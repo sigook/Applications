@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../../../core/constants/enums.dart';
 import '../../domain/entities/personal_info.dart';
 import '../../domain/entities/value_objects/name.dart';
+import '../../domain/entities/gender.dart';
 
 part 'personal_info_model.freezed.dart';
 part 'personal_info_model.g.dart';
@@ -14,7 +14,8 @@ class PersonalInfoModel with _$PersonalInfoModel {
     required String firstName,
     required String lastName,
     required DateTime dateOfBirth,
-    required Gender gender,
+    String? genderId, // UUID from API (may be null)
+    required String genderName, // Name from API
   }) = _PersonalInfoModel;
 
   /// Convert from domain entity
@@ -23,7 +24,8 @@ class PersonalInfoModel with _$PersonalInfoModel {
       firstName: entity.firstName.value,
       lastName: entity.lastName.value,
       dateOfBirth: entity.dateOfBirth,
-      gender: entity.gender,
+      genderId: entity.gender.id, // May be null
+      genderName: entity.gender.value,
     );
   }
 
@@ -33,7 +35,7 @@ class PersonalInfoModel with _$PersonalInfoModel {
       firstName: Name(firstName),
       lastName: Name(lastName),
       dateOfBirth: dateOfBirth,
-      gender: gender,
+      gender: Gender(id: genderId, value: genderName),
     );
   }
 

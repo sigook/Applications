@@ -62,9 +62,28 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data as List<dynamic>;
-        return jsonList
-            .map((json) => CatalogItemModel.fromJson(json as Map<String, dynamic>))
+        
+        // Debug: Show first item from API
+        if (jsonList.isNotEmpty && endpoint.contains('skill')) {
+          print('═══ DEBUG: Skills API Response ═══');
+          print('First item: ${jsonList.first}');
+          print('═══════════════════════════════');
+        }
+        
+        // Use safe parsing and filter out invalid items
+        final items = jsonList
+            .map((json) => CatalogItemModel.fromJsonSafe(json as Map<String, dynamic>))
+            .whereType<CatalogItemModel>()  // Filter out nulls
             .toList();
+        
+        if (items.isEmpty && jsonList.isNotEmpty) {
+          throw ParseException(
+            'All catalog items were invalid. '
+            'Check API data quality for endpoint: $endpoint'
+          );
+        }
+        
+        return items;
       } else {
         throw ServerException(
           message: 'Failed to load catalog data',
@@ -74,16 +93,28 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException('Request timeout');
+        throw NetworkException('Request timeout. Please check your internet connection.');
       } else if (e.type == DioExceptionType.connectionError) {
-        throw NetworkException('No internet connection');
+        throw NetworkException('Cannot connect to server. Please check your internet connection.');
+      } else if (e.error?.toString().contains('SocketException') == true) {
+        throw NetworkException('Cannot reach server. Please check your network connection or VPN.');
       } else {
         throw ServerException(
           message: e.message ?? 'Server error occurred',
           statusCode: e.response?.statusCode,
         );
       }
+    } on NetworkException {
+      rethrow; // Re-throw NetworkException as-is
+    } on ServerException {
+      rethrow; // Re-throw ServerException as-is
+    } on ParseException {
+      rethrow; // Re-throw ParseException as-is
     } catch (e) {
+      // Catch any other errors including SocketException
+      if (e.toString().contains('SocketException')) {
+        throw NetworkException('Cannot reach server. Please check your network connection or VPN.');
+      }
       throw ParseException('Failed to parse catalog data: ${e.toString()}');
     }
   }

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/constants/enums.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/gender.dart';
 import 'value_objects/name.dart';
 
 /// Personal information entity
@@ -41,7 +41,10 @@ class PersonalInfo extends Equatable {
 
   /// Validates all fields
   bool get isValid {
-    return firstName.isValid && lastName.isValid && isAdult;
+    return firstName.isValid &&
+        lastName.isValid &&
+        isAdult &&
+        gender.value.isNotEmpty; // Check value instead of id (id may be null)
   }
 
   /// Creates a copy with updated fields

@@ -23,7 +23,8 @@ ProfessionalInfoModel _$ProfessionalInfoModelFromJson(
 
 /// @nodoc
 mixin _$ProfessionalInfoModel {
-  List<String> get languages => throw _privateConstructorUsedError;
+  Map<String, String> get languages =>
+      throw _privateConstructorUsedError; // {id: value} - only languages with IDs
   List<String> get skills => throw _privateConstructorUsedError;
 
   /// Serializes this ProfessionalInfoModel to a JSON map.
@@ -43,7 +44,7 @@ abstract class $ProfessionalInfoModelCopyWith<$Res> {
     $Res Function(ProfessionalInfoModel) then,
   ) = _$ProfessionalInfoModelCopyWithImpl<$Res, ProfessionalInfoModel>;
   @useResult
-  $Res call({List<String> languages, List<String> skills});
+  $Res call({Map<String, String> languages, List<String> skills});
 }
 
 /// @nodoc
@@ -69,7 +70,7 @@ class _$ProfessionalInfoModelCopyWithImpl<
             languages: null == languages
                 ? _value.languages
                 : languages // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
+                      as Map<String, String>,
             skills: null == skills
                 ? _value.skills
                 : skills // ignore: cast_nullable_to_non_nullable
@@ -89,7 +90,7 @@ abstract class _$$ProfessionalInfoModelImplCopyWith<$Res>
   ) = __$$ProfessionalInfoModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<String> languages, List<String> skills});
+  $Res call({Map<String, String> languages, List<String> skills});
 }
 
 /// @nodoc
@@ -112,7 +113,7 @@ class __$$ProfessionalInfoModelImplCopyWithImpl<$Res>
         languages: null == languages
             ? _value._languages
             : languages // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
+                  as Map<String, String>,
         skills: null == skills
             ? _value._skills
             : skills // ignore: cast_nullable_to_non_nullable
@@ -126,7 +127,7 @@ class __$$ProfessionalInfoModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ProfessionalInfoModelImpl extends _ProfessionalInfoModel {
   const _$ProfessionalInfoModelImpl({
-    required final List<String> languages,
+    required final Map<String, String> languages,
     required final List<String> skills,
   }) : _languages = languages,
        _skills = skills,
@@ -135,15 +136,17 @@ class _$ProfessionalInfoModelImpl extends _ProfessionalInfoModel {
   factory _$ProfessionalInfoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfessionalInfoModelImplFromJson(json);
 
-  final List<String> _languages;
+  final Map<String, String> _languages;
   @override
-  List<String> get languages {
-    if (_languages is EqualUnmodifiableListView) return _languages;
+  Map<String, String> get languages {
+    if (_languages is EqualUnmodifiableMapView) return _languages;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_languages);
+    return EqualUnmodifiableMapView(_languages);
   }
 
+  // {id: value} - only languages with IDs
   final List<String> _skills;
+  // {id: value} - only languages with IDs
   @override
   List<String> get skills {
     if (_skills is EqualUnmodifiableListView) return _skills;
@@ -196,7 +199,7 @@ class _$ProfessionalInfoModelImpl extends _ProfessionalInfoModel {
 
 abstract class _ProfessionalInfoModel extends ProfessionalInfoModel {
   const factory _ProfessionalInfoModel({
-    required final List<String> languages,
+    required final Map<String, String> languages,
     required final List<String> skills,
   }) = _$ProfessionalInfoModelImpl;
   const _ProfessionalInfoModel._() : super._();
@@ -205,7 +208,7 @@ abstract class _ProfessionalInfoModel extends ProfessionalInfoModel {
       _$ProfessionalInfoModelImpl.fromJson;
 
   @override
-  List<String> get languages;
+  Map<String, String> get languages; // {id: value} - only languages with IDs
   @override
   List<String> get skills;
 

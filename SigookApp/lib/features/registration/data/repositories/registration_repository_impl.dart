@@ -1,29 +1,42 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/registration_form.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../datasources/registration_local_datasource.dart';
+import '../datasources/registration_remote_datasource.dart';
 import '../models/registration_form_model.dart';
+import '../models/worker_registration_request.dart';
 
 class RegistrationRepositoryImpl implements RegistrationRepository {
   final RegistrationLocalDataSource localDataSource;
+  final RegistrationRemoteDataSource remoteDataSource;
 
-  RegistrationRepositoryImpl({required this.localDataSource});
+  RegistrationRepositoryImpl({
+    required this.localDataSource,
+    required this.remoteDataSource,
+  });
 
   @override
   Future<Either<Failure, void>> submitRegistration(
       RegistrationForm form) async {
     try {
-      // TODO: Implement API call to submit registration
-      // For now, just simulate success
-      await Future.delayed(const Duration(seconds: 2));
+      // Create worker registration request from form
+      final request = WorkerRegistrationRequest.fromEntity(form);
+      
+      // Submit to API
+      await remoteDataSource.registerWorker(request);
       
       // Clear draft after successful submission
       await localDataSource.clearDraft();
       
       return const Right(null);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ServerFailure(message: 'Failed to submit registration: ${e.toString()}'));
     }
   }
 

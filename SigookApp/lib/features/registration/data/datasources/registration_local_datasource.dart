@@ -28,11 +28,18 @@ class RegistrationLocalDataSourceImpl implements RegistrationLocalDataSource {
 
   @override
   Future<RegistrationFormModel?> getDraft() async {
-    final jsonString = sharedPreferences.getString(_draftKey);
-    if (jsonString == null) return null;
+    try {
+      final jsonString = sharedPreferences.getString(_draftKey);
+      if (jsonString == null) return null;
 
-    final json = jsonDecode(jsonString) as Map<String, dynamic>;
-    return RegistrationFormModel.fromJson(json);
+      final json = jsonDecode(jsonString) as Map<String, dynamic>;
+      return RegistrationFormModel.fromJson(json);
+    } catch (e) {
+      // If draft is corrupted or incompatible (e.g., from old enum format),
+      // clear it and return null
+      await clearDraft();
+      return null;
+    }
   }
 
   @override

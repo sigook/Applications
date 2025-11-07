@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/network/api_client.dart';
 import '../../data/datasources/registration_local_datasource.dart';
+import '../../data/datasources/registration_remote_datasource.dart';
 import '../../data/repositories/registration_repository_impl.dart';
 import '../../domain/entities/registration_form.dart';
 import '../../domain/repositories/registration_repository.dart';
@@ -22,10 +24,22 @@ final registrationLocalDataSourceProvider =
   );
 });
 
+/// Remote data source provider
+final registrationRemoteDataSourceProvider =
+    Provider<RegistrationRemoteDataSource>((ref) {
+  return RegistrationRemoteDataSourceImpl(
+    apiClient: ApiClient(),
+  );
+});
+
 /// Repository provider
 final registrationRepositoryProvider = Provider<RegistrationRepository>((ref) {
   final localDataSource = ref.watch(registrationLocalDataSourceProvider);
-  return RegistrationRepositoryImpl(localDataSource: localDataSource);
+  final remoteDataSource = ref.watch(registrationRemoteDataSourceProvider);
+  return RegistrationRepositoryImpl(
+    localDataSource: localDataSource,
+    remoteDataSource: remoteDataSource,
+  );
 });
 
 /// Submit registration use case provider

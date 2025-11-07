@@ -115,7 +115,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
 
               // Page indicators
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -127,10 +127,11 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
 
               // Bottom buttons
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                 child: SlideTransition(
                   position: _slideAnimation,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Get Started button
                       SizedBox(
@@ -139,13 +140,13 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                         child: ElevatedButton(
                           onPressed: _navigateToRegistration,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE53935), // RED ACCENT!
+                            backgroundColor: const Color(0xFF1565C0), // Primary Blue
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 3,
-                            shadowColor: const Color(0xFFE53935).withValues(alpha: 0.4),
+                            shadowColor: const Color(0xFF1565C0).withValues(alpha: 0.4),
                           ),
                           child: const Text(
                             'Get Started',
@@ -157,7 +158,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       // Sign in text
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -171,13 +172,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                           ),
                           TextButton(
                             onPressed: () {
-                              // TODO: Navigate to sign in
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Sign in feature coming soon!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
+                              context.go(AppRoutes.signIn);
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
@@ -277,7 +272,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
       width: isActive ? 24 : 8,
       decoration: BoxDecoration(
         color: isActive
-            ? const Color(0xFFE53935) // RED ACCENT for active indicator
+            ? const Color(0xFF1565C0) // Primary Blue for active indicator
             : Colors.grey.shade300,
         borderRadius: BorderRadius.circular(4),
       ),

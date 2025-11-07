@@ -9,9 +9,7 @@ part of 'professional_info_model.dart';
 _$ProfessionalInfoModelImpl _$$ProfessionalInfoModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$ProfessionalInfoModelImpl(
-  languages: (json['languages'] as List<dynamic>)
-      .map((e) => e as String)
-      .toList(),
+  languages: Map<String, String>.from(json['languages'] as Map),
   skills: (json['skills'] as List<dynamic>).map((e) => e as String).toList(),
 );
 

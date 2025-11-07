@@ -93,7 +93,7 @@ final countriesListProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-final gendersListProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final gendersProvider = FutureProvider<List<CatalogItem>>((ref) async {
   final useCase = ref.read(getGendersProvider);
   final result = await useCase(NoParams());
   return result.fold(
@@ -111,7 +111,7 @@ final identificationTypesListProvider = FutureProvider<List<CatalogItem>>((ref) 
   );
 });
 
-final languagesListProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final languagesProvider = FutureProvider<List<CatalogItem>>((ref) async {
   final useCase = ref.read(getLanguagesProvider);
   final result = await useCase(NoParams());
   return result.fold(
@@ -120,7 +120,7 @@ final languagesListProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-final skillsListProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final skillsProvider = FutureProvider<List<CatalogItem>>((ref) async {
   final useCase = ref.read(getSkillsProvider);
   final result = await useCase(NoParams());
   return result.fold(

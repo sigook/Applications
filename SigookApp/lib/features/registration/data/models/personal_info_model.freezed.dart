@@ -24,7 +24,9 @@ mixin _$PersonalInfoModel {
   String get firstName => throw _privateConstructorUsedError;
   String get lastName => throw _privateConstructorUsedError;
   DateTime get dateOfBirth => throw _privateConstructorUsedError;
-  Gender get gender => throw _privateConstructorUsedError;
+  String? get genderId =>
+      throw _privateConstructorUsedError; // UUID from API (may be null)
+  String get genderName => throw _privateConstructorUsedError;
 
   /// Serializes this PersonalInfoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,7 +49,8 @@ abstract class $PersonalInfoModelCopyWith<$Res> {
     String firstName,
     String lastName,
     DateTime dateOfBirth,
-    Gender gender,
+    String? genderId,
+    String genderName,
   });
 }
 
@@ -69,7 +72,8 @@ class _$PersonalInfoModelCopyWithImpl<$Res, $Val extends PersonalInfoModel>
     Object? firstName = null,
     Object? lastName = null,
     Object? dateOfBirth = null,
-    Object? gender = null,
+    Object? genderId = freezed,
+    Object? genderName = null,
   }) {
     return _then(
       _value.copyWith(
@@ -85,10 +89,14 @@ class _$PersonalInfoModelCopyWithImpl<$Res, $Val extends PersonalInfoModel>
                 ? _value.dateOfBirth
                 : dateOfBirth // ignore: cast_nullable_to_non_nullable
                       as DateTime,
-            gender: null == gender
-                ? _value.gender
-                : gender // ignore: cast_nullable_to_non_nullable
-                      as Gender,
+            genderId: freezed == genderId
+                ? _value.genderId
+                : genderId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            genderName: null == genderName
+                ? _value.genderName
+                : genderName // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -108,7 +116,8 @@ abstract class _$$PersonalInfoModelImplCopyWith<$Res>
     String firstName,
     String lastName,
     DateTime dateOfBirth,
-    Gender gender,
+    String? genderId,
+    String genderName,
   });
 }
 
@@ -129,7 +138,8 @@ class __$$PersonalInfoModelImplCopyWithImpl<$Res>
     Object? firstName = null,
     Object? lastName = null,
     Object? dateOfBirth = null,
-    Object? gender = null,
+    Object? genderId = freezed,
+    Object? genderName = null,
   }) {
     return _then(
       _$PersonalInfoModelImpl(
@@ -145,10 +155,14 @@ class __$$PersonalInfoModelImplCopyWithImpl<$Res>
             ? _value.dateOfBirth
             : dateOfBirth // ignore: cast_nullable_to_non_nullable
                   as DateTime,
-        gender: null == gender
-            ? _value.gender
-            : gender // ignore: cast_nullable_to_non_nullable
-                  as Gender,
+        genderId: freezed == genderId
+            ? _value.genderId
+            : genderId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        genderName: null == genderName
+            ? _value.genderName
+            : genderName // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -161,7 +175,8 @@ class _$PersonalInfoModelImpl extends _PersonalInfoModel {
     required this.firstName,
     required this.lastName,
     required this.dateOfBirth,
-    required this.gender,
+    this.genderId,
+    required this.genderName,
   }) : super._();
 
   factory _$PersonalInfoModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -174,11 +189,14 @@ class _$PersonalInfoModelImpl extends _PersonalInfoModel {
   @override
   final DateTime dateOfBirth;
   @override
-  final Gender gender;
+  final String? genderId;
+  // UUID from API (may be null)
+  @override
+  final String genderName;
 
   @override
   String toString() {
-    return 'PersonalInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, gender: $gender)';
+    return 'PersonalInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderName: $genderName)';
   }
 
   @override
@@ -192,13 +210,22 @@ class _$PersonalInfoModelImpl extends _PersonalInfoModel {
                 other.lastName == lastName) &&
             (identical(other.dateOfBirth, dateOfBirth) ||
                 other.dateOfBirth == dateOfBirth) &&
-            (identical(other.gender, gender) || other.gender == gender));
+            (identical(other.genderId, genderId) ||
+                other.genderId == genderId) &&
+            (identical(other.genderName, genderName) ||
+                other.genderName == genderName));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, firstName, lastName, dateOfBirth, gender);
+  int get hashCode => Object.hash(
+    runtimeType,
+    firstName,
+    lastName,
+    dateOfBirth,
+    genderId,
+    genderName,
+  );
 
   /// Create a copy of PersonalInfoModel
   /// with the given fields replaced by the non-null parameter values.
@@ -222,7 +249,8 @@ abstract class _PersonalInfoModel extends PersonalInfoModel {
     required final String firstName,
     required final String lastName,
     required final DateTime dateOfBirth,
-    required final Gender gender,
+    final String? genderId,
+    required final String genderName,
   }) = _$PersonalInfoModelImpl;
   const _PersonalInfoModel._() : super._();
 
@@ -236,7 +264,9 @@ abstract class _PersonalInfoModel extends PersonalInfoModel {
   @override
   DateTime get dateOfBirth;
   @override
-  Gender get gender;
+  String? get genderId; // UUID from API (may be null)
+  @override
+  String get genderName;
 
   /// Create a copy of PersonalInfoModel
   /// with the given fields replaced by the non-null parameter values.

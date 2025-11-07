@@ -12,7 +12,8 @@ _$PersonalInfoModelImpl _$$PersonalInfoModelImplFromJson(
   firstName: json['firstName'] as String,
   lastName: json['lastName'] as String,
   dateOfBirth: DateTime.parse(json['dateOfBirth'] as String),
-  gender: $enumDecode(_$GenderEnumMap, json['gender']),
+  genderId: json['genderId'] as String?,
+  genderName: json['genderName'] as String,
 );
 
 Map<String, dynamic> _$$PersonalInfoModelImplToJson(
@@ -21,12 +22,6 @@ Map<String, dynamic> _$$PersonalInfoModelImplToJson(
   'firstName': instance.firstName,
   'lastName': instance.lastName,
   'dateOfBirth': instance.dateOfBirth.toIso8601String(),
-  'gender': _$GenderEnumMap[instance.gender]!,
-};
-
-const _$GenderEnumMap = {
-  Gender.male: 'male',
-  Gender.female: 'female',
-  Gender.other: 'other',
-  Gender.preferNotToSay: 'preferNotToSay',
+  'genderId': instance.genderId,
+  'genderName': instance.genderName,
 };

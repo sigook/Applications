@@ -9,47 +9,19 @@ part of 'availability_info_model.dart';
 _$AvailabilityInfoModelImpl _$$AvailabilityInfoModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$AvailabilityInfoModelImpl(
-  availabilityType: $enumDecode(
-    _$AvailabilityTypeEnumMap,
-    json['availabilityType'],
-  ),
-  availableTimes: (json['availableTimes'] as List<dynamic>)
-      .map((e) => $enumDecode(_$TimeOfDayEnumMap, e))
-      .toList(),
+  availabilityTypeId: json['availabilityTypeId'] as String?,
+  availabilityTypeName: json['availabilityTypeName'] as String,
+  availableTimes: Map<String, String>.from(json['availableTimes'] as Map),
   availableDays: (json['availableDays'] as List<dynamic>)
-      .map((e) => $enumDecode(_$DayOfWeekEnumMap, e))
+      .map((e) => e as String)
       .toList(),
 );
 
 Map<String, dynamic> _$$AvailabilityInfoModelImplToJson(
   _$AvailabilityInfoModelImpl instance,
 ) => <String, dynamic>{
-  'availabilityType': _$AvailabilityTypeEnumMap[instance.availabilityType]!,
-  'availableTimes': instance.availableTimes
-      .map((e) => _$TimeOfDayEnumMap[e]!)
-      .toList(),
-  'availableDays': instance.availableDays
-      .map((e) => _$DayOfWeekEnumMap[e]!)
-      .toList(),
-};
-
-const _$AvailabilityTypeEnumMap = {
-  AvailabilityType.fullTime: 'fullTime',
-  AvailabilityType.partTime: 'partTime',
-};
-
-const _$TimeOfDayEnumMap = {
-  TimeOfDay.morning: 'morning',
-  TimeOfDay.afternoon: 'afternoon',
-  TimeOfDay.evening: 'evening',
-};
-
-const _$DayOfWeekEnumMap = {
-  DayOfWeek.monday: 'monday',
-  DayOfWeek.tuesday: 'tuesday',
-  DayOfWeek.wednesday: 'wednesday',
-  DayOfWeek.thursday: 'thursday',
-  DayOfWeek.friday: 'friday',
-  DayOfWeek.saturday: 'saturday',
-  DayOfWeek.sunday: 'sunday',
+  'availabilityTypeId': instance.availabilityTypeId,
+  'availabilityTypeName': instance.availabilityTypeName,
+  'availableTimes': instance.availableTimes,
+  'availableDays': instance.availableDays,
 };

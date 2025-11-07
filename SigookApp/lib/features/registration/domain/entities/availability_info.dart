@@ -1,12 +1,21 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/constants/enums.dart';
+import 'available_time.dart';
+import 'availability_type.dart';
+import '../../../../core/constants/enums.dart' as enums;
 
 /// Availability information entity
 /// Represents the availability section of the registration form
+///
+/// Uses API data (UUIDs) for:
+/// - availabilityType: UUID from /Catalog/availability
+/// - availableTimes: UUIDs from /Catalog/availabilityTime
+///
+/// Uses enum for:
+/// - availableDays: Universal constant (not from API)
 class AvailabilityInfo extends Equatable {
-  final AvailabilityType availabilityType;
-  final List<TimeOfDay> availableTimes;
-  final List<DayOfWeek> availableDays;
+  final AvailabilityType availabilityType; // Entity from API
+  final List<AvailableTime> availableTimes; // Entities from API
+  final List<enums.DayOfWeek> availableDays; // Keep enum
 
   const AvailabilityInfo({
     required this.availabilityType,
@@ -16,10 +25,15 @@ class AvailabilityInfo extends Equatable {
 
   /// Validates all fields
   bool get isValid {
-    return availableTimes.isNotEmpty && availableDays.isNotEmpty;
+    return availabilityType.value.isNotEmpty &&
+        availableTimes.isNotEmpty &&
+        availableDays.isNotEmpty;
   }
 
   /// Validation error messages
+  String? get availabilityTypeError => availabilityType.value.isEmpty
+      ? 'Please select availability type'
+      : null;
   String? get availableTimesError =>
       availableTimes.isEmpty ? 'Please select at least one time slot' : null;
   String? get availableDaysError =>
@@ -28,8 +42,8 @@ class AvailabilityInfo extends Equatable {
   /// Creates a copy with updated fields
   AvailabilityInfo copyWith({
     AvailabilityType? availabilityType,
-    List<TimeOfDay>? availableTimes,
-    List<DayOfWeek>? availableDays,
+    List<AvailableTime>? availableTimes,
+    List<enums.DayOfWeek>? availableDays,
   }) {
     return AvailabilityInfo(
       availabilityType: availabilityType ?? this.availabilityType,

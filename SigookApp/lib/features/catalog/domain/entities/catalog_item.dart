@@ -3,21 +3,14 @@ import 'package:equatable/equatable.dart';
 /// Base catalog item entity
 /// Represents a generic catalog entry (gender, country, language, etc.)
 class CatalogItem extends Equatable {
-  final int id;
-  final String name;
-  final String? description;
-  final bool isActive;
+  final String? id; // Nullable - some catalog items don't have IDs from API
+  final String value;
 
-  const CatalogItem({
-    required this.id,
-    required this.name,
-    this.description,
-    this.isActive = true,
-  });
+  const CatalogItem({this.id, required this.value});
 
   @override
-  List<Object?> get props => [id, name, description, isActive];
+  List<Object?> get props => [id, value];
 
   @override
-  String toString() => name;
+  String toString() => value;
 }

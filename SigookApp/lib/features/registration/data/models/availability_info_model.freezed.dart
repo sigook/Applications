@@ -23,9 +23,13 @@ AvailabilityInfoModel _$AvailabilityInfoModelFromJson(
 
 /// @nodoc
 mixin _$AvailabilityInfoModel {
-  AvailabilityType get availabilityType => throw _privateConstructorUsedError;
-  List<TimeOfDay> get availableTimes => throw _privateConstructorUsedError;
-  List<DayOfWeek> get availableDays => throw _privateConstructorUsedError;
+  String? get availabilityTypeId =>
+      throw _privateConstructorUsedError; // UUID from API (may be null)
+  String get availabilityTypeName =>
+      throw _privateConstructorUsedError; // Name from API
+  Map<String, String> get availableTimes =>
+      throw _privateConstructorUsedError; // {id: value} - only times with IDs
+  List<String> get availableDays => throw _privateConstructorUsedError;
 
   /// Serializes this AvailabilityInfoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,9 +49,10 @@ abstract class $AvailabilityInfoModelCopyWith<$Res> {
   ) = _$AvailabilityInfoModelCopyWithImpl<$Res, AvailabilityInfoModel>;
   @useResult
   $Res call({
-    AvailabilityType availabilityType,
-    List<TimeOfDay> availableTimes,
-    List<DayOfWeek> availableDays,
+    String? availabilityTypeId,
+    String availabilityTypeName,
+    Map<String, String> availableTimes,
+    List<String> availableDays,
   });
 }
 
@@ -69,24 +74,29 @@ class _$AvailabilityInfoModelCopyWithImpl<
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? availabilityType = null,
+    Object? availabilityTypeId = freezed,
+    Object? availabilityTypeName = null,
     Object? availableTimes = null,
     Object? availableDays = null,
   }) {
     return _then(
       _value.copyWith(
-            availabilityType: null == availabilityType
-                ? _value.availabilityType
-                : availabilityType // ignore: cast_nullable_to_non_nullable
-                      as AvailabilityType,
+            availabilityTypeId: freezed == availabilityTypeId
+                ? _value.availabilityTypeId
+                : availabilityTypeId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            availabilityTypeName: null == availabilityTypeName
+                ? _value.availabilityTypeName
+                : availabilityTypeName // ignore: cast_nullable_to_non_nullable
+                      as String,
             availableTimes: null == availableTimes
                 ? _value.availableTimes
                 : availableTimes // ignore: cast_nullable_to_non_nullable
-                      as List<TimeOfDay>,
+                      as Map<String, String>,
             availableDays: null == availableDays
                 ? _value.availableDays
                 : availableDays // ignore: cast_nullable_to_non_nullable
-                      as List<DayOfWeek>,
+                      as List<String>,
           )
           as $Val,
     );
@@ -103,9 +113,10 @@ abstract class _$$AvailabilityInfoModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    AvailabilityType availabilityType,
-    List<TimeOfDay> availableTimes,
-    List<DayOfWeek> availableDays,
+    String? availabilityTypeId,
+    String availabilityTypeName,
+    Map<String, String> availableTimes,
+    List<String> availableDays,
   });
 }
 
@@ -124,24 +135,29 @@ class __$$AvailabilityInfoModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? availabilityType = null,
+    Object? availabilityTypeId = freezed,
+    Object? availabilityTypeName = null,
     Object? availableTimes = null,
     Object? availableDays = null,
   }) {
     return _then(
       _$AvailabilityInfoModelImpl(
-        availabilityType: null == availabilityType
-            ? _value.availabilityType
-            : availabilityType // ignore: cast_nullable_to_non_nullable
-                  as AvailabilityType,
+        availabilityTypeId: freezed == availabilityTypeId
+            ? _value.availabilityTypeId
+            : availabilityTypeId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        availabilityTypeName: null == availabilityTypeName
+            ? _value.availabilityTypeName
+            : availabilityTypeName // ignore: cast_nullable_to_non_nullable
+                  as String,
         availableTimes: null == availableTimes
             ? _value._availableTimes
             : availableTimes // ignore: cast_nullable_to_non_nullable
-                  as List<TimeOfDay>,
+                  as Map<String, String>,
         availableDays: null == availableDays
             ? _value._availableDays
             : availableDays // ignore: cast_nullable_to_non_nullable
-                  as List<DayOfWeek>,
+                  as List<String>,
       ),
     );
   }
@@ -151,9 +167,10 @@ class __$$AvailabilityInfoModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
   const _$AvailabilityInfoModelImpl({
-    required this.availabilityType,
-    required final List<TimeOfDay> availableTimes,
-    required final List<DayOfWeek> availableDays,
+    this.availabilityTypeId,
+    required this.availabilityTypeName,
+    required final Map<String, String> availableTimes,
+    required final List<String> availableDays,
   }) : _availableTimes = availableTimes,
        _availableDays = availableDays,
        super._();
@@ -162,18 +179,25 @@ class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
       _$$AvailabilityInfoModelImplFromJson(json);
 
   @override
-  final AvailabilityType availabilityType;
-  final List<TimeOfDay> _availableTimes;
+  final String? availabilityTypeId;
+  // UUID from API (may be null)
   @override
-  List<TimeOfDay> get availableTimes {
-    if (_availableTimes is EqualUnmodifiableListView) return _availableTimes;
+  final String availabilityTypeName;
+  // Name from API
+  final Map<String, String> _availableTimes;
+  // Name from API
+  @override
+  Map<String, String> get availableTimes {
+    if (_availableTimes is EqualUnmodifiableMapView) return _availableTimes;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_availableTimes);
+    return EqualUnmodifiableMapView(_availableTimes);
   }
 
-  final List<DayOfWeek> _availableDays;
+  // {id: value} - only times with IDs
+  final List<String> _availableDays;
+  // {id: value} - only times with IDs
   @override
-  List<DayOfWeek> get availableDays {
+  List<String> get availableDays {
     if (_availableDays is EqualUnmodifiableListView) return _availableDays;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_availableDays);
@@ -181,7 +205,7 @@ class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
 
   @override
   String toString() {
-    return 'AvailabilityInfoModel(availabilityType: $availabilityType, availableTimes: $availableTimes, availableDays: $availableDays)';
+    return 'AvailabilityInfoModel(availabilityTypeId: $availabilityTypeId, availabilityTypeName: $availabilityTypeName, availableTimes: $availableTimes, availableDays: $availableDays)';
   }
 
   @override
@@ -189,8 +213,10 @@ class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AvailabilityInfoModelImpl &&
-            (identical(other.availabilityType, availabilityType) ||
-                other.availabilityType == availabilityType) &&
+            (identical(other.availabilityTypeId, availabilityTypeId) ||
+                other.availabilityTypeId == availabilityTypeId) &&
+            (identical(other.availabilityTypeName, availabilityTypeName) ||
+                other.availabilityTypeName == availabilityTypeName) &&
             const DeepCollectionEquality().equals(
               other._availableTimes,
               _availableTimes,
@@ -205,7 +231,8 @@ class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    availabilityType,
+    availabilityTypeId,
+    availabilityTypeName,
     const DeepCollectionEquality().hash(_availableTimes),
     const DeepCollectionEquality().hash(_availableDays),
   );
@@ -230,9 +257,10 @@ class _$AvailabilityInfoModelImpl extends _AvailabilityInfoModel {
 
 abstract class _AvailabilityInfoModel extends AvailabilityInfoModel {
   const factory _AvailabilityInfoModel({
-    required final AvailabilityType availabilityType,
-    required final List<TimeOfDay> availableTimes,
-    required final List<DayOfWeek> availableDays,
+    final String? availabilityTypeId,
+    required final String availabilityTypeName,
+    required final Map<String, String> availableTimes,
+    required final List<String> availableDays,
   }) = _$AvailabilityInfoModelImpl;
   const _AvailabilityInfoModel._() : super._();
 
@@ -240,11 +268,13 @@ abstract class _AvailabilityInfoModel extends AvailabilityInfoModel {
       _$AvailabilityInfoModelImpl.fromJson;
 
   @override
-  AvailabilityType get availabilityType;
+  String? get availabilityTypeId; // UUID from API (may be null)
   @override
-  List<TimeOfDay> get availableTimes;
+  String get availabilityTypeName; // Name from API
   @override
-  List<DayOfWeek> get availableDays;
+  Map<String, String> get availableTimes; // {id: value} - only times with IDs
+  @override
+  List<String> get availableDays;
 
   /// Create a copy of AvailabilityInfoModel
   /// with the given fields replaced by the non-null parameter values.
