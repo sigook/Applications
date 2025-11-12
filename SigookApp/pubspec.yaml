@@ -65,6 +65,7 @@ dependencies:
   
   # Network
   connectivity_plus: ^6.0.5
+  retry: ^3.1.2
 
 dev_dependencies:
   flutter_test:

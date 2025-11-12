@@ -6,6 +6,7 @@ import '../../domain/entities/gender.dart';
 import '../../domain/entities/availability_type.dart';
 import '../../domain/entities/identification_type.dart';
 import '../../domain/entities/day_of_week.dart';
+import '../utils/catalog_id_mapper.dart';
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -82,37 +83,28 @@ class WorkerRegistrationRequest {
     // Format date as ISO 8601
     final formattedDate = basicInfo.dateOfBirth.toIso8601String();
 
-    // Convert day strings to DayOfWeekEntity objects
+    // Convert day strings to DayOfWeekEntity objects using catalog mapper
     // API expects {id: guid, value: "DayName"}
-    final dayIdMap = {
-      'Monday': '00000000-0000-0000-0000-000000000001',
-      'Tuesday': '00000000-0000-0000-0000-000000000002',
-      'Wednesday': '00000000-0000-0000-0000-000000000003',
-      'Thursday': '00000000-0000-0000-0000-000000000004',
-      'Friday': '00000000-0000-0000-0000-000000000005',
-      'Saturday': '00000000-0000-0000-0000-000000000006',
-      'Sunday': '00000000-0000-0000-0000-000000000007',
-    };
-    
     final availabilityDays = preferencesInfo.availableDays.map((dayName) {
       return DayOfWeekEntity(
-        id: dayIdMap[dayName] ?? '00000000-0000-0000-0000-000000000000',
+        id: CatalogIdMapper.getDayId(dayName),
         value: dayName,
       );
     }).toList();
 
     // Convert availability time strings to AvailableTime entities
-    // Assuming time slots have associated IDs from catalog
+    // Using catalog mapper for ID lookup
     final availabilityTimes = preferencesInfo.availableTimes.map((timeValue) {
       return AvailableTime(
-        id: null, // Will be filled by API or catalog lookup
+        id: CatalogIdMapper.getTimeSlotId(timeValue),
         value: timeValue,
       );
     }).toList();
 
     // Convert availability type string to AvailabilityType entity
+    // Using catalog mapper for ID lookup
     final availabilityType = AvailabilityType(
-      id: null, // Will be filled by API or catalog lookup
+      id: CatalogIdMapper.getAvailabilityTypeId(preferencesInfo.availabilityType),
       value: preferencesInfo.availabilityType,
     );
 
