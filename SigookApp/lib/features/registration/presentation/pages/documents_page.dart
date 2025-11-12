@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/documents_info.dart';
 import '../providers/registration_providers.dart';
+import '../widgets/file_upload_modal.dart';
 
 class DocumentsPage extends ConsumerStatefulWidget {
   const DocumentsPage({super.key});
@@ -55,6 +56,35 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     });
   }
 
+  /// Show file upload modal
+  Future<void> _showFileUploadModal({
+    required String title,
+    required String description,
+    required Function(String fileName, String identificationType, String identificationNumber) onFileUploaded,
+  }) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => FileUploadModal(
+        title: title,
+        description: description,
+      ),
+    );
+
+    if (result != null && mounted) {
+      final fileName = result['file'] as String;
+      final identificationType = result['identificationType'];
+      final identificationNumber = result['identificationNumber'] as String;
+      
+      onFileUploaded(
+        fileName,
+        identificationType?.value ?? 'Unknown',
+        identificationNumber,
+      );
+      
+      _validateAndSave();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -95,11 +125,20 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 icon: Icons.description,
                 files: _documents,
                 onUpload: () {
-                  // TODO: Implement file upload
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Document upload will be implemented'),
-                    ),
+                  _showFileUploadModal(
+                    title: 'Upload General Document',
+                    description: 'Select identification type and upload document',
+                    onFileUploaded: (fileName, identificationType, identificationNumber) {
+                      setState(() {
+                        _documents.add('$identificationType #$identificationNumber - $fileName');
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Document uploaded: $fileName'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -112,11 +151,20 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 icon: Icons.card_membership,
                 files: _licenses,
                 onUpload: () {
-                  // TODO: Implement file upload
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('License upload will be implemented'),
-                    ),
+                  _showFileUploadModal(
+                    title: 'Upload License',
+                    description: 'Select identification type and upload license',
+                    onFileUploaded: (fileName, identificationType, identificationNumber) {
+                      setState(() {
+                        _licenses.add('$identificationType #$identificationNumber - $fileName');
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('License uploaded: $fileName'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -129,11 +177,20 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 icon: Icons.workspace_premium,
                 files: _certificates,
                 onUpload: () {
-                  // TODO: Implement file upload
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Certificate upload will be implemented'),
-                    ),
+                  _showFileUploadModal(
+                    title: 'Upload Certificate',
+                    description: 'Select identification type and upload certificate',
+                    onFileUploaded: (fileName, identificationType, identificationNumber) {
+                      setState(() {
+                        _certificates.add('$identificationType #$identificationNumber - $fileName');
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Certificate uploaded: $fileName'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -147,16 +204,20 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 files: _resume != null ? [_resume!] : [],
                 errorText: _resumeError,
                 onUpload: () {
-                  // TODO: Implement file upload
-                  // For now, mark as uploaded for validation
-                  setState(() {
-                    _resume = 'placeholder_resume.pdf';
-                  });
-                  _validateAndSave();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Resume marked as uploaded (placeholder)'),
-                    ),
+                  _showFileUploadModal(
+                    title: 'Upload Resume',
+                    description: 'Select identification type and upload resume',
+                    onFileUploaded: (fileName, identificationType, identificationNumber) {
+                      setState(() {
+                        _resume = '$identificationType #$identificationNumber - $fileName';
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Resume uploaded: $fileName'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
                   );
                 },
                 required: true,

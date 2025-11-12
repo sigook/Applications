@@ -231,23 +231,27 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
           ),
         ],
         const SizedBox(height: 12),
-        Column(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: LiftingCapacityType.values.map((capacity) {
             final isSelected = _selectedLiftingCapacity == capacity;
-            return RadioListTile<LiftingCapacityType>(
-              title: Text(capacity.label),
-              value: capacity,
-              groupValue: _selectedLiftingCapacity,
+            return ChoiceChip(
+              label: Text(capacity.label),
               selected: isSelected,
-              activeColor: AppTheme.primaryBlue,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLiftingCapacity = value;
-                });
-                _validateAndSave();
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedLiftingCapacity = capacity;
+                  });
+                  _validateAndSave();
+                }
               },
-              contentPadding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
+              selectedColor: AppTheme.primaryBlue,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
             );
           }).toList(),
         ),

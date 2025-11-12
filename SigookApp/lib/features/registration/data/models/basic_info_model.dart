@@ -22,6 +22,8 @@ class BasicInfoModel with _$BasicInfoModel {
     required String address,
     required String zipCode,
     required String mobileNumber,
+    String? identificationType,
+    String? identificationNumber,
   }) = _BasicInfoModel;
 
   /// Convert from domain entity
@@ -38,6 +40,8 @@ class BasicInfoModel with _$BasicInfoModel {
       address: entity.address,
       zipCode: entity.zipCode,
       mobileNumber: entity.mobileNumber,
+      identificationType: entity.identificationType,
+      identificationNumber: entity.identificationNumber,
     );
   }
 
@@ -54,6 +58,8 @@ class BasicInfoModel with _$BasicInfoModel {
       address: address,
       zipCode: zipCode,
       mobileNumber: mobileNumber,
+      identificationType: identificationType,
+      identificationNumber: identificationNumber,
     );
   }
 

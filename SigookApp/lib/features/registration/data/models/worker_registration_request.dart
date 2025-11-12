@@ -108,20 +108,27 @@ class WorkerRegistrationRequest {
       value: preferencesInfo.availabilityType,
     );
 
-    // NOTE: Currently no identification fields in new structure
-    // Using placeholder values - may need to add these fields to BasicInfo or AccountInfo
-    final placeholderIdentificationType = IdentificationType(
-      id: null,
-      value: 'ID', // Placeholder
-    );
+    // Use identification from BasicInfo or documents
+    // If not provided in BasicInfo, use placeholder (will be updated via documents upload)
+    final identificationType = basicInfo.identificationType != null
+        ? IdentificationType(
+            id: null, // ID will be resolved by backend from value
+            value: basicInfo.identificationType!,
+          )
+        : IdentificationType(
+            id: null,
+            value: 'ID', // Placeholder if not provided
+          );
+    
+    final identificationNumber = basicInfo.identificationNumber ?? 'PENDING';
 
     return WorkerRegistrationRequest(
       firstName: basicInfo.firstName.value,
       lastName: basicInfo.lastName.value,
       birthDay: formattedDate,
       gender: basicInfo.gender,
-      identificationNumber1: 'TEMP', // TODO: Add identification to form
-      identificationType1: placeholderIdentificationType,
+      identificationNumber1: identificationNumber,
+      identificationType1: identificationType,
       mobileNumber: basicInfo.mobileNumber,
       phone: null, // Optional phone field
       address: basicInfo.address,

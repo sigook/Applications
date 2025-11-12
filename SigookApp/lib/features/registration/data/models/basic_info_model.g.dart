@@ -19,6 +19,8 @@ _$BasicInfoModelImpl _$$BasicInfoModelImplFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String,
       zipCode: json['zipCode'] as String,
       mobileNumber: json['mobileNumber'] as String,
+      identificationType: json['identificationType'] as String?,
+      identificationNumber: json['identificationNumber'] as String?,
     );
 
 Map<String, dynamic> _$$BasicInfoModelImplToJson(
@@ -35,4 +37,6 @@ Map<String, dynamic> _$$BasicInfoModelImplToJson(
   'address': instance.address,
   'zipCode': instance.zipCode,
   'mobileNumber': instance.mobileNumber,
+  'identificationType': instance.identificationType,
+  'identificationNumber': instance.identificationNumber,
 };

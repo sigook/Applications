@@ -33,6 +33,8 @@ mixin _$BasicInfoModel {
   String get address => throw _privateConstructorUsedError;
   String get zipCode => throw _privateConstructorUsedError;
   String get mobileNumber => throw _privateConstructorUsedError;
+  String? get identificationType => throw _privateConstructorUsedError;
+  String? get identificationNumber => throw _privateConstructorUsedError;
 
   /// Serializes this BasicInfoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -63,6 +65,8 @@ abstract class $BasicInfoModelCopyWith<$Res> {
     String address,
     String zipCode,
     String mobileNumber,
+    String? identificationType,
+    String? identificationNumber,
   });
 }
 
@@ -92,6 +96,8 @@ class _$BasicInfoModelCopyWithImpl<$Res, $Val extends BasicInfoModel>
     Object? address = null,
     Object? zipCode = null,
     Object? mobileNumber = null,
+    Object? identificationType = freezed,
+    Object? identificationNumber = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -139,6 +145,14 @@ class _$BasicInfoModelCopyWithImpl<$Res, $Val extends BasicInfoModel>
                 ? _value.mobileNumber
                 : mobileNumber // ignore: cast_nullable_to_non_nullable
                       as String,
+            identificationType: freezed == identificationType
+                ? _value.identificationType
+                : identificationType // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            identificationNumber: freezed == identificationNumber
+                ? _value.identificationNumber
+                : identificationNumber // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -166,6 +180,8 @@ abstract class _$$BasicInfoModelImplCopyWith<$Res>
     String address,
     String zipCode,
     String mobileNumber,
+    String? identificationType,
+    String? identificationNumber,
   });
 }
 
@@ -194,6 +210,8 @@ class __$$BasicInfoModelImplCopyWithImpl<$Res>
     Object? address = null,
     Object? zipCode = null,
     Object? mobileNumber = null,
+    Object? identificationType = freezed,
+    Object? identificationNumber = freezed,
   }) {
     return _then(
       _$BasicInfoModelImpl(
@@ -241,6 +259,14 @@ class __$$BasicInfoModelImplCopyWithImpl<$Res>
             ? _value.mobileNumber
             : mobileNumber // ignore: cast_nullable_to_non_nullable
                   as String,
+        identificationType: freezed == identificationType
+            ? _value.identificationType
+            : identificationType // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        identificationNumber: freezed == identificationNumber
+            ? _value.identificationNumber
+            : identificationNumber // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -261,6 +287,8 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
     required this.address,
     required this.zipCode,
     required this.mobileNumber,
+    this.identificationType,
+    this.identificationNumber,
   }) : super._();
 
   factory _$BasicInfoModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -289,10 +317,14 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
   final String zipCode;
   @override
   final String mobileNumber;
+  @override
+  final String? identificationType;
+  @override
+  final String? identificationNumber;
 
   @override
   String toString() {
-    return 'BasicInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderValue: $genderValue, country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode, mobileNumber: $mobileNumber)';
+    return 'BasicInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderValue: $genderValue, country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode, mobileNumber: $mobileNumber, identificationType: $identificationType, identificationNumber: $identificationNumber)';
   }
 
   @override
@@ -317,7 +349,11 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
             (identical(other.address, address) || other.address == address) &&
             (identical(other.zipCode, zipCode) || other.zipCode == zipCode) &&
             (identical(other.mobileNumber, mobileNumber) ||
-                other.mobileNumber == mobileNumber));
+                other.mobileNumber == mobileNumber) &&
+            (identical(other.identificationType, identificationType) ||
+                other.identificationType == identificationType) &&
+            (identical(other.identificationNumber, identificationNumber) ||
+                other.identificationNumber == identificationNumber));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -335,6 +371,8 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
     address,
     zipCode,
     mobileNumber,
+    identificationType,
+    identificationNumber,
   );
 
   /// Create a copy of BasicInfoModel
@@ -367,6 +405,8 @@ abstract class _BasicInfoModel extends BasicInfoModel {
     required final String address,
     required final String zipCode,
     required final String mobileNumber,
+    final String? identificationType,
+    final String? identificationNumber,
   }) = _$BasicInfoModelImpl;
   const _BasicInfoModel._() : super._();
 
@@ -395,6 +435,10 @@ abstract class _BasicInfoModel extends BasicInfoModel {
   String get zipCode;
   @override
   String get mobileNumber;
+  @override
+  String? get identificationType;
+  @override
+  String? get identificationNumber;
 
   /// Create a copy of BasicInfoModel
   /// with the given fields replaced by the non-null parameter values.

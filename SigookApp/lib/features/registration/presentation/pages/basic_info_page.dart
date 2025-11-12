@@ -45,6 +45,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   String? _zipCodeError;
   String? _mobileNumberError;
 
+  // Track which fields have been touched (focused and blurred)
+  final Set<String> _touchedFields = {};
+  bool _attemptedSubmit = false;
+
   @override
   void initState() {
     super.initState();
@@ -85,46 +89,69 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     super.dispose();
   }
 
-  void _validateAndSave() {
+  /// Helper to check if field should show error
+  bool _shouldShowError(String fieldName) {
+    return _attemptedSubmit || _touchedFields.contains(fieldName);
+  }
+
+  /// Validate fields and update error messages
+  void _validate() {
+    final firstName = Name(_firstNameController.text);
+    final lastName = Name(_lastNameController.text);
+
+    final basicInfo = BasicInfo(
+      firstName: firstName,
+      lastName: lastName,
+      dateOfBirth: _selectedDate ?? DateTime.now(),
+      gender: Gender(
+        id: _selectedGenderId ?? '',
+        value: _selectedGender ?? '',
+      ),
+      country: _selectedCountryName ?? '',
+      provinceState: _selectedProvinceName ?? '',
+      city: _selectedCityName ?? '',
+      address: _addressController.text,
+      zipCode: _zipCodeController.text,
+      mobileNumber: _mobileNumberController.text,
+    );
+
     setState(() {
-      final firstName = Name(_firstNameController.text);
-      final lastName = Name(_lastNameController.text);
+      // Only show errors for touched fields or after submit attempt
+      _firstNameError = _shouldShowError('firstName') ? firstName.errorMessage : null;
+      _lastNameError = _shouldShowError('lastName') ? lastName.errorMessage : null;
+      _dateError = _shouldShowError('dateOfBirth') && _selectedDate == null 
+          ? 'Date of birth is required' 
+          : null;
+      _countryError = _shouldShowError('country') ? basicInfo.countryError : null;
+      _provinceStateError = _shouldShowError('provinceState') ? basicInfo.provinceStateError : null;
+      _cityError = _shouldShowError('city') ? basicInfo.cityError : null;
+      _addressError = _shouldShowError('address') ? basicInfo.addressError : null;
+      _zipCodeError = _shouldShowError('zipCode') ? basicInfo.zipCodeError : null;
+      _mobileNumberError = _shouldShowError('mobileNumber') ? basicInfo.mobileNumberError : null;
 
-      _firstNameError = firstName.errorMessage;
-      _lastNameError = lastName.errorMessage;
-      _dateError = _selectedDate == null ? 'Date of birth is required' : null;
-
-      final basicInfo = BasicInfo(
-        firstName: firstName,
-        lastName: lastName,
-        dateOfBirth: _selectedDate ?? DateTime.now(),
-        gender: Gender(
-          id: _selectedGenderId ?? '',
-          value: _selectedGender ?? '',
-        ),
-        country: _selectedCountryName ?? '',
-        provinceState: _selectedProvinceName ?? '',
-        city: _selectedCityName ?? '',
-        address: _addressController.text,
-        zipCode: _zipCodeController.text,
-        mobileNumber: _mobileNumberController.text,
-      );
-
-      _countryError = basicInfo.countryError;
-      _provinceStateError = basicInfo.provinceStateError;
-      _cityError = basicInfo.cityError;
-      _addressError = basicInfo.addressError;
-      _zipCodeError = basicInfo.zipCodeError;
-      _mobileNumberError = basicInfo.mobileNumberError;
-
-      if (!basicInfo.isAdult) {
+      if (_shouldShowError('dateOfBirth') && !basicInfo.isAdult && _selectedDate != null) {
         _dateError = 'You must be at least 18 years old';
       }
-
-      if (basicInfo.isValid) {
-        ref.read(registrationViewModelProvider.notifier).updateBasicInfo(basicInfo);
-      }
     });
+
+    // Always save valid data to view model
+    if (basicInfo.isValid) {
+      ref.read(registrationViewModelProvider.notifier).updateBasicInfo(basicInfo);
+    }
+  }
+
+  /// Mark field as touched and validate
+  void _markTouched(String fieldName) {
+    _touchedFields.add(fieldName);
+    _validate();
+  }
+
+  /// Validate all fields (called on submit)
+  void _validateAndSave() {
+    setState(() {
+      _attemptedSubmit = true;
+    });
+    _validate();
   }
 
   Future<void> _selectDate() async {
@@ -138,7 +165,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       setState(() {
         _selectedDate = date;
       });
-      _validateAndSave();
+      _markTouched('dateOfBirth');
     }
   }
 
@@ -150,7 +177,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       _selectedProvinceName = null;
       _selectedCityName = null;
     });
-    _validateAndSave();
+    _markTouched('country');
   }
 
   void _onProvinceChanged(CatalogItem? province) {
@@ -159,20 +186,28 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       _selectedProvinceName = province?.value;
       _selectedCityName = null;
     });
-    _validateAndSave();
+    _markTouched('provinceState');
   }
 
   void _onCityChanged(CatalogItem? city) {
     setState(() {
       _selectedCityName = city?.value;
     });
-    _validateAndSave();
+    _markTouched('city');
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
+
+    // Listen for step changes to trigger validation when user tries to navigate away
+    ref.listen(registrationFormStateProvider, (previous, next) {
+      if (previous?.currentStep == 0 && next.currentStep != 0) {
+        // User is leaving this step - validate all fields
+        _validateAndSave();
+      }
+    });
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
@@ -210,7 +245,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 errorText: _firstNameError,
                 onChanged: (value) {
                   _firstNameController.text = value;
-                  _validateAndSave();
+                },
+                onFocusChanged: (hasFocus) {
+                  if (!hasFocus) _markTouched('firstName');
                 },
               ),
               const SizedBox(height: 24),
@@ -221,7 +258,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 errorText: _lastNameError,
                 onChanged: (value) {
                   _lastNameController.text = value;
-                  _validateAndSave();
+                },
+                onFocusChanged: (hasFocus) {
+                  if (!hasFocus) _markTouched('lastName');
                 },
               ),
               const SizedBox(height: 24),
@@ -299,31 +338,37 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 maxLines: 2,
                 onChanged: (value) {
                   _addressController.text = value;
-                  _validateAndSave();
+                },
+                onFocusChanged: (hasFocus) {
+                  if (!hasFocus) _markTouched('address');
                 },
               ),
               const SizedBox(height: 24),
               CustomTextField(
                 label: 'ZIP Code',
-                hint: 'Enter ZIP code',
+                hint: 'Enter your ZIP code',
                 initialValue: _zipCodeController.text,
                 errorText: _zipCodeError,
                 keyboardType: TextInputType.text,
                 onChanged: (value) {
                   _zipCodeController.text = value;
-                  _validateAndSave();
+                },
+                onFocusChanged: (hasFocus) {
+                  if (!hasFocus) _markTouched('zipCode');
                 },
               ),
               const SizedBox(height: 24),
               CustomTextField(
                 label: 'Mobile Number',
-                hint: '+1 234 567 8900',
+                hint: 'Enter your mobile number',
                 initialValue: _mobileNumberController.text,
                 errorText: _mobileNumberError,
                 keyboardType: TextInputType.phone,
                 onChanged: (value) {
                   _mobileNumberController.text = value;
-                  _validateAndSave();
+                },
+                onFocusChanged: (hasFocus) {
+                  if (!hasFocus) _markTouched('mobileNumber');
                 },
               ),
             ],
@@ -367,7 +412,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                       _selectedGenderId = gender.id;
                       _selectedGender = gender.value;
                     });
-                    _validateAndSave();
+                    _markTouched('gender');
                   }
                 },
                 selectedColor: AppTheme.primaryBlue,

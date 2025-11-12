@@ -20,6 +20,10 @@ class BasicInfo extends Equatable {
   
   // Contact
   final String mobileNumber;
+  
+  // Identification (optional - can be provided via documents)
+  final String? identificationType;
+  final String? identificationNumber;
 
   const BasicInfo({
     required this.firstName,
@@ -32,6 +36,8 @@ class BasicInfo extends Equatable {
     required this.address,
     required this.zipCode,
     required this.mobileNumber,
+    this.identificationType,
+    this.identificationNumber,
   });
 
   /// Check if the user is at least 18 years old
@@ -88,6 +94,8 @@ class BasicInfo extends Equatable {
     String? address,
     String? zipCode,
     String? mobileNumber,
+    String? identificationType,
+    String? identificationNumber,
   }) {
     return BasicInfo(
       firstName: firstName ?? this.firstName,
@@ -100,6 +108,8 @@ class BasicInfo extends Equatable {
       address: address ?? this.address,
       zipCode: zipCode ?? this.zipCode,
       mobileNumber: mobileNumber ?? this.mobileNumber,
+      identificationType: identificationType ?? this.identificationType,
+      identificationNumber: identificationNumber ?? this.identificationNumber,
     );
   }
 
@@ -115,5 +125,7 @@ class BasicInfo extends Equatable {
         address,
         zipCode,
         mobileNumber,
+        identificationType,
+        identificationNumber,
       ];
 }

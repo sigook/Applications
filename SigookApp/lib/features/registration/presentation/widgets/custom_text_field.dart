@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<bool>? onFocusChanged;
   final bool enabled;
   final Widget? suffixIcon;
 
@@ -22,6 +23,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.onChanged,
+    this.onFocusChanged,
     this.enabled = true,
     this.suffixIcon,
   });
@@ -38,38 +40,41 @@ class CustomTextField extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          initialValue: initialValue,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          enabled: enabled,
-          decoration: InputDecoration(
-            hintText: hint,
-            errorText: errorText,
-            suffixIcon: suffixIcon,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
+        Focus(
+          onFocusChange: onFocusChanged,
+          child: TextFormField(
+            initialValue: initialValue,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            enabled: enabled,
+            decoration: InputDecoration(
+              hintText: hint,
+              errorText: errorText,
+              suffixIcon: suffixIcon,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red),
+              ),
+              filled: true,
+              fillColor: enabled ? Colors.white : Colors.grey.shade100,
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            filled: true,
-            fillColor: enabled ? Colors.white : Colors.grey.shade100,
+            onChanged: onChanged,
           ),
-          onChanged: onChanged,
         ),
       ],
     );
