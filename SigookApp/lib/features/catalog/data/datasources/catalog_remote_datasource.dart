@@ -9,6 +9,8 @@ abstract class CatalogRemoteDataSource {
   Future<List<CatalogItemModel>> getAvailability();
   Future<List<CatalogItemModel>> getAvailabilityTime();
   Future<List<CatalogItemModel>> getCountries();
+  Future<List<CatalogItemModel>> getProvinces(String countryId);
+  Future<List<CatalogItemModel>> getCities(String provinceId);
   Future<List<CatalogItemModel>> getGenders();
   Future<List<CatalogItemModel>> getIdentificationTypes();
   Future<List<CatalogItemModel>> getLanguages();
@@ -33,6 +35,16 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   @override
   Future<List<CatalogItemModel>> getCountries() async {
     return _getCatalogItems('/Catalog/country');
+  }
+
+  @override
+  Future<List<CatalogItemModel>> getProvinces(String countryId) async {
+    return _getCatalogItems('/Catalog/province/$countryId');
+  }
+
+  @override
+  Future<List<CatalogItemModel>> getCities(String provinceId) async {
+    return _getCatalogItems('/Catalog/city/$provinceId');
   }
 
   @override
@@ -62,27 +74,30 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data as List<dynamic>;
-        
+
         // Debug: Show first item from API
         if (jsonList.isNotEmpty && endpoint.contains('skill')) {
           print('═══ DEBUG: Skills API Response ═══');
           print('First item: ${jsonList.first}');
           print('═══════════════════════════════');
         }
-        
+
         // Use safe parsing and filter out invalid items
         final items = jsonList
-            .map((json) => CatalogItemModel.fromJsonSafe(json as Map<String, dynamic>))
-            .whereType<CatalogItemModel>()  // Filter out nulls
+            .map(
+              (json) =>
+                  CatalogItemModel.fromJsonSafe(json as Map<String, dynamic>),
+            )
+            .whereType<CatalogItemModel>() // Filter out nulls
             .toList();
-        
+
         if (items.isEmpty && jsonList.isNotEmpty) {
           throw ParseException(
             'All catalog items were invalid. '
-            'Check API data quality for endpoint: $endpoint'
+            'Check API data quality for endpoint: $endpoint',
           );
         }
-        
+
         return items;
       } else {
         throw ServerException(
@@ -93,11 +108,17 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException('Request timeout. Please check your internet connection.');
+        throw NetworkException(
+          'Request timeout. Please check your internet connection.',
+        );
       } else if (e.type == DioExceptionType.connectionError) {
-        throw NetworkException('Cannot connect to server. Please check your internet connection.');
+        throw NetworkException(
+          'Cannot connect to server. Please check your internet connection.',
+        );
       } else if (e.error?.toString().contains('SocketException') == true) {
-        throw NetworkException('Cannot reach server. Please check your network connection or VPN.');
+        throw NetworkException(
+          'Cannot reach server. Please check your network connection or VPN.',
+        );
       } else {
         throw ServerException(
           message: e.message ?? 'Server error occurred',
@@ -113,7 +134,9 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
     } catch (e) {
       // Catch any other errors including SocketException
       if (e.toString().contains('SocketException')) {
-        throw NetworkException('Cannot reach server. Please check your network connection or VPN.');
+        throw NetworkException(
+          'Cannot reach server. Please check your network connection or VPN.',
+        );
       }
       throw ParseException('Failed to parse catalog data: ${e.toString()}');
     }

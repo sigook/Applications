@@ -33,6 +33,16 @@ class CatalogRepositoryImpl implements CatalogRepository {
   }
 
   @override
+  Future<Either<Failure, List<CatalogItem>>> getProvinces(String countryId) async {
+    return _getCatalogData(() => remoteDataSource.getProvinces(countryId));
+  }
+
+  @override
+  Future<Either<Failure, List<CatalogItem>>> getCities(String provinceId) async {
+    return _getCatalogData(() => remoteDataSource.getCities(provinceId));
+  }
+
+  @override
   Future<Either<Failure, List<CatalogItem>>> getGenders() async {
     return _getCatalogData(() => remoteDataSource.getGenders());
   }

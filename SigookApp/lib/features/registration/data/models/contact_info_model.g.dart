@@ -14,6 +14,7 @@ _$ContactInfoModelImpl _$$ContactInfoModelImplFromJson(
   identification: json['identification'] as String,
   identificationTypeId: json['identificationTypeId'] as String?,
   identificationTypeName: json['identificationTypeName'] as String,
+  mobileNumber: json['mobileNumber'] as String,
 );
 
 Map<String, dynamic> _$$ContactInfoModelImplToJson(
@@ -24,4 +25,5 @@ Map<String, dynamic> _$$ContactInfoModelImplToJson(
   'identification': instance.identification,
   'identificationTypeId': instance.identificationTypeId,
   'identificationTypeName': instance.identificationTypeName,
+  'mobileNumber': instance.mobileNumber,
 };

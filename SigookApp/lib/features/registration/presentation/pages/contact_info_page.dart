@@ -19,6 +19,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   late TextEditingController _identificationController;
+  late TextEditingController _mobileNumberController;
   bool _obscurePassword = true;
 
   String? _selectedIdentificationTypeId;
@@ -28,6 +29,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
   String? _passwordError;
   String? _identificationError;
   String? _identificationTypeError;
+  String? _mobileNumberError;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _identificationController = TextEditingController();
+    _mobileNumberController = TextEditingController();
 
     // Load existing data
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,6 +46,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
         _emailController.text = form.contactInfo!.email.value;
         _passwordController.text = form.contactInfo!.password.value;
         _identificationController.text = form.contactInfo!.identification;
+        _mobileNumberController.text = form.contactInfo!.mobileNumber;
         _selectedIdentificationTypeId = form.contactInfo!.identificationType.id;
         _selectedIdentificationTypeName = form.contactInfo!.identificationType.value;
         setState(() {});
@@ -55,6 +59,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _identificationController.dispose();
+    _mobileNumberController.dispose();
     super.dispose();
   }
 
@@ -72,10 +77,18 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
       _identificationTypeError = _selectedIdentificationTypeId == null
           ? 'Identification type is required'
           : null;
+      
+      final mobileNumber = _mobileNumberController.text;
+      _mobileNumberError = mobileNumber.isEmpty
+          ? 'Mobile number is required'
+          : mobileNumber.length < 10
+          ? 'Mobile number must be at least 10 digits'
+          : null;
 
       if (_emailError == null &&
           _passwordError == null &&
           _identificationError == null &&
+          _mobileNumberError == null &&
           _selectedIdentificationTypeId != null &&
           _selectedIdentificationTypeName != null) {
         final contactInfo = ContactInfo(
@@ -86,6 +99,7 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
             id: _selectedIdentificationTypeId!,
             value: _selectedIdentificationTypeName!,
           ),
+          mobileNumber: mobileNumber,
         );
         ref
             .read(registrationViewModelProvider.notifier)
@@ -133,6 +147,18 @@ class _ContactInfoPageState extends ConsumerState<ContactInfoPage> {
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (value) {
                   _emailController.text = value;
+                  _validateAndSave();
+                },
+              ),
+              const SizedBox(height: 24),
+              CustomTextField(
+                label: 'Mobile Number',
+                hint: '+1 234 567 8900',
+                initialValue: _mobileNumberController.text,
+                errorText: _mobileNumberError,
+                keyboardType: TextInputType.phone,
+                onChanged: (value) {
+                  _mobileNumberController.text = value;
                   _validateAndSave();
                 },
               ),

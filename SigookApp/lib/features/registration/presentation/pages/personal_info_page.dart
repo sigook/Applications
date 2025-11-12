@@ -207,76 +207,28 @@ class _PersonalInfoPageState extends ConsumerState<PersonalInfoPage> {
   }
 
   Widget _buildGenderSelector() {
+    // Data is guaranteed to be loaded before this screen is shown
     final gendersAsync = ref.watch(gendersProvider);
+    
+    // Since we pre-load in RegistrationScreen, data should always be available
+    final genders = gendersAsync.value ?? [];
 
-    return gendersAsync.when(
-      loading: () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender',
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        if (genders.isEmpty)
           Text(
-            'Gender',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          const Center(
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        ],
-      ),
-      error: (error, stackTrace) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Gender',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Failed to load genders',
-                    style: TextStyle(color: Colors.red.shade700, fontSize: 13),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    ref.invalidate(gendersProvider);
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      data: (genders) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Gender',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
+            'No gender options available',
+            style: TextStyle(color: Colors.grey.shade600),
+          )
+        else
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -302,8 +254,7 @@ class _PersonalInfoPageState extends ConsumerState<PersonalInfoPage> {
               );
             }).toList(),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

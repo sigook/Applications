@@ -27,6 +27,7 @@ mixin _$ContactInfoModel {
   String? get identificationTypeId =>
       throw _privateConstructorUsedError; // May be null from API
   String get identificationTypeName => throw _privateConstructorUsedError;
+  String get mobileNumber => throw _privateConstructorUsedError;
 
   /// Serializes this ContactInfoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,6 +52,7 @@ abstract class $ContactInfoModelCopyWith<$Res> {
     String identification,
     String? identificationTypeId,
     String identificationTypeName,
+    String mobileNumber,
   });
 }
 
@@ -74,6 +76,7 @@ class _$ContactInfoModelCopyWithImpl<$Res, $Val extends ContactInfoModel>
     Object? identification = null,
     Object? identificationTypeId = freezed,
     Object? identificationTypeName = null,
+    Object? mobileNumber = null,
   }) {
     return _then(
       _value.copyWith(
@@ -97,6 +100,10 @@ class _$ContactInfoModelCopyWithImpl<$Res, $Val extends ContactInfoModel>
                 ? _value.identificationTypeName
                 : identificationTypeName // ignore: cast_nullable_to_non_nullable
                       as String,
+            mobileNumber: null == mobileNumber
+                ? _value.mobileNumber
+                : mobileNumber // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -118,6 +125,7 @@ abstract class _$$ContactInfoModelImplCopyWith<$Res>
     String identification,
     String? identificationTypeId,
     String identificationTypeName,
+    String mobileNumber,
   });
 }
 
@@ -140,6 +148,7 @@ class __$$ContactInfoModelImplCopyWithImpl<$Res>
     Object? identification = null,
     Object? identificationTypeId = freezed,
     Object? identificationTypeName = null,
+    Object? mobileNumber = null,
   }) {
     return _then(
       _$ContactInfoModelImpl(
@@ -163,6 +172,10 @@ class __$$ContactInfoModelImplCopyWithImpl<$Res>
             ? _value.identificationTypeName
             : identificationTypeName // ignore: cast_nullable_to_non_nullable
                   as String,
+        mobileNumber: null == mobileNumber
+            ? _value.mobileNumber
+            : mobileNumber // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -177,6 +190,7 @@ class _$ContactInfoModelImpl extends _ContactInfoModel {
     required this.identification,
     this.identificationTypeId,
     required this.identificationTypeName,
+    required this.mobileNumber,
   }) : super._();
 
   factory _$ContactInfoModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -193,10 +207,12 @@ class _$ContactInfoModelImpl extends _ContactInfoModel {
   // May be null from API
   @override
   final String identificationTypeName;
+  @override
+  final String mobileNumber;
 
   @override
   String toString() {
-    return 'ContactInfoModel(email: $email, password: $password, identification: $identification, identificationTypeId: $identificationTypeId, identificationTypeName: $identificationTypeName)';
+    return 'ContactInfoModel(email: $email, password: $password, identification: $identification, identificationTypeId: $identificationTypeId, identificationTypeName: $identificationTypeName, mobileNumber: $mobileNumber)';
   }
 
   @override
@@ -212,7 +228,9 @@ class _$ContactInfoModelImpl extends _ContactInfoModel {
             (identical(other.identificationTypeId, identificationTypeId) ||
                 other.identificationTypeId == identificationTypeId) &&
             (identical(other.identificationTypeName, identificationTypeName) ||
-                other.identificationTypeName == identificationTypeName));
+                other.identificationTypeName == identificationTypeName) &&
+            (identical(other.mobileNumber, mobileNumber) ||
+                other.mobileNumber == mobileNumber));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -224,6 +242,7 @@ class _$ContactInfoModelImpl extends _ContactInfoModel {
     identification,
     identificationTypeId,
     identificationTypeName,
+    mobileNumber,
   );
 
   /// Create a copy of ContactInfoModel
@@ -250,6 +269,7 @@ abstract class _ContactInfoModel extends ContactInfoModel {
     required final String identification,
     final String? identificationTypeId,
     required final String identificationTypeName,
+    required final String mobileNumber,
   }) = _$ContactInfoModelImpl;
   const _ContactInfoModel._() : super._();
 
@@ -266,6 +286,8 @@ abstract class _ContactInfoModel extends ContactInfoModel {
   String? get identificationTypeId; // May be null from API
   @override
   String get identificationTypeName;
+  @override
+  String get mobileNumber;
 
   /// Create a copy of ContactInfoModel
   /// with the given fields replaced by the non-null parameter values.

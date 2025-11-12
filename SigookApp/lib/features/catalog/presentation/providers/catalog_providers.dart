@@ -8,6 +8,8 @@ import '../../data/repositories/catalog_repository_impl.dart';
 import '../../domain/entities/catalog_item.dart';
 import '../../domain/repositories/catalog_repository.dart';
 import '../../domain/usecases/get_catalog_data.dart';
+import '../../domain/usecases/get_provinces.dart';
+import '../../domain/usecases/get_cities.dart';
 
 /// Provider for API client
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -62,6 +64,14 @@ final getLanguagesProvider = Provider<GetLanguages>((ref) {
 
 final getSkillsProvider = Provider<GetSkills>((ref) {
   return GetSkills(ref.read(catalogRepositoryProvider));
+});
+
+final getProvincesProvider = Provider<GetProvinces>((ref) {
+  return GetProvinces(ref.read(catalogRepositoryProvider));
+});
+
+final getCitiesProvider = Provider<GetCities>((ref) {
+  return GetCities(ref.read(catalogRepositoryProvider));
 });
 
 // State Providers for catalog data
@@ -128,3 +138,27 @@ final skillsProvider = FutureProvider<List<CatalogItem>>((ref) async {
     (data) => data,
   );
 });
+
+/// Provinces provider - requires countryId parameter
+final provincesProvider = FutureProvider.family<List<CatalogItem>, String>(
+  (ref, countryId) async {
+    final useCase = ref.read(getProvincesProvider);
+    final result = await useCase(countryId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (data) => data,
+    );
+  },
+);
+
+/// Cities provider - requires provinceId parameter
+final citiesProvider = FutureProvider.family<List<CatalogItem>, String>(
+  (ref, provinceId) async {
+    final useCase = ref.read(getCitiesProvider);
+    final result = await useCase(provinceId);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (data) => data,
+    );
+  },
+);

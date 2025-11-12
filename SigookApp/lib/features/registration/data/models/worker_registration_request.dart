@@ -125,8 +125,8 @@ class WorkerRegistrationRequest {
       gender: personalInfo.gender,
       identificationNumber1: contactInfo.identification,
       identificationType1: contactInfo.identificationType,
-      mobileNumber: null, // Not collected yet
-      phone: null, // Not collected yet
+      mobileNumber: contactInfo.mobileNumber,
+      phone: null, // Optional phone field
       address: addressInfo.address,
       city: addressInfo.city,
       provinceState: addressInfo.provinceState,

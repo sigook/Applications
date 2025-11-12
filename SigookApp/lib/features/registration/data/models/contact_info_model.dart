@@ -17,6 +17,7 @@ class ContactInfoModel with _$ContactInfoModel {
     required String identification,
     String? identificationTypeId, // May be null from API
     required String identificationTypeName,
+    required String mobileNumber,
   }) = _ContactInfoModel;
 
   /// Convert from domain entity
@@ -27,6 +28,7 @@ class ContactInfoModel with _$ContactInfoModel {
       identification: entity.identification,
       identificationTypeId: entity.identificationType.id, // May be null
       identificationTypeName: entity.identificationType.value,
+      mobileNumber: entity.mobileNumber,
     );
   }
 
@@ -40,6 +42,7 @@ class ContactInfoModel with _$ContactInfoModel {
         id: identificationTypeId,
         value: identificationTypeName,
       ),
+      mobileNumber: mobileNumber,
     );
   }
 

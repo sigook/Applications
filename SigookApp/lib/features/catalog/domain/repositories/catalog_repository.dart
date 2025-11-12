@@ -14,6 +14,12 @@ abstract class CatalogRepository {
   /// Get country options
   Future<Either<Failure, List<CatalogItem>>> getCountries();
 
+  /// Get provinces by country ID
+  Future<Either<Failure, List<CatalogItem>>> getProvinces(String countryId);
+
+  /// Get cities by province ID
+  Future<Either<Failure, List<CatalogItem>>> getCities(String provinceId);
+
   /// Get gender options
   Future<Either<Failure, List<CatalogItem>>> getGenders();
 
