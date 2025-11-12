@@ -1,0 +1,68 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
+
+class AvailabilityTypeSelector extends ConsumerWidget {
+  final String? selectedType;
+  final Function(String?) onChanged;
+  final String? errorText;
+
+  const AvailabilityTypeSelector({
+    super.key,
+    this.selectedType,
+    required this.onChanged,
+    this.errorText,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final availabilityAsync = ref.watch(availabilityListProvider);
+    final availability = availabilityAsync.value ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Availability Type',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        if (availability.isEmpty)
+          Text(
+            'No availability types available',
+            style: TextStyle(color: Colors.grey.shade600),
+          )
+        else
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: availability.map((type) {
+              final isSelected = selectedType == type.value;
+              return ChoiceChip(
+                label: Text(type.value),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) {
+                    onChanged(type.value);
+                  }
+                },
+                selectedColor: AppTheme.primaryBlue,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              );
+            }).toList(),
+          ),
+        if (errorText != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            errorText!,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
+      ],
+    );
+  }
+}

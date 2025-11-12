@@ -7,12 +7,14 @@ class AddressInfo extends Equatable {
   final String provinceState;
   final String city;
   final String address;
+  final String zipCode;
 
   const AddressInfo({
     required this.country,
     required this.provinceState,
     required this.city,
     required this.address,
+    required this.zipCode,
   });
 
   /// Validates all fields
@@ -21,7 +23,8 @@ class AddressInfo extends Equatable {
         provinceState.isNotEmpty &&
         city.isNotEmpty &&
         address.isNotEmpty &&
-        address.length >= 5;
+        address.length >= 5 &&
+        zipCode.isNotEmpty;
   }
 
   /// Validation error messages
@@ -34,6 +37,8 @@ class AddressInfo extends Equatable {
     if (address.length < 5) return 'Address must be at least 5 characters';
     return null;
   }
+  
+  String? get zipCodeError => zipCode.isEmpty ? 'ZIP Code is required' : null;
 
   /// Creates a copy with updated fields
   AddressInfo copyWith({
@@ -41,15 +46,17 @@ class AddressInfo extends Equatable {
     String? provinceState,
     String? city,
     String? address,
+    String? zipCode,
   }) {
     return AddressInfo(
       country: country ?? this.country,
       provinceState: provinceState ?? this.provinceState,
       city: city ?? this.city,
       address: address ?? this.address,
+      zipCode: zipCode ?? this.zipCode,
     );
   }
 
   @override
-  List<Object?> get props => [country, provinceState, city, address];
+  List<Object?> get props => [country, provinceState, city, address, zipCode];
 }

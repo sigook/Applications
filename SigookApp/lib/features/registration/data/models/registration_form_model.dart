@@ -1,10 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/registration_form.dart';
-import 'personal_info_model.dart';
-import 'contact_info_model.dart';
-import 'address_info_model.dart';
-import 'availability_info_model.dart';
-import 'professional_info_model.dart';
+import 'basic_info_model.dart';
+import 'preferences_info_model.dart';
+import 'documents_info_model.dart';
+import 'account_info_model.dart';
 
 part 'registration_form_model.freezed.dart';
 part 'registration_form_model.g.dart';
@@ -14,30 +13,26 @@ class RegistrationFormModel with _$RegistrationFormModel {
   const RegistrationFormModel._();
 
   const factory RegistrationFormModel({
-    PersonalInfoModel? personalInfo,
-    ContactInfoModel? contactInfo,
-    AddressInfoModel? addressInfo,
-    AvailabilityInfoModel? availabilityInfo,
-    ProfessionalInfoModel? professionalInfo,
+    BasicInfoModel? basicInfo,
+    PreferencesInfoModel? preferencesInfo,
+    DocumentsInfoModel? documentsInfo,
+    AccountInfoModel? accountInfo,
   }) = _RegistrationFormModel;
 
   /// Convert from domain entity
   factory RegistrationFormModel.fromEntity(RegistrationForm entity) {
     return RegistrationFormModel(
-      personalInfo: entity.personalInfo != null
-          ? PersonalInfoModel.fromEntity(entity.personalInfo!)
+      basicInfo: entity.basicInfo != null
+          ? BasicInfoModel.fromEntity(entity.basicInfo!)
           : null,
-      contactInfo: entity.contactInfo != null
-          ? ContactInfoModel.fromEntity(entity.contactInfo!)
+      preferencesInfo: entity.preferencesInfo != null
+          ? PreferencesInfoModel.fromEntity(entity.preferencesInfo!)
           : null,
-      addressInfo: entity.addressInfo != null
-          ? AddressInfoModel.fromEntity(entity.addressInfo!)
+      documentsInfo: entity.documentsInfo != null
+          ? DocumentsInfoModel.fromEntity(entity.documentsInfo!)
           : null,
-      availabilityInfo: entity.availabilityInfo != null
-          ? AvailabilityInfoModel.fromEntity(entity.availabilityInfo!)
-          : null,
-      professionalInfo: entity.professionalInfo != null
-          ? ProfessionalInfoModel.fromEntity(entity.professionalInfo!)
+      accountInfo: entity.accountInfo != null
+          ? AccountInfoModel.fromEntity(entity.accountInfo!)
           : null,
     );
   }
@@ -45,11 +40,10 @@ class RegistrationFormModel with _$RegistrationFormModel {
   /// Convert to domain entity
   RegistrationForm toEntity() {
     return RegistrationForm(
-      personalInfo: personalInfo?.toEntity(),
-      contactInfo: contactInfo?.toEntity(),
-      addressInfo: addressInfo?.toEntity(),
-      availabilityInfo: availabilityInfo?.toEntity(),
-      professionalInfo: professionalInfo?.toEntity(),
+      basicInfo: basicInfo?.toEntity(),
+      preferencesInfo: preferencesInfo?.toEntity(),
+      documentsInfo: documentsInfo?.toEntity(),
+      accountInfo: accountInfo?.toEntity(),
     );
   }
 

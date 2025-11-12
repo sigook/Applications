@@ -32,6 +32,7 @@ class AddressInfoModel with _$AddressInfoModel {
       provinceState: provinceState,
       city: city,
       address: address,
+      zipCode: '', // TODO: Add zipCode field to model
     );
   }
 

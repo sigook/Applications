@@ -23,13 +23,11 @@ RegistrationFormModel _$RegistrationFormModelFromJson(
 
 /// @nodoc
 mixin _$RegistrationFormModel {
-  PersonalInfoModel? get personalInfo => throw _privateConstructorUsedError;
-  ContactInfoModel? get contactInfo => throw _privateConstructorUsedError;
-  AddressInfoModel? get addressInfo => throw _privateConstructorUsedError;
-  AvailabilityInfoModel? get availabilityInfo =>
+  BasicInfoModel? get basicInfo => throw _privateConstructorUsedError;
+  PreferencesInfoModel? get preferencesInfo =>
       throw _privateConstructorUsedError;
-  ProfessionalInfoModel? get professionalInfo =>
-      throw _privateConstructorUsedError;
+  DocumentsInfoModel? get documentsInfo => throw _privateConstructorUsedError;
+  AccountInfoModel? get accountInfo => throw _privateConstructorUsedError;
 
   /// Serializes this RegistrationFormModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,18 +47,16 @@ abstract class $RegistrationFormModelCopyWith<$Res> {
   ) = _$RegistrationFormModelCopyWithImpl<$Res, RegistrationFormModel>;
   @useResult
   $Res call({
-    PersonalInfoModel? personalInfo,
-    ContactInfoModel? contactInfo,
-    AddressInfoModel? addressInfo,
-    AvailabilityInfoModel? availabilityInfo,
-    ProfessionalInfoModel? professionalInfo,
+    BasicInfoModel? basicInfo,
+    PreferencesInfoModel? preferencesInfo,
+    DocumentsInfoModel? documentsInfo,
+    AccountInfoModel? accountInfo,
   });
 
-  $PersonalInfoModelCopyWith<$Res>? get personalInfo;
-  $ContactInfoModelCopyWith<$Res>? get contactInfo;
-  $AddressInfoModelCopyWith<$Res>? get addressInfo;
-  $AvailabilityInfoModelCopyWith<$Res>? get availabilityInfo;
-  $ProfessionalInfoModelCopyWith<$Res>? get professionalInfo;
+  $BasicInfoModelCopyWith<$Res>? get basicInfo;
+  $PreferencesInfoModelCopyWith<$Res>? get preferencesInfo;
+  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo;
+  $AccountInfoModelCopyWith<$Res>? get accountInfo;
 }
 
 /// @nodoc
@@ -81,34 +77,29 @@ class _$RegistrationFormModelCopyWithImpl<
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? personalInfo = freezed,
-    Object? contactInfo = freezed,
-    Object? addressInfo = freezed,
-    Object? availabilityInfo = freezed,
-    Object? professionalInfo = freezed,
+    Object? basicInfo = freezed,
+    Object? preferencesInfo = freezed,
+    Object? documentsInfo = freezed,
+    Object? accountInfo = freezed,
   }) {
     return _then(
       _value.copyWith(
-            personalInfo: freezed == personalInfo
-                ? _value.personalInfo
-                : personalInfo // ignore: cast_nullable_to_non_nullable
-                      as PersonalInfoModel?,
-            contactInfo: freezed == contactInfo
-                ? _value.contactInfo
-                : contactInfo // ignore: cast_nullable_to_non_nullable
-                      as ContactInfoModel?,
-            addressInfo: freezed == addressInfo
-                ? _value.addressInfo
-                : addressInfo // ignore: cast_nullable_to_non_nullable
-                      as AddressInfoModel?,
-            availabilityInfo: freezed == availabilityInfo
-                ? _value.availabilityInfo
-                : availabilityInfo // ignore: cast_nullable_to_non_nullable
-                      as AvailabilityInfoModel?,
-            professionalInfo: freezed == professionalInfo
-                ? _value.professionalInfo
-                : professionalInfo // ignore: cast_nullable_to_non_nullable
-                      as ProfessionalInfoModel?,
+            basicInfo: freezed == basicInfo
+                ? _value.basicInfo
+                : basicInfo // ignore: cast_nullable_to_non_nullable
+                      as BasicInfoModel?,
+            preferencesInfo: freezed == preferencesInfo
+                ? _value.preferencesInfo
+                : preferencesInfo // ignore: cast_nullable_to_non_nullable
+                      as PreferencesInfoModel?,
+            documentsInfo: freezed == documentsInfo
+                ? _value.documentsInfo
+                : documentsInfo // ignore: cast_nullable_to_non_nullable
+                      as DocumentsInfoModel?,
+            accountInfo: freezed == accountInfo
+                ? _value.accountInfo
+                : accountInfo // ignore: cast_nullable_to_non_nullable
+                      as AccountInfoModel?,
           )
           as $Val,
     );
@@ -118,13 +109,13 @@ class _$RegistrationFormModelCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $PersonalInfoModelCopyWith<$Res>? get personalInfo {
-    if (_value.personalInfo == null) {
+  $BasicInfoModelCopyWith<$Res>? get basicInfo {
+    if (_value.basicInfo == null) {
       return null;
     }
 
-    return $PersonalInfoModelCopyWith<$Res>(_value.personalInfo!, (value) {
-      return _then(_value.copyWith(personalInfo: value) as $Val);
+    return $BasicInfoModelCopyWith<$Res>(_value.basicInfo!, (value) {
+      return _then(_value.copyWith(basicInfo: value) as $Val);
     });
   }
 
@@ -132,43 +123,15 @@ class _$RegistrationFormModelCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ContactInfoModelCopyWith<$Res>? get contactInfo {
-    if (_value.contactInfo == null) {
+  $PreferencesInfoModelCopyWith<$Res>? get preferencesInfo {
+    if (_value.preferencesInfo == null) {
       return null;
     }
 
-    return $ContactInfoModelCopyWith<$Res>(_value.contactInfo!, (value) {
-      return _then(_value.copyWith(contactInfo: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RegistrationFormModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AddressInfoModelCopyWith<$Res>? get addressInfo {
-    if (_value.addressInfo == null) {
-      return null;
-    }
-
-    return $AddressInfoModelCopyWith<$Res>(_value.addressInfo!, (value) {
-      return _then(_value.copyWith(addressInfo: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RegistrationFormModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AvailabilityInfoModelCopyWith<$Res>? get availabilityInfo {
-    if (_value.availabilityInfo == null) {
-      return null;
-    }
-
-    return $AvailabilityInfoModelCopyWith<$Res>(_value.availabilityInfo!, (
+    return $PreferencesInfoModelCopyWith<$Res>(_value.preferencesInfo!, (
       value,
     ) {
-      return _then(_value.copyWith(availabilityInfo: value) as $Val);
+      return _then(_value.copyWith(preferencesInfo: value) as $Val);
     });
   }
 
@@ -176,15 +139,27 @@ class _$RegistrationFormModelCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ProfessionalInfoModelCopyWith<$Res>? get professionalInfo {
-    if (_value.professionalInfo == null) {
+  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo {
+    if (_value.documentsInfo == null) {
       return null;
     }
 
-    return $ProfessionalInfoModelCopyWith<$Res>(_value.professionalInfo!, (
-      value,
-    ) {
-      return _then(_value.copyWith(professionalInfo: value) as $Val);
+    return $DocumentsInfoModelCopyWith<$Res>(_value.documentsInfo!, (value) {
+      return _then(_value.copyWith(documentsInfo: value) as $Val);
+    });
+  }
+
+  /// Create a copy of RegistrationFormModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccountInfoModelCopyWith<$Res>? get accountInfo {
+    if (_value.accountInfo == null) {
+      return null;
+    }
+
+    return $AccountInfoModelCopyWith<$Res>(_value.accountInfo!, (value) {
+      return _then(_value.copyWith(accountInfo: value) as $Val);
     });
   }
 }
@@ -199,23 +174,20 @@ abstract class _$$RegistrationFormModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    PersonalInfoModel? personalInfo,
-    ContactInfoModel? contactInfo,
-    AddressInfoModel? addressInfo,
-    AvailabilityInfoModel? availabilityInfo,
-    ProfessionalInfoModel? professionalInfo,
+    BasicInfoModel? basicInfo,
+    PreferencesInfoModel? preferencesInfo,
+    DocumentsInfoModel? documentsInfo,
+    AccountInfoModel? accountInfo,
   });
 
   @override
-  $PersonalInfoModelCopyWith<$Res>? get personalInfo;
+  $BasicInfoModelCopyWith<$Res>? get basicInfo;
   @override
-  $ContactInfoModelCopyWith<$Res>? get contactInfo;
+  $PreferencesInfoModelCopyWith<$Res>? get preferencesInfo;
   @override
-  $AddressInfoModelCopyWith<$Res>? get addressInfo;
+  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo;
   @override
-  $AvailabilityInfoModelCopyWith<$Res>? get availabilityInfo;
-  @override
-  $ProfessionalInfoModelCopyWith<$Res>? get professionalInfo;
+  $AccountInfoModelCopyWith<$Res>? get accountInfo;
 }
 
 /// @nodoc
@@ -233,34 +205,29 @@ class __$$RegistrationFormModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? personalInfo = freezed,
-    Object? contactInfo = freezed,
-    Object? addressInfo = freezed,
-    Object? availabilityInfo = freezed,
-    Object? professionalInfo = freezed,
+    Object? basicInfo = freezed,
+    Object? preferencesInfo = freezed,
+    Object? documentsInfo = freezed,
+    Object? accountInfo = freezed,
   }) {
     return _then(
       _$RegistrationFormModelImpl(
-        personalInfo: freezed == personalInfo
-            ? _value.personalInfo
-            : personalInfo // ignore: cast_nullable_to_non_nullable
-                  as PersonalInfoModel?,
-        contactInfo: freezed == contactInfo
-            ? _value.contactInfo
-            : contactInfo // ignore: cast_nullable_to_non_nullable
-                  as ContactInfoModel?,
-        addressInfo: freezed == addressInfo
-            ? _value.addressInfo
-            : addressInfo // ignore: cast_nullable_to_non_nullable
-                  as AddressInfoModel?,
-        availabilityInfo: freezed == availabilityInfo
-            ? _value.availabilityInfo
-            : availabilityInfo // ignore: cast_nullable_to_non_nullable
-                  as AvailabilityInfoModel?,
-        professionalInfo: freezed == professionalInfo
-            ? _value.professionalInfo
-            : professionalInfo // ignore: cast_nullable_to_non_nullable
-                  as ProfessionalInfoModel?,
+        basicInfo: freezed == basicInfo
+            ? _value.basicInfo
+            : basicInfo // ignore: cast_nullable_to_non_nullable
+                  as BasicInfoModel?,
+        preferencesInfo: freezed == preferencesInfo
+            ? _value.preferencesInfo
+            : preferencesInfo // ignore: cast_nullable_to_non_nullable
+                  as PreferencesInfoModel?,
+        documentsInfo: freezed == documentsInfo
+            ? _value.documentsInfo
+            : documentsInfo // ignore: cast_nullable_to_non_nullable
+                  as DocumentsInfoModel?,
+        accountInfo: freezed == accountInfo
+            ? _value.accountInfo
+            : accountInfo // ignore: cast_nullable_to_non_nullable
+                  as AccountInfoModel?,
       ),
     );
   }
@@ -270,30 +237,27 @@ class __$$RegistrationFormModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$RegistrationFormModelImpl extends _RegistrationFormModel {
   const _$RegistrationFormModelImpl({
-    this.personalInfo,
-    this.contactInfo,
-    this.addressInfo,
-    this.availabilityInfo,
-    this.professionalInfo,
+    this.basicInfo,
+    this.preferencesInfo,
+    this.documentsInfo,
+    this.accountInfo,
   }) : super._();
 
   factory _$RegistrationFormModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$RegistrationFormModelImplFromJson(json);
 
   @override
-  final PersonalInfoModel? personalInfo;
+  final BasicInfoModel? basicInfo;
   @override
-  final ContactInfoModel? contactInfo;
+  final PreferencesInfoModel? preferencesInfo;
   @override
-  final AddressInfoModel? addressInfo;
+  final DocumentsInfoModel? documentsInfo;
   @override
-  final AvailabilityInfoModel? availabilityInfo;
-  @override
-  final ProfessionalInfoModel? professionalInfo;
+  final AccountInfoModel? accountInfo;
 
   @override
   String toString() {
-    return 'RegistrationFormModel(personalInfo: $personalInfo, contactInfo: $contactInfo, addressInfo: $addressInfo, availabilityInfo: $availabilityInfo, professionalInfo: $professionalInfo)';
+    return 'RegistrationFormModel(basicInfo: $basicInfo, preferencesInfo: $preferencesInfo, documentsInfo: $documentsInfo, accountInfo: $accountInfo)';
   }
 
   @override
@@ -301,27 +265,24 @@ class _$RegistrationFormModelImpl extends _RegistrationFormModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$RegistrationFormModelImpl &&
-            (identical(other.personalInfo, personalInfo) ||
-                other.personalInfo == personalInfo) &&
-            (identical(other.contactInfo, contactInfo) ||
-                other.contactInfo == contactInfo) &&
-            (identical(other.addressInfo, addressInfo) ||
-                other.addressInfo == addressInfo) &&
-            (identical(other.availabilityInfo, availabilityInfo) ||
-                other.availabilityInfo == availabilityInfo) &&
-            (identical(other.professionalInfo, professionalInfo) ||
-                other.professionalInfo == professionalInfo));
+            (identical(other.basicInfo, basicInfo) ||
+                other.basicInfo == basicInfo) &&
+            (identical(other.preferencesInfo, preferencesInfo) ||
+                other.preferencesInfo == preferencesInfo) &&
+            (identical(other.documentsInfo, documentsInfo) ||
+                other.documentsInfo == documentsInfo) &&
+            (identical(other.accountInfo, accountInfo) ||
+                other.accountInfo == accountInfo));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    personalInfo,
-    contactInfo,
-    addressInfo,
-    availabilityInfo,
-    professionalInfo,
+    basicInfo,
+    preferencesInfo,
+    documentsInfo,
+    accountInfo,
   );
 
   /// Create a copy of RegistrationFormModel
@@ -344,11 +305,10 @@ class _$RegistrationFormModelImpl extends _RegistrationFormModel {
 
 abstract class _RegistrationFormModel extends RegistrationFormModel {
   const factory _RegistrationFormModel({
-    final PersonalInfoModel? personalInfo,
-    final ContactInfoModel? contactInfo,
-    final AddressInfoModel? addressInfo,
-    final AvailabilityInfoModel? availabilityInfo,
-    final ProfessionalInfoModel? professionalInfo,
+    final BasicInfoModel? basicInfo,
+    final PreferencesInfoModel? preferencesInfo,
+    final DocumentsInfoModel? documentsInfo,
+    final AccountInfoModel? accountInfo,
   }) = _$RegistrationFormModelImpl;
   const _RegistrationFormModel._() : super._();
 
@@ -356,15 +316,13 @@ abstract class _RegistrationFormModel extends RegistrationFormModel {
       _$RegistrationFormModelImpl.fromJson;
 
   @override
-  PersonalInfoModel? get personalInfo;
+  BasicInfoModel? get basicInfo;
   @override
-  ContactInfoModel? get contactInfo;
+  PreferencesInfoModel? get preferencesInfo;
   @override
-  AddressInfoModel? get addressInfo;
+  DocumentsInfoModel? get documentsInfo;
   @override
-  AvailabilityInfoModel? get availabilityInfo;
-  @override
-  ProfessionalInfoModel? get professionalInfo;
+  AccountInfoModel? get accountInfo;
 
   /// Create a copy of RegistrationFormModel
   /// with the given fields replaced by the non-null parameter values.

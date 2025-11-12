@@ -1,25 +1,22 @@
 import 'package:equatable/equatable.dart';
-import 'personal_info.dart';
-import 'contact_info.dart';
-import 'address_info.dart';
-import 'availability_info.dart';
-import 'professional_info.dart';
+import 'basic_info.dart';
+import 'preferences_info.dart';
+import 'documents_info.dart';
+import 'account_info.dart';
 
 /// Complete registration form entity
-/// Aggregates all form sections
+/// Aggregates all form sections (new 4-section structure)
 class RegistrationForm extends Equatable {
-  final PersonalInfo? personalInfo;
-  final ContactInfo? contactInfo;
-  final AddressInfo? addressInfo;
-  final AvailabilityInfo? availabilityInfo;
-  final ProfessionalInfo? professionalInfo;
+  final BasicInfo? basicInfo;
+  final PreferencesInfo? preferencesInfo;
+  final DocumentsInfo? documentsInfo;
+  final AccountInfo? accountInfo;
 
   const RegistrationForm({
-    this.personalInfo,
-    this.contactInfo,
-    this.addressInfo,
-    this.availabilityInfo,
-    this.professionalInfo,
+    this.basicInfo,
+    this.preferencesInfo,
+    this.documentsInfo,
+    this.accountInfo,
   });
 
   /// Empty form constructor
@@ -29,59 +26,52 @@ class RegistrationForm extends Equatable {
 
   /// Validates if all sections are complete and valid
   bool get isComplete {
-    return personalInfo != null &&
-        contactInfo != null &&
-        addressInfo != null &&
-        availabilityInfo != null &&
-        professionalInfo != null &&
-        personalInfo!.isValid &&
-        contactInfo!.isValid &&
-        addressInfo!.isValid &&
-        availabilityInfo!.isValid &&
-        professionalInfo!.isValid;
+    return basicInfo != null &&
+        preferencesInfo != null &&
+        documentsInfo != null &&
+        accountInfo != null &&
+        basicInfo!.isValid &&
+        preferencesInfo!.isValid &&
+        documentsInfo!.isValid &&
+        accountInfo!.isValid;
   }
 
   /// Checks which sections are completed
-  bool get isPersonalInfoComplete => personalInfo?.isValid ?? false;
-  bool get isContactInfoComplete => contactInfo?.isValid ?? false;
-  bool get isAddressInfoComplete => addressInfo?.isValid ?? false;
-  bool get isAvailabilityInfoComplete => availabilityInfo?.isValid ?? false;
-  bool get isProfessionalInfoComplete => professionalInfo?.isValid ?? false;
+  bool get isBasicInfoComplete => basicInfo?.isValid ?? false;
+  bool get isPreferencesInfoComplete => preferencesInfo?.isValid ?? false;
+  bool get isDocumentsInfoComplete => documentsInfo?.isValid ?? false;
+  bool get isAccountInfoComplete => accountInfo?.isValid ?? false;
 
   /// Calculates completion percentage
   double get completionPercentage {
     int completed = 0;
-    if (isPersonalInfoComplete) completed++;
-    if (isContactInfoComplete) completed++;
-    if (isAddressInfoComplete) completed++;
-    if (isAvailabilityInfoComplete) completed++;
-    if (isProfessionalInfoComplete) completed++;
-    return completed / 5;
+    if (isBasicInfoComplete) completed++;
+    if (isPreferencesInfoComplete) completed++;
+    if (isDocumentsInfoComplete) completed++;
+    if (isAccountInfoComplete) completed++;
+    return completed / 4;
   }
 
   /// Creates a copy with updated fields
   RegistrationForm copyWith({
-    PersonalInfo? personalInfo,
-    ContactInfo? contactInfo,
-    AddressInfo? addressInfo,
-    AvailabilityInfo? availabilityInfo,
-    ProfessionalInfo? professionalInfo,
+    BasicInfo? basicInfo,
+    PreferencesInfo? preferencesInfo,
+    DocumentsInfo? documentsInfo,
+    AccountInfo? accountInfo,
   }) {
     return RegistrationForm(
-      personalInfo: personalInfo ?? this.personalInfo,
-      contactInfo: contactInfo ?? this.contactInfo,
-      addressInfo: addressInfo ?? this.addressInfo,
-      availabilityInfo: availabilityInfo ?? this.availabilityInfo,
-      professionalInfo: professionalInfo ?? this.professionalInfo,
+      basicInfo: basicInfo ?? this.basicInfo,
+      preferencesInfo: preferencesInfo ?? this.preferencesInfo,
+      documentsInfo: documentsInfo ?? this.documentsInfo,
+      accountInfo: accountInfo ?? this.accountInfo,
     );
   }
 
   @override
   List<Object?> get props => [
-    personalInfo,
-    contactInfo,
-    addressInfo,
-    availabilityInfo,
-    professionalInfo,
+    basicInfo,
+    preferencesInfo,
+    documentsInfo,
+    accountInfo,
   ];
 }

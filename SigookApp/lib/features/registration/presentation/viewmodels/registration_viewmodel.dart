@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/personal_info.dart';
-import '../../domain/entities/contact_info.dart';
-import '../../domain/entities/address_info.dart';
-import '../../domain/entities/availability_info.dart';
-import '../../domain/entities/professional_info.dart';
+import '../../domain/entities/basic_info.dart';
+import '../../domain/entities/preferences_info.dart';
+import '../../domain/entities/documents_info.dart';
+import '../../domain/entities/account_info.dart';
 import '../../domain/entities/registration_form.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../../domain/usecases/submit_registration.dart';
@@ -29,33 +28,27 @@ class RegistrationViewModel extends StateNotifier<RegistrationForm> {
     );
   }
 
-  /// Update personal info section
-  void updatePersonalInfo(PersonalInfo info) {
-    state = state.copyWith(personalInfo: info);
+  /// Update basic info section (Section 1)
+  void updateBasicInfo(BasicInfo info) {
+    state = state.copyWith(basicInfo: info);
     _saveDraft();
   }
 
-  /// Update contact info section
-  void updateContactInfo(ContactInfo info) {
-    state = state.copyWith(contactInfo: info);
+  /// Update preferences info section (Section 2)
+  void updatePreferencesInfo(PreferencesInfo info) {
+    state = state.copyWith(preferencesInfo: info);
     _saveDraft();
   }
 
-  /// Update address info section
-  void updateAddressInfo(AddressInfo info) {
-    state = state.copyWith(addressInfo: info);
+  /// Update documents info section (Section 3)
+  void updateDocumentsInfo(DocumentsInfo info) {
+    state = state.copyWith(documentsInfo: info);
     _saveDraft();
   }
 
-  /// Update availability info section
-  void updateAvailabilityInfo(AvailabilityInfo info) {
-    state = state.copyWith(availabilityInfo: info);
-    _saveDraft();
-  }
-
-  /// Update professional info section
-  void updateProfessionalInfo(ProfessionalInfo info) {
-    state = state.copyWith(professionalInfo: info);
+  /// Update account info section (Section 4)
+  void updateAccountInfo(AccountInfo info) {
+    state = state.copyWith(accountInfo: info);
     _saveDraft();
   }
 

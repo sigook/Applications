@@ -6,7 +6,6 @@ import '../../domain/entities/gender.dart';
 import '../../domain/entities/availability_type.dart';
 import '../../domain/entities/identification_type.dart';
 import '../../domain/entities/day_of_week.dart';
-import '../../../../core/constants/enums.dart' as enums;
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -68,77 +67,83 @@ class WorkerRegistrationRequest {
     required this.confirmPassword,
   });
 
-  /// Create from registration form entity
+  /// Create from registration form entity (NEW 4-section structure)
   factory WorkerRegistrationRequest.fromEntity(RegistrationForm form) {
-    if (form.personalInfo == null ||
-        form.contactInfo == null ||
-        form.addressInfo == null ||
-        form.availabilityInfo == null ||
-        form.professionalInfo == null) {
-      throw ArgumentError('All form sections must be completed');
+    if (form.basicInfo == null ||
+        form.preferencesInfo == null ||
+        form.accountInfo == null) {
+      throw ArgumentError('Required form sections must be completed');
     }
 
-    final personalInfo = form.personalInfo!;
-    final contactInfo = form.contactInfo!;
-    final addressInfo = form.addressInfo!;
-    final availabilityInfo = form.availabilityInfo!;
-    final professionalInfo = form.professionalInfo!;
+    final basicInfo = form.basicInfo!;
+    final preferencesInfo = form.preferencesInfo!;
+    final accountInfo = form.accountInfo!;
 
     // Format date as ISO 8601
-    final formattedDate = personalInfo.dateOfBirth.toIso8601String();
+    final formattedDate = basicInfo.dateOfBirth.toIso8601String();
 
-    // Convert DayOfWeek enums to DayOfWeekEntity objects
-    // Note: API expects {id: guid, value: "DayName"}
-    // We need to generate a consistent GUID for each day
-    // Using a fixed mapping based on day index
+    // Convert day strings to DayOfWeekEntity objects
+    // API expects {id: guid, value: "DayName"}
     final dayIdMap = {
-      enums.DayOfWeek.monday: '00000000-0000-0000-0000-000000000001',
-      enums.DayOfWeek.tuesday: '00000000-0000-0000-0000-000000000002',
-      enums.DayOfWeek.wednesday: '00000000-0000-0000-0000-000000000003',
-      enums.DayOfWeek.thursday: '00000000-0000-0000-0000-000000000004',
-      enums.DayOfWeek.friday: '00000000-0000-0000-0000-000000000005',
-      enums.DayOfWeek.saturday: '00000000-0000-0000-0000-000000000006',
-      enums.DayOfWeek.sunday: '00000000-0000-0000-0000-000000000007',
+      'Monday': '00000000-0000-0000-0000-000000000001',
+      'Tuesday': '00000000-0000-0000-0000-000000000002',
+      'Wednesday': '00000000-0000-0000-0000-000000000003',
+      'Thursday': '00000000-0000-0000-0000-000000000004',
+      'Friday': '00000000-0000-0000-0000-000000000005',
+      'Saturday': '00000000-0000-0000-0000-000000000006',
+      'Sunday': '00000000-0000-0000-0000-000000000007',
     };
     
-    final dayNameMap = {
-      enums.DayOfWeek.monday: 'Monday',
-      enums.DayOfWeek.tuesday: 'Tuesday',
-      enums.DayOfWeek.wednesday: 'Wednesday',
-      enums.DayOfWeek.thursday: 'Thursday',
-      enums.DayOfWeek.friday: 'Friday',
-      enums.DayOfWeek.saturday: 'Saturday',
-      enums.DayOfWeek.sunday: 'Sunday',
-    };
-    
-    final availabilityDays = availabilityInfo.availableDays.map((day) {
+    final availabilityDays = preferencesInfo.availableDays.map((dayName) {
       return DayOfWeekEntity(
-        id: dayIdMap[day]!,
-        value: dayNameMap[day]!,
+        id: dayIdMap[dayName] ?? '00000000-0000-0000-0000-000000000000',
+        value: dayName,
       );
     }).toList();
 
+    // Convert availability time strings to AvailableTime entities
+    // Assuming time slots have associated IDs from catalog
+    final availabilityTimes = preferencesInfo.availableTimes.map((timeValue) {
+      return AvailableTime(
+        id: null, // Will be filled by API or catalog lookup
+        value: timeValue,
+      );
+    }).toList();
+
+    // Convert availability type string to AvailabilityType entity
+    final availabilityType = AvailabilityType(
+      id: null, // Will be filled by API or catalog lookup
+      value: preferencesInfo.availabilityType,
+    );
+
+    // NOTE: Currently no identification fields in new structure
+    // Using placeholder values - may need to add these fields to BasicInfo or AccountInfo
+    final placeholderIdentificationType = IdentificationType(
+      id: null,
+      value: 'ID', // Placeholder
+    );
+
     return WorkerRegistrationRequest(
-      firstName: personalInfo.firstName.value,
-      lastName: personalInfo.lastName.value,
+      firstName: basicInfo.firstName.value,
+      lastName: basicInfo.lastName.value,
       birthDay: formattedDate,
-      gender: personalInfo.gender,
-      identificationNumber1: contactInfo.identification,
-      identificationType1: contactInfo.identificationType,
-      mobileNumber: contactInfo.mobileNumber,
+      gender: basicInfo.gender,
+      identificationNumber1: 'TEMP', // TODO: Add identification to form
+      identificationType1: placeholderIdentificationType,
+      mobileNumber: basicInfo.mobileNumber,
       phone: null, // Optional phone field
-      address: addressInfo.address,
-      city: addressInfo.city,
-      provinceState: addressInfo.provinceState,
-      country: addressInfo.country,
-      availabilities: [availabilityInfo.availabilityType], // Wrap in list
-      availabilityTimes: availabilityInfo.availableTimes,
+      address: basicInfo.address,
+      city: basicInfo.city,
+      provinceState: basicInfo.provinceState,
+      country: basicInfo.country,
+      availabilities: [availabilityType],
+      availabilityTimes: availabilityTimes,
       availabilityDays: availabilityDays,
-      languages: professionalInfo.languages,
-      skills: professionalInfo.skills,
-      email: contactInfo.email.value,
-      password: contactInfo.password.value,
-      confirmPassword: contactInfo.password.value, // Same as password
+      languages: preferencesInfo.languages,
+      skills: preferencesInfo.skills,
+      email: accountInfo.email.value,
+      password: accountInfo.password.value,
+      confirmPassword: accountInfo.confirmPassword,
     );
   }
 

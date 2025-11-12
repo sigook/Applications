@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../providers/registration_providers.dart';
-import 'personal_info_page.dart';
-import 'contact_info_page.dart';
-import 'address_info_page.dart';
-import 'availability_info_page.dart';
-import 'professional_info_page.dart';
+import 'basic_info_page.dart';
+import 'preferences_page.dart';
+import 'documents_page.dart';
+import 'account_page.dart';
 
 /// Wrapper that pre-loads all catalog data before showing the registration form
 class RegistrationScreen extends ConsumerWidget {
@@ -150,7 +149,7 @@ class _RegistrationFormScreen extends ConsumerWidget {
                 currentStep: formState.currentStep,
                 onStepContinue: () {
                   if (_canContinue(formState.currentStep, form)) {
-                    if (formState.currentStep < 4) {
+                    if (formState.currentStep < 3) {
                       ref
                           .read(registrationFormStateProvider.notifier)
                           .nextStep();
@@ -174,7 +173,7 @@ class _RegistrationFormScreen extends ConsumerWidget {
                       .goToStep(step);
                 },
                 controlsBuilder: (context, details) {
-                  final isLastStep = details.currentStep == 4;
+                  final isLastStep = details.currentStep == 3;
                   return Padding(
                     padding: const EdgeInsets.only(top: 24),
                     child: Row(
@@ -223,83 +222,67 @@ class _RegistrationFormScreen extends ConsumerWidget {
                 },
                 steps: [
                   Step(
-                    title: const Text('Personal Info'),
-                    subtitle: form.isPersonalInfoComplete
+                    title: const Text('Basic Information'),
+                    subtitle: form.isBasicInfoComplete
                         ? const Text(
                             'Completed',
                             style: TextStyle(color: Colors.green),
                           )
                         : null,
-                    content: const PersonalInfoPage(),
+                    content: const BasicInfoPage(),
                     isActive: formState.currentStep >= 0,
                     state: _getStepState(
                       0,
                       formState.currentStep,
-                      form.isPersonalInfoComplete,
+                      form.isBasicInfoComplete,
                     ),
                   ),
                   Step(
-                    title: const Text('Contact'),
-                    subtitle: form.isContactInfoComplete
+                    title: const Text('Preferences'),
+                    subtitle: form.isPreferencesInfoComplete
                         ? const Text(
                             'Completed',
                             style: TextStyle(color: Colors.green),
                           )
                         : null,
-                    content: const ContactInfoPage(),
+                    content: const PreferencesPage(),
                     isActive: formState.currentStep >= 1,
                     state: _getStepState(
                       1,
                       formState.currentStep,
-                      form.isContactInfoComplete,
+                      form.isPreferencesInfoComplete,
                     ),
                   ),
                   Step(
-                    title: const Text('Address'),
-                    subtitle: form.isAddressInfoComplete
+                    title: const Text('Documents'),
+                    subtitle: form.isDocumentsInfoComplete
                         ? const Text(
                             'Completed',
                             style: TextStyle(color: Colors.green),
                           )
                         : null,
-                    content: const AddressInfoPage(),
+                    content: const DocumentsPage(),
                     isActive: formState.currentStep >= 2,
                     state: _getStepState(
                       2,
                       formState.currentStep,
-                      form.isAddressInfoComplete,
+                      form.isDocumentsInfoComplete,
                     ),
                   ),
                   Step(
-                    title: const Text('Availability'),
-                    subtitle: form.isAvailabilityInfoComplete
+                    title: const Text('Account Setup'),
+                    subtitle: form.isAccountInfoComplete
                         ? const Text(
                             'Completed',
                             style: TextStyle(color: Colors.green),
                           )
                         : null,
-                    content: const AvailabilityInfoPage(),
+                    content: const AccountPage(),
                     isActive: formState.currentStep >= 3,
                     state: _getStepState(
                       3,
                       formState.currentStep,
-                      form.isAvailabilityInfoComplete,
-                    ),
-                  ),
-                  Step(
-                    title: const Text('Professional'),
-                    subtitle: form.isProfessionalInfoComplete
-                        ? const Text(
-                            'Completed',
-                            style: TextStyle(color: Colors.green),
-                          )
-                        : null,
-                    content: const ProfessionalInfoPage(),
-                    isActive: formState.currentStep >= 4,
-                    state: _getStepState(
-                      4,
-                      formState.currentStep,
-                      form.isProfessionalInfoComplete,
+                      form.isAccountInfoComplete,
                     ),
                   ),
                 ],
@@ -325,15 +308,13 @@ class _RegistrationFormScreen extends ConsumerWidget {
   bool _canContinue(int currentStep, form) {
     switch (currentStep) {
       case 0:
-        return form.isPersonalInfoComplete;
+        return form.isBasicInfoComplete;
       case 1:
-        return form.isContactInfoComplete;
+        return form.isPreferencesInfoComplete;
       case 2:
-        return form.isAddressInfoComplete;
+        return form.isDocumentsInfoComplete;
       case 3:
-        return form.isAvailabilityInfoComplete;
-      case 4:
-        return form.isProfessionalInfoComplete;
+        return form.isAccountInfoComplete;
       default:
         return false;
     }
@@ -343,19 +324,16 @@ class _RegistrationFormScreen extends ConsumerWidget {
     String sectionName;
     switch (step) {
       case 0:
-        sectionName = 'Personal Information';
+        sectionName = 'Basic Information';
         break;
       case 1:
-        sectionName = 'Contact Information';
+        sectionName = 'Preferences';
         break;
       case 2:
-        sectionName = 'Address Information';
+        sectionName = 'Documents';
         break;
       case 3:
-        sectionName = 'Availability';
-        break;
-      case 4:
-        sectionName = 'Professional Information';
+        sectionName = 'Account Setup';
         break;
       default:
         sectionName = 'Current section';

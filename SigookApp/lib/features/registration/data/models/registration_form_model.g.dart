@@ -9,35 +9,29 @@ part of 'registration_form_model.dart';
 _$RegistrationFormModelImpl _$$RegistrationFormModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$RegistrationFormModelImpl(
-  personalInfo: json['personalInfo'] == null
+  basicInfo: json['basicInfo'] == null
       ? null
-      : PersonalInfoModel.fromJson(
-          json['personalInfo'] as Map<String, dynamic>,
+      : BasicInfoModel.fromJson(json['basicInfo'] as Map<String, dynamic>),
+  preferencesInfo: json['preferencesInfo'] == null
+      ? null
+      : PreferencesInfoModel.fromJson(
+          json['preferencesInfo'] as Map<String, dynamic>,
         ),
-  contactInfo: json['contactInfo'] == null
+  documentsInfo: json['documentsInfo'] == null
       ? null
-      : ContactInfoModel.fromJson(json['contactInfo'] as Map<String, dynamic>),
-  addressInfo: json['addressInfo'] == null
-      ? null
-      : AddressInfoModel.fromJson(json['addressInfo'] as Map<String, dynamic>),
-  availabilityInfo: json['availabilityInfo'] == null
-      ? null
-      : AvailabilityInfoModel.fromJson(
-          json['availabilityInfo'] as Map<String, dynamic>,
+      : DocumentsInfoModel.fromJson(
+          json['documentsInfo'] as Map<String, dynamic>,
         ),
-  professionalInfo: json['professionalInfo'] == null
+  accountInfo: json['accountInfo'] == null
       ? null
-      : ProfessionalInfoModel.fromJson(
-          json['professionalInfo'] as Map<String, dynamic>,
-        ),
+      : AccountInfoModel.fromJson(json['accountInfo'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$$RegistrationFormModelImplToJson(
   _$RegistrationFormModelImpl instance,
 ) => <String, dynamic>{
-  'personalInfo': instance.personalInfo,
-  'contactInfo': instance.contactInfo,
-  'addressInfo': instance.addressInfo,
-  'availabilityInfo': instance.availabilityInfo,
-  'professionalInfo': instance.professionalInfo,
+  'basicInfo': instance.basicInfo,
+  'preferencesInfo': instance.preferencesInfo,
+  'documentsInfo': instance.documentsInfo,
+  'accountInfo': instance.accountInfo,
 };
