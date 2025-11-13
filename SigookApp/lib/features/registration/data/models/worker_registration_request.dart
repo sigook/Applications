@@ -111,7 +111,7 @@ class WorkerRegistrationRequest {
         ? Location(
             city: basicInfo.city!,
             address: basicInfo.address,
-            postalCode: basicInfo.zipCode,
+            postalCode: basicInfo.zipCode.value,
           )
         : Location(
             // Fallback with empty GUIDs if location entities not selected
@@ -131,7 +131,7 @@ class WorkerRegistrationRequest {
               ),
             ),
             address: basicInfo.address,
-            postalCode: basicInfo.zipCode,
+            postalCode: basicInfo.zipCode.value,
           );
 
     // Lifting capacity already has ID from catalog

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/zip_code.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/gender.dart';
 import '../../domain/entities/value_objects/name.dart';
@@ -42,7 +43,7 @@ class BasicInfoModel with _$BasicInfoModel {
       provinceState: entity.provinceState?.toJson(),
       city: entity.city?.toJson(),
       address: entity.address,
-      zipCode: entity.zipCode,
+      zipCode: entity.zipCode.value,
       mobileNumber: entity.mobileNumber.e164Format,
       identificationType: entity.identificationType,
       identificationNumber: entity.identificationNumber,
@@ -104,7 +105,14 @@ class BasicInfoModel with _$BasicInfoModel {
             )
           : null,
       address: address,
-      zipCode: zipCode,
+      zipCode: ZipCode.parse(
+        input: zipCode,
+        countryCode: country?['code'] as String? ?? 'US',
+        provinceCode: provinceState?['code'] as String?,
+      ).fold(
+        (error) => country?['code'] == 'CA' ? ZipCode.emptyCA : ZipCode.emptyUS,
+        (validZip) => validZip,
+      ),
       mobileNumber: PhoneNumber(value: mobileNumber),
       identificationType: identificationType,
       identificationNumber: identificationNumber,

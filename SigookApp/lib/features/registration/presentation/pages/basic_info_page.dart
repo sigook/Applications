@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/zip_code.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/basic_info.dart';
@@ -29,7 +30,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   late TextEditingController _lastNameController;
   late TextEditingController _addressController;
   late TextEditingController _zipCodeController;
-  
+
   // Phone validation service
   late PhoneValidationService _phoneService;
   PhoneNumber _mobileNumber = PhoneNumber.empty();
@@ -79,7 +80,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
         _selectedProvince = info.provinceState;
         _selectedCity = info.city;
         _addressController.text = info.address;
-        _zipCodeController.text = info.zipCode;
+        _zipCodeController.text = info.zipCode.value;
         _mobileNumber = info.mobileNumber;
         setState(() {});
       }
@@ -109,40 +110,62 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       firstName: firstName,
       lastName: lastName,
       dateOfBirth: _selectedDate ?? DateTime.now(),
-      gender: Gender(
-        id: _selectedGenderId ?? '',
-        value: _selectedGender ?? '',
-      ),
+      gender: Gender(id: _selectedGenderId ?? '', value: _selectedGender ?? ''),
       country: _selectedCountry,
       provinceState: _selectedProvince,
       city: _selectedCity,
       address: _addressController.text,
-      zipCode: _zipCodeController.text,
+      zipCode: ZipCode.parse(
+        input: _zipCodeController.text,
+        countryCode: _selectedCountry?.code ?? 'US',
+        provinceCode: _selectedProvince?.code,
+      ).fold(
+        (error) => _selectedCountry?.code == 'CA' ? ZipCode.emptyCA : ZipCode.emptyUS,
+        (validZip) => validZip,
+      ),
       mobileNumber: _mobileNumber,
     );
 
     setState(() {
       // Only show errors for touched fields or after submit attempt
-      _firstNameError = _shouldShowError('firstName') ? firstName.errorMessage : null;
-      _lastNameError = _shouldShowError('lastName') ? lastName.errorMessage : null;
-      _dateError = _shouldShowError('dateOfBirth') && _selectedDate == null 
-          ? 'Date of birth is required' 
+      _firstNameError = _shouldShowError('firstName')
+          ? firstName.errorMessage
           : null;
-      _countryError = _shouldShowError('country') ? basicInfo.countryError : null;
-      _provinceStateError = _shouldShowError('provinceState') ? basicInfo.provinceStateError : null;
+      _lastNameError = _shouldShowError('lastName')
+          ? lastName.errorMessage
+          : null;
+      _dateError = _shouldShowError('dateOfBirth') && _selectedDate == null
+          ? 'Date of birth is required'
+          : null;
+      _countryError = _shouldShowError('country')
+          ? basicInfo.countryError
+          : null;
+      _provinceStateError = _shouldShowError('provinceState')
+          ? basicInfo.provinceStateError
+          : null;
       _cityError = _shouldShowError('city') ? basicInfo.cityError : null;
-      _addressError = _shouldShowError('address') ? basicInfo.addressError : null;
-      _zipCodeError = _shouldShowError('zipCode') ? basicInfo.zipCodeError : null;
-      _mobileNumberError = _shouldShowError('mobileNumber') ? basicInfo.mobileNumberError : null;
+      _addressError = _shouldShowError('address')
+          ? basicInfo.addressError
+          : null;
+      _zipCodeError = _shouldShowError('zipCode')
+          ? basicInfo.zipCodeError
+          : null;
+      _mobileNumberError = _shouldShowError('mobileNumber')
+          ? basicInfo.mobileNumberError
+          : null;
 
-      if (_shouldShowError('dateOfBirth') && !basicInfo.isAdult && _selectedDate != null) {
+      if (_shouldShowError('dateOfBirth') &&
+          !basicInfo.isAdult &&
+          _selectedDate != null) {
         _dateError = 'You must be at least 18 years old';
       }
     });
 
     // Always save valid data to view model
     if (basicInfo.isValid) {
-      ref.read(registrationViewModelProvider.notifier).updateBasicInfo(basicInfo);
+      ref
+          .read(registrationViewModelProvider.notifier)
+          .updateBasicInfo(basicInfo);
     }
   }
 
@@ -230,19 +253,18 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               Text(
                 'Basic Information',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Please provide your personal and location details',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey.shade600),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
-              
+
               // Personal Details
               CustomTextField(
                 label: 'First Name',
@@ -270,7 +292,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 },
               ),
               const SizedBox(height: 24),
-              
+
               // Date of Birth
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,8 +300,8 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                   Text(
                     'Date of Birth',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   InkWell(
@@ -304,7 +326,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                             ? DateFormat('MMM dd, yyyy').format(_selectedDate!)
                             : 'Select date',
                         style: TextStyle(
-                          color: _selectedDate != null ? Colors.black : Colors.grey,
+                          color: _selectedDate != null
+                              ? Colors.black
+                              : Colors.grey,
                         ),
                       ),
                     ),
@@ -312,17 +336,17 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               // Gender
               _buildGenderSelector(),
               const SizedBox(height: 32),
-              
+
               // Location Section
               Text(
                 'Location',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               LocationSelector(
@@ -368,7 +392,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               PhoneNumberField(
                 label: 'Mobile Number',
                 initialValue: _mobileNumber.value,
-                countryCode: _selectedCountry?.code ?? 'US', // Use selected country or default to US
+                countryCode:
+                    _selectedCountry?.code ??
+                    'US', // Use selected country or default to US
                 errorText: _mobileNumberError,
                 onChanged: (value) {
                   // Validate phone number with selected country
@@ -399,9 +425,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       children: [
         Text(
           'Gender',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         if (genders.isEmpty)
@@ -438,5 +464,4 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       ],
     );
   }
-
 }

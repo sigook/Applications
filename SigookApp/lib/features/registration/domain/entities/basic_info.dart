@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/zip_code.dart';
 import 'value_objects/name.dart';
 import 'value_objects/phone_number.dart';
 import 'gender.dart';
@@ -20,7 +21,7 @@ class BasicInfo extends Equatable {
   final Province? provinceState;
   final City? city;
   final String address;
-  final String zipCode;
+  final ZipCode zipCode;
 
   // Contact
   final PhoneNumber mobileNumber;
@@ -62,7 +63,7 @@ class BasicInfo extends Equatable {
         city != null &&
         address.isNotEmpty &&
         address.length >= 5 &&
-        zipCode.isNotEmpty &&
+        zipCode.value.isNotEmpty &&
         mobileNumber.isValid;
   }
 
@@ -77,7 +78,8 @@ class BasicInfo extends Equatable {
     return null;
   }
 
-  String? get zipCodeError => zipCode.isEmpty ? 'ZIP Code is required' : null;
+  String? get zipCodeError =>
+      zipCode.value.isEmpty ? 'ZIP Code is required' : null;
   String? get mobileNumberError => mobileNumber.errorMessage;
   String? get dateOfBirthError =>
       !isAdult ? 'You must be at least 18 years old' : null;
@@ -92,7 +94,7 @@ class BasicInfo extends Equatable {
     Province? provinceState,
     City? city,
     String? address,
-    String? zipCode,
+    ZipCode? zipCode,
     PhoneNumber? mobileNumber,
     String? identificationType,
     String? identificationNumber,
