@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../domain/entities/available_time.dart';
 
 class AvailabilityTimeSelector extends ConsumerWidget {
-  final List<String> selectedTimes;
-  final Function(List<String>) onChanged;
+  final List<AvailableTime> selectedTimes;
+  final Function(List<AvailableTime>) onChanged;
   final String? errorText;
 
   const AvailabilityTimeSelector({
@@ -38,16 +39,19 @@ class AvailabilityTimeSelector extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: timeSlots.map((slot) {
-              final isSelected = selectedTimes.contains(slot.value);
+              final isSelected = selectedTimes.any((t) => t.id == slot.id || t.value == slot.value);
               return FilterChip(
                 label: Text(slot.value),
                 selected: isSelected,
                 onSelected: (selected) {
-                  final newTimes = List<String>.from(selectedTimes);
+                  final newTimes = List<AvailableTime>.from(selectedTimes);
                   if (selected) {
-                    newTimes.add(slot.value);
+                    newTimes.add(AvailableTime(
+                      id: slot.id,
+                      value: slot.value,
+                    ));
                   } else {
-                    newTimes.remove(slot.value);
+                    newTimes.removeWhere((t) => t.id == slot.id || t.value == slot.value);
                   }
                   onChanged(newTimes);
                 },

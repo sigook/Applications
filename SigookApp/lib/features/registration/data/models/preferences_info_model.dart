@@ -3,6 +3,9 @@ import '../../domain/entities/preferences_info.dart';
 import '../../domain/entities/lifting_capacity.dart';
 import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
+import '../../domain/entities/availability_type.dart';
+import '../../domain/entities/available_time.dart';
+import '../../domain/entities/day_of_week.dart';
 
 part 'preferences_info_model.freezed.dart';
 part 'preferences_info_model.g.dart';
@@ -12,64 +15,75 @@ class PreferencesInfoModel with _$PreferencesInfoModel {
   const PreferencesInfoModel._();
 
   const factory PreferencesInfoModel({
-    required String availabilityType,
-    required List<String> availableTimes,
-    required List<String> availableDays,
-    required String liftingCapacity, // Stored as string (enum label)
+    required Map<String, String> availabilityType, // {id, value}
+    required List<Map<String, String>> availableTimes,
+    required List<Map<String, String>> availableDays,
+    required Map<String, String>? liftingCapacity, // {id, value}
     required bool hasVehicle,
-    required Map<String, String> languages, // id -> value
-    required List<String> skills, // List of skill values
+    required List<Map<String, String>> languages,
+    required List<String> skills, // Just skill values
   }) = _PreferencesInfoModel;
 
   /// Convert from domain entity
   factory PreferencesInfoModel.fromEntity(PreferencesInfo entity) {
-    // Convert languages to map
-    final languagesMap = <String, String>{};
-    for (final lang in entity.languages) {
-      languagesMap[lang.id ?? lang.value] = lang.value;
-    }
-
-    // Convert skills to list of values
-    final skillsList = entity.skills.map((s) => s.value).toList();
-
     return PreferencesInfoModel(
-      availabilityType: entity.availabilityType,
-      availableTimes: entity.availableTimes,
-      availableDays: entity.availableDays,
-      liftingCapacity: entity.liftingCapacity?.label ?? '',
+      availabilityType: {
+        'id': entity.availabilityType.id ?? '',
+        'value': entity.availabilityType.value,
+      },
+      availableTimes: entity.availableTimes
+          .map((t) => {'id': t.id ?? '', 'value': t.value})
+          .toList(),
+      availableDays: entity.availableDays
+          .map((d) => {'id': d.id, 'value': d.value})
+          .toList(),
+      liftingCapacity: entity.liftingCapacity != null
+          ? {
+              'id': entity.liftingCapacity!.id ?? '',
+              'value': entity.liftingCapacity!.value,
+            }
+          : null,
       hasVehicle: entity.hasVehicle,
-      languages: languagesMap,
-      skills: skillsList,
+      languages: entity.languages
+          .map((l) => {'id': l.id ?? '', 'value': l.value})
+          .toList(),
+      skills: entity.skills.map((s) => s.value).toList(),
     );
   }
 
   /// Convert to domain entity
   PreferencesInfo toEntity() {
-    // Convert languages map back to list
-    final languagesList = languages.entries
-        .map((e) => Language(id: e.key, value: e.value))
-        .toList();
-
-    // Convert skills list back to Skill objects
-    final skillsList = skills.map((s) => Skill(skill: s)).toList();
-
-    // Parse lifting capacity from string
-    LiftingCapacityType? capacity;
-    for (final type in LiftingCapacityType.values) {
-      if (type.label == liftingCapacity) {
-        capacity = type;
-        break;
-      }
-    }
-
     return PreferencesInfo(
-      availabilityType: availabilityType,
-      availableTimes: availableTimes,
-      availableDays: availableDays,
-      liftingCapacity: capacity,
+      availabilityType: AvailabilityType(
+        id: availabilityType['id'],
+        value: availabilityType['value'] ?? '',
+      ),
+      availableTimes: availableTimes
+          .map((t) => AvailableTime(
+                id: t['id'],
+                value: t['value'] ?? '',
+              ))
+          .toList(),
+      availableDays: availableDays
+          .map((d) => DayOfWeekEntity(
+                id: d['id'] ?? '',
+                value: d['value'] ?? '',
+              ))
+          .toList(),
+      liftingCapacity: liftingCapacity != null
+          ? LiftingCapacity(
+              id: liftingCapacity!['id'],
+              value: liftingCapacity!['value'] ?? '',
+            )
+          : null,
       hasVehicle: hasVehicle,
-      languages: languagesList,
-      skills: skillsList,
+      languages: languages
+          .map((l) => Language(
+                id: l['id'],
+                value: l['value'] ?? '',
+              ))
+          .toList(),
+      skills: skills.map((s) => Skill(skill: s)).toList(),
     );
   }
 

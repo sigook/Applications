@@ -12,10 +12,21 @@ enum LiftingCapacityType {
 
 /// Domain entity for lifting capacity
 class LiftingCapacity extends Equatable {
-  final LiftingCapacityType capacity;
+  final String? id;
+  final String value;
 
-  const LiftingCapacity({required this.capacity});
+  const LiftingCapacity({
+    this.id,
+    required this.value,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'value': value,
+    };
+  }
 
   @override
-  List<Object?> get props => [capacity];
+  List<Object?> get props => [id, value];
 }

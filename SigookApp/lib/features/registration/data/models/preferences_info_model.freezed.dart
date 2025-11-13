@@ -21,14 +21,16 @@ PreferencesInfoModel _$PreferencesInfoModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PreferencesInfoModel {
-  String get availabilityType => throw _privateConstructorUsedError;
-  List<String> get availableTimes => throw _privateConstructorUsedError;
-  List<String> get availableDays => throw _privateConstructorUsedError;
-  String get liftingCapacity =>
-      throw _privateConstructorUsedError; // Stored as string (enum label)
+  Map<String, String> get availabilityType =>
+      throw _privateConstructorUsedError; // {id, value}
+  List<Map<String, String>> get availableTimes =>
+      throw _privateConstructorUsedError;
+  List<Map<String, String>> get availableDays =>
+      throw _privateConstructorUsedError;
+  Map<String, String>? get liftingCapacity =>
+      throw _privateConstructorUsedError; // {id, value}
   bool get hasVehicle => throw _privateConstructorUsedError;
-  Map<String, String> get languages =>
-      throw _privateConstructorUsedError; // id -> value
+  List<Map<String, String>> get languages => throw _privateConstructorUsedError;
   List<String> get skills => throw _privateConstructorUsedError;
 
   /// Serializes this PreferencesInfoModel to a JSON map.
@@ -49,12 +51,12 @@ abstract class $PreferencesInfoModelCopyWith<$Res> {
   ) = _$PreferencesInfoModelCopyWithImpl<$Res, PreferencesInfoModel>;
   @useResult
   $Res call({
-    String availabilityType,
-    List<String> availableTimes,
-    List<String> availableDays,
-    String liftingCapacity,
+    Map<String, String> availabilityType,
+    List<Map<String, String>> availableTimes,
+    List<Map<String, String>> availableDays,
+    Map<String, String>? liftingCapacity,
     bool hasVehicle,
-    Map<String, String> languages,
+    List<Map<String, String>> languages,
     List<String> skills,
   });
 }
@@ -80,7 +82,7 @@ class _$PreferencesInfoModelCopyWithImpl<
     Object? availabilityType = null,
     Object? availableTimes = null,
     Object? availableDays = null,
-    Object? liftingCapacity = null,
+    Object? liftingCapacity = freezed,
     Object? hasVehicle = null,
     Object? languages = null,
     Object? skills = null,
@@ -90,19 +92,19 @@ class _$PreferencesInfoModelCopyWithImpl<
             availabilityType: null == availabilityType
                 ? _value.availabilityType
                 : availabilityType // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as Map<String, String>,
             availableTimes: null == availableTimes
                 ? _value.availableTimes
                 : availableTimes // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
+                      as List<Map<String, String>>,
             availableDays: null == availableDays
                 ? _value.availableDays
                 : availableDays // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            liftingCapacity: null == liftingCapacity
+                      as List<Map<String, String>>,
+            liftingCapacity: freezed == liftingCapacity
                 ? _value.liftingCapacity
                 : liftingCapacity // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as Map<String, String>?,
             hasVehicle: null == hasVehicle
                 ? _value.hasVehicle
                 : hasVehicle // ignore: cast_nullable_to_non_nullable
@@ -110,7 +112,7 @@ class _$PreferencesInfoModelCopyWithImpl<
             languages: null == languages
                 ? _value.languages
                 : languages // ignore: cast_nullable_to_non_nullable
-                      as Map<String, String>,
+                      as List<Map<String, String>>,
             skills: null == skills
                 ? _value.skills
                 : skills // ignore: cast_nullable_to_non_nullable
@@ -131,12 +133,12 @@ abstract class _$$PreferencesInfoModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String availabilityType,
-    List<String> availableTimes,
-    List<String> availableDays,
-    String liftingCapacity,
+    Map<String, String> availabilityType,
+    List<Map<String, String>> availableTimes,
+    List<Map<String, String>> availableDays,
+    Map<String, String>? liftingCapacity,
     bool hasVehicle,
-    Map<String, String> languages,
+    List<Map<String, String>> languages,
     List<String> skills,
   });
 }
@@ -158,7 +160,7 @@ class __$$PreferencesInfoModelImplCopyWithImpl<$Res>
     Object? availabilityType = null,
     Object? availableTimes = null,
     Object? availableDays = null,
-    Object? liftingCapacity = null,
+    Object? liftingCapacity = freezed,
     Object? hasVehicle = null,
     Object? languages = null,
     Object? skills = null,
@@ -166,21 +168,21 @@ class __$$PreferencesInfoModelImplCopyWithImpl<$Res>
     return _then(
       _$PreferencesInfoModelImpl(
         availabilityType: null == availabilityType
-            ? _value.availabilityType
+            ? _value._availabilityType
             : availabilityType // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as Map<String, String>,
         availableTimes: null == availableTimes
             ? _value._availableTimes
             : availableTimes // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
+                  as List<Map<String, String>>,
         availableDays: null == availableDays
             ? _value._availableDays
             : availableDays // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        liftingCapacity: null == liftingCapacity
-            ? _value.liftingCapacity
+                  as List<Map<String, String>>,
+        liftingCapacity: freezed == liftingCapacity
+            ? _value._liftingCapacity
             : liftingCapacity // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as Map<String, String>?,
         hasVehicle: null == hasVehicle
             ? _value.hasVehicle
             : hasVehicle // ignore: cast_nullable_to_non_nullable
@@ -188,7 +190,7 @@ class __$$PreferencesInfoModelImplCopyWithImpl<$Res>
         languages: null == languages
             ? _value._languages
             : languages // ignore: cast_nullable_to_non_nullable
-                  as Map<String, String>,
+                  as List<Map<String, String>>,
         skills: null == skills
             ? _value._skills
             : skills // ignore: cast_nullable_to_non_nullable
@@ -202,15 +204,17 @@ class __$$PreferencesInfoModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
   const _$PreferencesInfoModelImpl({
-    required this.availabilityType,
-    required final List<String> availableTimes,
-    required final List<String> availableDays,
-    required this.liftingCapacity,
+    required final Map<String, String> availabilityType,
+    required final List<Map<String, String>> availableTimes,
+    required final List<Map<String, String>> availableDays,
+    required final Map<String, String>? liftingCapacity,
     required this.hasVehicle,
-    required final Map<String, String> languages,
+    required final List<Map<String, String>> languages,
     required final List<String> skills,
-  }) : _availableTimes = availableTimes,
+  }) : _availabilityType = availabilityType,
+       _availableTimes = availableTimes,
        _availableDays = availableDays,
+       _liftingCapacity = liftingCapacity,
        _languages = languages,
        _skills = skills,
        super._();
@@ -218,40 +222,54 @@ class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
   factory _$PreferencesInfoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PreferencesInfoModelImplFromJson(json);
 
+  final Map<String, String> _availabilityType;
   @override
-  final String availabilityType;
-  final List<String> _availableTimes;
+  Map<String, String> get availabilityType {
+    if (_availabilityType is EqualUnmodifiableMapView) return _availabilityType;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_availabilityType);
+  }
+
+  // {id, value}
+  final List<Map<String, String>> _availableTimes;
+  // {id, value}
   @override
-  List<String> get availableTimes {
+  List<Map<String, String>> get availableTimes {
     if (_availableTimes is EqualUnmodifiableListView) return _availableTimes;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_availableTimes);
   }
 
-  final List<String> _availableDays;
+  final List<Map<String, String>> _availableDays;
   @override
-  List<String> get availableDays {
+  List<Map<String, String>> get availableDays {
     if (_availableDays is EqualUnmodifiableListView) return _availableDays;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_availableDays);
   }
 
+  final Map<String, String>? _liftingCapacity;
   @override
-  final String liftingCapacity;
-  // Stored as string (enum label)
-  @override
-  final bool hasVehicle;
-  final Map<String, String> _languages;
-  @override
-  Map<String, String> get languages {
-    if (_languages is EqualUnmodifiableMapView) return _languages;
+  Map<String, String>? get liftingCapacity {
+    final value = _liftingCapacity;
+    if (value == null) return null;
+    if (_liftingCapacity is EqualUnmodifiableMapView) return _liftingCapacity;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_languages);
+    return EqualUnmodifiableMapView(value);
   }
 
-  // id -> value
+  // {id, value}
+  @override
+  final bool hasVehicle;
+  final List<Map<String, String>> _languages;
+  @override
+  List<Map<String, String>> get languages {
+    if (_languages is EqualUnmodifiableListView) return _languages;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_languages);
+  }
+
   final List<String> _skills;
-  // id -> value
   @override
   List<String> get skills {
     if (_skills is EqualUnmodifiableListView) return _skills;
@@ -269,8 +287,10 @@ class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PreferencesInfoModelImpl &&
-            (identical(other.availabilityType, availabilityType) ||
-                other.availabilityType == availabilityType) &&
+            const DeepCollectionEquality().equals(
+              other._availabilityType,
+              _availabilityType,
+            ) &&
             const DeepCollectionEquality().equals(
               other._availableTimes,
               _availableTimes,
@@ -279,8 +299,10 @@ class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
               other._availableDays,
               _availableDays,
             ) &&
-            (identical(other.liftingCapacity, liftingCapacity) ||
-                other.liftingCapacity == liftingCapacity) &&
+            const DeepCollectionEquality().equals(
+              other._liftingCapacity,
+              _liftingCapacity,
+            ) &&
             (identical(other.hasVehicle, hasVehicle) ||
                 other.hasVehicle == hasVehicle) &&
             const DeepCollectionEquality().equals(
@@ -294,10 +316,10 @@ class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    availabilityType,
+    const DeepCollectionEquality().hash(_availabilityType),
     const DeepCollectionEquality().hash(_availableTimes),
     const DeepCollectionEquality().hash(_availableDays),
-    liftingCapacity,
+    const DeepCollectionEquality().hash(_liftingCapacity),
     hasVehicle,
     const DeepCollectionEquality().hash(_languages),
     const DeepCollectionEquality().hash(_skills),
@@ -323,12 +345,12 @@ class _$PreferencesInfoModelImpl extends _PreferencesInfoModel {
 
 abstract class _PreferencesInfoModel extends PreferencesInfoModel {
   const factory _PreferencesInfoModel({
-    required final String availabilityType,
-    required final List<String> availableTimes,
-    required final List<String> availableDays,
-    required final String liftingCapacity,
+    required final Map<String, String> availabilityType,
+    required final List<Map<String, String>> availableTimes,
+    required final List<Map<String, String>> availableDays,
+    required final Map<String, String>? liftingCapacity,
     required final bool hasVehicle,
-    required final Map<String, String> languages,
+    required final List<Map<String, String>> languages,
     required final List<String> skills,
   }) = _$PreferencesInfoModelImpl;
   const _PreferencesInfoModel._() : super._();
@@ -337,17 +359,17 @@ abstract class _PreferencesInfoModel extends PreferencesInfoModel {
       _$PreferencesInfoModelImpl.fromJson;
 
   @override
-  String get availabilityType;
+  Map<String, String> get availabilityType; // {id, value}
   @override
-  List<String> get availableTimes;
+  List<Map<String, String>> get availableTimes;
   @override
-  List<String> get availableDays;
+  List<Map<String, String>> get availableDays;
   @override
-  String get liftingCapacity; // Stored as string (enum label)
+  Map<String, String>? get liftingCapacity; // {id, value}
   @override
   bool get hasVehicle;
   @override
-  Map<String, String> get languages; // id -> value
+  List<Map<String, String>> get languages;
   @override
   List<String> get skills;
 

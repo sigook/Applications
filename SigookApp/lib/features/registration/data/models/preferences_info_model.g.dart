@@ -9,16 +9,20 @@ part of 'preferences_info_model.dart';
 _$PreferencesInfoModelImpl _$$PreferencesInfoModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$PreferencesInfoModelImpl(
-  availabilityType: json['availabilityType'] as String,
+  availabilityType: Map<String, String>.from(json['availabilityType'] as Map),
   availableTimes: (json['availableTimes'] as List<dynamic>)
-      .map((e) => e as String)
+      .map((e) => Map<String, String>.from(e as Map))
       .toList(),
   availableDays: (json['availableDays'] as List<dynamic>)
-      .map((e) => e as String)
+      .map((e) => Map<String, String>.from(e as Map))
       .toList(),
-  liftingCapacity: json['liftingCapacity'] as String,
+  liftingCapacity: (json['liftingCapacity'] as Map<String, dynamic>?)?.map(
+    (k, e) => MapEntry(k, e as String),
+  ),
   hasVehicle: json['hasVehicle'] as bool,
-  languages: Map<String, String>.from(json['languages'] as Map),
+  languages: (json['languages'] as List<dynamic>)
+      .map((e) => Map<String, String>.from(e as Map))
+      .toList(),
   skills: (json['skills'] as List<dynamic>).map((e) => e as String).toList(),
 );
 

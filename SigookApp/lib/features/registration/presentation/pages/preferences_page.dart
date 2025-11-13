@@ -5,7 +5,11 @@ import '../../domain/entities/lifting_capacity.dart';
 import '../../domain/entities/preferences_info.dart';
 import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
+import '../../domain/entities/availability_type.dart';
+import '../../domain/entities/available_time.dart';
+import '../../domain/entities/day_of_week.dart';
 import '../providers/registration_providers.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../widgets/availability_type_selector.dart';
 import '../widgets/availability_time_selector.dart';
 import '../widgets/day_selector.dart';
@@ -20,10 +24,10 @@ class PreferencesPage extends ConsumerStatefulWidget {
 }
 
 class _PreferencesPageState extends ConsumerState<PreferencesPage> {
-  String? _selectedAvailabilityType;
-  List<String> _selectedAvailableTimes = [];
-  List<String> _selectedDays = [];
-  LiftingCapacityType? _selectedLiftingCapacity;
+  AvailabilityType? _selectedAvailabilityType;
+  List<AvailableTime> _selectedAvailableTimes = [];
+  List<DayOfWeekEntity> _selectedDays = [];
+  LiftingCapacity? _selectedLiftingCapacity;
   bool _hasVehicle = false;
   List<Language> _selectedLanguages = [];
   List<Skill> _selectedSkills = [];
@@ -58,8 +62,11 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
 
   void _validateAndSave() {
     setState(() {
+      // Skip validation if no availability type selected yet
+      if (_selectedAvailabilityType == null) return;
+      
       final preferencesInfo = PreferencesInfo(
-        availabilityType: _selectedAvailabilityType ?? '',
+        availabilityType: _selectedAvailabilityType!,
         availableTimes: _selectedAvailableTimes,
         availableDays: _selectedDays,
         liftingCapacity: _selectedLiftingCapacity,
@@ -209,6 +216,10 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
   }
 
   Widget _buildLiftingCapacitySelector() {
+    // Fetch lifting capacities from catalog
+    final capacitiesAsync = ref.watch(liftingCapacitiesProvider);
+    final catalogCapacities = capacitiesAsync.value ?? [];
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,30 +242,40 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
           ),
         ],
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: LiftingCapacityType.values.map((capacity) {
-            final isSelected = _selectedLiftingCapacity == capacity;
-            return ChoiceChip(
-              label: Text(capacity.label),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedLiftingCapacity = capacity;
-                  });
-                  _validateAndSave();
-                }
-              },
-              selectedColor: AppTheme.primaryBlue,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            );
-          }).toList(),
-        ),
+        if (catalogCapacities.isEmpty)
+          Text(
+            'Loading options...',
+            style: TextStyle(color: Colors.grey.shade600),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: catalogCapacities.map((capacity) {
+              final isSelected = _selectedLiftingCapacity?.id == capacity.id || 
+                                 _selectedLiftingCapacity?.value == capacity.value;
+              return ChoiceChip(
+                label: Text(capacity.value),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      _selectedLiftingCapacity = LiftingCapacity(
+                        id: capacity.id,
+                        value: capacity.value,
+                      );
+                    });
+                    _validateAndSave();
+                  }
+                },
+                selectedColor: AppTheme.primaryBlue,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }

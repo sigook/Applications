@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'value_objects/name.dart';
+import 'value_objects/phone_number.dart';
 import 'gender.dart';
+import 'country.dart';
+import 'province.dart';
+import 'city.dart';
 
 /// Basic information entity
 /// Combines personal details, location, and mobile number
@@ -10,17 +14,17 @@ class BasicInfo extends Equatable {
   final Name lastName;
   final DateTime dateOfBirth;
   final Gender gender;
-  
+
   // Location
-  final String country;
-  final String provinceState;
-  final String city;
+  final Country? country;
+  final Province? provinceState;
+  final City? city;
   final String address;
   final String zipCode;
-  
+
   // Contact
-  final String mobileNumber;
-  
+  final PhoneNumber mobileNumber;
+
   // Identification (optional - can be provided via documents)
   final String? identificationType;
   final String? identificationNumber;
@@ -30,9 +34,9 @@ class BasicInfo extends Equatable {
     required this.lastName,
     required this.dateOfBirth,
     required this.gender,
-    required this.country,
-    required this.provinceState,
-    required this.city,
+    this.country,
+    this.provinceState,
+    this.city,
     required this.address,
     required this.zipCode,
     required this.mobileNumber,
@@ -53,32 +57,28 @@ class BasicInfo extends Equatable {
     return firstName.isValid &&
         lastName.isValid &&
         isAdult &&
-        country.isNotEmpty &&
-        provinceState.isNotEmpty &&
-        city.isNotEmpty &&
+        country != null &&
+        provinceState != null &&
+        city != null &&
         address.isNotEmpty &&
         address.length >= 5 &&
         zipCode.isNotEmpty &&
-        mobileNumber.isNotEmpty &&
-        mobileNumber.length >= 10;
+        mobileNumber.isValid;
   }
 
   /// Validation error messages
-  String? get countryError => country.isEmpty ? 'Country is required' : null;
+  String? get countryError => country == null ? 'Country is required' : null;
   String? get provinceStateError =>
-      provinceState.isEmpty ? 'Province/State is required' : null;
-  String? get cityError => city.isEmpty ? 'City is required' : null;
+      provinceState == null ? 'Province/State is required' : null;
+  String? get cityError => city == null ? 'City is required' : null;
   String? get addressError {
     if (address.isEmpty) return 'Address is required';
     if (address.length < 5) return 'Address must be at least 5 characters';
     return null;
   }
+
   String? get zipCodeError => zipCode.isEmpty ? 'ZIP Code is required' : null;
-  String? get mobileNumberError {
-    if (mobileNumber.isEmpty) return 'Mobile number is required';
-    if (mobileNumber.length < 10) return 'Mobile number must be at least 10 digits';
-    return null;
-  }
+  String? get mobileNumberError => mobileNumber.errorMessage;
   String? get dateOfBirthError =>
       !isAdult ? 'You must be at least 18 years old' : null;
 
@@ -88,12 +88,12 @@ class BasicInfo extends Equatable {
     Name? lastName,
     DateTime? dateOfBirth,
     Gender? gender,
-    String? country,
-    String? provinceState,
-    String? city,
+    Country? country,
+    Province? provinceState,
+    City? city,
     String? address,
     String? zipCode,
-    String? mobileNumber,
+    PhoneNumber? mobileNumber,
     String? identificationType,
     String? identificationNumber,
   }) {
@@ -115,17 +115,17 @@ class BasicInfo extends Equatable {
 
   @override
   List<Object?> get props => [
-        firstName,
-        lastName,
-        dateOfBirth,
-        gender,
-        country,
-        provinceState,
-        city,
-        address,
-        zipCode,
-        mobileNumber,
-        identificationType,
-        identificationNumber,
-      ];
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    country,
+    provinceState,
+    city,
+    address,
+    zipCode,
+    mobileNumber,
+    identificationType,
+    identificationNumber,
+  ];
 }

@@ -31,4 +31,10 @@ abstract class CatalogRepository {
 
   /// Get skills options
   Future<Either<Failure, List<CatalogItem>>> getSkills();
+
+  /// Get lifting capacities options
+  Future<Either<Failure, List<CatalogItem>>> getLiftingCapacities();
+
+  /// Get days of week options
+  Future<Either<Failure, List<CatalogItem>>> getDaysOfWeek();
 }

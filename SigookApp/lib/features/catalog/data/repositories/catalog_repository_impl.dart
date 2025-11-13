@@ -33,12 +33,16 @@ class CatalogRepositoryImpl implements CatalogRepository {
   }
 
   @override
-  Future<Either<Failure, List<CatalogItem>>> getProvinces(String countryId) async {
+  Future<Either<Failure, List<CatalogItem>>> getProvinces(
+    String countryId,
+  ) async {
     return _getCatalogData(() => remoteDataSource.getProvinces(countryId));
   }
 
   @override
-  Future<Either<Failure, List<CatalogItem>>> getCities(String provinceId) async {
+  Future<Either<Failure, List<CatalogItem>>> getCities(
+    String provinceId,
+  ) async {
     return _getCatalogData(() => remoteDataSource.getCities(provinceId));
   }
 
@@ -60,6 +64,16 @@ class CatalogRepositoryImpl implements CatalogRepository {
   @override
   Future<Either<Failure, List<CatalogItem>>> getSkills() async {
     return _getCatalogData(() => remoteDataSource.getSkills());
+  }
+
+  @override
+  Future<Either<Failure, List<CatalogItem>>> getLiftingCapacities() async {
+    return _getCatalogData(() => remoteDataSource.getLiftingCapacities());
+  }
+
+  @override
+  Future<Either<Failure, List<CatalogItem>>> getDaysOfWeek() async {
+    return _getCatalogData(() => remoteDataSource.getDaysOfWeek());
   }
 
   /// Generic method to handle catalog data fetching with error handling

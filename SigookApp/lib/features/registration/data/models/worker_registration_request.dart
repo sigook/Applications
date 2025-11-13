@@ -6,7 +6,11 @@ import '../../domain/entities/gender.dart';
 import '../../domain/entities/availability_type.dart';
 import '../../domain/entities/identification_type.dart';
 import '../../domain/entities/day_of_week.dart';
-import '../utils/catalog_id_mapper.dart';
+import '../../domain/entities/location.dart';
+import '../../domain/entities/city.dart';
+import '../../domain/entities/province.dart';
+import '../../domain/entities/country.dart';
+import '../../domain/entities/lifting_capacity.dart';
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -16,34 +20,35 @@ class WorkerRegistrationRequest {
   final String lastName;
   final String birthDay; // ISO 8601 format
   final Gender gender;
-  
+
   // Identification
   final String identificationNumber1;
   final IdentificationType identificationType1;
-  
+
   // Contact
   final String? mobileNumber;
   final String? phone;
-  
-  // Location (simplified for now - can be expanded later)
-  final String? address;
-  final String? city;
-  final String? provinceState;
-  final String? country;
-  
+
+  // Location
+  final Location location;
+
+  // Lifting capacity
+  final LiftingCapacity? lift;
+
   // Availability
   final List<AvailabilityType> availabilities;
   final List<AvailableTime> availabilityTimes;
   final List<DayOfWeekEntity> availabilityDays;
-  
+
   // Professional
   final List<Language> languages;
   final List<Skill> skills;
-  
+
   // Auth
   final String email;
   final String password;
   final String confirmPassword;
+  final bool agreeTermsAndConditions;
 
   WorkerRegistrationRequest({
     required this.firstName,
@@ -54,10 +59,8 @@ class WorkerRegistrationRequest {
     required this.identificationType1,
     this.mobileNumber,
     this.phone,
-    this.address,
-    this.city,
-    this.provinceState,
-    this.country,
+    required this.location,
+    this.lift,
     required this.availabilities,
     required this.availabilityTimes,
     required this.availabilityDays,
@@ -66,6 +69,7 @@ class WorkerRegistrationRequest {
     required this.email,
     required this.password,
     required this.confirmPassword,
+    required this.agreeTermsAndConditions,
   });
 
   /// Create from registration form entity (NEW 4-section structure)
@@ -83,30 +87,10 @@ class WorkerRegistrationRequest {
     // Format date as ISO 8601
     final formattedDate = basicInfo.dateOfBirth.toIso8601String();
 
-    // Convert day strings to DayOfWeekEntity objects using catalog mapper
-    // API expects {id: guid, value: "DayName"}
-    final availabilityDays = preferencesInfo.availableDays.map((dayName) {
-      return DayOfWeekEntity(
-        id: CatalogIdMapper.getDayId(dayName),
-        value: dayName,
-      );
-    }).toList();
-
-    // Convert availability time strings to AvailableTime entities
-    // Using catalog mapper for ID lookup
-    final availabilityTimes = preferencesInfo.availableTimes.map((timeValue) {
-      return AvailableTime(
-        id: CatalogIdMapper.getTimeSlotId(timeValue),
-        value: timeValue,
-      );
-    }).toList();
-
-    // Convert availability type string to AvailabilityType entity
-    // Using catalog mapper for ID lookup
-    final availabilityType = AvailabilityType(
-      id: CatalogIdMapper.getAvailabilityTypeId(preferencesInfo.availabilityType),
-      value: preferencesInfo.availabilityType,
-    );
+    // Days, times, and availability type already have IDs from catalog
+    final availabilityDays = preferencesInfo.availableDays;
+    final availabilityTimes = preferencesInfo.availableTimes;
+    final availabilityType = preferencesInfo.availabilityType;
 
     // Use identification from BasicInfo or documents
     // If not provided in BasicInfo, use placeholder (will be updated via documents upload)
@@ -119,8 +103,39 @@ class WorkerRegistrationRequest {
             id: null,
             value: 'ID', // Placeholder if not provided
           );
-    
+
     final identificationNumber = basicInfo.identificationNumber ?? 'PENDING';
+
+    // Build Location object using catalog entities with IDs
+    final location = basicInfo.city != null
+        ? Location(
+            city: basicInfo.city!,
+            address: basicInfo.address,
+            postalCode: basicInfo.zipCode,
+          )
+        : Location(
+            // Fallback with empty GUIDs if location entities not selected
+            city: City(
+              id: '00000000-0000-0000-0000-000000000000',
+              value: 'Not specified',
+              code: null,
+              province: Province(
+                id: '00000000-0000-0000-0000-000000000000',
+                value: 'Not specified',
+                code: null,
+                country: Country(
+                  id: '00000000-0000-0000-0000-000000000000',
+                  value: 'Not specified',
+                  code: null,
+                ),
+              ),
+            ),
+            address: basicInfo.address,
+            postalCode: basicInfo.zipCode,
+          );
+
+    // Lifting capacity already has ID from catalog
+    final lift = preferencesInfo.liftingCapacity;
 
     return WorkerRegistrationRequest(
       firstName: basicInfo.firstName.value,
@@ -129,12 +144,10 @@ class WorkerRegistrationRequest {
       gender: basicInfo.gender,
       identificationNumber1: identificationNumber,
       identificationType1: identificationType,
-      mobileNumber: basicInfo.mobileNumber,
+      mobileNumber: basicInfo.mobileNumber.e164Format,
       phone: null, // Optional phone field
-      address: basicInfo.address,
-      city: basicInfo.city,
-      provinceState: basicInfo.provinceState,
-      country: basicInfo.country,
+      location: location,
+      lift: lift,
       availabilities: [availabilityType],
       availabilityTimes: availabilityTimes,
       availabilityDays: availabilityDays,
@@ -143,6 +156,7 @@ class WorkerRegistrationRequest {
       email: accountInfo.email.value,
       password: accountInfo.password.value,
       confirmPassword: accountInfo.confirmPassword,
+      agreeTermsAndConditions: accountInfo.termsAccepted,
     );
   }
 
@@ -153,27 +167,27 @@ class WorkerRegistrationRequest {
     print('Gender: id=${gender.id}, value=${gender.value}');
     print('Languages count: ${languages.length}');
     if (languages.isNotEmpty) {
-      print('First language: id=${languages.first.id}, value=${languages.first.value}');
+      print(
+        'First language: id=${languages.first.id}, value=${languages.first.value}',
+      );
     }
     print('Skills count: ${skills.length}');
     if (skills.isNotEmpty) {
       print('First skill: skill=${skills.first.skill}');
     }
     print('═══════════════════════════');
-    
+
     return {
       'firstName': firstName,
       'lastName': lastName,
       'birthDay': birthDay,
-      'gender': gender.toJson(),
+      'gender': {'id': gender.id}, // Only id per API spec
       'identificationNumber1': identificationNumber1,
       'identificationType1': identificationType1.toJson(),
       if (mobileNumber != null) 'mobileNumber': mobileNumber,
       if (phone != null) 'phone': phone,
-      if (address != null) 'address': address,
-      if (city != null) 'city': city,
-      if (provinceState != null) 'provinceState': provinceState,
-      if (country != null) 'country': country,
+      'location': location.toJson(),
+      if (lift != null) 'lift': lift!.toJson(),
       'availabilities': availabilities.map((a) => a.toJson()).toList(),
       'availabilityTimes': availabilityTimes.map((a) => a.toJson()).toList(),
       'availabilityDays': availabilityDays.map((d) => d.toJson()).toList(),
@@ -182,6 +196,15 @@ class WorkerRegistrationRequest {
       'email': email,
       'password': password,
       'confirmPassword': confirmPassword,
+      'agreeTermsAndConditions': agreeTermsAndConditions,
+      // TODO: Add file uploads when implemented
+      // 'identificationType1File': null,
+      // 'identificationType2File': null,
+      // 'identificationType2': null,
+      // 'licenses': [],
+      // 'certificates': [],
+      // 'resume': null,
+      // 'otherDocuments': [],
     };
   }
 }

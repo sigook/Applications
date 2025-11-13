@@ -15,6 +15,8 @@ abstract class CatalogRemoteDataSource {
   Future<List<CatalogItemModel>> getIdentificationTypes();
   Future<List<CatalogItemModel>> getLanguages();
   Future<List<CatalogItemModel>> getSkills();
+  Future<List<CatalogItemModel>> getLiftingCapacities();
+  Future<List<CatalogItemModel>> getDaysOfWeek();
 }
 
 class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
@@ -65,6 +67,16 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   @override
   Future<List<CatalogItemModel>> getSkills() async {
     return _getCatalogItems('/Catalog/skills');
+  }
+
+  @override
+  Future<List<CatalogItemModel>> getLiftingCapacities() async {
+    return _getCatalogItems('/Catalog/lift');
+  }
+
+  @override
+  Future<List<CatalogItemModel>> getDaysOfWeek() async {
+    return _getCatalogItems('/Catalog/day');
   }
 
   /// Generic method to fetch catalog items

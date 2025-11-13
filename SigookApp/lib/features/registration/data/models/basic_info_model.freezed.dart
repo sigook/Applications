@@ -27,9 +27,9 @@ mixin _$BasicInfoModel {
       throw _privateConstructorUsedError; // ISO 8601 string
   String get genderId => throw _privateConstructorUsedError;
   String get genderValue => throw _privateConstructorUsedError;
-  String get country => throw _privateConstructorUsedError;
-  String get provinceState => throw _privateConstructorUsedError;
-  String get city => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get country => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get provinceState => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get city => throw _privateConstructorUsedError;
   String get address => throw _privateConstructorUsedError;
   String get zipCode => throw _privateConstructorUsedError;
   String get mobileNumber => throw _privateConstructorUsedError;
@@ -59,9 +59,9 @@ abstract class $BasicInfoModelCopyWith<$Res> {
     String dateOfBirth,
     String genderId,
     String genderValue,
-    String country,
-    String provinceState,
-    String city,
+    Map<String, dynamic>? country,
+    Map<String, dynamic>? provinceState,
+    Map<String, dynamic>? city,
     String address,
     String zipCode,
     String mobileNumber,
@@ -90,9 +90,9 @@ class _$BasicInfoModelCopyWithImpl<$Res, $Val extends BasicInfoModel>
     Object? dateOfBirth = null,
     Object? genderId = null,
     Object? genderValue = null,
-    Object? country = null,
-    Object? provinceState = null,
-    Object? city = null,
+    Object? country = freezed,
+    Object? provinceState = freezed,
+    Object? city = freezed,
     Object? address = null,
     Object? zipCode = null,
     Object? mobileNumber = null,
@@ -121,18 +121,18 @@ class _$BasicInfoModelCopyWithImpl<$Res, $Val extends BasicInfoModel>
                 ? _value.genderValue
                 : genderValue // ignore: cast_nullable_to_non_nullable
                       as String,
-            country: null == country
+            country: freezed == country
                 ? _value.country
                 : country // ignore: cast_nullable_to_non_nullable
-                      as String,
-            provinceState: null == provinceState
+                      as Map<String, dynamic>?,
+            provinceState: freezed == provinceState
                 ? _value.provinceState
                 : provinceState // ignore: cast_nullable_to_non_nullable
-                      as String,
-            city: null == city
+                      as Map<String, dynamic>?,
+            city: freezed == city
                 ? _value.city
                 : city // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as Map<String, dynamic>?,
             address: null == address
                 ? _value.address
                 : address // ignore: cast_nullable_to_non_nullable
@@ -174,9 +174,9 @@ abstract class _$$BasicInfoModelImplCopyWith<$Res>
     String dateOfBirth,
     String genderId,
     String genderValue,
-    String country,
-    String provinceState,
-    String city,
+    Map<String, dynamic>? country,
+    Map<String, dynamic>? provinceState,
+    Map<String, dynamic>? city,
     String address,
     String zipCode,
     String mobileNumber,
@@ -204,9 +204,9 @@ class __$$BasicInfoModelImplCopyWithImpl<$Res>
     Object? dateOfBirth = null,
     Object? genderId = null,
     Object? genderValue = null,
-    Object? country = null,
-    Object? provinceState = null,
-    Object? city = null,
+    Object? country = freezed,
+    Object? provinceState = freezed,
+    Object? city = freezed,
     Object? address = null,
     Object? zipCode = null,
     Object? mobileNumber = null,
@@ -235,18 +235,18 @@ class __$$BasicInfoModelImplCopyWithImpl<$Res>
             ? _value.genderValue
             : genderValue // ignore: cast_nullable_to_non_nullable
                   as String,
-        country: null == country
-            ? _value.country
+        country: freezed == country
+            ? _value._country
             : country // ignore: cast_nullable_to_non_nullable
-                  as String,
-        provinceState: null == provinceState
-            ? _value.provinceState
+                  as Map<String, dynamic>?,
+        provinceState: freezed == provinceState
+            ? _value._provinceState
             : provinceState // ignore: cast_nullable_to_non_nullable
-                  as String,
-        city: null == city
-            ? _value.city
+                  as Map<String, dynamic>?,
+        city: freezed == city
+            ? _value._city
             : city // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as Map<String, dynamic>?,
         address: null == address
             ? _value.address
             : address // ignore: cast_nullable_to_non_nullable
@@ -281,15 +281,18 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
     required this.dateOfBirth,
     required this.genderId,
     required this.genderValue,
-    required this.country,
-    required this.provinceState,
-    required this.city,
+    final Map<String, dynamic>? country,
+    final Map<String, dynamic>? provinceState,
+    final Map<String, dynamic>? city,
     required this.address,
     required this.zipCode,
     required this.mobileNumber,
     this.identificationType,
     this.identificationNumber,
-  }) : super._();
+  }) : _country = country,
+       _provinceState = provinceState,
+       _city = city,
+       super._();
 
   factory _$BasicInfoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$BasicInfoModelImplFromJson(json);
@@ -305,12 +308,36 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
   final String genderId;
   @override
   final String genderValue;
+  final Map<String, dynamic>? _country;
   @override
-  final String country;
+  Map<String, dynamic>? get country {
+    final value = _country;
+    if (value == null) return null;
+    if (_country is EqualUnmodifiableMapView) return _country;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  final Map<String, dynamic>? _provinceState;
   @override
-  final String provinceState;
+  Map<String, dynamic>? get provinceState {
+    final value = _provinceState;
+    if (value == null) return null;
+    if (_provinceState is EqualUnmodifiableMapView) return _provinceState;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  final Map<String, dynamic>? _city;
   @override
-  final String city;
+  Map<String, dynamic>? get city {
+    final value = _city;
+    if (value == null) return null;
+    if (_city is EqualUnmodifiableMapView) return _city;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
   @override
   final String address;
   @override
@@ -342,10 +369,12 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
                 other.genderId == genderId) &&
             (identical(other.genderValue, genderValue) ||
                 other.genderValue == genderValue) &&
-            (identical(other.country, country) || other.country == country) &&
-            (identical(other.provinceState, provinceState) ||
-                other.provinceState == provinceState) &&
-            (identical(other.city, city) || other.city == city) &&
+            const DeepCollectionEquality().equals(other._country, _country) &&
+            const DeepCollectionEquality().equals(
+              other._provinceState,
+              _provinceState,
+            ) &&
+            const DeepCollectionEquality().equals(other._city, _city) &&
             (identical(other.address, address) || other.address == address) &&
             (identical(other.zipCode, zipCode) || other.zipCode == zipCode) &&
             (identical(other.mobileNumber, mobileNumber) ||
@@ -365,9 +394,9 @@ class _$BasicInfoModelImpl extends _BasicInfoModel {
     dateOfBirth,
     genderId,
     genderValue,
-    country,
-    provinceState,
-    city,
+    const DeepCollectionEquality().hash(_country),
+    const DeepCollectionEquality().hash(_provinceState),
+    const DeepCollectionEquality().hash(_city),
     address,
     zipCode,
     mobileNumber,
@@ -399,9 +428,9 @@ abstract class _BasicInfoModel extends BasicInfoModel {
     required final String dateOfBirth,
     required final String genderId,
     required final String genderValue,
-    required final String country,
-    required final String provinceState,
-    required final String city,
+    final Map<String, dynamic>? country,
+    final Map<String, dynamic>? provinceState,
+    final Map<String, dynamic>? city,
     required final String address,
     required final String zipCode,
     required final String mobileNumber,
@@ -424,11 +453,11 @@ abstract class _BasicInfoModel extends BasicInfoModel {
   @override
   String get genderValue;
   @override
-  String get country;
+  Map<String, dynamic>? get country;
   @override
-  String get provinceState;
+  Map<String, dynamic>? get provinceState;
   @override
-  String get city;
+  Map<String, dynamic>? get city;
   @override
   String get address;
   @override

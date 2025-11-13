@@ -2,6 +2,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/gender.dart';
 import '../../domain/entities/value_objects/name.dart';
+import '../../domain/entities/value_objects/phone_number.dart';
+import '../../domain/entities/country.dart';
+import '../../domain/entities/province.dart';
+import '../../domain/entities/city.dart';
 
 part 'basic_info_model.freezed.dart';
 part 'basic_info_model.g.dart';
@@ -16,9 +20,9 @@ class BasicInfoModel with _$BasicInfoModel {
     required String dateOfBirth, // ISO 8601 string
     required String genderId,
     required String genderValue,
-    required String country,
-    required String provinceState,
-    required String city,
+    Map<String, dynamic>? country,
+    Map<String, dynamic>? provinceState,
+    Map<String, dynamic>? city,
     required String address,
     required String zipCode,
     required String mobileNumber,
@@ -34,12 +38,12 @@ class BasicInfoModel with _$BasicInfoModel {
       dateOfBirth: entity.dateOfBirth.toIso8601String(),
       genderId: entity.gender.id ?? '',
       genderValue: entity.gender.value,
-      country: entity.country,
-      provinceState: entity.provinceState,
-      city: entity.city,
+      country: entity.country?.toJson(),
+      provinceState: entity.provinceState?.toJson(),
+      city: entity.city?.toJson(),
       address: entity.address,
       zipCode: entity.zipCode,
-      mobileNumber: entity.mobileNumber,
+      mobileNumber: entity.mobileNumber.e164Format,
       identificationType: entity.identificationType,
       identificationNumber: entity.identificationNumber,
     );
@@ -52,12 +56,56 @@ class BasicInfoModel with _$BasicInfoModel {
       lastName: Name(lastName),
       dateOfBirth: DateTime.parse(dateOfBirth),
       gender: Gender(id: genderId, value: genderValue),
-      country: country,
-      provinceState: provinceState,
-      city: city,
+      country: country != null
+          ? Country(
+              id: country!['id'] as String?,
+              value: country!['value'] as String,
+              code: country!['code'] as String?,
+            )
+          : null,
+      provinceState: provinceState != null
+          ? Province(
+              id: provinceState!['id'] as String?,
+              value: provinceState!['value'] as String,
+              code: provinceState!['code'] as String?,
+              country: country != null
+                  ? Country(
+                      id: country!['id'] as String?,
+                      value: country!['value'] as String,
+                      code: country!['code'] as String?,
+                    )
+                  : Country(id: null, value: '', code: null),
+            )
+          : null,
+      city: city != null
+          ? City(
+              id: city!['id'] as String?,
+              value: city!['value'] as String,
+              code: city!['code'] as String?,
+              province: provinceState != null
+                  ? Province(
+                      id: provinceState!['id'] as String?,
+                      value: provinceState!['value'] as String,
+                      code: provinceState!['code'] as String?,
+                      country: country != null
+                          ? Country(
+                              id: country!['id'] as String?,
+                              value: country!['value'] as String,
+                              code: country!['code'] as String?,
+                            )
+                          : Country(id: null, value: '', code: null),
+                    )
+                  : Province(
+                      id: null,
+                      value: '',
+                      code: null,
+                      country: Country(id: null, value: '', code: null),
+                    ),
+            )
+          : null,
       address: address,
       zipCode: zipCode,
-      mobileNumber: mobileNumber,
+      mobileNumber: PhoneNumber(value: mobileNumber),
       identificationType: identificationType,
       identificationNumber: identificationNumber,
     );

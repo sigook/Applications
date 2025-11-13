@@ -52,6 +52,7 @@ dependencies:
   # Utilities
   intl: ^0.19.0
   equatable: ^2.0.5
+  phone_numbers_parser: ^8.3.0
 
   # Local Storage
   shared_preferences: ^2.2.3

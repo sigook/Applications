@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/gender.dart';
 import '../../domain/entities/value_objects/name.dart';
+import '../../domain/entities/country.dart';
+import '../../domain/entities/province.dart';
+import '../../domain/entities/city.dart';
+import '../../domain/entities/value_objects/phone_number.dart';
+import '../../domain/services/phone_validation_service.dart';
+import '../../data/services/phone_number_parser_validation_service.dart';
 import '../providers/registration_providers.dart';
-import '../widgets/country_autocomplete_field.dart';
+import '../widgets/location_selector.dart';
+import '../widgets/phone_number_field.dart';
 import '../widgets/custom_text_field.dart';
 
 class BasicInfoPage extends ConsumerStatefulWidget {
@@ -23,17 +29,18 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   late TextEditingController _lastNameController;
   late TextEditingController _addressController;
   late TextEditingController _zipCodeController;
-  late TextEditingController _mobileNumberController;
+  
+  // Phone validation service
+  late PhoneValidationService _phoneService;
+  PhoneNumber _mobileNumber = PhoneNumber.empty();
 
   DateTime? _selectedDate;
   String? _selectedGenderId;
   String? _selectedGender;
 
-  String? _selectedCountryId;
-  String? _selectedCountryName;
-  String? _selectedProvinceId;
-  String? _selectedProvinceName;
-  String? _selectedCityName;
+  Country? _selectedCountry;
+  Province? _selectedProvince;
+  City? _selectedCity;
 
   String? _firstNameError;
   String? _lastNameError;
@@ -56,7 +63,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     _lastNameController = TextEditingController();
     _addressController = TextEditingController();
     _zipCodeController = TextEditingController();
-    _mobileNumberController = TextEditingController();
+    _phoneService = PhoneNumberParserValidationService();
 
     // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -68,12 +75,12 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
         _selectedDate = info.dateOfBirth;
         _selectedGenderId = info.gender.id;
         _selectedGender = info.gender.value;
-        _selectedCountryName = info.country;
-        _selectedProvinceName = info.provinceState;
-        _selectedCityName = info.city;
+        _selectedCountry = info.country;
+        _selectedProvince = info.provinceState;
+        _selectedCity = info.city;
         _addressController.text = info.address;
         _zipCodeController.text = info.zipCode;
-        _mobileNumberController.text = info.mobileNumber;
+        _mobileNumber = info.mobileNumber;
         setState(() {});
       }
     });
@@ -85,7 +92,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     _lastNameController.dispose();
     _addressController.dispose();
     _zipCodeController.dispose();
-    _mobileNumberController.dispose();
     super.dispose();
   }
 
@@ -107,12 +113,12 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
         id: _selectedGenderId ?? '',
         value: _selectedGender ?? '',
       ),
-      country: _selectedCountryName ?? '',
-      provinceState: _selectedProvinceName ?? '',
-      city: _selectedCityName ?? '',
+      country: _selectedCountry,
+      provinceState: _selectedProvince,
+      city: _selectedCity,
       address: _addressController.text,
       zipCode: _zipCodeController.text,
-      mobileNumber: _mobileNumberController.text,
+      mobileNumber: _mobileNumber,
     );
 
     setState(() {
@@ -169,31 +175,31 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     }
   }
 
-  void _onCountryChanged(CatalogItem? country) {
+  void _onCountryChanged(Country? country) {
     setState(() {
-      _selectedCountryId = country?.id;
-      _selectedCountryName = country?.value;
-      _selectedProvinceId = null;
-      _selectedProvinceName = null;
-      _selectedCityName = null;
+      _selectedCountry = country;
+      _selectedProvince = null;
+      _selectedCity = null;
     });
     _markTouched('country');
+    _validate();
   }
 
-  void _onProvinceChanged(CatalogItem? province) {
+  void _onProvinceChanged(Province? province) {
     setState(() {
-      _selectedProvinceId = province?.id;
-      _selectedProvinceName = province?.value;
-      _selectedCityName = null;
+      _selectedProvince = province;
+      _selectedCity = null;
     });
     _markTouched('provinceState');
+    _validate();
   }
 
-  void _onCityChanged(CatalogItem? city) {
+  void _onCityChanged(City? city) {
     setState(() {
-      _selectedCityName = city?.value;
+      _selectedCity = city;
     });
     _markTouched('city');
+    _validate();
   }
 
   @override
@@ -319,17 +325,18 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                     ),
               ),
               const SizedBox(height: 16),
-              CountryAutocompleteField(
-                selectedCountryId: _selectedCountryId,
-                selectedCountryName: _selectedCountryName,
-                onChanged: _onCountryChanged,
-                errorText: _countryError,
+              LocationSelector(
+                selectedCountry: _selectedCountry,
+                selectedProvince: _selectedProvince,
+                selectedCity: _selectedCity,
+                onCountryChanged: _onCountryChanged,
+                onProvinceChanged: _onProvinceChanged,
+                onCityChanged: _onCityChanged,
+                countryError: _countryError,
+                provinceError: _provinceStateError,
+                cityError: _cityError,
               ),
               const SizedBox(height: 24),
-              if (_selectedCountryId != null) _buildProvinceDropdown(),
-              if (_selectedCountryId != null) const SizedBox(height: 24),
-              if (_selectedProvinceId != null) _buildCityDropdown(),
-              if (_selectedProvinceId != null) const SizedBox(height: 24),
               CustomTextField(
                 label: 'Address',
                 hint: 'Enter your street address',
@@ -358,14 +365,19 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 },
               ),
               const SizedBox(height: 24),
-              CustomTextField(
+              PhoneNumberField(
                 label: 'Mobile Number',
-                hint: 'Enter your mobile number',
-                initialValue: _mobileNumberController.text,
+                initialValue: _mobileNumber.value,
+                countryCode: _selectedCountry?.code ?? 'US', // Use selected country or default to US
                 errorText: _mobileNumberError,
-                keyboardType: TextInputType.phone,
                 onChanged: (value) {
-                  _mobileNumberController.text = value;
+                  // Validate phone number with selected country
+                  final countryCode = _selectedCountry?.code ?? 'US';
+                  final validated = _phoneService.validate(value, countryCode);
+                  setState(() {
+                    _mobileNumber = validated;
+                  });
+                  _validate();
                 },
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('mobileNumber');
@@ -427,132 +439,4 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     );
   }
 
-  Widget _buildProvinceDropdown() {
-    if (_selectedCountryId == null) return const SizedBox.shrink();
-
-    final provincesAsync = ref.watch(provincesProvider(_selectedCountryId!));
-
-    return provincesAsync.when(
-      data: (provinces) {
-        if (provinces.isEmpty) {
-          return Text(
-            'No provinces available for this country',
-            style: TextStyle(color: Colors.grey.shade600),
-          );
-        }
-
-        return _buildCatalogDropdown(
-          label: 'Province / State',
-          hint: 'Select province/state...',
-          selectedValue: _selectedProvinceName,
-          items: provinces,
-          onChanged: _onProvinceChanged,
-          errorText: _provinceStateError,
-          icon: Icons.map,
-        );
-      },
-      loading: () => const LinearProgressIndicator(),
-      error: (error, stack) => Text(
-        'Error loading provinces: ${error.toString()}',
-        style: const TextStyle(color: Colors.red),
-      ),
-    );
-  }
-
-  Widget _buildCityDropdown() {
-    if (_selectedProvinceId == null) return const SizedBox.shrink();
-
-    final citiesAsync = ref.watch(citiesProvider(_selectedProvinceId!));
-
-    return citiesAsync.when(
-      data: (cities) {
-        if (cities.isEmpty) {
-          return Text(
-            'No cities available for this province',
-            style: TextStyle(color: Colors.grey.shade600),
-          );
-        }
-
-        return _buildCatalogDropdown(
-          label: 'City',
-          hint: 'Select city...',
-          selectedValue: _selectedCityName,
-          items: cities,
-          onChanged: _onCityChanged,
-          errorText: _cityError,
-          icon: Icons.location_city,
-        );
-      },
-      loading: () => const LinearProgressIndicator(),
-      error: (error, stack) => Text(
-        'Error loading cities: ${error.toString()}',
-        style: const TextStyle(color: Colors.red),
-      ),
-    );
-  }
-
-  Widget _buildCatalogDropdown({
-    required String label,
-    required String hint,
-    required String? selectedValue,
-    required List<CatalogItem> items,
-    required Function(CatalogItem?) onChanged,
-    String? errorText,
-    IconData? icon,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          isExpanded: true,
-          initialValue: selectedValue,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: icon != null ? Icon(icon) : null,
-            errorText: errorText,
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 2),
-            ),
-          ),
-          items: items.map((item) {
-            return DropdownMenuItem<String>(
-              value: item.value,
-              child: Text(
-                item.value,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            final selectedItem = items.firstWhere(
-              (item) => item.value == value,
-            );
-            onChanged(selectedItem);
-          },
-        ),
-      ],
-    );
-  }
 }

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../domain/entities/availability_type.dart';
 
 class AvailabilityTypeSelector extends ConsumerWidget {
-  final String? selectedType;
-  final Function(String?) onChanged;
+  final AvailabilityType? selectedType;
+  final Function(AvailabilityType?) onChanged;
   final String? errorText;
 
   const AvailabilityTypeSelector({
@@ -38,13 +39,16 @@ class AvailabilityTypeSelector extends ConsumerWidget {
             spacing: 12,
             runSpacing: 12,
             children: availability.map((type) {
-              final isSelected = selectedType == type.value;
+              final isSelected = selectedType?.id == type.id || selectedType?.value == type.value;
               return ChoiceChip(
                 label: Text(type.value),
                 selected: isSelected,
                 onSelected: (selected) {
                   if (selected) {
-                    onChanged(type.value);
+                    onChanged(AvailabilityType(
+                      id: type.id,
+                      value: type.value,
+                    ));
                   }
                 },
                 selectedColor: AppTheme.primaryBlue,

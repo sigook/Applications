@@ -22,10 +22,10 @@ final networkInfoProvider = Provider<NetworkInfo>((ref) {
 });
 
 /// Provider for remote data source
-final catalogRemoteDataSourceProvider = Provider<CatalogRemoteDataSource>((ref) {
-  return CatalogRemoteDataSourceImpl(
-    apiClient: ref.read(apiClientProvider),
-  );
+final catalogRemoteDataSourceProvider = Provider<CatalogRemoteDataSource>((
+  ref,
+) {
+  return CatalogRemoteDataSourceImpl(apiClient: ref.read(apiClientProvider));
 });
 
 /// Provider for catalog repository
@@ -85,7 +85,9 @@ final availabilityListProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-final availabilityTimeListProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final availabilityTimeListProvider = FutureProvider<List<CatalogItem>>((
+  ref,
+) async {
   final useCase = ref.read(getAvailabilityTimeProvider);
   final result = await useCase(NoParams());
   return result.fold(
@@ -112,7 +114,9 @@ final gendersProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-final identificationTypesListProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final identificationTypesListProvider = FutureProvider<List<CatalogItem>>((
+  ref,
+) async {
   final useCase = ref.read(getIdentificationTypesProvider);
   final result = await useCase(NoParams());
   return result.fold(
@@ -140,25 +144,46 @@ final skillsProvider = FutureProvider<List<CatalogItem>>((ref) async {
 });
 
 /// Provinces provider - requires countryId parameter
-final provincesProvider = FutureProvider.family<List<CatalogItem>, String>(
-  (ref, countryId) async {
-    final useCase = ref.read(getProvincesProvider);
-    final result = await useCase(countryId);
-    return result.fold(
-      (failure) => throw Exception(failure.message),
-      (data) => data,
-    );
-  },
-);
+final provincesProvider = FutureProvider.family<List<CatalogItem>, String>((
+  ref,
+  countryId,
+) async {
+  final useCase = ref.read(getProvincesProvider);
+  final result = await useCase(countryId);
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (data) => data,
+  );
+});
 
 /// Cities provider - requires provinceId parameter
-final citiesProvider = FutureProvider.family<List<CatalogItem>, String>(
-  (ref, provinceId) async {
-    final useCase = ref.read(getCitiesProvider);
-    final result = await useCase(provinceId);
-    return result.fold(
-      (failure) => throw Exception(failure.message),
-      (data) => data,
-    );
-  },
-);
+final citiesProvider = FutureProvider.family<List<CatalogItem>, String>((
+  ref,
+  provinceId,
+) async {
+  final useCase = ref.read(getCitiesProvider);
+  final result = await useCase(provinceId);
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (data) => data,
+  );
+});
+
+final daysOfWeekProvider = FutureProvider<List<CatalogItem>>((ref) async {
+  final catalogRepository = ref.watch(catalogRepositoryProvider);
+  final result = await catalogRepository.getDaysOfWeek();
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (days) => days,
+  );
+});
+
+/// Lifting capacities provider
+final liftingCapacitiesProvider = FutureProvider<List<CatalogItem>>((ref) async {
+  final catalogRepository = ref.watch(catalogRepositoryProvider);
+  final result = await catalogRepository.getLiftingCapacities();
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (capacities) => capacities,
+  );
+});

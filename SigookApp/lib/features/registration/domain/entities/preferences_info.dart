@@ -2,17 +2,20 @@ import 'package:equatable/equatable.dart';
 import 'lifting_capacity.dart';
 import 'language.dart';
 import 'skill.dart';
+import 'availability_type.dart';
+import 'available_time.dart';
+import 'day_of_week.dart';
 
 /// Preferences information entity
 /// Combines availability, physical capabilities, and professional skills
 class PreferencesInfo extends Equatable {
   // Availability
-  final String availabilityType;
-  final List<String> availableTimes;
-  final List<String> availableDays;
+  final AvailabilityType availabilityType;
+  final List<AvailableTime> availableTimes;
+  final List<DayOfWeekEntity> availableDays;
   
   // Physical capabilities
-  final LiftingCapacityType? liftingCapacity;
+  final LiftingCapacity? liftingCapacity;
   final bool hasVehicle;
   
   // Professional
@@ -37,7 +40,7 @@ class PreferencesInfo extends Equatable {
 
   /// Validates all required fields
   bool get isValid {
-    return availabilityType.isNotEmpty &&
+    return availabilityType.value.isNotEmpty &&
         availableTimes.isNotEmpty &&
         availableDays.isNotEmpty &&
         liftingCapacity != null &&
@@ -47,7 +50,7 @@ class PreferencesInfo extends Equatable {
 
   /// Validation error messages
   String? get availabilityTypeError =>
-      availabilityType.isEmpty ? 'Availability type is required' : null;
+      availabilityType.value.isEmpty ? 'Availability type is required' : null;
   String? get availableTimesError =>
       availableTimes.isEmpty ? 'At least one time slot is required' : null;
   String? get availableDaysError =>
@@ -61,10 +64,10 @@ class PreferencesInfo extends Equatable {
 
   /// Creates a copy with updated fields
   PreferencesInfo copyWith({
-    String? availabilityType,
-    List<String>? availableTimes,
-    List<String>? availableDays,
-    LiftingCapacityType? liftingCapacity,
+    AvailabilityType? availabilityType,
+    List<AvailableTime>? availableTimes,
+    List<DayOfWeekEntity>? availableDays,
+    LiftingCapacity? liftingCapacity,
     bool? hasVehicle,
     List<Language>? languages,
     List<Skill>? skills,
