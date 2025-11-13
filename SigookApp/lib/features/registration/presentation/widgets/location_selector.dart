@@ -4,7 +4,7 @@ import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/province.dart';
 import '../../domain/entities/city.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'searchable_dropdown_field.dart';
 
 class LocationSelector extends ConsumerStatefulWidget {
   final Country? selectedCountry;
@@ -55,7 +55,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Country Dropdown
+        // Country - searchable dropdown
         _buildDropdown(
           label: 'Country',
           value: widget.selectedCountry,
@@ -79,15 +79,15 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           },
           errorText: widget.countryError,
           isLoading: countriesAsync.isLoading,
+          enabled: true,
         ),
         const SizedBox(height: 16),
 
-        // Province/State Dropdown
+        // Province/State - searchable dropdown, enabled only when country selected
         _buildDropdown(
           label: 'Province/State',
           value: widget.selectedProvince,
           items: provinces,
-
           onChanged: (catalogItem) {
             if (catalogItem != null && widget.selectedCountry != null) {
               final province = Province(
@@ -110,7 +110,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
         ),
         const SizedBox(height: 16),
 
-        // City Dropdown
+        // City - searchable dropdown, enabled only when province selected
         _buildDropdown(
           label: 'City',
           value: widget.selectedCity,
@@ -145,101 +145,101 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     bool isLoading = false,
     bool enabled = true,
   }) {
-    // Find the matching catalog item based on the entity's ID
-    String? selectedId;
+    // Derive the selected display label and option labels from items
+    String? selectedLabel;
     if (value != null) {
       if (value is Country) {
-        selectedId = value.id;
+        selectedLabel = value.value;
       } else if (value is Province) {
-        selectedId = value.id;
+        selectedLabel = value.value;
       } else if (value is City) {
-        selectedId = value.id;
+        selectedLabel = value.value;
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+    // When disabled, show a non-interactive dropdown-style field with a hint
+    if (!enabled) {
+      // More explicit dependency messages
+      String dependencyLabel;
+      if (label == 'Province/State') {
+        dependencyLabel = 'country';
+      } else if (label == 'City') {
+        dependencyLabel = 'province';
+      } else {
+        dependencyLabel = label.toLowerCase();
+      }
+
+      final hintText = 'Select $dependencyLabel first';
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          isExpanded: true,
-          menuMaxHeight: 300,
-          initialValue: selectedId,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: enabled ? Colors.white : Colors.grey.shade100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppTheme.primaryBlue,
-                width: 2,
+          const SizedBox(height: 8),
+          TextField(
+            enabled: false,
+            decoration: InputDecoration(
+              hintText: hintText,
+              prefixIcon: const Icon(Icons.place),
+              filled: true,
+              fillColor: Colors.grey.shade100,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
               ),
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            errorText: errorText,
-            suffixIcon: isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : null,
           ),
-          items: items
-              .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item.id,
-                  child: Text(
-                    item.value,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: enabled && !isLoading
-              ? (selectedItemId) {
-                  if (selectedItemId != null) {
-                    final selectedItem = items.firstWhere(
-                      (item) => item.id == selectedItemId,
-                    );
-                    onChanged(selectedItem);
-                  }
-                }
-              : null,
-          hint: Text(
-            enabled ? 'Select $label' : 'Select ${label.split('/')[0].toLowerCase()} first',
-            style: TextStyle(color: Colors.grey.shade600),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
+        ],
+      );
+    }
+
+    final optionLabels = items.map((item) => item.value as String).toList();
+
+    return SearchableDropdownField(
+      label: label,
+      hint: 'Select or search $label...',
+      selectedValue: selectedLabel,
+      options: optionLabels,
+      onChanged: (selectedText) {
+        if (selectedText == null) {
+          onChanged(null);
+          return;
+        }
+
+        // Manual search to avoid type issues with firstWhere's orElse
+        dynamic selectedItem;
+        for (final item in items) {
+          if (item.value == selectedText) {
+            selectedItem = item;
+            break;
+          }
+        }
+
+        if (selectedItem != null) {
+          onChanged(selectedItem);
+        }
+      },
+      errorText: errorText,
+      icon: Icons.place,
+      isLoading: isLoading,
     );
   }
 }

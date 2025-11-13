@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
@@ -10,7 +9,8 @@ import '../../domain/usecases/submit_registration.dart';
 import '../viewmodels/section_state.dart';
 
 // Re-export for convenience
-export '../viewmodels/registration_viewmodel.dart' show registrationViewModelProvider;
+export '../viewmodels/registration_viewmodel.dart'
+    show registrationViewModelProvider;
 
 part 'registration_providers.g.dart';
 
@@ -22,19 +22,17 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 /// Local data source provider
 final registrationLocalDataSourceProvider =
     Provider<RegistrationLocalDataSource>((ref) {
-  final sharedPreferences = ref.watch(sharedPreferencesProvider);
-  return RegistrationLocalDataSourceImpl(
-    sharedPreferences: sharedPreferences,
-  );
-});
+      final sharedPreferences = ref.watch(sharedPreferencesProvider);
+      return RegistrationLocalDataSourceImpl(
+        sharedPreferences: sharedPreferences,
+      );
+    });
 
 /// Remote data source provider
 final registrationRemoteDataSourceProvider =
     Provider<RegistrationRemoteDataSource>((ref) {
-  return RegistrationRemoteDataSourceImpl(
-    apiClient: ApiClient(),
-  );
-});
+      return RegistrationRemoteDataSourceImpl(apiClient: ApiClient());
+    });
 
 /// Repository provider
 final registrationRepositoryProvider = Provider<RegistrationRepository>((ref) {
