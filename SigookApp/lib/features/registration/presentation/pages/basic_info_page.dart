@@ -115,14 +115,17 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       provinceState: _selectedProvince,
       city: _selectedCity,
       address: _addressController.text,
-      zipCode: ZipCode.parse(
-        input: _zipCodeController.text,
-        countryCode: _selectedCountry?.code ?? 'US',
-        provinceCode: _selectedProvince?.code,
-      ).fold(
-        (error) => _selectedCountry?.code == 'CA' ? ZipCode.emptyCA : ZipCode.emptyUS,
-        (validZip) => validZip,
-      ),
+      zipCode:
+          ZipCode.parse(
+            input: _zipCodeController.text,
+            countryCode: _selectedCountry?.code ?? 'US',
+            provinceCode: _selectedProvince?.code,
+          ).fold(
+            (error) => _selectedCountry?.code == 'CA'
+                ? ZipCode.emptyCA
+                : ZipCode.emptyUS,
+            (validZip) => validZip,
+          ),
       mobileNumber: _mobileNumber,
     );
 
@@ -231,7 +234,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     final isMobile = screenWidth < 600;
 
     // Listen for step changes to trigger validation when user tries to navigate away
-    ref.listen(registrationFormStateProvider, (previous, next) {
+    ref.listen(registrationFormStateNotifierProvider, (previous, next) {
       if (previous?.currentStep == 0 && next.currentStep != 0) {
         // User is leaving this step - validate all fields
         _validateAndSave();

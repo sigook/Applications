@@ -1,14 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/registration_local_datasource.dart';
 import '../../data/datasources/registration_remote_datasource.dart';
 import '../../data/repositories/registration_repository_impl.dart';
-import '../../domain/entities/registration_form.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../../domain/usecases/submit_registration.dart';
-import '../viewmodels/registration_viewmodel.dart';
 import '../viewmodels/section_state.dart';
+
+// Re-export for convenience
+export '../viewmodels/registration_viewmodel.dart' show registrationViewModelProvider;
+
+part 'registration_providers.g.dart';
 
 /// SharedPreferences provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -48,28 +52,13 @@ final submitRegistrationUseCaseProvider = Provider<SubmitRegistration>((ref) {
   return SubmitRegistration(repository);
 });
 
-/// Registration ViewModel provider
-final registrationViewModelProvider =
-    StateNotifierProvider<RegistrationViewModel, RegistrationForm>((ref) {
-  final repository = ref.watch(registrationRepositoryProvider);
-  final submitUseCase = ref.watch(submitRegistrationUseCaseProvider);
-  
-  return RegistrationViewModel(
-    repository: repository,
-    submitRegistrationUseCase: submitUseCase,
-  );
-});
-
 /// Form state provider for UI controls (current step, loading states, etc.)
-final registrationFormStateProvider =
-    StateNotifierProvider<RegistrationFormStateNotifier, RegistrationFormState>(
-        (ref) {
-  return RegistrationFormStateNotifier();
-});
-
-/// Form state notifier
-class RegistrationFormStateNotifier extends StateNotifier<RegistrationFormState> {
-  RegistrationFormStateNotifier() : super(RegistrationFormState.initial());
+@riverpod
+class RegistrationFormStateNotifier extends _$RegistrationFormStateNotifier {
+  @override
+  RegistrationFormState build() {
+    return RegistrationFormState.initial();
+  }
 
   void nextStep() {
     if (state.currentStep < 4) {

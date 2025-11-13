@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/preferences_info.dart';
 import '../../domain/entities/documents_info.dart';
@@ -6,22 +6,25 @@ import '../../domain/entities/account_info.dart';
 import '../../domain/entities/registration_form.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../../domain/usecases/submit_registration.dart';
+import '../providers/registration_providers.dart';
+
+part 'registration_viewmodel.g.dart';
 
 /// ViewModel for managing registration form state
-class RegistrationViewModel extends StateNotifier<RegistrationForm> {
-  final RegistrationRepository repository;
-  final SubmitRegistration submitRegistrationUseCase;
-
-  RegistrationViewModel({
-    required this.repository,
-    required this.submitRegistrationUseCase,
-  }) : super(RegistrationForm.empty()) {
+@riverpod
+class RegistrationViewModel extends _$RegistrationViewModel {
+  @override
+  RegistrationForm build() {
     _loadDraft();
+    return RegistrationForm.empty();
   }
+
+  RegistrationRepository get _repository => ref.read(registrationRepositoryProvider);
+  SubmitRegistration get _submitUseCase => ref.read(submitRegistrationUseCaseProvider);
 
   /// Load saved draft
   Future<void> _loadDraft() async {
-    final result = await repository.getDraft();
+    final result = await _repository.getDraft();
     result.fold(
       (failure) => {}, // Ignore error, start with empty form
       (form) => state = form,
@@ -54,12 +57,12 @@ class RegistrationViewModel extends StateNotifier<RegistrationForm> {
 
   /// Save draft
   Future<void> _saveDraft() async {
-    await repository.saveDraft(state);
+    await _repository.saveDraft(state);
   }
 
   /// Submit registration
   Future<bool> submitRegistration() async {
-    final result = await submitRegistrationUseCase(state);
+    final result = await _submitUseCase(state);
     return result.fold(
       (failure) => false,
       (_) => true,
@@ -68,7 +71,7 @@ class RegistrationViewModel extends StateNotifier<RegistrationForm> {
 
   /// Check email availability
   Future<bool> checkEmailAvailability(String email) async {
-    final result = await repository.isEmailAvailable(email);
+    final result = await _repository.isEmailAvailable(email);
     return result.fold(
       (failure) => false,
       (isAvailable) => isAvailable,
@@ -77,7 +80,7 @@ class RegistrationViewModel extends StateNotifier<RegistrationForm> {
 
   /// Clear all form data
   Future<void> clearForm() async {
-    await repository.clearDraft();
+    await _repository.clearDraft();
     state = RegistrationForm.empty();
   }
 }

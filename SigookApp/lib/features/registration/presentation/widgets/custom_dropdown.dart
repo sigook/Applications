@@ -33,8 +33,13 @@ class CustomDropdown<T> extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
+          isExpanded: true,
+          menuMaxHeight: 300,
           initialValue: value,
-          hint: hint != null ? Text(hint!) : null,
+          hint: hint != null ? Text(
+            hint!,
+            overflow: TextOverflow.ellipsis,
+          ) : null,
           decoration: InputDecoration(
             errorText: errorText,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -55,7 +60,11 @@ class CustomDropdown<T> extends StatelessWidget {
           items: items.map((item) {
             return DropdownMenuItem<T>(
               value: item,
-              child: Text(getLabel(item)),
+              child: Text(
+                getLabel(item),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
             );
           }).toList(),
           onChanged: onChanged,

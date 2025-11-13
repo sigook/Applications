@@ -59,16 +59,12 @@ class PreferencesInfoModel with _$PreferencesInfoModel {
         value: availabilityType['value'] ?? '',
       ),
       availableTimes: availableTimes
-          .map((t) => AvailableTime(
-                id: t['id'],
-                value: t['value'] ?? '',
-              ))
+          .map((t) => AvailableTime(id: t['id'], value: t['value'] ?? ''))
           .toList(),
       availableDays: availableDays
-          .map((d) => DayOfWeekEntity(
-                id: d['id'] ?? '',
-                value: d['value'] ?? '',
-              ))
+          .map(
+            (d) => DayOfWeekEntity(id: d['id'] ?? '', value: d['value'] ?? ''),
+          )
           .toList(),
       liftingCapacity: liftingCapacity != null
           ? LiftingCapacity(
@@ -78,10 +74,7 @@ class PreferencesInfoModel with _$PreferencesInfoModel {
           : null,
       hasVehicle: hasVehicle,
       languages: languages
-          .map((l) => Language(
-                id: l['id'],
-                value: l['value'] ?? '',
-              ))
+          .map((l) => Language(id: l['id'], value: l['value'] ?? ''))
           .toList(),
       skills: skills.map((s) => Skill(skill: s)).toList(),
     );

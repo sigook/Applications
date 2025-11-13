@@ -105,14 +105,16 @@ class BasicInfoModel with _$BasicInfoModel {
             )
           : null,
       address: address,
-      zipCode: ZipCode.parse(
-        input: zipCode,
-        countryCode: country?['code'] as String? ?? 'US',
-        provinceCode: provinceState?['code'] as String?,
-      ).fold(
-        (error) => country?['code'] == 'CA' ? ZipCode.emptyCA : ZipCode.emptyUS,
-        (validZip) => validZip,
-      ),
+      zipCode:
+          ZipCode.parse(
+            input: zipCode,
+            countryCode: country?['code'] as String? ?? 'US',
+            provinceCode: provinceState?['code'] as String?,
+          ).fold(
+            (error) =>
+                country?['code'] == 'CA' ? ZipCode.emptyCA : ZipCode.emptyUS,
+            (validZip) => validZip,
+          ),
       mobileNumber: PhoneNumber(value: mobileNumber),
       identificationType: identificationType,
       identificationNumber: identificationNumber,

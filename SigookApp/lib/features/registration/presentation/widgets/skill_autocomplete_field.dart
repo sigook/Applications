@@ -144,7 +144,9 @@ class _SkillAutocompleteFieldState
                       controller: fieldTextEditingController,
                       focusNode: fieldFocusNode,
                       decoration: InputDecoration(
-                        hintText: 'Type to search skills...',
+                        hintText: 'Type to search or add custom skill...',
+                        helperText: 'Press Enter to add custom skill or select from suggestions',
+                        helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.workspace_premium),
                         suffixIcon: fieldTextEditingController.text.isNotEmpty
                             ? IconButton(
@@ -180,24 +182,29 @@ class _SkillAutocompleteFieldState
                         fillColor: Colors.white,
                       ),
                       onSubmitted: (value) {
-                        // Only allow if it's in the list
+                        if (value.trim().isEmpty) return;
+                        
+                        // Allow adding any skill - from suggestions or custom
+                        final trimmedValue = value.trim();
                         final matchingSkill = skills.where(
-                          (skill) => skill.value == value,
+                          (skill) => skill.value.toLowerCase() == trimmedValue.toLowerCase(),
                         ).firstOrNull;
                         
                         if (matchingSkill != null) {
+                          // Use the skill from suggestions (preserves correct casing)
                           _addSkill(Skill(skill: matchingSkill.value));
                         } else {
+                          // Allow custom skill entry
+                          _addSkill(Skill(skill: trimmedValue));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Please select a skill from the suggestions',
-                              ),
-                              backgroundColor: AppTheme.errorRed,
+                            SnackBar(
+                              content: Text('Added custom skill: "$trimmedValue"'),
+                              backgroundColor: AppTheme.successGreen,
+                              duration: const Duration(seconds: 2),
                             ),
                           );
-                          fieldTextEditingController.clear();
                         }
+                        fieldTextEditingController.clear();
                       },
                     );
                   },

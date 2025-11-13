@@ -24,7 +24,8 @@ class RegistrationScreen extends ConsumerWidget {
     final countriesAsync = ref.watch(countriesListProvider);
 
     // Check if any are still loading
-    final isLoading = gendersAsync.isLoading ||
+    final isLoading =
+        gendersAsync.isLoading ||
         identificationTypesAsync.isLoading ||
         languagesAsync.isLoading ||
         skillsAsync.isLoading ||
@@ -33,7 +34,8 @@ class RegistrationScreen extends ConsumerWidget {
         countriesAsync.isLoading;
 
     // Check if any have errors
-    final hasError = gendersAsync.hasError ||
+    final hasError =
+        gendersAsync.hasError ||
         identificationTypesAsync.hasError ||
         languagesAsync.hasError ||
         skillsAsync.hasError ||
@@ -43,10 +45,7 @@ class RegistrationScreen extends ConsumerWidget {
 
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Registration'),
-          elevation: 0,
-        ),
+        appBar: AppBar(title: const Text('Registration'), elevation: 0),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -65,10 +64,7 @@ class RegistrationScreen extends ConsumerWidget {
 
     if (hasError) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Registration'),
-          elevation: 0,
-        ),
+        appBar: AppBar(title: const Text('Registration'), elevation: 0),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -116,7 +112,7 @@ class _RegistrationFormScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formState = ref.watch(registrationFormStateProvider);
+    final formState = ref.watch(registrationFormStateNotifierProvider);
     final form = ref.watch(registrationViewModelProvider);
     final responsive = context.responsive;
 
@@ -151,7 +147,7 @@ class _RegistrationFormScreen extends ConsumerWidget {
                   if (_canContinue(formState.currentStep, form)) {
                     if (formState.currentStep < 3) {
                       ref
-                          .read(registrationFormStateProvider.notifier)
+                          .read(registrationFormStateNotifierProvider.notifier)
                           .nextStep();
                     } else {
                       _submitForm(context, ref);
@@ -163,13 +159,13 @@ class _RegistrationFormScreen extends ConsumerWidget {
                 onStepCancel: () {
                   if (formState.currentStep > 0) {
                     ref
-                        .read(registrationFormStateProvider.notifier)
+                        .read(registrationFormStateNotifierProvider.notifier)
                         .previousStep();
                   }
                 },
                 onStepTapped: (step) {
                   ref
-                      .read(registrationFormStateProvider.notifier)
+                      .read(registrationFormStateNotifierProvider.notifier)
                       .goToStep(step);
                 },
                 controlsBuilder: (context, details) {
@@ -348,7 +344,7 @@ class _RegistrationFormScreen extends ConsumerWidget {
   }
 
   Future<void> _submitForm(BuildContext context, WidgetRef ref) async {
-    final notifier = ref.read(registrationFormStateProvider.notifier);
+    final notifier = ref.read(registrationFormStateNotifierProvider.notifier);
     notifier.setSubmitting(true);
 
     final viewModel = ref.read(registrationViewModelProvider.notifier);

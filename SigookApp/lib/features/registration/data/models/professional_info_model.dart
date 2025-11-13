@@ -11,7 +11,8 @@ class ProfessionalInfoModel with _$ProfessionalInfoModel {
   const ProfessionalInfoModel._();
 
   const factory ProfessionalInfoModel({
-    required Map<String, String> languages, // {id: value} - only languages with IDs
+    required Map<String, String>
+    languages, // {id: value} - only languages with IDs
     required List<String> skills, // List of skill names
   }) = _ProfessionalInfoModel;
 
@@ -19,7 +20,10 @@ class ProfessionalInfoModel with _$ProfessionalInfoModel {
   factory ProfessionalInfoModel.fromEntity(ProfessionalInfo entity) {
     return ProfessionalInfoModel(
       // Only include languages that have IDs
-      languages: {for (var lang in entity.languages.where((l) => l.id != null)) lang.id!: lang.value},
+      languages: {
+        for (var lang in entity.languages.where((l) => l.id != null))
+          lang.id!: lang.value,
+      },
       skills: entity.skills.map((skill) => skill.skill).toList(),
     );
   }

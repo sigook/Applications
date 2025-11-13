@@ -87,6 +87,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           label: 'Province/State',
           value: widget.selectedProvince,
           items: provinces,
+
           onChanged: (catalogItem) {
             if (catalogItem != null && widget.selectedCountry != null) {
               final province = Province(
@@ -169,6 +170,8 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
+          isExpanded: true,
+          menuMaxHeight: 300,
           initialValue: selectedId,
           decoration: InputDecoration(
             filled: true,
@@ -212,7 +215,11 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
               .map(
                 (item) => DropdownMenuItem<String>(
                   value: item.id,
-                  child: Text(item.value),
+                  child: Text(
+                    item.value,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
               )
               .toList(),
@@ -227,10 +234,9 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
                 }
               : null,
           hint: Text(
-            enabled
-                ? 'Select $label'
-                : 'Select ${label.split('/')[0].toLowerCase()} first',
+            enabled ? 'Select $label' : 'Select ${label.split('/')[0].toLowerCase()} first',
             style: TextStyle(color: Colors.grey.shade600),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

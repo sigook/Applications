@@ -14,7 +14,8 @@ class AvailabilityInfoModel with _$AvailabilityInfoModel {
   const factory AvailabilityInfoModel({
     String? availabilityTypeId, // UUID from API (may be null)
     required String availabilityTypeName, // Name from API
-    required Map<String, String> availableTimes, // {id: value} - only times with IDs
+    required Map<String, String>
+    availableTimes, // {id: value} - only times with IDs
     required List<String> availableDays, // Stored as strings
   }) = _AvailabilityInfoModel;
 
@@ -24,8 +25,13 @@ class AvailabilityInfoModel with _$AvailabilityInfoModel {
       availabilityTypeId: entity.availabilityType.id, // May be null
       availabilityTypeName: entity.availabilityType.value,
       // Only include times that have IDs
-      availableTimes: {for (var time in entity.availableTimes.where((t) => t.id != null)) time.id!: time.value},
-      availableDays: entity.availableDays.map((d) => d.toString().split('.').last).toList(),
+      availableTimes: {
+        for (var time in entity.availableTimes.where((t) => t.id != null))
+          time.id!: time.value,
+      },
+      availableDays: entity.availableDays
+          .map((d) => d.toString().split('.').last)
+          .toList(),
     );
   }
 
