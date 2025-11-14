@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:retry/retry.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
@@ -20,15 +21,15 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
   @override
   Future<void> registerWorker(WorkerRegistrationRequest request) async {
     final jsonData = request.toJson();
-    
-    // Debug: Print the actual JSON being sent
-    print('╔═══ WORKER REGISTRATION REQUEST ═══');
-    print('║ JSON Data:');
+
+    // Debug: Log the actual JSON being sent
+    debugPrint('╔═══ WORKER REGISTRATION REQUEST ═══');
+    debugPrint('║ JSON Data:');
     const encoder = JsonEncoder.withIndent('  ');
     final prettyJson = encoder.convert(jsonData);
-    print(prettyJson);
-    print('╚═══════════════════════════════════');
-    
+    debugPrint(prettyJson);
+    debugPrint('╚═══════════════════════════════════');
+
     // Retry configuration with exponential backoff
     const retryOptions = RetryOptions(
       maxAttempts: 3,
@@ -40,24 +41,23 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     try {
       final response = await retryOptions.retry(
         () async {
-          return await apiClient.post(
-            '/WorkerProfile',
-            data: jsonData,
-          );
+          return await apiClient.post('/WorkerProfile', data: jsonData);
         },
         // Only retry on network/timeout errors, not on server errors (4xx/5xx)
         retryIf: (e) {
           if (e is DioException) {
             return e.type == DioExceptionType.connectionTimeout ||
-                   e.type == DioExceptionType.receiveTimeout ||
-                   e.type == DioExceptionType.sendTimeout ||
-                   e.type == DioExceptionType.connectionError;
+                e.type == DioExceptionType.receiveTimeout ||
+                e.type == DioExceptionType.sendTimeout ||
+                e.type == DioExceptionType.connectionError;
           }
           // Retry on socket exceptions
           return e.toString().contains('SocketException');
         },
         onRetry: (e) {
-          print('⚠️ Retrying registration request due to: ${e.toString()}');
+          debugPrint(
+            '⚠️ Retrying registration request due to: ${e.toString()}',
+          );
         },
       );
 

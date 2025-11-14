@@ -9,7 +9,8 @@ class WelcomePage extends StatefulWidget {
   State<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStateMixin {
+class _WelcomePageState extends State<WelcomePage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -41,15 +42,16 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
@@ -133,23 +135,27 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Get Started button
+                      // Sign Up button (primary)
                       SizedBox(
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
                           onPressed: _navigateToRegistration,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1565C0), // Primary Blue
+                            backgroundColor: const Color(
+                              0xFF1565C0,
+                            ), // Primary Blue
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 3,
-                            shadowColor: const Color(0xFF1565C0).withValues(alpha: 0.4),
+                            shadowColor: const Color(
+                              0xFF1565C0,
+                            ).withValues(alpha: 0.4),
                           ),
                           child: const Text(
-                            'Get Started',
+                            'Sign Up',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -159,35 +165,35 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Sign in text
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Already have an account? ',
+                      // Sign In button (outlined style)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            context.go(AppRoutes.signIn);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: Color(0xFF1565C0),
+                              width: 2,
+                            ),
+                            foregroundColor: const Color(0xFF1565C0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            backgroundColor: Colors.white,
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Sign In',
                             style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              context.go(AppRoutes.signIn);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -203,7 +209,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
   Widget _buildOnboardingPage(OnboardingItem item) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
       child: Column(
@@ -216,10 +222,7 @@ class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStat
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  item.color.withValues(alpha: 0.8),
-                  item.color,
-                ],
+                colors: [item.color.withValues(alpha: 0.8), item.color],
               ),
               shape: BoxShape.circle,
               boxShadow: [

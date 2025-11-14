@@ -24,20 +24,20 @@ class RegistrationForm extends Equatable {
     return const RegistrationForm();
   }
 
-  /// Validates if all sections are complete and valid
+  /// Validates if all required sections are complete and valid
+  /// Preferences are optional: the user may skip them entirely.
   bool get isComplete {
-    return basicInfo != null &&
-        preferencesInfo != null &&
-        documentsInfo != null &&
-        accountInfo != null &&
-        basicInfo!.isValid &&
-        preferencesInfo!.isValid &&
-        documentsInfo!.isValid &&
-        accountInfo!.isValid;
+    final basicOk = basicInfo?.isValid ?? false;
+    final docsOk = documentsInfo?.isValid ?? false;
+    final accountOk = accountInfo?.isValid ?? false;
+    // Preferences are optional: either not provided or valid if present
+    final prefsOk = preferencesInfo == null || preferencesInfo!.isValid;
+    return basicOk && docsOk && accountOk && prefsOk;
   }
 
   /// Checks which sections are completed
   bool get isBasicInfoComplete => basicInfo?.isValid ?? false;
+  // Preferences section is optional: only mark complete when valid data exists
   bool get isPreferencesInfoComplete => preferencesInfo?.isValid ?? false;
   bool get isDocumentsInfoComplete => documentsInfo?.isValid ?? false;
   bool get isAccountInfoComplete => accountInfo?.isValid ?? false;

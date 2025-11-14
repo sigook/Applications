@@ -47,8 +47,8 @@ class _SignInPageState extends State<SignInPage> {
         ),
       );
 
-      // Navigate to home/dashboard (for now go to registration as placeholder)
-      context.go(AppRoutes.registration);
+      // Navigate to welcome page (TODO: Replace with actual dashboard when available)
+      context.go(AppRoutes.welcome);
     }
   }
 
@@ -77,7 +77,7 @@ class _SignInPageState extends State<SignInPage> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
-                        onPressed: () => context.pop(),
+                        onPressed: () => context.go(AppRoutes.welcome),
                         icon: const Icon(Icons.arrow_back),
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -121,10 +121,7 @@ class _SignInPageState extends State<SignInPage> {
                     const SizedBox(height: 8),
                     Text(
                       'Sign in to continue',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppTheme.textLight,
-                      ),
+                      style: TextStyle(fontSize: 16, color: AppTheme.textLight),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
@@ -166,8 +163,9 @@ class _SignInPageState extends State<SignInPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email';
                         }
                         return null;
@@ -240,7 +238,9 @@ class _SignInPageState extends State<SignInPage> {
                           // TODO: Implement forgot password
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Forgot password feature coming soon!'),
+                              content: Text(
+                                'Forgot password feature coming soon!',
+                              ),
                             ),
                           );
                         },
@@ -267,7 +267,9 @@ class _SignInPageState extends State<SignInPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 3,
-                          shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
+                          shadowColor: AppTheme.primaryBlue.withValues(
+                            alpha: 0.4,
+                          ),
                         ),
                         child: _isLoading
                             ? const SizedBox(

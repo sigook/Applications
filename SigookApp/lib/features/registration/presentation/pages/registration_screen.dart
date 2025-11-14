@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../providers/registration_providers.dart';
 import 'basic_info_page.dart';
@@ -45,7 +48,6 @@ class RegistrationScreen extends ConsumerWidget {
 
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Registration'), elevation: 0),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -107,178 +109,251 @@ class RegistrationScreen extends ConsumerWidget {
 }
 
 /// The actual registration form screen (shown only after data is loaded)
-class _RegistrationFormScreen extends ConsumerWidget {
+class _RegistrationFormScreen extends ConsumerStatefulWidget {
   const _RegistrationFormScreen();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RegistrationFormScreen> createState() =>
+      _RegistrationFormScreenState();
+}
+
+class _RegistrationFormScreenState
+    extends ConsumerState<_RegistrationFormScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  // Total number of steps (0-indexed, so last step is 3)
+  static const int _lastStepIndex = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    // Scroll to top when widget is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTop());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final formState = ref.watch(registrationFormStateNotifierProvider);
     final form = ref.watch(registrationViewModelProvider);
     final responsive = context.responsive;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Registration',
-          style: TextStyle(fontSize: responsive.sp(20)),
-        ),
-        elevation: 0,
-      ),
       backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
         child: Column(
           children: [
-            if (form.completionPercentage > 0)
-              LinearProgressIndicator(
-                value: form.completionPercentage,
-                minHeight: 6,
-                backgroundColor: const Color(0xFFFFCDD2),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFFE53935),
+            // Back button (same style as sign in page)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: IconButton(
+                  onPressed: () => context.go(AppRoutes.welcome),
+                  icon: const Icon(Icons.arrow_back),
+                  style: IconButton.styleFrom(backgroundColor: Colors.white),
                 ),
               ),
+            ),
+
             Expanded(
-              child: Stepper(
-                type: responsive.isMobile
-                    ? StepperType.vertical
-                    : StepperType.vertical,
-                currentStep: formState.currentStep,
-                onStepContinue: () {
-                  if (_canContinue(formState.currentStep, form)) {
-                    if (formState.currentStep < 3) {
+              child: PrimaryScrollController(
+                controller: _scrollController,
+                child: Stepper(
+                  type: responsive.isMobile
+                      ? StepperType.vertical
+                      : StepperType.vertical,
+                  currentStep: formState.currentStep,
+                  onStepContinue: () {
+                    if (_canContinue(formState.currentStep, form)) {
+                      if (formState.currentStep < _lastStepIndex) {
+                        ref
+                            .read(
+                              registrationFormStateNotifierProvider.notifier,
+                            )
+                            .nextStep();
+                        WidgetsBinding.instance.addPostFrameCallback(
+                          (_) => _scrollToTop(),
+                        );
+                      } else {
+                        _submitForm(context, ref);
+                      }
+                    } else {
+                      _showValidationError(context, formState.currentStep);
+                    }
+                  },
+                  onStepCancel: () {
+                    if (formState.currentStep > 0) {
                       ref
                           .read(registrationFormStateNotifierProvider.notifier)
-                          .nextStep();
-                    } else {
-                      _submitForm(context, ref);
+                          .previousStep();
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => _scrollToTop(),
+                      );
                     }
-                  } else {
-                    _showValidationError(context, formState.currentStep);
-                  }
-                },
-                onStepCancel: () {
-                  if (formState.currentStep > 0) {
+                  },
+                  onStepTapped: (step) {
                     ref
                         .read(registrationFormStateNotifierProvider.notifier)
-                        .previousStep();
-                  }
-                },
-                onStepTapped: (step) {
-                  ref
-                      .read(registrationFormStateNotifierProvider.notifier)
-                      .goToStep(step);
-                },
-                controlsBuilder: (context, details) {
-                  final isLastStep = details.currentStep == 3;
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: formState.isSubmitting
-                              ? null
-                              : details.onStepContinue,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                          ),
-                          child: formState.isSubmitting
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : Text(isLastStep ? 'Submit' : 'Continue'),
-                        ),
-                        if (details.currentStep > 0) ...[
-                          const SizedBox(width: 12),
-                          OutlinedButton(
+                        .goToStep(step);
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _scrollToTop(),
+                    );
+                  },
+                  controlsBuilder: (context, details) {
+                    final isLastStep = details.currentStep == _lastStepIndex;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: Row(
+                        children: [
+                          ElevatedButton(
                             onPressed: formState.isSubmitting
                                 ? null
-                                : details.onStepCancel,
-                            style: OutlinedButton.styleFrom(
+                                : details.onStepContinue,
+                            style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
+                                horizontal: 32,
                                 vertical: 16,
                               ),
                             ),
-                            child: const Text('Back'),
+                            child: formState.isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(isLastStep ? 'Submit' : 'Continue'),
                           ),
+                          if (details.currentStep > 0) ...[
+                            const SizedBox(width: 12),
+                            OutlinedButton(
+                              onPressed: formState.isSubmitting
+                                  ? null
+                                  : details.onStepCancel,
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                              ),
+                              child: const Text('Back'),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
+                    );
+                  },
+                  steps: [
+                    Step(
+                      title: const Text('Basic Information'),
+                      subtitle: form.isBasicInfoComplete
+                          ? const Text(
+                              'Completed',
+                              style: TextStyle(color: Colors.green),
+                            )
+                          : null,
+                      content: const BasicInfoPage(),
+                      isActive: formState.currentStep >= 0,
+                      state: _getStepState(
+                        0,
+                        formState.currentStep,
+                        form.isBasicInfoComplete,
+                      ),
                     ),
-                  );
-                },
-                steps: [
-                  Step(
-                    title: const Text('Basic Information'),
-                    subtitle: form.isBasicInfoComplete
-                        ? const Text(
-                            'Completed',
-                            style: TextStyle(color: Colors.green),
-                          )
-                        : null,
-                    content: const BasicInfoPage(),
-                    isActive: formState.currentStep >= 0,
-                    state: _getStepState(
-                      0,
-                      formState.currentStep,
-                      form.isBasicInfoComplete,
+                    Step(
+                      title: const Text('Preferences'),
+                      subtitle: form.isPreferencesInfoComplete
+                          ? const Text(
+                              'Completed',
+                              style: TextStyle(color: Colors.green),
+                            )
+                          : null,
+                      content: const PreferencesPage(),
+                      isActive: formState.currentStep >= 1,
+                      state: _getStepState(
+                        1,
+                        formState.currentStep,
+                        form.isPreferencesInfoComplete,
+                      ),
                     ),
+                    Step(
+                      title: const Text('Documents'),
+                      subtitle: form.isDocumentsInfoComplete
+                          ? const Text(
+                              'Completed',
+                              style: TextStyle(color: Colors.green),
+                            )
+                          : null,
+                      content: const DocumentsPage(),
+                      isActive: formState.currentStep >= 2,
+                      state: _getStepState(
+                        2,
+                        formState.currentStep,
+                        form.isDocumentsInfoComplete,
+                      ),
+                    ),
+                    Step(
+                      title: const Text('Account Setup'),
+                      subtitle: form.isAccountInfoComplete
+                          ? const Text(
+                              'Completed',
+                              style: TextStyle(color: Colors.green),
+                            )
+                          : null,
+                      content: const AccountPage(),
+                      isActive: formState.currentStep >= 3,
+                      state: _getStepState(
+                        3,
+                        formState.currentStep,
+                        form.isAccountInfoComplete,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Bottom sign in link
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Already have an account? ',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
                   ),
-                  Step(
-                    title: const Text('Preferences'),
-                    subtitle: form.isPreferencesInfoComplete
-                        ? const Text(
-                            'Completed',
-                            style: TextStyle(color: Colors.green),
-                          )
-                        : null,
-                    content: const PreferencesPage(),
-                    isActive: formState.currentStep >= 1,
-                    state: _getStepState(
-                      1,
-                      formState.currentStep,
-                      form.isPreferencesInfoComplete,
+                  TextButton(
+                    onPressed: () {
+                      context.go(AppRoutes.signIn);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                  ),
-                  Step(
-                    title: const Text('Documents'),
-                    subtitle: form.isDocumentsInfoComplete
-                        ? const Text(
-                            'Completed',
-                            style: TextStyle(color: Colors.green),
-                          )
-                        : null,
-                    content: const DocumentsPage(),
-                    isActive: formState.currentStep >= 2,
-                    state: _getStepState(
-                      2,
-                      formState.currentStep,
-                      form.isDocumentsInfoComplete,
-                    ),
-                  ),
-                  Step(
-                    title: const Text('Account Setup'),
-                    subtitle: form.isAccountInfoComplete
-                        ? const Text(
-                            'Completed',
-                            style: TextStyle(color: Colors.green),
-                          )
-                        : null,
-                    content: const AccountPage(),
-                    isActive: formState.currentStep >= 3,
-                    state: _getStepState(
-                      3,
-                      formState.currentStep,
-                      form.isAccountInfoComplete,
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        color: AppTheme.primaryBlue,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -306,7 +381,8 @@ class _RegistrationFormScreen extends ConsumerWidget {
       case 0:
         return form.isBasicInfoComplete;
       case 1:
-        return form.isPreferencesInfoComplete;
+        // Preferences are optional: never block navigation on this step
+        return true;
       case 2:
         return form.isDocumentsInfoComplete;
       case 3:
@@ -363,7 +439,8 @@ class _RegistrationFormScreen extends ConsumerWidget {
         ),
       );
 
-      Navigator.of(context).pop();
+      // Navigate to welcome page after successful registration
+      context.go(AppRoutes.welcome);
     } else {
       notifier.setError('Failed to submit registration. Please try again.');
       ScaffoldMessenger.of(context).showSnackBar(

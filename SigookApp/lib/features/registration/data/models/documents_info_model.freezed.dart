@@ -22,8 +22,6 @@ DocumentsInfoModel _$DocumentsInfoModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$DocumentsInfoModel {
   List<String> get documents => throw _privateConstructorUsedError;
-  List<String> get licenses => throw _privateConstructorUsedError;
-  List<String> get certificates => throw _privateConstructorUsedError;
   String? get resume => throw _privateConstructorUsedError;
 
   /// Serializes this DocumentsInfoModel to a JSON map.
@@ -43,12 +41,7 @@ abstract class $DocumentsInfoModelCopyWith<$Res> {
     $Res Function(DocumentsInfoModel) then,
   ) = _$DocumentsInfoModelCopyWithImpl<$Res, DocumentsInfoModel>;
   @useResult
-  $Res call({
-    List<String> documents,
-    List<String> licenses,
-    List<String> certificates,
-    String? resume,
-  });
+  $Res call({List<String> documents, String? resume});
 }
 
 /// @nodoc
@@ -65,25 +58,12 @@ class _$DocumentsInfoModelCopyWithImpl<$Res, $Val extends DocumentsInfoModel>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? documents = null,
-    Object? licenses = null,
-    Object? certificates = null,
-    Object? resume = freezed,
-  }) {
+  $Res call({Object? documents = null, Object? resume = freezed}) {
     return _then(
       _value.copyWith(
             documents: null == documents
                 ? _value.documents
                 : documents // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            licenses: null == licenses
-                ? _value.licenses
-                : licenses // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            certificates: null == certificates
-                ? _value.certificates
-                : certificates // ignore: cast_nullable_to_non_nullable
                       as List<String>,
             resume: freezed == resume
                 ? _value.resume
@@ -104,12 +84,7 @@ abstract class _$$DocumentsInfoModelImplCopyWith<$Res>
   ) = __$$DocumentsInfoModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    List<String> documents,
-    List<String> licenses,
-    List<String> certificates,
-    String? resume,
-  });
+  $Res call({List<String> documents, String? resume});
 }
 
 /// @nodoc
@@ -125,25 +100,12 @@ class __$$DocumentsInfoModelImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? documents = null,
-    Object? licenses = null,
-    Object? certificates = null,
-    Object? resume = freezed,
-  }) {
+  $Res call({Object? documents = null, Object? resume = freezed}) {
     return _then(
       _$DocumentsInfoModelImpl(
         documents: null == documents
             ? _value._documents
             : documents // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        licenses: null == licenses
-            ? _value._licenses
-            : licenses // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        certificates: null == certificates
-            ? _value._certificates
-            : certificates // ignore: cast_nullable_to_non_nullable
                   as List<String>,
         resume: freezed == resume
             ? _value.resume
@@ -159,12 +121,8 @@ class __$$DocumentsInfoModelImplCopyWithImpl<$Res>
 class _$DocumentsInfoModelImpl extends _DocumentsInfoModel {
   const _$DocumentsInfoModelImpl({
     required final List<String> documents,
-    required final List<String> licenses,
-    required final List<String> certificates,
     this.resume,
   }) : _documents = documents,
-       _licenses = licenses,
-       _certificates = certificates,
        super._();
 
   factory _$DocumentsInfoModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -178,28 +136,12 @@ class _$DocumentsInfoModelImpl extends _DocumentsInfoModel {
     return EqualUnmodifiableListView(_documents);
   }
 
-  final List<String> _licenses;
-  @override
-  List<String> get licenses {
-    if (_licenses is EqualUnmodifiableListView) return _licenses;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_licenses);
-  }
-
-  final List<String> _certificates;
-  @override
-  List<String> get certificates {
-    if (_certificates is EqualUnmodifiableListView) return _certificates;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_certificates);
-  }
-
   @override
   final String? resume;
 
   @override
   String toString() {
-    return 'DocumentsInfoModel(documents: $documents, licenses: $licenses, certificates: $certificates, resume: $resume)';
+    return 'DocumentsInfoModel(documents: $documents, resume: $resume)';
   }
 
   @override
@@ -211,11 +153,6 @@ class _$DocumentsInfoModelImpl extends _DocumentsInfoModel {
               other._documents,
               _documents,
             ) &&
-            const DeepCollectionEquality().equals(other._licenses, _licenses) &&
-            const DeepCollectionEquality().equals(
-              other._certificates,
-              _certificates,
-            ) &&
             (identical(other.resume, resume) || other.resume == resume));
   }
 
@@ -224,8 +161,6 @@ class _$DocumentsInfoModelImpl extends _DocumentsInfoModel {
   int get hashCode => Object.hash(
     runtimeType,
     const DeepCollectionEquality().hash(_documents),
-    const DeepCollectionEquality().hash(_licenses),
-    const DeepCollectionEquality().hash(_certificates),
     resume,
   );
 
@@ -249,8 +184,6 @@ class _$DocumentsInfoModelImpl extends _DocumentsInfoModel {
 abstract class _DocumentsInfoModel extends DocumentsInfoModel {
   const factory _DocumentsInfoModel({
     required final List<String> documents,
-    required final List<String> licenses,
-    required final List<String> certificates,
     final String? resume,
   }) = _$DocumentsInfoModelImpl;
   const _DocumentsInfoModel._() : super._();
@@ -260,10 +193,6 @@ abstract class _DocumentsInfoModel extends DocumentsInfoModel {
 
   @override
   List<String> get documents;
-  @override
-  List<String> get licenses;
-  @override
-  List<String> get certificates;
   @override
   String? get resume;
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/file_picker_provider.dart';
+import '../../../../core/services/file_picker_service.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 
@@ -22,8 +24,11 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
   CatalogItem? _selectedIdentificationType;
   String _searchQuery = '';
   String _identificationNumber = '';
+  PickedFileData? _selectedFile;
+  bool _isPickingFile = false;
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _identificationNumberController = TextEditingController();
+  final TextEditingController _identificationNumberController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -32,14 +37,67 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
     super.dispose();
   }
 
+  /// Pick file using file picker service
+  Future<void> _pickFile() async {
+    setState(() {
+      _isPickingFile = true;
+    });
+
+    try {
+      final filePickerService = ref.read(filePickerServiceProvider);
+
+      // Pick file with PDF, JPG, PNG allowed
+      final result = await filePickerService.pickFile(
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        maxFileSizeMB: 10,
+      );
+
+      if (!mounted) return;
+
+      if (result.isSuccess) {
+        setState(() {
+          _selectedFile = result.file;
+          _isPickingFile = false;
+        });
+      } else if (result.isError) {
+        setState(() {
+          _isPickingFile = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Failed to pick file'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        // Cancelled
+        setState(() {
+          _isPickingFile = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isPickingFile = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error picking file: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final identificationTypesAsync = ref.watch(identificationTypesListProvider);
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
         child: Column(
@@ -112,15 +170,15 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Searchable Dropdown
                     identificationTypesAsync.when(
                       data: (identificationTypes) {
                         // Filter based on search query
                         final filteredTypes = identificationTypes.where((type) {
-                          return type.value
-                              .toLowerCase()
-                              .contains(_searchQuery.toLowerCase());
+                          return type.value.toLowerCase().contains(
+                            _searchQuery.toLowerCase(),
+                          );
                         }).toList();
 
                         return Column(
@@ -157,7 +215,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                               },
                             ),
                             const SizedBox(height: 12),
-                            
+
                             // Dropdown container
                             Container(
                               constraints: const BoxConstraints(maxHeight: 200),
@@ -185,12 +243,13 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                         final type = filteredTypes[index];
                                         final isSelected =
                                             _selectedIdentificationType?.id ==
-                                                type.id;
+                                            type.id;
 
                                         return InkWell(
                                           onTap: () {
                                             setState(() {
-                                              _selectedIdentificationType = type;
+                                              _selectedIdentificationType =
+                                                  type;
                                             });
                                           },
                                           child: Container(
@@ -201,8 +260,8 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                             decoration: BoxDecoration(
                                               color: isSelected
                                                   ? Theme.of(context)
-                                                      .primaryColor
-                                                      .withValues(alpha: 0.1)
+                                                        .primaryColor
+                                                        .withValues(alpha: 0.1)
                                                   : null,
                                               border: Border(
                                                 bottom: BorderSide(
@@ -222,18 +281,21 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                                           ? FontWeight.w600
                                                           : FontWeight.normal,
                                                       color: isSelected
-                                                          ? Theme.of(context)
-                                                              .primaryColor
+                                                          ? Theme.of(
+                                                              context,
+                                                            ).primaryColor
                                                           : const Color(
-                                                              0xFF1E293B),
+                                                              0xFF1E293B,
+                                                            ),
                                                     ),
                                                   ),
                                                 ),
                                                 if (isSelected)
                                                   Icon(
                                                     Icons.check_circle,
-                                                    color: Theme.of(context)
-                                                        .primaryColor,
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).primaryColor,
                                                     size: 20,
                                                   ),
                                               ],
@@ -261,7 +323,10 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red.shade700),
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red.shade700,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -322,7 +387,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Identification Number Field
                       const Text(
                         'Identification Number',
@@ -365,30 +430,92 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // Selected file display
+                    if (_selectedFile != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedFile!.name,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green.shade900,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    _selectedFile!.formattedSize,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              iconSize: 20,
+                              onPressed: () {
+                                setState(() {
+                                  _selectedFile = null;
+                                });
+                              },
+                              color: Colors.grey.shade600,
+                              tooltip: 'Remove file',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: Colors.grey.shade300,
+                          color:
+                              (_selectedIdentificationType != null &&
+                                  _identificationNumber.isNotEmpty)
+                              ? Theme.of(context).primaryColor.withAlpha(128)
+                              : Colors.grey.shade300,
+                          width:
+                              (_selectedIdentificationType != null &&
+                                  _identificationNumber.isNotEmpty)
+                              ? 2
+                              : 1,
                           style: BorderStyle.solid,
                         ),
                         borderRadius: BorderRadius.circular(8),
+                        color:
+                            (_selectedIdentificationType != null &&
+                                _identificationNumber.isNotEmpty)
+                            ? Theme.of(context).primaryColor.withAlpha(5)
+                            : Colors.grey.shade50,
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: _selectedIdentificationType != null &&
-                                  _identificationNumber.isNotEmpty
-                              ? () {
-                                  // TODO: Implement actual file picker
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'File picker will be implemented for ${_selectedIdentificationType!.value} #$_identificationNumber',
-                                      ),
-                                      backgroundColor: Colors.blue,
-                                    ),
-                                  );
-                                }
+                          onTap:
+                              (_selectedIdentificationType != null &&
+                                  _identificationNumber.isNotEmpty &&
+                                  !_isPickingFile)
+                              ? _pickFile
                               : null,
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
@@ -398,26 +525,38 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                             ),
                             child: Column(
                               children: [
-                                Icon(
-                                  Icons.cloud_upload_outlined,
-                                  size: 48,
-                                  color: _selectedIdentificationType != null &&
-                                          _identificationNumber.isNotEmpty
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.grey.shade400,
-                                ),
+                                if (_isPickingFile)
+                                  const CircularProgressIndicator()
+                                else
+                                  Icon(
+                                    _selectedFile != null
+                                        ? Icons.cloud_done_outlined
+                                        : Icons.cloud_upload_outlined,
+                                    size: 48,
+                                    color: _selectedFile != null
+                                        ? Colors.green
+                                        : _selectedIdentificationType != null &&
+                                              _identificationNumber.isNotEmpty
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.grey.shade400,
+                                  ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  _selectedIdentificationType != null &&
-                                          _identificationNumber.isNotEmpty
+                                  _isPickingFile
+                                      ? 'Selecting file...'
+                                      : _selectedFile != null
+                                      ? 'Click to change file'
+                                      : _selectedIdentificationType != null &&
+                                            _identificationNumber.isNotEmpty
                                       ? 'Click to select file'
                                       : _selectedIdentificationType == null
-                                          ? 'Select identification type first'
-                                          : 'Enter identification number',
+                                      ? 'Select identification type first'
+                                      : 'Enter identification number',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: _selectedIdentificationType != null &&
+                                    color:
+                                        _selectedIdentificationType != null &&
                                             _identificationNumber.isNotEmpty
                                         ? const Color(0xFF1E293B)
                                         : Colors.grey.shade500,
@@ -446,9 +585,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey.shade300),
-                ),
+                border: Border(top: BorderSide(color: Colors.grey.shade300)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -459,14 +596,17 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
-                    onPressed: _selectedIdentificationType != null &&
-                            _identificationNumber.isNotEmpty
+                    onPressed:
+                        (_selectedIdentificationType != null &&
+                            _identificationNumber.isNotEmpty &&
+                            _selectedFile != null)
                         ? () {
-                            // TODO: Handle actual upload
                             Navigator.of(context).pop({
                               'identificationType': _selectedIdentificationType,
                               'identificationNumber': _identificationNumber,
-                              'file': 'placeholder_file.pdf',
+                              'file': _selectedFile!.name,
+                              'filePath': _selectedFile!.path,
+                              'fileSize': _selectedFile!.size,
                             });
                           }
                         : null,

@@ -64,7 +64,7 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
     setState(() {
       // Skip validation if no availability type selected yet
       if (_selectedAvailabilityType == null) return;
-      
+
       final preferencesInfo = PreferencesInfo(
         availabilityType: _selectedAvailabilityType!,
         availableTimes: _selectedAvailableTimes,
@@ -110,16 +110,15 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               Text(
                 'Preferences',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Tell us about your availability and capabilities',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey.shade600),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
 
@@ -165,9 +164,9 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               // Lifting Capacity Section
               Text(
                 'Physical Capabilities',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               _buildLiftingCapacitySelector(),
@@ -180,9 +179,9 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               // Languages
               Text(
                 'Professional Skills',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               LanguageAutocompleteField(
@@ -219,7 +218,7 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
     // Fetch lifting capacities from catalog
     final capacitiesAsync = ref.watch(liftingCapacitiesProvider);
     final catalogCapacities = capacitiesAsync.value ?? [];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,10 +234,7 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
           const SizedBox(height: 4),
           Text(
             _liftingCapacityError!,
-            style: TextStyle(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.red.shade700, fontSize: 12),
           ),
         ],
         const SizedBox(height: 12),
@@ -252,9 +248,10 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
             spacing: 8,
             runSpacing: 8,
             children: catalogCapacities.map((capacity) {
-              final isSelected = _selectedLiftingCapacity?.id == capacity.id || 
-                                 _selectedLiftingCapacity?.value == capacity.value;
-              return ChoiceChip(
+              final isSelected =
+                  _selectedLiftingCapacity?.id == capacity.id ||
+                  _selectedLiftingCapacity?.value == capacity.value;
+              return FilterChip(
                 label: Text(capacity.value),
                 selected: isSelected,
                 onSelected: (selected) {
@@ -268,9 +265,10 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
                     _validateAndSave();
                   }
                 },
-                selectedColor: AppTheme.primaryBlue,
+                selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.2),
+                checkmarkColor: AppTheme.primaryBlue,
                 labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? AppTheme.primaryBlue : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               );

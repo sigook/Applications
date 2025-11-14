@@ -1,45 +1,27 @@
 import 'package:equatable/equatable.dart';
 
 /// Documents information entity
-/// Handles file uploads for various document types
+/// Identification is required, resume is optional.
 class DocumentsInfo extends Equatable {
-  final List<String> documents; // General documents (file paths)
-  final List<String> licenses; // License files (file paths)
-  final List<String> certificates; // Certificate files (file paths)
-  final String? resume; // Resume file path (single file)
+  /// Required identification documents
+  final List<String> documents;
 
-  const DocumentsInfo({
-    required this.documents,
-    required this.licenses,
-    required this.certificates,
-    this.resume,
-  });
+  /// Optional resume file path (single file)
+  final String? resume;
 
-  /// Validates that at least resume is provided
-  /// Other documents are optional
-  bool get isValid {
-    return resume != null && resume!.isNotEmpty;
-  }
+  const DocumentsInfo({required this.documents, this.resume});
 
-  /// Validation error messages
-  String? get resumeError =>
-      (resume == null || resume!.isEmpty) ? 'Resume is required' : null;
+  /// Valid when at least one identification document is present
+  bool get isValid => documents.isNotEmpty;
 
   /// Creates a copy with updated fields
-  DocumentsInfo copyWith({
-    List<String>? documents,
-    List<String>? licenses,
-    List<String>? certificates,
-    String? resume,
-  }) {
+  DocumentsInfo copyWith({List<String>? documents, String? resume}) {
     return DocumentsInfo(
       documents: documents ?? this.documents,
-      licenses: licenses ?? this.licenses,
-      certificates: certificates ?? this.certificates,
       resume: resume ?? this.resume,
     );
   }
 
   @override
-  List<Object?> get props => [documents, licenses, certificates, resume];
+  List<Object?> get props => [documents, resume];
 }

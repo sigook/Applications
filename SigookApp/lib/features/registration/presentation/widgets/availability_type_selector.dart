@@ -39,21 +39,21 @@ class AvailabilityTypeSelector extends ConsumerWidget {
             spacing: 12,
             runSpacing: 12,
             children: availability.map((type) {
-              final isSelected = selectedType?.id == type.id || selectedType?.value == type.value;
-              return ChoiceChip(
+              final isSelected =
+                  selectedType?.id == type.id ||
+                  selectedType?.value == type.value;
+              return FilterChip(
                 label: Text(type.value),
                 selected: isSelected,
                 onSelected: (selected) {
                   if (selected) {
-                    onChanged(AvailabilityType(
-                      id: type.id,
-                      value: type.value,
-                    ));
+                    onChanged(AvailabilityType(id: type.id, value: type.value));
                   }
                 },
-                selectedColor: AppTheme.primaryBlue,
+                selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.2),
+                checkmarkColor: AppTheme.primaryBlue,
                 labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? AppTheme.primaryBlue : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               );

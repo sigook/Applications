@@ -13,11 +13,7 @@ class DocumentsPage extends ConsumerStatefulWidget {
 
 class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   List<String> _documents = [];
-  List<String> _licenses = [];
-  List<String> _certificates = [];
   String? _resume;
-
-  String? _resumeError;
 
   @override
   void initState() {
@@ -29,8 +25,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
       if (form.documentsInfo != null) {
         final info = form.documentsInfo!;
         _documents = List.from(info.documents);
-        _licenses = List.from(info.licenses);
-        _certificates = List.from(info.certificates);
         _resume = info.resume;
         setState(() {});
       }
@@ -41,12 +35,8 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     setState(() {
       final documentsInfo = DocumentsInfo(
         documents: _documents,
-        licenses: _licenses,
-        certificates: _certificates,
         resume: _resume,
       );
-
-      _resumeError = documentsInfo.resumeError;
 
       if (documentsInfo.isValid) {
         ref
@@ -60,27 +50,30 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   Future<void> _showFileUploadModal({
     required String title,
     required String description,
-    required Function(String fileName, String identificationType, String identificationNumber) onFileUploaded,
+    required Function(
+      String fileName,
+      String identificationType,
+      String identificationNumber,
+    )
+    onFileUploaded,
   }) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => FileUploadModal(
-        title: title,
-        description: description,
-      ),
+      builder: (context) =>
+          FileUploadModal(title: title, description: description),
     );
 
     if (result != null && mounted) {
       final fileName = result['file'] as String;
       final identificationType = result['identificationType'];
       final identificationNumber = result['identificationNumber'] as String;
-      
+
       onFileUploaded(
         fileName,
         identificationType?.value ?? 'Unknown',
         identificationNumber,
       );
-      
+
       _validateAndSave();
     }
   }
@@ -105,122 +98,100 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               Text(
                 'Documents',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Upload your documents, licenses, certificates, and resume',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey.shade600),
+                'Upload your identification and optional resume',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
 
-              // Documents
+              // Identification (required)
               _buildFileUploadSection(
-                title: 'General Documents',
-                description: 'Upload any additional documents (optional)',
+                title: 'Identification *',
+                description: 'Upload your identification document(s)',
                 icon: Icons.description,
                 files: _documents,
                 onUpload: () {
                   _showFileUploadModal(
-                    title: 'Upload General Document',
-                    description: 'Select identification type and upload document',
-                    onFileUploaded: (fileName, identificationType, identificationNumber) {
-                      setState(() {
-                        _documents.add('$identificationType #$identificationNumber - $fileName');
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Document uploaded: $fileName'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
+                    title: 'Upload Identification',
+                    description:
+                        'Select identification type and upload identification document',
+                    onFileUploaded:
+                        (fileName, identificationType, identificationNumber) {
+                          setState(() {
+                            _documents.add(
+                              '$identificationType #$identificationNumber - $fileName',
+                            );
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Identification uploaded: $fileName',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
+                  );
+                },
+                onRemove: (index) {
+                  setState(() {
+                    _documents.removeAt(index);
+                  });
+                  _validateAndSave();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Identification removed'),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 24),
 
-              // Licenses
+              // Resume (optional)
               _buildFileUploadSection(
-                title: 'Licenses',
-                description: 'Upload your professional licenses (optional)',
-                icon: Icons.card_membership,
-                files: _licenses,
-                onUpload: () {
-                  _showFileUploadModal(
-                    title: 'Upload License',
-                    description: 'Select identification type and upload license',
-                    onFileUploaded: (fileName, identificationType, identificationNumber) {
-                      setState(() {
-                        _licenses.add('$identificationType #$identificationNumber - $fileName');
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('License uploaded: $fileName'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Certificates
-              _buildFileUploadSection(
-                title: 'Certificates',
-                description: 'Upload your certificates (optional)',
-                icon: Icons.workspace_premium,
-                files: _certificates,
-                onUpload: () {
-                  _showFileUploadModal(
-                    title: 'Upload Certificate',
-                    description: 'Select identification type and upload certificate',
-                    onFileUploaded: (fileName, identificationType, identificationNumber) {
-                      setState(() {
-                        _certificates.add('$identificationType #$identificationNumber - $fileName');
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Certificate uploaded: $fileName'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Resume (Required)
-              _buildFileUploadSection(
-                title: 'Resume *',
-                description: 'Upload your resume (required)',
+                title: 'Resume',
+                description: 'Upload your resume (optional)',
                 icon: Icons.work,
                 files: _resume != null ? [_resume!] : [],
-                errorText: _resumeError,
                 onUpload: () {
                   _showFileUploadModal(
                     title: 'Upload Resume',
                     description: 'Select identification type and upload resume',
-                    onFileUploaded: (fileName, identificationType, identificationNumber) {
-                      setState(() {
-                        _resume = '$identificationType #$identificationNumber - $fileName';
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Resume uploaded: $fileName'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
+                    onFileUploaded:
+                        (fileName, identificationType, identificationNumber) {
+                          setState(() {
+                            _resume =
+                                '$identificationType #$identificationNumber - $fileName';
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Resume uploaded: $fileName'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
                   );
                 },
-                required: true,
+                onRemove: (index) {
+                  setState(() {
+                    _resume = null;
+                  });
+                  _validateAndSave();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Resume removed'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                required: false,
               ),
             ],
           ),
@@ -235,6 +206,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     required IconData icon,
     required List<String> files,
     required VoidCallback onUpload,
+    required Function(int index) onRemove,
     String? errorText,
     bool required = false,
   }) {
@@ -280,7 +252,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Show uploaded files
           if (files.isNotEmpty) ...[
             Container(
@@ -291,13 +263,16 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               ),
               padding: const EdgeInsets.all(8),
               child: Column(
-                children: files.map((file) {
+                children: files.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final file = entry.value;
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.check_circle, 
-                          color: Colors.green, 
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -308,6 +283,15 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          iconSize: 18,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => onRemove(index),
+                          color: Colors.grey.shade600,
+                          tooltip: 'Remove file',
+                        ),
                       ],
                     ),
                   );
@@ -316,7 +300,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
             ),
             const SizedBox(height: 12),
           ],
-          
+
           // Upload button
           ElevatedButton.icon(
             onPressed: onUpload,
@@ -326,16 +310,13 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               minimumSize: const Size(double.infinity, 44),
             ),
           ),
-          
+
           // Error text
           if (errorText != null) ...[
             const SizedBox(height: 8),
             Text(
               errorText,
-              style: TextStyle(
-                color: Colors.red.shade700,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.red.shade700, fontSize: 12),
             ),
           ],
         ],

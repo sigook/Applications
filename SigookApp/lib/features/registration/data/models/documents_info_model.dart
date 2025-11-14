@@ -10,8 +10,6 @@ class DocumentsInfoModel with _$DocumentsInfoModel {
 
   const factory DocumentsInfoModel({
     required List<String> documents,
-    required List<String> licenses,
-    required List<String> certificates,
     String? resume,
   }) = _DocumentsInfoModel;
 
@@ -19,20 +17,13 @@ class DocumentsInfoModel with _$DocumentsInfoModel {
   factory DocumentsInfoModel.fromEntity(DocumentsInfo entity) {
     return DocumentsInfoModel(
       documents: entity.documents,
-      licenses: entity.licenses,
-      certificates: entity.certificates,
       resume: entity.resume,
     );
   }
 
   /// Convert to domain entity
   DocumentsInfo toEntity() {
-    return DocumentsInfo(
-      documents: documents,
-      licenses: licenses,
-      certificates: certificates,
-      resume: resume,
-    );
+    return DocumentsInfo(documents: documents, resume: resume);
   }
 
   /// From JSON

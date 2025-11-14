@@ -50,6 +50,12 @@ final submitRegistrationUseCaseProvider = Provider<SubmitRegistration>((ref) {
   return SubmitRegistration(repository);
 });
 
+/// Total number of registration steps (0: Basic Info, 1: Preferences, 2: Documents, 3: Account)
+const int _totalRegistrationSteps = 4;
+
+/// Maximum step index (last step)
+const int _maxStepIndex = _totalRegistrationSteps - 1;
+
 /// Form state provider for UI controls (current step, loading states, etc.)
 @riverpod
 class RegistrationFormStateNotifier extends _$RegistrationFormStateNotifier {
@@ -59,7 +65,7 @@ class RegistrationFormStateNotifier extends _$RegistrationFormStateNotifier {
   }
 
   void nextStep() {
-    if (state.currentStep < 4) {
+    if (state.currentStep < _maxStepIndex) {
       state = state.copyWith(currentStep: state.currentStep + 1);
     }
   }
@@ -71,7 +77,7 @@ class RegistrationFormStateNotifier extends _$RegistrationFormStateNotifier {
   }
 
   void goToStep(int step) {
-    if (step >= 0 && step <= 4) {
+    if (step >= 0 && step <= _maxStepIndex) {
       state = state.copyWith(currentStep: step);
     }
   }
