@@ -7,7 +7,7 @@ part of 'registration_providers.dart';
 // **************************************************************************
 
 String _$registrationFormStateNotifierHash() =>
-    r'985ca76de4335c3a815ae39aab08685ba0477750';
+    r'392152c872ff9e9d659c94bd345ad25b30dda160';
 
 /// Form state provider for UI controls (current step, loading states, etc.)
 ///

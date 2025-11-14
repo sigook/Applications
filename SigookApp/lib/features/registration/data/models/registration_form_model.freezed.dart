@@ -55,7 +55,6 @@ abstract class $RegistrationFormModelCopyWith<$Res> {
 
   $BasicInfoModelCopyWith<$Res>? get basicInfo;
   $PreferencesInfoModelCopyWith<$Res>? get preferencesInfo;
-  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo;
   $AccountInfoModelCopyWith<$Res>? get accountInfo;
 }
 
@@ -139,20 +138,6 @@ class _$RegistrationFormModelCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo {
-    if (_value.documentsInfo == null) {
-      return null;
-    }
-
-    return $DocumentsInfoModelCopyWith<$Res>(_value.documentsInfo!, (value) {
-      return _then(_value.copyWith(documentsInfo: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RegistrationFormModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
   $AccountInfoModelCopyWith<$Res>? get accountInfo {
     if (_value.accountInfo == null) {
       return null;
@@ -184,8 +169,6 @@ abstract class _$$RegistrationFormModelImplCopyWith<$Res>
   $BasicInfoModelCopyWith<$Res>? get basicInfo;
   @override
   $PreferencesInfoModelCopyWith<$Res>? get preferencesInfo;
-  @override
-  $DocumentsInfoModelCopyWith<$Res>? get documentsInfo;
   @override
   $AccountInfoModelCopyWith<$Res>? get accountInfo;
 }

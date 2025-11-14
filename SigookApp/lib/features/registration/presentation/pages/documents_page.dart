@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/documents_info.dart';
+import '../../domain/entities/uploaded_file.dart';
+import '../../../catalog/domain/entities/catalog_item.dart';
 import '../providers/registration_providers.dart';
 import '../widgets/file_upload_modal.dart';
 
@@ -12,8 +14,9 @@ class DocumentsPage extends ConsumerStatefulWidget {
 }
 
 class _DocumentsPageState extends ConsumerState<DocumentsPage> {
-  List<String> _documents = [];
-  String? _resume;
+  IdentificationDocument? _identification1;
+  IdentificationDocument? _identification2;
+  UploadedFile? _resume;
 
   @override
   void initState() {
@@ -24,7 +27,8 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
       final form = ref.read(registrationViewModelProvider);
       if (form.documentsInfo != null) {
         final info = form.documentsInfo!;
-        _documents = List.from(info.documents);
+        _identification1 = info.identification1;
+        _identification2 = info.identification2;
         _resume = info.resume;
         setState(() {});
       }
@@ -34,7 +38,8 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   void _validateAndSave() {
     setState(() {
       final documentsInfo = DocumentsInfo(
-        documents: _documents,
+        identification1: _identification1,
+        identification2: _identification2,
         resume: _resume,
       );
 
@@ -52,8 +57,10 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     required String description,
     required Function(
       String fileName,
-      String identificationType,
+      CatalogItem identificationType,
       String identificationNumber,
+      String filePath,
+      int fileSize,
     )
     onFileUploaded,
   }) async {
@@ -65,13 +72,17 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
 
     if (result != null && mounted) {
       final fileName = result['file'] as String;
-      final identificationType = result['identificationType'];
+      final identificationType = result['identificationType'] as CatalogItem;
       final identificationNumber = result['identificationNumber'] as String;
+      final filePath = (result['filePath'] as String?) ?? '';
+      final fileSize = (result['fileSize'] as int?) ?? 0;
 
       onFileUploaded(
         fileName,
-        identificationType?.value ?? 'Unknown',
+        identificationType,
         identificationNumber,
+        filePath,
+        fileSize,
       );
 
       _validateAndSave();
@@ -110,24 +121,40 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               ),
               const SizedBox(height: 32),
 
-              // Identification (required)
+              // Identification 1 (required)
               _buildFileUploadSection(
-                title: 'Identification *',
-                description: 'Upload your identification document(s)',
-                icon: Icons.description,
-                files: _documents,
+                title: 'Primary Identification *',
+                description: 'Upload your primary identification document',
+                icon: Icons.badge,
+                files: _identification1 != null
+                    ? [_identification1!.displayName]
+                    : [],
                 onUpload: () {
                   _showFileUploadModal(
-                    title: 'Upload Identification',
+                    title: 'Upload Primary Identification',
                     description:
                         'Select identification type and upload identification document',
                     onFileUploaded:
-                        (fileName, identificationType, identificationNumber) {
+                        (
+                          fileName,
+                          identificationType,
+                          identificationNumber,
+                          filePath,
+                          fileSize,
+                        ) {
                           setState(() {
-                            _documents.add(
-                              '$identificationType #$identificationNumber - $fileName',
+                            _identification1 = IdentificationDocument(
+                              identificationTypeId: identificationType.id ?? '',
+                              identificationTypeValue: identificationType.value,
+                              identificationNumber: identificationNumber,
+                              file: UploadedFile(
+                                fileName: fileName,
+                                description: '',
+                                filePath: filePath,
+                              ),
                             );
                           });
+                          _validateAndSave();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -141,16 +168,77 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 },
                 onRemove: (index) {
                   setState(() {
-                    _documents.removeAt(index);
+                    _identification1 = null;
                   });
                   _validateAndSave();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Identification removed'),
+                      content: Text('Primary identification removed'),
                       backgroundColor: Colors.orange,
                     ),
                   );
                 },
+              ),
+              const SizedBox(height: 24),
+
+              // Identification 2 (optional)
+              _buildFileUploadSection(
+                title: 'Secondary Identification',
+                description: 'Upload secondary identification (optional)',
+                icon: Icons.description,
+                files: _identification2 != null
+                    ? [_identification2!.displayName]
+                    : [],
+                onUpload: () {
+                  _showFileUploadModal(
+                    title: 'Upload Secondary Identification',
+                    description:
+                        'Select identification type and upload identification document',
+                    onFileUploaded:
+                        (
+                          fileName,
+                          identificationType,
+                          identificationNumber,
+                          filePath,
+                          fileSize,
+                        ) {
+                          setState(() {
+                            _identification2 = IdentificationDocument(
+                              identificationTypeId: identificationType.id ?? '',
+                              identificationTypeValue: identificationType.value,
+                              identificationNumber: identificationNumber,
+                              file: UploadedFile(
+                                fileName: fileName,
+                                description: '',
+                                filePath: filePath,
+                              ),
+                            );
+                          });
+                          _validateAndSave();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Identification uploaded: $fileName',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
+                  );
+                },
+                onRemove: (index) {
+                  setState(() {
+                    _identification2 = null;
+                  });
+                  _validateAndSave();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Secondary identification removed'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                required: false,
               ),
               const SizedBox(height: 24),
 
@@ -159,17 +247,27 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 title: 'Resume',
                 description: 'Upload your resume (optional)',
                 icon: Icons.work,
-                files: _resume != null ? [_resume!] : [],
+                files: _resume != null ? [_resume!.fileName] : [],
                 onUpload: () {
                   _showFileUploadModal(
                     title: 'Upload Resume',
-                    description: 'Select identification type and upload resume',
+                    description: 'Upload your resume document',
                     onFileUploaded:
-                        (fileName, identificationType, identificationNumber) {
+                        (
+                          fileName,
+                          identificationType,
+                          identificationNumber,
+                          filePath,
+                          fileSize,
+                        ) {
                           setState(() {
-                            _resume =
-                                '$identificationType #$identificationNumber - $fileName';
+                            _resume = UploadedFile(
+                              fileName: fileName,
+                              description: '',
+                              filePath: filePath,
+                            );
                           });
+                          _validateAndSave();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Resume uploaded: $fileName'),

@@ -11,6 +11,7 @@ import '../../domain/entities/city.dart';
 import '../../domain/entities/province.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/lifting_capacity.dart';
+import '../../domain/entities/uploaded_file.dart';
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -21,9 +22,18 @@ class WorkerRegistrationRequest {
   final String birthDay; // ISO 8601 format
   final Gender gender;
 
-  // Identification
+  // Identification 1 (required)
   final String identificationNumber1;
   final IdentificationType identificationType1;
+  final UploadedFile? identificationType1File;
+
+  // Identification 2 (optional)
+  final String? identificationNumber2;
+  final IdentificationType? identificationType2;
+  final UploadedFile? identificationType2File;
+
+  // Documents
+  final UploadedFile? resume;
 
   // Contact
   final String? mobileNumber;
@@ -57,6 +67,11 @@ class WorkerRegistrationRequest {
     required this.gender,
     required this.identificationNumber1,
     required this.identificationType1,
+    this.identificationType1File,
+    this.identificationNumber2,
+    this.identificationType2,
+    this.identificationType2File,
+    this.resume,
     this.mobileNumber,
     this.phone,
     required this.location,
@@ -83,6 +98,7 @@ class WorkerRegistrationRequest {
     final basicInfo = form.basicInfo!;
     final preferencesInfo = form.preferencesInfo!;
     final accountInfo = form.accountInfo!;
+    final documentsInfo = form.documentsInfo;
 
     // Format date as ISO 8601
     final formattedDate = basicInfo.dateOfBirth.toIso8601String();
@@ -137,13 +153,39 @@ class WorkerRegistrationRequest {
     // Lifting capacity already has ID from catalog
     final lift = preferencesInfo.liftingCapacity;
 
+    // Extract documents from form
+    final identification1 = documentsInfo?.identification1;
+    final identification2 = documentsInfo?.identification2;
+    final resumeFile = documentsInfo?.resume;
+
+    // Create IdentificationType from document data if available
+    final identType1 = identification1 != null
+        ? IdentificationType(
+            id: identification1.identificationTypeId,
+            value: identification1.identificationTypeValue,
+          )
+        : identificationType;
+
+    final identNumber1 =
+        identification1?.identificationNumber ?? identificationNumber;
+
     return WorkerRegistrationRequest(
       firstName: basicInfo.firstName.value,
       lastName: basicInfo.lastName.value,
       birthDay: formattedDate,
       gender: basicInfo.gender,
-      identificationNumber1: identificationNumber,
-      identificationType1: identificationType,
+      identificationNumber1: identNumber1,
+      identificationType1: identType1,
+      identificationType1File: identification1?.file,
+      identificationNumber2: identification2?.identificationNumber,
+      identificationType2: identification2 != null
+          ? IdentificationType(
+              id: identification2.identificationTypeId,
+              value: identification2.identificationTypeValue,
+            )
+          : null,
+      identificationType2File: identification2?.file,
+      resume: resumeFile,
       mobileNumber: basicInfo.mobileNumber.e164Format,
       phone: null, // Optional phone field
       location: location,
@@ -197,14 +239,17 @@ class WorkerRegistrationRequest {
       'password': password,
       'confirmPassword': confirmPassword,
       'agreeTermsAndConditions': agreeTermsAndConditions,
-      // TODO: Add file uploads when implemented
-      // 'identificationType1File': null,
-      // 'identificationType2File': null,
-      // 'identificationType2': null,
-      // 'licenses': [],
-      // 'certificates': [],
-      // 'resume': null,
-      // 'otherDocuments': [],
+      // File uploads
+      'identificationType1File': identificationType1File?.toJson(),
+      'identificationType2File': identificationType2File?.toJson(),
+      'identificationType2': identificationType2?.toJson(),
+      if (identificationNumber2 != null)
+        'identificationNumber2': identificationNumber2,
+      'resume': resume?.toJson(),
+      // Empty arrays for now
+      'licenses': [],
+      'certificates': [],
+      'otherDocuments': [],
     };
   }
 }

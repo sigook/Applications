@@ -1,27 +1,56 @@
 import 'package:equatable/equatable.dart';
+import 'uploaded_file.dart';
 
 /// Documents information entity
-/// Identification is required, resume is optional.
+/// Identification is required (at least one), resume is optional.
 class DocumentsInfo extends Equatable {
-  /// Required identification documents
-  final List<String> documents;
+  /// Primary identification document (required)
+  final IdentificationDocument? identification1;
 
-  /// Optional resume file path (single file)
-  final String? resume;
+  /// Secondary identification document (optional)
+  final IdentificationDocument? identification2;
 
-  const DocumentsInfo({required this.documents, this.resume});
+  /// Optional resume file
+  final UploadedFile? resume;
+
+  const DocumentsInfo({
+    this.identification1,
+    this.identification2,
+    this.resume,
+  });
 
   /// Valid when at least one identification document is present
-  bool get isValid => documents.isNotEmpty;
+  bool get isValid => identification1 != null;
+
+  /// Check if any documents are present
+  bool get hasDocuments =>
+      identification1 != null || identification2 != null || resume != null;
+
+  /// Get list of all identifications for display
+  List<IdentificationDocument> get identifications {
+    final list = <IdentificationDocument>[];
+    if (identification1 != null) list.add(identification1!);
+    if (identification2 != null) list.add(identification2!);
+    return list;
+  }
 
   /// Creates a copy with updated fields
-  DocumentsInfo copyWith({List<String>? documents, String? resume}) {
+  DocumentsInfo copyWith({
+    IdentificationDocument? identification1,
+    IdentificationDocument? identification2,
+    UploadedFile? resume,
+    bool clearIdentification2 = false,
+    bool clearResume = false,
+  }) {
     return DocumentsInfo(
-      documents: documents ?? this.documents,
-      resume: resume ?? this.resume,
+      identification1: identification1 ?? this.identification1,
+      identification2: clearIdentification2
+          ? null
+          : (identification2 ?? this.identification2),
+      resume: clearResume ? null : (resume ?? this.resume),
     );
   }
 
   @override
-  List<Object?> get props => [documents, resume];
+  List<Object?> get props => [identification1, identification2, resume];
 }
