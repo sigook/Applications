@@ -186,8 +186,8 @@ class WorkerRegistrationRequest {
           : null,
       identificationType2File: identification2?.file,
       resume: resumeFile,
-      mobileNumber: basicInfo.mobileNumber.e164Format,
-      phone: null, // Optional phone field
+      mobileNumber: basicInfo.mobileNumber.nationalFormat,
+      phone: null,
       location: location,
       lift: lift,
       availabilities: [availabilityType],
