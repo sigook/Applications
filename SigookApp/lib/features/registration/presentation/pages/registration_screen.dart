@@ -154,7 +154,6 @@ class _RegistrationFormScreenState
       body: SafeArea(
         child: Column(
           children: [
-            // Back button (same style as sign in page)
             Align(
               alignment: Alignment.centerLeft,
               child: Padding(
@@ -166,7 +165,6 @@ class _RegistrationFormScreenState
                 ),
               ),
             ),
-
             Expanded(
               child: PrimaryScrollController(
                 controller: _scrollController,
@@ -381,7 +379,6 @@ class _RegistrationFormScreenState
       case 0:
         return form.isBasicInfoComplete;
       case 1:
-        // Preferences are optional: never block navigation on this step
         return true;
       case 2:
         return form.isDocumentsInfoComplete;
@@ -424,13 +421,13 @@ class _RegistrationFormScreenState
     notifier.setSubmitting(true);
 
     final viewModel = ref.read(registrationViewModelProvider.notifier);
-    final success = await viewModel.submitRegistration();
+    final result = await viewModel.submitRegistration();
 
     notifier.setSubmitting(false);
 
     if (!context.mounted) return;
 
-    if (success) {
+    if (result == 'Success') {
       notifier.setSuccess('Registration submitted successfully!');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -442,12 +439,9 @@ class _RegistrationFormScreenState
       // Navigate to welcome page after successful registration
       context.go(AppRoutes.welcome);
     } else {
-      notifier.setError('Failed to submit registration. Please try again.');
+      notifier.setError(result);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to submit registration. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(result), backgroundColor: Colors.red),
       );
     }
   }

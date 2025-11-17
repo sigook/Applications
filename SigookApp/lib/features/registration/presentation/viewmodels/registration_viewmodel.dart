@@ -19,8 +19,10 @@ class RegistrationViewModel extends _$RegistrationViewModel {
     return RegistrationForm.empty();
   }
 
-  RegistrationRepository get _repository => ref.read(registrationRepositoryProvider);
-  SubmitRegistration get _submitUseCase => ref.read(submitRegistrationUseCaseProvider);
+  RegistrationRepository get _repository =>
+      ref.read(registrationRepositoryProvider);
+  SubmitRegistration get _submitUseCase =>
+      ref.read(submitRegistrationUseCaseProvider);
 
   /// Load saved draft
   Future<void> _loadDraft() async {
@@ -61,21 +63,15 @@ class RegistrationViewModel extends _$RegistrationViewModel {
   }
 
   /// Submit registration
-  Future<bool> submitRegistration() async {
+  Future<String> submitRegistration() async {
     final result = await _submitUseCase(state);
-    return result.fold(
-      (failure) => false,
-      (_) => true,
-    );
+    return result.fold((failure) => failure.message, (_) => 'Success');
   }
 
   /// Check email availability
   Future<bool> checkEmailAvailability(String email) async {
     final result = await _repository.isEmailAvailable(email);
-    return result.fold(
-      (failure) => false,
-      (isAvailable) => isAvailable,
-    );
+    return result.fold((failure) => false, (isAvailable) => isAvailable);
   }
 
   /// Clear all form data

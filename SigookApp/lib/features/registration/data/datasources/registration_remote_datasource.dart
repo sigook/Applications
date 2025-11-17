@@ -86,9 +86,19 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         );
       } else if (e.response != null) {
         // Extract error message from API response
-        final errorMessage = e.response!.data is Map
-            ? e.response!.data['message'] ?? 'Registration failed'
-            : 'Registration failed';
+        String errorMessage = 'Registration failed';
+        if (e.response!.data is Map<String, dynamic>) {
+          final data = e.response!.data as Map<String, dynamic>;
+          final errors = <String>[];
+          data.forEach((key, value) {
+            if (value is List) {
+              errors.addAll(value.map((e) => e.toString()));
+            }
+          });
+          if (errors.isNotEmpty) {
+            errorMessage = errors.join('; ');
+          }
+        }
         throw ServerException(
           message: errorMessage,
           statusCode: e.response!.statusCode,
