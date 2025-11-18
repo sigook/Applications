@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/profile_photo.dart';
 import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/zip_code.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/gender.dart';
@@ -12,7 +13,7 @@ part 'basic_info_model.freezed.dart';
 part 'basic_info_model.g.dart';
 
 @freezed
-class BasicInfoModel with _$BasicInfoModel {
+sealed class BasicInfoModel with _$BasicInfoModel {
   const BasicInfoModel._();
 
   const factory BasicInfoModel({
@@ -53,6 +54,7 @@ class BasicInfoModel with _$BasicInfoModel {
   /// Convert to domain entity
   BasicInfo toEntity() {
     return BasicInfo(
+      profilePhoto: ProfilePhoto(path: ''),
       firstName: Name(firstName),
       lastName: Name(lastName),
       dateOfBirth: DateTime.parse(dateOfBirth),

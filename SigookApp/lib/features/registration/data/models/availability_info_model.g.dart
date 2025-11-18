@@ -6,9 +6,9 @@ part of 'availability_info_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AvailabilityInfoModelImpl _$$AvailabilityInfoModelImplFromJson(
+_AvailabilityInfoModel _$AvailabilityInfoModelFromJson(
   Map<String, dynamic> json,
-) => _$AvailabilityInfoModelImpl(
+) => _AvailabilityInfoModel(
   availabilityTypeId: json['availabilityTypeId'] as String?,
   availabilityTypeName: json['availabilityTypeName'] as String,
   availableTimes: Map<String, String>.from(json['availableTimes'] as Map),
@@ -17,8 +17,8 @@ _$AvailabilityInfoModelImpl _$$AvailabilityInfoModelImplFromJson(
       .toList(),
 );
 
-Map<String, dynamic> _$$AvailabilityInfoModelImplToJson(
-  _$AvailabilityInfoModelImpl instance,
+Map<String, dynamic> _$AvailabilityInfoModelToJson(
+  _AvailabilityInfoModel instance,
 ) => <String, dynamic>{
   'availabilityTypeId': instance.availabilityTypeId,
   'availabilityTypeName': instance.availabilityTypeName,

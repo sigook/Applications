@@ -7,7 +7,7 @@ part 'professional_info_model.freezed.dart';
 part 'professional_info_model.g.dart';
 
 @freezed
-class ProfessionalInfoModel with _$ProfessionalInfoModel {
+sealed class ProfessionalInfoModel with _$ProfessionalInfoModel {
   const ProfessionalInfoModel._();
 
   const factory ProfessionalInfoModel({

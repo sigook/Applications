@@ -8,7 +8,7 @@ part 'availability_info_model.freezed.dart';
 part 'availability_info_model.g.dart';
 
 @freezed
-class AvailabilityInfoModel with _$AvailabilityInfoModel {
+sealed class AvailabilityInfoModel with _$AvailabilityInfoModel {
   const AvailabilityInfoModel._();
 
   const factory AvailabilityInfoModel({

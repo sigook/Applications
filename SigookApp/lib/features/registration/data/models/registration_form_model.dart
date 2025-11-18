@@ -9,7 +9,7 @@ part 'registration_form_model.freezed.dart';
 part 'registration_form_model.g.dart';
 
 @freezed
-class RegistrationFormModel with _$RegistrationFormModel {
+sealed class RegistrationFormModel with _$RegistrationFormModel {
   const RegistrationFormModel._();
 
   const factory RegistrationFormModel({

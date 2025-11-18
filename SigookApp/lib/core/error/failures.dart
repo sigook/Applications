@@ -34,3 +34,11 @@ class ParseFailure extends Failure {
 class ValidationFailure extends Failure {
   const ValidationFailure({super.message = 'Validation error'});
 }
+
+class PermissionFailure extends Failure {
+  const PermissionFailure({super.message = 'Permission denied by user'});
+}
+
+class UserCancelledFailure extends Failure {
+  const UserCancelledFailure({super.message = 'User cancelled the operation'});
+}

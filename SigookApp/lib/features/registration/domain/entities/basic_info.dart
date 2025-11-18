@@ -6,11 +6,13 @@ import 'gender.dart';
 import 'country.dart';
 import 'province.dart';
 import 'city.dart';
+import 'value_objects/profile_photo.dart';
 
 /// Basic information entity
 /// Combines personal details, location, and mobile number
 class BasicInfo extends Equatable {
   // Personal details
+  final ProfilePhoto profilePhoto;
   final Name firstName;
   final Name lastName;
   final DateTime dateOfBirth;
@@ -31,6 +33,7 @@ class BasicInfo extends Equatable {
   final String? identificationNumber;
 
   const BasicInfo({
+    required this.profilePhoto,
     required this.firstName,
     required this.lastName,
     required this.dateOfBirth,
@@ -64,7 +67,8 @@ class BasicInfo extends Equatable {
         address.isNotEmpty &&
         address.length >= 5 &&
         zipCode.value.isNotEmpty &&
-        mobileNumber.isValid;
+        mobileNumber.isValid &&
+        profilePhoto.hasPhoto;
   }
 
   /// Validation error messages
@@ -83,9 +87,12 @@ class BasicInfo extends Equatable {
   String? get mobileNumberError => mobileNumber.errorMessage;
   String? get dateOfBirthError =>
       !isAdult ? 'You must be at least 18 years old' : null;
+  String? get profilePhotoError =>
+      profilePhoto.path.isEmpty ? 'Profile photo is required' : null;
 
   /// Creates a copy with updated fields
   BasicInfo copyWith({
+    ProfilePhoto? profilePhoto,
     Name? firstName,
     Name? lastName,
     DateTime? dateOfBirth,
@@ -100,6 +107,7 @@ class BasicInfo extends Equatable {
     String? identificationNumber,
   }) {
     return BasicInfo(
+      profilePhoto: profilePhoto ?? this.profilePhoto,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
@@ -117,6 +125,7 @@ class BasicInfo extends Equatable {
 
   @override
   List<Object?> get props => [
+    profilePhoto,
     firstName,
     lastName,
     dateOfBirth,

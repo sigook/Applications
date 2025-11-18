@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,1050 +9,708 @@ part of 'section_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$SectionState<T> {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SectionState<T>);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'SectionState<$T>()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $SectionStateCopyWith<T, $Res> {
-  factory $SectionStateCopyWith(
-    SectionState<T> value,
-    $Res Function(SectionState<T>) then,
-  ) = _$SectionStateCopyWithImpl<T, $Res, SectionState<T>>;
+class $SectionStateCopyWith<T,$Res>  {
+$SectionStateCopyWith(SectionState<T> _, $Res Function(SectionState<T>) __);
 }
 
-/// @nodoc
-class _$SectionStateCopyWithImpl<T, $Res, $Val extends SectionState<T>>
-    implements $SectionStateCopyWith<T, $Res> {
-  _$SectionStateCopyWithImpl(this._value, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+/// Adds pattern-matching-related methods to [SectionState].
+extension SectionStatePatterns<T> on SectionState<T> {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial<T> value)?  initial,TResult Function( _Editing<T> value)?  editing,TResult Function( _Validating<T> value)?  validating,TResult Function( _Valid<T> value)?  valid,TResult Function( _Invalid<T> value)?  invalid,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Editing() when editing != null:
+return editing(_that);case _Validating() when validating != null:
+return validating(_that);case _Valid() when valid != null:
+return valid(_that);case _Invalid() when invalid != null:
+return invalid(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial<T> value)  initial,required TResult Function( _Editing<T> value)  editing,required TResult Function( _Validating<T> value)  validating,required TResult Function( _Valid<T> value)  valid,required TResult Function( _Invalid<T> value)  invalid,}){
+final _that = this;
+switch (_that) {
+case _Initial():
+return initial(_that);case _Editing():
+return editing(_that);case _Validating():
+return validating(_that);case _Valid():
+return valid(_that);case _Invalid():
+return invalid(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial<T> value)?  initial,TResult? Function( _Editing<T> value)?  editing,TResult? Function( _Validating<T> value)?  validating,TResult? Function( _Valid<T> value)?  valid,TResult? Function( _Invalid<T> value)?  invalid,}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Editing() when editing != null:
+return editing(_that);case _Validating() when validating != null:
+return validating(_that);case _Valid() when valid != null:
+return valid(_that);case _Invalid() when invalid != null:
+return invalid(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function( T data)?  editing,TResult Function()?  validating,TResult Function( T data)?  valid,TResult Function( T data,  String error)?  invalid,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Editing() when editing != null:
+return editing(_that.data);case _Validating() when validating != null:
+return validating();case _Valid() when valid != null:
+return valid(_that.data);case _Invalid() when invalid != null:
+return invalid(_that.data,_that.error);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function( T data)  editing,required TResult Function()  validating,required TResult Function( T data)  valid,required TResult Function( T data,  String error)  invalid,}) {final _that = this;
+switch (_that) {
+case _Initial():
+return initial();case _Editing():
+return editing(_that.data);case _Validating():
+return validating();case _Valid():
+return valid(_that.data);case _Invalid():
+return invalid(_that.data,_that.error);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function( T data)?  editing,TResult? Function()?  validating,TResult? Function( T data)?  valid,TResult? Function( T data,  String error)?  invalid,}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Editing() when editing != null:
+return editing(_that.data);case _Validating() when validating != null:
+return validating();case _Valid() when valid != null:
+return valid(_that.data);case _Invalid() when invalid != null:
+return invalid(_that.data,_that.error);case _:
+  return null;
+
+}
 }
 
-/// @nodoc
-abstract class _$$InitialImplCopyWith<T, $Res> {
-  factory _$$InitialImplCopyWith(
-    _$InitialImpl<T> value,
-    $Res Function(_$InitialImpl<T>) then,
-  ) = __$$InitialImplCopyWithImpl<T, $Res>;
-}
-
-/// @nodoc
-class __$$InitialImplCopyWithImpl<T, $Res>
-    extends _$SectionStateCopyWithImpl<T, $Res, _$InitialImpl<T>>
-    implements _$$InitialImplCopyWith<T, $Res> {
-  __$$InitialImplCopyWithImpl(
-    _$InitialImpl<T> _value,
-    $Res Function(_$InitialImpl<T>) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-
-class _$InitialImpl<T> implements _Initial<T> {
-  const _$InitialImpl();
-
-  @override
-  String toString() {
-    return 'SectionState<$T>.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$InitialImpl<T>);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _Initial<T> implements SectionState<T> {
-  const factory _Initial() = _$InitialImpl<T>;
-}
-
-/// @nodoc
-abstract class _$$EditingImplCopyWith<T, $Res> {
-  factory _$$EditingImplCopyWith(
-    _$EditingImpl<T> value,
-    $Res Function(_$EditingImpl<T>) then,
-  ) = __$$EditingImplCopyWithImpl<T, $Res>;
-  @useResult
-  $Res call({T data});
-}
-
-/// @nodoc
-class __$$EditingImplCopyWithImpl<T, $Res>
-    extends _$SectionStateCopyWithImpl<T, $Res, _$EditingImpl<T>>
-    implements _$$EditingImplCopyWith<T, $Res> {
-  __$$EditingImplCopyWithImpl(
-    _$EditingImpl<T> _value,
-    $Res Function(_$EditingImpl<T>) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? data = freezed}) {
-    return _then(
-      _$EditingImpl<T>(
-        freezed == data
-            ? _value.data
-            : data // ignore: cast_nullable_to_non_nullable
-                  as T,
-      ),
-    );
-  }
 }
 
 /// @nodoc
 
-class _$EditingImpl<T> implements _Editing<T> {
-  const _$EditingImpl(this.data);
 
-  @override
-  final T data;
+class _Initial<T> implements SectionState<T> {
+  const _Initial();
+  
 
-  @override
-  String toString() {
-    return 'SectionState<$T>.editing(data: $data)';
-  }
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$EditingImpl<T> &&
-            const DeepCollectionEquality().equals(other.data, data));
-  }
 
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(data));
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$EditingImplCopyWith<T, _$EditingImpl<T>> get copyWith =>
-      __$$EditingImplCopyWithImpl<T, _$EditingImpl<T>>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) {
-    return editing(data);
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) {
-    return editing?.call(data);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) {
-    if (editing != null) {
-      return editing(data);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) {
-    return editing(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) {
-    return editing?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) {
-    if (editing != null) {
-      return editing(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial<T>);
 }
 
-abstract class _Editing<T> implements SectionState<T> {
-  const factory _Editing(final T data) = _$EditingImpl<T>;
 
-  T get data;
+@override
+int get hashCode => runtimeType.hashCode;
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EditingImplCopyWith<T, _$EditingImpl<T>> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'SectionState<$T>.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Editing<T> implements SectionState<T> {
+  const _Editing(this.data);
+  
+
+ final  T data;
+
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$EditingCopyWith<T, _Editing<T>> get copyWith => __$EditingCopyWithImpl<T, _Editing<T>>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Editing<T>&&const DeepCollectionEquality().equals(other.data, data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+
+@override
+String toString() {
+  return 'SectionState<$T>.editing(data: $data)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$ValidatingImplCopyWith<T, $Res> {
-  factory _$$ValidatingImplCopyWith(
-    _$ValidatingImpl<T> value,
-    $Res Function(_$ValidatingImpl<T>) then,
-  ) = __$$ValidatingImplCopyWithImpl<T, $Res>;
+abstract mixin class _$EditingCopyWith<T,$Res> implements $SectionStateCopyWith<T, $Res> {
+  factory _$EditingCopyWith(_Editing<T> value, $Res Function(_Editing<T>) _then) = __$EditingCopyWithImpl;
+@useResult
+$Res call({
+ T data
+});
+
+
+
+
+}
+/// @nodoc
+class __$EditingCopyWithImpl<T,$Res>
+    implements _$EditingCopyWith<T, $Res> {
+  __$EditingCopyWithImpl(this._self, this._then);
+
+  final _Editing<T> _self;
+  final $Res Function(_Editing<T>) _then;
+
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = freezed,}) {
+  return _then(_Editing<T>(
+freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as T,
+  ));
 }
 
-/// @nodoc
-class __$$ValidatingImplCopyWithImpl<T, $Res>
-    extends _$SectionStateCopyWithImpl<T, $Res, _$ValidatingImpl<T>>
-    implements _$$ValidatingImplCopyWith<T, $Res> {
-  __$$ValidatingImplCopyWithImpl(
-    _$ValidatingImpl<T> _value,
-    $Res Function(_$ValidatingImpl<T>) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$ValidatingImpl<T> implements _Validating<T> {
-  const _$ValidatingImpl();
 
-  @override
-  String toString() {
-    return 'SectionState<$T>.validating()';
-  }
+class _Validating<T> implements SectionState<T> {
+  const _Validating();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$ValidatingImpl<T>);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) {
-    return validating();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) {
-    return validating?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) {
-    if (validating != null) {
-      return validating();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) {
-    return validating(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) {
-    return validating?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) {
-    if (validating != null) {
-      return validating(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Validating<T>);
 }
 
-abstract class _Validating<T> implements SectionState<T> {
-  const factory _Validating() = _$ValidatingImpl<T>;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'SectionState<$T>.validating()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Valid<T> implements SectionState<T> {
+  const _Valid(this.data);
+  
+
+ final  T data;
+
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ValidCopyWith<T, _Valid<T>> get copyWith => __$ValidCopyWithImpl<T, _Valid<T>>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Valid<T>&&const DeepCollectionEquality().equals(other.data, data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+
+@override
+String toString() {
+  return 'SectionState<$T>.valid(data: $data)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$ValidImplCopyWith<T, $Res> {
-  factory _$$ValidImplCopyWith(
-    _$ValidImpl<T> value,
-    $Res Function(_$ValidImpl<T>) then,
-  ) = __$$ValidImplCopyWithImpl<T, $Res>;
-  @useResult
-  $Res call({T data});
+abstract mixin class _$ValidCopyWith<T,$Res> implements $SectionStateCopyWith<T, $Res> {
+  factory _$ValidCopyWith(_Valid<T> value, $Res Function(_Valid<T>) _then) = __$ValidCopyWithImpl;
+@useResult
+$Res call({
+ T data
+});
+
+
+
+
+}
+/// @nodoc
+class __$ValidCopyWithImpl<T,$Res>
+    implements _$ValidCopyWith<T, $Res> {
+  __$ValidCopyWithImpl(this._self, this._then);
+
+  final _Valid<T> _self;
+  final $Res Function(_Valid<T>) _then;
+
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = freezed,}) {
+  return _then(_Valid<T>(
+freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as T,
+  ));
 }
 
-/// @nodoc
-class __$$ValidImplCopyWithImpl<T, $Res>
-    extends _$SectionStateCopyWithImpl<T, $Res, _$ValidImpl<T>>
-    implements _$$ValidImplCopyWith<T, $Res> {
-  __$$ValidImplCopyWithImpl(
-    _$ValidImpl<T> _value,
-    $Res Function(_$ValidImpl<T>) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? data = freezed}) {
-    return _then(
-      _$ValidImpl<T>(
-        freezed == data
-            ? _value.data
-            : data // ignore: cast_nullable_to_non_nullable
-                  as T,
-      ),
-    );
-  }
 }
 
 /// @nodoc
 
-class _$ValidImpl<T> implements _Valid<T> {
-  const _$ValidImpl(this.data);
 
-  @override
-  final T data;
+class _Invalid<T> implements SectionState<T> {
+  const _Invalid(this.data, this.error);
+  
 
-  @override
-  String toString() {
-    return 'SectionState<$T>.valid(data: $data)';
-  }
+ final  T data;
+ final  String error;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ValidImpl<T> &&
-            const DeepCollectionEquality().equals(other.data, data));
-  }
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$InvalidCopyWith<T, _Invalid<T>> get copyWith => __$InvalidCopyWithImpl<T, _Invalid<T>>(this, _$identity);
 
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(data));
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ValidImplCopyWith<T, _$ValidImpl<T>> get copyWith =>
-      __$$ValidImplCopyWithImpl<T, _$ValidImpl<T>>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) {
-    return valid(data);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) {
-    return valid?.call(data);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) {
-    if (valid != null) {
-      return valid(data);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) {
-    return valid(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) {
-    return valid?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) {
-    if (valid != null) {
-      return valid(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invalid<T>&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.error, error) || other.error == error));
 }
 
-abstract class _Valid<T> implements SectionState<T> {
-  const factory _Valid(final T data) = _$ValidImpl<T>;
 
-  T get data;
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data),error);
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ValidImplCopyWith<T, _$ValidImpl<T>> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'SectionState<$T>.invalid(data: $data, error: $error)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$InvalidImplCopyWith<T, $Res> {
-  factory _$$InvalidImplCopyWith(
-    _$InvalidImpl<T> value,
-    $Res Function(_$InvalidImpl<T>) then,
-  ) = __$$InvalidImplCopyWithImpl<T, $Res>;
-  @useResult
-  $Res call({T data, String error});
-}
+abstract mixin class _$InvalidCopyWith<T,$Res> implements $SectionStateCopyWith<T, $Res> {
+  factory _$InvalidCopyWith(_Invalid<T> value, $Res Function(_Invalid<T>) _then) = __$InvalidCopyWithImpl;
+@useResult
+$Res call({
+ T data, String error
+});
 
+
+
+
+}
 /// @nodoc
-class __$$InvalidImplCopyWithImpl<T, $Res>
-    extends _$SectionStateCopyWithImpl<T, $Res, _$InvalidImpl<T>>
-    implements _$$InvalidImplCopyWith<T, $Res> {
-  __$$InvalidImplCopyWithImpl(
-    _$InvalidImpl<T> _value,
-    $Res Function(_$InvalidImpl<T>) _then,
-  ) : super(_value, _then);
+class __$InvalidCopyWithImpl<T,$Res>
+    implements _$InvalidCopyWith<T, $Res> {
+  __$InvalidCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? data = freezed, Object? error = null}) {
-    return _then(
-      _$InvalidImpl<T>(
-        freezed == data
-            ? _value.data
-            : data // ignore: cast_nullable_to_non_nullable
-                  as T,
-        null == error
-            ? _value.error
-            : error // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
+  final _Invalid<T> _self;
+  final $Res Function(_Invalid<T>) _then;
+
+/// Create a copy of SectionState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = freezed,Object? error = null,}) {
+  return _then(_Invalid<T>(
+freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as T,null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-/// @nodoc
 
-class _$InvalidImpl<T> implements _Invalid<T> {
-  const _$InvalidImpl(this.data, this.error);
-
-  @override
-  final T data;
-  @override
-  final String error;
-
-  @override
-  String toString() {
-    return 'SectionState<$T>.invalid(data: $data, error: $error)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$InvalidImpl<T> &&
-            const DeepCollectionEquality().equals(other.data, data) &&
-            (identical(other.error, error) || other.error == error));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(data),
-    error,
-  );
-
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$InvalidImplCopyWith<T, _$InvalidImpl<T>> get copyWith =>
-      __$$InvalidImplCopyWithImpl<T, _$InvalidImpl<T>>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function(T data) editing,
-    required TResult Function() validating,
-    required TResult Function(T data) valid,
-    required TResult Function(T data, String error) invalid,
-  }) {
-    return invalid(data, error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function(T data)? editing,
-    TResult? Function()? validating,
-    TResult? Function(T data)? valid,
-    TResult? Function(T data, String error)? invalid,
-  }) {
-    return invalid?.call(data, error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function(T data)? editing,
-    TResult Function()? validating,
-    TResult Function(T data)? valid,
-    TResult Function(T data, String error)? invalid,
-    required TResult orElse(),
-  }) {
-    if (invalid != null) {
-      return invalid(data, error);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_Initial<T> value) initial,
-    required TResult Function(_Editing<T> value) editing,
-    required TResult Function(_Validating<T> value) validating,
-    required TResult Function(_Valid<T> value) valid,
-    required TResult Function(_Invalid<T> value) invalid,
-  }) {
-    return invalid(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Initial<T> value)? initial,
-    TResult? Function(_Editing<T> value)? editing,
-    TResult? Function(_Validating<T> value)? validating,
-    TResult? Function(_Valid<T> value)? valid,
-    TResult? Function(_Invalid<T> value)? invalid,
-  }) {
-    return invalid?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Initial<T> value)? initial,
-    TResult Function(_Editing<T> value)? editing,
-    TResult Function(_Validating<T> value)? validating,
-    TResult Function(_Valid<T> value)? valid,
-    TResult Function(_Invalid<T> value)? invalid,
-    required TResult orElse(),
-  }) {
-    if (invalid != null) {
-      return invalid(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _Invalid<T> implements SectionState<T> {
-  const factory _Invalid(final T data, final String error) = _$InvalidImpl<T>;
-
-  T get data;
-  String get error;
-
-  /// Create a copy of SectionState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$InvalidImplCopyWith<T, _$InvalidImpl<T>> get copyWith =>
-      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 mixin _$RegistrationFormState {
-  int get currentStep => throw _privateConstructorUsedError;
-  bool get isSubmitting => throw _privateConstructorUsedError;
-  String? get errorMessage => throw _privateConstructorUsedError;
-  String? get successMessage => throw _privateConstructorUsedError;
 
-  /// Create a copy of RegistrationFormState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $RegistrationFormStateCopyWith<RegistrationFormState> get copyWith =>
-      throw _privateConstructorUsedError;
+ int get currentStep; bool get isSubmitting; String? get errorMessage; String? get successMessage;
+/// Create a copy of RegistrationFormState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RegistrationFormStateCopyWith<RegistrationFormState> get copyWith => _$RegistrationFormStateCopyWithImpl<RegistrationFormState>(this as RegistrationFormState, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegistrationFormState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,currentStep,isSubmitting,errorMessage,successMessage);
+
+@override
+String toString() {
+  return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $RegistrationFormStateCopyWith<$Res> {
-  factory $RegistrationFormStateCopyWith(
-    RegistrationFormState value,
-    $Res Function(RegistrationFormState) then,
-  ) = _$RegistrationFormStateCopyWithImpl<$Res, RegistrationFormState>;
-  @useResult
-  $Res call({
-    int currentStep,
-    bool isSubmitting,
-    String? errorMessage,
-    String? successMessage,
-  });
-}
+abstract mixin class $RegistrationFormStateCopyWith<$Res>  {
+  factory $RegistrationFormStateCopyWith(RegistrationFormState value, $Res Function(RegistrationFormState) _then) = _$RegistrationFormStateCopyWithImpl;
+@useResult
+$Res call({
+ int currentStep, bool isSubmitting, String? errorMessage, String? successMessage
+});
 
+
+
+
+}
 /// @nodoc
-class _$RegistrationFormStateCopyWithImpl<
-  $Res,
-  $Val extends RegistrationFormState
->
+class _$RegistrationFormStateCopyWithImpl<$Res>
     implements $RegistrationFormStateCopyWith<$Res> {
-  _$RegistrationFormStateCopyWithImpl(this._value, this._then);
+  _$RegistrationFormStateCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final RegistrationFormState _self;
+  final $Res Function(RegistrationFormState) _then;
 
-  /// Create a copy of RegistrationFormState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? currentStep = null,
-    Object? isSubmitting = null,
-    Object? errorMessage = freezed,
-    Object? successMessage = freezed,
-  }) {
-    return _then(
-      _value.copyWith(
-            currentStep: null == currentStep
-                ? _value.currentStep
-                : currentStep // ignore: cast_nullable_to_non_nullable
-                      as int,
-            isSubmitting: null == isSubmitting
-                ? _value.isSubmitting
-                : isSubmitting // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            errorMessage: freezed == errorMessage
-                ? _value.errorMessage
-                : errorMessage // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            successMessage: freezed == successMessage
-                ? _value.successMessage
-                : successMessage // ignore: cast_nullable_to_non_nullable
-                      as String?,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of RegistrationFormState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? currentStep = null,Object? isSubmitting = null,Object? errorMessage = freezed,Object? successMessage = freezed,}) {
+  return _then(_self.copyWith(
+currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
+as int,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
+as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as String?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RegistrationFormState].
+extension RegistrationFormStatePatterns on RegistrationFormState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RegistrationFormState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RegistrationFormState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RegistrationFormState value)  $default,){
+final _that = this;
+switch (_that) {
+case _RegistrationFormState():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RegistrationFormState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RegistrationFormState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentStep,  bool isSubmitting,  String? errorMessage,  String? successMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RegistrationFormState() when $default != null:
+return $default(_that.currentStep,_that.isSubmitting,_that.errorMessage,_that.successMessage);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentStep,  bool isSubmitting,  String? errorMessage,  String? successMessage)  $default,) {final _that = this;
+switch (_that) {
+case _RegistrationFormState():
+return $default(_that.currentStep,_that.isSubmitting,_that.errorMessage,_that.successMessage);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentStep,  bool isSubmitting,  String? errorMessage,  String? successMessage)?  $default,) {final _that = this;
+switch (_that) {
+case _RegistrationFormState() when $default != null:
+return $default(_that.currentStep,_that.isSubmitting,_that.errorMessage,_that.successMessage);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
-abstract class _$$RegistrationFormStateImplCopyWith<$Res>
-    implements $RegistrationFormStateCopyWith<$Res> {
-  factory _$$RegistrationFormStateImplCopyWith(
-    _$RegistrationFormStateImpl value,
-    $Res Function(_$RegistrationFormStateImpl) then,
-  ) = __$$RegistrationFormStateImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    int currentStep,
-    bool isSubmitting,
-    String? errorMessage,
-    String? successMessage,
-  });
+
+
+class _RegistrationFormState implements RegistrationFormState {
+  const _RegistrationFormState({required this.currentStep, required this.isSubmitting, this.errorMessage, this.successMessage});
+  
+
+@override final  int currentStep;
+@override final  bool isSubmitting;
+@override final  String? errorMessage;
+@override final  String? successMessage;
+
+/// Create a copy of RegistrationFormState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegistrationFormStateCopyWith<_RegistrationFormState> get copyWith => __$RegistrationFormStateCopyWithImpl<_RegistrationFormState>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationFormState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,currentStep,isSubmitting,errorMessage,successMessage);
+
+@override
+String toString() {
+  return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
+}
+
+
 }
 
 /// @nodoc
-class __$$RegistrationFormStateImplCopyWithImpl<$Res>
-    extends
-        _$RegistrationFormStateCopyWithImpl<$Res, _$RegistrationFormStateImpl>
-    implements _$$RegistrationFormStateImplCopyWith<$Res> {
-  __$$RegistrationFormStateImplCopyWithImpl(
-    _$RegistrationFormStateImpl _value,
-    $Res Function(_$RegistrationFormStateImpl) _then,
-  ) : super(_value, _then);
+abstract mixin class _$RegistrationFormStateCopyWith<$Res> implements $RegistrationFormStateCopyWith<$Res> {
+  factory _$RegistrationFormStateCopyWith(_RegistrationFormState value, $Res Function(_RegistrationFormState) _then) = __$RegistrationFormStateCopyWithImpl;
+@override @useResult
+$Res call({
+ int currentStep, bool isSubmitting, String? errorMessage, String? successMessage
+});
 
-  /// Create a copy of RegistrationFormState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? currentStep = null,
-    Object? isSubmitting = null,
-    Object? errorMessage = freezed,
-    Object? successMessage = freezed,
-  }) {
-    return _then(
-      _$RegistrationFormStateImpl(
-        currentStep: null == currentStep
-            ? _value.currentStep
-            : currentStep // ignore: cast_nullable_to_non_nullable
-                  as int,
-        isSubmitting: null == isSubmitting
-            ? _value.isSubmitting
-            : isSubmitting // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        errorMessage: freezed == errorMessage
-            ? _value.errorMessage
-            : errorMessage // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        successMessage: freezed == successMessage
-            ? _value.successMessage
-            : successMessage // ignore: cast_nullable_to_non_nullable
-                  as String?,
-      ),
-    );
-  }
+
+
+
 }
-
 /// @nodoc
+class __$RegistrationFormStateCopyWithImpl<$Res>
+    implements _$RegistrationFormStateCopyWith<$Res> {
+  __$RegistrationFormStateCopyWithImpl(this._self, this._then);
 
-class _$RegistrationFormStateImpl implements _RegistrationFormState {
-  const _$RegistrationFormStateImpl({
-    required this.currentStep,
-    required this.isSubmitting,
-    this.errorMessage,
-    this.successMessage,
-  });
+  final _RegistrationFormState _self;
+  final $Res Function(_RegistrationFormState) _then;
 
-  @override
-  final int currentStep;
-  @override
-  final bool isSubmitting;
-  @override
-  final String? errorMessage;
-  @override
-  final String? successMessage;
-
-  @override
-  String toString() {
-    return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$RegistrationFormStateImpl &&
-            (identical(other.currentStep, currentStep) ||
-                other.currentStep == currentStep) &&
-            (identical(other.isSubmitting, isSubmitting) ||
-                other.isSubmitting == isSubmitting) &&
-            (identical(other.errorMessage, errorMessage) ||
-                other.errorMessage == errorMessage) &&
-            (identical(other.successMessage, successMessage) ||
-                other.successMessage == successMessage));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    currentStep,
-    isSubmitting,
-    errorMessage,
-    successMessage,
-  );
-
-  /// Create a copy of RegistrationFormState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$RegistrationFormStateImplCopyWith<_$RegistrationFormStateImpl>
-  get copyWith =>
-      __$$RegistrationFormStateImplCopyWithImpl<_$RegistrationFormStateImpl>(
-        this,
-        _$identity,
-      );
+/// Create a copy of RegistrationFormState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? currentStep = null,Object? isSubmitting = null,Object? errorMessage = freezed,Object? successMessage = freezed,}) {
+  return _then(_RegistrationFormState(
+currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
+as int,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
+as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as String?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-abstract class _RegistrationFormState implements RegistrationFormState {
-  const factory _RegistrationFormState({
-    required final int currentStep,
-    required final bool isSubmitting,
-    final String? errorMessage,
-    final String? successMessage,
-  }) = _$RegistrationFormStateImpl;
 
-  @override
-  int get currentStep;
-  @override
-  bool get isSubmitting;
-  @override
-  String? get errorMessage;
-  @override
-  String? get successMessage;
-
-  /// Create a copy of RegistrationFormState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RegistrationFormStateImplCopyWith<_$RegistrationFormStateImpl>
-  get copyWith => throw _privateConstructorUsedError;
 }
+
+// dart format on

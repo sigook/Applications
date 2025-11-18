@@ -6,9 +6,9 @@ part of 'registration_form_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$RegistrationFormModelImpl _$$RegistrationFormModelImplFromJson(
+_RegistrationFormModel _$RegistrationFormModelFromJson(
   Map<String, dynamic> json,
-) => _$RegistrationFormModelImpl(
+) => _RegistrationFormModel(
   basicInfo: json['basicInfo'] == null
       ? null
       : BasicInfoModel.fromJson(json['basicInfo'] as Map<String, dynamic>),
@@ -27,8 +27,8 @@ _$RegistrationFormModelImpl _$$RegistrationFormModelImplFromJson(
       : AccountInfoModel.fromJson(json['accountInfo'] as Map<String, dynamic>),
 );
 
-Map<String, dynamic> _$$RegistrationFormModelImplToJson(
-  _$RegistrationFormModelImpl instance,
+Map<String, dynamic> _$RegistrationFormModelToJson(
+  _RegistrationFormModel instance,
 ) => <String, dynamic>{
   'basicInfo': instance.basicInfo,
   'preferencesInfo': instance.preferencesInfo,

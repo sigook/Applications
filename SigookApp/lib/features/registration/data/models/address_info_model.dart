@@ -5,7 +5,7 @@ part 'address_info_model.freezed.dart';
 part 'address_info_model.g.dart';
 
 @freezed
-class AddressInfoModel with _$AddressInfoModel {
+sealed class AddressInfoModel with _$AddressInfoModel {
   const AddressInfoModel._();
 
   const factory AddressInfoModel({

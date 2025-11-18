@@ -6,9 +6,9 @@ part of 'preferences_info_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PreferencesInfoModelImpl _$$PreferencesInfoModelImplFromJson(
+_PreferencesInfoModel _$PreferencesInfoModelFromJson(
   Map<String, dynamic> json,
-) => _$PreferencesInfoModelImpl(
+) => _PreferencesInfoModel(
   availabilityType: Map<String, String>.from(json['availabilityType'] as Map),
   availableTimes: (json['availableTimes'] as List<dynamic>)
       .map((e) => Map<String, String>.from(e as Map))
@@ -26,8 +26,8 @@ _$PreferencesInfoModelImpl _$$PreferencesInfoModelImplFromJson(
   skills: (json['skills'] as List<dynamic>).map((e) => e as String).toList(),
 );
 
-Map<String, dynamic> _$$PreferencesInfoModelImplToJson(
-  _$PreferencesInfoModelImpl instance,
+Map<String, dynamic> _$PreferencesInfoModelToJson(
+  _PreferencesInfoModel instance,
 ) => <String, dynamic>{
   'availabilityType': instance.availabilityType,
   'availableTimes': instance.availableTimes,

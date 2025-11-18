@@ -6,28 +6,69 @@ part of 'registration_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// Form state provider for UI controls (current step, loading states, etc.)
+
+@ProviderFor(RegistrationFormStateNotifier)
+const registrationFormStateProvider = RegistrationFormStateNotifierProvider._();
+
+/// Form state provider for UI controls (current step, loading states, etc.)
+final class RegistrationFormStateNotifierProvider
+    extends
+        $NotifierProvider<
+          RegistrationFormStateNotifier,
+          RegistrationFormState
+        > {
+  /// Form state provider for UI controls (current step, loading states, etc.)
+  const RegistrationFormStateNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'registrationFormStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$registrationFormStateNotifierHash();
+
+  @$internal
+  @override
+  RegistrationFormStateNotifier create() => RegistrationFormStateNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RegistrationFormState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RegistrationFormState>(value),
+    );
+  }
+}
+
 String _$registrationFormStateNotifierHash() =>
     r'392152c872ff9e9d659c94bd345ad25b30dda160';
 
 /// Form state provider for UI controls (current step, loading states, etc.)
-///
-/// Copied from [RegistrationFormStateNotifier].
-@ProviderFor(RegistrationFormStateNotifier)
-final registrationFormStateNotifierProvider =
-    AutoDisposeNotifierProvider<
-      RegistrationFormStateNotifier,
-      RegistrationFormState
-    >.internal(
-      RegistrationFormStateNotifier.new,
-      name: r'registrationFormStateNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$registrationFormStateNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
 
-typedef _$RegistrationFormStateNotifier =
-    AutoDisposeNotifier<RegistrationFormState>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$RegistrationFormStateNotifier
+    extends $Notifier<RegistrationFormState> {
+  RegistrationFormState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<RegistrationFormState, RegistrationFormState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<RegistrationFormState, RegistrationFormState>,
+              RegistrationFormState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

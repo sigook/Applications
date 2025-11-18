@@ -7,7 +7,7 @@ part 'personal_info_model.freezed.dart';
 part 'personal_info_model.g.dart';
 
 @freezed
-class PersonalInfoModel with _$PersonalInfoModel {
+sealed class PersonalInfoModel with _$PersonalInfoModel {
   const PersonalInfoModel._();
 
   const factory PersonalInfoModel({

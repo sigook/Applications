@@ -6,8 +6,8 @@ part of 'basic_info_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$BasicInfoModelImpl _$$BasicInfoModelImplFromJson(Map<String, dynamic> json) =>
-    _$BasicInfoModelImpl(
+_BasicInfoModel _$BasicInfoModelFromJson(Map<String, dynamic> json) =>
+    _BasicInfoModel(
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       dateOfBirth: json['dateOfBirth'] as String,
@@ -23,20 +23,19 @@ _$BasicInfoModelImpl _$$BasicInfoModelImplFromJson(Map<String, dynamic> json) =>
       identificationNumber: json['identificationNumber'] as String?,
     );
 
-Map<String, dynamic> _$$BasicInfoModelImplToJson(
-  _$BasicInfoModelImpl instance,
-) => <String, dynamic>{
-  'firstName': instance.firstName,
-  'lastName': instance.lastName,
-  'dateOfBirth': instance.dateOfBirth,
-  'genderId': instance.genderId,
-  'genderValue': instance.genderValue,
-  'country': instance.country,
-  'provinceState': instance.provinceState,
-  'city': instance.city,
-  'address': instance.address,
-  'zipCode': instance.zipCode,
-  'mobileNumber': instance.mobileNumber,
-  'identificationType': instance.identificationType,
-  'identificationNumber': instance.identificationNumber,
-};
+Map<String, dynamic> _$BasicInfoModelToJson(_BasicInfoModel instance) =>
+    <String, dynamic>{
+      'firstName': instance.firstName,
+      'lastName': instance.lastName,
+      'dateOfBirth': instance.dateOfBirth,
+      'genderId': instance.genderId,
+      'genderValue': instance.genderValue,
+      'country': instance.country,
+      'provinceState': instance.provinceState,
+      'city': instance.city,
+      'address': instance.address,
+      'zipCode': instance.zipCode,
+      'mobileNumber': instance.mobileNumber,
+      'identificationType': instance.identificationType,
+      'identificationNumber': instance.identificationNumber,
+    };
