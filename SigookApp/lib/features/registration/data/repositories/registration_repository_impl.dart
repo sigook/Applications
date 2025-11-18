@@ -19,24 +19,29 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
 
   @override
   Future<Either<Failure, void>> submitRegistration(
-      RegistrationForm form) async {
+    RegistrationForm form,
+  ) async {
     try {
       // Create worker registration request from form
       final request = WorkerRegistrationRequest.fromEntity(form);
-      
+
       // Submit to API
       await remoteDataSource.registerWorker(request);
-      
+
       // Clear draft after successful submission
       await localDataSource.clearDraft();
-      
+
       return const Right(null);
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to submit registration: ${e.toString()}'));
+      return Left(
+        ServerFailure(
+          message: 'Failed to submit registration: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -71,21 +76,6 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
       return const Right(null);
     } catch (e) {
       return Left(CacheFailure(message: e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, bool>> isEmailAvailable(String email) async {
-    try {
-      // TODO: Implement API call to check email availability
-      // For now, simulate check
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Simulate: email is available if it doesn't contain "test"
-      final isAvailable = !email.toLowerCase().contains('test');
-      return Right(isAvailable);
-    } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
     }
   }
 }
