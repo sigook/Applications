@@ -68,12 +68,6 @@ class RegistrationViewModel extends _$RegistrationViewModel {
     return result.fold((failure) => failure.message, (_) => 'Success');
   }
 
-  /// Check email availability
-  Future<bool> checkEmailAvailability(String email) async {
-    final result = await _repository.isEmailAvailable(email);
-    return result.fold((failure) => false, (isAvailable) => isAvailable);
-  }
-
   /// Clear all form data
   Future<void> clearForm() async {
     await _repository.clearDraft();
