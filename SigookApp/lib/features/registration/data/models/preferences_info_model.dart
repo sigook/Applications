@@ -11,7 +11,7 @@ part 'preferences_info_model.freezed.dart';
 part 'preferences_info_model.g.dart';
 
 @freezed
-class PreferencesInfoModel with _$PreferencesInfoModel {
+sealed class PreferencesInfoModel with _$PreferencesInfoModel {
   const PreferencesInfoModel._();
 
   const factory PreferencesInfoModel({

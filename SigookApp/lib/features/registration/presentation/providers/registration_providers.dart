@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
@@ -7,12 +8,18 @@ import '../../data/repositories/registration_repository_impl.dart';
 import '../../domain/repositories/registration_repository.dart';
 import '../../domain/usecases/submit_registration.dart';
 import '../viewmodels/section_state.dart';
+import '../../data/repositories/image_picker_repository_imp.dart';
 
 // Re-export for convenience
 export '../viewmodels/registration_viewmodel.dart'
     show registrationViewModelProvider;
 
 part 'registration_providers.g.dart';
+
+final imagePickerProvider = Provider((ref) => ImagePickerRepositoryImp());
+final pickProfilePhotoProvider = Provider(
+  (ref) => ref.read(imagePickerProvider),
+);
 
 /// SharedPreferences provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

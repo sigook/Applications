@@ -66,7 +66,6 @@ class RegistrationScreen extends ConsumerWidget {
 
     if (hasError) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Registration'), elevation: 0),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -145,7 +144,7 @@ class _RegistrationFormScreenState
 
   @override
   Widget build(BuildContext context) {
-    final formState = ref.watch(registrationFormStateNotifierProvider);
+    final formState = ref.watch(registrationFormStateProvider);
     final form = ref.watch(registrationViewModelProvider);
     final responsive = context.responsive;
 
@@ -177,9 +176,7 @@ class _RegistrationFormScreenState
                     if (_canContinue(formState.currentStep, form)) {
                       if (formState.currentStep < _lastStepIndex) {
                         ref
-                            .read(
-                              registrationFormStateNotifierProvider.notifier,
-                            )
+                            .read(registrationFormStateProvider.notifier)
                             .nextStep();
                         WidgetsBinding.instance.addPostFrameCallback(
                           (_) => _scrollToTop(),
@@ -194,7 +191,7 @@ class _RegistrationFormScreenState
                   onStepCancel: () {
                     if (formState.currentStep > 0) {
                       ref
-                          .read(registrationFormStateNotifierProvider.notifier)
+                          .read(registrationFormStateProvider.notifier)
                           .previousStep();
                       WidgetsBinding.instance.addPostFrameCallback(
                         (_) => _scrollToTop(),
@@ -203,7 +200,7 @@ class _RegistrationFormScreenState
                   },
                   onStepTapped: (step) {
                     ref
-                        .read(registrationFormStateNotifierProvider.notifier)
+                        .read(registrationFormStateProvider.notifier)
                         .goToStep(step);
                     WidgetsBinding.instance.addPostFrameCallback(
                       (_) => _scrollToTop(),
@@ -417,7 +414,7 @@ class _RegistrationFormScreenState
   }
 
   Future<void> _submitForm(BuildContext context, WidgetRef ref) async {
-    final notifier = ref.read(registrationFormStateNotifierProvider.notifier);
+    final notifier = ref.read(registrationFormStateProvider.notifier);
     notifier.setSubmitting(true);
 
     final viewModel = ref.read(registrationViewModelProvider.notifier);

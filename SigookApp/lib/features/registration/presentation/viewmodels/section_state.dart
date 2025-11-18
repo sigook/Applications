@@ -4,7 +4,7 @@ part 'section_state.freezed.dart';
 
 /// State for individual form sections
 @freezed
-class SectionState<T> with _$SectionState<T> {
+sealed class SectionState<T> with _$SectionState<T> {
   const factory SectionState.initial() = _Initial<T>;
   const factory SectionState.editing(T data) = _Editing<T>;
   const factory SectionState.validating() = _Validating<T>;
@@ -14,7 +14,7 @@ class SectionState<T> with _$SectionState<T> {
 
 /// Overall form state
 @freezed
-class RegistrationFormState with _$RegistrationFormState {
+sealed class RegistrationFormState with _$RegistrationFormState {
   const factory RegistrationFormState({
     required int currentStep,
     required bool isSubmitting,
@@ -22,8 +22,6 @@ class RegistrationFormState with _$RegistrationFormState {
     String? successMessage,
   }) = _RegistrationFormState;
 
-  factory RegistrationFormState.initial() => const RegistrationFormState(
-        currentStep: 0,
-        isSubmitting: false,
-      );
+  factory RegistrationFormState.initial() =>
+      const RegistrationFormState(currentStep: 0, isSubmitting: false);
 }

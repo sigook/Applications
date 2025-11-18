@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/profile_photo.dart';
 import 'package:sigook_app_flutter/features/registration/domain/entities/value_objects/zip_code.dart';
+import 'package:sigook_app_flutter/features/registration/presentation/widgets/profile_photo_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/basic_info.dart';
@@ -52,6 +54,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   String? _addressError;
   String? _zipCodeError;
   String? _mobileNumberError;
+  String? _profilePhotoError;
 
   // Track which fields have been touched (focused and blurred)
   final Set<String> _touchedFields = {};
@@ -106,6 +109,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     final firstName = Name(_firstNameController.text);
     final lastName = Name(_lastNameController.text);
 
+    final currentPhoto =
+        ref.read(registrationViewModelProvider).basicInfo?.profilePhoto ??
+        ProfilePhoto.empty();
+
     final basicInfo = BasicInfo(
       firstName: firstName,
       lastName: lastName,
@@ -127,6 +134,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
             (validZip) => validZip,
           ),
       mobileNumber: _mobileNumber,
+      profilePhoto: currentPhoto,
     );
 
     setState(() {
@@ -155,6 +163,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
           : null;
       _mobileNumberError = _shouldShowError('mobileNumber')
           ? basicInfo.mobileNumberError
+          : null;
+      _profilePhotoError = _shouldShowError('profilePhoto')
+          ? _profilePhotoError
           : null;
 
       if (_shouldShowError('dateOfBirth') &&
@@ -234,7 +245,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     final isMobile = screenWidth < 600;
 
     // Listen for step changes to trigger validation when user tries to navigate away
-    ref.listen(registrationFormStateNotifierProvider, (previous, next) {
+    ref.listen(registrationFormStateProvider, (previous, next) {
       if (previous?.currentStep == 0 && next.currentStep != 0) {
         // User is leaving this step - validate all fields
         _validateAndSave();
@@ -265,6 +276,20 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 32),
+
+              // Foto de perfil (widget reutilizable)
+              ProfilePhotoPicker(
+                errorText: 'Profile photo is required',
+                showError:
+                    _shouldShowError('profilePhoto') &&
+                    !(ref
+                            .watch(registrationViewModelProvider)
+                            .basicInfo
+                            ?.profilePhoto
+                            .hasPhoto ??
+                        false),
               ),
               const SizedBox(height: 32),
 

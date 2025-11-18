@@ -8,7 +8,7 @@ part 'contact_info_model.freezed.dart';
 part 'contact_info_model.g.dart';
 
 @freezed
-class ContactInfoModel with _$ContactInfoModel {
+sealed class ContactInfoModel with _$ContactInfoModel {
   const ContactInfoModel._();
 
   const factory ContactInfoModel({
