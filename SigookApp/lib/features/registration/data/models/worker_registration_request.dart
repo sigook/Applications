@@ -12,6 +12,7 @@ import '../../domain/entities/province.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/lifting_capacity.dart';
 import '../../domain/entities/uploaded_file.dart';
+import '../../domain/entities/profile_image.dart';
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -21,6 +22,7 @@ class WorkerRegistrationRequest {
   final String lastName;
   final String birthDay; // ISO 8601 format
   final Gender gender;
+  final ProfileImage? profileImage;
 
   // Identification 1 (required)
   final String identificationNumber1;
@@ -65,6 +67,7 @@ class WorkerRegistrationRequest {
     required this.lastName,
     required this.birthDay,
     required this.gender,
+    this.profileImage,
     required this.identificationNumber1,
     required this.identificationType1,
     this.identificationType1File,
@@ -169,11 +172,17 @@ class WorkerRegistrationRequest {
     final identNumber1 =
         identification1?.identificationNumber ?? identificationNumber;
 
+    // Convert profile photo to profile image
+    final profileImage = basicInfo.profilePhoto.hasPhoto
+        ? ProfileImage.fromPath(basicInfo.profilePhoto.path)
+        : null;
+
     return WorkerRegistrationRequest(
       firstName: basicInfo.firstName.value,
       lastName: basicInfo.lastName.value,
       birthDay: formattedDate,
       gender: basicInfo.gender,
+      profileImage: profileImage,
       identificationNumber1: identNumber1,
       identificationType1: identType1,
       identificationType1File: identification1?.file,
@@ -224,6 +233,7 @@ class WorkerRegistrationRequest {
       'lastName': lastName,
       'birthDay': birthDay,
       'gender': {'id': gender.id}, // Only id per API spec
+      if (profileImage != null) 'profileImage': profileImage!.toJson(),
       'identificationNumber1': identificationNumber1,
       'identificationType1': identificationType1.toJson(),
       if (mobileNumber != null) 'mobileNumber': mobileNumber,
