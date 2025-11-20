@@ -45,7 +45,7 @@ final class RegistrationViewModelProvider
 }
 
 String _$registrationViewModelHash() =>
-    r'18397918bdbe9f7c7f0ec8e6d568d9caa6b821af';
+    r'10f30d9c1e91e60125fd0f8004f78faf9d5db528';
 
 /// ViewModel for managing registration form state
 

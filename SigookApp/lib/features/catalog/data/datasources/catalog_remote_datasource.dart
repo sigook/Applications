@@ -36,17 +36,17 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
 
   @override
   Future<List<CatalogItemModel>> getCountries() async {
-    return _getCatalogItems('/Catalog/country');
+    return _getCatalogItems('/Location/country');
   }
 
   @override
   Future<List<CatalogItemModel>> getProvinces(String countryId) async {
-    return _getCatalogItems('/Catalog/province/$countryId');
+    return _getCatalogItems('/Location/province/$countryId');
   }
 
   @override
   Future<List<CatalogItemModel>> getCities(String provinceId) async {
-    return _getCatalogItems('/Catalog/city/$provinceId');
+    return _getCatalogItems('/Location/city/$provinceId');
   }
 
   @override

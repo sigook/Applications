@@ -10,6 +10,9 @@ class ApiClient {
 
   late final Dio _dio;
 
+  /// Expose Dio instance for use cases that need direct access
+  Dio get dio => _dio;
+
   ApiClient() {
     _dio = Dio(
       BaseOptions(
