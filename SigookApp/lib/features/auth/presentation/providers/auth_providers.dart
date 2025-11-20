@@ -2,8 +2,8 @@
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:sigook_app_flutter/core/providers/core_providers.dart';
-import 'package:sigook_app_flutter/features/catalog/presentation/providers/catalog_providers.dart';
+import '../../../../core/providers/core_providers.dart';
+import '../../../../core/network/auth_interceptor.dart';
 
 import '../../data/datasources/auth_local_datasource.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
@@ -17,6 +17,30 @@ import '../viewmodels/auth_viewmodel.dart';
 
 part 'auth_providers.g.dart';
 
+// 0. Auth Interceptor for automatic token refresh on 401 errors
+final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
+  return AuthInterceptor(
+    ref: ref,
+    authRepository: ref.read(authRepositoryProvider),
+    localDataSource: ref.read(authLocalDataSourceProvider),
+  );
+});
+
+// 0b. Authenticated API Client with auth interceptor
+/// Use this provider for API calls that require authentication
+final authenticatedApiClientProvider = Provider((ref) {
+  final authInterceptor = ref.watch(authInterceptorProvider);
+  final apiClient = ref.read(apiClientProvider);
+
+  // Add the auth interceptor to the Dio instance
+  // This is safe because it only happens once per provider instance
+  if (!apiClient.dio.interceptors.any((i) => i is AuthInterceptor)) {
+    apiClient.dio.interceptors.insert(0, authInterceptor);
+  }
+
+  return apiClient;
+});
+
 // 1. Datasources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSource(
@@ -27,7 +51,7 @@ final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
 
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
   return AuthLocalDataSourceImpl(
-    sharedPreferences: ref.read(sharedPreferencesProvider),
+    secureStorage: ref.read(secureStorageProvider),
   );
 });
 

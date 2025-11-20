@@ -1,19 +1,22 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import '../config/environment.dart';
 
 /// Dio HTTP client configuration
 /// Centralized API client with interceptors and error handling
 class ApiClient {
-  static const String baseUrl = 'https://staging.api.sigook.ca/api';
   static const int connectionTimeout = 30000; // 30 seconds
   static const int receiveTimeout = 30000; // 30 seconds
+
+  /// Get base URL from environment configuration
+  String get baseUrl => EnvironmentConfig.apiBaseUrl;
 
   late final Dio _dio;
 
   /// Expose Dio instance for use cases that need direct access
   Dio get dio => _dio;
 
-  ApiClient() {
+  ApiClient({Interceptor? authInterceptor}) {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -27,10 +30,15 @@ class ApiClient {
     );
 
     // Add interceptors
-    _addInterceptors();
+    _addInterceptors(authInterceptor);
   }
 
-  void _addInterceptors() {
+  void _addInterceptors(Interceptor? authInterceptor) {
+    // Add auth interceptor first (if provided) so it runs before logging
+    if (authInterceptor != null) {
+      _dio.interceptors.add(authInterceptor);
+    }
+
     // Pretty logger for debugging (only in debug mode)
     _dio.interceptors.add(
       PrettyDioLogger(

@@ -14,6 +14,9 @@ _AuthTokenModel _$AuthTokenModelFromJson(Map<String, dynamic> json) =>
       expiresIn: (json['expiresIn'] as num?)?.toInt(),
       tokenType: json['tokenType'] as String?,
       scope: json['scope'] as String?,
+      userInfo: json['userInfo'] == null
+          ? null
+          : UserInfoModel.fromJson(json['userInfo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AuthTokenModelToJson(_AuthTokenModel instance) =>
@@ -24,4 +27,5 @@ Map<String, dynamic> _$AuthTokenModelToJson(_AuthTokenModel instance) =>
       'expiresIn': instance.expiresIn,
       'tokenType': instance.tokenType,
       'scope': instance.scope,
+      'userInfo': instance.userInfo,
     };

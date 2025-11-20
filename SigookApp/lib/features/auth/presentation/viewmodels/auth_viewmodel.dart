@@ -34,14 +34,19 @@ class AuthViewModel extends _$AuthViewModel {
     final result = await signIn(NoParams());
 
     result.fold(
-      (failure) =>
-          state = state.copyWith(isLoading: false, error: failure.message),
-      (token) => state = state.copyWith(
-        isLoading: false,
-        token: token,
-        isAuthenticated: true,
-        error: null,
-      ),
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        print('Sign in error: ${failure.message}');
+      },
+      (token) {
+        state = state.copyWith(
+          isLoading: false,
+          token: token,
+          isAuthenticated: true,
+          error: null,
+        );
+        print('Sign in result: $token');
+      },
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
+import '../../../../core/config/environment.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
 import '../models/auth_token_model.dart';
@@ -18,10 +19,10 @@ class AuthRemoteDataSource {
 
     try {
       final AuthorizationTokenRequest request = AuthorizationTokenRequest(
-        'sigook.flutter.staging',
-        'sigook://oauth-callback',
-        issuer: 'https://staging.accounts.sigook.ca',
-        scopes: ['openid', 'profile', 'roles', 'api1', 'offline_access'],
+        EnvironmentConfig.clientId,
+        EnvironmentConfig.redirectUri,
+        issuer: EnvironmentConfig.authority,
+        scopes: EnvironmentConfig.scopes,
       );
 
       final AuthorizationTokenResponse result = await flutterAppAuth
@@ -56,9 +57,9 @@ class AuthRemoteDataSource {
 
     try {
       final TokenRequest request = TokenRequest(
-        'sigook.flutter.staging',
-        'sigook://oauth-callback',
-        issuer: 'https://staging.accounts.sigook.ca',
+        EnvironmentConfig.clientId,
+        EnvironmentConfig.redirectUri,
+        issuer: EnvironmentConfig.authority,
         refreshToken: currentRefreshToken,
       );
 

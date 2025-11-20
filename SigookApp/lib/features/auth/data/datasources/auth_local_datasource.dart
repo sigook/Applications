@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/auth_token_model.dart';
 
 abstract class AuthLocalDataSource {
@@ -9,14 +9,14 @@ abstract class AuthLocalDataSource {
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
-  final SharedPreferences sharedPreferences;
+  final FlutterSecureStorage secureStorage;
   static const String cachedTokenKey = 'CACHED_AUTH_TOKEN';
 
-  AuthLocalDataSourceImpl({required this.sharedPreferences});
+  AuthLocalDataSourceImpl({required this.secureStorage});
 
   @override
   Future<AuthTokenModel?> getCachedToken() async {
-    final jsonString = sharedPreferences.getString(cachedTokenKey);
+    final jsonString = await secureStorage.read(key: cachedTokenKey);
     if (jsonString != null) {
       return AuthTokenModel.fromJson(json.decode(jsonString));
     }
@@ -26,11 +26,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheToken(AuthTokenModel token) async {
     final jsonString = json.encode(token.toJson());
-    await sharedPreferences.setString(cachedTokenKey, jsonString);
+    await secureStorage.write(key: cachedTokenKey, value: jsonString);
   }
 
   @override
   Future<void> clearToken() async {
-    await sharedPreferences.remove(cachedTokenKey);
+    await secureStorage.delete(key: cachedTokenKey);
   }
 }

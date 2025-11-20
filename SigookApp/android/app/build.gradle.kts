@@ -1,40 +1,53 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
     namespace = "com.example.sigook_app_flutter"
-    compileSdk = flutter.compileSdkVersion
+
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
-    // -------------------------------
-    // Java 17 compatibility (FIX)
-    // -------------------------------
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         isCoreLibraryDesugaringEnabled = true
     }
 
-    // -------------------------------
-    // Kotlin JVM target 17 (FIX)
-    // -------------------------------
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 
     defaultConfig {
         applicationId = "com.example.sigook_app_flutter"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Required for flutter_appauth
+        manifestPlaceholders["appAuthRedirectScheme"] = "sigookcallback"
+        
+        // Add multiDex support
+        multiDexEnabled = true
+    }
 
-        // OAuth redirect scheme for FlutterAppAuth
-        manifestPlaceholders["appAuthRedirectScheme"] = "sigook"
+    flavorDimensions.add("environment")
+
+    productFlavors {
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            resValue("string", "app_name", "Sigook (Staging)")
+        }
+
+        create("production") {
+            dimension = "environment"
+            resValue("string", "app_name", "Sigook")
+        }
     }
 
     buildTypes {
@@ -48,9 +61,7 @@ flutter {
     source = "../.."
 }
 
-// ---------------------------------------
-// Enable desugaring support (recommended)
-// ---------------------------------------
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+    implementation("androidx.multidex:multidex:2.0.1")
 }

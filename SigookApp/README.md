@@ -56,3 +56,39 @@ This project follows **Clean Architecture** principles with clear separation of 
 
 ## Development Workflow
 
+### 🐛 Debugging with VS Code
+
+The project includes pre-configured VS Code launch configurations for easy debugging across different environments:
+
+#### Available Debug Configurations
+- **Development (Staging)** - Default development with staging environment
+- **Staging Environment** - Explicit staging build
+- **Production Environment** - Explicit production build
+- **Platform-specific variants** for iOS Simulator and Android Emulator
+
+#### How to Debug
+1. Open VS Code in the project directory
+2. Press `Ctrl+Shift+D` (or `Cmd+Shift+D` on Mac) to open Run & Debug
+3. Select your desired configuration from the dropdown
+4. Press `F5` or click the green play button
+
+#### Environment Details
+- **Staging**: Orange theme, points to staging servers
+- **Production**: Clean theme, points to production servers
+- Each environment loads its respective `.env` file
+
+See `.vscode/README.md` for detailed configuration information.
+
+### 🚀 Build Flavors
+
+This app uses Flutter **Build Flavors** for environment management:
+
+```bash
+# Staging build
+flutter run --flavor staging -t lib/main_staging.dart
+
+# Production build  
+flutter build apk --flavor production -t lib/main_production.dart --release
+```
+
+See `BUILD_FLAVORS_GUIDE.md` for complete setup instructions.

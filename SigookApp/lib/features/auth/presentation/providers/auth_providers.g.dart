@@ -47,7 +47,7 @@ final class SignInProvider extends $FunctionalProvider<SignIn, SignIn, SignIn>
   }
 }
 
-String _$signInHash() => r'69d0a5b9c916867a86f60ff9fab4c57d00e3ed46';
+String _$signInHash() => r'22614f11f9564296d0cb7bdf5e3a0064602a9f75';
 
 @ProviderFor(refreshToken)
 const refreshTokenProvider = RefreshTokenProvider._();
@@ -88,7 +88,7 @@ final class RefreshTokenProvider
   }
 }
 
-String _$refreshTokenHash() => r'f9a892d9ff35c0ea9d7c6866c6506b9a7df0c6bc';
+String _$refreshTokenHash() => r'61f13c03571f269236663bf6681ffa5df3c78619';
 
 @ProviderFor(logout)
 const logoutProvider = LogoutProvider._();
@@ -128,7 +128,7 @@ final class LogoutProvider extends $FunctionalProvider<Logout, Logout, Logout>
   }
 }
 
-String _$logoutHash() => r'5ba812e305e7ae7c054f77046bbeed388ec55ec2';
+String _$logoutHash() => r'3f851dcbb9e8569c953ef50df79359f905c186c8';
 
 @ProviderFor(currentAuthToken)
 const currentAuthTokenProvider = CurrentAuthTokenProvider._();
@@ -169,4 +169,4 @@ final class CurrentAuthTokenProvider
   }
 }
 
-String _$currentAuthTokenHash() => r'69c9d442f829d388ae4e1e2a5fd9e4191bb1b6e5';
+String _$currentAuthTokenHash() => r'3df1e536fe7e48ff406f7d9c1ec1d83c1076ec05';

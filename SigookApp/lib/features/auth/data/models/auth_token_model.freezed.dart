@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthTokenModel {
 
- String? get accessToken; String? get idToken; String? get refreshToken; int? get expiresIn; String? get tokenType; String? get scope;
+ String? get accessToken; String? get idToken; String? get refreshToken; int? get expiresIn; String? get tokenType; String? get scope; UserInfoModel? get userInfo;
 /// Create a copy of AuthTokenModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,12 +28,12 @@ $AuthTokenModelCopyWith<AuthTokenModel> get copyWith => _$AuthTokenModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&(identical(other.scope, scope) || other.scope == scope));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expiresIn,tokenType,scope);
+int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expiresIn,tokenType,scope,userInfo);
 
 
 
@@ -44,7 +44,7 @@ abstract mixin class $AuthTokenModelCopyWith<$Res>  {
   factory $AuthTokenModelCopyWith(AuthTokenModel value, $Res Function(AuthTokenModel) _then) = _$AuthTokenModelCopyWithImpl;
 @useResult
 $Res call({
- String? accessToken, String? idToken, String? refreshToken, int? expiresIn, String? tokenType, String? scope
+ String? accessToken, String? idToken, String? refreshToken, int? expiresIn, String? tokenType, String? scope, UserInfoModel? userInfo
 });
 
 
@@ -61,7 +61,7 @@ class _$AuthTokenModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthTokenModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = freezed,Object? idToken = freezed,Object? refreshToken = freezed,Object? expiresIn = freezed,Object? tokenType = freezed,Object? scope = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = freezed,Object? idToken = freezed,Object? refreshToken = freezed,Object? expiresIn = freezed,Object? tokenType = freezed,Object? scope = freezed,Object? userInfo = freezed,}) {
   return _then(_self.copyWith(
 accessToken: freezed == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String?,idToken: freezed == idToken ? _self.idToken : idToken // ignore: cast_nullable_to_non_nullable
@@ -69,7 +69,8 @@ as String?,refreshToken: freezed == refreshToken ? _self.refreshToken : refreshT
 as String?,expiresIn: freezed == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
 as int?,tokenType: freezed == tokenType ? _self.tokenType : tokenType // ignore: cast_nullable_to_non_nullable
 as String?,scope: freezed == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,userInfo: freezed == userInfo ? _self.userInfo : userInfo // ignore: cast_nullable_to_non_nullable
+as UserInfoModel?,
   ));
 }
 
@@ -151,10 +152,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope,  UserInfoModel? userInfo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthTokenModel() when $default != null:
-return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope);case _:
+return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope,_that.userInfo);case _:
   return orElse();
 
 }
@@ -172,10 +173,10 @@ return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expires
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope,  UserInfoModel? userInfo)  $default,) {final _that = this;
 switch (_that) {
 case _AuthTokenModel():
-return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope);}
+return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope,_that.userInfo);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -189,10 +190,10 @@ return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expires
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? accessToken,  String? idToken,  String? refreshToken,  int? expiresIn,  String? tokenType,  String? scope,  UserInfoModel? userInfo)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthTokenModel() when $default != null:
-return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope);case _:
+return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expiresIn,_that.tokenType,_that.scope,_that.userInfo);case _:
   return null;
 
 }
@@ -204,7 +205,7 @@ return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expires
 @JsonSerializable()
 
 class _AuthTokenModel extends AuthTokenModel {
-  const _AuthTokenModel({this.accessToken, this.idToken, this.refreshToken, this.expiresIn, this.tokenType, this.scope}): super._();
+  const _AuthTokenModel({this.accessToken, this.idToken, this.refreshToken, this.expiresIn, this.tokenType, this.scope, this.userInfo}): super._();
   factory _AuthTokenModel.fromJson(Map<String, dynamic> json) => _$AuthTokenModelFromJson(json);
 
 @override final  String? accessToken;
@@ -213,6 +214,7 @@ class _AuthTokenModel extends AuthTokenModel {
 @override final  int? expiresIn;
 @override final  String? tokenType;
 @override final  String? scope;
+@override final  UserInfoModel? userInfo;
 
 /// Create a copy of AuthTokenModel
 /// with the given fields replaced by the non-null parameter values.
@@ -227,12 +229,12 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&(identical(other.scope, scope) || other.scope == scope));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expiresIn,tokenType,scope);
+int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expiresIn,tokenType,scope,userInfo);
 
 
 
@@ -243,7 +245,7 @@ abstract mixin class _$AuthTokenModelCopyWith<$Res> implements $AuthTokenModelCo
   factory _$AuthTokenModelCopyWith(_AuthTokenModel value, $Res Function(_AuthTokenModel) _then) = __$AuthTokenModelCopyWithImpl;
 @override @useResult
 $Res call({
- String? accessToken, String? idToken, String? refreshToken, int? expiresIn, String? tokenType, String? scope
+ String? accessToken, String? idToken, String? refreshToken, int? expiresIn, String? tokenType, String? scope, UserInfoModel? userInfo
 });
 
 
@@ -260,7 +262,7 @@ class __$AuthTokenModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthTokenModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = freezed,Object? idToken = freezed,Object? refreshToken = freezed,Object? expiresIn = freezed,Object? tokenType = freezed,Object? scope = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = freezed,Object? idToken = freezed,Object? refreshToken = freezed,Object? expiresIn = freezed,Object? tokenType = freezed,Object? scope = freezed,Object? userInfo = freezed,}) {
   return _then(_AuthTokenModel(
 accessToken: freezed == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String?,idToken: freezed == idToken ? _self.idToken : idToken // ignore: cast_nullable_to_non_nullable
@@ -268,7 +270,8 @@ as String?,refreshToken: freezed == refreshToken ? _self.refreshToken : refreshT
 as String?,expiresIn: freezed == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
 as int?,tokenType: freezed == tokenType ? _self.tokenType : tokenType // ignore: cast_nullable_to_non_nullable
 as String?,scope: freezed == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,userInfo: freezed == userInfo ? _self.userInfo : userInfo // ignore: cast_nullable_to_non_nullable
+as UserInfoModel?,
   ));
 }
 

@@ -1,41 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'core/providers/core_providers.dart';
-import 'core/routing/app_router.dart';
-import 'core/theme/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'main_common.dart';
 
-void main() async {
+/// Default entry point for development
+/// Loads staging environment by default
+///
+/// For flavor-specific builds, use:
+/// - flutter run --flavor staging -t lib/main_staging.dart
+/// - flutter run --flavor production -t lib/main_production.dart
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final sharedPreferences = await SharedPreferences.getInstance();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const MyApp(),
-    ),
-  );
-}
+  // Load staging environment by default for development
+  await dotenv.load(fileName: '.env.staging');
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Sigook',
-      debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
-      theme: AppTheme.lightTheme,
-      builder: (context, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: child,
-        );
-      },
-    );
-  }
+  // Run the common main app
+  await mainCommon();
 }
