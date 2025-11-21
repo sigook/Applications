@@ -11,9 +11,13 @@ _AuthTokenModel _$AuthTokenModelFromJson(Map<String, dynamic> json) =>
       accessToken: json['accessToken'] as String?,
       idToken: json['idToken'] as String?,
       refreshToken: json['refreshToken'] as String?,
-      expiresIn: (json['expiresIn'] as num?)?.toInt(),
+      expirationDateTime: json['expirationDateTime'] == null
+          ? null
+          : DateTime.parse(json['expirationDateTime'] as String),
       tokenType: json['tokenType'] as String?,
-      scope: json['scope'] as String?,
+      scopes: (json['scopes'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       userInfo: json['userInfo'] == null
           ? null
           : UserInfoModel.fromJson(json['userInfo'] as Map<String, dynamic>),
@@ -24,8 +28,8 @@ Map<String, dynamic> _$AuthTokenModelToJson(_AuthTokenModel instance) =>
       'accessToken': instance.accessToken,
       'idToken': instance.idToken,
       'refreshToken': instance.refreshToken,
-      'expiresIn': instance.expiresIn,
+      'expirationDateTime': instance.expirationDateTime?.toIso8601String(),
       'tokenType': instance.tokenType,
-      'scope': instance.scope,
+      'scopes': instance.scopes,
       'userInfo': instance.userInfo,
     };

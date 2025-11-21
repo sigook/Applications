@@ -14,9 +14,9 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
     String? accessToken,
     String? idToken,
     String? refreshToken,
-    int? expiresIn,
+    DateTime? expirationDateTime,
     String? tokenType,
-    String? scope,
+    List<String>? scopes,
     UserInfoModel? userInfo,
   }) = _AuthTokenModel;
 
@@ -40,9 +40,9 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
       accessToken: response.accessToken,
       idToken: response.idToken,
       refreshToken: response.refreshToken,
-      expiresIn: response.expiresIn,
+      expirationDateTime: response.accessTokenExpirationDateTime,
       tokenType: response.tokenType ?? 'Bearer',
-      scope: response.scope,
+      scopes: response.scopes,
       userInfo: userInfo,
     );
   }
@@ -50,5 +50,5 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
   @override
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
-      (expiresIn != null && expiresIn! > 0);
+      (expirationDateTime != null);
 }

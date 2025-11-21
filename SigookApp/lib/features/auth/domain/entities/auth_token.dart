@@ -5,14 +5,16 @@ class AuthToken extends Equatable {
   final String? accessToken;
   final String? idToken;
   final String? refreshToken;
-  final int? expiresIn;
+  final DateTime? expirationDateTime;
+  final List<String>? scopes;
   final UserInfo? userInfo;
 
   const AuthToken({
     this.accessToken,
     this.idToken,
     this.refreshToken,
-    this.expiresIn,
+    this.expirationDateTime,
+    this.scopes,
     this.userInfo,
   });
 
@@ -20,14 +22,15 @@ class AuthToken extends Equatable {
 
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
-      (expiresIn != null && expiresIn! > 0);
+      (expirationDateTime != null);
 
   @override
   List<Object?> get props => [
     accessToken,
     idToken,
     refreshToken,
-    expiresIn,
+    expirationDateTime,
+    scopes,
     userInfo,
   ];
 }
