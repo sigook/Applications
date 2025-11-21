@@ -4,6 +4,7 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/welcome/presentation/pages/welcome_page.dart';
 import '../../features/registration/presentation/pages/registration_screen.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
+import '../../features/auth/presentation/pages/token_info_page.dart';
 
 /// Route path constants
 class AppRoutes {
@@ -11,6 +12,7 @@ class AppRoutes {
   static const String welcome = '/welcome';
   static const String signIn = '/sign-in';
   static const String registration = '/registration';
+  static const String tokenInfo = '/token-info';
 }
 
 /// Navigation observer to dismiss keyboard on route change
@@ -65,7 +67,10 @@ class AppRouter {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
             var offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
@@ -81,9 +86,23 @@ class AppRouter {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
             var offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.tokenInfo,
+        name: 'tokenInfo',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const TokenInfoPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
           },
         ),
       ),
