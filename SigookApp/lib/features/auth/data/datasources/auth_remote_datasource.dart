@@ -5,13 +5,24 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
 import '../models/auth_token_model.dart';
 
-class AuthRemoteDataSource {
+abstract class AuthRemoteDataSource {
+  Future<AuthTokenModel> signIn();
+  Future<void> logout(String idToken);
+  Future<AuthTokenModel> refreshToken(String currentRefreshToken);
+}
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio;
   final NetworkInfo networkInfo;
-  final FlutterAppAuth flutterAppAuth = FlutterAppAuth();
+  final FlutterAppAuth appAuth;
 
-  AuthRemoteDataSource({required this.dio, required this.networkInfo});
+  AuthRemoteDataSourceImpl({
+    required this.dio,
+    required this.networkInfo,
+    required this.appAuth,
+  });
 
+  @override
   Future<AuthTokenModel> signIn() async {
     if (!(await networkInfo.isConnected)) {
       throw NetworkException('No internet connection');
@@ -25,7 +36,7 @@ class AuthRemoteDataSource {
         scopes: EnvironmentConfig.scopes,
       );
 
-      final AuthorizationTokenResponse result = await flutterAppAuth
+      final AuthorizationTokenResponse result = await appAuth
           .authorizeAndExchangeCode(request);
 
       return AuthTokenModel.fromResponse(result);
@@ -35,21 +46,27 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<void> logout() async {
+  @override
+  Future<void> logout(String idToken) async {
     if (!(await networkInfo.isConnected)) {
       throw NetworkException('No internet connection');
     }
 
     try {
-      await dio.post('/logout');
-    } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Logout failed',
-        statusCode: e.response?.statusCode,
+      final request = EndSessionRequest(
+        idTokenHint: idToken,
+        postLogoutRedirectUrl: EnvironmentConfig.postLogoutRedirectUri,
+        issuer: EnvironmentConfig.authority,
       );
+
+      await appAuth.endSession(request);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Logout failed: ${e.toString()}');
     }
   }
 
+  @override
   Future<AuthTokenModel> refreshToken(String currentRefreshToken) async {
     if (!(await networkInfo.isConnected)) {
       throw NetworkException('No internet connection');
@@ -63,7 +80,7 @@ class AuthRemoteDataSource {
         refreshToken: currentRefreshToken,
       );
 
-      final TokenResponse result = await flutterAppAuth.token(request);
+      final TokenResponse result = await appAuth.token(request);
 
       return AuthTokenModel.fromResponse(result);
     } catch (e) {

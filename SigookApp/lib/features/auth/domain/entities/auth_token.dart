@@ -6,6 +6,7 @@ class AuthToken extends Equatable {
   final String? idToken;
   final String? refreshToken;
   final DateTime? expirationDateTime;
+  final String? tokenType;
   final List<String>? scopes;
   final UserInfo? userInfo;
 
@@ -14,6 +15,7 @@ class AuthToken extends Equatable {
     this.idToken,
     this.refreshToken,
     this.expirationDateTime,
+    this.tokenType,
     this.scopes,
     this.userInfo,
   });
@@ -30,6 +32,7 @@ class AuthToken extends Equatable {
     idToken,
     refreshToken,
     expirationDateTime,
+    tokenType,
     scopes,
     userInfo,
   ];

@@ -1,5 +1,6 @@
 // lib/features/auth/presentation/providers/auth_providers.dart
 
+import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
@@ -23,6 +24,7 @@ final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
     ref: ref,
     authRepository: ref.read(authRepositoryProvider),
     localDataSource: ref.read(authLocalDataSourceProvider),
+    dio: ref.read(apiClientProvider).dio,
   );
 });
 
@@ -41,11 +43,17 @@ final authenticatedApiClientProvider = Provider((ref) {
   return apiClient;
 });
 
-// 1. Datasources
+// 1. OAuth Client
+final flutterAppAuthProvider = Provider<FlutterAppAuth>((ref) {
+  return FlutterAppAuth();
+});
+
+// 2. Datasources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
-  return AuthRemoteDataSource(
+  return AuthRemoteDataSourceImpl(
     dio: ref.read(apiClientProvider).dio,
     networkInfo: ref.read(networkInfoProvider),
+    appAuth: ref.read(flutterAppAuthProvider),
   );
 });
 
@@ -55,7 +63,7 @@ final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
   );
 });
 
-// 2. Repository
+// 3. Repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
     remote: ref.read(authRemoteDataSourceProvider),
@@ -64,7 +72,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
-// 3. UseCases
+// 4. UseCases
 @riverpod
 SignIn signIn(Ref ref) {
   return SignIn(ref.read(authRepositoryProvider));
@@ -80,9 +88,9 @@ Logout logout(Ref ref) {
   return Logout(ref.read(authRepositoryProvider));
 }
 
-// 4. authViewModelProvider is auto-generated from @riverpod in auth_viewmodel.dart
+// 5. authViewModelProvider is auto-generated from @riverpod in auth_viewmodel.dart
 
-// 5. Token actual (para usar en interceptors de Dio, etc.)
+// 6. Current token for use in interceptors, etc.
 @riverpod
 AuthToken? currentAuthToken(Ref ref) {
   return ref.watch(authViewModelProvider).token;

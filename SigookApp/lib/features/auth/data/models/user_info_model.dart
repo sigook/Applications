@@ -35,10 +35,10 @@ class UserInfoModel extends UserInfo {
     return {
       'sub': sub,
       'name': name,
-      'givenName': givenName,
-      'familyName': familyName,
+      'given_name': givenName,
+      'family_name': familyName,
       'email': email,
-      'emailVerified': emailVerified,
+      'email_verified': emailVerified,
       'roles': roles,
     };
   }

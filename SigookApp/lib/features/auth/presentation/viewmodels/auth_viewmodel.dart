@@ -36,7 +36,6 @@ class AuthViewModel extends _$AuthViewModel {
     result.fold(
       (failure) {
         state = state.copyWith(isLoading: false, error: failure.message);
-        print('Sign in error: ${failure.message}');
       },
       (token) {
         state = state.copyWith(
@@ -45,7 +44,6 @@ class AuthViewModel extends _$AuthViewModel {
           isAuthenticated: true,
           error: null,
         );
-        print('Sign in result: $token');
       },
     );
   }
@@ -89,11 +87,22 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   Future<void> logout() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, error: null);
 
     final logout = ref.read(logoutProvider);
-    await logout(NoParams());
+    final result = await logout(NoParams());
 
-    state = const AuthState();
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.message,
+          // Keep authentication state until logout succeeds
+        );
+      },
+      (success) {
+        state = const AuthState();
+      },
+    );
   }
 }

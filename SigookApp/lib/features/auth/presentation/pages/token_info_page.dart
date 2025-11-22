@@ -45,6 +45,31 @@ class _TokenInfoPageState extends ConsumerState<TokenInfoPage> {
         context.go(AppRoutes.welcome);
       }
 
+      // Show error message if logout failed
+      if (next.error != null &&
+          previous?.isLoading == true &&
+          next.isLoading == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout failed: ${next.error!}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+      // Show error message if refresh failed
+      if (next.error != null &&
+          previous?.isLoading == true &&
+          next.isLoading == false &&
+          next.isAuthenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Token refresh failed: ${next.error!}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+
       // Check if token was refreshed (different from original)
       if (next.isAuthenticated &&
           next.token != null &&

@@ -8,11 +8,13 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
   final Ref ref;
   final AuthRepository authRepository;
   final AuthLocalDataSource localDataSource;
+  final Dio dio;
 
   AuthInterceptor({
     required this.ref,
     required this.authRepository,
     required this.localDataSource,
+    required this.dio,
   });
 
   @override
@@ -66,7 +68,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
                 'Bearer ${newToken.accessToken}';
 
             try {
-              final response = await Dio().fetch(requestOptions);
+              final response = await dio.fetch(requestOptions);
               return handler.resolve(response);
             } catch (e) {
               return handler.next(err);

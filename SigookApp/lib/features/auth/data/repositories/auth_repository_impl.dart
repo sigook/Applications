@@ -52,7 +52,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> logout() async {
     try {
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
-      await remote.logout();
+      final cachedToken = await local.getCachedToken();
+      if (cachedToken?.idToken == null) {
+        return Left(ServerFailure(message: 'No valid token found for logout'));
+      }
+      await remote.logout(cachedToken!.idToken!);
       await local.clearToken();
       return Right(null);
     } on ServerException catch (e) {
