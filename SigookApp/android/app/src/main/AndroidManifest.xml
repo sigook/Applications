@@ -33,13 +33,21 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- OAuth redirects (login and logout) -->
+            <!-- OAuth login redirect -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="sigookcallback" android:host="oauth2redirect" android:pathPrefix="/" />
                 <data android:scheme="sigookcallback" android:host="logout" />
+            </intent-filter>
+
+            <!-- OAuth logout redirect -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.sigook" android:host="oauth2logout" />
             </intent-filter>
 
         </activity>

@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 /// Common main function shared by all flavors
 /// This is called after the environment-specific .env file is loaded
@@ -36,24 +35,6 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    // Attempt silent auto-login when app starts
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _attemptAutoLogin();
-    });
-  }
-
-  Future<void> _attemptAutoLogin() async {
-    try {
-      await ref.read(authViewModelProvider.notifier).tryAutoLogin();
-    } catch (e) {
-      // Silent fail - user will need to login manually
-      debugPrint('Auto-login failed: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(

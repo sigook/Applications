@@ -41,32 +41,27 @@ class _TokenInfoPageState extends ConsumerState<TokenInfoPage> {
     // Listen to auth state changes
     ref.listen(authViewModelProvider, (previous, next) {
       if (!next.isAuthenticated && next.token == null) {
-        // User has logged out, navigate back to welcome
+        // User has logged out successfully
+        if (previous?.isAuthenticated == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Logged out successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        // Navigate back to welcome
         context.go(AppRoutes.welcome);
       }
 
-      // Show error message if logout failed
-      if (next.error != null &&
-          previous?.isLoading == true &&
-          next.isLoading == false) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Logout failed: ${next.error!}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-
-      // Show error message if refresh failed
+      // Show error message if operation failed (but still authenticated)
       if (next.error != null &&
           previous?.isLoading == true &&
           next.isLoading == false &&
           next.isAuthenticated) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Token refresh failed: ${next.error!}'),
-            backgroundColor: Colors.orange,
-          ),
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.orange),
         );
       }
 

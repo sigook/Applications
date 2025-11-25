@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../../../core/routing/app_router.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  bool _hasNavigated = false;
+  bool _minDurationComplete = false;
 
   @override
   void initState() {
@@ -41,10 +45,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // Navigate to welcome page after 2.5 seconds
-    Timer(const Duration(milliseconds: 2500), () {
+    // Mark minimum duration as complete after splash time
+    Timer(const Duration(milliseconds: 2700), () {
       if (mounted) {
-        context.go(AppRoutes.welcome);
+        setState(() {
+          _minDurationComplete = true;
+        });
       }
     });
   }
@@ -57,6 +63,23 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch auth state - this will rebuild when state changes
+    final authState = ref.watch(authViewModelProvider);
+
+    // Navigate once minimum duration is complete
+    if (_minDurationComplete && !_hasNavigated) {
+      _hasNavigated = true;
+      // Schedule navigation for next frame to avoid modifying state during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          if (authState.isAuthenticated && authState.token != null) {
+            context.go(AppRoutes.tokenInfo);
+          } else {
+            context.go(AppRoutes.welcome);
+          }
+        }
+      });
+    }
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

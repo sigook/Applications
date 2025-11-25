@@ -51,18 +51,39 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
-      if (!await networkInfo.isConnected) return Left(NetworkFailure());
       final cachedToken = await local.getCachedToken();
       if (cachedToken?.idToken == null) {
-        return Left(ServerFailure(message: 'No valid token found for logout'));
+        // No token to logout with, just clear local storage
+        await local.clearToken();
+        return Right(null);
       }
-      await remote.logout(cachedToken!.idToken!);
+
+      // Try to end session with IdentityServer
+      if (await networkInfo.isConnected) {
+        try {
+          await remote.logout(cachedToken!.idToken!);
+        } catch (e) {
+          // Log the error but continue to clear local tokens
+          print('End session failed: $e');
+          // We still clear local tokens even if server logout fails
+        }
+      }
+
+      // Always clear local tokens, even if end session fails
       await local.clearToken();
       return Right(null);
     } on ServerException catch (e) {
+      // Clear local tokens even on error
+      await local.clearToken();
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
+      // Clear local tokens even on error
+      await local.clearToken();
       return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      // Clear local tokens even on unexpected error
+      await local.clearToken();
+      return Left(ServerFailure(message: 'Logout error: ${e.toString()}'));
     }
   }
 }

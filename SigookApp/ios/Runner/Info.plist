@@ -53,6 +53,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sigookcallback</string>
+				<string>com.sigook</string>
 			</array>
 		</dict>
 	</array>
