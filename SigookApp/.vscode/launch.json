@@ -1,0 +1,64 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "sigook_app_flutter (Debug)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "sigook_app_flutter (Profile)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "sigook_app_flutter (Release)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "sigook_app_flutter (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
+            "deviceId": "chrome"
+        },
+        {
+            "name": "sigook_app_flutter (Windows)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
+            "deviceId": "windows"
+        },
+        {
+            "name": "sigook_app_flutter (Edge)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
+            "deviceId": "edge"
+        },
+        {
+            "name": "Attach to Flutter",
+            "request": "attach",
+            "type": "dart"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Multi-device Debug",
+            "configurations": [
+                "sigook_app_flutter (Windows)",
+                "sigook_app_flutter (Chrome)"
+            ]
+        }
+    ]
+}
