@@ -18,12 +18,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   bool _hasNavigated = false;
-  bool _minDurationComplete = false;
 
   @override
   void initState() {
     super.initState();
 
+    // Animations
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -45,13 +45,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _animationController.forward();
 
-    // Mark minimum duration as complete after splash time
+    // ---- SPLASH LOGIC (Option A) ----
     Timer(const Duration(milliseconds: 2700), () {
-      if (mounted) {
-        setState(() {
-          _minDurationComplete = true;
-        });
-      }
+      if (!mounted) return;
+
+      // Read current auth state once
+      final authState = ref.read(authViewModelProvider);
+
+      if (_hasNavigated) return;
+      _hasNavigated = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        if (authState.isAuthenticated && authState.token != null) {
+          context.go(AppRoutes.tokenInfo);
+        } else {
+          context.go(AppRoutes.welcome);
+        }
+      });
     });
   }
 
@@ -63,23 +75,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch auth state - this will rebuild when state changes
-    final authState = ref.watch(authViewModelProvider);
-
-    // Navigate once minimum duration is complete
-    if (_minDurationComplete && !_hasNavigated) {
-      _hasNavigated = true;
-      // Schedule navigation for next frame to avoid modifying state during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          if (authState.isAuthenticated && authState.token != null) {
-            context.go(AppRoutes.tokenInfo);
-          } else {
-            context.go(AppRoutes.welcome);
-          }
-        }
-      });
-    }
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
