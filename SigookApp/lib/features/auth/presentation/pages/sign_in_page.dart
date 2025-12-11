@@ -5,8 +5,6 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
-/// Sign In Page
-/// Provides OAuth authentication interface
 class SignInPage extends ConsumerStatefulWidget {
   const SignInPage({super.key});
 

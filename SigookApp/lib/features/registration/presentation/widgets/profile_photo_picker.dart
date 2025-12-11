@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sigook_app_flutter/core/theme/app_theme.dart';
+import 'package:sigook_app_flutter/features/registration/domain/entities/basic_info.dart';
 import 'package:sigook_app_flutter/features/registration/domain/usecases/pick_profile_photo.dart';
 import '../../domain/entities/value_objects/profile_photo.dart';
 import '../providers/registration_providers.dart';
@@ -134,11 +135,17 @@ class ProfilePhotoPicker extends ConsumerWidget {
       (profilePhoto) {
         final notifier = ref.read(registrationViewModelProvider.notifier);
         final currentInfo = ref.read(registrationViewModelProvider).basicInfo;
-        if (currentInfo != null) {
+
+        if (currentInfo == null) {
+          BasicInfo basicInfo = BasicInfo.empty();
           notifier.updateBasicInfo(
-            currentInfo.copyWith(profilePhoto: profilePhoto),
+            basicInfo.copyWith(profilePhoto: profilePhoto),
           );
+          return;
         }
+        notifier.updateBasicInfo(
+          currentInfo.copyWith(profilePhoto: profilePhoto),
+        );
       },
     );
   }

@@ -32,6 +32,20 @@ class BasicInfo extends Equatable {
   final String? identificationType;
   final String? identificationNumber;
 
+  factory BasicInfo.empty() => BasicInfo(
+    firstName: Name(''),
+    lastName: Name(''),
+    dateOfBirth: DateTime(1900),
+    gender: Gender(value: ''),
+    country: null,
+    provinceState: null,
+    city: null,
+    address: '',
+    zipCode: ZipCode.emptyUS,
+    mobileNumber: PhoneNumber.empty(),
+    profilePhoto: ProfilePhoto.empty(),
+  );
+
   const BasicInfo({
     required this.profilePhoto,
     required this.firstName,

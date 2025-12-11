@@ -114,6 +114,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
         ProfilePhoto.empty();
 
     final basicInfo = BasicInfo(
+      profilePhoto: currentPhoto,
       firstName: firstName,
       lastName: lastName,
       dateOfBirth: _selectedDate ?? DateTime.now(),
@@ -134,11 +135,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
             (validZip) => validZip,
           ),
       mobileNumber: _mobileNumber,
-      profilePhoto: currentPhoto,
     );
 
     setState(() {
-      // Only show errors for touched fields or after submit attempt
       _firstNameError = _shouldShowError('firstName')
           ? firstName.errorMessage
           : null;
@@ -165,7 +164,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
           ? basicInfo.mobileNumberError
           : null;
       _profilePhotoError = _shouldShowError('profilePhoto')
-          ? _profilePhotoError
+          ? basicInfo.profilePhotoError
           : null;
 
       if (_shouldShowError('dateOfBirth') &&
