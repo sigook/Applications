@@ -94,14 +94,14 @@
   </section>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
+<script setup lang="ts">
+  import { useRouter } from 'vue-router'
 
-const router = useRouter()
+  const router = useRouter()
 
-const goToContact = () => {
-  router.push({ name: 'contact' }) // ajusta si tu ruta es distinta
-}
+  const goToContact = () => {
+    router.push({ name: 'contact' }) // ajusta si tu ruta es distinta
+  }
 </script>
 
 <style scoped>

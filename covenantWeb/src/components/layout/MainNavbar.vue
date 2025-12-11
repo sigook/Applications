@@ -13,7 +13,8 @@
         <RouterLink to="/about" class="navbar__link" active-class="navbar__link--active">
           ABOUT US
         </RouterLink>
-        <RouterLink to="/news" class="navbar__link" active-class="navbar__link--active">NEWS</RouterLink>
+        <RouterLink to="/employers" class="navbar__link" active-class="navbar__link--active">EMPLOYERS</RouterLink>
+        <RouterLink to="/talents" class="navbar__link" active-class="navbar__link--active">TALENTS</RouterLink>
         <RouterLink to="/become-partner" class="navbar__link" active-class="navbar__link--active">
           BECOME A PARTNER
         </RouterLink>
@@ -49,7 +50,12 @@
           <RouterLink @click="closeMobile" to="/about" class="navbar__mobile-link">
             About Us
           </RouterLink>
-          <RouterLink @click="closeMobile" to="/news" class="navbar__mobile-link">News</RouterLink>
+          <RouterLink @click="closeMobile" to="/employers" class="navbar__mobile-link">
+            Employers
+          </RouterLink>
+          <RouterLink @click="closeMobile" to="/talents" class="navbar__mobile-link">
+            Talents
+          </RouterLink>
           <RouterLink @click="closeMobile" to="/become-partner" class="navbar__mobile-link">
             Become a Partner
           </RouterLink>
@@ -62,27 +68,27 @@
   </header>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import {RouterLink } from 'vue-router'
+<script setup lang="ts">
+  import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import { RouterLink } from 'vue-router'
 
-const isScrolled = ref(false)
-const isMobileOpen = ref(false)
+  const isScrolled = ref<boolean>(false)
+  const isMobileOpen = ref<boolean>(false)
 
-const onScroll = () => {
-  isScrolled.value = window.scrollY > 40
-}
+  const onScroll = (): void => {
+    isScrolled.value = window.scrollY > 40
+  }
 
-const toggleMobile = () => {
-  isMobileOpen.value = !isMobileOpen.value
-}
+  const toggleMobile = (): void => {
+    isMobileOpen.value = !isMobileOpen.value
+  }
 
-const closeMobile = () => {
-  isMobileOpen.value = false
-}
+  const closeMobile = (): void => {
+    isMobileOpen.value = false
+  }
 
-onMounted(() => window.addEventListener('scroll', onScroll))
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+  onMounted(() => window.addEventListener('scroll', onScroll))
+  onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>

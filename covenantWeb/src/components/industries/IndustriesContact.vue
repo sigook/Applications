@@ -27,7 +27,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ContactForm from '@/components/layout/ContactForm.vue'
 </script>
 
@@ -119,7 +119,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   .ind-contact__circle::before {
     width: 420px;
     height: 420px;
-    top: -110px;
+    top: 0px;
   }
 
   .ind-contact__title {
@@ -136,7 +136,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   .ind-contact__circle::before {
     width: 360px;
     height: 360px;
-    top: -90px;
+    top: 0px;
   }
 }
 </style>

@@ -52,52 +52,59 @@
   </section>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import ContactForm from '@/components/layout/ContactForm.vue'
+<script setup lang="ts">
+  import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+  import ContactForm from '@/components/layout/ContactForm.vue'
 
-const testimonials = ref([
-  {
-    text: 'Thank you so much for your assistance. Wouldn’t have done it without you!',
-    author: 'Business Owner, Flower Boutique',
-    role: 'Ontario, Canada'
-  },
-  {
-    text: 'They quickly understood our needs and found the right talent for our projects.',
-    author: 'HR Manager, Tech Company',
-    role: 'Toronto, Canada'
-  },
-  {
-    text: 'Reliable, professional and always available when we need them.',
-    author: 'Operations Director, Logistics Firm',
-    role: 'Vancouver, Canada'
+  interface Testimonial {
+    text: string
+    author: string
+    role: string
   }
-])
 
-const currentIndex = ref(0)
-const intervalId = ref(null)
+  const testimonials = ref<Testimonial[]>([
+    {
+      text: 'Thank you so much for your assistance. Wouldn’t have done it without you!',
+      author: 'Business Owner, Flower Boutique',
+      role: 'Ontario, Canada'
+    },
+    {
+      text: 'They quickly understood our needs and found the right talent for our projects.',
+      author: 'HR Manager, Tech Company',
+      role: 'Toronto, Canada'
+    },
+    {
+      text: 'Reliable, professional and always available when we need them.',
+      author: 'Operations Director, Logistics Firm',
+      role: 'Vancouver, Canada'
+    }
+  ])
 
-const currentTestimonial = computed(
-  () => testimonials.value[currentIndex.value]
-)
+  const currentIndex = ref<number>(0)
+  const intervalId = ref<ReturnType<typeof setInterval> | null>(null)
 
-const goTo = (index) => {
-  currentIndex.value = index
-}
+  const currentTestimonial = computed(
+    () => testimonials.value[currentIndex.value]
+  )
 
-const next = () => {
-  currentIndex.value =
-    (currentIndex.value + 1) % testimonials.value.length
-}
+  const goTo = (index: number): void => {
+    currentIndex.value = index
+  }
 
-onMounted(() => {
-  intervalId.value = setInterval(next, 6000)
-})
+  const next = (): void => {
+    currentIndex.value = (currentIndex.value + 1) % testimonials.value.length
+  }
 
-onBeforeUnmount(() => {
-  if (intervalId.value) clearInterval(intervalId.value)
-})
-</script>
+  onMounted((): void => {
+    intervalId.value = setInterval(next, 6000)
+  })
+
+  onBeforeUnmount((): void => {
+    if (intervalId.value) {
+      clearInterval(intervalId.value)
+    }
+  })
+  </script>
 
 <style scoped>
 .hc-section {
@@ -327,6 +334,7 @@ onBeforeUnmount(() => {
 @media (max-width: 768px) {
   .hc-section {
     padding: 60px 0 90px;
+    padding-bottom: 440px;
   }
 
   .hc-circle--outer {
@@ -340,7 +348,7 @@ onBeforeUnmount(() => {
   }
 
   .hc-circle__content {
-    width: 86%;
+    width: 100%;
   }
 
   .hc-circle__title {

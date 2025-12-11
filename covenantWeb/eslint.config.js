@@ -1,26 +1,37 @@
-import { defineConfig, globalIgnores } from 'eslint/config'
-import globals from 'globals'
+// eslint.config.js
 import js from '@eslint/js'
+import vueParser from 'vue-eslint-parser'
 import pluginVue from 'eslint-plugin-vue'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import tsParser from '@typescript-eslint/parser'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
 
-export default defineConfig([
+export default [
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
+    ignores: ['dist/**', 'node_modules/**']
   },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
   {
+    files: ['**/*.{js,jsx,ts,tsx,vue}'],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
+      parser: vueParser,
+      parserOptions: {
+        parser: tsParser,
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        extraFileExtensions: ['.vue']
+      }
     },
-  },
+    plugins: {
+      vue: pluginVue,
+      '@typescript-eslint': tsPlugin
+    },
+    rules: {
+      // Reglas base de JS
+      ...js.configs.recommended.rules,
+      // Reglas base de Vue 3
+      ...pluginVue.configs['vue3-essential'].rules
+      // Aquí puedes agregar tus reglas personalizadas si tenías
+      // 'no-console': 'warn',
+    }
+  }
+]
 
-  js.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
-  skipFormatting,
-])

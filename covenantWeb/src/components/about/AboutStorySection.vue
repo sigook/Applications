@@ -34,7 +34,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // No logic por ahora
 </script>
 

@@ -22,7 +22,7 @@
 }
 </style>
 
-<script setup>
+<script setup lang="ts">
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
 import HeroSection from '@/components/home/HeroSection.vue'

@@ -1,16 +1,25 @@
 <template>
   <section class="our-numbers" data-aos="fade-up">
     <div class="our-numbers__inner">
-      <img
-        src="@/assets/our-numbers.svg"
-        alt="Our numbers"
-        class="our-numbers__img"
-      />
+      <!-- 👇 Imagen responsive: mobile + desktop -->
+      <picture class="our-numbers__picture">
+        <!-- 🔹 Imagen para móviles -->
+        <source
+          srcset="@/assets/images/Section-OurNumbers.png"
+          media="(max-width: 768px)"
+        />
+        <!-- 🔹 Imagen por defecto (desktop / tablet) -->
+        <img
+          src="@/assets/our-numbers.svg"
+          alt="Our numbers"
+          class="our-numbers__img"
+        />
+      </picture>
     </div>
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 </script>
 
 <style scoped>
@@ -21,31 +30,33 @@
   box-sizing: border-box;
 }
 
-/* contenedor que recorta los bordes extra */
+/* contenedor que recorta bordes extra si la imagen los tuviera */
 .our-numbers__inner {
   width: 100%;
   margin: 0 auto;
-  overflow: hidden;         /* recorta lo que se sale de la imagen */
+  overflow: hidden;
 }
 
+/* picture como bloque */
+.our-numbers__picture {
+  display: block;
+  width: 100%;
+}
+
+/* imagen (desktop o mobile) siempre ajustada al ancho */
 .our-numbers__img {
   display: block;
   width: 100%;
   max-width: none;
   height: auto;
-  transform: translateX(0%);
 }
 
-/* En pantallas pequeñas podemos bajar un poco el zoom */
+/* Puedes ajustar solo el padding en mobile si quieres más aire */
 @media (max-width: 768px) {
   .our-numbers {
-    padding: 60px 0;
-  }
-
-  .our-numbers__img {
-    width: 130%;
-    transform: translateX(-15%);
+    padding: 40px 0;
   }
 }
 </style>
+
 

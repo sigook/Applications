@@ -1,5 +1,5 @@
 <template>
-  <section class="app-section" data-aos="fade-up">
+  <section class="app-section" data-aos="fade-up" id="download">
     <div class="app-container">
       <!-- ================== BLOQUE SUPERIOR ================== -->
       <div class="app-top">
@@ -95,7 +95,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 </script>
 
 <style scoped>
@@ -282,7 +282,7 @@
 
   width: auto;                   /* asegura que no se estire */
   max-width: fit-content;        /* en navegadores modernos */
-  margin: 0 auto;       
+  margin: 0 auto;
 }
 
 .attendance-store__img {
@@ -309,6 +309,8 @@
 }
 
 @media (max-width: 768px) {
+
+
   .app-container {
     padding: 0 20px;
   }
@@ -332,6 +334,94 @@
 
   .attendance-list {
     font-size: 0.95rem;
+  }
+}
+
+/* ====== MOBILE (≤ 768px) ====== */
+@media (max-width: 768px) {
+  .app-section {
+    padding-bottom: 0;
+  }
+
+  .app-top__text {
+    margin: 0;
+  }
+
+  .app-top__title {
+    font-size: 1.6rem;
+  }
+
+  .app-top__subtitle {
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .app-top__btn {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+  }
+
+    /* curva azul: al fondo y desplazada un poco a la derecha */
+  .attendance-wave--blue {
+    z-index: 0;
+    transform: translateX(0%);
+  }
+
+  /* teléfono centrado bajo el texto, como en tu captura */
+  .app-top__phone-wrapper {
+    margin-top: 30px;
+    min-height: 400px;
+  }
+
+  .app-top__circle {
+    width: 360px;
+    height: 360px;
+    top: 45%;
+    left: 90%;
+  }
+
+  .app-top__phone {
+    max-height: 480px;
+  }
+
+  /* BLOQUE INFERIOR: se ve como el rectángulo verde con curva y texto */
+  .attendance-wrapper {
+    margin-top: 0;
+    min-height: 520px;
+  }
+
+  .attendance-content {
+    padding: 120px 20px 32px;
+  }
+
+  .attendance-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .attendance-icon__img {
+    margin-top: 100px;
+    width: 80px;
+  }
+
+  .attendance-title {
+    font-size: 1.3rem;
+    line-height: 1.3;
+  }
+
+  .attendance-list {
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  .attendance-stores {
+    margin-top: 24px;
+    padding: 8px 16px;
+  }
+
+  .attendance-store__img {
+    height: 26px;
   }
 }
 

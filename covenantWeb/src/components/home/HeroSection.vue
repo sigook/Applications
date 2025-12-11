@@ -37,16 +37,14 @@
   </section>
 </template>
 
-<script setup>
-/**
- * Lleva suavemente a la siguiente sección (por ejemplo el banner "For Employers")
- * Asegúrate de que esa sección tenga id="for-employers"
- */
-const scrollToNext = () => {
-  const el = document.querySelector('#for-employers')
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
-}
-</script>
+<script setup lang="ts">
+  const scrollToNext = () => {
+    const el = document.querySelector<HTMLElement>('#for-employers')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+  </script>
 
 <style scoped>
 *{

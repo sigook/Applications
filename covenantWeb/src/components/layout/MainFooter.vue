@@ -33,7 +33,7 @@
         <div class="footer__col footer__nav-1">
           <span class="footer__divider"></span>
           <RouterLink class="footer__link" to="/">Home</RouterLink>
-          <RouterLink class="footer__link" to="/about-us">About Us</RouterLink>
+          <RouterLink class="footer__link" to="/about">About Us</RouterLink>
           <RouterLink class="footer__link" to="/industries">Industries</RouterLink>
         </div>
 
@@ -63,10 +63,10 @@
         <!-- NAV 3 -->
         <div class="footer__col footer__block footer__nav-3">
           <RouterLink class="footer__link" to="/news">News</RouterLink>
-          <RouterLink class="footer__link" to="/become-a-partner">
+          <RouterLink class="footer__link" to="/become-partner">
             Become a Partner
           </RouterLink>
-          <RouterLink class="footer__link" to="/download-app">
+          <RouterLink class="footer__link" to="/">
             Download Our App
           </RouterLink>
         </div>
@@ -85,7 +85,7 @@
   </footer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { RouterLink } from 'vue-router'
 </script>
 

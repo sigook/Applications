@@ -45,7 +45,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 </script>
 
 <style scoped>
@@ -171,6 +171,7 @@
 
 @media (max-width: 768px) {
   .cert-section {
+    height: 34rem;
     padding: 60px 0 70px;
   }
 
@@ -192,5 +193,13 @@
     bottom: -22px;
     border-radius: 0 0 70px 70px;
   }
+}
+
+@media (min-width: 768px) {
+  .cert-section {
+    height: 26rem;
+    padding: 60px 0 70px;
+  }
+
 }
 </style>

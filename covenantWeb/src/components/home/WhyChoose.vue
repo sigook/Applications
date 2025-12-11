@@ -27,9 +27,13 @@
 /* CONTEXTO GENERAL (fondo azul oscuro debajo de la tarjeta) */
 .why-section {
   width: 100%;
-  height: 40rem;
-  background: #ffffff;
-  background: linear-gradient(180deg,rgba(255, 255, 255, 1) 43%, rgba(6, 35, 56, 1) 61%);
+  min-height: 40rem;
+  height: auto;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 1) 43%,
+    rgba(6, 35, 56, 1) 61%
+  );
   display: flex;
   justify-content: center;
 }
@@ -115,36 +119,46 @@
   }
 }
 
+/* ================== RESPONSIVE ================== */
+
 @media (max-width: 768px) {
   .why-section {
-    padding: 60px 0 80px;
+    min-height: 20rem;
+    padding: 40px 0 50px;
   }
 
   .why-card {
-    border-radius: 50px 50px 80px 0;
+    border-radius: 80px 0 80px 0;
+    background-position: center top;
   }
 
   .why-content {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 60px 26px 70px;
-    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 24px 60px;
+    gap: 14px;
   }
 
   .why-title {
     flex: none;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin: 0 0 6px;
   }
 
   .why-text {
-    max-width: none;
-    font-size: 0.9rem;
+    max-width: 260px;
+    font-size: 1rem;                    
+    line-height: 1.5;
   }
 
   .why-strip {
-    height: 38px;
-    bottom: -22px;
-    border-radius: 0 0 80px 0;
+    height: 32px;
+    bottom: -18px;
+    border-radius: 0 0 70px 0;
   }
 }
+
 </style>

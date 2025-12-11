@@ -17,7 +17,7 @@
 
 </style>
 
-<script setup>
+<script setup lang="ts">
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
 import LicensedCertifiedSection from '@/components/licensed/LicensedCertifiedSection.vue'

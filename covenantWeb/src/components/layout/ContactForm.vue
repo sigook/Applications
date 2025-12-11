@@ -9,7 +9,7 @@
     </header>
 
     <!-- Nombre -->
-    <div class="contact-form__group contact-form__group--two">
+    <div class="contact-form__group">
       <div class="contact-form__field">
         <label class="contact-form__label" for="firstName">Name</label>
         <input
@@ -17,16 +17,6 @@
           type="text"
           class="contact-form__input"
           placeholder="First Name"
-        />
-      </div>
-
-      <div class="contact-form__field contact-form__field--no-label">
-        <label class="contact-form__label" for="lastName">Last Name</label>
-        <input
-          id="lastName"
-          type="text"
-          class="contact-form__input"
-          placeholder="Last Name"
         />
       </div>
     </div>
@@ -42,16 +32,15 @@
       />
     </div>
 
-    <!-- Industry -->
+    <!-- Phone -->
     <div class="contact-form__group">
-      <label class="contact-form__label" for="industry">Industry</label>
-      <select id="industry" class="contact-form__input contact-form__select">
-        <option value="" disabled selected>Select One</option>
-        <option value="manufacturing">Manufacturing</option>
-        <option value="logistics">Logistics</option>
-        <option value="construction">Construction</option>
-        <option value="other">Other</option>
-      </select>
+      <label class="contact-form__label" for="email">Phone</label>
+      <input
+        id="phone"
+        type="phone"
+        class="contact-form__input"
+        placeholder="Your Phone"
+      />
     </div>
 
     <!-- Message -->
@@ -77,7 +66,7 @@
   </form>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // sin lógica por ahora; luego acá agregas emits / composables para llamar a la API
 </script>
 

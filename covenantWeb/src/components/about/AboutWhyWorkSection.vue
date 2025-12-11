@@ -65,7 +65,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // sin lógica por ahora
 </script>
 

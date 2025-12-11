@@ -15,7 +15,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import ContactForm from '@/components/layout/ContactForm.vue'
 </script>
 
@@ -40,8 +40,8 @@
   left: 50%;
   transform: translateX(-50%);
   top: 40px;               /* controla cuánto sube el círculo */
-  width: 620px;
-  height: 620px;
+  width: 720px;
+  height: 720px;
   border-radius: 50%;
   background-color: #32d26a;
   box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);
@@ -112,7 +112,7 @@
   .contact-cta__circle {
     width: 440px;
     height: 440px;
-    top: 40px;
+    top: 140px;
     padding: 32px 28px 64px;
   }
 
@@ -144,7 +144,7 @@
   .contact-cta__circle {
     width: 360px;
     height: 360px;
-    top: 40px;
+    top: 140px;
     padding: 28px 22px 52px;
   }
 

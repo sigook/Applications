@@ -55,96 +55,102 @@
   </section>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+  import { ref } from 'vue'
 
-const industries = [
-  {
-    id: 1,
-    label: 'Automotive',
-    image: new URL('@/assets/images/ind-automotive.jpg', import.meta.url).href,
-    description:
-      'We supply skilled talent for the automotive industry—from technicians to engineers. Our candidates support manufacturing, repair, and sales across all vehicle types.',
-  },
-  {
-    id: 2,
-    label: 'Aviation',
-    image: new URL('@/assets/images/ind-aviation.jpg', import.meta.url).href,
-    description:
-      'We recruit aviation experts—pilots, technicians, and support staff. Our candidates help airlines and aviation firms maintain safety, compliance, and operational excellence.',
-  },
-  {
-    id: 3,
-    label: 'Construction',
-    image: new URL('@/assets/images/ind-construction.jpg', import.meta.url).href,
-    description:
-      'We connect skilled tradespeople and professionals with top-tier construction companies. We provide talent that drives growth and ensures quality from the ground up.',
-  },
-  {
-    id: 4,
-    label: 'Engineering',
-    image: new URL('@/assets/images/ind-engineering.jpg', import.meta.url).href,
-    description:
-      'We recruit engineers across multiple disciplines. Our candidates bring innovation, precision, and technical expertise to every project, fueling infrastructure and development.',
-  },
-  {
-    id: 5,
-    label: 'IT / AI',
-    image: new URL('@/assets/images/ind-it-ai.jpg', import.meta.url).href,
-    description:
-      'We source top tech talent in software, data, and AI. Our candidates fuel innovation, boost performance, and deliver smart solutions in fast-evolving digital environments.',
-  },
-  {
-    id: 6,
-    label: 'Financial',
-    image: new URL('@/assets/images/ind-financial.jpg', import.meta.url).href,
-    description:
-      'We source skilled finance professionals in banking, accounting, and more. Our candidates bring accuracy, compliance, and insight to fast-paced financial environments.',
-  },
-  {
-    id: 7,
-    label: 'Legal / Accounting',
-    image: new URL('@/assets/images/ind-legal.jpg', import.meta.url).href,
-    description:
-      'We recruit legal professionals, including assistants, paralegals, and lawyers. Our candidates bring organization, precision, and expertise to every legal team.',
-  },
-  {
-    id: 8,
-    label: 'Logistics, 3PL/4PL',
-    image: new URL('@/assets/images/ind-logistics.jpg', import.meta.url).href,
-    description:
-      'We provide logistics and supply chain talent—from warehouse workers to dispatchers. Our candidates help streamline operations and ensure timely, accurate delivery.',
-  },
-  {
-    id: 9,
-    label: 'Manufacturing',
-    image: new URL('@/assets/images/ind-manufacturing.jpg', import.meta.url).href,
-    description:
-      'We support manufacturing with reliable workers—machine operators, assemblers, and supervisors. Our talent helps boost productivity, safety, and product quality.',
-  },
-  {
-    id: 10,
-    label: 'Retail',
-    image: new URL('@/assets/images/ind-retail.jpg', import.meta.url).href,
-    description:
-      'We provide retail staff at all levels—from sales associates to managers. Our candidates deliver strong customer service and help drive daily operations and sales success.',
-  },
-  {
-    id: 11,
-    label: 'Transportation',
-    image: new URL('@/assets/images/ind-transportation.jpg', import.meta.url)
-      .href,
-    description:
-      'We recruit drivers, coordinators, and support staff for transport operations. Our candidates keep people and goods moving safely, efficiently, and on schedule.',
-  },
-]
+  type Industry = {
+    id: number
+    label: string
+    image: string
+    description: string
+  }
 
-// id de la card actualmente abierta
-const activeId = ref(null)
+  const industries: Industry[] = [
+    {
+      id: 1,
+      label: 'Automotive',
+      image: new URL('@/assets/images/ind-automotive.jpg', import.meta.url).href,
+      description:
+        'We supply skilled talent for the automotive industry—from technicians to engineers. Our candidates support manufacturing, repair, and sales across all vehicle types.',
+    },
+    {
+      id: 2,
+      label: 'Aviation',
+      image: new URL('@/assets/images/ind-aviation.jpg', import.meta.url).href,
+      description:
+        'We recruit aviation experts—pilots, technicians, and support staff. Our candidates help airlines and aviation firms maintain safety, compliance, and operational excellence.',
+    },
+    {
+      id: 3,
+      label: 'Construction',
+      image: new URL('@/assets/images/ind-construction.jpg', import.meta.url).href,
+      description:
+        'We connect skilled tradespeople and professionals with top-tier construction companies. We provide talent that drives growth and ensures quality from the ground up.',
+    },
+    {
+      id: 4,
+      label: 'Engineering',
+      image: new URL('@/assets/images/ind-engineering.jpg', import.meta.url).href,
+      description:
+        'We recruit engineers across multiple disciplines. Our candidates bring innovation, precision, and technical expertise to every project, fueling infrastructure and development.',
+    },
+    {
+      id: 5,
+      label: 'IT / AI',
+      image: new URL('@/assets/images/ind-it-ai.jpg', import.meta.url).href,
+      description:
+        'We source top tech talent in software, data, and AI. Our candidates fuel innovation, boost performance, and deliver smart solutions in fast-evolving digital environments.',
+    },
+    {
+      id: 6,
+      label: 'Financial',
+      image: new URL('@/assets/images/ind-financial.jpg', import.meta.url).href,
+      description:
+        'We source skilled finance professionals in banking, accounting, and more. Our candidates bring accuracy, compliance, and insight to fast-paced financial environments.',
+    },
+    {
+      id: 7,
+      label: 'Legal / Accounting',
+      image: new URL('@/assets/images/ind-legal.jpg', import.meta.url).href,
+      description:
+        'We recruit legal professionals, including assistants, paralegals, and lawyers. Our candidates bring organization, precision, and expertise to every legal team.',
+    },
+    {
+      id: 8,
+      label: 'Logistics, 3PL/4PL',
+      image: new URL('@/assets/images/ind-logistics.jpg', import.meta.url).href,
+      description:
+        'We provide logistics and supply chain talent—from warehouse workers to dispatchers. Our candidates help streamline operations and ensure timely, accurate delivery.',
+    },
+    {
+      id: 9,
+      label: 'Manufacturing',
+      image: new URL('@/assets/images/ind-manufacturing.jpg', import.meta.url).href,
+      description:
+        'We support manufacturing with reliable workers—machine operators, assemblers, and supervisors. Our talent helps boost productivity, safety, and product quality.',
+    },
+    {
+      id: 10,
+      label: 'Retail',
+      image: new URL('@/assets/images/ind-retail.jpg', import.meta.url).href,
+      description:
+        'We provide retail staff at all levels—from sales associates to managers. Our candidates deliver strong customer service and help drive daily operations and sales success.',
+    },
+    {
+      id: 11,
+      label: 'Transportation',
+      image: new URL('@/assets/images/ind-transportation.jpg', import.meta.url).href,
+      description:
+        'We recruit drivers, coordinators, and support staff for transport operations. Our candidates keep people and goods moving safely, efficiently, and on schedule.',
+    },
+  ]
 
-const toggleCard = (id) => {
-  activeId.value = activeId.value === id ? null : id
-}
+  // id de la card actualmente abierta
+  const activeId = ref<number | null>(null)
+
+  const toggleCard = (id: number): void => {
+    activeId.value = activeId.value === id ? null : id
+  }
 </script>
 
 <style scoped>
