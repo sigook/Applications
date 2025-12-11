@@ -22,11 +22,15 @@ sealed class AuthState with _$AuthState {
 
 @riverpod
 class AuthViewModel extends _$AuthViewModel {
+  bool _isInitialized = false;
+
   @override
   AuthState build() {
     _loadCachedToken();
     return const AuthState();
   }
+
+  bool get isInitialized => _isInitialized;
 
   /// Load cached token on initialization
   Future<void> _loadCachedToken() async {
@@ -34,12 +38,16 @@ class AuthViewModel extends _$AuthViewModel {
       final localDataSource = ref.read(authLocalDataSourceProvider);
       final cachedToken = await localDataSource.getCachedToken();
 
+      if (!ref.mounted) return;
+
       if (cachedToken != null) {
         state = state.copyWith(token: cachedToken, isAuthenticated: true);
       }
     } catch (e) {
       // Silent fail - user will need to login manually
       print('Failed to load cached token: $e');
+    } finally {
+      _isInitialized = true;
     }
   }
 

@@ -45,25 +45,38 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _animationController.forward();
 
-    // ---- SPLASH LOGIC (Option A) ----
-    Timer(const Duration(milliseconds: 2700), () {
+    // Wait for animation AND token loading before navigating
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    // Wait for animation to mostly complete
+    await Future.delayed(const Duration(milliseconds: 2700));
+
+    if (!mounted || _hasNavigated) return;
+
+    // Wait for auth initialization to complete (with timeout)
+    final authNotifier = ref.read(authViewModelProvider.notifier);
+    int attempts = 0;
+    while (!authNotifier.isInitialized && attempts < 20) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
+
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
+
+    final authState = ref.read(authViewModelProvider);
+
+    // Navigate based on authentication state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      // Read current auth state once
-      final authState = ref.read(authViewModelProvider);
-
-      if (_hasNavigated) return;
-      _hasNavigated = true;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-
-        if (authState.isAuthenticated && authState.token != null) {
-          context.go(AppRoutes.tokenInfo);
-        } else {
-          context.go(AppRoutes.welcome);
-        }
-      });
+      if (authState.isAuthenticated && authState.token != null) {
+        context.go(AppRoutes.tokenInfo);
+      } else {
+        context.go(AppRoutes.welcome);
+      }
     });
   }
 
@@ -101,7 +114,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo/Icon
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
@@ -124,7 +136,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // App name
                       Text(
                         'Sigook',
                         style: TextStyle(
@@ -151,7 +162,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 60),
-                      // Loading indicator
                       SizedBox(
                         width: 40,
                         height: 40,
