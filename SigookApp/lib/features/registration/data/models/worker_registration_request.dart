@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/registration_form.dart';
 import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
@@ -214,19 +215,19 @@ class WorkerRegistrationRequest {
   /// Convert to JSON for API request
   Map<String, dynamic> toJson() {
     // Debug: Print entity values before conversion
-    print('═══ DEBUG: Entity Values ═══');
-    print('Gender: id=${gender.id}, value=${gender.value}');
-    print('Languages count: ${languages.length}');
+    debugPrint('═══ DEBUG: Entity Values ═══');
+    debugPrint('Gender: id=${gender.id}, value=${gender.value}');
+    debugPrint('Languages count: ${languages.length}');
     if (languages.isNotEmpty) {
-      print(
+      debugPrint(
         'First language: id=${languages.first.id}, value=${languages.first.value}',
       );
     }
-    print('Skills count: ${skills.length}');
+    debugPrint('Skills count: ${skills.length}');
     if (skills.isNotEmpty) {
-      print('First skill: skill=${skills.first.skill}');
+      debugPrint('First skill: skill=${skills.first.skill}');
     }
-    print('═══════════════════════════');
+    debugPrint('═══════════════════════════');
 
     return {
       'firstName': firstName,

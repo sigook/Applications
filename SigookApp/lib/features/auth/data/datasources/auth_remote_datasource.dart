@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import '../../../../core/config/environment.dart';
@@ -60,23 +61,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         issuer: EnvironmentConfig.authority,
       );
 
-      print('🔐 Starting logout session...');
+      debugPrint('🔐 Starting logout session...');
       await appAuth.endSession(request);
-      print('✅ Logout session completed successfully');
+      debugPrint('✅ Logout session completed successfully');
     } on PlatformException catch (e) {
-      print('⚠️ PlatformException during logout: ${e.code}');
-      print('   Details: ${e.details}');
+      debugPrint('⚠️ PlatformException during logout: ${e.code}');
+      debugPrint('   Details: ${e.details}');
 
       // Handle user cancellation gracefully
       if (e.code == 'end_session_failed') {
         final details = e.details as Map<String, dynamic>?;
         final userCancelled = details?['user_did_cancel'] == true;
 
-        print('   User cancelled: $userCancelled');
+        debugPrint('   User cancelled: $userCancelled');
 
         if (userCancelled) {
           // User cancelled the logout flow - this is acceptable
-          print(
+          debugPrint(
             '✅ User cancelled logout - treating as successful (tokens will be cleared)',
           );
           return;
@@ -84,10 +85,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       // For other platform exceptions, rethrow as server exception
-      print('❌ Rethrowing as ServerException');
+      debugPrint('❌ Rethrowing as ServerException');
       throw ServerException(message: 'Logout failed: ${e.message}');
     } catch (e) {
-      print('❌ Unexpected error during logout: $e');
+      debugPrint('❌ Unexpected error during logout: $e');
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Logout failed: ${e.toString()}');
     }

@@ -28,6 +28,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     // Add Authorization header if token exists
     if (cachedToken?.accessToken != null) {
       options.headers['Authorization'] = 'Bearer ${cachedToken!.accessToken}';
+      options.headers['Accept'] = 'application/json';
     }
 
     return handler.next(options);

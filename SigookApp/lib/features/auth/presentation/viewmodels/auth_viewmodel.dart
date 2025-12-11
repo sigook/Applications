@@ -1,5 +1,6 @@
 // lib/features/auth/presentation/viewmodels/auth_viewmodel.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/usecases/usecase.dart';
@@ -51,7 +52,7 @@ class AuthViewModel extends _$AuthViewModel {
 
         if (isExpired && cachedToken.refreshToken != null) {
           // Token expired, try to refresh
-          print('🔄 Token expired, attempting refresh...');
+          debugPrint('🔄 Token expired, attempting refresh...');
           state = state.copyWith(token: cachedToken);
           await _refreshTokenSilent();
         } else {
@@ -61,7 +62,7 @@ class AuthViewModel extends _$AuthViewModel {
       }
     } catch (e) {
       // Silent fail - user will need to login manually
-      print('Failed to load cached token: $e');
+      debugPrint('Failed to load cached token: $e');
     } finally {
       _isInitialized = true;
     }
@@ -84,11 +85,11 @@ class AuthViewModel extends _$AuthViewModel {
 
     result.fold(
       (failure) {
-        print('❌ Token refresh failed: ${failure.message}');
+        debugPrint('❌ Token refresh failed: ${failure.message}');
         state = state.copyWith(isAuthenticated: false);
       },
       (token) {
-        print('✅ Token refreshed successfully');
+        debugPrint('✅ Token refreshed successfully');
         state = state.copyWith(token: token, isAuthenticated: true);
       },
     );

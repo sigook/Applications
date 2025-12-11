@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sigook_app_flutter/core/network/network_info.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -64,7 +65,7 @@ class AuthRepositoryImpl implements AuthRepository {
           await remote.logout(cachedToken!.idToken!);
         } catch (e) {
           // Log the error but continue to clear local tokens
-          print('End session failed: $e');
+          debugPrint('End session failed: $e');
           // We still clear local tokens even if server logout fails
         }
       }
