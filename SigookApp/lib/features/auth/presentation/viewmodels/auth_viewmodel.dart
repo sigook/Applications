@@ -32,7 +32,7 @@ class AuthViewModel extends _$AuthViewModel {
 
   bool get isInitialized => _isInitialized;
 
-  /// Load cached token on initialization
+  /// Load cached token and validate session on initialization
   Future<void> _loadCachedToken() async {
     try {
       final localDataSource = ref.read(authLocalDataSourceProvider);
@@ -41,7 +41,23 @@ class AuthViewModel extends _$AuthViewModel {
       if (!ref.mounted) return;
 
       if (cachedToken != null) {
-        state = state.copyWith(token: cachedToken, isAuthenticated: true);
+        // Check if token is expired and try to refresh
+        final expirationDateTime = cachedToken.expirationDateTime;
+        final isExpired =
+            expirationDateTime != null &&
+            DateTime.now().isAfter(
+              expirationDateTime.subtract(const Duration(minutes: 5)),
+            );
+
+        if (isExpired && cachedToken.refreshToken != null) {
+          // Token expired, try to refresh
+          print('🔄 Token expired, attempting refresh...');
+          state = state.copyWith(token: cachedToken);
+          await _refreshTokenSilent();
+        } else {
+          // Token still valid
+          state = state.copyWith(token: cachedToken, isAuthenticated: true);
+        }
       }
     } catch (e) {
       // Silent fail - user will need to login manually
@@ -49,6 +65,33 @@ class AuthViewModel extends _$AuthViewModel {
     } finally {
       _isInitialized = true;
     }
+  }
+
+  /// Silently refresh token without showing loading state
+  Future<void> _refreshTokenSilent() async {
+    final currentToken = state.token;
+    if (currentToken?.refreshToken == null) {
+      state = state.copyWith(isAuthenticated: false);
+      return;
+    }
+
+    final refreshToken = ref.read(refreshTokenProvider);
+    final result = await refreshToken(
+      RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
+    );
+
+    if (!ref.mounted) return;
+
+    result.fold(
+      (failure) {
+        print('❌ Token refresh failed: ${failure.message}');
+        state = state.copyWith(isAuthenticated: false);
+      },
+      (token) {
+        print('✅ Token refreshed successfully');
+        state = state.copyWith(token: token, isAuthenticated: true);
+      },
+    );
   }
 
   Future<void> signIn() async {

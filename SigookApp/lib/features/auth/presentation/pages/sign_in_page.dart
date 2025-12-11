@@ -48,7 +48,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             backgroundColor: AppTheme.successGreen,
           ),
         );
-        context.go(AppRoutes.tokenInfo);
+        context.go(AppRoutes.jobs);
       }
     });
 
