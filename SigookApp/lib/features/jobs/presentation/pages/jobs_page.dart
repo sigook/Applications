@@ -19,9 +19,10 @@ class _JobsPageState extends ConsumerState<JobsPage> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // Load jobs after first frame to avoid circular dependency
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(jobsViewModelProvider.notifier).loadJobs();
+      if (mounted) {
+        ref.read(jobsViewModelProvider.notifier).loadJobs();
+      }
     });
   }
 

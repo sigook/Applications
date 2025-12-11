@@ -13,6 +13,8 @@ class JobsViewModel extends _$JobsViewModel {
   }
 
   Future<void> loadJobs() async {
+    if (!ref.mounted) return;
+
     state = state.copyWith(isLoading: true, error: null);
 
     final getJobs = ref.read(getJobsUseCaseProvider);
@@ -24,6 +26,8 @@ class JobsViewModel extends _$JobsViewModel {
         pageSize: 30,
       ),
     );
+
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) =>
@@ -39,7 +43,7 @@ class JobsViewModel extends _$JobsViewModel {
   }
 
   Future<void> loadMore() async {
-    if (state.isLoadingMore || !state.hasMore) return;
+    if (!ref.mounted || state.isLoadingMore || !state.hasMore) return;
 
     state = state.copyWith(isLoadingMore: true);
 
@@ -52,6 +56,8 @@ class JobsViewModel extends _$JobsViewModel {
         pageSize: 30,
       ),
     );
+
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) =>

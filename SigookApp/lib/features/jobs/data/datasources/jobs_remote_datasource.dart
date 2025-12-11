@@ -26,7 +26,7 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
   }) async {
     try {
       final response = await apiClient.dio.get(
-        '/api/WorkerRequest',
+        '/WorkerRequest',
         queryParameters: {
           'sortBy': sortBy,
           'isDescending': isDescending,

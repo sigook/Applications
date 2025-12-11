@@ -24,7 +24,7 @@ class ApiClient {
         receiveTimeout: const Duration(milliseconds: receiveTimeout),
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Accept': 'application/json, text/plain, */*',
         },
       ),
     );
