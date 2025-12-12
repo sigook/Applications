@@ -165,6 +165,8 @@ class AuthViewModel extends _$AuthViewModel {
     final logout = ref.read(logoutProvider);
     final result = await logout(NoParams());
 
+    if (!ref.mounted) return;
+
     result.fold(
       (failure) {
         state = state.copyWith(
