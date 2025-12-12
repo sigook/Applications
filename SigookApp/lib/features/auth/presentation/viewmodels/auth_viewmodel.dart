@@ -42,6 +42,9 @@ class AuthViewModel extends _$AuthViewModel {
       if (!ref.mounted) return;
 
       if (cachedToken != null) {
+        // Set user as authenticated with cached token first
+        state = state.copyWith(token: cachedToken, isAuthenticated: true);
+
         // Check if token is expired and try to refresh
         final expirationDateTime = cachedToken.expirationDateTime;
         final isExpired =
@@ -51,13 +54,9 @@ class AuthViewModel extends _$AuthViewModel {
             );
 
         if (isExpired && cachedToken.refreshToken != null) {
-          // Token expired, try to refresh
+          // Token expired, try to refresh in background
           debugPrint('🔄 Token expired, attempting refresh...');
-          state = state.copyWith(token: cachedToken);
           await _refreshTokenSilent();
-        } else {
-          // Token still valid
-          state = state.copyWith(token: cachedToken, isAuthenticated: true);
         }
       }
     } catch (e) {
@@ -72,7 +71,8 @@ class AuthViewModel extends _$AuthViewModel {
   Future<void> _refreshTokenSilent() async {
     final currentToken = state.token;
     if (currentToken?.refreshToken == null) {
-      state = state.copyWith(isAuthenticated: false);
+      // No refresh token available, but keep user authenticated with current token
+      debugPrint('⚠️ No refresh token available, keeping current session');
       return;
     }
 
@@ -86,7 +86,9 @@ class AuthViewModel extends _$AuthViewModel {
     result.fold(
       (failure) {
         debugPrint('❌ Token refresh failed: ${failure.message}');
-        state = state.copyWith(isAuthenticated: false);
+        // Keep user authenticated with cached token even if refresh fails
+        // They will be prompted to re-authenticate when they try to access protected resources
+        debugPrint('ℹ️ Keeping user authenticated with cached token');
       },
       (token) {
         debugPrint('✅ Token refreshed successfully');

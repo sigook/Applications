@@ -41,10 +41,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final AuthorizationTokenResponse result = await appAuth
           .authorizeAndExchangeCode(request);
 
-      if (result == null) {
-        throw ServerException(message: 'User cancelled authentication');
-      }
-
       return AuthTokenModel.fromResponse(result);
     } on PlatformException catch (e) {
       debugPrint('⚠️ PlatformException during sign-in: ${e.code}');

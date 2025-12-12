@@ -130,9 +130,11 @@ class _JobsPageState extends ConsumerState<JobsPage> {
             _scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: const Text(
-          'Available Jobs',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        title: Center(
+          child: const Text(
+            'Jobs',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
         ),
         actions: [
           IconButton(

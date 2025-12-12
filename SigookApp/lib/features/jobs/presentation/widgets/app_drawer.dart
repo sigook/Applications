@@ -19,7 +19,7 @@ class AppDrawer extends ConsumerWidget {
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          _buildProfileHeader(context, userInfo?.displayName, userInfo?.email),
+          _buildProfileHeader(context, 'Juan Betancur', 'juanm@sigook.com'),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
