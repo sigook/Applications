@@ -38,10 +38,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         scopes: EnvironmentConfig.scopes,
       );
 
-      final AuthorizationTokenResponse result = await appAuth
+      final AuthorizationTokenResponse? result = await appAuth
           .authorizeAndExchangeCode(request);
 
+      if (result == null) {
+        throw ServerException(message: 'User cancelled authentication');
+      }
+
       return AuthTokenModel.fromResponse(result);
+    } on PlatformException catch (e) {
+      debugPrint('⚠️ PlatformException during sign-in: ${e.code}');
+      debugPrint('   Details: ${e.details}');
+
+      if (e.code == 'authorize_and_exchange_code_failed') {
+        final details = e.details as Map<String, dynamic>?;
+        final userCancelled = details?['user_did_cancel'] == true;
+
+        debugPrint('   User cancelled: $userCancelled');
+
+        if (userCancelled) {
+          debugPrint('✅ User cancelled sign-in - treating as user action');
+          throw ServerException(message: 'User cancelled authentication');
+        }
+      }
+
+      throw ServerException(message: 'Authentication failed: ${e.message}');
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Authentication error: ${e.toString()}');

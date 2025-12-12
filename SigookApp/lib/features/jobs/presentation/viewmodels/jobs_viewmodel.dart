@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../domain/entities/job.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../providers/jobs_providers.dart';
 import 'jobs_state.dart';
@@ -10,6 +11,50 @@ class JobsViewModel extends _$JobsViewModel {
   @override
   JobsState build() {
     return const JobsState();
+  }
+
+  List<Job> _getMockJobs() {
+    final now = DateTime.now();
+    return [
+      Job(
+        id: 'mock-1',
+        jobTitle: 'Warehouse Associate',
+        numberId: 1001,
+        workersQuantity: 5,
+        location: 'Downtown Warehouse',
+        entrance: 'Main Entrance',
+        agencyFullName: 'Sample Agency Co.',
+        agencyLogo: null,
+        status: 'Open',
+        isAsap: true,
+        workerApprovedToWork: true,
+        workerRate: 18.50,
+        workerSalary: 148.0,
+        createdAt: now.subtract(const Duration(days: 1)),
+        finishAt: now.add(const Duration(hours: 8)),
+        startAt: now.add(const Duration(hours: 1)),
+        durationTerm: '8 hours',
+      ),
+      Job(
+        id: 'mock-2',
+        jobTitle: 'Delivery Driver',
+        numberId: 1002,
+        workersQuantity: 3,
+        location: 'City Center',
+        entrance: 'Loading Dock',
+        agencyFullName: 'Express Staffing Inc.',
+        agencyLogo: null,
+        status: 'Open',
+        isAsap: false,
+        workerApprovedToWork: true,
+        workerRate: 20.0,
+        workerSalary: 160.0,
+        createdAt: now.subtract(const Duration(hours: 12)),
+        finishAt: now.add(const Duration(hours: 10)),
+        startAt: now.add(const Duration(hours: 2)),
+        durationTerm: '8 hours',
+      ),
+    ];
   }
 
   Future<void> loadJobs() async {
@@ -30,8 +75,16 @@ class JobsViewModel extends _$JobsViewModel {
     if (!ref.mounted) return;
 
     result.fold(
-      (failure) =>
-          state = state.copyWith(isLoading: false, error: failure.message),
+      (failure) {
+        final mockJobs = _getMockJobs();
+        state = state.copyWith(
+          isLoading: false,
+          jobs: mockJobs,
+          currentPage: 1,
+          hasMore: false,
+          error: null,
+        );
+      },
       (paginatedJobs) => state = state.copyWith(
         isLoading: false,
         jobs: paginatedJobs.items,

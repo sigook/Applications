@@ -103,7 +103,12 @@ class AuthViewModel extends _$AuthViewModel {
 
     result.fold(
       (failure) {
-        state = state.copyWith(isLoading: false, error: failure.message);
+        if (failure.message.contains('User cancelled')) {
+          debugPrint('ℹ️ User cancelled authentication - no error shown');
+          state = state.copyWith(isLoading: false, error: null);
+        } else {
+          state = state.copyWith(isLoading: false, error: failure.message);
+        }
       },
       (token) {
         state = state.copyWith(
