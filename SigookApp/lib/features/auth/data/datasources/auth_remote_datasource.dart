@@ -38,7 +38,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         scopes: EnvironmentConfig.scopes,
       );
 
-      final AuthorizationTokenResponse? result = await appAuth
+      final AuthorizationTokenResponse result = await appAuth
           .authorizeAndExchangeCode(request);
 
       if (result == null) {

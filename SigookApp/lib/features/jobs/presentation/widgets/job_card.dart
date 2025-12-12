@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../domain/entities/job.dart';
 
 class JobCard extends StatelessWidget {
@@ -16,7 +18,7 @@ class JobCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to job details
+          context.push(AppRoutes.jobDetails, extra: job);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

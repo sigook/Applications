@@ -6,6 +6,8 @@ import '../../features/registration/presentation/pages/registration_screen.dart'
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/token_info_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
+import '../../features/jobs/presentation/pages/job_details_page.dart';
+import '../../features/jobs/domain/entities/job.dart';
 
 /// Route path constants
 class AppRoutes {
@@ -15,6 +17,7 @@ class AppRoutes {
   static const String registration = '/registration';
   static const String tokenInfo = '/token-info';
   static const String jobs = '/jobs';
+  static const String jobDetails = '/jobs/details';
 }
 
 /// Navigation observer to dismiss keyboard on route change
@@ -118,6 +121,32 @@ class AppRouter {
             return FadeTransition(opacity: animation, child: child);
           },
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.jobDetails,
+        name: 'jobDetails',
+        pageBuilder: (context, state) {
+          final job = state.extra as Job;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: JobDetailsPage(job: job),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

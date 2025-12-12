@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/routing/app_router.dart';
 import '../viewmodels/jobs_viewmodel.dart';
 import '../widgets/job_card.dart';
+import '../widgets/app_drawer.dart';
+import '../widgets/filter_sort_bottom_sheet.dart';
+import '../../domain/entities/job.dart';
 
 class JobsPage extends ConsumerStatefulWidget {
   const JobsPage({super.key});
@@ -13,6 +17,9 @@ class JobsPage extends ConsumerStatefulWidget {
 
 class _JobsPageState extends ConsumerState<JobsPage> {
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  SortOption _currentSort = SortOption.dateNewest;
+  FilterStatus _currentFilter = FilterStatus.all;
 
   @override
   void initState() {
@@ -43,12 +50,76 @@ class _JobsPageState extends ConsumerState<JobsPage> {
     await ref.read(jobsViewModelProvider.notifier).refresh();
   }
 
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FilterSortBottomSheet(
+        currentSort: _currentSort,
+        currentFilter: _currentFilter,
+        onApply: (sort, filter) {
+          setState(() {
+            _currentSort = sort;
+            _currentFilter = filter;
+          });
+        },
+      ),
+    );
+  }
+
+  List<Job> _getFilteredAndSortedJobs(List<Job> jobs) {
+    // Create a mutable copy of the list
+    var filtered = List<Job>.from(jobs);
+
+    // Apply filter
+    if (_currentFilter != FilterStatus.all) {
+      filtered = filtered.where((job) {
+        switch (_currentFilter) {
+          case FilterStatus.open:
+            return job.status.toLowerCase() == 'open';
+          case FilterStatus.booked:
+            return job.status.toLowerCase() == 'booked';
+          case FilterStatus.pending:
+            return job.status.toLowerCase() == 'pending';
+          case FilterStatus.cancelled:
+            return job.status.toLowerCase() == 'cancelled';
+          default:
+            return true;
+        }
+      }).toList();
+    }
+
+    // Apply sort
+    filtered.sort((a, b) {
+      switch (_currentSort) {
+        case SortOption.dateNewest:
+          return b.createdAt.compareTo(a.createdAt);
+        case SortOption.dateOldest:
+          return a.createdAt.compareTo(b.createdAt);
+        case SortOption.rateHighest:
+          return b.workerRate.compareTo(a.workerRate);
+        case SortOption.rateLowest:
+          return a.workerRate.compareTo(b.workerRate);
+        case SortOption.workersHighest:
+          return b.workersQuantity.compareTo(a.workersQuantity);
+        case SortOption.workersLowest:
+          return a.workersQuantity.compareTo(b.workersQuantity);
+      }
+    });
+
+    return filtered;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(jobsViewModelProvider);
+    final filteredJobs = _getFilteredAndSortedJobs(state.jobs);
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppTheme.surfaceGrey,
+      drawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       appBar: AppBar(
         backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
@@ -56,7 +127,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () {
-            // TODO: Open drawer
+            _scaffoldKey.currentState?.openDrawer();
           },
         ),
         title: const Text(
@@ -66,9 +137,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // TODO: Show filter options
-            },
+            onPressed: _showFilterModal,
           ),
         ],
       ),
@@ -120,7 +189,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                 ],
               ),
             )
-          : state.jobs.isEmpty
+          : filteredJobs.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -132,7 +201,9 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No jobs available',
+                    _currentFilter != FilterStatus.all
+                        ? 'No jobs match the filter'
+                        : 'No jobs available',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -141,9 +212,22 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Check back later for new opportunities',
+                    _currentFilter != FilterStatus.all
+                        ? 'Try adjusting your filters'
+                        : 'Check back later for new opportunities',
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
+                  if (_currentFilter != FilterStatus.all) ...[
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentFilter = FilterStatus.all;
+                        });
+                      },
+                      child: const Text('Clear Filter'),
+                    ),
+                  ],
                 ],
               ),
             )
@@ -153,9 +237,9 @@ class _JobsPageState extends ConsumerState<JobsPage> {
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.only(top: 8, bottom: 16),
-                itemCount: state.jobs.length + (state.isLoadingMore ? 1 : 0),
+                itemCount: filteredJobs.length + (state.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == state.jobs.length) {
+                  if (index == filteredJobs.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(
@@ -165,7 +249,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                       ),
                     );
                   }
-                  return JobCard(job: state.jobs[index]);
+                  return JobCard(job: filteredJobs[index]);
                 },
               ),
             ),
