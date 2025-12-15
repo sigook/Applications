@@ -114,7 +114,7 @@ class JobCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      job.location,
+                      job.location ?? 'N/A',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
@@ -151,7 +151,9 @@ class JobCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${_formatDate(job.startAt)} - ${_formatDate(job.finishAt)}',
+                    job.finishAt != null
+                        ? '${_formatDate(job.startAt)} - ${_formatDate(job.finishAt!)}'
+                        : _formatDate(job.startAt),
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                   ),
                 ],
@@ -232,7 +234,7 @@ class JobCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      job.durationTerm,
+                      job.durationTerm ?? 'N/A',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

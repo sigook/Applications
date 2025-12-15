@@ -5,7 +5,7 @@ class Job extends Equatable {
   final String jobTitle;
   final int numberId;
   final int workersQuantity;
-  final String location;
+  final String? location;
   final String? entrance;
   final String agencyFullName;
   final String? agencyLogo;
@@ -15,16 +15,16 @@ class Job extends Equatable {
   final double workerRate;
   final double? workerSalary;
   final DateTime createdAt;
-  final DateTime finishAt;
+  final DateTime? finishAt;
   final DateTime startAt;
-  final String durationTerm;
+  final String? durationTerm;
 
   const Job({
     required this.id,
     required this.jobTitle,
     required this.numberId,
     required this.workersQuantity,
-    required this.location,
+    this.location,
     this.entrance,
     required this.agencyFullName,
     this.agencyLogo,
@@ -34,9 +34,9 @@ class Job extends Equatable {
     required this.workerRate,
     this.workerSalary,
     required this.createdAt,
-    required this.finishAt,
+    this.finishAt,
     required this.startAt,
-    required this.durationTerm,
+    this.durationTerm,
   });
 
   @override

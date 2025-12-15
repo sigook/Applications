@@ -1,6 +1,9 @@
 import '../../domain/entities/paginated_jobs.dart';
 import 'job_model.dart';
 
+/// PaginatedJobsModel uses manual JSON serialization because it needs to
+/// convert between List<Job> (entity) and List<JobModel> (model).
+/// json_serializable can't handle this polymorphic conversion automatically.
 class PaginatedJobsModel extends PaginatedJobs {
   const PaginatedJobsModel({
     required super.items,

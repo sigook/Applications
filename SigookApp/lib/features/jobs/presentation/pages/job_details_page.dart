@@ -205,7 +205,11 @@ class JobDetailsPage extends StatelessWidget {
               '${job.workersQuantity} workers',
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.access_time, 'Duration', job.durationTerm),
+            _buildInfoRow(
+              Icons.access_time,
+              'Duration',
+              job.durationTerm == null ? 'N/A' : job.durationTerm!,
+            ),
             if (job.workerApprovedToWork != null) ...[
               const SizedBox(height: 12),
               _buildInfoRow(
@@ -249,13 +253,14 @@ class JobDetailsPage extends StatelessWidget {
               AppTheme.successGreen,
             ),
             const SizedBox(height: 12),
-            _buildScheduleRow(
-              'End Date',
-              _formatDateTime(job.finishAt),
-              Icons.event_busy,
-              AppTheme.errorRed,
-            ),
-            const SizedBox(height: 12),
+            if (job.finishAt != null)
+              _buildScheduleRow(
+                'End Date',
+                _formatDateTime(job.finishAt!),
+                Icons.event_busy,
+                AppTheme.errorRed,
+              ),
+            if (job.finishAt != null) const SizedBox(height: 12),
             _buildScheduleRow(
               'Posted',
               _formatDateTime(job.createdAt),
@@ -406,7 +411,7 @@ class JobDetailsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        job.location,
+                        job.location ?? 'N/A',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

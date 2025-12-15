@@ -12,7 +12,7 @@ part of 'auth_viewmodel.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$AuthState {
+mixin _$AuthState implements DiagnosticableTreeMixin {
 
  bool get isLoading; String? get error; AuthToken? get token; bool get isAuthenticated;
 /// Create a copy of AuthState
@@ -22,6 +22,12 @@ mixin _$AuthState {
 $AuthStateCopyWith<AuthState> get copyWith => _$AuthStateCopyWithImpl<AuthState>(this as AuthState, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'AuthState'))
+    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('token', token))..add(DiagnosticsProperty('isAuthenticated', isAuthenticated));
+}
 
 @override
 bool operator ==(Object other) {
@@ -33,7 +39,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,isLoading,error,token,isAuthenticated);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'AuthState(isLoading: $isLoading, error: $error, token: $token, isAuthenticated: $isAuthenticated)';
 }
 
@@ -202,7 +208,7 @@ return $default(_that.isLoading,_that.error,_that.token,_that.isAuthenticated);c
 /// @nodoc
 
 
-class _AuthState implements AuthState {
+class _AuthState with DiagnosticableTreeMixin implements AuthState {
   const _AuthState({this.isLoading = false, this.error, this.token, this.isAuthenticated = false});
   
 
@@ -218,6 +224,12 @@ class _AuthState implements AuthState {
 _$AuthStateCopyWith<_AuthState> get copyWith => __$AuthStateCopyWithImpl<_AuthState>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'AuthState'))
+    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('token', token))..add(DiagnosticsProperty('isAuthenticated', isAuthenticated));
+}
 
 @override
 bool operator ==(Object other) {
@@ -229,7 +241,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,isLoading,error,token,isAuthenticated);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'AuthState(isLoading: $isLoading, error: $error, token: $token, isAuthenticated: $isAuthenticated)';
 }
 
