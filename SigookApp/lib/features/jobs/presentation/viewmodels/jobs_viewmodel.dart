@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/entities/job.dart';
+import '../../../../core/config/feature_flags.dart';
+import '../../data/mock/mock_jobs_data.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../providers/jobs_providers.dart';
 import 'jobs_state.dart';
@@ -11,68 +12,6 @@ class JobsViewModel extends _$JobsViewModel {
   @override
   JobsState build() {
     return const JobsState();
-  }
-
-  List<Job> _getMockJobs() {
-    final now = DateTime.now();
-    final nextMonday = now.add(
-      Duration(days: (DateTime.monday - now.weekday + 7) % 7),
-    );
-    final mondayStart = DateTime(
-      nextMonday.year,
-      nextMonday.month,
-      nextMonday.day,
-      7,
-      0,
-    );
-    final mondayEnd = DateTime(
-      nextMonday.year,
-      nextMonday.month,
-      nextMonday.day,
-      16,
-      0,
-    );
-
-    return [
-      Job(
-        id: 'mock-2201',
-        jobTitle: 'General Labor - Valdosta GA',
-        numberId: 2201,
-        workersQuantity: 10,
-        location: 'Valdosta, GA',
-        entrance: 'Main Entrance',
-        agencyFullName: 'MOCA',
-        agencyLogo: null,
-        status: 'Open',
-        isAsap: false,
-        workerApprovedToWork: false,
-        workerRate: 15.50,
-        workerSalary: 124.0,
-        createdAt: now.subtract(const Duration(days: 2)),
-        finishAt: mondayEnd,
-        startAt: mondayStart,
-        durationTerm: '6-7 weeks',
-      ),
-      Job(
-        id: 'mock-hr-001',
-        jobTitle: 'HR Administrator',
-        numberId: 1003,
-        workersQuantity: 1,
-        location: 'Medley, FL',
-        entrance: 'Main Office',
-        agencyFullName: 'E-Air',
-        agencyLogo: null,
-        status: 'Open',
-        isAsap: false,
-        workerApprovedToWork: false,
-        workerRate: 33.17,
-        workerSalary: 265.36,
-        createdAt: now.subtract(const Duration(days: 5)),
-        finishAt: now.add(const Duration(days: 30, hours: 8)),
-        startAt: now.add(const Duration(days: 7, hours: 9)),
-        durationTerm: 'Full-time',
-      ),
-    ];
   }
 
   Future<void> loadJobs() async {
@@ -94,14 +33,31 @@ class JobsViewModel extends _$JobsViewModel {
 
     result.fold(
       (failure) {
-        final mockJobs = _getMockJobs();
-        state = state.copyWith(
-          isLoading: false,
-          jobs: mockJobs,
-          currentPage: 1,
-          hasMore: false,
-          error: null,
-        );
+        // ===================================================================
+        // MOCK DATA FALLBACK (controlled by FeatureFlags.useMockJobs)
+        // To remove: Set FeatureFlags.useMockJobs = false or delete this block
+        // ===================================================================
+        if (FeatureFlags.useMockJobs) {
+          // Load mock jobs instead of showing error
+          final mockJobs = MockJobsData.getMockJobs();
+          state = state.copyWith(
+            isLoading: false,
+            jobs: mockJobs,
+            currentPage: 1,
+            hasMore: false,
+            error: null,
+          );
+        } else {
+          // Show user-friendly error message based on failure type
+          String errorMessage = _getUserFriendlyErrorMessage(failure.message);
+          state = state.copyWith(
+            isLoading: false,
+            jobs: [],
+            currentPage: 0,
+            hasMore: false,
+            error: errorMessage,
+          );
+        }
       },
       (paginatedJobs) => state = state.copyWith(
         isLoading: false,
@@ -111,6 +67,28 @@ class JobsViewModel extends _$JobsViewModel {
         error: null,
       ),
     );
+  }
+
+  /// Convert technical error messages to user-friendly ones
+  String _getUserFriendlyErrorMessage(String technicalError) {
+    final lowerError = technicalError.toLowerCase();
+
+    if (lowerError.contains('network') || lowerError.contains('internet')) {
+      return 'No internet connection. Please check your network and try again.';
+    } else if (lowerError.contains('timeout')) {
+      return 'Request timed out. Please check your connection and try again.';
+    } else if (lowerError.contains('401') ||
+        lowerError.contains('unauthorized')) {
+      return 'Your session has expired. Please sign in again.';
+    } else if (lowerError.contains('403') || lowerError.contains('forbidden')) {
+      return 'You don\'t have permission to access this content.';
+    } else if (lowerError.contains('404') || lowerError.contains('not found')) {
+      return 'Job listings are currently unavailable. Please try again later.';
+    } else if (lowerError.contains('500') || lowerError.contains('server')) {
+      return 'Server error. Our team has been notified. Please try again later.';
+    } else {
+      return 'Unable to load jobs. Please try again.\n\nTechnical details: $technicalError';
+    }
   }
 
   Future<void> loadMore() async {

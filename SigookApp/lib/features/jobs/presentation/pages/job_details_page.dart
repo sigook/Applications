@@ -578,7 +578,7 @@ class JobDetailsPage extends StatelessWidget {
             Icon(Icons.check_circle_outline, color: Colors.white),
             SizedBox(width: 8),
             Text(
-              'Apply for this Job',
+              'Apply Job',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
