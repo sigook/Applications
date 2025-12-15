@@ -53,13 +53,6 @@ class AppDrawer extends ConsumerWidget {
                   route: '/about',
                   isSelected: currentRoute == '/about',
                 ),
-                _buildMenuItem(
-                  context: context,
-                  icon: Icons.qr_code,
-                  title: 'QR Code',
-                  route: '/qr-code',
-                  isSelected: currentRoute == '/qr-code',
-                ),
                 const Divider(height: 32, thickness: 1),
                 _buildMenuItem(
                   context: context,
