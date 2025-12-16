@@ -120,27 +120,25 @@ class _JobsPageState extends ConsumerState<JobsPage> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppTheme.surfaceGrey,
-      drawer: const AppDrawer(currentRoute: AppRoutes.jobs),
+      endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       appBar: AppBar(
         backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
+          icon: const Icon(Icons.filter_list),
+          onPressed: _showFilterModal,
         ),
-        title: Center(
-          child: const Text(
-            'Jobs',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-          ),
+        title: const Text(
+          'Jobs',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterModal,
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
         ],
       ),

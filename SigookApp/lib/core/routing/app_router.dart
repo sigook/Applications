@@ -6,7 +6,7 @@ import '../../features/registration/presentation/pages/registration_screen.dart'
 import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/token_info_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
-import '../../features/jobs/presentation/pages/job_details_page.dart';
+import '../../features/jobs/presentation/pages/job_page.dart';
 import '../../features/jobs/domain/entities/job.dart';
 
 /// Route path constants
@@ -129,7 +129,7 @@ class AppRouter {
           final job = state.extra as Job;
           return CustomTransitionPage(
             key: state.pageKey,
-            child: JobDetailsPage(job: job),
+            child: JobPage(job: job),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);

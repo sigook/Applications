@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../domain/entities/job.dart';
 import '../widgets/job_details_tab.dart';
 import '../widgets/punch_card_tab.dart';
 import '../widgets/timesheet_tab.dart';
+import '../widgets/app_drawer.dart';
 
-class JobDetailsPage extends StatelessWidget {
+class JobPage extends StatelessWidget {
   final Job job;
 
-  const JobDetailsPage({super.key, required this.job});
+  const JobPage({super.key, required this.job});
 
   @override
   Widget build(BuildContext context) {
@@ -84,23 +86,63 @@ class JobDetailsPage extends StatelessWidget {
                   ),
                 ),
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(48),
+                  preferredSize: const Size.fromHeight(60),
                   child: Container(
                     color: Colors.white,
                     child: TabBar(
+                      indicator: UnderlineTabIndicator(
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryBlue,
+                          width: 3,
+                        ),
+                        insets: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
                       labelColor: AppTheme.primaryBlue,
                       unselectedLabelColor: Colors.grey.shade600,
-                      indicatorColor: AppTheme.primaryBlue,
-                      indicatorWeight: 3,
                       labelStyle: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                         letterSpacing: 0.5,
                       ),
-                      tabs: const [
-                        Tab(text: 'JOB'),
-                        Tab(text: 'PUNCH CARD'),
-                        Tab(text: 'TIMESHEET'),
+                      tabs: [
+                        Tab(
+                          height: 60,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.work_outline, size: 24),
+                              const SizedBox(height: 4),
+                              const Text('JOB'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          height: 60,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.access_time, size: 24),
+                              const SizedBox(height: 4),
+                              const Text('PUNCH'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          height: 60,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.receipt_long, size: 24),
+                              const SizedBox(height: 4),
+                              const Text('TIMESHEET'),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -116,11 +158,7 @@ class JobDetailsPage extends StatelessWidget {
             ],
           ),
         ),
-        endDrawer: Builder(
-          builder: (context) {
-            return const SizedBox.shrink();
-          },
-        ),
+        endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       ),
     );
   }
