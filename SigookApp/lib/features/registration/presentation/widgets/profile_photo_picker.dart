@@ -26,7 +26,6 @@ class ProfilePhotoPicker extends ConsumerWidget {
 
     return Column(
       children: [
-        // Avatar
         GestureDetector(
           onTap: () => _showPhotoSourceBottomSheet(context, ref),
           child: Container(
@@ -60,7 +59,6 @@ class ProfilePhotoPicker extends ConsumerWidget {
 
         const SizedBox(height: 16),
 
-        // Botón
         OutlinedButton.icon(
           onPressed: () => _showPhotoSourceBottomSheet(context, ref),
           icon: const Icon(Icons.camera_alt, size: 18),
@@ -72,7 +70,6 @@ class ProfilePhotoPicker extends ConsumerWidget {
           ),
         ),
 
-        // Error message
         if (showError && errorText != null && !photo.hasPhoto)
           Padding(
             padding: const EdgeInsets.only(top: 8),

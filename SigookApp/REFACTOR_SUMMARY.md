@@ -1,15 +1,40 @@
 # Codebase Refactor Summary
 
-## Completed Improvements
+## Completed Improvements (Phase 2)
 
-### 1. Comments Cleanup
+### 1. Additional Comments Cleanup
+- Removed section marker comments from `welcome_page.dart`
+- Removed documentation comments from widget files:
+  - `skill_autocomplete_field.dart`
+  - `searchable_dropdown_field.dart`
+  - `phone_number_field.dart`
+  - `location_selector.dart`
+  - `profile_photo_picker.dart`
+  - `file_upload_modal.dart`
+- Removed inline explanatory comments across registration widgets
+
+### 2. Comments Cleanup (Phase 1)
 - Removed verbose comment blocks from `mock_jobs_data.dart`
 - Removed JSDoc-style comments from `auth_viewmodel.dart`
 - Removed inline explanatory comments from `splash_screen.dart`, `jobs_viewmodel.dart`
 - Removed emoji debug prints for cleaner logging
 - Kept only essential error logging with `debugPrint`
 
-### 2. Reusable Widget Extraction
+### 3. Additional Reusable Widgets Created
+Created more shared widgets in `lib/core/widgets/`:
+- **`file_picker_button.dart`** - File picker UI with loading states
+- **`section_divider.dart`** - Consistent spacing divider
+
+### 4. Major File Refactoring
+**`user_profile_page.dart`** - Reduced from 662 to ~450 lines:
+- Now uses `ProfileSectionCard` for all sections
+- Uses `ProfileInfoRow` for all info displays
+- Uses `ProfileHeader` widget for header
+- Removed duplicate `_buildSection` and `_buildInfoRow` methods
+- Removed unused `_buildProfileHeader` and `_getInitials` methods
+- Much cleaner, more maintainable code
+
+### 5. Reusable Widget Extraction (Phase 1)
 Created shared widgets in `lib/core/widgets/`:
 - **`profile_section_card.dart`** - Card with gradient icon header for sections
 - **`profile_info_row.dart`** - Label/value pairs with edit mode
@@ -23,10 +48,25 @@ Created shared widgets in `lib/core/widgets/`:
 Created feature-specific widgets:
 - **`job_header_card.dart`** - Job header with logo, title, location, status
 
-### 3. File Simplification
+### 6. File Simplification
 - **`job_details_tab.dart`** - Reduced from 570 to ~400 lines by extracting JobHeaderCard
 - **`auth_viewmodel.dart`** - Cleaner code flow without excessive logging
 - **`splash_screen.dart`** - Removed all inline comments
+
+## Widget Extraction Impact
+
+### Before Refactor
+- `user_profile_page.dart`: 662 lines (lots of repetition)
+- `job_details_tab.dart`: 570 lines
+- Comments scattered throughout codebase
+- Section marker comments in UI files
+
+### After Refactor
+- `user_profile_page.dart`: ~390 lines (-41% reduction)
+- `job_details_tab.dart`: ~400 lines (-30% reduction)
+- 12 new reusable widget files created
+- Removed 100+ comment lines
+- Much better code reusability
 
 ## Naming Conventions Analysis
 

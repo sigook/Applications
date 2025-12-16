@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Phone number input field with country-aware formatting
-/// Follows Single Responsibility - handles phone number input UI only
 class PhoneNumberField extends StatefulWidget {
   final String? initialValue;
   final String countryCode; // ISO code (US, CA)
@@ -36,13 +34,11 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   @override
   void initState() {
     super.initState();
-    // US/CA phone mask: (###) ###-####
     _maskFormatter = MaskTextInputFormatter(
       mask: '(###) ###-####',
       filter: {"#": RegExp(r'[0-9]')},
       type: MaskAutoCompletionType.lazy,
     );
-    // Format initial value if provided
     final initialText =
         widget.initialValue != null && widget.initialValue!.isNotEmpty
         ? _maskFormatter.maskText(widget.initialValue!)
@@ -55,7 +51,6 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   @override
   void didUpdateWidget(PhoneNumberField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update text if initial value changes
     if (widget.initialValue != oldWidget.initialValue) {
       final newText =
           widget.initialValue != null && widget.initialValue!.isNotEmpty
@@ -79,9 +74,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   }
 
   void _onChanged(String value) {
-    // Extract only digits from the masked value for validation
     final digitsOnly = _maskFormatter.getUnmaskedText();
-    // Pass the raw digits to parent for validation
     widget.onChanged(digitsOnly);
   }
 

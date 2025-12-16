@@ -81,7 +81,6 @@ class _WelcomePageState extends State<WelcomePage>
           opacity: _fadeAnimation,
           child: Column(
             children: [
-              // Skip button
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
@@ -99,7 +98,6 @@ class _WelcomePageState extends State<WelcomePage>
                 ),
               ),
 
-              // PageView
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -115,7 +113,6 @@ class _WelcomePageState extends State<WelcomePage>
                 ),
               ),
 
-              // Page indicators
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
@@ -127,7 +124,6 @@ class _WelcomePageState extends State<WelcomePage>
                 ),
               ),
 
-              // Bottom buttons
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                 child: SlideTransition(
@@ -135,7 +131,6 @@ class _WelcomePageState extends State<WelcomePage>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Sign Up button (primary)
                       SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -165,7 +160,6 @@ class _WelcomePageState extends State<WelcomePage>
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Sign In button (outlined style)
                       SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -215,7 +209,6 @@ class _WelcomePageState extends State<WelcomePage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon
           Container(
             padding: EdgeInsets.all(isMobile ? 24 : 32),
             decoration: BoxDecoration(
@@ -240,7 +233,6 @@ class _WelcomePageState extends State<WelcomePage>
             ),
           ),
           SizedBox(height: isMobile ? 32 : 48),
-          // Title
           Text(
             item.title,
             textAlign: TextAlign.center,
@@ -251,7 +243,6 @@ class _WelcomePageState extends State<WelcomePage>
             ),
           ),
           const SizedBox(height: 16),
-          // Description
           Text(
             item.description,
             textAlign: TextAlign.center,

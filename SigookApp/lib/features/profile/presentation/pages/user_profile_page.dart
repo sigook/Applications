@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/profile_section_card.dart';
+import '../../../../core/widgets/profile_info_row.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../widgets/profile_header.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
   const UserProfilePage({super.key});
@@ -40,7 +43,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildProfileHeader('Juan Betancur', 'juanm@sigook.com'),
+            ProfileHeader(
+              name: 'Juan Betancur',
+              email: 'juanm@sigook.com',
+              isEditing: _isEditing,
+            ),
             const SizedBox(height: 16),
             _buildPersonalInfoSection(),
             const SizedBox(height: 12),
@@ -62,173 +69,177 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildProfileHeader(String name, String email) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                child: Text(
-                  _getInitials(name),
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryBlue,
-                  ),
-                ),
-              ),
-              if (_isEditing)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            email,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPersonalInfoSection() {
-    return _buildSection(
+    return ProfileSectionCard(
       title: 'Personal Information',
       icon: Icons.person_outline,
       iconGradient: const [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
       children: [
-        _buildInfoRow('First Name', 'Juan', Icons.badge_outlined),
-        _buildInfoRow('Last Name', 'Betancur', Icons.badge_outlined),
-        _buildInfoRow('Date of Birth', 'January 15, 1990', Icons.cake_outlined),
-        _buildInfoRow('Gender', 'Male', Icons.wc_outlined),
+        ProfileInfoRow(
+          label: 'First Name',
+          value: 'Juan',
+          icon: Icons.badge_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Last Name',
+          value: 'Betancur',
+          icon: Icons.badge_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Date of Birth',
+          value: 'January 15, 1990',
+          icon: Icons.cake_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Gender',
+          value: 'Male',
+          icon: Icons.wc_outlined,
+          isEditing: _isEditing,
+        ),
       ],
     );
   }
 
   Widget _buildContactSection() {
-    return _buildSection(
+    return ProfileSectionCard(
       title: 'Contact Information',
       icon: Icons.contact_phone_outlined,
       iconGradient: const [Color(0xFF4CAF50), Color(0xFF81C784)],
       children: [
-        _buildInfoRow(
-          'Mobile Number',
-          '+1 (555) 123-4567',
-          Icons.phone_outlined,
+        ProfileInfoRow(
+          label: 'Mobile Number',
+          value: '+1 (555) 123-4567',
+          icon: Icons.phone_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow('Email', 'juanm@sigook.com', Icons.email_outlined),
+        ProfileInfoRow(
+          label: 'Email',
+          value: 'juanm@sigook.com',
+          icon: Icons.email_outlined,
+          isEditing: _isEditing,
+        ),
       ],
     );
   }
 
   Widget _buildLocationSection() {
-    return _buildSection(
+    return ProfileSectionCard(
       title: 'Location Details',
       icon: Icons.location_on_outlined,
       iconGradient: const [Color(0xFFFF9800), Color(0xFFFFB74D)],
       children: [
-        _buildInfoRow('Country', 'United States', Icons.flag_outlined),
-        _buildInfoRow('State/Province', 'California', Icons.map_outlined),
-        _buildInfoRow('City', 'Los Angeles', Icons.location_city_outlined),
-        _buildInfoRow(
-          'Address',
-          '123 Main Street, Apt 4B',
-          Icons.home_outlined,
+        ProfileInfoRow(
+          label: 'Country',
+          value: 'United States',
+          icon: Icons.flag_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow('Zip Code', '90001', Icons.markunread_mailbox_outlined),
+        ProfileInfoRow(
+          label: 'State/Province',
+          value: 'California',
+          icon: Icons.map_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'City',
+          value: 'Los Angeles',
+          icon: Icons.location_city_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Address',
+          value: '123 Main Street, Apt 4B',
+          icon: Icons.home_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Zip Code',
+          value: '90001',
+          icon: Icons.markunread_mailbox_outlined,
+          isEditing: _isEditing,
+        ),
       ],
     );
   }
 
   Widget _buildPreferencesSection() {
-    return _buildSection(
+    return ProfileSectionCard(
       title: 'Work Preferences',
       icon: Icons.work_outline,
       iconGradient: const [Color(0xFF9C27B0), Color(0xFFBA68C8)],
       children: [
-        _buildInfoRow('Availability', 'Full-time', Icons.schedule_outlined),
-        _buildInfoRow(
-          'Available Days',
-          'Mon, Tue, Wed, Thu, Fri',
-          Icons.calendar_today_outlined,
+        ProfileInfoRow(
+          label: 'Availability',
+          value: 'Full-time',
+          icon: Icons.schedule_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow(
-          'Preferred Time',
-          'Morning, Afternoon',
-          Icons.access_time_outlined,
+        ProfileInfoRow(
+          label: 'Available Days',
+          value: 'Mon, Tue, Wed, Thu, Fri',
+          icon: Icons.calendar_today_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow(
-          'Lifting Capacity',
-          'Up to 50 lbs',
-          Icons.fitness_center_outlined,
+        ProfileInfoRow(
+          label: 'Preferred Time',
+          value: 'Morning, Afternoon',
+          icon: Icons.access_time_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow('Has Vehicle', 'Yes', Icons.directions_car_outlined),
-        _buildInfoRow('Languages', 'English, Spanish', Icons.language_outlined),
-        _buildInfoRow(
-          'Skills',
-          'Customer Service, Warehouse, Forklift',
-          Icons.stars_outlined,
+        ProfileInfoRow(
+          label: 'Lifting Capacity',
+          value: 'Up to 50 lbs',
+          icon: Icons.fitness_center_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Has Vehicle',
+          value: 'Yes',
+          icon: Icons.directions_car_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Languages',
+          value: 'English, Spanish',
+          icon: Icons.language_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Skills',
+          value: 'Customer Service, Warehouse, Forklift',
+          icon: Icons.stars_outlined,
+          isEditing: _isEditing,
         ),
       ],
     );
   }
 
   Widget _buildDocumentsSection() {
-    return _buildSection(
+    return ProfileSectionCard(
       title: 'Documents & Account',
       icon: Icons.description_outlined,
       iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
       children: [
-        _buildInfoRow(
-          'ID Type',
-          'Driver\'s License',
-          Icons.credit_card_outlined,
+        ProfileInfoRow(
+          label: 'ID Type',
+          value: 'Driver\'s License',
+          icon: Icons.credit_card_outlined,
+          isEditing: _isEditing,
         ),
-        _buildInfoRow('ID Number', '****6789', Icons.numbers_outlined),
-        _buildInfoRow(
-          'Username',
-          'juan_betancur',
-          Icons.account_circle_outlined,
+        ProfileInfoRow(
+          label: 'ID Number',
+          value: '****6789',
+          icon: Icons.numbers_outlined,
+          isEditing: _isEditing,
+        ),
+        ProfileInfoRow(
+          label: 'Username',
+          value: 'juan_betancur',
+          icon: Icons.account_circle_outlined,
+          isEditing: _isEditing,
         ),
       ],
     );
@@ -322,122 +333,6 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required List<Color> iconGradient,
-    required List<Widget> children,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: iconGradient),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: AppTheme.primaryBlue),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                if (_isEditing)
-                  TextField(
-                    controller: TextEditingController(text: value),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppTheme.primaryBlue,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
-                  )
-                else
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -613,15 +508,5 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         ],
       ),
     );
-  }
-
-  String _getInitials(String? name) {
-    if (name == null || name.isEmpty) return 'U';
-
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name[0].toUpperCase();
   }
 }

@@ -5,7 +5,6 @@ import '../../../../core/services/file_picker_service.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 
-/// Modal dialog for uploading files with identification type selection
 class FileUploadModal extends ConsumerStatefulWidget {
   final String title;
   final String description;
@@ -37,7 +36,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
     super.dispose();
   }
 
-  /// Pick file using file picker service
   Future<void> _pickFile() async {
     setState(() {
       _isPickingFile = true;
@@ -46,7 +44,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
     try {
       final filePickerService = ref.read(filePickerServiceProvider);
 
-      // Pick file with PDF, JPG, PNG allowed
       final result = await filePickerService.pickFile(
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
         maxFileSizeMB: 10,
@@ -71,7 +68,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
           ),
         );
       } else {
-        // Cancelled
         setState(() {
           _isPickingFile = false;
         });

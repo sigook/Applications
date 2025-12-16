@@ -4,8 +4,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/notifiers/catalog_notifiers.dart';
 import '../../../registration/domain/entities/skill.dart';
 
-/// Autocomplete text field for skills
-/// Allows user to type and select from API suggestions only
 class SkillAutocompleteField extends ConsumerStatefulWidget {
   final List<Skill> selectedSkills;
   final ValueChanged<List<Skill>> onChanged;
@@ -101,7 +99,6 @@ class _SkillAutocompleteFieldState
         ],
       ),
       data: (skills) {
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,16 +112,15 @@ class _SkillAutocompleteFieldState
                 if (textEditingValue.text.isEmpty) {
                   return const Iterable<String>.empty();
                 }
-                return skills
-                    .map((skill) => skill.value)
-                    .where((String option) {
+                return skills.map((skill) => skill.value).where((
+                  String option,
+                ) {
                   return option.toLowerCase().contains(
                     textEditingValue.text.toLowerCase(),
                   );
                 });
               },
               onSelected: (String selection) {
-                // Create skill entity from selected value
                 _addSkill(Skill(skill: selection));
               },
               fieldViewBuilder:
@@ -134,7 +130,6 @@ class _SkillAutocompleteFieldState
                     FocusNode fieldFocusNode,
                     VoidCallback onFieldSubmitted,
                   ) {
-                    // Sync controllers
                     _controller.text = fieldTextEditingController.text;
                     fieldTextEditingController.addListener(() {
                       _controller.text = fieldTextEditingController.text;
@@ -145,7 +140,8 @@ class _SkillAutocompleteFieldState
                       focusNode: fieldFocusNode,
                       decoration: InputDecoration(
                         hintText: 'Type to search or add custom skill...',
-                        helperText: 'Press Enter to add custom skill or select from suggestions',
+                        helperText:
+                            'Press Enter to add custom skill or select from suggestions',
                         helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.workspace_premium),
                         suffixIcon: fieldTextEditingController.text.isNotEmpty
@@ -183,22 +179,25 @@ class _SkillAutocompleteFieldState
                       ),
                       onSubmitted: (value) {
                         if (value.trim().isEmpty) return;
-                        
-                        // Allow adding any skill - from suggestions or custom
+
                         final trimmedValue = value.trim();
-                        final matchingSkill = skills.where(
-                          (skill) => skill.value.toLowerCase() == trimmedValue.toLowerCase(),
-                        ).firstOrNull;
-                        
+                        final matchingSkill = skills
+                            .where(
+                              (skill) =>
+                                  skill.value.toLowerCase() ==
+                                  trimmedValue.toLowerCase(),
+                            )
+                            .firstOrNull;
+
                         if (matchingSkill != null) {
-                          // Use the skill from suggestions (preserves correct casing)
                           _addSkill(Skill(skill: matchingSkill.value));
                         } else {
-                          // Allow custom skill entry
                           _addSkill(Skill(skill: trimmedValue));
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Added custom skill: "$trimmedValue"'),
+                              content: Text(
+                                'Added custom skill: "$trimmedValue"',
+                              ),
                               backgroundColor: AppTheme.successGreen,
                               duration: const Duration(seconds: 2),
                             ),
