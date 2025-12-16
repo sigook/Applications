@@ -30,6 +30,10 @@ class WorkerProfileData {
   final String password;
   final String confirmPassword;
   final bool agreeTermsAndConditions;
+  final String? profileImageFileName;
+  final String? identificationType1FileName;
+  final String? identificationType2FileName;
+  final String? resumeFileName;
 
   WorkerProfileData({
     required this.firstName,
@@ -53,6 +57,10 @@ class WorkerProfileData {
     required this.password,
     required this.confirmPassword,
     required this.agreeTermsAndConditions,
+    this.profileImageFileName,
+    this.identificationType1FileName,
+    this.identificationType2FileName,
+    this.resumeFileName,
   });
 
   Map<String, dynamic> toJson() {
@@ -80,6 +88,19 @@ class WorkerProfileData {
       'password': password,
       'confirmPassword': confirmPassword,
       'agreeTermsAndConditions': agreeTermsAndConditions,
+      if (profileImageFileName != null)
+        'profileImage': {'fileName': profileImageFileName},
+      if (identificationType1FileName != null)
+        'identificationType1File': {
+          'fileName': identificationType1FileName,
+          'description': '',
+        },
+      if (identificationType2FileName != null)
+        'identificationType2File': {
+          'fileName': identificationType2FileName,
+          'description': '',
+        },
+      if (resumeFileName != null) 'resume': {'fileName': resumeFileName},
       'licenses': [],
       'certificates': [],
       'otherDocuments': [],

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:retry/retry.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/file_naming_service.dart';
 import '../models/worker_registration_request.dart';
 
 /// Remote data source for registration operations
@@ -20,7 +21,41 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
 
   @override
   Future<void> registerWorker(WorkerRegistrationRequest request) async {
-    final workerData = request.toWorkerProfileData();
+    String? profileImageFileName;
+    String? identificationType1FileName;
+    String? identificationType2FileName;
+    String? resumeFileName;
+
+    if (request.profileImage != null) {
+      profileImageFileName = FileNamingService.generateProfileImageName(
+        request.profileImage!.pathFile,
+      );
+    }
+
+    if (request.identificationType1File?.filePath != null) {
+      identificationType1FileName = FileNamingService.generateDocumentName(
+        request.identificationType1File!.filePath!,
+      );
+    }
+
+    if (request.identificationType2File?.filePath != null) {
+      identificationType2FileName = FileNamingService.generateDocumentName(
+        request.identificationType2File!.filePath!,
+      );
+    }
+
+    if (request.resume?.filePath != null) {
+      resumeFileName = FileNamingService.generateResumeName(
+        request.resume!.filePath!,
+      );
+    }
+
+    final workerData = request.toWorkerProfileData(
+      profileImageFileName: profileImageFileName,
+      identificationType1FileName: identificationType1FileName,
+      identificationType2FileName: identificationType2FileName,
+      resumeFileName: resumeFileName,
+    );
     final jsonData = workerData.toJson();
 
     debugPrint('╔═══ WORKER REGISTRATION REQUEST (MULTIPART) ═══');
@@ -35,59 +70,59 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     final formData = FormData();
     formData.fields.add(MapEntry('data', jsonEncode(jsonData)));
 
-    if (request.profileImage != null) {
-      debugPrint('║   - profileImage: ${request.profileImage!.fileName}');
+    if (request.profileImage != null && profileImageFileName != null) {
+      debugPrint('║   - $profileImageFileName');
       formData.files.add(
         MapEntry(
-          'profileImage',
+          profileImageFileName,
           await MultipartFile.fromFile(
             request.profileImage!.pathFile,
-            filename: request.profileImage!.fileName,
+            filename: profileImageFileName,
           ),
         ),
       );
     }
 
     if (request.identificationType1File != null &&
-        request.identificationType1File!.filePath != null) {
-      debugPrint(
-        '║   - identificationType1File: ${request.identificationType1File!.fileName}',
-      );
+        request.identificationType1File!.filePath != null &&
+        identificationType1FileName != null) {
+      debugPrint('║   - $identificationType1FileName');
       formData.files.add(
         MapEntry(
-          'identificationType1File',
+          identificationType1FileName,
           await MultipartFile.fromFile(
             request.identificationType1File!.filePath!,
-            filename: request.identificationType1File!.fileName,
+            filename: identificationType1FileName,
           ),
         ),
       );
     }
 
     if (request.identificationType2File != null &&
-        request.identificationType2File!.filePath != null) {
-      debugPrint(
-        '║   - identificationType2File: ${request.identificationType2File!.fileName}',
-      );
+        request.identificationType2File!.filePath != null &&
+        identificationType2FileName != null) {
+      debugPrint('║   - $identificationType2FileName');
       formData.files.add(
         MapEntry(
-          'identificationType2File',
+          identificationType2FileName,
           await MultipartFile.fromFile(
             request.identificationType2File!.filePath!,
-            filename: request.identificationType2File!.fileName,
+            filename: identificationType2FileName,
           ),
         ),
       );
     }
 
-    if (request.resume != null && request.resume!.filePath != null) {
-      debugPrint('║   - resume: ${request.resume!.fileName}');
+    if (request.resume != null &&
+        request.resume!.filePath != null &&
+        resumeFileName != null) {
+      debugPrint('║   - $resumeFileName');
       formData.files.add(
         MapEntry(
-          'resume',
+          resumeFileName,
           await MultipartFile.fromFile(
             request.resume!.filePath!,
-            filename: request.resume!.fileName,
+            filename: resumeFileName,
           ),
         ),
       );

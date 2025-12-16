@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../../domain/entities/registration_form.dart';
 import 'worker_profile_data.dart';
 import '../../domain/entities/language.dart';
@@ -213,7 +212,12 @@ class WorkerRegistrationRequest {
     );
   }
 
-  WorkerProfileData toWorkerProfileData() {
+  WorkerProfileData toWorkerProfileData({
+    String? profileImageFileName,
+    String? identificationType1FileName,
+    String? identificationType2FileName,
+    String? resumeFileName,
+  }) {
     return WorkerProfileData(
       firstName: firstName,
       lastName: lastName,
@@ -236,58 +240,10 @@ class WorkerRegistrationRequest {
       password: password,
       confirmPassword: confirmPassword,
       agreeTermsAndConditions: agreeTermsAndConditions,
+      profileImageFileName: profileImageFileName,
+      identificationType1FileName: identificationType1FileName,
+      identificationType2FileName: identificationType2FileName,
+      resumeFileName: resumeFileName,
     );
-  }
-
-  /// Convert to JSON for API request
-  Map<String, dynamic> toJson() {
-    // Debug: Print entity values before conversion
-    debugPrint('═══ DEBUG: Entity Values ═══');
-    debugPrint('Gender: id=${gender.id}, value=${gender.value}');
-    debugPrint('Languages count: ${languages.length}');
-    if (languages.isNotEmpty) {
-      debugPrint(
-        'First language: id=${languages.first.id}, value=${languages.first.value}',
-      );
-    }
-    debugPrint('Skills count: ${skills.length}');
-    if (skills.isNotEmpty) {
-      debugPrint('First skill: skill=${skills.first.skill}');
-    }
-    debugPrint('═══════════════════════════');
-
-    return {
-      'firstName': firstName,
-      'lastName': lastName,
-      'birthDay': birthDay,
-      'gender': {'id': gender.id}, // Only id per API spec
-      if (profileImage != null) 'profileImage': profileImage!.toJson(),
-      'identificationNumber1': identificationNumber1,
-      'identificationType1': identificationType1.toJson(),
-      if (mobileNumber != null) 'mobileNumber': mobileNumber,
-      if (phone != null) 'phone': phone,
-      'location': location.toJson(),
-      if (lift != null) 'lift': lift!.toJson(),
-      'availabilities': availabilities.map((a) => a.toJson()).toList(),
-      'availabilityTimes': availabilityTimes.map((a) => a.toJson()).toList(),
-      'availabilityDays': availabilityDays.map((d) => d.toJson()).toList(),
-      'languages': languages.map((l) => l.toJson()).toList(),
-      'skills': skills.map((s) => s.toJson()).toList(),
-      'email': email,
-      'password': password,
-      'confirmPassword': confirmPassword,
-      'agreeTermsAndConditions': agreeTermsAndConditions,
-      // File uploads
-      'identificationType1File': identificationType1File?.toJson(),
-      'identificationType2File': identificationType2File?.toJson(),
-      'identificationType2': identificationType2?.toJson(),
-      if (identificationNumber2 != null)
-        'identificationNumber2': identificationNumber2,
-      'resume': resume?.toJson(),
-      // Empty arrays for now
-      'licenses': [],
-      'certificates': [],
-      'otherDocuments': [],
-    };
   }
 }
