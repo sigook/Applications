@@ -160,6 +160,12 @@ class AppDrawer extends ConsumerWidget {
     bool isLogout = false,
     VoidCallback? onTap,
   }) {
+    final iconColor = isSelected
+        ? AppTheme.primaryBlue
+        : isLogout
+        ? AppTheme.secondaryRed
+        : AppTheme.primaryBlue;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -169,14 +175,41 @@ class AppDrawer extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: isSelected
-              ? AppTheme.primaryBlue
-              : isLogout
-              ? AppTheme.secondaryRed
-              : AppTheme.textLight,
-          size: 24,
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isLogout
+                  ? [AppTheme.secondaryRed, AppTheme.errorRed]
+                  : isSelected
+                  ? [AppTheme.primaryBlue, AppTheme.tertiaryBlue]
+                  : [
+                      iconColor.withValues(alpha: 0.1),
+                      iconColor.withValues(alpha: 0.05),
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected || isLogout
+                ? [
+                    BoxShadow(
+                      color:
+                          (isLogout
+                                  ? AppTheme.secondaryRed
+                                  : AppTheme.primaryBlue)
+                              .withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            color: isSelected || isLogout ? Colors.white : iconColor,
+            size: 22,
+          ),
         ),
         title: Text(
           title,
@@ -225,12 +258,7 @@ class AppDrawer extends ConsumerWidget {
 
   void _navigateToProfile(BuildContext context) {
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile page coming soon!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    context.push(AppRoutes.profile);
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {

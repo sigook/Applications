@@ -433,8 +433,8 @@ class _RegistrationFormScreenState
         ),
       );
 
-      // Navigate to welcome page after successful registration
-      context.go(AppRoutes.welcome);
+      // Navigate to jobs page after successful registration
+      context.go(AppRoutes.jobs);
     } else {
       notifier.setError(result);
       ScaffoldMessenger.of(context).showSnackBar(

@@ -8,6 +8,7 @@ import '../../features/auth/presentation/pages/token_info_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/jobs/presentation/pages/job_page.dart';
 import '../../features/jobs/domain/entities/job.dart';
+import '../../features/profile/presentation/pages/user_profile_page.dart';
 
 /// Route path constants
 class AppRoutes {
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String tokenInfo = '/token-info';
   static const String jobs = '/jobs';
   static const String jobDetails = '/jobs/details';
+  static const String profile = '/profile';
 }
 
 /// Navigation observer to dismiss keyboard on route change
@@ -147,6 +149,17 @@ class AppRouter {
                 },
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const UserProfilePage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
