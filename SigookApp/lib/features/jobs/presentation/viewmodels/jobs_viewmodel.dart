@@ -33,12 +33,7 @@ class JobsViewModel extends _$JobsViewModel {
 
     result.fold(
       (failure) {
-        // ===================================================================
-        // MOCK DATA FALLBACK (controlled by FeatureFlags.useMockJobs)
-        // To remove: Set FeatureFlags.useMockJobs = false or delete this block
-        // ===================================================================
         if (FeatureFlags.useMockJobs) {
-          // Load mock jobs instead of showing error
           final mockJobs = MockJobsData.getMockJobs();
           state = state.copyWith(
             isLoading: false,
@@ -48,7 +43,6 @@ class JobsViewModel extends _$JobsViewModel {
             error: null,
           );
         } else {
-          // Show user-friendly error message based on failure type
           String errorMessage = _getUserFriendlyErrorMessage(failure.message);
           state = state.copyWith(
             isLoading: false,

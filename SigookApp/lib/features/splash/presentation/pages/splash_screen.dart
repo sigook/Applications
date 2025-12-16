@@ -23,7 +23,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
 
-    // Animations
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -45,17 +44,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _animationController.forward();
 
-    // Wait for animation AND token loading before navigating
     _checkAuthAndNavigate();
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for animation to mostly complete
     await Future.delayed(const Duration(milliseconds: 2700));
 
     if (!mounted || _hasNavigated) return;
 
-    // Wait for auth initialization to complete (with timeout)
     final authNotifier = ref.read(authViewModelProvider.notifier);
     int attempts = 0;
     while (!authNotifier.isInitialized && attempts < 20) {
@@ -63,12 +59,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       attempts++;
     }
 
+    await Future.delayed(const Duration(milliseconds: 200));
+
     if (!mounted || _hasNavigated) return;
     _hasNavigated = true;
 
     final authState = ref.read(authViewModelProvider);
 
-    // Navigate based on authentication state
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
@@ -95,10 +92,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1565C0), // Deep Blue
-              Color(0xFF1976D2), // Medium Blue
-              Color(0xFFD32F2F), // Deep Red
-              Color(0xFFE53935), // Vibrant Red
+              Color(0xFF1565C0),
+              Color(0xFF1976D2),
+              Color(0xFFD32F2F),
+              Color(0xFFE53935),
             ],
             stops: [0.0, 0.4, 0.7, 1.0],
           ),
@@ -130,9 +127,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         child: const Icon(
                           Icons.person_add_alt_1,
                           size: 80,
-                          color: Color(
-                            0xFF1565C0,
-                          ), // Use direct color instead of deprecated primaryColor
+                          color: Color(0xFF1565C0),
                         ),
                       ),
                       const SizedBox(height: 32),

@@ -1,21 +1,5 @@
 import '../../domain/entities/job.dart';
 
-/// ============================================================================
-/// MOCK JOBS DATA - FOR TESTING/DEVELOPMENT ONLY
-/// ============================================================================
-///
-/// This file contains mock job data for testing purposes.
-///
-/// TO REMOVE MOCK DATA COMPLETELY:
-/// 1. Delete this entire file: lib/features/jobs/data/mock/mock_jobs_data.dart
-/// 2. Set FeatureFlags.useMockJobs to false in: lib/core/config/feature_flags.dart
-/// 3. Remove mock-related imports and logic from: jobs_viewmodel.dart
-///
-/// TO TOGGLE MOCK DATA ON/OFF:
-/// - Set FeatureFlags.useMockJobs = true (enable mocks as fallback)
-/// - Set FeatureFlags.useMockJobs = false (disable mocks, show real errors)
-///
-/// ============================================================================
 class MockJobsData {
   static List<Job> getMockJobs() {
     final now = DateTime.now();

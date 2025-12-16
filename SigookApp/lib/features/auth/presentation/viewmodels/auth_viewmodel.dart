@@ -1,5 +1,3 @@
-// lib/features/auth/presentation/viewmodels/auth_viewmodel.dart
-
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -33,7 +31,6 @@ class AuthViewModel extends _$AuthViewModel {
 
   bool get isInitialized => _isInitialized;
 
-  /// Load cached token and validate session on initialization
   Future<void> _loadCachedToken() async {
     try {
       final localDataSource = ref.read(authLocalDataSourceProvider);
@@ -42,10 +39,8 @@ class AuthViewModel extends _$AuthViewModel {
       if (!ref.mounted) return;
 
       if (cachedToken != null) {
-        // Set user as authenticated with cached token first
         state = state.copyWith(token: cachedToken, isAuthenticated: true);
 
-        // Check if token is expired and try to refresh
         final expirationDateTime = cachedToken.expirationDateTime;
         final isExpired =
             expirationDateTime != null &&
@@ -54,27 +49,19 @@ class AuthViewModel extends _$AuthViewModel {
             );
 
         if (isExpired && cachedToken.refreshToken != null) {
-          // Token expired, try to refresh in background
-          debugPrint('🔄 Token expired, attempting refresh...');
           await _refreshTokenSilent();
         }
       }
     } catch (e) {
-      // Silent fail - user will need to login manually
       debugPrint('Failed to load cached token: $e');
     } finally {
       _isInitialized = true;
     }
   }
 
-  /// Silently refresh token without showing loading state
   Future<void> _refreshTokenSilent() async {
     final currentToken = state.token;
-    if (currentToken?.refreshToken == null) {
-      // No refresh token available, but keep user authenticated with current token
-      debugPrint('⚠️ No refresh token available, keeping current session');
-      return;
-    }
+    if (currentToken?.refreshToken == null) return;
 
     final refreshToken = ref.read(refreshTokenProvider);
     final result = await refreshToken(
@@ -84,16 +71,8 @@ class AuthViewModel extends _$AuthViewModel {
     if (!ref.mounted) return;
 
     result.fold(
-      (failure) {
-        debugPrint('❌ Token refresh failed: ${failure.message}');
-        // Keep user authenticated with cached token even if refresh fails
-        // They will be prompted to re-authenticate when they try to access protected resources
-        debugPrint('ℹ️ Keeping user authenticated with cached token');
-      },
-      (token) {
-        debugPrint('✅ Token refreshed successfully');
-        state = state.copyWith(token: token, isAuthenticated: true);
-      },
+      (failure) => debugPrint('Token refresh failed: ${failure.message}'),
+      (token) => state = state.copyWith(token: token, isAuthenticated: true),
     );
   }
 
@@ -106,7 +85,6 @@ class AuthViewModel extends _$AuthViewModel {
     result.fold(
       (failure) {
         if (failure.message.contains('User cancelled')) {
-          debugPrint('ℹ️ User cancelled authentication - no error shown');
           state = state.copyWith(isLoading: false, error: null);
         } else {
           state = state.copyWith(isLoading: false, error: failure.message);
@@ -171,11 +149,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-          // Keep authentication state until logout succeeds
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (success) {
         state = const AuthState();

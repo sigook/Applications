@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/job.dart';
+import 'job_header_card.dart';
 
 class JobDetailsTab extends StatelessWidget {
   final Job job;
@@ -18,7 +19,7 @@ class JobDetailsTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              _buildHeaderCard(),
+              JobHeaderCard(job: job),
               const SizedBox(height: 12),
               _buildInfoCard(),
               const SizedBox(height: 12),
@@ -37,153 +38,6 @@ class JobDetailsTab extends StatelessWidget {
           child: _buildActionButton(context),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeaderCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (job.agencyLogo != null)
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        job.agencyLogo!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.business,
-                            color: Colors.grey.shade400,
-                            size: 32,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.business,
-                      color: AppTheme.primaryBlue,
-                      size: 32,
-                    ),
-                  ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        job.jobTitle,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        job.agencyFullName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildStatusBadge(),
-                const SizedBox(width: 12),
-                if (job.isAsap)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorRed,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.flash_on, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          'ASAP',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge() {
-    Color statusColor;
-    switch (job.status.toLowerCase()) {
-      case 'open':
-        statusColor = AppTheme.successGreen;
-        break;
-      case 'closed':
-        statusColor = AppTheme.errorRed;
-        break;
-      case 'booked':
-        statusColor = AppTheme.primaryBlue;
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: statusColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: statusColor),
-      ),
-      child: Text(
-        job.status.toUpperCase(),
-        style: TextStyle(
-          color: statusColor,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 
