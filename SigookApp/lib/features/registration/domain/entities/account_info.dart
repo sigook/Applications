@@ -51,6 +51,16 @@ class AccountInfo extends Equatable {
     );
   }
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email.value,
+      'password': password.value,
+      'confirmPassword': confirmPassword,
+      'termsAccepted': termsAccepted,
+    };
+  }
+
   @override
   List<Object?> get props => [email, password, confirmPassword, termsAccepted];
 }

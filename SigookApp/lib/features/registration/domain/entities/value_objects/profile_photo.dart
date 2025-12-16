@@ -10,6 +10,11 @@ class ProfilePhoto extends Equatable {
 
   bool get hasPhoto => path.isNotEmpty;
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {'path': path, 'isFromCamera': isFromCamera};
+  }
+
   @override
   List<Object?> get props => [path, isFromCamera];
 }

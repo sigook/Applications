@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
+import 'package:json_annotation/json_annotation.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/registration_form.dart';
@@ -22,13 +26,16 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
     RegistrationForm form,
   ) async {
     try {
-      // Create worker registration request from form
+      debugPrint('╔═══ WORKER REGISTRATION REQUEST ═══');
+      debugPrint('║ Worker Profile Data (JSON):');
+      const encoder = JsonEncoder.withIndent('  ');
+      final prettyJson = encoder.convert(form.toJson());
+      debugPrint(prettyJson);
+      debugPrint('╚═══════════════════════════════════');
       final request = WorkerRegistrationRequest.fromEntity(form);
 
-      // Submit to API
       await remoteDataSource.registerWorker(request);
 
-      // Clear draft after successful submission
       await localDataSource.clearDraft();
 
       return const Right(null);

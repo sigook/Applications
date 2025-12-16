@@ -65,6 +65,16 @@ class IdentificationDocument extends Equatable {
     );
   }
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      'identificationTypeId': identificationTypeId,
+      'identificationTypeValue': identificationTypeValue,
+      'identificationNumber': identificationNumber,
+      'file': file.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [
     identificationTypeId,

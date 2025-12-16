@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/registration_form.dart';
+import 'worker_profile_data.dart';
 import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
 import '../../domain/entities/available_time.dart';
@@ -209,6 +210,32 @@ class WorkerRegistrationRequest {
       password: accountInfo.password.value,
       confirmPassword: accountInfo.confirmPassword,
       agreeTermsAndConditions: accountInfo.termsAccepted,
+    );
+  }
+
+  WorkerProfileData toWorkerProfileData() {
+    return WorkerProfileData(
+      firstName: firstName,
+      lastName: lastName,
+      birthDay: birthDay,
+      gender: gender,
+      identificationNumber1: identificationNumber1,
+      identificationType1: identificationType1,
+      identificationNumber2: identificationNumber2,
+      identificationType2: identificationType2,
+      mobileNumber: mobileNumber,
+      phone: phone,
+      location: location,
+      lift: lift,
+      availabilities: availabilities,
+      availabilityTimes: availabilityTimes,
+      availabilityDays: availabilityDays,
+      languages: languages,
+      skills: skills,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      agreeTermsAndConditions: agreeTermsAndConditions,
     );
   }
 

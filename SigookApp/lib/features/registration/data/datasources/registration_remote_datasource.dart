@@ -20,15 +20,83 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
 
   @override
   Future<void> registerWorker(WorkerRegistrationRequest request) async {
-    final jsonData = request.toJson();
+    final workerData = request.toWorkerProfileData();
+    final jsonData = workerData.toJson();
 
-    // Debug: Log the actual JSON being sent
-    debugPrint('╔═══ WORKER REGISTRATION REQUEST ═══');
-    debugPrint('║ JSON Data:');
+    debugPrint('╔═══ WORKER REGISTRATION REQUEST (MULTIPART) ═══');
+    debugPrint('║');
+    debugPrint('║ 📋 Form Field: "data" (JSON string)');
     const encoder = JsonEncoder.withIndent('  ');
     final prettyJson = encoder.convert(jsonData);
-    debugPrint(prettyJson);
-    debugPrint('╚═══════════════════════════════════');
+    debugPrint('║ ${prettyJson.replaceAll('\n', '\n║ ')}');
+    debugPrint('║');
+    debugPrint('║ 📎 Files to attach:');
+
+    final formData = FormData();
+    formData.fields.add(MapEntry('data', jsonEncode(jsonData)));
+
+    if (request.profileImage != null) {
+      debugPrint('║   - profileImage: ${request.profileImage!.fileName}');
+      formData.files.add(
+        MapEntry(
+          'profileImage',
+          await MultipartFile.fromFile(
+            request.profileImage!.pathFile,
+            filename: request.profileImage!.fileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.identificationType1File != null &&
+        request.identificationType1File!.filePath != null) {
+      debugPrint(
+        '║   - identificationType1File: ${request.identificationType1File!.fileName}',
+      );
+      formData.files.add(
+        MapEntry(
+          'identificationType1File',
+          await MultipartFile.fromFile(
+            request.identificationType1File!.filePath!,
+            filename: request.identificationType1File!.fileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.identificationType2File != null &&
+        request.identificationType2File!.filePath != null) {
+      debugPrint(
+        '║   - identificationType2File: ${request.identificationType2File!.fileName}',
+      );
+      formData.files.add(
+        MapEntry(
+          'identificationType2File',
+          await MultipartFile.fromFile(
+            request.identificationType2File!.filePath!,
+            filename: request.identificationType2File!.fileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.resume != null && request.resume!.filePath != null) {
+      debugPrint('║   - resume: ${request.resume!.fileName}');
+      formData.files.add(
+        MapEntry(
+          'resume',
+          await MultipartFile.fromFile(
+            request.resume!.filePath!,
+            filename: request.resume!.fileName,
+          ),
+        ),
+      );
+    }
+
+    debugPrint('║');
+    debugPrint('║ 📦 Total files: ${formData.files.length}');
+    debugPrint('║ 📋 Total form fields: ${formData.fields.length}');
+    debugPrint('╚════════════════════════════════════════════════');
 
     // Retry configuration with exponential backoff
     const retryOptions = RetryOptions(
@@ -41,7 +109,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     try {
       final response = await retryOptions.retry(
         () async {
-          return await apiClient.post('/WorkerProfile', data: jsonData);
+          return await apiClient.post('/WorkerProfile', data: formData);
         },
         // Only retry on network/timeout errors, not on server errors (4xx/5xx)
         retryIf: (e) {

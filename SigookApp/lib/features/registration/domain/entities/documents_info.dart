@@ -51,6 +51,15 @@ class DocumentsInfo extends Equatable {
     );
   }
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      if (identification1 != null) 'identification1': identification1!.toJson(),
+      if (identification2 != null) 'identification2': identification2!.toJson(),
+      if (resume != null) 'resume': resume!.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [identification1, identification2, resume];
 }

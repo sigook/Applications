@@ -67,6 +67,16 @@ class RegistrationForm extends Equatable {
     );
   }
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      if (basicInfo != null) 'basicInfo': basicInfo!.toJson(),
+      if (preferencesInfo != null) 'preferencesInfo': preferencesInfo!.toJson(),
+      if (documentsInfo != null) 'documentsInfo': documentsInfo!.toJson(),
+      if (accountInfo != null) 'accountInfo': accountInfo!.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [
     basicInfo,

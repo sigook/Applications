@@ -13,11 +13,11 @@ class PreferencesInfo extends Equatable {
   final AvailabilityType availabilityType;
   final List<AvailableTime> availableTimes;
   final List<DayOfWeekEntity> availableDays;
-  
+
   // Physical capabilities
   final LiftingCapacity? liftingCapacity;
   final bool hasVehicle;
-  
+
   // Professional
   final List<Language> languages;
   final List<Skill> skills;
@@ -34,7 +34,7 @@ class PreferencesInfo extends Equatable {
 
   /// Helper to get language values as strings
   List<String> get languageValues => languages.map((l) => l.value).toList();
-  
+
   /// Helper to get skill values as strings
   List<String> get skillValues => skills.map((s) => s.value).toList();
 
@@ -83,14 +83,27 @@ class PreferencesInfo extends Equatable {
     );
   }
 
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      'availabilityType': availabilityType.toJson(),
+      'availableTimes': availableTimes.map((t) => t.toJson()).toList(),
+      'availableDays': availableDays.map((d) => d.toJson()).toList(),
+      if (liftingCapacity != null) 'liftingCapacity': liftingCapacity!.toJson(),
+      'hasVehicle': hasVehicle,
+      'languages': languages.map((l) => l.toJson()).toList(),
+      'skills': skills.map((s) => s.toJson()).toList(),
+    };
+  }
+
   @override
   List<Object?> get props => [
-        availabilityType,
-        availableTimes,
-        availableDays,
-        liftingCapacity,
-        hasVehicle,
-        languages,
-        skills,
-      ];
+    availabilityType,
+    availableTimes,
+    availableDays,
+    liftingCapacity,
+    hasVehicle,
+    languages,
+    skills,
+  ];
 }
