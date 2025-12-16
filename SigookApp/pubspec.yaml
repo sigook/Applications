@@ -55,6 +55,7 @@ dependencies:
   phone_numbers_parser: ^9.0.16
   uuid: ^4.5.1
   mask_text_input_formatter: ^2.9.0
+  table_calendar: ^3.1.2
 
   # Local Storage
   shared_preferences: ^2.2.3

@@ -86,42 +86,67 @@ class AppDrawer extends ConsumerWidget {
           colors: [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.white,
-            child: Text(
-              _getInitials(displayName),
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryBlue,
-              ),
+      child: InkWell(
+        onTap: () => _navigateToProfile(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    _getInitials(displayName),
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            displayName ?? 'User',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          if (email != null) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 16),
             Text(
-              email,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.9),
+              displayName ?? 'User',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
+            if (email != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                email,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -196,6 +221,16 @@ class AppDrawer extends ConsumerWidget {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name[0].toUpperCase();
+  }
+
+  void _navigateToProfile(BuildContext context) {
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile page coming soon!'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
