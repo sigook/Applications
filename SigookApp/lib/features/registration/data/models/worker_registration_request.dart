@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/registration_form.dart';
 import 'worker_profile_data.dart';
 import '../../domain/entities/language.dart';
@@ -161,6 +162,14 @@ class WorkerRegistrationRequest {
     final identification1 = documentsInfo?.identification1;
     final identification2 = documentsInfo?.identification2;
     final resumeFile = documentsInfo?.resume;
+
+    debugPrint('🔍 DEBUG fromFormState: identification1 = $identification1');
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file = ${identification1?.file}',
+    );
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file.filePath = ${identification1?.file.filePath}',
+    );
 
     // Create IdentificationType from document data if available
     final identType1 = identification1 != null

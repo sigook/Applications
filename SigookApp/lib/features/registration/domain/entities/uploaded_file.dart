@@ -25,7 +25,11 @@ class UploadedFile extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {'fileName': fileName, 'description': description};
+    return {
+      'fileName': fileName,
+      'description': description,
+      'filePath': filePath,
+    };
   }
 
   @override

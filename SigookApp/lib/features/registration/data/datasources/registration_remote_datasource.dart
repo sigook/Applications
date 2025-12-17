@@ -26,6 +26,13 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     String? identificationType2FileName;
     String? resumeFileName;
 
+    debugPrint(
+      '🔍 DEBUG: identificationType1File = ${request.identificationType1File}',
+    );
+    debugPrint(
+      '🔍 DEBUG: identificationType1File?.filePath = ${request.identificationType1File?.filePath}',
+    );
+
     if (request.profileImage != null) {
       profileImageFileName = FileNamingService.generateProfileImageName(
         request.profileImage!.pathFile,
@@ -35,6 +42,13 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     if (request.identificationType1File?.filePath != null) {
       identificationType1FileName = FileNamingService.generateDocumentName(
         request.identificationType1File!.filePath!,
+      );
+      debugPrint(
+        '🔍 DEBUG: Generated identificationType1FileName = $identificationType1FileName',
+      );
+    } else {
+      debugPrint(
+        '⚠️ DEBUG: identificationType1File is null or has no filePath!',
       );
     }
 
@@ -67,12 +81,12 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     debugPrint('║');
     debugPrint('║ 📎 Files to attach:');
 
-    final formData = FormData();
-    formData.fields.add(MapEntry('data', jsonEncode(jsonData)));
+    final data = FormData();
+    data.fields.add(MapEntry('data', jsonEncode(jsonData)));
 
     if (request.profileImage != null && profileImageFileName != null) {
       debugPrint('║   - $profileImageFileName');
-      formData.files.add(
+      data.files.add(
         MapEntry(
           profileImageFileName,
           await MultipartFile.fromFile(
@@ -87,7 +101,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         request.identificationType1File!.filePath != null &&
         identificationType1FileName != null) {
       debugPrint('║   - $identificationType1FileName');
-      formData.files.add(
+      data.files.add(
         MapEntry(
           identificationType1FileName,
           await MultipartFile.fromFile(
@@ -102,7 +116,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         request.identificationType2File!.filePath != null &&
         identificationType2FileName != null) {
       debugPrint('║   - $identificationType2FileName');
-      formData.files.add(
+      data.files.add(
         MapEntry(
           identificationType2FileName,
           await MultipartFile.fromFile(
@@ -117,7 +131,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         request.resume!.filePath != null &&
         resumeFileName != null) {
       debugPrint('║   - $resumeFileName');
-      formData.files.add(
+      data.files.add(
         MapEntry(
           resumeFileName,
           await MultipartFile.fromFile(
@@ -129,8 +143,8 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     }
 
     debugPrint('║');
-    debugPrint('║ 📦 Total files: ${formData.files.length}');
-    debugPrint('║ 📋 Total form fields: ${formData.fields.length}');
+    debugPrint('║ 📦 Total files: ${data.files.length}');
+    debugPrint('║ 📋 Total form fields: ${data.fields.length}');
     debugPrint('╚════════════════════════════════════════════════');
 
     // Retry configuration with exponential backoff
@@ -144,7 +158,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     try {
       final response = await retryOptions.retry(
         () async {
-          return await apiClient.post('/WorkerProfile', data: formData);
+          return await apiClient.post('/WorkerProfile', data: data);
         },
         // Only retry on network/timeout errors, not on server errors (4xx/5xx)
         retryIf: (e) {

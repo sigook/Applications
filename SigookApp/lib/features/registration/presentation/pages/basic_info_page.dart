@@ -296,11 +296,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               CustomTextField(
                 label: 'First Name',
                 hint: 'Enter your first name',
-                initialValue: _firstNameController.text,
+                controller: _firstNameController,
                 errorText: _firstNameError,
-                onChanged: (value) {
-                  _firstNameController.text = value;
-                },
+                onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('firstName');
                 },
@@ -309,11 +307,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               CustomTextField(
                 label: 'Last Name',
                 hint: 'Enter your last name',
-                initialValue: _lastNameController.text,
+                controller: _lastNameController,
                 errorText: _lastNameError,
-                onChanged: (value) {
-                  _lastNameController.text = value;
-                },
+                onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('lastName');
                 },
@@ -391,12 +387,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               CustomTextField(
                 label: 'Address',
                 hint: 'Enter your street address',
-                initialValue: _addressController.text,
+                controller: _addressController,
                 errorText: _addressError,
                 maxLines: 2,
-                onChanged: (value) {
-                  _addressController.text = value;
-                },
+                onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('address');
                 },
@@ -405,12 +399,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               CustomTextField(
                 label: 'ZIP Code',
                 hint: 'Enter your ZIP code',
-                initialValue: _zipCodeController.text,
+                controller: _zipCodeController,
                 errorText: _zipCodeError,
                 keyboardType: TextInputType.text,
-                onChanged: (value) {
-                  _zipCodeController.text = value;
-                },
+                onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('zipCode');
                 },
