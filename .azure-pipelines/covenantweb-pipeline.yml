@@ -39,14 +39,14 @@ variables:
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
 
 stages:
-  - stage: Release
-    displayName: 'Build and Deploy'
+  - stage: CI_CD
+    displayName: 'CI/CD Pipeline'
     jobs:
       # ============================================
-      # Job 1: Build and Publish
+      # Job 1: Build and Test
       # ============================================
-      - job: BuildPublish
-        displayName: 'Build Vue.js Application'
+      - job: Build_and_Test
+        displayName: 'Build and Test Application'
         condition: or(eq(variables['isDev'], true), eq(variables['isMain'], true))
         steps:
           - checkout: self
@@ -189,14 +189,14 @@ stages:
                 ls -lh $(Build.ArtifactStagingDirectory)/*.zip
 
       # ============================================
-      # Job 2: Deploy to Azure App Service
+      # Job 2: Deploy to Azure
       # ============================================
-      - job: Deploy
+      - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
-        dependsOn: BuildPublish
+        dependsOn: Build_and_Test
         condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
         variables:
-          environment: $[ dependencies.BuildPublish.outputs['SetEnvironment.environment'] ]
+          environment: $[ dependencies.Build_and_Test.outputs['SetEnvironment.environment'] ]
         steps:
           - download: current
             artifact: covenantweb-drop

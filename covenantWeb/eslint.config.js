@@ -1,35 +1,42 @@
 // eslint.config.js
 import js from '@eslint/js'
-import vueParser from 'vue-eslint-parser'
 import pluginVue from 'eslint-plugin-vue'
-import tsParser from '@typescript-eslint/parser'
-import tsPlugin from '@typescript-eslint/eslint-plugin'
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsparser from '@typescript-eslint/parser'
 
 export default [
+  // Ignores
   {
-    ignores: ['dist/**', 'node_modules/**']
+    ignores: ['dist/**', 'node_modules/**', '*.config.js']
   },
+
+  // Base JS config
+  js.configs.recommended,
+
+  // Vue 3 essential rules
+  ...pluginVue.configs['flat/essential'],
+
+  // Custom config for TypeScript + Vue files
   {
-    files: ['**/*.{js,jsx,ts,tsx,vue}'],
+    files: ['**/*.{ts,tsx,vue}'],
     languageOptions: {
-      parser: vueParser,
+      parser: tsparser,
       parserOptions: {
-        parser: tsParser,
-        ecmaVersion: 2020,
-        sourceType: 'module',
-        extraFileExtensions: ['.vue']
+        ecmaVersion: 'latest',
+        sourceType: 'module'
       }
     },
     plugins: {
-      vue: pluginVue,
-      '@typescript-eslint': tsPlugin
-    },
+      '@typescript-eslint': tseslint
+    }
+  },
+
+  // Custom rules (optional)
+  {
     rules: {
-      // Reglas base de JS
-      ...js.configs.recommended.rules,
-      // Reglas base de Vue 3
-      ...pluginVue.configs['vue3-essential'].rules
-      // Aquí puedes agregar tus reglas personalizadas si tenías
+      // Desactiva reglas que causan problemas comunes
+      'vue/multi-word-component-names': 'off',
+      // Agrega tus reglas personalizadas aquí
       // 'no-console': 'warn',
     }
   }
