@@ -18,7 +18,7 @@
 
       <article class="why-card">
         <div class="why-card__icon">
-          <img src="@/assets/images/Map canada.png" alt="Full Autonomy">
+          <img src="@/assets/images/map-canada.png" alt="Full Autonomy">
         </div>
         <div class="why-card__body">
           <h3 class="why-card__title">Nationwide Reach</h3>
