@@ -58,20 +58,16 @@ stages:
               if [ "$(isDev)" = True ]; then
                 environment=staging
                 buildCommand=build:staging
-                tag=latest_staging
               else
                 environment=production
                 buildCommand=build:production
-                tag=latest_production
               fi
               echo "##vso[task.setvariable variable=environment]$environment"
               echo "##vso[task.setvariable variable=environment;isOutput=true]$environment"
               echo "##vso[task.setvariable variable=buildCommand]$buildCommand"
-              echo "##vso[task.setvariable variable=tag]$tag"
               echo ""
               echo "Environment: $environment"
               echo "Build Command: npm run $buildCommand"
-              echo "Tag: $tag"
             name: SetEnvironment
             displayName: 'Determine Environment'
 
