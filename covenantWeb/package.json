@@ -13,6 +13,7 @@
     "build:production": "vite build --mode production",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit -p tsconfig.json",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
     "start": "serve -s dist -l 8080"
   },
   "dependencies": {
