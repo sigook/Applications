@@ -126,7 +126,6 @@ stages:
               command: 'custom'
               customCommand: 'run lint'
               workingDir: $(workingDirectory)
-            continueOnError: true
 
           # Build application
           - task: Npm@1

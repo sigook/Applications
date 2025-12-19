@@ -1,8 +1,10 @@
 // eslint.config.js
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
+import vueParser from 'vue-eslint-parser'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
+import globals from 'globals'
 
 export default [
   // Ignores
@@ -16,9 +18,29 @@ export default [
   // Vue 3 essential rules
   ...pluginVue.configs['flat/essential'],
 
-  // Custom config for TypeScript + Vue files
+  // Custom config for Vue files with TypeScript
   {
-    files: ['**/*.{ts,tsx,vue}'],
+    files: ['**/*.vue'],
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        parser: tsparser,
+        ecmaVersion: 'latest',
+        sourceType: 'module'
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2021
+      }
+    },
+    plugins: {
+      '@typescript-eslint': tseslint
+    }
+  },
+
+  // Custom config for TypeScript files
+  {
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -31,7 +53,7 @@ export default [
     }
   },
 
-  // Custom rules (optional)
+  // Custom rules
   {
     rules: {
       // Desactiva reglas que causan problemas comunes

@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed } from 'vue'
 
 // --- LÓGICA DE ESTADO ---
 const activeTab = ref<'professional' | 'industrial'>('professional');
