@@ -38,29 +38,18 @@ class PreferencesInfo extends Equatable {
   /// Helper to get skill values as strings
   List<String> get skillValues => skills.map((s) => s.value).toList();
 
-  /// Validates all required fields
+  /// Validates all required fields - ALL FIELDS ARE OPTIONAL
   bool get isValid {
-    return availabilityType.value.isNotEmpty &&
-        availableTimes.isNotEmpty &&
-        availableDays.isNotEmpty &&
-        liftingCapacity != null &&
-        languages.isNotEmpty &&
-        skills.isNotEmpty;
+    return true;
   }
 
-  /// Validation error messages
-  String? get availabilityTypeError =>
-      availabilityType.value.isEmpty ? 'Availability type is required' : null;
-  String? get availableTimesError =>
-      availableTimes.isEmpty ? 'At least one time slot is required' : null;
-  String? get availableDaysError =>
-      availableDays.isEmpty ? 'At least one day is required' : null;
-  String? get liftingCapacityError =>
-      liftingCapacity == null ? 'Lifting capacity is required' : null;
-  String? get languagesError =>
-      languages.isEmpty ? 'At least one language is required' : null;
-  String? get skillsError =>
-      skills.isEmpty ? 'At least one skill is required' : null;
+  /// Validation error messages - No errors since all fields are optional
+  String? get availabilityTypeError => null;
+  String? get availableTimesError => null;
+  String? get availableDaysError => null;
+  String? get liftingCapacityError => null;
+  String? get languagesError => null;
+  String? get skillsError => null;
 
   /// Creates a copy with updated fields
   PreferencesInfo copyWith({

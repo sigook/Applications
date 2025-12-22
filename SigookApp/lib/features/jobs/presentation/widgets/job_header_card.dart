@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/status_badge.dart';
-import '../../domain/entities/job.dart';
+import '../../domain/entities/job_details.dart';
 
 class JobHeaderCard extends StatelessWidget {
-  final Job job;
+  final JobDetails jobDetails;
 
-  const JobHeaderCard({super.key, required this.job});
+  const JobHeaderCard({super.key, required this.jobDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class JobHeaderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        job.jobTitle,
+                        jobDetails.jobTitle,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -35,13 +35,13 @@ class JobHeaderCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        job.agencyFullName,
+                        jobDetails.agencyFullName,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade600,
                         ),
                       ),
-                      if (job.location != null) ...[
+                      if (jobDetails.location != null) ...[
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -53,7 +53,7 @@ class JobHeaderCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                job.location!,
+                                jobDetails.location!,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade600,
@@ -69,7 +69,7 @@ class JobHeaderCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            StatusBadge(status: job.status, isAsap: job.isAsap),
+            StatusBadge(status: jobDetails.status, isAsap: jobDetails.isAsap),
           ],
         ),
       ),
@@ -77,7 +77,7 @@ class JobHeaderCard extends StatelessWidget {
   }
 
   Widget _buildLogo() {
-    if (job.agencyLogo != null) {
+    if (jobDetails.agencyLogo != null) {
       return Container(
         width: 60,
         height: 60,
@@ -88,7 +88,7 @@ class JobHeaderCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            job.agencyLogo!,
+            jobDetails.agencyLogo!,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
               return Icon(

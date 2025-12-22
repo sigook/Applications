@@ -35,7 +35,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   void initState() {
     super.initState();
     _maskFormatter = MaskTextInputFormatter(
-      mask: '(###) ###-####',
+      mask: '### ### ####',
       filter: {"#": RegExp(r'[0-9]')},
       type: MaskAutoCompletionType.lazy,
     );
@@ -84,7 +84,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
     switch (widget.countryCode.toUpperCase()) {
       case 'US':
       case 'CA':
-        return '(555) 123-4567';
+        return '555 123 4567';
       default:
         return 'Enter phone number';
     }

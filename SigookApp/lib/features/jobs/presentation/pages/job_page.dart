@@ -1,21 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../domain/entities/job.dart';
+import '../../domain/entities/job_details.dart';
+import '../../domain/usecases/get_job_details.dart';
+import '../providers/jobs_providers.dart';
 import '../widgets/job_details_tab.dart';
 import '../widgets/punch_card_tab.dart';
 import '../widgets/timesheet_tab.dart';
 import '../widgets/app_drawer.dart';
 
-class JobPage extends StatelessWidget {
-  final Job job;
+class JobPage extends ConsumerStatefulWidget {
+  final String jobId;
 
-  const JobPage({super.key, required this.job});
+  const JobPage({super.key, required this.jobId});
+
+  @override
+  ConsumerState<JobPage> createState() => _JobPageState();
+}
+
+class _JobPageState extends ConsumerState<JobPage> {
+  JobDetails? _jobDetails;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadJobDetails();
+  }
+
+  Future<void> _loadJobDetails() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final useCase = ref.read(getJobDetailsUseCaseProvider);
+    final result = await useCase(GetJobDetailsParams(jobId: widget.jobId));
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _error = failure.message;
+          _isLoading = false;
+        });
+      },
+      (jobDetails) {
+        setState(() {
+          _jobDetails = jobDetails;
+          _isLoading = false;
+        });
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppTheme.surfaceGrey,
+        appBar: AppBar(
+          backgroundColor: AppTheme.primaryBlue,
+          title: const Text('Job Details'),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null || _jobDetails == null) {
+      return Scaffold(
+        backgroundColor: AppTheme.surfaceGrey,
+        appBar: AppBar(
+          backgroundColor: AppTheme.primaryBlue,
+          title: const Text('Job Details'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                _error ?? 'Failed to load job details',
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadJobDetails,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final jobDetails = _jobDetails!;
+    final showTimesheetPunchcard = jobDetails.shouldShowTimesheetAndPunchcard;
+    final tabCount = showTimesheetPunchcard ? 3 : 1;
+
     return DefaultTabController(
-      length: 3,
+      length: tabCount,
       child: Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         body: NestedScrollView(
@@ -39,7 +128,7 @@ class JobPage extends StatelessWidget {
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
-                    'Job #${job.numberId}',
+                    'Job #${jobDetails.numberId}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -62,7 +151,7 @@ class JobPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              job.jobTitle,
+                              jobDetails.jobTitle,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -73,7 +162,7 @@ class JobPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              job.agencyFullName,
+                              jobDetails.agencyFullName,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 14,
@@ -121,28 +210,30 @@ class JobPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Tab(
-                          height: 60,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.access_time, size: 24),
-                              const SizedBox(height: 4),
-                              const Text('PUNCH'),
-                            ],
+                        if (showTimesheetPunchcard) ...[
+                          Tab(
+                            height: 60,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.access_time, size: 24),
+                                const SizedBox(height: 4),
+                                const Text('PUNCH'),
+                              ],
+                            ),
                           ),
-                        ),
-                        Tab(
-                          height: 60,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.receipt_long, size: 24),
-                              const SizedBox(height: 4),
-                              const Text('TIMESHEET'),
-                            ],
+                          Tab(
+                            height: 60,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt_long, size: 24),
+                                const SizedBox(height: 4),
+                                const Text('TIMESHEET'),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -152,9 +243,11 @@ class JobPage extends StatelessWidget {
           },
           body: TabBarView(
             children: [
-              JobDetailsTab(job: job),
-              const PunchCardTab(),
-              const TimesheetTab(),
+              JobDetailsTab(jobDetails: jobDetails),
+              if (showTimesheetPunchcard) ...[
+                const PunchCardTab(),
+                const TimesheetTab(),
+              ],
             ],
           ),
         ),

@@ -18,7 +18,7 @@ class JobCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          context.push(AppRoutes.jobDetails, extra: job);
+          context.push(AppRoutes.jobDetails, extra: job.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

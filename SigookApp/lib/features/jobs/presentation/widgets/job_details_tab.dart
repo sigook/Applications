@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/entities/job.dart';
+import '../../domain/entities/job_details.dart';
 import 'job_header_card.dart';
 
 class JobDetailsTab extends StatelessWidget {
-  final Job job;
+  final JobDetails jobDetails;
 
-  const JobDetailsTab({super.key, required this.job});
+  const JobDetailsTab({super.key, required this.jobDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -19,24 +18,35 @@ class JobDetailsTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              JobHeaderCard(job: job),
+              JobHeaderCard(jobDetails: jobDetails),
               const SizedBox(height: 12),
+              if (jobDetails.description != null) ...[
+                _buildDescriptionCard(),
+                const SizedBox(height: 12),
+              ],
               _buildInfoCard(),
               const SizedBox(height: 12),
-              _buildScheduleCard(),
+              _buildDatesCard(),
               const SizedBox(height: 12),
               _buildCompensationCard(),
               const SizedBox(height: 12),
+              _buildBenefitsCard(),
+              const SizedBox(height: 12),
+              if (jobDetails.requirements != null) ...[
+                _buildRequirementsCard(),
+                const SizedBox(height: 12),
+              ],
               _buildLocationCard(),
             ],
           ),
         ),
-        Positioned(
-          bottom: 16,
-          left: 16,
-          right: 16,
-          child: _buildActionButton(context),
-        ),
+        if (jobDetails.shouldShowApplyButton)
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: _buildActionButton(context),
+          ),
       ],
     );
   }
@@ -58,74 +68,48 @@ class JobDetailsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            if (jobDetails.jobPosition != null) ...[
+              _buildInfoRow(
+                Icons.work_outline,
+                'Position',
+                jobDetails.jobPosition!,
+              ),
+              const SizedBox(height: 12),
+            ],
             _buildInfoRow(
               Icons.people_outline,
               'Workers Needed',
-              '${job.workersQuantity} workers',
+              '${jobDetails.workersQuantity} workers',
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.access_time,
               'Duration',
-              job.durationTerm ?? 'N/A',
+              jobDetails.durationTerm ?? 'N/A',
             ),
-            if (job.workerApprovedToWork != null) ...[
+            if (jobDetails.requestStatus != null) ...[
               const SizedBox(height: 12),
               _buildInfoRow(
-                job.workerApprovedToWork!
+                Icons.pending_actions,
+                'Request Status',
+                jobDetails.requestStatus!,
+              ),
+            ],
+            if (jobDetails.workerApprovedToWork != null) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                jobDetails.workerApprovedToWork!
                     ? Icons.check_circle_outline
                     : Icons.cancel_outlined,
                 'Approval Status',
-                job.workerApprovedToWork! ? 'Approved to Work' : 'Not Approved',
-                valueColor: job.workerApprovedToWork!
+                jobDetails.workerApprovedToWork!
+                    ? 'Approved to Work'
+                    : 'Not Approved',
+                valueColor: jobDetails.workerApprovedToWork!
                     ? AppTheme.successGreen
                     : AppTheme.errorRed,
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScheduleCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Schedule',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildScheduleRow(
-              'Start Date',
-              _formatDateTime(job.startAt),
-              Icons.event_available,
-              AppTheme.successGreen,
-            ),
-            const SizedBox(height: 12),
-            if (job.finishAt != null)
-              _buildScheduleRow(
-                'End Date',
-                _formatDateTime(job.finishAt!),
-                Icons.event_busy,
-                AppTheme.errorRed,
-              ),
-            if (job.finishAt != null) const SizedBox(height: 12),
-            _buildScheduleRow(
-              'Posted',
-              _formatDateTime(job.createdAt),
-              Icons.schedule,
-              AppTheme.primaryBlue,
-            ),
           ],
         ),
       ),
@@ -167,7 +151,7 @@ class JobDetailsTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '\$${job.workerRate.toStringAsFixed(2)}',
+                          '\$${jobDetails.workerRate.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -186,7 +170,7 @@ class JobDetailsTab extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (job.workerSalary != null) ...[
+                if (jobDetails.workerSalary != null) ...[
                   const SizedBox(width: 12),
                   Expanded(
                     child: Container(
@@ -204,7 +188,7 @@ class JobDetailsTab extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '\$${job.workerSalary!.toStringAsFixed(2)}',
+                            '\$${jobDetails.workerSalary!.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -269,17 +253,17 @@ class JobDetailsTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        job.location ?? 'N/A',
+                        jobDetails.location ?? 'N/A',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.textDark,
                         ),
                       ),
-                      if (job.entrance != null) ...[
+                      if (jobDetails.entrance != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'Entrance: ${job.entrance}',
+                          'Entrance: ${jobDetails.entrance}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -291,6 +275,193 @@ class JobDetailsTab extends StatelessWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDescriptionCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.description, color: AppTheme.primaryBlue, size: 22),
+                SizedBox(width: 8),
+                Text(
+                  'Description',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _stripHtmlTags(jobDetails.description!),
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade700,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequirementsCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.checklist, color: AppTheme.primaryBlue, size: 22),
+                SizedBox(width: 8),
+                Text(
+                  'Requirements',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _stripHtmlTags(jobDetails.requirements!),
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade700,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatesCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Schedule',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              Icons.calendar_today,
+              'Start Date',
+              _formatDate(jobDetails.startAt),
+            ),
+            if (jobDetails.finishAt != null) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                Icons.event,
+                'End Date',
+                _formatDate(jobDetails.finishAt!),
+              ),
+            ],
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              Icons.add_circle_outline,
+              'Created',
+              _formatDate(jobDetails.createdAt),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBenefitsCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Benefits & Perks',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              jobDetails.holidayIsPaid ? Icons.check_circle : Icons.cancel,
+              'Paid Holidays',
+              jobDetails.holidayIsPaid ? 'Yes' : 'No',
+              valueColor: jobDetails.holidayIsPaid
+                  ? AppTheme.successGreen
+                  : Colors.grey.shade600,
+            ),
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              jobDetails.breakIsPaid ? Icons.check_circle : Icons.cancel,
+              'Paid Breaks',
+              jobDetails.breakIsPaid ? 'Yes' : 'No',
+              valueColor: jobDetails.breakIsPaid
+                  ? AppTheme.successGreen
+                  : Colors.grey.shade600,
+            ),
+            if (jobDetails.durationBreak != null &&
+                jobDetails.durationBreak != '00:00:00') ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                Icons.free_breakfast,
+                'Break Duration',
+                _formatBreakDuration(jobDetails.durationBreak!),
+              ),
+            ],
+            if (jobDetails.incentive != null) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                Icons.card_giftcard,
+                'Incentive',
+                jobDetails.incentive!,
+              ),
+            ],
+            if (jobDetails.incentiveDescription != null) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(left: 32),
+                child: Text(
+                  jobDetails.incentiveDescription!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -329,51 +500,6 @@ class JobDetailsTab extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Widget _buildScheduleRow(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 20, color: color),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormat('MMM dd, yyyy - hh:mm a').format(dateTime);
   }
 
   Widget _buildActionButton(BuildContext context) {
@@ -419,5 +545,30 @@ class JobDetailsTab extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _stripHtmlTags(String html) {
+    return html.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatBreakDuration(String duration) {
+    final parts = duration.split(':');
+    if (parts.length != 3) return duration;
+
+    final hours = int.tryParse(parts[0]) ?? 0;
+    final minutes = int.tryParse(parts[1]) ?? 0;
+
+    if (hours > 0 && minutes > 0) {
+      return '$hours hour${hours > 1 ? 's' : ''} $minutes min${minutes > 1 ? 's' : ''}';
+    } else if (hours > 0) {
+      return '$hours hour${hours > 1 ? 's' : ''}';
+    } else if (minutes > 0) {
+      return '$minutes minute${minutes > 1 ? 's' : ''}';
+    }
+    return 'None';
   }
 }

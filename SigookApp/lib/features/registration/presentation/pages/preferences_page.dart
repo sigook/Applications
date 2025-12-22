@@ -62,11 +62,11 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
 
   void _validateAndSave() {
     setState(() {
-      // Skip validation if no availability type selected yet
-      if (_selectedAvailabilityType == null) return;
-
+      // All fields are optional - save whatever is filled
+      // Use empty/default values for unselected fields
       final preferencesInfo = PreferencesInfo(
-        availabilityType: _selectedAvailabilityType!,
+        availabilityType:
+            _selectedAvailabilityType ?? AvailabilityType(id: '', value: ''),
         availableTimes: _selectedAvailableTimes,
         availableDays: _selectedDays,
         liftingCapacity: _selectedLiftingCapacity,
@@ -75,18 +75,17 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
         skills: _selectedSkills,
       );
 
-      _availabilityTypeError = preferencesInfo.availabilityTypeError;
-      _availableTimesError = preferencesInfo.availableTimesError;
-      _availableDaysError = preferencesInfo.availableDaysError;
-      _liftingCapacityError = preferencesInfo.liftingCapacityError;
-      _languagesError = preferencesInfo.languagesError;
-      _skillsError = preferencesInfo.skillsError;
+      // No validation errors - all fields are optional
+      _availabilityTypeError = null;
+      _availableTimesError = null;
+      _availableDaysError = null;
+      _liftingCapacityError = null;
+      _languagesError = null;
+      _skillsError = null;
 
-      if (preferencesInfo.isValid) {
-        ref
-            .read(registrationViewModelProvider.notifier)
-            .updatePreferencesInfo(preferencesInfo);
-      }
+      ref
+          .read(registrationViewModelProvider.notifier)
+          .updatePreferencesInfo(preferencesInfo);
     });
   }
 

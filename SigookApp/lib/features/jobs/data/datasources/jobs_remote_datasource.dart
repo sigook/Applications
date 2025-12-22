@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/paginated_jobs_model.dart';
+import '../models/job_details_model.dart';
 
 abstract class JobsRemoteDataSource {
   Future<PaginatedJobsModel> getJobs({
@@ -10,6 +11,8 @@ abstract class JobsRemoteDataSource {
     required int pageIndex,
     required int pageSize,
   });
+
+  Future<JobDetailsModel> getJobDetails(String jobId);
 }
 
 class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
@@ -59,6 +62,36 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
       }
     } catch (e) {
       throw ServerException(message: 'Failed to load jobs: $e');
+    }
+  }
+
+  @override
+  Future<JobDetailsModel> getJobDetails(String jobId) async {
+    try {
+      final response = await apiClient.dio.get('/WorkerRequest/$jobId');
+
+      if (response.statusCode == 200) {
+        return JobDetailsModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw ServerException(
+          message: 'Failed to load job details: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw ServerException(message: 'Failed to load job details: $e');
     }
   }
 }
