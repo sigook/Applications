@@ -5,6 +5,7 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/profile_section_card.dart';
 import '../../../../core/widgets/profile_info_row.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../providers/cached_worker_profile_provider.dart';
 import '../widgets/profile_header.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
@@ -19,6 +20,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final profileAsync = ref.watch(cachedWorkerProfileProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -40,36 +43,58 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ProfileHeader(
-              name: 'Juan Betancur',
-              email: 'juanm@sigook.com',
-              isEditing: _isEditing,
-            ),
-            const SizedBox(height: 16),
-            _buildPersonalInfoSection(),
-            const SizedBox(height: 12),
-            _buildContactSection(),
-            const SizedBox(height: 12),
-            _buildLocationSection(),
-            const SizedBox(height: 12),
-            _buildPreferencesSection(),
-            const SizedBox(height: 12),
-            _buildDocumentsSection(),
-            const SizedBox(height: 12),
-            _buildCommentsSection(),
-            const SizedBox(height: 24),
-            _buildActionButtons(),
-            const SizedBox(height: 32),
-          ],
+      body: profileAsync.when(
+        data: (profile) => SingleChildScrollView(
+          child: Column(
+            children: [
+              ProfileHeader(
+                name: profile?.fullName ?? 'User',
+                email: profile?.email ?? '',
+                isEditing: _isEditing,
+              ),
+              const SizedBox(height: 16),
+              _buildPersonalInfoSection(profile),
+              const SizedBox(height: 12),
+              _buildContactSection(),
+              const SizedBox(height: 12),
+              _buildLocationSection(),
+              const SizedBox(height: 12),
+              _buildPreferencesSection(),
+              const SizedBox(height: 12),
+              _buildDocumentsSection(),
+              const SizedBox(height: 12),
+              _buildCommentsSection(),
+              const SizedBox(height: 24),
+              _buildActionButtons(),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppTheme.errorRed,
+              ),
+              const SizedBox(height: 16),
+              const Text('Failed to load profile'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(cachedWorkerProfileProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPersonalInfoSection() {
+  Widget _buildPersonalInfoSection(profile) {
     return ProfileSectionCard(
       title: 'Personal Information',
       icon: Icons.person_outline,
@@ -77,13 +102,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       children: [
         ProfileInfoRow(
           label: 'First Name',
-          value: 'Juan',
+          value: profile?.firstName ?? 'N/A',
           icon: Icons.badge_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Last Name',
-          value: 'Betancur',
+          value: profile?.lastName ?? 'N/A',
           icon: Icons.badge_outlined,
           isEditing: _isEditing,
         ),

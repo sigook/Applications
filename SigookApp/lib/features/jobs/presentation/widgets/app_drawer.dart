@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
 class AppDrawer extends ConsumerWidget {
   final String currentRoute;
@@ -12,14 +13,22 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authViewModelProvider);
-    final userInfo = authState.token?.userInfo;
+    final profileAsync = ref.watch(cachedWorkerProfileProvider);
 
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          _buildProfileHeader(context, 'Juan Betancur', 'juanm@sigook.com'),
+          profileAsync.when(
+            data: (profile) => _buildProfileHeader(
+              context,
+              profile?.fullName ?? 'User',
+              profile?.email ?? '',
+              profile?.profilePhoto,
+            ),
+            loading: () => _buildProfileHeader(context, 'Loading...', '', null),
+            error: (_, __) => _buildProfileHeader(context, 'User', '', null),
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
@@ -75,6 +84,7 @@ class AppDrawer extends ConsumerWidget {
     BuildContext context,
     String? displayName,
     String? email,
+    String? profilePhoto,
   ) {
     return Container(
       width: double.infinity,
@@ -97,14 +107,19 @@ class AppDrawer extends ConsumerWidget {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  child: Text(
-                    _getInitials(displayName),
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
+                  backgroundImage: profilePhoto != null
+                      ? NetworkImage(profilePhoto)
+                      : null,
+                  child: profilePhoto == null
+                      ? Text(
+                          _getInitials(displayName),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        )
+                      : null,
                 ),
                 Positioned(
                   right: 0,
@@ -134,7 +149,7 @@ class AppDrawer extends ConsumerWidget {
                 color: Colors.white,
               ),
             ),
-            if (email != null) ...[
+            if (email != null && email.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 email,
