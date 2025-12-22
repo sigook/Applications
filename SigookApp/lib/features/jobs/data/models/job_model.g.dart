@@ -15,7 +15,7 @@ JobModel _$JobModelFromJson(Map<String, dynamic> json) => JobModel(
   entrance: json['entrance'] as String?,
   agencyFullName: json['agencyFullName'] as String,
   agencyLogo: json['agencyLogo'] as String?,
-  status: json['status'] as String,
+  status: json['status'] as String?,
   isAsap: json['isAsap'] as bool,
   workerApprovedToWork: json['workerApprovedToWork'] as bool?,
   workerRate: (json['workerRate'] as num).toDouble(),

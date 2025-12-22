@@ -78,13 +78,13 @@ class _JobsPageState extends ConsumerState<JobsPage> {
       filtered = filtered.where((job) {
         switch (_currentFilter) {
           case FilterStatus.open:
-            return job.status.toLowerCase() == 'open';
+            return job.status?.toLowerCase() == 'open';
           case FilterStatus.booked:
-            return job.status.toLowerCase() == 'booked';
+            return job.status?.toLowerCase() == 'booked';
           case FilterStatus.pending:
-            return job.status.toLowerCase() == 'pending';
+            return job.status?.toLowerCase() == 'pending';
           case FilterStatus.cancelled:
-            return job.status.toLowerCase() == 'cancelled';
+            return job.status?.toLowerCase() == 'cancelled';
           default:
             return true;
         }

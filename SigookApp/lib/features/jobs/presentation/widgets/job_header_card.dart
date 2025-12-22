@@ -34,13 +34,6 @@ class JobHeaderCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        jobDetails.agencyFullName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
                       if (jobDetails.location != null) ...[
                         const SizedBox(height: 8),
                         Row(
@@ -77,39 +70,25 @@ class JobHeaderCard extends StatelessWidget {
   }
 
   Widget _buildLogo() {
-    if (jobDetails.agencyLogo != null) {
-      return Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            jobDetails.agencyLogo!,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(
-                Icons.business,
-                color: Colors.grey.shade400,
-                size: 32,
-              );
-            },
-          ),
-        ),
-      );
-    }
-
     return Container(
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryBlue.withValues(alpha: 0.15),
+            AppTheme.tertiaryBlue.withValues(alpha: 0.15),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: const Icon(Icons.business, color: AppTheme.primaryBlue, size: 32),
+      child: const Icon(
+        Icons.work_outline,
+        color: AppTheme.primaryBlue,
+        size: 32,
+      ),
     );
   }
 }

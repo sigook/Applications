@@ -14,7 +14,7 @@ class JobModel extends Job {
     super.entrance,
     required super.agencyFullName,
     super.agencyLogo,
-    required super.status,
+    super.status,
     required super.isAsap,
     super.workerApprovedToWork,
     required super.workerRate,

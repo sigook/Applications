@@ -6,6 +6,7 @@ import '../../data/repositories/jobs_repository_impl.dart';
 import '../../domain/repositories/jobs_repository.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../../domain/usecases/get_job_details.dart';
+import '../../domain/usecases/apply_to_job.dart';
 
 final jobsRemoteDataSourceProvider = Provider<JobsRemoteDataSource>((ref) {
   return JobsRemoteDataSourceImpl(
@@ -26,4 +27,8 @@ final getJobsUseCaseProvider = Provider<GetJobs>((ref) {
 
 final getJobDetailsUseCaseProvider = Provider<GetJobDetails>((ref) {
   return GetJobDetails(ref.read(jobsRepositoryProvider));
+});
+
+final applyToJobUseCaseProvider = Provider<ApplyToJob>((ref) {
+  return ApplyToJob(ref.read(jobsRepositoryProvider));
 });

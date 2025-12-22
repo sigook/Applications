@@ -61,4 +61,22 @@ class JobsRepositoryImpl implements JobsRepository {
       return Left(ServerFailure(message: 'Unexpected error: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> applyToJob(String jobId) async {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.applyToJob(jobId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Unexpected error: $e'));
+    }
+  }
 }

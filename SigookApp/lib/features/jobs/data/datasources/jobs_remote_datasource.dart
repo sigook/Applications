@@ -13,6 +13,8 @@ abstract class JobsRemoteDataSource {
   });
 
   Future<JobDetailsModel> getJobDetails(String jobId);
+
+  Future<void> applyToJob(String jobId);
 }
 
 class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
@@ -92,6 +94,31 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
       }
     } catch (e) {
       throw ServerException(message: 'Failed to load job details: $e');
+    }
+  }
+
+  @override
+  Future<void> applyToJob(String jobId) async {
+    try {
+      final response = await apiClient.post(
+        '/WorkerRequest/$jobId/Apply',
+        data: {'comments': ''},
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to apply to job',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw ServerException(
+          message: e.response?.data['message'] ?? 'Failed to apply to job',
+        );
+      }
+      throw ServerException(message: 'Network error occurred');
+    } catch (e) {
+      throw ServerException(message: 'Failed to apply to job');
     }
   }
 }

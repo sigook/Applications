@@ -12,4 +12,6 @@ abstract class JobsRepository {
   });
 
   Future<Either<Failure, JobDetails>> getJobDetails(String jobId);
+
+  Future<Either<Failure, void>> applyToJob(String jobId);
 }

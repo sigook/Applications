@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/job_details.dart';
+import '../../domain/usecases/apply_to_job.dart';
+import '../providers/jobs_providers.dart';
 import 'job_header_card.dart';
 
-class JobDetailsTab extends StatelessWidget {
+class JobDetailsTab extends ConsumerStatefulWidget {
   final JobDetails jobDetails;
+  final VoidCallback? onApplySuccess;
 
-  const JobDetailsTab({super.key, required this.jobDetails});
+  const JobDetailsTab({
+    super.key,
+    required this.jobDetails,
+    this.onApplySuccess,
+  });
+
+  @override
+  ConsumerState<JobDetailsTab> createState() => _JobDetailsTabState();
+}
+
+class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
+  bool _isApplying = false;
+
+  JobDetails get jobDetails => widget.jobDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -502,6 +519,43 @@ class JobDetailsTab extends StatelessWidget {
     );
   }
 
+  Future<void> _handleApply() async {
+    setState(() {
+      _isApplying = true;
+    });
+
+    final useCase = ref.read(applyToJobUseCaseProvider);
+    final result = await useCase(ApplyToJobParams(jobId: jobDetails.id));
+
+    if (!mounted) return;
+
+    setState(() {
+      _isApplying = false;
+    });
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: AppTheme.errorRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Successfully applied to job!'),
+            backgroundColor: AppTheme.successGreen,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        widget.onApplySuccess?.call();
+      },
+    );
+  }
+
   Widget _buildActionButton(BuildContext context) {
     return Container(
       height: 56,
@@ -519,14 +573,7 @@ class JobDetailsTab extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Apply feature coming soon!'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        },
+        onPressed: _isApplying ? null : _handleApply,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -534,15 +581,24 @@ class JobDetailsTab extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: const Text(
-          'Apply Now',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
+        child: _isApplying
+            ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Text(
+                'Apply Now',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
       ),
     );
   }
