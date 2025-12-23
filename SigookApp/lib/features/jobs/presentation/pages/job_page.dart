@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../domain/entities/job_details.dart';
@@ -220,7 +221,12 @@ class _JobPageState extends ConsumerState<JobPage> {
           },
           body: TabBarView(
             children: [
-              JobDetailsTab(jobDetails: jobDetails),
+              JobDetailsTab(
+                jobDetails: jobDetails,
+                onApplySuccess: () {
+                  context.go(AppRoutes.jobs);
+                },
+              ),
               if (showTimesheetPunchcard) ...[
                 const PunchCardTab(),
                 const TimesheetTab(),
