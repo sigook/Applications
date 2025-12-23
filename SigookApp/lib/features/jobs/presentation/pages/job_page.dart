@@ -128,12 +128,19 @@ class _JobPageState extends ConsumerState<JobPage> {
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
-                    'Job #${jobDetails.numberId}',
+                    jobDetails.jobTitle,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
-                      fontSize: 18,
+                      fontSize: 16,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  titlePadding: const EdgeInsets.only(
+                    left: 56,
+                    right: 56,
+                    bottom: 16,
                   ),
                   background: Container(
                     decoration: const BoxDecoration(

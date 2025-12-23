@@ -61,10 +61,10 @@ class JobDetails extends Equatable {
     this.requestStatus,
   });
 
-  bool get shouldShowApplyButton => status != 'booked' && !isApplicant;
+  bool get shouldShowApplyButton =>
+      status.toLowerCase() != 'booked' && !isApplicant;
 
-  bool get shouldShowTimesheetAndPunchcard =>
-      status == 'booked' && punchCardOptionEnabled;
+  bool get shouldShowTimesheetAndPunchcard => punchCardOptionEnabled;
 
   @override
   List<Object?> get props => [
