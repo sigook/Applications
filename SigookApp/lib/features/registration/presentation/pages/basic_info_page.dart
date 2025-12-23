@@ -54,7 +54,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   String? _addressError;
   String? _zipCodeError;
   String? _mobileNumberError;
-  String? _profilePhotoError;
 
   // Track which fields have been touched (focused and blurred)
   final Set<String> _touchedFields = {};
@@ -162,9 +161,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
           : null;
       _mobileNumberError = _shouldShowError('mobileNumber')
           ? basicInfo.mobileNumberError
-          : null;
-      _profilePhotoError = _shouldShowError('profilePhoto')
-          ? basicInfo.profilePhotoError
           : null;
 
       if (_shouldShowError('dateOfBirth') &&
