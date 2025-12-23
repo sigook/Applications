@@ -3,7 +3,6 @@
 
     <div class="hero-top">
       <div class="hero-bg">
-
         <img
           :src="imgProfessional"
           alt="Professional Background"
@@ -23,8 +22,8 @@
 
       <div class="hero-content container">
         <h1 class="hero-title">
-            <span class="hero-subtitle">• Find Talents •</span><br>
-            EMPLOYERS
+            <span class="hero-subtitle">• Find Work •</span><br>
+            TALENTS
         </h1>
         <div class="switch-box">
              <button class="switch-btn" :class="{ 'active': activeTab === 'professional' }" @click="activeTab = 'professional'">Professional</button>
@@ -51,15 +50,17 @@
             {{ currentContent.introText }}
           </p>
 
-          <button class="btn-contact-outline" @click="scrollToContact">
-            Contact Us
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <button class="btn-contact-outline">
+            OPEN POSITIONS
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
+
         </div>
       </transition>
 
       <div class="hiring-options container">
-        <h2 class="options-title">Professional<br>Hiring Options</h2>
+        <h2 class="options-title" v-if="activeTab === 'professional'">Your Career,<br>Your Way</h2>
+        <h2 class="options-title" v-else>Your Career,<br>Your Way</h2>
 
         <transition name="fade" mode="out-in">
           <div :key="activeTab" class="cards-layout">
@@ -68,10 +69,11 @@
               <div class="side-icon left-icon">
                  <component :is="currentContent.iconLeftComponent" />
               </div>
+
               <div class="puzzle-card card-green">
                 <h3>{{ currentContent.card1Title }}</h3>
                 <p>{{ currentContent.card1Desc }}</p>
-                <button class="btn-pill white">&lt;&lt; Benefits</button>
+                <button class="btn-pill white">Check Out >></button>
               </div>
             </div>
 
@@ -80,9 +82,10 @@
                 <div class="text-right-content">
                   <h3>{{ currentContent.card2Title }}</h3>
                   <p>{{ currentContent.card2Desc }}</p>
-                  <button class="btn-pill white">Benefits &gt;&gt;</button>
+                  <button class="btn-pill white">Check Out >></button>
                 </div>
               </div>
+
               <div class="side-icon right-icon">
                  <component :is="currentContent.iconRightComponent" />
               </div>
@@ -92,44 +95,57 @@
         </transition>
       </div>
     </div>
+
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-// 1. IMPORTAR LAS IMÁGENES
-// Ajusta los nombres de archivo según los tengas guardados
-// Si usas Vite, esta es la forma más segura de importar assets estáticos
-import imgProfessional from '@/assets/images/hero-professional.png'
-import imgIndustrial from '@/assets/images/hero-industrial.png'
+// 1. IMPORTAR LAS IMÁGENES DE TALENTS
+// NOTA: Asegúrate de guardar las imágenes correspondientes con estos nombres
+// imgProfessional: El hombre sonriendo (image_cfaf01.jpg)
+// imgIndustrial: Los trabajadores de almacén (image_cfaf3e.png)
+import imgProfessional from '@/assets/images/hero-talents-professional.png'
+import imgIndustrial from '@/assets/images/hero-talents-industrial.png'
 
-// (Aquí van tus definiciones de iconos anteriores...)
-const activeTab = ref<'professional' | 'industrial'>('industrial');
+const activeTab = ref<'professional' | 'industrial'>('professional');
 
-// --- FUNCIÓN NUEVA PARA CARGAR ICONOS ---
-// Busca en la misma carpeta donde pusiste los iconos de los roles
+// Función de iconos (La misma lógica)
 const getIcon = (iconName: string) => {
   return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
 }
 
+// 2. DATA ACTUALIZADA CON LA INFORMACIÓN DE TALENTS
 const contentData = {
   professional: {
-    introText: "We help companies recruit highly qualified professionals for specialized positions, ensuring long-term impact and measurable business success.",
-    card1Title: "DIRECT HIRING",
-    card1Desc: "Find long-term professionals who align with your company's culture and goals.",
-    card2Title: "CONTRACT",
-    card2Desc: "Access skilled talent quickly with flexible contracts tailored to project needs.",
-    // Asegúrate de importar o definir tus iconos aquí
+    // Texto extraído de image_cfaf01.jpg
+    introText: "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed. Whether you're looking for a new challenge or the next step in your career, we're here to guide you toward lasting success.",
+
+    // Tarjeta Verde
+    card1Title: "Direct Hiring",
+    card1Desc: "Build a lasting career with stable opportunities and long-term professional growth.",
+
+    // Tarjeta Azul
+    card2Title: "Contract",
+    card2Desc: "Flexibility and growth through project-based roles across diverse industries.",
+
+    // Placeholders para iconos laterales (Si tienes los componentes SVG, ponlos aquí)
     iconLeftComponent: 'div',
     iconRightComponent: 'div'
   },
   industrial: {
-    introText: "Our industrial solutions deliver reliable, pre-screened workers for temporary or ongoing staffing needs, keeping your workforce agile and efficient.",
-    card1Title: "TEMP TO PERM",
-    card1Desc: "We help you transition top temporary talent into long-term, high-performing employees.",
-    card2Title: "TEMPORAL / SEASONAL",
-    card2Desc: "Our team delivers fast, flexible staffing solutions to keep your operations running smoothly.",
+    // Texto extraído de image_cfaf3e.png
+    introText: "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed.",
+
+    // Tarjeta Verde
+    card1Title: "Temp to Perm",
+    card1Desc: "Gain experience, prove your value, and grow into permanent opportunities.",
+
+    // Tarjeta Azul
+    card2Title: "Temporal/Seasonal",
+    card2Desc: "Work on your terms. Seasonal jobs offer flexibility and experience.",
+
     iconLeftComponent: 'div',
     iconRightComponent: 'div'
   }
@@ -137,13 +153,13 @@ const contentData = {
 
 const currentContent = computed(() => contentData[activeTab.value]);
 
-const scrollToContact = () => {
-  const el = document.querySelector('#contact-section')
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
-}
 </script>
 
 <style scoped>
+/* ================================================================= */
+/* === ESTILOS IDÉNTICOS A EMPLOYERS (COPIAR Y PEGAR SIN TOCAR) === */
+/* ================================================================= */
+
 .main-section {
   width: 100%;
   position: relative;
@@ -196,7 +212,6 @@ const scrollToContact = () => {
   will-change: opacity;
 }
 
-/* Imagen Activa */
 .hero-img-layer.img-active {
   opacity: 1;
 }
@@ -264,8 +279,6 @@ const scrollToContact = () => {
   z-index: 1;
 }
 
-/* POSICIONAMIENTO DEL ICONO EN LA PUNTA */
-
 .intro-icon-circle {
   background: #32d26a;
   width: 100px;
@@ -276,10 +289,9 @@ const scrollToContact = () => {
   justify-content: center;
   box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
   border: 4px solid #32d26a;
-  overflow: hidden; /* Por seguridad */
+  overflow: hidden;
 }
 
-/* === NUEVO: Ajuste para la imagen dentro del círculo === */
 .intro-icon-circle img {
   width: 75%;
   height: 75%;
@@ -298,7 +310,7 @@ const scrollToContact = () => {
 /* Texto Intro */
 .intro-block {
   text-align: center;
-  max-width: 700px;
+  max-width: 800px; /* Aumentado ligeramente para el texto más largo de Talents */
   margin: 0 auto 80px;
   display: flex;
   flex-direction: column;
@@ -322,6 +334,7 @@ const scrollToContact = () => {
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 600;
+  text-transform: uppercase;
 }
 .btn-contact-outline:hover {
   border-color: #32d26a;
@@ -354,7 +367,7 @@ const scrollToContact = () => {
   margin-left: 15%;
   text-align: right;
 }
-.puzzle-card h3 { font-size: 1.8rem; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
+.puzzle-card h3 { font-size: 1.8rem; font-weight: 800; margin-bottom: 15px; text-transform: capitalize; /* Ajuste para mayúsculas/minúsculas */ }
 .text-right-content { display: flex; flex-direction: column; align-items: flex-end; }
 .btn-pill.white {
   background: white; color: #12223b; border: none; padding: 10px 25px; border-radius: 999px; font-weight: 700; cursor: pointer; transition: transform 0.2s;

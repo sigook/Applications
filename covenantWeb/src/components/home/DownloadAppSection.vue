@@ -292,6 +292,28 @@
 
 /* ================== RESPONSIVE ================== */
 
+@media (max-width: 1024px) {
+  .app-section {
+    padding-bottom: 0;
+    overflow-x: hidden;
+  }
+
+  /* teléfono centrado bajo el texto, como en tu captura */
+  .app-top__phone-wrapper {
+    margin-top: 70px;
+    min-height: 400px;
+    overflow: hidden;
+  }
+
+  .app-top__circle {
+    width: 400px;
+    height: 400px;
+    top: 50%;
+    left: 90%;
+    transform: translate(-90%, -50%);
+  }
+}
+
 @media (max-width: 992px) {
   .app-top {
     flex-direction: column;
@@ -341,6 +363,7 @@
 @media (max-width: 768px) {
   .app-section {
     padding-bottom: 0;
+    overflow-x: hidden;
   }
 
   .app-top__text {
@@ -369,19 +392,22 @@
 
   /* teléfono centrado bajo el texto, como en tu captura */
   .app-top__phone-wrapper {
-    margin-top: 30px;
+    margin-top: 70px;
     min-height: 400px;
+    overflow: hidden;
   }
 
   .app-top__circle {
-    width: 360px;
-    height: 360px;
-    top: 45%;
-    left: 90%;
+    width: 260px;
+    height: 260px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .app-top__phone {
-    max-height: 480px;
+    max-height: 440px;
+    padding: 0;
   }
 
   /* BLOQUE INFERIOR: se ve como el rectángulo verde con curva y texto */

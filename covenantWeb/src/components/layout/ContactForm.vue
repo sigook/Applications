@@ -1,6 +1,5 @@
 <template>
-  <form class="contact-form" @submit.prevent>
-    <!-- Encabezado -->
+  <form class="contact-form">
     <header class="contact-form__header">
       <h2 class="contact-form__title">Your Information</h2>
       <p class="contact-form__subtitle">
@@ -8,7 +7,6 @@
       </p>
     </header>
 
-    <!-- Nombre -->
     <div class="contact-form__group">
       <div class="contact-form__field">
         <label class="contact-form__label" for="firstName">Name</label>
@@ -21,7 +19,6 @@
       </div>
     </div>
 
-    <!-- Email -->
     <div class="contact-form__group">
       <label class="contact-form__label" for="email">Email</label>
       <input
@@ -32,18 +29,17 @@
       />
     </div>
 
-    <!-- Phone -->
     <div class="contact-form__group">
-      <label class="contact-form__label" for="email">Phone</label>
+      <label class="contact-form__label" for="phone">Phone</label>
       <input
+        ref="phoneInput"
         id="phone"
-        type="phone"
+        type="text"
         class="contact-form__input"
-        placeholder="Your Phone"
+        placeholder="300 123-4567"
       />
     </div>
 
-    <!-- Message -->
     <div class="contact-form__group">
       <label class="contact-form__label" for="message">Message</label>
       <textarea
@@ -54,12 +50,10 @@
       ></textarea>
     </div>
 
-    <!-- Botón principal -->
     <button type="submit" class="contact-form__submit">
       Save &amp; Send
     </button>
 
-    <!-- Reset -->
     <button type="button" class="contact-form__reset">
       Reset Information
     </button>
@@ -67,15 +61,34 @@
 </template>
 
 <script setup lang="ts">
-// sin lógica por ahora; luego acá agregas emits / composables para llamar a la API
-</script>
+  import { onMounted, ref } from 'vue';
+  // CAMBIO 2: Importamos Cleave
+  import Cleave from 'cleave.js';
+  // Si necesitas importar estilos específicos de la región (opcional en este caso manual)
+  // import 'cleave.js/dist/addons/cleave-phone.us';
+
+  // Referencia al elemento del DOM
+  const phoneInput = ref<HTMLElement | null>(null);
+
+  onMounted(() => {
+    // CAMBIO 3: Inicializamos la máscara cuando el componente carga
+    if (phoneInput.value) {
+      new Cleave(phoneInput.value, {
+        blocks: [3, 3, 4],       // Los bloques de tu imagen
+        delimiters: [' ', '-'],  // Los delimitadores de tu imagen
+        numericOnly: true        // Solo números
+      });
+    }
+  });
+  </script>
+
 
 <style scoped>
 * {
   box-sizing: border-box;
 }
 
-/* Contenedor del formulario (usa todo el ancho del card padre) */
+/* Contenedor del formulario */
 .contact-form {
   width: 100%;
 }
@@ -103,15 +116,19 @@
   margin-bottom: 18px;
 }
 
-/* Layout dos columnas para nombre */
-.contact-form__group--two {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+/* Estilo para centrar el Recaptcha si lo deseas */
+.contact-form__recaptcha {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrado horizontalmente */
+  justify-content: center;
+  margin-top: 10px;
 }
 
-.contact-form__field--no-label .contact-form__label {
-  /* usamos el mismo label pero la palabra solo sirve para accesibilidad */
+.error-text {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 5px;
 }
 
 /* Labels */
@@ -141,7 +158,7 @@
   color: #c3c3c3;
 }
 
-/* textareas: esquinas suavemente redondeadas pero más rectangulares */
+/* textareas */
 .contact-form__textarea {
   border-radius: 18px;
   resize: vertical;
@@ -149,23 +166,9 @@
   padding-top: 12px;
 }
 
-/* select */
-.contact-form__select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #c3c3c3 50%),
-    linear-gradient(135deg, #c3c3c3 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 13px) calc(50% - 3px);
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-}
-
 /* focus */
 .contact-form__input:focus,
-.contact-form__textarea:focus,
-.contact-form__select:focus {
+.contact-form__textarea:focus {
   border-color: #32d26a;
   background-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(50, 210, 106, 0.12);
@@ -211,12 +214,7 @@
   text-decoration: underline;
 }
 
-/* Responsive pequeño */
 @media (max-width: 480px) {
-  .contact-form__group--two {
-    grid-template-columns: 1fr;
-  }
-
   .contact-form__title {
     font-size: 1.4rem;
   }
