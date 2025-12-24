@@ -87,6 +87,9 @@
 }
 
 @media (max-width: 768px) {
+  .ind-hero {
+    min-height: 380px;
+  }
   .ind-hero__content {
     padding-top: 100px;
     padding-bottom: 60px;

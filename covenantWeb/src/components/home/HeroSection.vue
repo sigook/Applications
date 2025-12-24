@@ -61,15 +61,32 @@
   color: #ffffff;
 }
 
-/* Imagen de fondo */
-.hero__bg {
-  width: 100vw;
-  position: absolute;
-  inset: 0;
+/* contenedor principal */
+.hero__inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 140px 7vw 80px;   /* desktop */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
+/* Imagen de fondo */
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;            /* 🔧 cambiado de 100vw a 100% */
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 🔧 ANTES: width: 100vw; */
 .hero__bg img {
-  width: 100vw;
+  width: 100%;            /* 🔧 cambiado de 100vw a 100% */
   height: 100%;
   object-fit: cover;
 }
@@ -170,19 +187,101 @@
   }
 }
 
-/* Responsive simple */
-@media (max-width: 768px) {
+/* ===== CENTRAR LOGO + BOTÓN EN TABLETS Y MÓVILES ===== */
+@media (max-width: 1024px) {
+  /* Centrar todo el contenido del hero horizontalmente */
   .hero__content {
-    padding-top: 30vh;
-    padding-inline: 20px;
+    align-items: center;
+    text-align: center;
   }
 
+  .hero__content > :first-child {
+    display: flex;
+    flex-direction: column;  /* logo arriba, botón abajo */
+    align-items: center;     /* centrados horizontalmente */
+    gap: 16px;
+  }
+
+  /* Aseguramos que el logo no tenga desplazamientos raros */
+  .hero__content img,
   .hero__logo {
-    width: 260px;
+    margin: 0 auto;
+    display: block;
   }
 
-  .hero__cta {
-    padding-inline: 40px;
+  /* Y que el botón quede centrado también */
+  .hero__content button {
+    margin: 0 auto;
   }
 }
+
+/* =============== TABLET ================= */
+@media (max-width: 1024px) {
+
+/* 🔧 AJUSTE CENTRADO EN TABLETS */
+.hero__inner {
+  padding: 110px 6vw 60px; /* menos padding arriba y abajo */
+}
+
+.hero__title {
+  font-size: 2.4rem;
+}
+
+.hero__subtitle {
+  max-width: 520px;
+  font-size: 0.95rem;
+}
+}
+
+/* =============== MOBILE (≤ 768px) ================= */
+@media (max-width: 768px) {
+
+.hero {
+  min-height: 90vh;
+}
+
+/* 🔧 AJUSTE CENTRADO EN MÓVIL */
+.hero__inner {
+  padding: 90px 6vw 50px;  /* aún menos padding para centrar verticalmente */
+}
+
+.hero__logo {
+  max-width: 180px;
+}
+
+.hero__title {
+  font-size: 2rem;
+}
+
+.hero__subtitle {
+  max-width: 420px;
+  font-size: 0.9rem;
+}
+
+.hero__cta {
+  padding-inline: 40px;
+}
+
+.hero__scroll-indicator {
+  bottom: 18px;
+}
+}
+
+/* =============== MOBILE PEQUEÑO (≤ 480px) ================= */
+@media (max-width: 480px) {
+
+/* 🔧 ajuste fino para teléfonos más chicos */
+.hero__inner {
+  padding: 80px 6vw 40px;
+}
+
+.hero__title {
+  font-size: 1.8rem;
+}
+
+.hero__subtitle {
+  font-size: 0.85rem;
+}
+}
+
 </style>

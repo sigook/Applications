@@ -8,19 +8,38 @@
           v-for="(role, index) in roles"
           :key="index"
           class="role-card"
-          :class="{ 'role-card--right': index % 2 !== 0, 'role-card--left': index % 2 === 0 }"
+          :class="{
+            'role-card--right': index % 2 !== 0,
+            'role-card--left': index % 2 === 0,
+            'is-active': activeIndex === index
+          }"
+          @click="toggleCard(index)"
         >
-          <div class="role-card__bg-wrapper">
-            <img src="@/assets/images/hero-bg.png" :alt="role.title" class="role-card__img" />
-            <div class="role-card__overlay"></div>
-          </div>
+          <div class="role-card__inner">
 
-          <div class="role-card__content">
-            <h3 class="role-card__title">{{ role.title }}</h3>
+            <div class="role-card__face role-card__face--front">
+              <div class="role-card__bg-wrapper">
+                <img :src="getRoleImage(role.image)" :alt="role.title" class="role-card__img" />
+                <div class="role-card__overlay"></div>
+              </div>
 
-            <div class="role-card__arrow">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              <div class="role-card__content">
+                <h3 class="role-card__title">{{ role.title }}</h3>
+                <div class="role-card__arrow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+              </div>
             </div>
+
+            <div class="role-card__face role-card__face--back">
+              <div class="info-content">
+                <p class="info-text">{{ role.description }}</p>
+                <div class="info-icon">
+                  <img :src="getRoleIcon(role.icon)" alt="icon" />
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -30,24 +49,101 @@
 </template>
 
 <script setup lang="ts">
-// Data de ejemplo (Asegúrate de tener las imágenes)
+import { ref } from 'vue'
+
+// --- ESTADO Y LÓGICA ---
+const activeIndex = ref<number | null>(null);
+
+const toggleCard = (index: number) => {
+  activeIndex.value = activeIndex.value === index ? null : index;
+}
+
+// Función para cargar la IMAGEN DE FONDO (Igual que antes)
+const getRoleImage = (imageName: string) => {
+  return new URL(`../../assets/images/roles/${imageName}`, import.meta.url).href
+}
+
+// Función NUEVA para cargar el ICONO desde la subcarpeta "icons"
+const getRoleIcon = (iconName: string) => {
+  // Asume ruta: src/assets/images/roles/icons/nombre.svg
+  return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
+}
+
+// --- DATA (Actualizada con nombres de archivo para los iconos) ---
 const roles = [
-  { title: 'Automotive', image: 'automotive.jpg' },
-  { title: 'Aviation', image: 'aviation.jpg' },
-  { title: 'Construction', image: 'construction.jpg' },
-  { title: 'IT / AI', image: 'it-ai.jpg' },
-  { title: 'Financial/Insurance', image: 'finance.jpg' },
-  { title: 'Legal/Accounting', image: 'legal.jpg' },
-  { title: 'Logistics, 3PL/4PL', image: 'logistics.jpg' },
-  { title: 'Manufacturing', image: 'manufacturing.jpg' },
-  { title: 'Retail', image: 'retail.jpg' },
-  { title: 'Transportation', image: 'transportation.jpg' },
+  {
+    title: 'Automotive',
+    image: 'automotive.png',
+    icon: 'car.svg', // Asegúrate de nombrar tus archivos así en la carpeta icons
+    description: "Gain access to skilled automotive professionals who ensure quality, efficiency, and reliability, keeping your operations running smoothly."
+  },
+  {
+    title: 'Aviation',
+    image: 'aviation.png',
+    icon: 'plane.svg',
+    description: "We connect you with the specialized talent that keeps your aviation business moving forward."
+  },
+  {
+    title: 'Construction',
+    image: 'construction.png',
+    icon: 'crane.svg',
+    description: "Ensure your construction operations meet the highest standards of quality, safety, and performance."
+  },
+  {
+    title: 'Engineering',
+    image: 'engineering.png',
+    icon: 'gear.svg',
+    description: "Hire experienced engineers with proven expertise to deliver precision, innovation, and dependable results."
+  },
+  {
+    title: 'IT / AI',
+    image: 'it-ai.png',
+    icon: 'chip.svg',
+    description: "Hire skilled developers and AI specialists to deliver intelligent solutions that accelerate digital transformation."
+  },
+  {
+    title: 'Financial/Insurance',
+    image: 'finance.png',
+    icon: 'money.svg',
+    description: "Professionals who bring accuracy and strategic insight to ensure compliance and dependable results."
+  },
+  {
+    title: 'Legal/Accounting',
+    image: 'legal.png',
+    icon: 'doc.svg',
+    description: "Connect with professionals who ensure your operations remain efficient, compliant, and trustworthy."
+  },
+  {
+    title: 'Logistics, 3PL/4PL',
+    image: 'logistics.png',
+    icon: 'truck.svg',
+    description: "Depend on qualified logistics talent to optimize supply chains and improve efficiency across your network."
+  },
+  {
+    title: 'Manufacturing',
+    image: 'manufacturing.png',
+    icon: 'factory.svg',
+    description: "Maintain quality, efficiency, and precision—ensuring every process runs smoothly from production to delivery."
+  },
+  {
+    title: 'Retail',
+    image: 'retail.png',
+    icon: 'store.svg',
+    description: "Professionals who maintain smooth operations and deliver exceptional in-store and organizational results."
+  },
+  {
+    title: 'Transportation',
+    image: 'transportation.png',
+    icon: 'transport.svg',
+    description: "Trusted professionals who ensure safe deliveries, regulatory compliance, and smooth operations."
+  },
 ];
 </script>
 
 <style scoped>
+/* SE MANTIENEN TUS ESTILOS EXACTOS */
 .roles-section {
-  background-color: #05162d; /* Fondo oscuro continuo */
+  background-color: #05162d;
   padding: 80px 0 120px;
   overflow: hidden;
 }
@@ -71,17 +167,14 @@ const roles = [
 .roles-list {
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Espacio vertical entre tarjetas */
+  gap: 25px;
 }
 
-/* === ESTILOS BASE DE LA TARJETA === */
 .role-card {
   position: relative;
-  width: 65%; /* Ocupan el 85% del ancho para dejar espacio al lado contrario */
-  height: 240px; /* AUMENTADO: Mucho más grandes que antes */
-  display: flex;
-  align-items: center;
-  overflow: hidden; /* Para que la imagen respete los bordes redondeados */
+  width: 65%;
+  height: 240px;
+  overflow: hidden;
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -94,34 +187,76 @@ const roles = [
 }
 
 .role-card:hover .role-card__img {
-  transform: scale(1.05); /* Zoom suave en la imagen */
+  transform: scale(1.05);
 }
 
-/* === INTERCALADO (ZIG ZAG) === */
-
-/* IMPARES (Izquierda) */
 .role-card--left {
-  align-self: flex-start; /* Se pega a la izquierda */
-  /* Redondeado solo en el lado derecho (Top-Right, Bottom-Right) */
+  align-self: flex-start;
   border-radius: 0 150px 150px 0;
   text-align: left;
+  box-shadow: 0 50px 0 #010914;
 }
 
-/* PARES (Derecha) */
 .role-card--right {
-  align-self: flex-end; /* Se pega a la derecha */
-  /* Redondeado solo en el lado izquierdo (Top-Left, Bottom-Left) */
+  align-self: flex-end;
   border-radius: 150px 0 0 150px;
-  /* Invertimos el contenido para que el texto quede "adentro" */
-  flex-direction: row-reverse;
   text-align: right;
+  box-shadow: 0 50px 0 #0F2F44;
 }
 
-/* === IMAGEN DE FONDO === */
+/* LÓGICA INTERNA DE CARAS */
+.role-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.role-card__face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.role-card__face--front {
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  opacity: 1;
+}
+
+.role-card--right .role-card__face--front {
+  flex-direction: row-reverse;
+}
+
+.role-card__face--back {
+  background-color: #0d2644;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-card.is-active .role-card__face--front {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.role-card.is-active .role-card__face--back {
+  opacity: 1;
+  transform: translateY(0);
+  z-index: 3;
+}
+
+/* CONTENIDO */
 .role-card__bg-wrapper {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
 }
 
 .role-card__img {
@@ -134,21 +269,18 @@ const roles = [
 .role-card__overlay {
   position: absolute;
   inset: 0;
-  /* Gradiente para que el texto sea legible */
   background: linear-gradient(to right, rgba(12, 34, 59, 0.9) 0%, rgba(12, 34, 59, 0.3) 100%);
 }
 
-/* Invertimos el gradiente para las tarjetas derechas */
 .role-card--right .role-card__overlay {
   background: linear-gradient(to left, rgba(12, 34, 59, 0.9) 0%, rgba(12, 34, 59, 0.3) 100%);
 }
 
-/* === CONTENIDO (TEXTO E ICONO) === */
 .role-card__content {
   position: relative;
   z-index: 2;
   width: 100%;
-  padding: 0 60px; /* Espacio interno generoso */
+  padding: 0 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -156,7 +288,7 @@ const roles = [
 }
 
 .role-card__title {
-  font-size: 2rem; /* Texto más grande */
+  font-size: 2rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -173,33 +305,86 @@ const roles = [
   align-items: center;
   justify-content: center;
   transition: background 0.3s;
+  flex-shrink: 0;
 }
 
 .role-card:hover .role-card__arrow {
-  background: #32d26a; /* Verde al hover */
+  background: #32d26a;
   color: white;
 }
 
-/* Rotar flecha si está a la derecha */
 .role-card--right .role-card__arrow svg {
   transform: rotate(180deg);
 }
 
-/* === RESPONSIVE === */
+/* CONTENIDO TRASERO */
+.info-content {
+  width: 100%;
+  padding: 0 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+}
+
+.role-card--right .info-content {
+  flex-direction: row-reverse;
+}
+
+.info-text {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  flex: 1;
+  margin-right: 40px;
+}
+
+.role-card--right .info-text {
+  margin-right: 0;
+  margin-left: 40px;
+}
+
+.info-icon {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* NUEVO: ESTILO PARA LA IMAGEN DEL ICONO */
+.info-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 @media (max-width: 768px) {
   .role-card {
-    width: 100%; /* En móvil ocupan todo el ancho */
+    width: 100%;
     height: 180px;
-    border-radius: 20px !important; /* Bordes simples en móvil */
+    border-radius: 20px !important;
     margin-bottom: 20px;
   }
 
-  .role-card__content {
+  .role-card__content, .info-content {
     padding: 0 30px;
   }
 
   .role-card__title {
     font-size: 1.5rem;
+  }
+
+  .info-text {
+    font-size: 0.9rem;
+    margin-right: 20px;
+  }
+  .role-card--right .info-text {
+    margin-left: 20px;
+  }
+  .info-icon {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>

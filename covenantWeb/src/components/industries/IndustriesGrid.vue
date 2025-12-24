@@ -25,7 +25,12 @@
               >
                 +
               </button>
-              <p class="ind-card__label">{{ industry.label }}</p>
+              <p
+                class="ind-card__label"
+                :class="{ 'ind-card__label--hidden': activeId === industry.id }"
+              >
+                {{ industry.label }}
+              </p>
             </div>
           </div>
 
@@ -324,6 +329,44 @@
   max-width: 260px;
   opacity: 0.95;
 }
+
+
+/* caras */
+.ind-card__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* fix iOS */
+}
+
+/* frontal */
+.ind-card__face--front {
+}
+
+/* trasera */
+.ind-card__face--back {
+  background: #334e60;
+  color: #ffffff;
+  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
+  height: 100%;
+
+  /* opcional: la escondemos hasta que se gire */
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* cuando está girada, mostramos la cara trasera */
+.ind-card__inner--flipped .ind-card__face--back {
+  opacity: 1;
+}
+
+/* ===== título frontal oculto al girar ===== */
+.ind-card__label--hidden {
+  opacity: 0;
+}
+
 
 /* Responsive */
 @media (max-width: 1024px) {
