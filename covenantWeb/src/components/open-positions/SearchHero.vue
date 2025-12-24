@@ -101,7 +101,7 @@ const filters = reactive<SearchFilters>({
 
 // Definimos evento para comunicar al padre que se debe buscar
 const emit = defineEmits<{
-  (e: 'search', filters: SearchFilters): void
+  search: [filters: SearchFilters]
 }>();
 
 const handleSearch = () => {
