@@ -34,13 +34,17 @@ The Flutter app follows **Clean Architecture** with three distinct layers:
 
 ### Key Technologies
 
+- **SDK**: Dart ^3.9.2
 - **State Management**: Riverpod (flutter_riverpod ^3.0.3, riverpod_annotation ^3.0.3)
 - **Routing**: GoRouter ^17.0.0
 - **Immutability**: Freezed ^3.2.3 with freezed_annotation ^3.1.0
 - **Functional Programming**: Dartz ^0.10.1 (Either, Option for error handling)
-- **Dependency Injection**: Providers pattern via Riverpod
+- **Dependency Injection**: Providers pattern via Riverpod (also uses get_it ^9.0.5)
 - **HTTP Client**: Dio ^5.7.0 with pretty_dio_logger for debugging
 - **Authentication**: OpenID Client with flutter_appauth ^11.0.0
+- **Local Storage**: SharedPreferences ^2.2.3, FlutterSecureStorage ^9.2.2 (encrypted on Android)
+- **Utilities**: phone_numbers_parser ^9.0.16, mask_text_input_formatter ^2.9.0, table_calendar ^3.1.2
+- **File/Image Selection**: file_picker ^10.3.6, image_picker ^1.2.1 with permission_handler ^12.0.1
 
 ### Environment Configuration
 
@@ -59,6 +63,10 @@ flutter build apk --flavor production -t lib/main_production.dart --release
 ```
 
 Environment variables are loaded from `.env.staging` and `.env.production` using flutter_dotenv. Configuration is accessed via `lib/core/config/environment.dart` (`EnvironmentConfig` class).
+
+**Build Configuration:**
+- Android: `android/app/build.gradle.kts` - Kotlin-based Gradle config with flavors (staging/production), Java 17, Compile SDK 36, MultiDex enabled, OAuth redirect scheme: `sigookcallback`
+- iOS: `ios/Runner/Info.plist` - Photo library and camera permissions configured, URL schemes: `sigookcallback`, `com.sigook`
 
 ### Code Generation
 
@@ -98,11 +106,13 @@ features/
 
 ### Core Infrastructure
 
-- **Routing**: `lib/core/routing/app_router.dart` - GoRouter configuration with custom transitions
-- **API Client**: `lib/core/network/api_client.dart` - Dio-based HTTP client
-- **Auth Interceptor**: `lib/core/network/auth_interceptor.dart` - Automatic token injection
+- **Routing**: `lib/core/routing/app_router.dart` - GoRouter configuration with custom transitions (Fade, Slide) and KeyboardDismissObserver
+- **API Client**: `lib/core/network/api_client.dart` - Dio-based HTTP client with 30s timeout
+- **Auth Interceptor**: `lib/core/network/auth_interceptor.dart` - Automatic Bearer token injection, handles 401 responses with token refresh and retry mechanism
+- **Environment Config**: `lib/core/config/environment.dart` - Loads from `.env.staging` or `.env.production` (AUTH_AUTHORITY, API_BASE_URL, CLIENT_ID, REDIRECT_URI, SCOPES)
 - **Theme**: `lib/core/theme/app_theme.dart` - Material theme configuration
-- **Providers**: `lib/core/providers/core_providers.dart` - Global providers (SharedPreferences, SecureStorage, ApiClient, NetworkInfo)
+- **Providers**: `lib/core/providers/core_providers.dart` - Global providers (SharedPreferences, SecureStorage with Android encryption, ApiClient, NetworkInfo)
+- **Error Handling**: `lib/core/error/failures.dart` - Failure types (ServerFailure, NetworkFailure, CacheFailure, ParseFailure, ValidationFailure, PermissionFailure, UserCancelledFailure)
 
 ### Development Commands
 
@@ -135,9 +145,11 @@ flutter format lib/
 
 **Value Objects**: Domain primitives (Email, Password, PhoneNumber) contain their own validation logic and return `Either<ValueFailure, ValueObject>`.
 
-**Dependency Injection**: Providers are defined in `*_providers.dart` files and override placeholder providers from `core_providers.dart` in `main.dart`.
+**Dependency Injection**: Providers are defined in `*_providers.dart` files and override placeholder providers from `core_providers.dart` in `main_common.dart`. Entry points (`main_staging.dart`, `main_production.dart`) load the appropriate `.env` file and call `mainCommon()`.
 
 **State Management**: Riverpod providers manage state. Use `ref.watch()` in widgets to rebuild on changes, `ref.read()` for one-time access.
+
+**Models vs Entities**: Data layer uses Freezed `models` (DTOs) with JSON serialization for API/storage. Domain layer uses pure `entities` (business objects) without serialization. Models are converted to entities when crossing the data→domain boundary.
 
 ## covenantWeb (Vue.js Marketing Website)
 
@@ -199,12 +211,16 @@ npm run lint
 
 ### Routes
 
+Configuration: `src/router/index.ts`
+
 - `/` - Home page
 - `/licensed-certified` - Licensed & Certified information
 - `/about` - About Us
 - `/industries` - Industries served
 - `/become-partner` - Partner signup
 - `/employers` - Employers landing page
+- `/talents` - Talents/Workers landing page
+- `/open-positions` - Open positions listing
 
 ### Important Notes
 
@@ -271,17 +287,20 @@ No duplicate stages - one pipeline handles both environments using conditional v
 ### Pipeline Structure
 
 **CovenantWeb Pipeline (complete):**
-1. **CI Stage** - Build & Validate
-   - Install dependencies (with caching)
-   - Type checking
-   - Linting
-   - Build for appropriate environment
-   - Publish artifacts
+1. **Build and Test Job**
+   - Install Node.js 20.x with node_modules caching
+   - Type checking (vue-tsc)
+   - Linting (ESLint)
+   - Build for appropriate environment (staging or production)
+   - Verify dist/index.html exists
+   - Archive and publish artifacts (only on direct push, not PR)
 
-2. **CD Stage** - Deploy
-   - Download artifacts
-   - Deploy to staging or production
-   - Requires approval for production environment
+2. **Deploy to Azure Job** (runs after build on non-PR pushes)
+   - Downloads build artifacts
+   - Deploys to Azure App Service (Linux)
+   - Staging: `covenantgroup-staging.azurewebsites.net`
+   - Production: `covenantgroup.azurewebsites.net`
+   - Runtime: Node.js 20 LTS with `npm start` (serves static files via `serve` package)
 
 **SigookApp Pipeline (placeholder):**
 - Basic project structure validation
