@@ -5,6 +5,8 @@ import AboutUsView from '@/views/AboutUsView.vue'
 import IndustriesView from '@/views/IndustriesView.vue'
 import BecomePartnerView from '@/views/BecomePartnerView.vue'
 import EmployersView from '@/views/EmployersView.vue'
+import TalentsView from '@/views/TalentsView.vue'
+import OpenPositionsView from '@/views/OpenPositionsView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -36,6 +38,16 @@ const routes: RouteRecordRaw[] = [
     path: '/employers',
     name: 'employers',
     component: EmployersView,
+  },
+  {
+    path: '/talents',
+    name: 'talents',
+    component: TalentsView,
+  },
+  {
+    path: '/open-positions',
+    name: 'open_positions',
+    component: OpenPositionsView,
   },
 ]
 

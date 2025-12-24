@@ -333,7 +333,7 @@
 
 @media (max-width: 768px) {
   .hc-section {
-    padding: 60px 0 90px;
+    padding: 30px 0;
     padding-bottom: 440px;
   }
 
@@ -363,6 +363,16 @@
     padding: 20px 16px 22px;
     transform: translateY(5%);
   }
+
+  .hc-circle-area{
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  .hc-hero__card{
+    padding: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -372,7 +382,7 @@
   }
 
   .hc-circle__form-placeholder {
-    padding: 18px 12px;
+    padding: 18px 32px;
     transform: translateY(3%);
   }
 

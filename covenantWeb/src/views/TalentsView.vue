@@ -2,11 +2,11 @@
   <div class="employers-page">
     <MainNavbar />
 
-    <EmployersMainSection />
+    <TalentsMainSection />
 
-    <IndustriesCTA />
+    <WhyWork />
 
-    <RolesWeRecruit />
+    <RolesTalents />
 
     <div id="contact-section">
       <PartnerContactSection />
@@ -20,14 +20,14 @@
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
 import PartnerContactSection from '@/components/partners/PartnerContactSection.vue'
-import RolesWeRecruit from '@/components/employers/RolesWeRecruit.vue'
-import IndustriesCTA from '@/components/employers/IndustriesCTA.vue'
-import EmployersMainSection from '@/components/employers/EmployersMainSection.vue'
+import RolesTalents from '@/components/talents/RolesTalents.vue'
+import WhyWork from '@/components/talents/WhyWork.vue'
+import TalentsMainSection from '@/components/talents/TalentsMainSection.vue'
 </script>
 
 <style scoped>
 .employers-page {
-  background-color: #05162d;
+  background-color: #ffffff;
   min-height: 100vh;
 }
 </style>
