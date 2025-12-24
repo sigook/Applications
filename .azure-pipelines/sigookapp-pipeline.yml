@@ -37,6 +37,9 @@ pool:
 
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 stages:
   - stage: Validate
@@ -62,6 +65,16 @@ stages:
                 Write-Host "Source Version: $(Build.SourceVersion)"
                 Write-Host "Build Reason: $(Build.Reason)"
                 Write-Host "Working Directory: $(workingDirectory)"
+
+                # Display PR information if applicable
+                if ("$(Build.Reason)" -eq "PullRequest") {
+                    Write-Host ""
+                    Write-Host "Pull Request Information:"
+                    Write-Host "PR Number: $(System.PullRequest.PullRequestNumber)"
+                    Write-Host "Target Branch: $(System.PullRequest.TargetBranch)"
+                    Write-Host "Source Branch: $(System.PullRequest.SourceBranch)"
+                }
+
                 Write-Host "============================================"
 
           - task: Bash@3
@@ -137,7 +150,8 @@ stages:
   - stage: BuildStaging
     displayName: 'Build Staging (TODO)'
     dependsOn: Validate
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    # Only build on direct push to dev, not on PRs
+    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
     jobs:
       - job: PlaceholderBuild
         displayName: 'Placeholder - Flutter Build Coming Soon'
@@ -161,7 +175,8 @@ stages:
   - stage: BuildProduction
     displayName: 'Build Production (TODO)'
     dependsOn: Validate
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    # Only build on direct push to main, not on PRs
+    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
     jobs:
       - job: PlaceholderBuild
         displayName: 'Placeholder - Flutter Production Build Coming Soon'
