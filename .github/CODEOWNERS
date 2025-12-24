@@ -1,0 +1,24 @@
+# CODEOWNERS
+# This file defines code ownership for the Covenant/Sigook Applications monorepo
+# Code owners are automatically requested for review when someone opens a pull request
+
+# Global ownership - applies to all files unless overridden
+* @sigook-juan
+
+# SigookApp - Flutter Mobile Application
+/SigookApp/ @sigook-juan
+
+# CovenantWeb - Vue.js Marketing Website
+/covenantWeb/ @sigook-juan
+
+# Azure DevOps Pipelines
+/.azure-pipelines/ @sigook-juan
+
+# Documentation
+*.md @sigook-juan
+/docs/ @sigook-juan
+
+# Configuration files
+/.github/ @sigook-juan
+*.yml @sigook-juan
+*.yaml @sigook-juan
