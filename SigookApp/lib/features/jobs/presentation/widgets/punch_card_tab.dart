@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:sigook_app_flutter/core/constants/enums.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_clock_type.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/usecases/submit_timesheet.dart';
+import 'package:sigook_app_flutter/features/jobs/presentation/providers/timesheet_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class PunchCardTab extends ConsumerStatefulWidget {
-  const PunchCardTab({super.key});
+  final String jobId;
+
+  const PunchCardTab({super.key, required this.jobId});
 
   @override
   ConsumerState<PunchCardTab> createState() => _PunchCardTabState();
@@ -17,6 +24,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   DateTime _selectedDay = DateTime.now();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
+  ClockType _clockType = ClockType.none;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -28,6 +37,29 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         });
       }
     });
+    _loadClockType();
+  }
+
+  Future<void> _loadClockType() async {
+    final useCase = ref.read(getClockTypeUseCaseProvider);
+    final result = await useCase(
+      GetClockTypeParams(date: _selectedDay, requestId: widget.jobId),
+    );
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _clockType = ClockType.none;
+        });
+      },
+      (clockType) {
+        setState(() {
+          _clockType = clockType;
+        });
+      },
+    );
   }
 
   @override
@@ -79,6 +111,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                 });
+                _loadClockType();
               },
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
@@ -212,31 +245,58 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: _onClockTapped,
+              onPressed: _clockType == ClockType.none || _isSubmitting
+                  ? null
+                  : _onClockTapped,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
+                backgroundColor: _clockType == ClockType.clockIn
+                    ? AppTheme.successGreen
+                    : _clockType == ClockType.clockOut
+                    ? AppTheme.errorRed
+                    : Colors.grey,
                 foregroundColor: Colors.white,
                 elevation: 4,
                 shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                disabledBackgroundColor: Colors.grey.shade400,
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.touch_app, size: 24),
-                  SizedBox(width: 12),
-                  Text(
-                    'PUNCH TIME',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _clockType == ClockType.clockIn
+                              ? Icons.login
+                              : _clockType == ClockType.clockOut
+                              ? Icons.logout
+                              : Icons.block,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          _clockType == ClockType.clockIn
+                              ? 'CLOCK IN'
+                              : _clockType == ClockType.clockOut
+                              ? 'CLOCK OUT'
+                              : 'UNAVAILABLE',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -244,16 +304,85 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  void _onClockTapped() {
-    final punchTime = DateTime(
-      _selectedDay.year,
-      _selectedDay.month,
-      _selectedDay.day,
-      _currentTime.hour,
-      _currentTime.minute,
-      _currentTime.second,
-    );
+  Future<void> _onClockTapped() async {
+    setState(() {
+      _isSubmitting = true;
+    });
 
+    try {
+      final position = await _getCurrentLocation();
+
+      if (position == null) {
+        if (!mounted) return;
+        setState(() {
+          _isSubmitting = false;
+        });
+        _showErrorSnackBar(
+          'Failed to get location. Please enable location services.',
+        );
+        return;
+      }
+
+      final useCase = ref.read(submitTimesheetUseCaseProvider);
+      final result = await useCase(
+        SubmitTimesheetParams(
+          jobId: widget.jobId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      result.fold(
+        (failure) {
+          _showErrorSnackBar(failure.message);
+        },
+        (response) {
+          _showSuccessSnackBar(response.workerFullName, response.finish);
+          _loadClockType();
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+      });
+      _showErrorSnackBar('An error occurred: $e');
+    }
+  }
+
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return null;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return null;
+    }
+
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+  }
+
+  void _showSuccessSnackBar(String workerName, bool finish) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -265,14 +394,16 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Time Punched!',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
                   Text(
-                    DateFormat('MMM dd, yyyy - hh:mm:ss a').format(punchTime),
-                    style: const TextStyle(fontSize: 14),
+                    finish
+                        ? 'Clocked Out Successfully!'
+                        : 'Clocked In Successfully!',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
+                  Text(workerName, style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -280,6 +411,26 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         ),
         backgroundColor: AppTheme.successGreen,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(message, style: const TextStyle(fontSize: 14)),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.errorRed,
+        duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

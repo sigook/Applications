@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
+import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/core/usecases/usecase.dart';
-import 'package:sigook_app_flutter/features/jobs/domain/entities/clock_type.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/repositories/timesheet_repository.dart';
 
 class GetClockType implements UseCase<ClockType, GetClockTypeParams> {

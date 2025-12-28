@@ -81,3 +81,5 @@ enum DayOfWeek {
     }
   }
 }
+
+enum ClockType { none, clockIn, clockOut }

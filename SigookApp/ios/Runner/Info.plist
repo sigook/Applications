@@ -61,5 +61,9 @@
 	<string>Need access to your photo library to upload profile picture</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Need access to your camera to upload profile picture</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to record your timesheet punch in/out</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to record your timesheet punch in/out</string>
 </dict>
 </plist>
