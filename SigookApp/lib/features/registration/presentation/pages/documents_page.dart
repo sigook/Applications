@@ -22,7 +22,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   void initState() {
     super.initState();
 
-    // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final form = ref.read(registrationViewModelProvider);
       if (form.documentsInfo != null) {
@@ -51,7 +50,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     });
   }
 
-  /// Show file upload modal
   Future<void> _showFileUploadModal({
     required String title,
     required String description,
@@ -121,7 +119,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               ),
               const SizedBox(height: 32),
 
-              // Identification 1 (required)
               _buildFileUploadSection(
                 title: 'Primary Identification *',
                 description: 'Upload your primary identification document',
@@ -181,7 +178,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               ),
               const SizedBox(height: 24),
 
-              // Identification 2 (optional)
               _buildFileUploadSection(
                 title: 'Secondary Identification',
                 description: 'Upload secondary identification (optional)',
@@ -242,7 +238,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
               ),
               const SizedBox(height: 24),
 
-              // Resume (optional)
               _buildFileUploadSection(
                 title: 'Resume',
                 description: 'Upload your resume (optional)',
@@ -351,7 +346,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
           ),
           const SizedBox(height: 12),
 
-          // Show uploaded files
           if (files.isNotEmpty) ...[
             Container(
               decoration: BoxDecoration(
@@ -399,7 +393,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
             const SizedBox(height: 12),
           ],
 
-          // Upload button
           ElevatedButton.icon(
             onPressed: onUpload,
             icon: const Icon(Icons.upload_file, size: 20),
@@ -409,7 +402,6 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
             ),
           ),
 
-          // Error text
           if (errorText != null) ...[
             const SizedBox(height: 8),
             Text(

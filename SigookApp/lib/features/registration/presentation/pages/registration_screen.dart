@@ -11,13 +11,11 @@ import 'preferences_page.dart';
 import 'documents_page.dart';
 import 'account_page.dart';
 
-/// Wrapper that pre-loads all catalog data before showing the registration form
 class RegistrationScreen extends ConsumerWidget {
   const RegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Pre-load all static catalog data
     final gendersAsync = ref.watch(gendersProvider);
     final identificationTypesAsync = ref.watch(identificationTypesListProvider);
     final languagesAsync = ref.watch(languagesProvider);
@@ -26,7 +24,6 @@ class RegistrationScreen extends ConsumerWidget {
     final availabilityTimeAsync = ref.watch(availabilityTimeListProvider);
     final countriesAsync = ref.watch(countriesListProvider);
 
-    // Check if any are still loading
     final isLoading =
         gendersAsync.isLoading ||
         identificationTypesAsync.isLoading ||
@@ -36,7 +33,6 @@ class RegistrationScreen extends ConsumerWidget {
         availabilityTimeAsync.isLoading ||
         countriesAsync.isLoading;
 
-    // Check if any have errors
     final hasError =
         gendersAsync.hasError ||
         identificationTypesAsync.hasError ||
@@ -84,7 +80,6 @@ class RegistrationScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
-                  // Invalidate all providers to retry
                   ref.invalidate(gendersProvider);
                   ref.invalidate(identificationTypesListProvider);
                   ref.invalidate(languagesProvider);
@@ -102,12 +97,10 @@ class RegistrationScreen extends ConsumerWidget {
       );
     }
 
-    // All data loaded successfully, show the form
     return const _RegistrationFormScreen();
   }
 }
 
-/// The actual registration form screen (shown only after data is loaded)
 class _RegistrationFormScreen extends ConsumerStatefulWidget {
   const _RegistrationFormScreen();
 
@@ -120,13 +113,11 @@ class _RegistrationFormScreenState
     extends ConsumerState<_RegistrationFormScreen> {
   final ScrollController _scrollController = ScrollController();
 
-  // Total number of steps (0-indexed, so last step is 3)
   static const int _lastStepIndex = 3;
 
   @override
   void initState() {
     super.initState();
-    // Scroll to top when widget is first built
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTop());
   }
 
@@ -323,7 +314,6 @@ class _RegistrationFormScreenState
                 ),
               ),
             ),
-            // Bottom sign in link
             Container(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Row(
@@ -433,7 +423,6 @@ class _RegistrationFormScreenState
         ),
       );
 
-      // Navigate to jobs page after successful registration
       context.go(AppRoutes.jobs);
     } else {
       notifier.setError(result);

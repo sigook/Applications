@@ -43,7 +43,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
   void initState() {
     super.initState();
 
-    // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final form = ref.read(registrationViewModelProvider);
       if (form.preferencesInfo != null) {
@@ -62,8 +61,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
 
   void _validateAndSave() {
     setState(() {
-      // All fields are optional - save whatever is filled
-      // Use empty/default values for unselected fields
       final preferencesInfo = PreferencesInfo(
         availabilityType:
             _selectedAvailabilityType ?? AvailabilityType(id: '', value: ''),
@@ -74,8 +71,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
         languages: _selectedLanguages,
         skills: _selectedSkills,
       );
-
-      // No validation errors - all fields are optional
       _availabilityTypeError = null;
       _availableTimesError = null;
       _availableDaysError = null;
@@ -121,7 +116,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 32),
 
-              // Availability Type
               AvailabilityTypeSelector(
                 selectedType: _selectedAvailabilityType,
                 onChanged: (value) {
@@ -134,7 +128,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Available Time
               AvailabilityTimeSelector(
                 selectedTimes: _selectedAvailableTimes,
                 onChanged: (times) {
@@ -147,7 +140,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Available Days
               DaySelector(
                 selectedDays: _selectedDays,
                 onChanged: (days) {
@@ -160,7 +152,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 32),
 
-              // Lifting Capacity Section
               Text(
                 'Physical Capabilities',
                 style: Theme.of(
@@ -171,11 +162,9 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               _buildLiftingCapacitySelector(),
               const SizedBox(height: 24),
 
-              // Vehicle Ownership
               _buildVehicleCheckbox(),
               const SizedBox(height: 32),
 
-              // Languages
               Text(
                 'Professional Skills',
                 style: Theme.of(
@@ -195,7 +184,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Skills
               SkillAutocompleteField(
                 selectedSkills: _selectedSkills,
                 onChanged: (skills) {
@@ -214,7 +202,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
   }
 
   Widget _buildLiftingCapacitySelector() {
-    // Fetch lifting capacities from catalog
     final capacitiesAsync = ref.watch(liftingCapacitiesProvider);
     final catalogCapacities = capacitiesAsync.value ?? [];
 

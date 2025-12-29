@@ -54,35 +54,27 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final cachedToken = await local.getCachedToken();
       if (cachedToken?.idToken == null) {
-        // No token to logout with, just clear local storage
         await local.clearToken();
         return Right(null);
       }
 
-      // Try to end session with IdentityServer
       if (await networkInfo.isConnected) {
         try {
           await remote.logout(cachedToken!.idToken!);
         } catch (e) {
-          // Log the error but continue to clear local tokens
           debugPrint('End session failed: $e');
-          // We still clear local tokens even if server logout fails
         }
       }
 
-      // Always clear local tokens, even if end session fails
       await local.clearToken();
       return Right(null);
     } on ServerException catch (e) {
-      // Clear local tokens even on error
       await local.clearToken();
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      // Clear local tokens even on error
       await local.clearToken();
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
-      // Clear local tokens even on unexpected error
       await local.clearToken();
       return Left(ServerFailure(message: 'Logout error: ${e.toString()}'));
     }

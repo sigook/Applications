@@ -1,7 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-/// Network connectivity checker
-/// Used to verify internet connection before making API calls
 abstract class NetworkInfo {
   Future<bool> get isConnected;
 }

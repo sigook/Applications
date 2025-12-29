@@ -1,4 +1,3 @@
-/// Gender enum for personal information
 enum Gender {
   male,
   female,
@@ -19,7 +18,6 @@ enum Gender {
   }
 }
 
-/// Availability type enum
 enum AvailabilityType {
   fullTime,
   partTime;
@@ -34,7 +32,6 @@ enum AvailabilityType {
   }
 }
 
-/// Time of day availability
 enum TimeOfDay {
   morning,
   afternoon,
@@ -52,7 +49,6 @@ enum TimeOfDay {
   }
 }
 
-/// Days of the week
 enum DayOfWeek {
   monday,
   tuesday,

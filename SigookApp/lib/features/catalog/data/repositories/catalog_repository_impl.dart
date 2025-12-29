@@ -6,8 +6,6 @@ import '../../domain/entities/catalog_item.dart';
 import '../../domain/repositories/catalog_repository.dart';
 import '../datasources/catalog_remote_datasource.dart';
 
-/// Implementation of the catalog repository
-/// Handles data fetching with error handling and network checks
 class CatalogRepositoryImpl implements CatalogRepository {
   final CatalogRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
@@ -76,11 +74,9 @@ class CatalogRepositoryImpl implements CatalogRepository {
     return _getCatalogData(() => remoteDataSource.getDaysOfWeek());
   }
 
-  /// Generic method to handle catalog data fetching with error handling
   Future<Either<Failure, List<CatalogItem>>> _getCatalogData(
     Future<List<CatalogItem>> Function() getData,
   ) async {
-    // Check network connectivity
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }

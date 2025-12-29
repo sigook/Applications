@@ -4,8 +4,6 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/catalog_item_model.dart';
 
-/// Remote data source for catalog data
-/// Handles all HTTP requests to the catalog API endpoints
 abstract class CatalogRemoteDataSource {
   Future<List<CatalogItemModel>> getAvailability();
   Future<List<CatalogItemModel>> getAvailabilityTime();
@@ -80,7 +78,6 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
     return _getCatalogItems('/Catalog/day');
   }
 
-  /// Generic method to fetch catalog items
   Future<List<CatalogItemModel>> _getCatalogItems(String endpoint) async {
     try {
       final response = await apiClient.get(endpoint);
@@ -88,20 +85,18 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data as List<dynamic>;
 
-        // Debug: Show first item from API
         if (jsonList.isNotEmpty && endpoint.contains('skill')) {
           debugPrint('═══ DEBUG: Skills API Response ═══');
           debugPrint('First item: ${jsonList.first}');
           debugPrint('═══════════════════════════════');
         }
 
-        // Use safe parsing and filter out invalid items
         final items = jsonList
             .map(
               (json) =>
                   CatalogItemModel.fromJsonSafe(json as Map<String, dynamic>),
             )
-            .whereType<CatalogItemModel>() // Filter out nulls
+            .whereType<CatalogItemModel>()
             .toList();
 
         if (items.isEmpty && jsonList.isNotEmpty) {
@@ -139,13 +134,12 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
         );
       }
     } on NetworkException {
-      rethrow; // Re-throw NetworkException as-is
+      rethrow;
     } on ServerException {
-      rethrow; // Re-throw ServerException as-is
+      rethrow;
     } on ParseException {
-      rethrow; // Re-throw ParseException as-is
+      rethrow;
     } catch (e) {
-      // Catch any other errors including SocketException
       if (e.toString().contains('SocketException')) {
         throw NetworkException(
           'Cannot reach server. Please check your network connection or VPN.',

@@ -1,10 +1,9 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents an uploaded file with metadata
 class UploadedFile extends Equatable {
   final String fileName;
   final String description;
-  final String? filePath; // Local path for display/preview
+  final String? filePath;
 
   const UploadedFile({
     required this.fileName,
@@ -36,7 +35,6 @@ class UploadedFile extends Equatable {
   List<Object?> get props => [fileName, description, filePath];
 }
 
-/// Represents an identification document with type, number, and file
 class IdentificationDocument extends Equatable {
   final String identificationTypeId;
   final String identificationTypeValue;
@@ -50,7 +48,6 @@ class IdentificationDocument extends Equatable {
     required this.file,
   });
 
-  /// Display string for UI
   String get displayName =>
       '$identificationTypeValue #$identificationNumber - ${file.fileName}';
 
@@ -69,7 +66,6 @@ class IdentificationDocument extends Equatable {
     );
   }
 
-  /// Convert to JSON for debugging/logging purposes
   Map<String, dynamic> toJson() {
     return {
       'identificationTypeId': identificationTypeId,

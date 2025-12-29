@@ -24,14 +24,12 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
       _$AuthTokenModelFromJson(json);
 
   factory AuthTokenModel.fromResponse(dynamic response) {
-    // Parse user info from id_token if available
     UserInfoModel? userInfo;
     if (response.idToken != null) {
       try {
         final decodedToken = JwtDecoder.decode(response.idToken);
         userInfo = UserInfoModel.fromIdTokenClaims(decodedToken);
       } catch (e) {
-        // If token parsing fails, continue without user info
         userInfo = null;
       }
     }

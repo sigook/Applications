@@ -2,18 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/environment.dart';
 
-/// Dio HTTP client configuration
-/// Centralized API client with interceptors and error handling
 class ApiClient {
-  static const int connectionTimeout = 30000; // 30 seconds
-  static const int receiveTimeout = 30000; // 30 seconds
+  static const int connectionTimeout = 30000;
+  static const int receiveTimeout = 30000;
 
-  /// Get base URL from environment configuration
   String get baseUrl => EnvironmentConfig.apiBaseUrl;
 
   late final Dio _dio;
 
-  /// Expose Dio instance for use cases that need direct access
   Dio get dio => _dio;
 
   ApiClient({Interceptor? authInterceptor}) {
@@ -29,17 +25,14 @@ class ApiClient {
       ),
     );
 
-    // Add interceptors
     _addInterceptors(authInterceptor);
   }
 
   void _addInterceptors(Interceptor? authInterceptor) {
-    // Add auth interceptor first (if provided) so it runs before logging
     if (authInterceptor != null) {
       _dio.interceptors.add(authInterceptor);
     }
 
-    // Pretty logger for debugging (only in debug mode)
     _dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,
@@ -52,18 +45,15 @@ class ApiClient {
       ),
     );
 
-    // Custom error interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) {
-          // Handle errors globally here if needed
           return handler.next(error);
         },
       ),
     );
   }
 
-  /// GET request
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -81,7 +71,6 @@ class ApiClient {
     }
   }
 
-  /// POST request
   Future<Response> post(
     String path, {
     dynamic data,
@@ -101,7 +90,6 @@ class ApiClient {
     }
   }
 
-  /// PUT request
   Future<Response> put(
     String path, {
     dynamic data,
@@ -121,7 +109,6 @@ class ApiClient {
     }
   }
 
-  /// DELETE request
   Future<Response> delete(
     String path, {
     dynamic data,

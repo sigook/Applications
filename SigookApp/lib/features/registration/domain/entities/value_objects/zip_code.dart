@@ -1,5 +1,3 @@
-// lib/features/registration/domain/entities/value_objects/zip_code.dart
-
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
@@ -17,7 +15,6 @@ class ZipCode extends Equatable {
   static const ZipCode emptyUS = ZipCode._(value: '', countryCode: 'US');
   static const ZipCode emptyCA = ZipCode._(value: '', countryCode: 'CA');
 
-  /// Factory: Parse and validate input
   static Either<String, ZipCode> parse({
     required String input,
     required String countryCode,
@@ -37,7 +34,6 @@ class ZipCode extends Equatable {
     );
   }
 
-  // --- Validation Logic ---
   static String? _validate(
     String input,
     String countryCode,
@@ -51,7 +47,7 @@ class ZipCode extends Equatable {
     return switch (code) {
       'US' => _validateUS(cleaned, provinceCode),
       'CA' => _validateCA(cleaned, provinceCode),
-      _ => null, // Allow other countries
+      _ => null,
     };
   }
 
@@ -88,7 +84,6 @@ class ZipCode extends Equatable {
     return null;
   }
 
-  // --- Formatting ---
   static String _format(String input, String countryCode) {
     final code = countryCode.toUpperCase();
     final cleaned = input.replaceAll(' ', '').toUpperCase();
@@ -106,7 +101,6 @@ class ZipCode extends Equatable {
     };
   }
 
-  // --- Static Maps ---
   static const Map<String, Set<String>> _caProvinceToPrefixes = {
     'NL': {'A'},
     'NS': {'B'},

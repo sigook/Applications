@@ -85,7 +85,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       debugPrint('⚠️ PlatformException during logout: ${e.code}');
       debugPrint('   Details: ${e.details}');
 
-      // Handle user cancellation gracefully
       if (e.code == 'end_session_failed') {
         final details = e.details as Map<String, dynamic>?;
         final userCancelled = details?['user_did_cancel'] == true;
@@ -93,7 +92,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         debugPrint('   User cancelled: $userCancelled');
 
         if (userCancelled) {
-          // User cancelled the logout flow - this is acceptable
           debugPrint(
             '✅ User cancelled logout - treating as successful (tokens will be cleared)',
           );
@@ -101,7 +99,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         }
       }
 
-      // For other platform exceptions, rethrow as server exception
       debugPrint('❌ Rethrowing as ServerException');
       throw ServerException(message: 'Logout failed: ${e.message}');
     } catch (e) {

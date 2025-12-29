@@ -99,7 +99,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -149,14 +148,12 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
               ),
             ),
 
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Identification Type Section
                     const Text(
                       'Identification Type',
                       style: TextStyle(
@@ -167,10 +164,8 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Searchable Dropdown
                     identificationTypesAsync.when(
                       data: (identificationTypes) {
-                        // Filter based on search query
                         final filteredTypes = identificationTypes.where((type) {
                           return type.value.toLowerCase().contains(
                             _searchQuery.toLowerCase(),
@@ -179,7 +174,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
 
                         return Column(
                           children: [
-                            // Search field
                             TextField(
                               controller: _searchController,
                               decoration: InputDecoration(
@@ -212,7 +206,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Dropdown container
                             Container(
                               constraints: const BoxConstraints(maxHeight: 200),
                               decoration: BoxDecoration(
@@ -340,7 +333,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
 
                     const SizedBox(height: 24),
 
-                    // Selected Type Display
                     if (_selectedIdentificationType != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -384,7 +376,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Identification Number Field
                       const Text(
                         'Identification Number',
                         style: TextStyle(
@@ -415,8 +406,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                       const SizedBox(height: 24),
                     ],
-
-                    // File Upload Section
                     const Text(
                       'Upload File',
                       style: TextStyle(
@@ -426,7 +415,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Selected file display
                     if (_selectedFile != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -577,7 +565,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
               ),
             ),
 
-            // Footer buttons
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(

@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Address information entity
-/// Represents the address section of the registration form
 class AddressInfo extends Equatable {
   final String country;
   final String provinceState;
@@ -17,7 +15,6 @@ class AddressInfo extends Equatable {
     required this.zipCode,
   });
 
-  /// Validates all fields
   bool get isValid {
     return country.isNotEmpty &&
         provinceState.isNotEmpty &&
@@ -27,7 +24,6 @@ class AddressInfo extends Equatable {
         zipCode.isNotEmpty;
   }
 
-  /// Validation error messages
   String? get countryError => country.isEmpty ? 'Country is required' : null;
   String? get provinceStateError =>
       provinceState.isEmpty ? 'Province/State is required' : null;
@@ -37,10 +33,9 @@ class AddressInfo extends Equatable {
     if (address.length < 5) return 'Address must be at least 5 characters';
     return null;
   }
-  
+
   String? get zipCodeError => zipCode.isEmpty ? 'ZIP Code is required' : null;
 
-  /// Creates a copy with updated fields
   AddressInfo copyWith({
     String? country,
     String? provinceState,

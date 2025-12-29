@@ -1,6 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../../core/config/feature_flags.dart';
-import '../../data/mock/mock_jobs_data.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../providers/jobs_providers.dart';
 import 'jobs_state.dart';
@@ -33,25 +31,14 @@ class JobsViewModel extends _$JobsViewModel {
 
     result.fold(
       (failure) {
-        if (FeatureFlags.useMockJobs) {
-          final mockJobs = MockJobsData.getMockJobs();
-          state = state.copyWith(
-            isLoading: false,
-            jobs: mockJobs,
-            currentPage: 1,
-            hasMore: false,
-            error: null,
-          );
-        } else {
-          String errorMessage = _getUserFriendlyErrorMessage(failure.message);
-          state = state.copyWith(
-            isLoading: false,
-            jobs: [],
-            currentPage: 0,
-            hasMore: false,
-            error: errorMessage,
-          );
-        }
+        String errorMessage = _getUserFriendlyErrorMessage(failure.message);
+        state = state.copyWith(
+          isLoading: false,
+          jobs: [],
+          currentPage: 0,
+          hasMore: false,
+          error: errorMessage,
+        );
       },
       (paginatedJobs) => state = state.copyWith(
         isLoading: false,
@@ -63,7 +50,6 @@ class JobsViewModel extends _$JobsViewModel {
     );
   }
 
-  /// Convert technical error messages to user-friendly ones
   String _getUserFriendlyErrorMessage(String technicalError) {
     final lowerError = technicalError.toLowerCase();
 

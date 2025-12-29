@@ -1,14 +1,13 @@
 import 'package:equatable/equatable.dart';
 
-/// User information extracted from ID token
 class UserInfo extends Equatable {
-  final String? sub; // Subject (user ID)
-  final String? name; // Full name
-  final String? givenName; // First name
-  final String? familyName; // Last name
+  final String? sub;
+  final String? name;
+  final String? givenName;
+  final String? familyName;
   final String? email;
   final bool? emailVerified;
-  final List<String>? roles; // User roles from token claims
+  final List<String>? roles;
 
   const UserInfo({
     this.sub,
@@ -23,7 +22,6 @@ class UserInfo extends Equatable {
   factory UserInfo.empty() => const UserInfo();
 
   factory UserInfo.fromIdTokenClaims(Map<String, dynamic> claims) {
-    // Extract roles from claims - could be in different claim names
     List<String>? roles;
     if (claims.containsKey('role')) {
       final roleValue = claims['role'];

@@ -4,8 +4,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/notifiers/catalog_notifiers.dart';
 import '../../../registration/domain/entities/language.dart';
 
-/// Autocomplete text field for languages
-/// Allows user to type and select from API suggestions only
 class LanguageAutocompleteField extends ConsumerStatefulWidget {
   final List<Language> selectedLanguages;
   final ValueChanged<List<Language>> onChanged;
@@ -114,20 +112,21 @@ class _LanguageAutocompleteFieldState
                 if (textEditingValue.text.isEmpty) {
                   return const Iterable<String>.empty();
                 }
-                return languages
-                    .map((lang) => lang.value)
-                    .where((String option) {
+                return languages.map((lang) => lang.value).where((
+                  String option,
+                ) {
                   return option.toLowerCase().contains(
                     textEditingValue.text.toLowerCase(),
                   );
                 });
               },
               onSelected: (String selection) {
-                // Find the language and convert to entity
                 final catalogItem = languages.firstWhere(
                   (lang) => lang.value == selection,
                 );
-                _addLanguage(Language(id: catalogItem.id, value: catalogItem.value));
+                _addLanguage(
+                  Language(id: catalogItem.id, value: catalogItem.value),
+                );
               },
               fieldViewBuilder:
                   (
@@ -136,7 +135,6 @@ class _LanguageAutocompleteFieldState
                     FocusNode fieldFocusNode,
                     VoidCallback onFieldSubmitted,
                   ) {
-                    // Sync controllers
                     _controller.text = fieldTextEditingController.text;
                     fieldTextEditingController.addListener(() {
                       _controller.text = fieldTextEditingController.text;
@@ -182,13 +180,17 @@ class _LanguageAutocompleteFieldState
                         fillColor: Colors.white,
                       ),
                       onSubmitted: (value) {
-                        // Only allow if it's in the list
-                        final matchingLang = languages.where(
-                          (lang) => lang.value == value,
-                        ).firstOrNull;
-                        
+                        final matchingLang = languages
+                            .where((lang) => lang.value == value)
+                            .firstOrNull;
+
                         if (matchingLang != null) {
-                          _addLanguage(Language(id: matchingLang.id, value: matchingLang.value));
+                          _addLanguage(
+                            Language(
+                              id: matchingLang.id,
+                              value: matchingLang.value,
+                            ),
+                          );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

@@ -1,18 +1,13 @@
-/// Base exception for server errors
 class ServerException implements Exception {
   final String message;
   final int? statusCode;
 
-  ServerException({
-    required this.message,
-    this.statusCode,
-  });
+  ServerException({required this.message, this.statusCode});
 
   @override
   String toString() => 'ServerException: $message (Status: $statusCode)';
 }
 
-/// Exception for network/connection errors
 class NetworkException implements Exception {
   final String message;
 
@@ -22,7 +17,6 @@ class NetworkException implements Exception {
   String toString() => 'NetworkException: $message';
 }
 
-/// Exception for caching errors
 class CacheException implements Exception {
   final String message;
 
@@ -32,7 +26,6 @@ class CacheException implements Exception {
   String toString() => 'CacheException: $message';
 }
 
-/// Exception for parsing/serialization errors
 class ParseException implements Exception {
   final String message;
 

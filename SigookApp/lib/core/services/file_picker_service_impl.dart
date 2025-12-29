@@ -2,9 +2,6 @@ import 'package:file_picker/file_picker.dart' hide FilePickerResult;
 import 'package:flutter/foundation.dart';
 import 'file_picker_service.dart';
 
-/// Implementation of FilePickerService using file_picker package
-/// Following SOLID principles - Dependency Inversion Principle
-/// Cross-platform support for iOS, Android, and Web
 class FilePickerServiceImpl implements FilePickerService {
   final FilePicker _filePicker;
 
@@ -17,29 +14,25 @@ class FilePickerServiceImpl implements FilePickerService {
     int maxFileSizeMB = 10,
   }) async {
     try {
-      // Configure file type
       final FileType fileType =
           allowedExtensions != null && allowedExtensions.isNotEmpty
           ? FileType.custom
           : FileType.any;
 
-      // Pick file
       final result = await _filePicker.pickFiles(
         type: fileType,
         allowedExtensions: allowedExtensions,
         allowMultiple: false,
-        withData: kIsWeb, // Load bytes on web platform
-        withReadStream: !kIsWeb, // Use stream on mobile for large files
+        withData: kIsWeb,
+        withReadStream: !kIsWeb,
       );
 
-      // Handle cancellation
       if (result == null || result.files.isEmpty) {
         return FilePickerResult.cancelled();
       }
 
       final platformFile = result.files.first;
 
-      // Validate file
       final validationError = _validateFile(
         platformFile,
         maxFileSizeMB,
@@ -49,7 +42,6 @@ class FilePickerServiceImpl implements FilePickerService {
         return FilePickerResult.error(validationError);
       }
 
-      // Create PickedFileData
       final pickedFile = _createPickedFileData(platformFile);
 
       debugPrint(
@@ -70,13 +62,11 @@ class FilePickerServiceImpl implements FilePickerService {
     int maxFiles = 5,
   }) async {
     try {
-      // Configure file type
       final FileType fileType =
           allowedExtensions != null && allowedExtensions.isNotEmpty
           ? FileType.custom
           : FileType.any;
 
-      // Pick files
       final result = await _filePicker.pickFiles(
         type: fileType,
         allowedExtensions: allowedExtensions,
@@ -85,18 +75,14 @@ class FilePickerServiceImpl implements FilePickerService {
         withReadStream: !kIsWeb,
       );
 
-      // Handle cancellation
       if (result == null || result.files.isEmpty) {
         return [FilePickerResult.cancelled()];
       }
 
-      // Limit number of files
       final files = result.files.take(maxFiles).toList();
 
-      // Process each file
       final results = <FilePickerResult>[];
       for (final platformFile in files) {
-        // Validate file
         final validationError = _validateFile(
           platformFile,
           maxFileSizeMB,
@@ -107,7 +93,6 @@ class FilePickerServiceImpl implements FilePickerService {
           continue;
         }
 
-        // Create PickedFileData
         final pickedFile = _createPickedFileData(platformFile);
         results.add(FilePickerResult.success(pickedFile));
 
@@ -129,7 +114,6 @@ class FilePickerServiceImpl implements FilePickerService {
     bool allowCamera = false,
   }) async {
     try {
-      // For images, use FileType.image which is optimized for image selection
       final result = await _filePicker.pickFiles(
         type: FileType.image,
         allowMultiple: false,
@@ -137,14 +121,12 @@ class FilePickerServiceImpl implements FilePickerService {
         withReadStream: !kIsWeb,
       );
 
-      // Handle cancellation
       if (result == null || result.files.isEmpty) {
         return FilePickerResult.cancelled();
       }
 
       final platformFile = result.files.first;
 
-      // Validate file size
       final validationError = _validateFile(platformFile, maxFileSizeMB, [
         'jpg',
         'jpeg',
@@ -157,7 +139,6 @@ class FilePickerServiceImpl implements FilePickerService {
         return FilePickerResult.error(validationError);
       }
 
-      // Create PickedFileData
       final pickedFile = _createPickedFileData(platformFile);
 
       debugPrint(
@@ -171,18 +152,15 @@ class FilePickerServiceImpl implements FilePickerService {
     }
   }
 
-  /// Validate file based on size and extension
   String? _validateFile(
     PlatformFile file,
     int maxFileSizeMB,
     List<String>? allowedExtensions,
   ) {
-    // Check file size
     if (file.size > maxFileSizeMB * 1024 * 1024) {
       return 'File size exceeds ${maxFileSizeMB}MB limit';
     }
 
-    // Check extension if specified
     if (allowedExtensions != null && allowedExtensions.isNotEmpty) {
       final extension = file.extension?.toLowerCase();
       if (extension == null || !allowedExtensions.contains(extension)) {
@@ -190,17 +168,16 @@ class FilePickerServiceImpl implements FilePickerService {
       }
     }
 
-    return null; // Valid
+    return null;
   }
 
-  /// Create PickedFileData from PlatformFile
   PickedFileData _createPickedFileData(PlatformFile platformFile) {
     return PickedFileData(
       name: platformFile.name,
       path: platformFile.path ?? '',
       size: platformFile.size,
       extension: platformFile.extension,
-      bytes: platformFile.bytes, // Available on web
+      bytes: platformFile.bytes,
     );
   }
 }

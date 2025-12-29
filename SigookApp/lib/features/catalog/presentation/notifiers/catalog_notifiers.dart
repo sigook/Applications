@@ -5,8 +5,6 @@ import '../providers/catalog_providers.dart';
 
 part 'catalog_notifiers.g.dart';
 
-/// Availability Notifier
-/// Manages availability catalog data with loading, error, and data states
 @riverpod
 class Availability extends _$Availability {
   @override
@@ -20,14 +18,12 @@ class Availability extends _$Availability {
     );
   }
 
-  /// Refresh data
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(build);
   }
 }
 
-/// Availability Time Notifier
 @riverpod
 class AvailabilityTime extends _$AvailabilityTime {
   @override
@@ -47,7 +43,6 @@ class AvailabilityTime extends _$AvailabilityTime {
   }
 }
 
-/// Countries Notifier
 @riverpod
 class Countries extends _$Countries {
   @override
@@ -67,7 +62,6 @@ class Countries extends _$Countries {
   }
 }
 
-/// Genders Notifier
 @riverpod
 class Genders extends _$Genders {
   @override
@@ -87,7 +81,6 @@ class Genders extends _$Genders {
   }
 }
 
-/// Identification Types Notifier
 @riverpod
 class IdentificationTypes extends _$IdentificationTypes {
   @override
@@ -107,7 +100,6 @@ class IdentificationTypes extends _$IdentificationTypes {
   }
 }
 
-/// Languages Notifier
 @riverpod
 class Languages extends _$Languages {
   @override
@@ -127,7 +119,6 @@ class Languages extends _$Languages {
   }
 }
 
-/// Skills Notifier
 @riverpod
 class Skills extends _$Skills {
   @override

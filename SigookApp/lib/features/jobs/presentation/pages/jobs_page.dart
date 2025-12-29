@@ -70,10 +70,8 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   }
 
   List<Job> _getFilteredAndSortedJobs(List<Job> jobs) {
-    // Create a mutable copy of the list
     var filtered = List<Job>.from(jobs);
 
-    // Apply filter
     if (_currentFilter != FilterStatus.all) {
       filtered = filtered.where((job) {
         switch (_currentFilter) {
@@ -91,7 +89,6 @@ class _JobsPageState extends ConsumerState<JobsPage> {
       }).toList();
     }
 
-    // Apply sort
     filtered.sort((a, b) {
       switch (_currentSort) {
         case SortOption.dateNewest:

@@ -4,7 +4,6 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/catalog_item.dart';
 import '../repositories/catalog_repository.dart';
 
-/// Use case for getting availability options
 class GetAvailability implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -16,7 +15,6 @@ class GetAvailability implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting availability time options
 class GetAvailabilityTime implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -28,7 +26,6 @@ class GetAvailabilityTime implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting country options
 class GetCountries implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -40,7 +37,6 @@ class GetCountries implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting gender options
 class GetGenders implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -52,7 +48,6 @@ class GetGenders implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting identification type options
 class GetIdentificationTypes implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -64,7 +59,6 @@ class GetIdentificationTypes implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting language options
 class GetLanguages implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 
@@ -76,7 +70,6 @@ class GetLanguages implements UseCase<List<CatalogItem>, NoParams> {
   }
 }
 
-/// Use case for getting skills options
 class GetSkills implements UseCase<List<CatalogItem>, NoParams> {
   final CatalogRepository repository;
 

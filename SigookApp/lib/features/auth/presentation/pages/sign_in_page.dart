@@ -28,7 +28,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     final isMobile = size.width < 600;
     final authState = ref.watch(authViewModelProvider);
 
-    // Listen to auth state changes
     ref.listen(authViewModelProvider, (previous, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +67,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                     children: [
                       const SizedBox(height: 40),
 
-                      // Logo/Icon
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -92,7 +90,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Welcome back text
                       Text(
                         'Welcome Back',
                         style: TextStyle(
@@ -113,7 +110,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 48),
 
-                      // OAuth Sign in button
                       SizedBox(
                         height: 56,
                         child: ElevatedButton.icon(
@@ -155,7 +151,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Information text
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -188,7 +183,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Divider
                       Row(
                         children: [
                           Expanded(
@@ -217,7 +211,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Sign up link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -253,7 +246,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
               ),
             ),
-            // Back button positioned at top
             Positioned(
               top: 16,
               left: 16,

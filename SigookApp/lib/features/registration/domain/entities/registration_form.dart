@@ -4,8 +4,6 @@ import 'preferences_info.dart';
 import 'documents_info.dart';
 import 'account_info.dart';
 
-/// Complete registration form entity
-/// Aggregates all form sections (new 4-section structure)
 class RegistrationForm extends Equatable {
   final BasicInfo? basicInfo;
   final PreferencesInfo? preferencesInfo;
@@ -19,30 +17,23 @@ class RegistrationForm extends Equatable {
     this.accountInfo,
   });
 
-  /// Empty form constructor
   factory RegistrationForm.empty() {
     return const RegistrationForm();
   }
 
-  /// Validates if all required sections are complete and valid
-  /// Preferences are optional: the user may skip them entirely.
   bool get isComplete {
     final basicOk = basicInfo?.isValid ?? false;
     final docsOk = documentsInfo?.isValid ?? false;
     final accountOk = accountInfo?.isValid ?? false;
-    // Preferences are optional: either not provided or valid if present
     final prefsOk = preferencesInfo == null || preferencesInfo!.isValid;
     return basicOk && docsOk && accountOk && prefsOk;
   }
 
-  /// Checks which sections are completed
   bool get isBasicInfoComplete => basicInfo?.isValid ?? false;
-  // Preferences section is optional: only mark complete when valid data exists
   bool get isPreferencesInfoComplete => preferencesInfo?.isValid ?? false;
   bool get isDocumentsInfoComplete => documentsInfo?.isValid ?? false;
   bool get isAccountInfoComplete => accountInfo?.isValid ?? false;
 
-  /// Calculates completion percentage
   double get completionPercentage {
     int completed = 0;
     if (isBasicInfoComplete) completed++;
@@ -52,7 +43,6 @@ class RegistrationForm extends Equatable {
     return completed / 4;
   }
 
-  /// Creates a copy with updated fields
   RegistrationForm copyWith({
     BasicInfo? basicInfo,
     PreferencesInfo? preferencesInfo,
@@ -67,7 +57,6 @@ class RegistrationForm extends Equatable {
     );
   }
 
-  /// Convert to JSON for debugging/logging purposes
   Map<String, dynamic> toJson() {
     return {
       if (basicInfo != null) 'basicInfo': basicInfo!.toJson(),

@@ -33,7 +33,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   late TextEditingController _addressController;
   late TextEditingController _zipCodeController;
 
-  // Phone validation service
   late PhoneValidationService _phoneService;
   PhoneNumber _mobileNumber = PhoneNumber.empty();
 
@@ -55,7 +54,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   String? _zipCodeError;
   String? _mobileNumberError;
 
-  // Track which fields have been touched (focused and blurred)
   final Set<String> _touchedFields = {};
   bool _attemptedSubmit = false;
 
@@ -68,7 +66,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     _zipCodeController = TextEditingController();
     _phoneService = PhoneNumberParserValidationService();
 
-    // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final form = ref.read(registrationViewModelProvider);
       if (form.basicInfo != null) {
@@ -98,12 +95,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     super.dispose();
   }
 
-  /// Helper to check if field should show error
   bool _shouldShowError(String fieldName) {
     return _attemptedSubmit || _touchedFields.contains(fieldName);
   }
 
-  /// Validate fields and update error messages
   void _validate() {
     final firstName = Name(_firstNameController.text);
     final lastName = Name(_lastNameController.text);
@@ -170,7 +165,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       }
     });
 
-    // Always save valid data to view model
     if (basicInfo.isValid) {
       ref
           .read(registrationViewModelProvider.notifier)
@@ -178,13 +172,11 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     }
   }
 
-  /// Mark field as touched and validate
   void _markTouched(String fieldName) {
     _touchedFields.add(fieldName);
     _validate();
   }
 
-  /// Validate all fields (called on submit)
   void _validateAndSave() {
     setState(() {
       _attemptedSubmit = true;
@@ -239,10 +231,8 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
 
-    // Listen for step changes to trigger validation when user tries to navigate away
     ref.listen(registrationFormStateProvider, (previous, next) {
       if (previous?.currentStep == 0 && next.currentStep != 0) {
-        // User is leaving this step - validate all fields
         _validateAndSave();
       }
     });
@@ -274,7 +264,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               ),
               const SizedBox(height: 32),
 
-              // Foto de perfil (widget reutilizable)
               ProfilePhotoPicker(
                 errorText: 'Profile photo is required',
                 showError:
@@ -287,8 +276,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                         false),
               ),
               const SizedBox(height: 32),
-
-              // Personal Details
               CustomTextField(
                 label: 'First Name',
                 hint: 'Enter your first name',
@@ -312,7 +299,6 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               ),
               const SizedBox(height: 24),
 
-              // Date of Birth
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -355,12 +341,8 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 ],
               ),
               const SizedBox(height: 24),
-
-              // Gender
               _buildGenderSelector(),
               const SizedBox(height: 32),
-
-              // Location Section
               Text(
                 'Location',
                 style: Theme.of(
@@ -407,12 +389,9 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               PhoneNumberField(
                 label: 'Mobile Number',
                 initialValue: _mobileNumber.value,
-                countryCode:
-                    _selectedCountry?.code ??
-                    'US', // Use selected country or default to US
+                countryCode: _selectedCountry?.code ?? 'US',
                 errorText: _mobileNumberError,
                 onChanged: (value) {
-                  // Validate phone number with selected country
                   final countryCode = _selectedCountry?.code ?? 'US';
                   final validated = _phoneService.validate(value, countryCode);
                   setState(() {
