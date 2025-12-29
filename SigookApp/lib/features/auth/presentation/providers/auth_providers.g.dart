@@ -130,6 +130,47 @@ final class LogoutProvider extends $FunctionalProvider<Logout, Logout, Logout>
 
 String _$logoutHash() => r'3f851dcbb9e8569c953ef50df79359f905c186c8';
 
+@ProviderFor(validateToken)
+const validateTokenProvider = ValidateTokenProvider._();
+
+final class ValidateTokenProvider
+    extends $FunctionalProvider<ValidateToken, ValidateToken, ValidateToken>
+    with $Provider<ValidateToken> {
+  const ValidateTokenProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'validateTokenProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$validateTokenHash();
+
+  @$internal
+  @override
+  $ProviderElement<ValidateToken> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ValidateToken create(Ref ref) {
+    return validateToken(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ValidateToken value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ValidateToken>(value),
+    );
+  }
+}
+
+String _$validateTokenHash() => r'4ea639ebd1bf545ce21df6fa36ae01638579dad4';
+
 @ProviderFor(currentAuthToken)
 const currentAuthTokenProvider = CurrentAuthTokenProvider._();
 

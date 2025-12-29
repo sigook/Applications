@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:sigook_app_flutter/core/constants/enums.dart';
-import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_clock_type.dart';
-import 'package:sigook_app_flutter/features/jobs/domain/usecases/submit_timesheet.dart';
-import 'package:sigook_app_flutter/features/jobs/presentation/providers/timesheet_providers.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/constants/enums.dart';
+import '../../../../core/providers/analytics_providers.dart';
+import '../../domain/usecases/get_clock_type.dart';
+import '../../domain/usecases/submit_timesheet.dart';
+import '../providers/timesheet_providers.dart';
 
 class PunchCardTab extends ConsumerStatefulWidget {
   final String jobId;
@@ -340,7 +341,28 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
       result.fold(
         (failure) {
-          _showErrorSnackBar(failure.message);
+          final is3MinuteRestriction =
+              (failure.message.contains('400') ||
+                  failure.message.toLowerCase().contains('bad request') ||
+                  failure.message.toLowerCase().contains('too soon') ||
+                  failure.message.toLowerCase().contains('wait')) &&
+              _clockType == ClockType.clockOut;
+
+          if (is3MinuteRestriction) {
+            // Track 3-minute restriction hit for monitoring
+            ref
+                .read(analyticsServiceProvider)
+                .logEvent(
+                  name: 'clock_out_restriction_hit',
+                  parameters: {
+                    'job_id': widget.jobId,
+                    'error_type': '3_minute_restriction',
+                  },
+                );
+            _showClockOutRestrictionError();
+          } else {
+            _showErrorSnackBar(failure.message);
+          }
         },
         (response) {
           _showSuccessSnackBar(response.workerFullName, response.finish);
@@ -431,6 +453,40 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         ),
         backgroundColor: AppTheme.errorRed,
         duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showClockOutRestrictionError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.access_time, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Too Soon to Clock Out',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'You must wait at least 3 minutes after clocking in before you can clock out.',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.warningOrange,
+        duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

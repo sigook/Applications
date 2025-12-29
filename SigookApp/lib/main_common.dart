@@ -5,12 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/constants/error_messages.dart';
 
-/// Common main function shared by all flavors
-/// This is called after the environment-specific .env file is loaded
 Future<void> mainCommon() async {
-  // Initialize storage
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  await ErrorMessages.load();
 
   const secureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),

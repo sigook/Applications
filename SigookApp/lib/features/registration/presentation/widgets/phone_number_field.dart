@@ -111,7 +111,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 8),
@@ -135,7 +135,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF1E293B),
+                      color: AppTheme.textDark,
                     ),
                   ),
                   const SizedBox(width: 8),

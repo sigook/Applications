@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
@@ -125,7 +126,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                            color: AppTheme.textDark,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -159,7 +160,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -381,7 +382,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1E293B),
+                          color: AppTheme.textDark,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -411,7 +412,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -542,7 +543,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                     color:
                                         _selectedIdentificationType != null &&
                                             _identificationNumber.isNotEmpty
-                                        ? const Color(0xFF1E293B)
+                                        ? AppTheme.textDark
                                         : Colors.grey.shade500,
                                   ),
                                 ),

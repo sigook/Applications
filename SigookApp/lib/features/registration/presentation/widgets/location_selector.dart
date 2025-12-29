@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/province.dart';
@@ -168,7 +169,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 8),

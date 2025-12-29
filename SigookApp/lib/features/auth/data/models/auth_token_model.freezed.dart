@@ -28,13 +28,17 @@ $AuthTokenModelCopyWith<AuthTokenModel> get copyWith => _$AuthTokenModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other.scopes, scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other.scopes, scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(scopes),userInfo);
+int get hashCode => Object.hash(runtimeType,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(scopes),userInfo);
 
+@override
+String toString() {
+  return 'AuthTokenModel(accessToken: $accessToken, idToken: $idToken, refreshToken: $refreshToken, expirationDateTime: $expirationDateTime, tokenType: $tokenType, scopes: $scopes, userInfo: $userInfo)';
+}
 
 
 }
@@ -48,7 +52,7 @@ $Res call({
 });
 
 
-
+$UserInfoModelCopyWith<$Res>? get userInfo;
 
 }
 /// @nodoc
@@ -73,7 +77,19 @@ as List<String>?,userInfo: freezed == userInfo ? _self.userInfo : userInfo // ig
 as UserInfoModel?,
   ));
 }
+/// Create a copy of AuthTokenModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoModelCopyWith<$Res>? get userInfo {
+    if (_self.userInfo == null) {
+    return null;
+  }
 
+  return $UserInfoModelCopyWith<$Res>(_self.userInfo!, (value) {
+    return _then(_self.copyWith(userInfo: value));
+  });
+}
 }
 
 
@@ -117,7 +133,10 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _AuthTokenModel():
-return $default(_that);}
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -176,7 +195,10 @@ return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expirat
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? accessToken,  String? idToken,  String? refreshToken,  DateTime? expirationDateTime,  String? tokenType,  List<String>? scopes,  UserInfoModel? userInfo)  $default,) {final _that = this;
 switch (_that) {
 case _AuthTokenModel():
-return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expirationDateTime,_that.tokenType,_that.scopes,_that.userInfo);}
+return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expirationDateTime,_that.tokenType,_that.scopes,_that.userInfo);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -237,13 +259,17 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&super == other&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other._scopes, _scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other._scopes, _scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(_scopes),userInfo);
+int get hashCode => Object.hash(runtimeType,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(_scopes),userInfo);
 
+@override
+String toString() {
+  return 'AuthTokenModel(accessToken: $accessToken, idToken: $idToken, refreshToken: $refreshToken, expirationDateTime: $expirationDateTime, tokenType: $tokenType, scopes: $scopes, userInfo: $userInfo)';
+}
 
 
 }
@@ -257,7 +283,7 @@ $Res call({
 });
 
 
-
+@override $UserInfoModelCopyWith<$Res>? get userInfo;
 
 }
 /// @nodoc
@@ -283,7 +309,19 @@ as UserInfoModel?,
   ));
 }
 
+/// Create a copy of AuthTokenModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoModelCopyWith<$Res>? get userInfo {
+    if (_self.userInfo == null) {
+    return null;
+  }
 
+  return $UserInfoModelCopyWith<$Res>(_self.userInfo!, (value) {
+    return _then(_self.copyWith(userInfo: value));
+  });
+}
 }
 
 // dart format on

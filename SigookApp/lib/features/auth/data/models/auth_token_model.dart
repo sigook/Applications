@@ -7,7 +7,7 @@ part 'auth_token_model.freezed.dart';
 part 'auth_token_model.g.dart';
 
 @freezed
-sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
+abstract class AuthTokenModel with _$AuthTokenModel {
   const AuthTokenModel._();
 
   const factory AuthTokenModel({
@@ -45,8 +45,19 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
     );
   }
 
-  @override
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
       (expirationDateTime != null);
+
+  AuthToken toEntity() {
+    return AuthToken(
+      accessToken: accessToken,
+      idToken: idToken,
+      refreshToken: refreshToken,
+      expirationDateTime: expirationDateTime,
+      tokenType: tokenType,
+      scopes: scopes,
+      userInfo: userInfo?.toEntity(),
+    );
+  }
 }

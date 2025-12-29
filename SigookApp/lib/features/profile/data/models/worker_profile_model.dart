@@ -1,26 +1,43 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/worker_profile.dart';
 
+part 'worker_profile_model.freezed.dart';
 part 'worker_profile_model.g.dart';
 
-@JsonSerializable()
-class WorkerProfileModel extends WorkerProfile {
-  const WorkerProfileModel({
-    required super.id,
-    super.firstName,
-    super.lastName,
-    super.email,
-    super.profilePhoto,
-    super.phoneNumber,
-    super.address,
-    super.city,
-    super.state,
-    super.zipCode,
-    super.dateOfBirth,
-  });
+@freezed
+abstract class WorkerProfileModel with _$WorkerProfileModel {
+  const WorkerProfileModel._();
+
+  const factory WorkerProfileModel({
+    required String id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? profilePhoto,
+    String? phoneNumber,
+    String? address,
+    String? city,
+    String? state,
+    String? zipCode,
+    DateTime? dateOfBirth,
+  }) = _WorkerProfileModel;
 
   factory WorkerProfileModel.fromJson(Map<String, dynamic> json) =>
       _$WorkerProfileModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$WorkerProfileModelToJson(this);
+  WorkerProfile toEntity() {
+    return WorkerProfile(
+      id: id,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      profilePhoto: profilePhoto,
+      phoneNumber: phoneNumber,
+      address: address,
+      city: city,
+      state: state,
+      zipCode: zipCode,
+      dateOfBirth: dateOfBirth,
+    );
+  }
 }

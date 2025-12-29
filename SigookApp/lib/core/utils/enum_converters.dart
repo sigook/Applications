@@ -1,4 +1,4 @@
-import 'package:sigook_app_flutter/core/constants/enums.dart';
+import '../constants/enums.dart';
 
 ClockType clockTypeFromInt(int type) {
   switch (type) {
@@ -10,5 +10,16 @@ ClockType clockTypeFromInt(int type) {
       return ClockType.clockOut;
     default:
       return ClockType.none;
+  }
+}
+
+int clockTypeToInt(ClockType type) {
+  switch (type) {
+    case ClockType.none:
+      return 0;
+    case ClockType.clockIn:
+      return 1;
+    case ClockType.clockOut:
+      return 2;
   }
 }

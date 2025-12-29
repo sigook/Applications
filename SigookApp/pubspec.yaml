@@ -58,8 +58,11 @@ dependencies:
   table_calendar: ^3.1.2
 
   # Local Storage
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.5.4
   flutter_secure_storage: ^9.2.2
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  path: ^1.9.0
 
   # Environment Configuration
   flutter_dotenv: ^5.2.1
@@ -118,7 +121,14 @@ flutter:
   assets:
     - .env.staging
     - .env.production
-    - assets/images/logo/
+    - assets/images/
+    - assets/i18n/
+    - assets/i18n/error_messages_en.json
+    - assets/i18n/error_messages_es.json
+    - assets/i18n/error_messages_fr.json
+    - assets/i18n/app_en.json
+    - assets/i18n/app_es.json
+    - assets/i18n/app_fr.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

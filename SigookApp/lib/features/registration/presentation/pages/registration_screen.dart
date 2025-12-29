@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/loading_indicator.dart';
+import '../../../../core/widgets/error_state_widget.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../providers/registration_providers.dart';
 import 'basic_info_page.dart';
@@ -43,56 +45,25 @@ class RegistrationScreen extends ConsumerWidget {
         countriesAsync.hasError;
 
     if (isLoading) {
-      return Scaffold(
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Loading registration form...',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
+      return const Scaffold(
+        body: LoadingIndicator(message: 'Loading registration form...'),
       );
     }
 
     if (hasError) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              const Text(
-                'Failed to load registration data',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Please check your connection and try again',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  ref.invalidate(gendersProvider);
-                  ref.invalidate(identificationTypesListProvider);
-                  ref.invalidate(languagesProvider);
-                  ref.invalidate(skillsProvider);
-                  ref.invalidate(availabilityListProvider);
-                  ref.invalidate(availabilityTimeListProvider);
-                  ref.invalidate(countriesListProvider);
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
+        body: ErrorStateWidget(
+          title: 'Failed to load registration data',
+          message: 'Please check your connection and try again',
+          onRetry: () {
+            ref.invalidate(gendersProvider);
+            ref.invalidate(identificationTypesListProvider);
+            ref.invalidate(languagesProvider);
+            ref.invalidate(skillsProvider);
+            ref.invalidate(availabilityListProvider);
+            ref.invalidate(availabilityTimeListProvider);
+            ref.invalidate(countriesListProvider);
+          },
         ),
       );
     }
@@ -140,7 +111,7 @@ class _RegistrationFormScreenState
     final responsive = context.responsive;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
         child: Column(
           children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -75,7 +76,7 @@ class _WelcomePageState extends State<WelcomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -137,17 +138,17 @@ class _WelcomePageState extends State<WelcomePage>
                         child: ElevatedButton(
                           onPressed: _navigateToRegistration,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(
-                              0xFF1565C0,
-                            ), // Primary Blue
+                            backgroundColor: AppTheme.primaryBlue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
                             ),
                             elevation: 3,
-                            shadowColor: const Color(
-                              0xFF1565C0,
-                            ).withValues(alpha: 0.4),
+                            shadowColor: AppTheme.primaryBlue.withValues(
+                              alpha: 0.4,
+                            ),
                           ),
                           child: const Text(
                             'Sign Up',
@@ -169,12 +170,14 @@ class _WelcomePageState extends State<WelcomePage>
                           },
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
-                              color: Color(0xFF1565C0),
+                              color: AppTheme.primaryBlue,
                               width: 2,
                             ),
-                            foregroundColor: const Color(0xFF1565C0),
+                            foregroundColor: AppTheme.primaryBlue,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
                             ),
                             backgroundColor: Colors.white,
                             elevation: 0,
@@ -265,9 +268,7 @@ class _WelcomePageState extends State<WelcomePage>
       height: 8,
       width: isActive ? 24 : 8,
       decoration: BoxDecoration(
-        color: isActive
-            ? const Color(0xFF1565C0) // Primary Blue for active indicator
-            : Colors.grey.shade300,
+        color: isActive ? AppTheme.primaryBlue : Colors.grey.shade300,
         borderRadius: BorderRadius.circular(4),
       ),
     );

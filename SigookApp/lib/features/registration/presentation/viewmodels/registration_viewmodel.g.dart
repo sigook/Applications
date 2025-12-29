@@ -8,15 +8,12 @@ part of 'registration_viewmodel.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// ViewModel for managing registration form state
 
 @ProviderFor(RegistrationViewModel)
 const registrationViewModelProvider = RegistrationViewModelProvider._();
 
-/// ViewModel for managing registration form state
 final class RegistrationViewModelProvider
     extends $NotifierProvider<RegistrationViewModel, RegistrationForm> {
-  /// ViewModel for managing registration form state
   const RegistrationViewModelProvider._()
     : super(
         from: null,
@@ -46,8 +43,6 @@ final class RegistrationViewModelProvider
 
 String _$registrationViewModelHash() =>
     r'333a21a1a7a23ce58a1f60623475cb24a89989d4';
-
-/// ViewModel for managing registration form state
 
 abstract class _$RegistrationViewModel extends $Notifier<RegistrationForm> {
   RegistrationForm build();

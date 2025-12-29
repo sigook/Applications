@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthTokenModel> signIn();
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
+  Future<bool> validateToken(String accessToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -128,6 +129,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Token refresh error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<bool> validateToken(String accessToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final response = await dio.get(
+        '/api/auth/validate',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        return false;
+      }
+      throw ServerException(message: 'Token validation error: ${e.message}');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Token validation error: ${e.toString()}');
     }
   }
 }

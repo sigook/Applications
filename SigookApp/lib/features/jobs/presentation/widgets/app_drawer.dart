@@ -277,6 +277,10 @@ class AppDrawer extends ConsumerWidget {
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    // Check if already logging out
+    final isLoading = ref.read(authViewModelProvider).isLoading;
+    if (isLoading) return;
+
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -299,9 +303,20 @@ class AppDrawer extends ConsumerWidget {
     );
 
     if (shouldLogout == true && context.mounted) {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+      );
+
       await ref.read(authViewModelProvider.notifier).logout();
+
       if (context.mounted) {
-        context.go(AppRoutes.signIn);
+        Navigator.of(context).pop(); // Dismiss loading dialog
+        context.go(AppRoutes.welcome);
       }
     }
   }

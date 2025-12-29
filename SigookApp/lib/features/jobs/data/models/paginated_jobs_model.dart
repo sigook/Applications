@@ -1,31 +1,37 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/paginated_jobs.dart';
 import 'job_model.dart';
 
-/// PaginatedJobsModel uses manual JSON serialization because it needs to
-/// convert between List<Job> (entity) and List<JobModel> (model).
-/// json_serializable can't handle this polymorphic conversion automatically.
-class PaginatedJobsModel extends PaginatedJobs {
-  const PaginatedJobsModel({
-    required super.items,
-    required super.pageIndex,
-    required super.totalPages,
-    required super.totalItems,
-  });
+part 'paginated_jobs_model.freezed.dart';
+part 'paginated_jobs_model.g.dart';
 
-  factory PaginatedJobsModel.fromJson(Map<String, dynamic> json) {
-    return PaginatedJobsModel(
-      items: (json['items'] as List<dynamic>)
-          .map((item) => JobModel.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      pageIndex: json['pageIndex'] as int,
-      totalPages: json['totalPages'] as int,
-      totalItems: json['totalItems'] as int,
+@freezed
+abstract class PaginatedJobsModel with _$PaginatedJobsModel {
+  const PaginatedJobsModel._();
+
+  const factory PaginatedJobsModel({
+    required List<JobModel> items,
+    required int pageIndex,
+    required int totalPages,
+    required int totalItems,
+  }) = _PaginatedJobsModel;
+
+  factory PaginatedJobsModel.fromJson(Map<String, dynamic> json) =>
+      _$PaginatedJobsModelFromJson(json);
+
+  PaginatedJobs toEntity() {
+    return PaginatedJobs(
+      items: items.map((model) => model.toEntity()).toList(),
+      pageIndex: pageIndex,
+      totalPages: totalPages,
+      totalItems: totalItems,
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
-      'items': items.map((job) => (job as JobModel).toJson()).toList(),
+      'items': items.map((job) => job.toJson()).toList(),
       'pageIndex': pageIndex,
       'totalPages': totalPages,
       'totalItems': totalItems,

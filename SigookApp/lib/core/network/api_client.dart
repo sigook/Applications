@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/environment.dart';
+import 'dio_error_interceptor.dart';
 
 class ApiClient {
   static const int connectionTimeout = 30000;
@@ -29,6 +30,9 @@ class ApiClient {
   }
 
   void _addInterceptors(Interceptor? authInterceptor) {
+    // Add custom error interceptor for logging
+    _dio.interceptors.add(DioErrorInterceptor());
+
     if (authInterceptor != null) {
       _dio.interceptors.add(authInterceptor);
     }
@@ -42,14 +46,6 @@ class ApiClient {
         error: true,
         compact: true,
         maxWidth: 90,
-      ),
-    );
-
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onError: (error, handler) {
-          return handler.next(error);
-        },
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/documents_info.dart';
 import '../../domain/entities/uploaded_file.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
@@ -328,7 +329,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 4),

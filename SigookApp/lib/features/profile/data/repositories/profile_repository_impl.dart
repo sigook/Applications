@@ -24,8 +24,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
     }
 
     try {
-      final result = await remoteDataSource.getWorkerProfile(profileId);
-      return Right(result);
+      final profileModel = await remoteDataSource.getWorkerProfile(profileId);
+      return Right(profileModel.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {

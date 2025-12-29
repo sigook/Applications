@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class MultiSelectChips<T> extends StatelessWidget {
   final String label;
@@ -25,9 +26,9 @@ class MultiSelectChips<T> extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -39,7 +40,7 @@ class MultiSelectChips<T> extends StatelessWidget {
               label: Text(
                 getLabel(option),
                 style: const TextStyle(
-                  color: Color(0xFF212121), // Dark grey text - always visible
+                  color: AppTheme.textDark, // Dark grey text - always visible
                   fontSize: 14,
                 ),
               ),
@@ -53,12 +54,12 @@ class MultiSelectChips<T> extends StatelessWidget {
                 }
                 onChanged(newSelection);
               },
-              selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+              selectedColor: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.2),
               checkmarkColor: Theme.of(context).colorScheme.primary,
-              backgroundColor: const Color(0xFFF5F5F5), // Light grey background
-              labelStyle: const TextStyle(
-                color: Color(0xFF212121), // Ensure dark text
-              ),
+              backgroundColor: AppTheme.surfaceGrey, // Light grey background
+              labelStyle: const TextStyle(color: AppTheme.textDark),
             );
           }).toList(),
         ),

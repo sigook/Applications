@@ -1,47 +1,25 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/user_info.dart';
 
-class UserInfoModel extends UserInfo {
-  const UserInfoModel({
-    super.sub,
-    super.name,
-    super.givenName,
-    super.familyName,
-    super.email,
-    super.emailVerified,
-    super.roles,
-  });
+part 'user_info_model.freezed.dart';
+part 'user_info_model.g.dart';
 
-  factory UserInfoModel.fromJson(Map<String, dynamic> json) {
-    List<String>? roles;
-    if (json['roles'] != null) {
-      roles = (json['roles'] as List).map((e) => e.toString()).toList();
-    }
+@freezed
+abstract class UserInfoModel with _$UserInfoModel {
+  const UserInfoModel._();
 
-    return UserInfoModel(
-      sub: json['sub']?.toString(),
-      name: json['name']?.toString(),
-      givenName:
-          json['given_name']?.toString() ?? json['givenName']?.toString(),
-      familyName:
-          json['family_name']?.toString() ?? json['familyName']?.toString(),
-      email: json['email']?.toString(),
-      emailVerified:
-          json['email_verified'] as bool? ?? json['emailVerified'] as bool?,
-      roles: roles,
-    );
-  }
+  const factory UserInfoModel({
+    String? sub,
+    String? name,
+    @JsonKey(name: 'given_name') String? givenName,
+    @JsonKey(name: 'family_name') String? familyName,
+    String? email,
+    @JsonKey(name: 'email_verified') bool? emailVerified,
+    @JsonKey(name: 'roles') List<String>? roles,
+  }) = _UserInfoModel;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'sub': sub,
-      'name': name,
-      'given_name': givenName,
-      'family_name': familyName,
-      'email': email,
-      'email_verified': emailVerified,
-      'roles': roles,
-    };
-  }
+  factory UserInfoModel.fromJson(Map<String, dynamic> json) =>
+      _$UserInfoModelFromJson(json);
 
   factory UserInfoModel.fromIdTokenClaims(Map<String, dynamic> claims) {
     final userInfo = UserInfo.fromIdTokenClaims(claims);
@@ -53,6 +31,18 @@ class UserInfoModel extends UserInfo {
       email: userInfo.email,
       emailVerified: userInfo.emailVerified,
       roles: userInfo.roles,
+    );
+  }
+
+  UserInfo toEntity() {
+    return UserInfo(
+      sub: sub,
+      name: name,
+      givenName: givenName,
+      familyName: familyName,
+      email: email,
+      emailVerified: emailVerified,
+      roles: roles,
     );
   }
 }

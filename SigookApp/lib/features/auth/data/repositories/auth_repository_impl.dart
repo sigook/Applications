@@ -23,9 +23,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, AuthToken>> signIn() async {
     try {
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
-      final token = await remote.signIn();
-      await local.cacheToken(token);
-      return Right(token);
+      final tokenModel = await remote.signIn();
+      await local.cacheToken(tokenModel);
+      return Right(tokenModel.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
@@ -39,13 +39,31 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
-      final token = await remote.refreshToken(currentRefreshToken);
-      await local.cacheToken(token);
-      return Right(token);
+      final tokenModel = await remote.refreshToken(currentRefreshToken);
+      await local.cacheToken(tokenModel);
+      return Right(tokenModel.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> validateToken(String accessToken) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return Left(NetworkFailure(message: 'No internet connection'));
+      }
+
+      final isValid = await remote.validateToken(accessToken);
+      return Right(isValid);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Validation error: ${e.toString()}'));
     }
   }
 

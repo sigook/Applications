@@ -6,8 +6,8 @@ part of 'worker_profile_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-WorkerProfileModel _$WorkerProfileModelFromJson(Map<String, dynamic> json) =>
-    WorkerProfileModel(
+_WorkerProfileModel _$WorkerProfileModelFromJson(Map<String, dynamic> json) =>
+    _WorkerProfileModel(
       id: json['id'] as String,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
@@ -23,7 +23,7 @@ WorkerProfileModel _$WorkerProfileModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['dateOfBirth'] as String),
     );
 
-Map<String, dynamic> _$WorkerProfileModelToJson(WorkerProfileModel instance) =>
+Map<String, dynamic> _$WorkerProfileModelToJson(_WorkerProfileModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'firstName': instance.firstName,

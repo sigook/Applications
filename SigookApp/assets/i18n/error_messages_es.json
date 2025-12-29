@@ -1,0 +1,58 @@
+{
+  "network": {
+    "no_connection": "Sin conexión a internet. Por favor, verifica tu red e intenta nuevamente.",
+    "timeout": "La solicitud ha excedido el tiempo de espera. Por favor, verifica tu conexión e intenta nuevamente.",
+    "server_error": "Error del servidor. Nuestro equipo ha sido notificado. Por favor, intenta más tarde.",
+    "unknown": "Error de red desconocido. Por favor, intenta nuevamente."
+  },
+  "auth": {
+    "unauthorized": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+    "forbidden": "No tienes permiso para acceder a este contenido.",
+    "invalid_credentials": "Credenciales inválidas. Por favor, verifica tu correo electrónico y contraseña.",
+    "token_expired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+    "session_invalid": "Sesión inválida. Por favor, inicia sesión nuevamente."
+  },
+  "validation": {
+    "required_field": "Este campo es obligatorio.",
+    "invalid_email": "Por favor, ingresa un correo electrónico válido.",
+    "invalid_phone": "Por favor, ingresa un número de teléfono válido.",
+    "password_too_short": "La contraseña debe tener al menos 8 caracteres.",
+    "passwords_dont_match": "Las contraseñas no coinciden.",
+    "invalid_format": "Formato inválido. Por favor, verifica tu entrada."
+  },
+  "jobs": {
+    "not_found": "Los listados de trabajos no están disponibles actualmente. Por favor, intenta más tarde.",
+    "load_failed": "No se pueden cargar los trabajos. Por favor, intenta nuevamente.",
+    "apply_failed": "No se pudo postular al trabajo. Por favor, intenta nuevamente.",
+    "details_unavailable": "Los detalles del trabajo no están disponibles en este momento."
+  },
+  "profile": {
+    "load_failed": "No se pudo cargar el perfil. Por favor, intenta nuevamente.",
+    "update_failed": "No se pudo actualizar el perfil. Por favor, intenta nuevamente.",
+    "photo_upload_failed": "No se pudo cargar la foto. Por favor, intenta nuevamente."
+  },
+  "registration": {
+    "failed": "El registro ha fallado. Por favor, intenta nuevamente.",
+    "email_exists": "Este correo electrónico ya está registrado.",
+    "validation_error": "Por favor, completa todos los campos obligatorios correctamente.",
+    "terms_not_accepted": "Debes aceptar los términos y condiciones para continuar."
+  },
+  "catalog": {
+    "load_failed": "No se pudieron cargar los datos del catálogo. Por favor, intenta nuevamente.",
+    "countries_unavailable": "Los países no están disponibles en este momento.",
+    "skills_unavailable": "Las habilidades no están disponibles en este momento.",
+    "languages_unavailable": "Los idiomas no están disponibles en este momento."
+  },
+  "documents": {
+    "upload_failed": "No se pudo cargar el documento. Por favor, intenta nuevamente.",
+    "invalid_format": "Formato de archivo inválido. Solo se permiten PDF, JPG y PNG.",
+    "file_too_large": "El archivo es demasiado grande. El tamaño máximo es de 10MB.",
+    "required": "Este documento es obligatorio."
+  },
+  "general": {
+    "unknown_error": "Ocurrió un error inesperado. Por favor, intenta nuevamente.",
+    "try_again": "Algo salió mal. Por favor, intenta nuevamente.",
+    "maintenance": "El sistema está en mantenimiento. Por favor, intenta más tarde.",
+    "feature_unavailable": "Esta función no está disponible actualmente."
+  }
+}

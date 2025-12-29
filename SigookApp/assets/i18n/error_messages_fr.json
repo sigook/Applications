@@ -1,0 +1,58 @@
+{
+  "network": {
+    "no_connection": "Pas de connexion Internet. Veuillez vérifier votre réseau et réessayer.",
+    "timeout": "La demande a expiré. Veuillez vérifier votre connexion et réessayer.",
+    "server_error": "Erreur du serveur. Notre équipe a été notifiée. Veuillez réessayer plus tard.",
+    "unknown": "Erreur réseau inconnue. Veuillez réessayer."
+  },
+  "auth": {
+    "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
+    "forbidden": "Vous n'avez pas la permission d'accéder à ce contenu.",
+    "invalid_credentials": "Identifiants invalides. Veuillez vérifier votre email et mot de passe.",
+    "token_expired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "session_invalid": "Session invalide. Veuillez vous reconnecter."
+  },
+  "validation": {
+    "required_field": "Ce champ est obligatoire.",
+    "invalid_email": "Veuillez entrer une adresse email valide.",
+    "invalid_phone": "Veuillez entrer un numéro de téléphone valide.",
+    "password_too_short": "Le mot de passe doit contenir au moins 8 caractères.",
+    "passwords_dont_match": "Les mots de passe ne correspondent pas.",
+    "invalid_format": "Format invalide. Veuillez vérifier votre saisie."
+  },
+  "jobs": {
+    "not_found": "Les offres d'emploi ne sont pas disponibles actuellement. Veuillez réessayer plus tard.",
+    "load_failed": "Impossible de charger les emplois. Veuillez réessayer.",
+    "apply_failed": "Impossible de postuler à l'emploi. Veuillez réessayer.",
+    "details_unavailable": "Les détails de l'emploi ne sont pas disponibles pour le moment."
+  },
+  "profile": {
+    "load_failed": "Impossible de charger le profil. Veuillez réessayer.",
+    "update_failed": "Impossible de mettre à jour le profil. Veuillez réessayer.",
+    "photo_upload_failed": "Impossible de télécharger la photo. Veuillez réessayer."
+  },
+  "registration": {
+    "failed": "L'inscription a échoué. Veuillez réessayer.",
+    "email_exists": "Cet email est déjà enregistré.",
+    "validation_error": "Veuillez remplir tous les champs obligatoires correctement.",
+    "terms_not_accepted": "Vous devez accepter les termes et conditions pour continuer."
+  },
+  "catalog": {
+    "load_failed": "Impossible de charger les données du catalogue. Veuillez réessayer.",
+    "countries_unavailable": "Les pays ne sont pas disponibles pour le moment.",
+    "skills_unavailable": "Les compétences ne sont pas disponibles pour le moment.",
+    "languages_unavailable": "Les langues ne sont pas disponibles pour le moment."
+  },
+  "documents": {
+    "upload_failed": "Impossible de télécharger le document. Veuillez réessayer.",
+    "invalid_format": "Format de fichier invalide. Seuls PDF, JPG et PNG sont autorisés.",
+    "file_too_large": "Le fichier est trop volumineux. La taille maximale est de 10 Mo.",
+    "required": "Ce document est obligatoire."
+  },
+  "general": {
+    "unknown_error": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+    "try_again": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "maintenance": "Le système est en maintenance. Veuillez réessayer plus tard.",
+    "feature_unavailable": "Cette fonctionnalité n'est pas disponible actuellement."
+  }
+}

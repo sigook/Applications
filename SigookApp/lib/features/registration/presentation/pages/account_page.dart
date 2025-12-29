@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/account_info.dart';
 import '../../domain/entities/value_objects/email.dart';
 import '../../domain/entities/value_objects/password.dart';
@@ -225,7 +226,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     text: TextSpan(
                       style: const TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                       children: [
                         const TextSpan(text: 'I agree to Sigook '),

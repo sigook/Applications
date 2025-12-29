@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:sigook_app_flutter/core/error/exceptions.dart';
 import 'package:sigook_app_flutter/core/network/api_client.dart';
 import 'package:sigook_app_flutter/core/constants/enums.dart';
-import 'package:sigook_app_flutter/features/jobs/data/models/clock_type_model.dart';
+import 'package:sigook_app_flutter/core/utils/enum_converters.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/timesheet_response_model.dart';
 
 abstract class TimesheetRemoteDatasource {

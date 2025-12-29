@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/profile_section_card.dart';
 import '../../../../core/widgets/profile_info_row.dart';
+import '../../../../core/widgets/loading_indicator.dart';
+import '../../../../core/widgets/error_state_widget.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import '../widgets/profile_header.dart';
@@ -23,7 +26,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     final profileAsync = ref.watch(cachedWorkerProfileProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.surfaceGrey,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
@@ -70,25 +73,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: AppTheme.errorRed,
-              ),
-              const SizedBox(height: 16),
-              const Text('Failed to load profile'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.refresh(cachedWorkerProfileProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+        loading: () => const LoadingIndicator(message: 'Loading profile...'),
+        error: (_, __) => ErrorStateWidget(
+          title: 'Failed to load profile',
+          message: 'Unable to retrieve your profile information',
+          onRetry: () => ref.refresh(cachedWorkerProfileProvider),
         ),
       ),
     );
@@ -491,9 +480,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
 
     if (shouldLogout == true && mounted) {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+      );
+
       await ref.read(authViewModelProvider.notifier).logout();
+
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.signIn);
+        Navigator.of(context).pop(); // Dismiss loading dialog
+        context.go(AppRoutes.welcome);
       }
     }
   }

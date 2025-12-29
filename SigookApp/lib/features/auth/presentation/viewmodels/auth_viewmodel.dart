@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/usecases/refresh_token.dart';
+import '../../domain/usecases/validate_token.dart';
 import '../providers/auth_providers.dart';
 
 part 'auth_viewmodel.freezed.dart';
@@ -34,22 +36,85 @@ class AuthViewModel extends _$AuthViewModel {
   Future<void> _loadCachedToken() async {
     try {
       final localDataSource = ref.read(authLocalDataSourceProvider);
-      final cachedToken = await localDataSource.getCachedToken();
+      final cachedTokenModel = await localDataSource.getCachedToken();
 
       if (!ref.mounted) return;
 
-      if (cachedToken != null) {
+      if (cachedTokenModel != null) {
+        final cachedToken = cachedTokenModel.toEntity();
+
+        // Check if refresh token is expired (typically 30 days)
+        // Assuming refresh tokens are valid for 30 days from access token expiry
+        if (cachedToken.expirationDateTime != null) {
+          final refreshTokenExpiry = cachedToken.expirationDateTime!.add(
+            const Duration(days: 30),
+          );
+          if (DateTime.now().isAfter(refreshTokenExpiry)) {
+            debugPrint('Refresh token expired, clearing auth state');
+            state = const AuthState();
+            await localDataSource.clearToken();
+            _isInitialized = true;
+            return;
+          }
+        }
+
         state = state.copyWith(token: cachedToken, isAuthenticated: true);
 
-        final expirationDateTime = cachedToken.expirationDateTime;
-        final isExpired =
-            expirationDateTime != null &&
-            DateTime.now().isAfter(
-              expirationDateTime.subtract(const Duration(minutes: 5)),
-            );
+        // Validate token with server if we have an access token
+        if (cachedToken.accessToken != null) {
+          final validateUseCase = ref.read(validateTokenProvider);
+          final validationResult = await validateUseCase(
+            ValidateTokenParams(accessToken: cachedToken.accessToken!),
+          );
 
-        if (isExpired && cachedToken.refreshToken != null) {
-          await _refreshTokenSilent();
+          if (!ref.mounted) return;
+
+          validationResult.fold(
+            (failure) {
+              debugPrint('Token validation failed: ${failure.message}');
+              // Track token validation failure
+              ref
+                  .read(analyticsServiceProvider)
+                  .logEvent(
+                    name: 'token_validation_failed',
+                    parameters: {'error': failure.message},
+                  );
+              // Try refresh if validation fails
+              if (cachedToken.refreshToken != null) {
+                _refreshTokenSilent();
+              } else {
+                state = const AuthState();
+              }
+            },
+            (isValid) {
+              if (!isValid) {
+                debugPrint('Token is invalid, attempting refresh');
+                ref
+                    .read(analyticsServiceProvider)
+                    .logEvent(
+                      name: 'token_invalid',
+                      parameters: {'action': 'refresh_attempted'},
+                    );
+                if (cachedToken.refreshToken != null) {
+                  _refreshTokenSilent();
+                } else {
+                  state = const AuthState();
+                }
+              } else {
+                // Token is valid, check expiration for proactive refresh
+                final expirationDateTime = cachedToken.expirationDateTime;
+                final isExpired =
+                    expirationDateTime != null &&
+                    DateTime.now().isAfter(
+                      expirationDateTime.subtract(const Duration(minutes: 5)),
+                    );
+
+                if (isExpired && cachedToken.refreshToken != null) {
+                  _refreshTokenSilent();
+                }
+              }
+            },
+          );
         }
       }
     } catch (e) {
@@ -61,19 +126,59 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> _refreshTokenSilent() async {
     final currentToken = state.token;
-    if (currentToken?.refreshToken == null) return;
+    if (currentToken?.refreshToken == null) {
+      state = state.copyWith(isAuthenticated: false, token: null);
+      return;
+    }
 
-    final refreshToken = ref.read(refreshTokenProvider);
-    final result = await refreshToken(
-      RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
-    );
+    // Exponential backoff retry for token refresh
+    int retryCount = 0;
+    const maxRetries = 3;
+    const baseDelay = Duration(milliseconds: 500);
 
-    if (!ref.mounted) return;
+    while (retryCount < maxRetries) {
+      final refreshToken = ref.read(refreshTokenProvider);
+      final result = await refreshToken(
+        RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
+      );
 
-    result.fold(
-      (failure) => debugPrint('Token refresh failed: ${failure.message}'),
-      (token) => state = state.copyWith(token: token, isAuthenticated: true),
-    );
+      if (!ref.mounted) return;
+
+      final shouldRetry = result.fold(
+        (failure) {
+          debugPrint(
+            'Token refresh attempt ${retryCount + 1} failed: ${failure.message}',
+          );
+
+          // Don't retry on auth failures (401, 403)
+          if (failure.message.contains('401') ||
+              failure.message.contains('403') ||
+              failure.message.contains('unauthorized')) {
+            state = state.copyWith(isAuthenticated: false, token: null);
+            return false;
+          }
+
+          return true; // Retry for network or server errors
+        },
+        (token) {
+          state = state.copyWith(token: token, isAuthenticated: true);
+          return false; // Success, no retry needed
+        },
+      );
+
+      if (!shouldRetry) break;
+
+      retryCount++;
+      if (retryCount < maxRetries) {
+        final delay =
+            baseDelay * (1 << retryCount); // Exponential backoff: 1s, 2s, 4s
+        debugPrint('Retrying token refresh in ${delay.inSeconds}s...');
+        await Future.delayed(delay);
+      } else {
+        debugPrint('Token refresh failed after $maxRetries attempts');
+        state = state.copyWith(isAuthenticated: false, token: null);
+      }
+    }
   }
 
   Future<void> signIn() async {
@@ -142,6 +247,14 @@ class AuthViewModel extends _$AuthViewModel {
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, error: null);
 
+    // Track logout event
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(
+          name: 'user_logout',
+          parameters: {'timestamp': DateTime.now().toIso8601String()},
+        );
+
     final logout = ref.read(logoutProvider);
     final result = await logout(NoParams());
 
@@ -149,6 +262,12 @@ class AuthViewModel extends _$AuthViewModel {
 
     result.fold(
       (failure) {
+        ref
+            .read(analyticsServiceProvider)
+            .logEvent(
+              name: 'logout_failed',
+              parameters: {'error': failure.message},
+            );
         state = state.copyWith(isLoading: false, error: failure.message);
       },
       (success) {
