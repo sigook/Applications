@@ -109,6 +109,19 @@ import { ref, computed } from 'vue'
 import imgProfessional from '@/assets/images/hero-talents-professional.png'
 import imgIndustrial from '@/assets/images/hero-talents-industrial.png'
 
+// 2. NUEVO: IMPORTAR EL JSON DE DATOS
+import talentsJson from '../../assets/json/TalentsData.json'
+
+interface TalentContent {
+  introText: string;
+  card1Title: string;
+  card1Desc: string;
+  card2Title: string;
+  card2Desc: string;
+  iconLeftComponent: string;
+  iconRightComponent: string;
+}
+
 const activeTab = ref<'professional' | 'industrial'>('professional');
 
 // Función de iconos (La misma lógica)
@@ -116,40 +129,7 @@ const getIcon = (iconName: string) => {
   return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
 }
 
-// 2. DATA ACTUALIZADA CON LA INFORMACIÓN DE TALENTS
-const contentData = {
-  professional: {
-    // Texto extraído de image_cfaf01.jpg
-    introText: "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed. Whether you're looking for a new challenge or the next step in your career, we're here to guide you toward lasting success.",
-
-    // Tarjeta Verde
-    card1Title: "Direct Hiring",
-    card1Desc: "Build a lasting career with stable opportunities and long-term professional growth.",
-
-    // Tarjeta Azul
-    card2Title: "Contract",
-    card2Desc: "Flexibility and growth through project-based roles across diverse industries.",
-
-    // Placeholders para iconos laterales (Si tienes los componentes SVG, ponlos aquí)
-    iconLeftComponent: 'div',
-    iconRightComponent: 'div'
-  },
-  industrial: {
-    // Texto extraído de image_cfaf3e.png
-    introText: "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed.",
-
-    // Tarjeta Verde
-    card1Title: "Temp to Perm",
-    card1Desc: "Gain experience, prove your value, and grow into permanent opportunities.",
-
-    // Tarjeta Azul
-    card2Title: "Temporal/Seasonal",
-    card2Desc: "Work on your terms. Seasonal jobs offer flexibility and experience.",
-
-    iconLeftComponent: 'div',
-    iconRightComponent: 'div'
-  }
-}
+const contentData: Record<string, TalentContent> = talentsJson;
 
 const currentContent = computed(() => contentData[activeTab.value]);
 

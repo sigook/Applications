@@ -51,6 +51,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// 1. IMPORTAR LOS DATOS DEL JSON
+// Ajusta la ruta relativa (../../) según donde esté ubicado tu componente
+import rolesData from '../../assets/json/RolesEmployersData.json'
+
+// (Opcional) Definir interfaz para TypeScript para mayor seguridad
+interface Role {
+  title: string;
+  image: string;
+  icon: string;
+  description: string;
+}
+
 // --- ESTADO Y LÓGICA ---
 const activeIndex = ref<number | null>(null);
 
@@ -69,75 +81,9 @@ const getRoleIcon = (iconName: string) => {
   return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
 }
 
-// --- DATA (Actualizada con nombres de archivo para los iconos) ---
-const roles = [
-  {
-    title: 'Automotive',
-    image: 'automotive.png',
-    icon: 'car.svg', // Asegúrate de nombrar tus archivos así en la carpeta icons
-    description: "Gain access to skilled automotive professionals who ensure quality, efficiency, and reliability, keeping your operations running smoothly."
-  },
-  {
-    title: 'Aviation',
-    image: 'aviation.png',
-    icon: 'plane.svg',
-    description: "We connect you with the specialized talent that keeps your aviation business moving forward."
-  },
-  {
-    title: 'Construction',
-    image: 'construction.png',
-    icon: 'crane.svg',
-    description: "Ensure your construction operations meet the highest standards of quality, safety, and performance."
-  },
-  {
-    title: 'Engineering',
-    image: 'engineering.png',
-    icon: 'gear.svg',
-    description: "Hire experienced engineers with proven expertise to deliver precision, innovation, and dependable results."
-  },
-  {
-    title: 'IT / AI',
-    image: 'it-ai.png',
-    icon: 'chip.svg',
-    description: "Hire skilled developers and AI specialists to deliver intelligent solutions that accelerate digital transformation."
-  },
-  {
-    title: 'Financial/Insurance',
-    image: 'finance.png',
-    icon: 'money.svg',
-    description: "Professionals who bring accuracy and strategic insight to ensure compliance and dependable results."
-  },
-  {
-    title: 'Legal/Accounting',
-    image: 'legal.png',
-    icon: 'doc.svg',
-    description: "Connect with professionals who ensure your operations remain efficient, compliant, and trustworthy."
-  },
-  {
-    title: 'Logistics, 3PL/4PL',
-    image: 'logistics.png',
-    icon: 'truck.svg',
-    description: "Depend on qualified logistics talent to optimize supply chains and improve efficiency across your network."
-  },
-  {
-    title: 'Manufacturing',
-    image: 'manufacturing.png',
-    icon: 'factory.svg',
-    description: "Maintain quality, efficiency, and precision—ensuring every process runs smoothly from production to delivery."
-  },
-  {
-    title: 'Retail',
-    image: 'retail.png',
-    icon: 'store.svg',
-    description: "Professionals who maintain smooth operations and deliver exceptional in-store and organizational results."
-  },
-  {
-    title: 'Transportation',
-    image: 'transportation.png',
-    icon: 'transport.svg',
-    description: "Trusted professionals who ensure safe deliveries, regulatory compliance, and smooth operations."
-  },
-];
+// --- DATA ---
+// Asignamos los datos importados a la constante roles
+const roles: Role[] = rolesData;
 </script>
 
 <style scoped>
