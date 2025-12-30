@@ -78,6 +78,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// 1. IMPORTAR EL JSON
+import rolesTalentsData from '../../assets/json/RolesTalentsData.json'
+
+interface RoleTalent {
+  title: string;
+  image: string;
+  icon: string;
+  description: string;
+  detailList: string[];
+}
+
 // --- ESTADO ---
 const activeIndex = ref<number | null>(null);
 const detailIndex = ref<number | null>(null);
@@ -95,16 +106,14 @@ const toggleCard = (index: number) => {
   }
 }
 
-// Click en el botón + (Abre la capa de detalle)
+// Click en el botón +
 const openDetail = (index: number) => {
   detailIndex.value = index;
 }
 
-// Click en volver (dentro de detalle)
+// Click en volver
 const closeDetail = () => {
   detailIndex.value = null;
-  // Mantenemos activeIndex para que vuelva al dorso "Back", o null para cerrar todo.
-  // activeIndex.value = null;
 }
 
 const getRoleImage = (imageName: string) => {
@@ -116,107 +125,8 @@ const getRoleIcon = (iconName: string) => {
 }
 
 // --- DATA ---
-// Lista genérica para rellenar los roles que no tenían captura específica
-const genericList = [
-  "Specialized Technicians",
-  "Operational Managers",
-  "Support Staff",
-  "Project Coordinators",
-  "Safety Supervisors",
-  "Quality Control Specialists"
-];
-
-const roles = [
-  {
-    title: 'Automotive',
-    image: 'automotive.png',
-    icon: 'car.svg',
-    description: "Drive your career forward in the automotive industry. Join the teams that keep the world in motion — one vehicle at a time.",
-    detailList: genericList
-  },
-  {
-    title: 'Aviation',
-    image: 'aviation.png',
-    icon: 'plane.svg',
-    description: "Take your aviation career to new heights. Whether you're a ground handler, technician, or logistics professional, we connect you with trusted employers.",
-    detailList: genericList
-  },
-  {
-    title: 'Construction',
-    image: 'construction.png',
-    icon: 'crane.svg',
-    description: "Build your future with confidence. We help you find opportunities with companies that value craftsmanship, teamwork, and safety on every job site.",
-    detailList: genericList
-  },
-  {
-    title: 'Engineering',
-    image: 'engineering.png',
-    icon: 'gear.svg',
-    description: "Design, innovate, and build the future. We connect top talent in IT, civil works, oil and gas, and industrial sectors with companies leading large-scale projects.",
-    detailList: genericList
-  },
-  {
-    title: 'IT / AI',
-    image: 'it-ai.png',
-    icon: 'chip.svg',
-    description: "Step into the fast-paced world of IT and AI, where your skills can power the next digital breakthrough. Join teams that are redefining the future.",
-    detailList: genericList
-  },
-  {
-    title: 'Financial/Insurance',
-    image: 'finance.png',
-    icon: 'money.svg',
-    description: "Grow your professional career in finance and insurance. We connect you with organizations that rely on accuracy, integrity, and expertise.",
-    // LISTA ESPECÍFICA DE LA CAPTURA
-    detailList: [
-      "Accounting Clerks and Bookkeepers",
-      "Financial Analysts",
-      "Claims Processors and Adjusters",
-      "Underwriting Assistants",
-      "Payroll and Billing Specialists",
-      "Data Entry and Compliance Clerks",
-      "Credit and Collections Coordinators",
-      "Customer Service Representatives",
-      "Administrative Assistants",
-      "Office Managers"
-    ]
-  },
-  {
-    title: 'Legal/Accounting',
-    image: 'legal.png',
-    icon: 'doc.svg',
-    description: "Grow your professional career. We connect you with organizations—helping you contribute to financial stability and long-term success.",
-    detailList: genericList
-  },
-  {
-    title: 'Logistics, 3PL/4PL',
-    image: 'logistics.png',
-    icon: 'truck.svg',
-    description: "Drive your logistics career forward. We connect you with opportunities that reward reliability, performance, and growth.",
-    detailList: genericList
-  },
-  {
-    title: 'Manufacturing',
-    image: 'manufacturing.png',
-    icon: 'factory.svg',
-    description: "Shape the future of production. Join leading manufacturers looking for dependable, skilled professionals to ensure quality and efficiency.",
-    detailList: genericList
-  },
-  {
-    title: 'Retail',
-    image: 'retail.png',
-    icon: 'store.svg',
-    description: "Turn your talent into success. Whether in customer service, merchandising, or management, we help you join retailers who value excellence.",
-    detailList: genericList
-  },
-  {
-    title: 'Transportation',
-    image: 'transportation.png',
-    icon: 'transport.svg',
-    description: "Move your career in the right direction. We connect professional drivers and logistics experts with reliable employers who prioritize safety.",
-    detailList: genericList
-  },
-];
+// 2. ASIGNAR LOS DATOS IMPORTADOS
+const roles: RoleTalent[] = rolesTalentsData;
 </script>
 
 <style scoped>
