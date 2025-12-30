@@ -7,8 +7,6 @@ name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:
