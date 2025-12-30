@@ -1,0 +1,186 @@
+# Azure Pipeline for Covenant.Api (.NET 6 API)
+# Builds, tests, and deploys .NET API to Azure App Service via Docker
+
+name: CovenantApi-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+
+# Only trigger when Covenant.Api files change
+trigger:
+  branches:
+    include:
+      - main
+      - master
+      - dev
+  paths:
+    include:
+      - Covenant.Api/**
+      - .azure-pipelines/covenant-api-pipeline.yml
+    exclude:
+      - Covenant.Api/**/*.md
+
+# PR trigger
+pr:
+  branches:
+    include:
+      - main
+      - master
+      - dev
+  paths:
+    include:
+      - Covenant.Api/**
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+# Environment detection variables
+variables:
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  dotnetSdkVersion: '6.0.400'
+
+stages:
+  # ============================================
+  # Stage 1: Build and Test
+  # ============================================
+  - stage: Build_and_Test
+    displayName: 'Build and Test'
+    jobs:
+      - job: Build_Test_Solution
+        displayName: 'Build and Run Tests'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Build and Test using template
+          - template: templates/dotnet-build-test.yml
+            parameters:
+              buildProjects: 'Covenant.Api/**/*.sln'
+              buildConfiguration: 'Release'
+              runUnitTests: true
+              unitTestProjects: 'Covenant.Api/**/Covenant.Tests/*.csproj'
+              runIntegrationTests: true
+              integrationTestProjects: 'Covenant.Api/**/Covenant.Integration.Tests/*.csproj'
+
+  # ============================================
+  # Stage 2: Docker Build and Deploy
+  # ============================================
+  - stage: CI_CD
+    displayName: 'Build Docker and Deploy'
+    dependsOn: Build_and_Test
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    jobs:
+      - job: Build_Docker_Image
+        displayName: 'Build and Push Docker Image'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Determine Docker tag
+          - script: |
+              echo "Calculating Docker tag based on branch $(Build.SourceBranchName)..."
+              if [ "$(isDev)" = True ]; then
+                tag=latest_staging
+                environment=staging
+              else
+                tag=latest_production
+                environment=production
+              fi
+              echo "##vso[task.setvariable variable=tag]$tag"
+              echo "##vso[task.setvariable variable=tag;isOutput=true]$tag"
+              echo "##vso[task.setvariable variable=environment;isOutput=true]$environment"
+              echo ""
+              echo "Docker Tag: $tag"
+              echo "Environment: $environment"
+            name: SetDockerTag
+            displayName: 'Determine Docker Tag'
+
+          # Build and Push Docker Image
+          - task: Docker@2
+            displayName: 'Build and Push Docker Image'
+            inputs:
+              containerRegistry: 'acrServiceConnectionSigook'
+              repository: 'api'
+              command: 'buildAndPush'
+              Dockerfile: 'Covenant.Api/Dockerfile'
+              buildContext: 'Covenant.Api'
+              tags: $(tag)
+              arguments: '--build-arg BUILD_ID=$(Build.BuildId)'
+
+          - task: Bash@3
+            displayName: 'Docker Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "✅ Docker image built and pushed successfully!"
+                echo "📦 Image: sigook.azurecr.io/api:$(tag)"
+                echo "🏷️  Tag: $(tag)"
+                echo ""
+
+      - job: Deploy_to_Azure
+        displayName: 'Deploy to Azure App Service'
+        dependsOn: Build_Docker_Image
+        variables:
+          imageTag: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.tag'] ]
+          environment: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.environment'] ]
+        steps:
+          - checkout: none
+            displayName: 'Skip Checkout'
+
+          # Determine App Service name
+          - script: |
+              echo "Determining Azure App Service name..."
+              if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
+                azureAppName="sigook-api-staging"
+                envLabel="Staging"
+              else
+                azureAppName="sigook-api"
+                envLabel="Production"
+              fi
+              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
+              echo "##vso[task.setvariable variable=envLabel]$envLabel"
+              echo ""
+              echo "Target: $azureAppName ($envLabel)"
+              echo "Image: sigook.azurecr.io/api:$(imageTag)"
+            displayName: 'Set Deployment Target'
+
+          # Deploy to Azure App Service
+          - task: AzureWebAppContainer@1
+            displayName: 'Deploy Docker Container'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              appName: $(azureAppName)
+              containers: 'sigook.azurecr.io/api:$(imageTag)'
+              appSettings: '-CVN_VERSION $(Build.BuildId)'
+
+          # Deployment Summary
+          - task: Bash@3
+            displayName: 'Deployment Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "✅ Deployment Completed!"
+                echo "============================================"
+                echo "Environment: $(envLabel)"
+                echo "App Service: $(azureAppName)"
+                echo "Docker Image: sigook.azurecr.io/api:$(imageTag)"
+                echo "Version: $(Build.BuildId)"
+                echo "============================================"
+                echo ""
+                echo "URLs:"
+                if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
+                  echo "🌐 Staging API: https://sigook-api-staging.azurewebsites.net"
+                else
+                  echo "🌐 Production API: https://sigook-api.azurewebsites.net"
+                fi
+                echo ""
+                echo "Next steps:"
+                echo "1. Verify API health endpoints"
+                echo "2. Check application logs if needed"
+                echo "3. Run smoke tests"

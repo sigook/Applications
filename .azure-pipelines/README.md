@@ -6,10 +6,14 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 
 ```
 .azure-pipelines/
-├── sigookapp-pipeline.yml      # Pipeline para Flutter mobile app (placeholder)
-├── covenantweb-pipeline.yml    # Pipeline para Vue.js website (completo)
-├── templates/                  # Templates reutilizables (futuro)
-└── README.md                   # Esta guía
+├── sigookapp-pipeline.yml                 # Pipeline para Flutter mobile app (placeholder)
+├── covenantweb-pipeline.yml               # Pipeline para Vue.js website (completo)
+├── covenant-api-pipeline.yml              # Pipeline para .NET API (completo)
+├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
+├── templates/                             # Templates reutilizables
+│   ├── dotnet-setup.yml                   # Template: Instalar .NET SDK
+│   └── dotnet-build-test.yml              # Template: Build y Tests
+└── README.md                              # Esta guía
 ```
 
 ## 🎯 Características Clave
@@ -20,6 +24,8 @@ Cada pipeline **solo se ejecuta cuando hay cambios en su aplicación específica
 
 - **sigookapp-pipeline.yml**: Se activa solo con cambios en `SigookApp/**`
 - **covenantweb-pipeline.yml**: Se activa solo con cambios en `covenantWeb/**`
+- **covenant-api-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/**` (excepto Covenant.Common)
+- **covenant-common-nuget-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/Covenant.Common/**` (solo rama dev)
 
 **Beneficios:**
 - ✅ Ahorro de tiempo de build (no ejecuta pipelines innecesarios)
@@ -37,6 +43,53 @@ Los pipelines detectan automáticamente el ambiente basado en la rama:
 | `feature/*` | Staging | `build:staging` |
 
 **No hay stages duplicados** - un solo pipeline maneja ambos ambientes con variables condicionales.
+
+### Templates Reutilizables
+
+Los pipelines de .NET usan **templates reutilizables** para evitar duplicación de código y mantener consistencia:
+
+#### 📄 `templates/dotnet-setup.yml`
+
+Template para instalar .NET SDK:
+
+```yaml
+# Uso:
+- template: templates/dotnet-setup.yml
+  parameters:
+    sdkVersion: '6.0.400'
+```
+
+**Parámetros:**
+- `sdkVersion` (string): Versión del SDK a instalar (default: '6.0.400')
+
+#### 📄 `templates/dotnet-build-test.yml`
+
+Template para build y ejecución de tests:
+
+```yaml
+# Uso:
+- template: templates/dotnet-build-test.yml
+  parameters:
+    buildProjects: '**/*.sln'
+    buildConfiguration: 'Release'
+    runUnitTests: true
+    unitTestProjects: '**/Covenant.Tests/*.csproj'
+    runIntegrationTests: false
+```
+
+**Parámetros:**
+- `buildProjects` (string, requerido): Pattern de proyectos/soluciones a compilar
+- `buildConfiguration` (string): Configuración de build (default: 'Release')
+- `runUnitTests` (bool): Ejecutar unit tests (default: true)
+- `unitTestProjects` (string): Pattern de proyectos de unit tests
+- `runIntegrationTests` (bool): Ejecutar integration tests (default: false)
+- `integrationTestProjects` (string): Pattern de proyectos de integration tests
+
+**Beneficios:**
+- ✅ Código DRY (Don't Repeat Yourself)
+- ✅ Fácil mantenimiento (cambios en un solo lugar)
+- ✅ Consistencia entre pipelines
+- ✅ Configuración flexible mediante parámetros
 
 ## 🚀 Configuración Inicial en Azure DevOps
 
@@ -60,6 +113,21 @@ Los pipelines detectan automáticamente el ambiente basado en la rama:
 1. Repetir proceso anterior
 2. Path: /.azure-pipelines/sigookapp-pipeline.yml
 3. Rename pipeline a: "SigookApp-CI/CD"
+```
+
+#### Pipeline 3: Covenant.Api
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-api-pipeline.yml
+3. Rename pipeline a: "Covenant.Api-CI/CD"
+```
+
+#### Pipeline 4: Covenant.Common (NuGet)
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-common-nuget-pipeline.yml
+3. Rename pipeline a: "Covenant.Common-NuGet"
+4. ⚠️ Este pipeline solo se ejecuta en rama dev cuando hay cambios en Covenant.Common
 ```
 
 ### Paso 2: Crear Environments
@@ -173,6 +241,70 @@ Cuando estés listo para implementar el build completo de Flutter, el pipeline d
 - `flutter build apk/aab` con flavors
 - Firma de APK con keystore
 - Publicación a Firebase App Distribution o Play Store
+
+### Covenant.Api Pipeline
+
+**Archivo:** `covenant-api-pipeline.yml`
+
+**Stages:**
+1. **Build and Test** - Compilación y Quality Gate
+   - Instala .NET SDK 6.0.400 (usando template)
+   - Build de la solución completa
+   - Corre Unit Tests
+   - Corre Integration Tests
+   - Usa templates reutilizables
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Build de imagen Docker
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service (staging o production)
+   - Tags: `latest_staging` o `latest_production`
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Covenant.Api/**`
+- Pull Requests a `main`, `master`, o `dev`
+- Excluye: archivos markdown
+
+**Deployment Targets:**
+- Staging: `sigook-api-staging.azurewebsites.net`
+- Production: `sigook-api.azurewebsites.net`
+
+### Covenant.Common NuGet Pipeline
+
+**Archivo:** `covenant-common-nuget-pipeline.yml`
+
+**Propósito:** Publicar el paquete NuGet `Covenant.Common` cuando hay cambios en la librería compartida.
+
+**Stages:**
+1. **Build, Test, and Publish NuGet**
+   - **Quality Gate Job**:
+     - Instala .NET SDK (usando template)
+     - Build de la solución completa
+     - Corre Unit Tests (garantiza calidad antes de publicar)
+     - Usa templates reutilizables
+
+   - **Pack and Publish Job**:
+     - Pack del proyecto Covenant.Common
+     - Autentica con Azure Artifacts
+     - Publica a feed `sigook/Covenant.Common`
+     - Versión automática basada en build number
+
+**Triggers:**
+- ⚠️ **Solo rama `dev`**
+- Solo cuando hay cambios en `Covenant.Api/Covenant.Common/**`
+- Excluye: archivos markdown
+- **No se ejecuta en PRs** (solo pushes directos)
+
+**Características Especiales:**
+- ✅ **Quality Gate obligatorio**: Los tests deben pasar antes de publicar
+- ✅ **Path-based trigger**: Solo se ejecuta cuando Covenant.Common cambia
+- ✅ **Versión automática**: Usa el build number como versión del paquete
+- ✅ **Templates compartidos**: Reutiliza templates de .NET
+
+**Consumir el paquete:**
+```bash
+dotnet add package Covenant.Common --version <Build.BuildNumber>
+```
 
 ## 🔧 Deployment Configuration
 

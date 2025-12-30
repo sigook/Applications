@@ -1,0 +1,642 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MEListAny" xml:space="preserve">
+    <value>Debe agregar al menos un item</value>
+  </data>
+  <data name="MEInvalidLogo" xml:space="preserve">
+    <value>El logo es invalido</value>
+  </data>
+  <data name="MERequiredField" xml:space="preserve">
+    <value>Este campo es requerido</value>
+  </data>
+  <data name="MEInvalidJobRate" xml:space="preserve">
+    <value>Valor invalido</value>
+  </data>
+  <data name="MEInvalidCommentRate" xml:space="preserve">
+    <value>La calificaion debe estar entre 0 y 5</value>
+  </data>
+  <data name="ErrorSendingNotification" xml:space="preserve">
+    <value>Error enviando nofificación</value>
+  </data>
+  <data name="CompanyAlreadyExist" xml:space="preserve">
+    <value>Una compañia con este correo electronico {0} ya existe</value>
+  </data>
+  <data name="WorkerAlreadyExist" xml:space="preserve">
+    <value>Un trabajador con este correo electronico {0} ya existe</value>
+  </data>
+  <data name="MEInvalidEmail" xml:space="preserve">
+    <value>Correo electronico no valido</value>
+  </data>
+  <data name="MEMinLegth" xml:space="preserve">
+    <value>The length of Business name must be at least {MinLength} characters. You entered {TotalLength} characters.</value>
+  </data>
+  <data name="BusinessName" xml:space="preserve">
+    <value>Business name</value>
+  </data>
+  <data name="JobTitle" xml:space="preserve">
+    <value>Job Title</value>
+  </data>
+  <data name="MENotEmpty" xml:space="preserve">
+    <value>{PropertyFirstName} should not be empty.</value>
+  </data>
+  <data name="MEMaxLegth" xml:space="preserve">
+    <value>The length of {PropertyFirstName} must be {MinLength} characters or fewer. You entered {TotalLength} characters.</value>
+  </data>
+  <data name="MEGreaterThanOrEqualTo" xml:space="preserve">
+    <value>'Workers Quantity' must be greater than or equal to '1'.</value>
+  </data>
+  <data name="WorkersQuantity" xml:space="preserve">
+    <value>Workers Quantity</value>
+  </data>
+  <data name="MELessThanOrEqualTo" xml:space="preserve">
+    <value>{PropertyFirstName} must be less than or equal to {ComparisonValue}.</value>
+  </data>
+  <data name="JobPosition" xml:space="preserve">
+    <value>Job Position</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="HourPrice" xml:space="preserve">
+    <value>Hour Price</value>
+  </data>
+  <data name="DurationBreak" xml:space="preserve">
+    <value>Duration Break</value>
+  </data>
+  <data name="Incentive" xml:space="preserve">
+    <value>Incentive</value>
+  </data>
+  <data name="IncentiveDescription" xml:space="preserve">
+    <value>Incentive Description</value>
+  </data>
+  <data name="Requirements" xml:space="preserve">
+    <value>Requirements</value>
+  </data>
+  <data name="FirstDay" xml:space="preserve">
+    <value>First Day</value>
+  </data>
+  <data name="Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Days" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Repeat" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="HoursDay" xml:space="preserve">
+    <value>Hours Day</value>
+  </data>
+  <data name="JobLocation" xml:space="preserve">
+    <value>Job Location</value>
+  </data>
+  <data name="MEIncomplete" xml:space="preserve">
+    <value>{PropertyFirstName} is incomplete</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="PostalCode" xml:space="preserve">
+    <value>Postal Code</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="WorkShifts" xml:space="preserve">
+    <value>Work Shifts</value>
+  </data>
+  <data name="WorkShiftDateTime" xml:space="preserve">
+    <value>Date time</value>
+  </data>
+  <data name="WorkShiftsError" xml:space="preserve">
+    <value>Work Shifts ({0}) must be equal to days ({1}) </value>
+  </data>
+  <data name="AgencyAlreadyExist" xml:space="preserve">
+    <value>You already have an account with this email</value>
+  </data>
+  <data name="WorkerCanNotApplyToJob" xml:space="preserve">
+    <value>Yo can not apply for this job. This job is not available</value>
+  </data>
+  <data name="WorkShiftInformationIncomplete" xml:space="preserve">
+    <value>The Work Shift information is incomplete</value>
+  </data>
+  <data name="WorkerHasBeenRejected" xml:space="preserve">
+    <value>You have been rejected for this job</value>
+  </data>
+  <data name="RequestNotAvailable" xml:space="preserve">
+    <value>This request is not available</value>
+  </data>
+  <data name="HstNumber" xml:space="preserve">
+    <value>HST #</value>
+  </data>
+  <data name="BusinessNumber" xml:space="preserve">
+    <value>Business Number</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Full FirstName</value>
+  </data>
+  <data name="DateOfIncorporation" xml:space="preserve">
+    <value>Date Of Incorporation</value>
+  </data>
+  <data name="CityOfIncorporation" xml:space="preserve">
+    <value>City Of Incorporation</value>
+  </data>
+  <data name="InvalidWebPage" xml:space="preserve">
+    <value>The URL format is not valid </value>
+  </data>
+  <data name="WebPage" xml:space="preserve">
+    <value>WebPage</value>
+  </data>
+  <data name="Wsib" xml:space="preserve">
+    <value>Wsib</value>
+  </data>
+  <data name="WsibGroup" xml:space="preserve">
+    <value>Wsib Group</value>
+  </data>
+  <data name="BillingInformation" xml:space="preserve">
+    <value>Billing Information</value>
+  </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>Contact Information</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
+  <data name="Logo" xml:space="preserve">
+    <value>Logo</value>
+  </data>
+  <data name="BillingLocation" xml:space="preserve">
+    <value>Billing Location</value>
+  </data>
+  <data name="PhonePrincipal" xml:space="preserve">
+    <value>Phone Principal</value>
+  </data>
+  <data name="PhoneAlternate" xml:space="preserve">
+    <value>Phone Alternate</value>
+  </data>
+  <data name="MobileNumber" xml:space="preserve">
+    <value>Mobile Number</value>
+  </data>
+  <data name="Fax" xml:space="preserve">
+    <value>Fax</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>First FirstName</value>
+  </data>
+  <data name="MiddleName" xml:space="preserve">
+    <value>MiddleFirstName</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>LastFirstName</value>
+  </data>
+  <data name="Position" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="OfficeNumber" xml:space="preserve">
+    <value>Office Number</value>
+  </data>
+  <data name="ProfileImage" xml:space="preserve">
+    <value>Profile Image</value>
+  </data>
+  <data name="SecondLastName" xml:space="preserve">
+    <value>Second Last FirstName</value>
+  </data>
+  <data name="BirthDay" xml:space="preserve">
+    <value>BirthDay</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="SocialInsurance" xml:space="preserve">
+    <value>Social Insurance</value>
+  </data>
+  <data name="DueDate" xml:space="preserve">
+    <value>DueDate</value>
+  </data>
+  <data name="IdentificationType1" xml:space="preserve">
+    <value>Identification Type One</value>
+  </data>
+  <data name="IdentificationType2" xml:space="preserve">
+    <value>Identification Type Two</value>
+  </data>
+  <data name="PoliceCheckBackGround" xml:space="preserve">
+    <value>Police Check/BackGround</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="EmergencyPhone" xml:space="preserve">
+    <value>EmergencyPhone</value>
+  </data>
+  <data name="Availabilities" xml:space="preserve">
+    <value>Availabilities</value>
+  </data>
+  <data name="AvailabilityTimes" xml:space="preserve">
+    <value>AvailabilityTimes</value>
+  </data>
+  <data name="AvailabilityDays" xml:space="preserve">
+    <value>AvailabilityDays</value>
+  </data>
+  <data name="LocationPreferences" xml:space="preserve">
+    <value>Location Preferences</value>
+  </data>
+  <data name="Lift" xml:space="preserve">
+    <value>Lift</value>
+  </data>
+  <data name="Languages" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="Skills" xml:space="preserve">
+    <value>Skills</value>
+  </data>
+  <data name="Licenses" xml:space="preserve">
+    <value>Licenses</value>
+  </data>
+  <data name="Certificates" xml:space="preserve">
+    <value>Certificates</value>
+  </data>
+  <data name="HealthProblem" xml:space="preserve">
+    <value>Health Problem</value>
+  </data>
+  <data name="OtherHealthProblem" xml:space="preserve">
+    <value>Other Health Problem</value>
+  </data>
+  <data name="ContactEmergencyName" xml:space="preserve">
+    <value>Contact Emergency FirstName</value>
+  </data>
+  <data name="ContactEmergencyLastName" xml:space="preserve">
+    <value>Contact Emergency FirstName</value>
+  </data>
+  <data name="ContactEmergencyPhone" xml:space="preserve">
+    <value>Contact Emergency Phone</value>
+  </data>
+  <data name="JobExperiences" xml:space="preserve">
+    <value>Job Experiences</value>
+  </data>
+  <data name="Company" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="Supervisor" xml:space="preserve">
+    <value>Supervisor</value>
+  </data>
+  <data name="Duties" xml:space="preserve">
+    <value>Duties</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Duties</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Industry" xml:space="preserve">
+  <value>Industry</value>
+ </data>
+  <data name="ContactPersons" xml:space="preserve">
+  <value>Contact Persons</value>
+ </data>
+  <data name="Rate" xml:space="preserve">
+  <value>Rate</value>
+ </data>
+  <data name="JobPositionRates" xml:space="preserve">
+  <value>Job Position Rates</value>
+ </data>
+  <data name="Locations" xml:space="preserve">
+    <value>Locations</value>
+  </data>
+  <data name="NumberOfWorkersComplete" xml:space="preserve">
+    <value>The number of workers is complete.</value>
+  </data>
+  <data name="ApprovedHours">
+    <value>Approved Hours</value>
+  </data>
+  <data name="Comment">
+    <value>Comment</value>
+  </data>
+  <data name="AsapRate">
+    <value>Asap Rate</value>
+  </data>
+  <data name="WorkerNotAvailableToWork">
+    <value>This worker is not available to work</value>
+  </data>
+  <data name="WorkerNotFound">
+    <value>Worker Not Found</value>
+  </data>
+  <data name="NotAgencyAvailable">
+    <value>At this time there is no agency available</value>
+  </data>
+  <data name="AgencyNotFound">
+    <value>Agency not found</value>
+  </data>
+  <data name="PhoneExt">
+    <value>Ext.</value>
+  </data>
+  <data name="IdentificationNumber1">
+    <value>Identification Number 1</value>
+  </data>
+  <data name="IdentificationNumber2">
+    <value>Identification Number 2</value>
+  </data>
+  <data name="MEInvalidEndDate" xml:space="preserve">
+    <value>'{PropertyName}' is not valid.</value>
+  </data>
+  <data name="ErrorUpdateRequestDays" xml:space="preserve">
+    <value>The number of days can not be less than the number of days elapsed of the request</value>
+  </data>
+  <data name="ErrorUpdateWorkersQuantity" xml:space="preserve">
+    <value>El número de trabajadores no puede ser inferior al número de trabajadores que aplicarón si desea puede rechazar alguno de ellos del listado de trabajadores</value>
+  </data>
+  <data name="InvalidJobPosition">
+    <value>Invalid job position</value>
+  </data>
+  <data name="WorkShiftIncompleteHours" xml:space="preserve">
+    <value>You must add at least {0} hours for this day {1}</value>
+  </data>
+  <data name="Subject">
+    <value>Subject</value>
+  </data>
+  <data name="Message">
+    <value>Message</value>
+  </data>
+  <data name="WorkerRate" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="MissingHours">
+    <value>Missing Hours</value>
+  </data>
+  <data name="DeductionsOther">
+    <value>Other Deductions</value>
+  </data>
+  <data name="FareOrExtras">
+    <value>FareOrExtras</value>
+  </data>
+  <data name="TimeStartNightShift">
+    <value>Time Start Night Shift</value>
+  </data>
+  <data name="TimeEndNightShift">
+    <value>Time End Night Shift</value>
+  </data>
+  <data name="WorkerIsInRequestWithSameWorkShift">
+    <value>You can not apply to this request because you are in a request that has the same work shift ({0})</value>
+  </data>
+  <data name="CompanyBookWorkerWithSameWorkShift">
+    <value>This worker is in a request with the same work shift please try changing the work shift ({0})</value>
+  </data>
+  <data name="AgencyBookWorkerWithSameWorkShift">
+    <value>This worker is an a request with the same work shift please try another one ({0})</value>
+  </data>
+  <data name="RequestHasFinished">
+    <value>The request has finished</value>
+  </data>
+  <data name="WorkerCanNotRegisterTime">
+    <value>You can not report time today please try on {0}</value>
+  </data>
+  <data name="WorkerAlreadyReportedWorkShift">
+    <value>You already reported today's work shift</value>
+  </data>
+  <data name="WorkerCanNotUpdateWorkShift">
+    <value>You can not update the work shift anymore</value>
+  </data>
+  <data name="EmailAlreadyTaken">
+    <value>The email address is already taken. Please choose another one.</value>
+  </data>
+  <data name="WorkerNotApprovedToWork">
+    <value>You are not approved to work</value>
+  </data>
+  <data name="WorkerSocialInsuranceHasExpired">
+    <value>Your social insurance has expired on {0}</value>
+  </data>
+  <data name="SocialInsuranceAlreadyTaken">
+    <value>The social insurance is already taken. Please choose another one.</value>
+  </data>
+  <data name="InclusiveBetweenValidator">
+    <value>'{0}' must be between {1} and {2}. You entered {3}.</value>
+  </data>
+  <data name="WorkShiftAtLeastOneElement">
+    <value>Work shift has to have at least one element</value>
+  </data>
+  <data name="Agency">
+    <value>Agency</value>
+  </data>
+  <data name="InclusiveBetweenValidator2">
+    <value>'{PropertyName}' must be between {From} and {To}. You entered {Value}.</value>
+  </data>
+  <data name="IdentificationNumberAlreadyTaken">
+    <value>The identification number {0} is already taken. Please choose another one.</value>
+  </data>
+  <data name="WorkShiftCanNotBeRemoved" xml:space="preserve">
+    <value>This work shift can not be removed</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Invalid Request</value>
+  </data>
+  <data name="WorkShiftMustBeUnique" xml:space="preserve">
+    <value>Work shift must be unique {0}</value>
+  </data>
+  <data name="UserSubscribePlanUnPaid" xml:space="preserve">
+    <value>You currently have an unpaid plan, please pay to make this transaction</value>
+  </data>
+  <data name="ErrorInSubscription" xml:space="preserve">
+    <value>We can not process this operation please upgrade your subscription</value>
+  </data>
+  <data name="PlanCompanyErrorMaximumBookWorkers" xml:space="preserve">
+    <value>"Your current subscription only allow to book {0} workers"</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Discounts" xml:space="preserve">
+    <value>Discounts</value>
+  </data>
+  <data name="Amount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="UnitPrice" xml:space="preserve">
+    <value>Unit Price</value>
+  </data>
+  <data name="AdditionalItems" xml:space="preserve">
+    <value>Additional Items</value>
+  </data>
+  <data name="MissingHoursOvertime" xml:space="preserve">
+    <value>Missing Hours Overtime</value>
+  </data>
+  <data name="WorkerIsNotInARequest" xml:space="preserve">
+    <value>You aren't in a request please contact your agency</value>
+  </data>
+  <data name="MaxSizeFileError" xml:space="preserve">
+    <value>This file can't be uploaded, because it exceeds the maximum file-size 10MB</value>
+  </data>
+  <data name="SigookUpper">
+    <value>SIGOOK&#8482;</value>
+  </data>
+  <data name="SigookCapitalize">
+    <value>Sigook&#8482;</value>
+  </data>
+  <data name="SocialInsuranceDate" xml:space="preserve">
+    <value>Social Insurance Date</value>
+  </data>
+  <data name="SocialInsuranceFile" xml:space="preserve">
+    <value>Social Insurance File</value>
+  </data>
+  <data name="LicenseFile" xml:space="preserve">
+    <value>License File</value>
+  </data>
+  <data name="UpgradeYourSubscription" xml:space="preserve">
+    <value>We can not process this operation please upgrade your subscription</value>
+  </data>
+  <data name="GeneralError">
+    <value>An error occurred please try again, if the error persists try later one of our engineers will solve it soon</value>
+  </data>
+  <data name="There_is_not_enough_information_to_generate_pay_stub" xml:space="preserve">
+    <value>There is not enough information to generate a pay stub</value>
+  </data>
+  <data name="PayStub_cannot_be_created_if_worker_is_subcontractor" xml:space="preserve">
+    <value>PayStub cannot be created if worker is subcontractor</value>
+  </data>
+  <data name="To_create_report_worker_must_be_subcontractor" xml:space="preserve">
+    <value>To create report worker must be subcontractor</value>
+  </data>
+  <data name="PayStubItemDescriptionRequired" xml:space="preserve">
+    <value>Descripcion es requerida</value>
+  </data>
+  <data name="WorkerProfileNote">
+    <value>Nota</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found</value>
+  </data>
+  <data name="CompanyName" xml:space="preserve">
+    <value>Company name</value>
+  </data>
+</root>

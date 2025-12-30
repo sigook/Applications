@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Covenant.Billing\Covenant.Billing.csproj" />
+      <ProjectReference Include="..\Covenant.Common\Covenant.Common.csproj" />
+    </ItemGroup>
+
+</Project>

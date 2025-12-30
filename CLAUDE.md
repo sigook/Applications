@@ -8,6 +8,7 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 
 - **SigookApp** - Flutter mobile application for worker registration and job matching
 - **covenantWeb** - Vue.js marketing/informational website
+- **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system
 
 ## SigookApp (Flutter Mobile Application)
 
@@ -246,6 +247,71 @@ The covenantWeb project requires:
 
 Use nvm or similar to manage Node versions if needed.
 
+## Covenant.Api (.NET 6 Backend API)
+
+### Architecture
+
+The Covenant API is a comprehensive staffing/recruitment management system with modular architecture:
+
+**Tech Stack:**
+- .NET 6.0 with ASP.NET Core Web API
+- PostgreSQL with Entity Framework Core
+- Azure Service Bus for messaging
+- Azure Storage for file management
+- Docker containerization
+
+### Project Structure
+
+```
+Covenant.Api/
+├── Covenant.Api/              # Main API project
+├── Covenant.Common/           # Shared entities, interfaces (NuGet package)
+├── Covenant.Infrastructure/   # EF Core, repositories, integrations
+├── Covenant.Core.BL/          # Business logic services
+├── Covenant.Billing/          # Billing module
+├── Covenant.PayStubs/         # Pay stubs generation
+├── Covenant.Tests/            # Unit tests
+└── Covenant.Integration.Tests/ # Integration tests
+```
+
+### Development Commands
+
+```bash
+cd Covenant.Api
+
+# Build solution
+dotnet build Covenant.Api.sln
+
+# Run API
+dotnet run --project Covenant.Api
+
+# Run with watch mode (auto-restart)
+dotnet watch run --project Covenant.Api
+
+# Run tests
+dotnet test **/Covenant.Tests.csproj        # Unit tests
+dotnet test **/Covenant.Integration.Tests.csproj  # Integration tests
+dotnet test                                  # All tests
+
+# Database migrations (when changing entity models)
+dotnet ef migrations add MigrationName --project Covenant.Infrastructure --startup-project Covenant.Api
+```
+
+### Key Features
+
+- **Multi-module Architecture**: Agency, Company, Worker, Accounting modules
+- **Canadian Payroll**: Complex tax calculations (CPP, EI, federal/provincial)
+- **Document Generation**: Excel reports, PDF invoices/pay stubs
+- **Background Processing**: Azure Service Bus for async operations
+- **Multi-language**: English/Spanish localization
+
+### Important Notes
+
+- Uses shared cloud PostgreSQL database (no local setup needed)
+- All code must be in **English** (American market)
+- Publishes NuGet package: `Covenant.Common`
+- Deployed as Docker container to Azure App Service
+
 ## Azure DevOps Pipelines
 
 The repository uses **path-based triggers** to run pipelines only when relevant files change:
@@ -254,6 +320,7 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 
 - **`.azure-pipelines/sigookapp-pipeline.yml`** - Flutter app CI/CD (placeholder for future implementation)
 - **`.azure-pipelines/covenantweb-pipeline.yml`** - Vue.js website CI/CD (fully functional)
+- **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
 
 ### Intelligent Triggering
 
@@ -266,12 +333,20 @@ paths:
     - covenantWeb/**
   exclude:
     - covenantWeb/**/*.md
+
+# Example: Covenant.Api pipeline only triggers on:
+paths:
+  include:
+    - Covenant.Api/**
+  exclude:
+    - Covenant.Api/**/*.md
 ```
 
 **Benefits:**
 - Saves build time (no unnecessary pipeline runs)
 - Saves Azure DevOps minutes
 - Faster CI/CD feedback
+- Independent deployments per application
 
 ### Environment Detection
 
@@ -306,6 +381,25 @@ No duplicate stages - one pipeline handles both environments using conditional v
 - Basic project structure validation
 - TODO comments for future Flutter build implementation
 
+**Covenant.Api Pipeline (complete):**
+1. **Build and Test Stage**
+   - Install .NET SDK 6.0
+   - Build solution
+   - Run unit tests
+   - Run integration tests
+   - Publish test results
+
+2. **NuGet Package Stage** (dev only)
+   - Check for changes in Covenant.Common
+   - Build and publish NuGet package (if changed)
+
+3. **Docker Build and Deploy Stage**
+   - Build Docker image (staging or production tag)
+   - Push to Azure Container Registry
+   - Deploy to Azure App Service
+   - Staging: `sigook-api-staging`
+   - Production: `sigook-api`
+
 ### Setup Guide
 
 See `.azure-pipelines/README.md` for detailed setup instructions including:
@@ -326,6 +420,11 @@ git push origin dev
 # Test SigookApp pipeline only
 echo "test" >> SigookApp/lib/main.dart
 git add . && git commit -m "test: trigger sigookapp pipeline"
+git push origin dev
+
+# Test Covenant.Api pipeline only
+echo "// test" >> Covenant.Api/Covenant.Api/Program.cs
+git add . && git commit -m "test: trigger covenant-api pipeline"
 git push origin dev
 
 # No pipeline triggered (documentation only)

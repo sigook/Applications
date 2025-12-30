@@ -1,0 +1,84 @@
+@using Microsoft.Extensions.Configuration
+@model Covenant.HtmlTemplates.Views.AppCommission.Summary.AppCommissionSummaryViewModel
+@{
+    Layout = "InvoiceLayout";
+}
+@inject IConfiguration Configuration
+<div style="margin: 0 auto; padding: 5px;">
+    <table width="100%">
+        <tr>
+            <td style="width: 210px">
+                @await Html.PartialAsync("_BillingLogo",string.Concat(Configuration.GetSection("AppUrl").Value, "/assets/images/sigook-logo.png"))
+            </td>
+            <td>@await Html.PartialAsync("_Slogan")</td>
+            <td>@await Html.PartialAsync("_ContactInformation")</td>
+        </tr>
+    </table>
+
+    <table style="margin: 15px 0; display: inline-block; float: left" width="75%">
+        <tr>
+            <td style="padding: 8px; width: 33%">
+                <b>Bill to.</b> <br>@Model.AgencyFullName
+            </td>
+            <td style="padding: 8px; width: 33%">
+                <b>Phone:</b> <br>@Model.PhonePrincipal @(Model.PhonePrincipalExt.HasValue ? string.Concat(" Ext: ", Model.PhonePrincipalExt) : "")
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; width: 33%">
+                <b>Address: </b> <br>@Model.Address</td>
+            <td style="padding: 8px; width: 33%">
+                <b>Email:</b> <br>@Model.Email
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; width: 33%">
+                <b>Fax:</b> <br>@Model.Fax @(Model.FaxExt.HasValue ? string.Concat(" Ext: ", Model.FaxExt) : "")
+            </td>
+            <td style="padding: 8px; width: 33%">
+                <b></b> <br>
+            </td>
+        </tr>
+    </table>
+
+    <div style="display: inline-block; float: right; border: 2px solid #21b7ff; width: 25%; padding: 8px; box-sizing: border-box; margin-bottom: 20px">
+        <h4 style="text-align: center">COMMISSION</h4>
+        <p>
+            <b>Commission #: @Model.NumberId</b>
+        </p>
+        <p>
+            <b>Date: @Model.CreatedAt.ToLongDateString()</b>
+        </p>
+    </div>
+
+    @await Html.PartialAsync("_DescriptionTable", Model.Items)
+    @await Html.PartialAsync("_NotesComments")
+
+
+    <table style="display: inline-block; width: 30%; float: right; margin-top: 10px;">
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b>Subtotal</b>
+            </td>
+            <td style="background: #A4CB7C; padding: 5px; width: 100%; border-radius: 14px 14px 0 0;">
+                <b>@Model.SubTotal.ToString("C")</b>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b></b>
+            </td>
+            <td style="background: #A4CB7C; padding: 5px; width: 100%">
+                <b></b>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b>Total</b>
+            </td>
+            <td style="background: #A4CB7C; padding: 5px; width: 100%; border-radius: 0 0 14px 14px;">
+                <b>@Model.Total.ToString("C")</b>
+            </td>
+        </tr>
+    </table>
+</div>

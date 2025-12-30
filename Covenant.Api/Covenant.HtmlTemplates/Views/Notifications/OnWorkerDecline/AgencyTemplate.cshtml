@@ -1,0 +1,3 @@
+@model Covenant.HtmlTemplates.Views.Notifications.OnWorkerDecline.WorkerDeclineAgencyTemplateViewModel
+
+@await Html.PartialAsync("_GenericBody",$"Worker {Model.WorkerFullName} has declined request {Model.JobTitle}")

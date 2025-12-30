@@ -1,0 +1,3 @@
+@model Covenant.HtmlTemplates.Views.Notifications.OnWorkerInQueue.WorkerTemplateViewModel
+
+@await Html.PartialAsync("_GenericBody",$"Request {Model.JobTitle} is full but you are in the queue in case something happens")

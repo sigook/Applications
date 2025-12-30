@@ -1,0 +1,2 @@
+@model Covenant.Common.Models.Notification.NotificationAgencyModel
+@await Html.PartialAsync("_GenericBody", $"There is a new request {Model.JobTitle} ({Model.CompanyFullName})")

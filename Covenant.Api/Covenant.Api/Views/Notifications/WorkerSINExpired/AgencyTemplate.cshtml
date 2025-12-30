@@ -1,0 +1,49 @@
+@model IEnumerable<Covenant.Common.Models.Worker.WorkerSINExpiredModel>
+
+<div>
+    <table style="background-color: #F5F5F5;padding: 10px 20px 10px; text-align: center;width:100%" >
+        <tr>
+            <td>
+                <div>
+                    @await Html.PartialAsync("_EnvelopeLogo")
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2 style="font-weight: 300;">Hi</h2>
+                <div style="font-weight: 200;">
+                    <p style="margin:0">
+                        <b>The following workers need to update their Social Insurance.</b>
+                    </p>
+                    <p style="margin:0">If they do not work with the agency anymore, please change the status to <b>NOT APPROVED TO WORK.</b></p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table style="width: 100%;">
+                    <tr>
+                        <th>Worker</th>
+                        <th>Social Insurance</th>
+                        <th>Due Date</th>
+                        <th>Mobile Number</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                    </tr>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="border-bottom: 1px solid black;">@item.WorkerFullName</td>
+                            <td style="border-bottom: 1px solid black;">****@string.Concat(item.SocialInsurance?.TakeLast(4) ?? "")</td>
+                            <td style="border-bottom: 1px solid black;">@item.DueDate.GetValueOrDefault().ToString("yyyy MMMM dd")</td>
+                            <td style="border-bottom: 1px solid black;">@item.MobileNumber</td>
+                            <td style="border-bottom: 1px solid black;">@item.Phone @(item.PhoneExt.HasValue ? string.Concat(" Ext: ", item.PhoneExt.Value) : "")</td>
+                            <td style="border-bottom: 1px solid black;">@item.WorkerEmail</td>
+                        </tr>
+                    }
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
