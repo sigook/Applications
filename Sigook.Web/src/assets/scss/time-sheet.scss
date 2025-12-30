@@ -1,0 +1,204 @@
+@import './variables';
+
+.time-sheet {
+  padding: 0 20px 20px;
+  .button-right button{
+    margin-left: 10px;
+  }
+}
+
+.user-time-sheet{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid $gray-border;
+  margin: 10px 0 ;
+  padding: 8px 15px;
+  transition: .2s all ease;
+  font-weight: normal;
+
+  .progress {
+    margin: 0;
+  }
+
+  .item-first {
+    flex-basis: 40%;
+    display: flex;
+    align-items: center;
+    & > div {
+      display: inline-block;
+      vertical-align: middle;
+      padding-left: 20px;
+    }
+  }
+  img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+.table-time-sheet, .user-time-sheet {
+  /* PROGRESS */
+  .progress {
+    margin-bottom: 0;
+  }
+
+  progress[value] {
+    /* Reset the default appearance */
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 16px;
+  }
+
+  progress[value]::-webkit-progress-bar {
+    background-color: #e2e2e2;
+    border-radius: 5px;
+    height: 10px;
+  }
+
+  progress[value]::-webkit-progress-value {
+    background-color: $green;
+    border-radius: 5px;
+    height: 10px;
+  }
+
+  &:hover {
+    box-shadow: 0 1px 9px #e2e2e2;
+  }
+}
+
+.back-button {
+  padding: 0 0 30px;
+  display: block;
+
+  img {
+    transform: rotateY(180deg);
+    display: inline-block;
+    width: 20px;
+    vertical-align: top;
+    transition: .4s all ease;
+  }
+
+  &:hover {
+    img {
+      transform: scale(1.1);
+    }
+
+  }
+}
+
+.container-validation-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  & > div {
+      flex-basis: calc(50% - 8px);
+      margin-bottom: 20px;
+      border: 1px solid #e6e6e6;
+      border-radius: 5px;
+      padding: 15px 15px 10px;
+      table {
+          margin: 0;
+      }
+      h3 {
+          margin-bottom: 10px;
+      }
+  }
+  .validation-table {
+      width: 100% !important;
+      font-weight: normal;
+      tr th {
+          font-size: 14px;
+          padding: 4px 10px;
+      }
+  }
+}
+
+.one-line {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  &.max-width {
+    max-width: 80px;
+    display: inline-block;
+    overflow: hidden;
+  }
+}
+
+.table-time-sheet {
+  .container-validation {
+    padding: 10px;
+  }
+}
+
+.container-worker-report {
+  background: #efefef;
+  padding: 10px 20px;
+  text-align: center;
+  min-width: 50%;
+  width: auto;
+  border-radius: 7px;
+  margin: 0 auto 10px;
+  display: inline-block;
+  h3 {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+}
+
+
+@media(max-width: 999px){
+  .container-validation-flex {
+    overflow: auto;
+    & > div {
+        flex-basis: 100%;
+    }
+  }
+}
+
+@media(max-width: 767px){
+  .time-sheet {
+    padding: 0;
+
+    .button-right {
+      button {
+        width: 100%;
+        margin: 10px 0;
+        max-width: none;
+      }
+    }
+  }
+
+  .user-time-sheet {
+    display: block;
+
+    & > div {
+      text-align: center;
+      margin: 15px 0 8px;
+    }
+
+    .item-first > div{
+      text-align: left;
+      span{
+        font-size: 16px;
+      }
+    }
+    .progress + p {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  }
+
+  .one-line {
+    text-overflow: initial;
+    white-space: initial;
+  }
+
+  .container-worker-report {
+    width: 100%;
+  }
+}

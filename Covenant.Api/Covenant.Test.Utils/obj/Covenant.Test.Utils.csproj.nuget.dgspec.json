@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj": {}
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj": {}
   },
   "projects": {
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj",
         "projectName": "Covenant.Test.Utils",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Test.Utils\\Covenant.Test.Utils.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Test.Utils\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Test.Utils\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -45,8 +45,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -76,26 +75,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a monorepo containing the Covenant/Sigook platform applications:
 
 - **SigookApp** - Flutter mobile application for worker registration and job matching
-- **covenantWeb** - Vue.js marketing/informational website
+- **Sigook.Web** - Vue.js 2 main web application for Sigook platform
+- **covenantWeb** - Vue.js 3 marketing/informational website for Covenant
 - **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system
 
 ## SigookApp (Flutter Mobile Application)
@@ -152,7 +153,109 @@ flutter format lib/
 
 **Models vs Entities**: Data layer uses Freezed `models` (DTOs) with JSON serialization for API/storage. Domain layer uses pure `entities` (business objects) without serialization. Models are converted to entities when crossing the data→domain boundary.
 
-## covenantWeb (Vue.js Marketing Website)
+## Sigook.Web (Vue.js 2 Main Application)
+
+### Architecture
+
+The main Sigook web application built with Vue.js 2 and vue-cli-service.
+
+**Tech Stack:**
+- Vue.js 2.6.12
+- Vue CLI Service 4.5.19
+- Node.js 16
+- Vuex 3.0.1 (state management)
+- Vue Router 3.0.1
+- Axios 1.10.0 (HTTP client)
+- OIDC Client 1.5.2 (authentication)
+- Buefy 0.9.23 (UI components)
+- Docker multi-stage build (Node.js → Nginx)
+
+### Project Structure
+
+```
+Sigook.Web/
+├── src/
+│   ├── assets/         # Images, styles
+│   ├── components/     # Reusable Vue components
+│   ├── pages/          # Page-level components
+│   ├── router/         # Vue Router configuration
+│   ├── store/          # Vuex store modules
+│   ├── security/       # Authentication logic (OIDC)
+│   ├── utils/          # Utility functions
+│   ├── directives/     # Custom Vue directives
+│   ├── filters/        # Vue filters
+│   ├── lang/           # i18n translations (vue-i18n)
+│   ├── mixins/         # Vue mixins
+│   └── main.js         # Application entry point
+├── public/             # Static assets
+├── wwwroot/            # Build output directory
+├── .env.development.local
+├── .env.staging
+├── .env.production
+├── Dockerfile          # Multi-stage Docker build
+├── nginx.conf          # Nginx configuration
+└── vue.config.js       # Vue CLI configuration
+```
+
+### Environment Configuration
+
+Uses `.env` files for environment-specific configuration:
+- `.env.development.local` - Local development
+- `.env.staging` - Staging environment
+- `.env.production` - Production environment
+
+### Development Commands
+
+```bash
+cd Sigook.Web
+
+# Install dependencies
+npm ci
+
+# Dev server
+npm run serve
+
+# Build for staging
+npm run staging
+
+# Build for production
+npm run production
+
+# Lint code
+npm run lint
+```
+
+### Docker Deployment
+
+Multi-stage Dockerfile:
+1. **Build Stage** (node:16): Installs dependencies and runs `npm run staging` or `npm run production`
+2. **Production Stage** (nginx:stable-alpine): Serves static files from `wwwroot/`
+
+Build argument `ENV` determines which environment to build for:
+```bash
+docker build --build-arg ENV=staging -t sigook-web .
+docker build --build-arg ENV=production -t sigook-web .
+```
+
+### Key Features
+
+- **Authentication**: OIDC-based authentication with `oidc-client`
+- **Internationalization**: Multi-language support with `vue-i18n`
+- **State Management**: Vuex with `vuex-persistedstate` for persistence
+- **Form Validation**: `vee-validate` for form validation
+- **UI Components**: Buefy (Bulma-based Vue components)
+- **Image Handling**: Cropping and compression (`vue-croppa`, `image-compressor.js`)
+- **Maps Integration**: Google Maps via `vue2-google-maps`
+- **reCAPTCHA**: Form protection with `vue-recaptcha`
+
+### Important Notes
+
+- Output directory is `wwwroot/` (not `dist/`)
+- Uses Nginx for serving in production
+- Token replacement in `public/**/*.html` and `public/**/*.json` during CI/CD for versioning
+- ESLint configured with relaxed rules (warnings for most issues)
+
+## covenantWeb (Vue.js 3 Marketing Website)
 
 ### Architecture
 
@@ -319,14 +422,23 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 ### Pipeline Files
 
 - **`.azure-pipelines/sigookapp-pipeline.yml`** - Flutter app CI/CD (placeholder for future implementation)
-- **`.azure-pipelines/covenantweb-pipeline.yml`** - Vue.js website CI/CD (fully functional)
+- **`.azure-pipelines/sigook-web-pipeline.yml`** - Sigook.Web Vue.js 2 app CI/CD (fully functional)
+- **`.azure-pipelines/covenantweb-pipeline.yml`** - CovenantWeb Vue.js 3 marketing CI/CD (fully functional)
 - **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
+- **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
 
 ### Intelligent Triggering
 
 Each pipeline only executes when its application's files are modified:
 
 ```yaml
+# Example: Sigook.Web pipeline only triggers on:
+paths:
+  include:
+    - Sigook.Web/**
+  exclude:
+    - Sigook.Web/**/*.md
+
 # Example: covenantWeb pipeline only triggers on:
 paths:
   include:
@@ -377,28 +489,44 @@ No duplicate stages - one pipeline handles both environments using conditional v
    - Production: `covenantgroup.azurewebsites.net`
    - Runtime: Node.js 20 LTS with `npm start` (serves static files via `serve` package)
 
+**Sigook.Web Pipeline (complete):**
+1. **Build and Validate Stage**
+   - Install Node.js 16.x with node_modules caching
+   - Linting (ESLint)
+   - Build validation
+
+2. **Build Docker and Deploy Stage**
+   - Replace tokens (version in index.html and version.json)
+   - Build Docker image multi-stage (Node.js → Nginx)
+   - Push to Azure Container Registry
+   - Deploy to Azure App Service Container
+   - Staging: `sigook-web-staging.azurewebsites.net`
+   - Production: `sigook.azurewebsites.net`
+
 **SigookApp Pipeline (placeholder):**
 - Basic project structure validation
 - TODO comments for future Flutter build implementation
 
 **Covenant.Api Pipeline (complete):**
-1. **Build and Test Stage**
-   - Install .NET SDK 6.0
-   - Build solution
+1. **Build and Test Stage** (uses templates)
+   - Install .NET SDK 6.0 (template: dotnet-setup.yml)
+   - Build solution (template: dotnet-build-test.yml)
    - Run unit tests
    - Run integration tests
    - Publish test results
 
-2. **NuGet Package Stage** (dev only)
-   - Check for changes in Covenant.Common
-   - Build and publish NuGet package (if changed)
-
-3. **Docker Build and Deploy Stage**
+2. **Build Docker and Deploy Stage**
    - Build Docker image (staging or production tag)
    - Push to Azure Container Registry
    - Deploy to Azure App Service
    - Staging: `sigook-api-staging`
    - Production: `sigook-api`
+
+**Covenant.Common NuGet Pipeline (complete):**
+1. **Build, Test, and Publish Stage** (dev only, uses templates)
+   - Quality Gate: Build + Unit Tests
+   - Pack and Publish to Azure Artifacts (sigook/Covenant.Common)
+   - Only triggers on changes to Covenant.Api/Covenant.Common/**
 
 ### Setup Guide
 
@@ -412,6 +540,11 @@ See `.azure-pipelines/README.md` for detailed setup instructions including:
 ### Quick Commands for Testing Triggers
 
 ```bash
+# Test Sigook.Web pipeline only
+echo "test" >> Sigook.Web/src/App.vue
+git add . && git commit -m "test: trigger sigook-web pipeline"
+git push origin dev
+
 # Test CovenantWeb pipeline only
 echo "test" >> covenantWeb/src/App.vue
 git add . && git commit -m "test: trigger covenantweb pipeline"
@@ -425,6 +558,11 @@ git push origin dev
 # Test Covenant.Api pipeline only
 echo "// test" >> Covenant.Api/Covenant.Api/Program.cs
 git add . && git commit -m "test: trigger covenant-api pipeline"
+git push origin dev
+
+# Test Covenant.Common NuGet pipeline only
+echo "// test" >> Covenant.Api/Covenant.Common/README.md
+git add . && git commit -m "test: trigger covenant-common-nuget pipeline"
 git push origin dev
 
 # No pipeline triggered (documentation only)

@@ -1,0 +1,182 @@
+//IE9,10
+@media screen and (min-width:0\0) {
+
+  .navbar,
+  .navbar-logged {
+    clear: both;
+
+    .navbar-logo {
+      height: auto;
+    }
+
+    &>div {
+      display: inline-block;
+      float: right;
+      margin-top: 13px;
+    }
+
+    &>ul {
+      display: inline-block;
+      float: right;
+    }
+  }
+
+  img {
+    border: 0;
+    height: auto;
+  }
+
+  // requests
+  .container-requests-top {
+    &>div {
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 25px;
+    }
+  }
+
+  .container-actions {
+    &>div {
+      display: inline-block;
+
+      &.container-status {
+        float: right;
+        margin-top: -1px;
+      }
+    }
+  }
+
+  .request-top {
+    .container-title {
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 15px;
+    }
+  }
+
+  .job-items>div {
+    width: 33%;
+    display: inline-block;
+  }
+
+  .cont-space-between {
+    h3 {
+      display: inline-block;
+      //width: calc(100% - 300px);
+    }
+
+    .background-btn {
+      float: right;
+    }
+  }
+
+  .content-flex-between {
+    div {
+      display: inline-block;
+      float: right;
+    }
+  }
+
+  // worker
+  .worker-main .items>div {
+    display: inline-block;
+    width: 33%;
+    vertical-align: top;
+  }
+
+  .worker-skills>div>span {
+    display: inline-block;
+    width: calc(50% - 20px);
+  }
+
+  .worker-experience ul li {
+    display: inline-block;
+    width: calc(50% - 20px);
+    vertical-align: top;
+  }
+
+  .button-right {
+
+    h3,
+    div {
+      display: inline-block;
+    }
+
+    button {
+      float: right;
+      margin-top: 13px;
+    }
+
+    .collapse-button {
+      margin-top: 0;
+    }
+
+    &.filter-table {
+      button {
+        margin-top: 0;
+      }
+    }
+  }
+
+  // forms
+  select.input-border {
+    padding: 0 !important;
+  }
+
+  .contain-check label {
+    margin-right: 15px;
+  }
+
+  .group-form-inline .button-right button {
+    margin-top: 0;
+  }
+
+  // tables
+  .scroll {
+    clear: both;
+  }
+
+  // profile 
+
+  .profile-menu {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .profile-content {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  // time sheet
+
+  .time-sheet .button-right {
+    div {
+      float: right;
+    }
+  }
+
+  .user-time-sheet {
+    clear: both;
+    margin-top: 10px;
+
+    div {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 15px;
+    }
+
+    .progress {
+      width: 50%;
+    }
+  }
+
+
+  .section-top .bg-image-top h1 {
+    padding-top: 70px;
+  }
+
+  .section-top .bg-image-top>div h2 {
+    padding-top: 80px;
+  }
+}

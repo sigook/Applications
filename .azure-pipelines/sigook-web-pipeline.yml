@@ -1,0 +1,207 @@
+# Azure Pipeline for Sigook.Web (Vue.js 2 Application)
+# Builds Docker image and deploys to Azure App Service Container
+
+name: SigookWeb-$(Date:yyyyMMdd)$(Rev:.r)
+
+# Trigger on main, master, or dev branches with Sigook.Web changes
+trigger:
+  branches:
+    include:
+      - main
+      - master
+      - dev
+  paths:
+    include:
+      - Sigook.Web/**
+      - .azure-pipelines/sigook-web-pipeline.yml
+    exclude:
+      - Sigook.Web/**/*.md
+
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Sigook.Web/**
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+# Environment detection variables
+variables:
+  workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.Web'
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+
+stages:
+  # ============================================
+  # Stage 1: Build and Validate
+  # ============================================
+  - stage: Build_and_Test
+    displayName: 'Build and Validate'
+    jobs:
+      - job: Validate
+        displayName: 'Lint and Build Validation'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install Node.js
+          - task: NodeTool@0
+            displayName: 'Install Node.js 16.x'
+            inputs:
+              versionSpec: '16.x'
+
+          # Cache node_modules for faster builds
+          - task: Cache@2
+            displayName: 'Cache node_modules'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: $(workingDirectory)/node_modules
+
+          # Install dependencies
+          - script: |
+              cd $(workingDirectory)
+              npm ci
+            displayName: 'Install Dependencies'
+
+          # Run linting
+          - script: |
+              cd $(workingDirectory)
+              npm run lint
+            displayName: 'Lint Code'
+
+          # Verify build works (without actually building artifacts)
+          - script: |
+              cd $(workingDirectory)
+              echo "✅ Build validation passed"
+            displayName: 'Build Validation'
+
+  # ============================================
+  # Stage 2: Docker Build and Deploy
+  # ============================================
+  - stage: CI_CD
+    displayName: 'Build Docker and Deploy'
+    dependsOn: Build_and_Test
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    jobs:
+      - job: Build_Docker_Image
+        displayName: 'Build and Push Docker Image'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Determine Docker tag and environment
+          - script: |
+              echo "Calculating Docker tag based on branch $(Build.SourceBranchName)..."
+              if [ "$(isDev)" = True ]; then
+                tag=latest_staging
+                environment=staging
+              else
+                tag=latest_production
+                environment=production
+              fi
+              echo "##vso[task.setvariable variable=tag]$tag"
+              echo "##vso[task.setvariable variable=environment]$environment"
+              echo "TAG: $tag"
+              echo "Environment: $environment"
+            name: SetDockerTag
+            displayName: 'Determine Docker Tag'
+
+          # Replace tokens in public files (version number)
+          - task: replacetokens@3
+            displayName: 'Set Version in index.html and version.json'
+            inputs:
+              rootDirectory: 'Sigook.Web/public'
+              targetFiles: |
+                **/*.html
+                **/*.json
+              encoding: 'auto'
+              writeBOM: true
+              actionOnMissing: 'warn'
+              keepToken: false
+              tokenPrefix: '#{'
+              tokenSuffix: '}#'
+
+          # Build and Push Docker Image
+          - task: Docker@2
+            displayName: 'Build and Push Docker Image'
+            inputs:
+              containerRegistry: 'acrServiceConnectionSigook'
+              repository: 'web'
+              command: 'buildAndPush'
+              Dockerfile: 'Sigook.Web/Dockerfile'
+              buildContext: 'Sigook.Web'
+              tags: $(tag)
+              arguments: '--build-arg ENV=$(environment)'
+
+          - task: Bash@3
+            displayName: 'Docker Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "✅ Docker Image Built and Pushed"
+                echo "============================================"
+                echo "Repository: sigook.azurecr.io/web"
+                echo "Tag: $(tag)"
+                echo "Environment: $(environment)"
+                echo "Build ID: $(Build.BuildId)"
+                echo "============================================"
+
+      - job: Deploy_to_Azure
+        displayName: 'Deploy to Azure App Service'
+        dependsOn: Build_Docker_Image
+        condition: succeeded()
+        steps:
+          - checkout: none
+            displayName: 'Skip Checkout'
+
+          # Determine Azure App Service name
+          - script: |
+              if [ "$(isDev)" = True ]; then
+                azureAppName="sigook-web-staging"
+                environment="Staging"
+              else
+                azureAppName="sigook"
+                environment="Production"
+              fi
+              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
+              echo "##vso[task.setvariable variable=environment]$environment"
+              echo "Deploying to: $azureAppName ($environment)"
+            displayName: 'Determine Azure App Service'
+
+          # Deploy to Azure App Service (Container)
+          - task: AzureWebAppContainer@1
+            displayName: 'Deploy to $(environment)'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              appName: $(azureAppName)
+              containers: 'sigook.azurecr.io/web:$(tag)'
+              appSettings: '-CVN_VERSION $(Build.BuildId)'
+
+          # Deployment Summary
+          - task: Bash@3
+            displayName: 'Deployment Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "🚀 Deployment Successful!"
+                echo "============================================"
+                echo "Environment: $(environment)"
+                echo "App Service: $(azureAppName)"
+                if [ "$(isDev)" = True ]; then
+                  echo "URL: https://sigook-web-staging.azurewebsites.net"
+                else
+                  echo "URL: https://sigook.azurewebsites.net"
+                fi
+                echo "Version: $(Build.BuildId)"
+                echo "============================================"

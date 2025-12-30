@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "a/dcywp8Ia0=",
+  "dgSpecHash": "yPLn3ZhXh1k=",
   "success": true,
-  "projectFilePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
+  "projectFilePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\azure.core\\1.44.1\\azure.core.1.44.1.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\azure.core.amqp\\1.3.0\\azure.core.amqp.1.3.0.nupkg.sha512",
@@ -160,20 +160,7 @@
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading\\4.3.0\\system.threading.4.3.0.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.36\\microsoft.windowsdesktop.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512"
+    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://pkgs.dev.azure.com/sigook/sigook/_packaging/Covenant.Common/nuget/v3/index.json.",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }

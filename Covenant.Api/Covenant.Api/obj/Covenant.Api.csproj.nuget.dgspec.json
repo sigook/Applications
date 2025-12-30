@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj": {}
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj": {}
   },
   "projects": {
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
         "projectName": "Covenant.Api",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -34,8 +34,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj"
               }
             }
           }
@@ -49,8 +49,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -114,24 +113,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -140,18 +121,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj",
         "projectName": "Covenant.Billing",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -174,20 +155,20 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
               }
             }
           }
@@ -201,8 +182,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -218,37 +198,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj",
         "projectName": "Covenant.Common",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -282,8 +248,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -381,37 +346,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
         "projectName": "Covenant.Core.BL",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -434,8 +385,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj"
               }
             }
           }
@@ -449,8 +400,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -466,20 +416,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -488,18 +424,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj",
         "projectName": "Covenant.Deductions",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -522,8 +458,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
               }
             }
           }
@@ -537,8 +473,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -554,37 +489,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj",
         "projectName": "Covenant.Documents",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -607,17 +528,17 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj"
               }
             }
           }
@@ -631,8 +552,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -648,37 +568,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
         "projectName": "Covenant.Infrastructure",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -701,14 +607,14 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Billing\\Covenant.Billing.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Documents\\Covenant.Documents.csproj"
               }
             }
           }
@@ -722,8 +628,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -769,20 +674,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -791,18 +682,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj",
         "projectName": "Covenant.Invoices",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\Covenant.Invoices.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Invoices\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Invoices\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -825,8 +716,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
               }
             }
           }
@@ -840,8 +731,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -857,37 +747,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj",
         "projectName": "Covenant.PayStubs",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\Covenant.PayStubs.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.PayStubs\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.PayStubs\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -910,14 +786,14 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Deductions\\Covenant.Deductions.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
               }
             }
           }
@@ -931,8 +807,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -948,37 +823,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj",
         "projectName": "Covenant.Subcontractor",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\Covenant.Subcontractor.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Subcontractor\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Subcontractor\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1001,11 +862,11 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
               },
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj"
               }
             }
           }
@@ -1019,8 +880,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -1036,37 +896,23 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
+    "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj",
+        "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj",
         "projectName": "Covenant.TimeSheetTotal",
-        "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj",
+        "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\Covenant.TimeSheetTotal.csproj",
         "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-        "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.TimeSheetTotal\\obj\\",
+        "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.TimeSheetTotal\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1089,8 +935,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
-                "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
+              "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj": {
+                "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Common\\Covenant.Common.csproj"
               }
             }
           }
@@ -1104,8 +950,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net6.0": {
@@ -1121,26 +966,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[6.0.36, 6.0.36]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

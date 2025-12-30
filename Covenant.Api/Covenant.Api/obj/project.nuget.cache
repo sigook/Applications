@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "t9Iz6InzRA8=",
+  "dgSpecHash": "KId/eZ5Qrg0=",
   "success": true,
-  "projectFilePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+  "projectFilePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\asp.versioning.abstractions\\6.1.0\\asp.versioning.abstractions.6.1.0.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\asp.versioning.http\\6.1.0\\asp.versioning.http.6.1.0.nupkg.sha512",
@@ -206,29 +206,16 @@
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading\\4.3.0\\system.threading.4.3.0.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512",
     "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.36\\microsoft.windowsdesktop.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.36\\microsoft.netcore.app.host.win-x64.6.0.36.nupkg.sha512"
+    "C:\\Users\\SEBASTIAN\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512"
   ],
   "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://pkgs.dev.azure.com/sigook/sigook/_packaging/Covenant.Common/nuget/v3/index.json.",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
-      "targetGraphs": []
-    },
     {
       "code": "NU1901",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known low severity vulnerability, https://github.com/advisories/GHSA-23hg-53q6-hqfg",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -238,9 +225,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-6hgw-6x87-578x",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -250,9 +237,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-9ccg-6pjw-x645",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -262,9 +249,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-cjc8-g9w8-chfw",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -274,9 +261,9 @@
       "code": "NU1901",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known low severity vulnerability, https://github.com/advisories/GHSA-fh55-q5pj-pxgw",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -286,9 +273,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qp29-wxp5-wh82",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"
@@ -298,9 +285,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'Magick.NET-Q16-x64' 14.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wpp4-vqfq-v4hp",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
+      "filePath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Api\\Covenant.Api.csproj",
       "libraryId": "Magick.NET-Q16-x64",
       "targetGraphs": [
         "net6.0"

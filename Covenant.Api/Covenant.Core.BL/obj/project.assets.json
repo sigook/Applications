@@ -7371,11 +7371,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
+      "projectUniqueName": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
       "projectName": "Covenant.Core.BL",
-      "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
+      "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\Covenant.Core.BL.csproj",
       "packagesPath": "C:\\Users\\SEBASTIAN\\.nuget\\packages\\",
-      "outputPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\obj\\",
+      "outputPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Core.BL\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -7398,8 +7398,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
-              "projectPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj"
+            "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj": {
+              "projectPath": "C:\\Src\\Covenant\\Applications\\Covenant.Api\\Covenant.Infrastructure\\Covenant.Infrastructure.csproj"
             }
           }
         }
@@ -7413,8 +7413,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "10.0.100"
+      }
     },
     "frameworks": {
       "net6.0": {
@@ -7430,20 +7429,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.36, 6.0.36]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -7452,16 +7437,8 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://pkgs.dev.azure.com/sigook/sigook/_packaging/Covenant.Common/nuget/v3/index.json."
-    }
-  ]
+  }
 }

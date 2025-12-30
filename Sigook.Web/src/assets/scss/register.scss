@@ -1,0 +1,259 @@
+@import './variables';
+.main-container.path-register .white-container {
+  width: 60%;
+  margin: 0 auto;
+  min-width: 500px;
+  .register-top {
+    margin-bottom: 30px;
+  }
+
+  .group-form-inline {
+    margin: 10px 0;
+    input {
+      font-size: 0.80em;
+      font-weight: 300;
+      opacity: .8;
+    }
+  }
+
+  .label-right-30 {
+    display: inline-block;
+    width: 35%;
+    text-align: right;
+    padding-right: 20px;
+    font-size: 0.85em;
+    vertical-align: middle;
+  }
+
+  .input-70 {
+    display: inline-block;
+    width: calc(65% - 10px);
+    vertical-align: middle;
+  }
+  .register-section {
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: #616161;
+      width: 35%;
+      text-align: right;
+      padding-right: 20px;
+    }
+    margin-bottom: 30px;
+  }
+
+  .input-border[type="file"] {
+    padding-top: 6px;
+  }
+
+  // date picker
+
+  .vdp-datepicker {
+    @extend .input-70;
+    input {
+      // @extend .input-border;
+      width: 100%;
+    }
+  }
+
+
+  .register-actions {
+    margin-left: calc(30% + 25px);
+    width: calc(70% - 25px);
+    button {
+      margin-bottom: 10px;
+    }
+  }
+
+  .multiple-line-group {
+    label {
+      vertical-align: top;
+      padding-top: 7px;
+    }
+    .input-70 > div {
+      margin-bottom: 10px;
+    }
+  }
+
+  .select-btn {
+    height: 32px;
+    width: 75px;
+    padding: 4px 10px;
+    text-align: center;
+  }
+
+  .input-group {
+    width: calc(100% - 82px);
+    margin-right: 7px;
+  }
+
+
+  .multiple-block-group {
+    margin-bottom: 30px;
+    .text-right {
+      padding-right: 7px;
+    }
+
+  }
+
+  .group-added {
+    transition: 0.4s height ease;
+    background: #f7f7f7;
+    padding: 10px;
+    input,
+    select {
+      background-color: transparent;
+    }
+  }
+
+  .group-address {
+    label {
+      vertical-align: top;
+      padding-top: 7px;
+    }
+    .input-100 {
+      width: 100%;
+    }
+
+    .input-50 {
+      width: calc(50% - 3px);
+      margin: 10px 0 0;
+      &:nth-child(odd) {
+        margin-right: 6px;
+      }
+    }
+  }
+
+
+}
+
+.accepts {
+  font-size: 14px;
+  padding-left: 10px;
+  position: relative;
+  top: -9px;
+}
+
+.form-register-worker .form-100 {
+  width: calc(100% - 9px);
+}
+
+@media(max-width: 767px) {
+  .main-container.path-register .white-container {
+    width: 100%;
+    min-width: 0;
+    .register-section {
+      h3 {
+        width: 100%;
+        padding: 0;
+        text-align: left;
+      }
+    }
+
+    .label-right-30 {
+      width: 100%;
+      display: block;
+      text-align: left;
+      margin-bottom: 3px;
+    }
+    .group-form-inline input,
+    .vdp-datepicker,
+    .input-70 {
+      width: 100%;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+    }
+
+    .register-actions {
+      margin: 0 0 20px;
+      width: 100%;
+      text-align: center
+    }
+    .button-right .select-btn {
+      display: inline-block;
+    }
+  }
+}
+
+.uploadButton {
+  position: relative;
+  input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .progress-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .inline {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+  }
+  span.help.is-danger.no-margin {
+    position: absolute;
+    width: 110px;
+    top: 0;
+    font-size: 10px;
+    margin: 0;
+    left: 0;
+    transform: translateX(calc(-100% - 5px));
+    text-align: right;
+  }
+}
+
+.container-files {
+  padding: 10px 0;
+  .input-file-edited {
+    position: relative;
+    height: 60px;
+    overflow: hidden;
+    padding-left: 70px;
+    padding-right: 10px;
+    padding-top: 10px;
+    box-shadow: 1px 1px 3px #e0e0e0;
+    border: 1px solid #e0e0e0;
+    &:before {
+      content: "";
+      width: 60px;
+      height: 60px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #ff9932 url("/assets/images/document-white.png") no-repeat 50%;
+      background-size: 60%;
+    }
+
+    .cross-button {
+      background-color: transparent !important;
+      border: 0;
+      position: absolute;
+      right: -3px;
+      top: -4px;
+    }
+    input {
+      margin-top: 3px;
+      height: auto;
+    }
+  }
+}
+
+.borderTB {
+  padding: 15px 5px 5px 0;
+  border: 1px solid #d4d4d4;
+  border-width: 1px 0 0;
+  margin-top: 20px;
+}

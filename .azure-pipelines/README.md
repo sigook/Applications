@@ -7,7 +7,8 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 ```
 .azure-pipelines/
 ├── sigookapp-pipeline.yml                 # Pipeline para Flutter mobile app (placeholder)
-├── covenantweb-pipeline.yml               # Pipeline para Vue.js website (completo)
+├── sigook-web-pipeline.yml                # Pipeline para Sigook.Web Vue.js app (completo)
+├── covenantweb-pipeline.yml               # Pipeline para CovenantWeb marketing (completo)
 ├── covenant-api-pipeline.yml              # Pipeline para .NET API (completo)
 ├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
 ├── templates/                             # Templates reutilizables
@@ -23,6 +24,7 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 Cada pipeline **solo se ejecuta cuando hay cambios en su aplicación específica**:
 
 - **sigookapp-pipeline.yml**: Se activa solo con cambios en `SigookApp/**`
+- **sigook-web-pipeline.yml**: Se activa solo con cambios en `Sigook.Web/**`
 - **covenantweb-pipeline.yml**: Se activa solo con cambios en `covenantWeb/**`
 - **covenant-api-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/**` (excepto Covenant.Common)
 - **covenant-common-nuget-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/Covenant.Common/**` (solo rama dev)
@@ -143,14 +145,21 @@ Template para build y ejecución de tests:
 3. Rename pipeline a: "SigookApp-CI/CD"
 ```
 
-#### Pipeline 3: Covenant.Api
+#### Pipeline 3: Sigook.Web
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/sigook-web-pipeline.yml
+3. Rename pipeline a: "Sigook.Web-CI/CD"
+```
+
+#### Pipeline 4: Covenant.Api
 ```
 1. Repetir proceso anterior
 2. Path: /.azure-pipelines/covenant-api-pipeline.yml
 3. Rename pipeline a: "Covenant.Api-CI/CD"
 ```
 
-#### Pipeline 4: Covenant.Common (NuGet)
+#### Pipeline 5: Covenant.Common (NuGet)
 ```
 1. Repetir proceso anterior
 2. Path: /.azure-pipelines/covenant-common-nuget-pipeline.yml
@@ -269,6 +278,44 @@ Cuando estés listo para implementar el build completo de Flutter, el pipeline d
 - `flutter build apk/aab` con flavors
 - Firma de APK con keystore
 - Publicación a Firebase App Distribution o Play Store
+
+### Sigook.Web Pipeline
+
+**Archivo:** `sigook-web-pipeline.yml`
+
+**Propósito:** Aplicación web principal de Sigook (Vue.js 2) desplegada como contenedor Docker.
+
+**Stages:**
+1. **Build and Validate** - Validación y Linting
+   - Instala Node.js 16.x
+   - Usa caché para node_modules
+   - Linting con ESLint
+   - Validación de build
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Replace tokens (versión en index.html y version.json)
+   - Build de imagen Docker multi-stage (Node.js → Nginx)
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service Container
+   - Tags: `latest_staging` o `latest_production`
+
+**Tecnología:**
+- Vue.js 2 con vue-cli-service
+- Node.js 16 para build
+- Nginx stable-alpine para serving
+- Docker multi-stage build
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Sigook.Web/**`
+- Pull Requests a `dev` (NO a main)
+- Excluye: archivos markdown
+
+**Deployment Targets:**
+- Staging: `sigook-web-staging.azurewebsites.net`
+- Production: `sigook.azurewebsites.net`
+
+**Build Arguments:**
+- `ENV=staging` o `ENV=production` (usado en Dockerfile para ejecutar `npm run staging` o `npm run production`)
 
 ### Covenant.Api Pipeline
 
