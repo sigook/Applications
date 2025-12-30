@@ -44,6 +44,34 @@ Los pipelines detectan automáticamente el ambiente basado en la rama:
 
 **No hay stages duplicados** - un solo pipeline maneja ambos ambientes con variables condicionales.
 
+### Estrategia de Validación de PRs
+
+Los pipelines implementan una **estrategia optimizada** para evitar duplicación de tests:
+
+**✅ Pull Requests hacia `dev`:**
+- Pipeline **SÍ se ejecuta** con validación completa (build, tests, linting)
+- Garantiza que nada roto llegue a dev
+- Quality gate principal del proyecto
+
+**❌ Pull Requests hacia `main`:**
+- Pipeline **NO se ejecuta**
+- Se confía en que dev ya validó el código
+- Evita duplicación innecesaria de tests
+- Ahorra tiempo y recursos
+
+**🔒 Push directo a `dev` o `main`:**
+- Pipeline **SÍ se ejecuta** con todo el flujo (build, test, deploy)
+- `dev` → Deploy a Staging
+- `main` → Deploy a Production
+
+**Ventajas:**
+- ✅ Evita correr tests 2-3 veces para el mismo código
+- ✅ Feedback más rápido en PRs hacia main
+- ✅ Ahorra minutos de Azure DevOps
+- ✅ Dev actúa como el quality gate principal
+
+**Requisito:** Branch protection configurado en `main` para requerir PRs y approvals (ver sección de configuración).
+
 ### Templates Reutilizables
 
 Los pipelines de .NET usan **templates reutilizables** para evitar duplicación de código y mantener consistencia:

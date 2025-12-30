@@ -17,12 +17,11 @@ trigger:
     exclude:
       - Covenant.Api/**/*.md
 
-# PR trigger
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
 pr:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:
