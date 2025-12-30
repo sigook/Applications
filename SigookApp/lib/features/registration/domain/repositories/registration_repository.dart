@@ -16,7 +16,4 @@ abstract class RegistrationRepository {
 
   /// Clears saved draft
   Future<Either<Failure, void>> clearDraft();
-
-  /// Validates email availability
-  Future<Either<Failure, bool>> isEmailAvailable(String email);
 }

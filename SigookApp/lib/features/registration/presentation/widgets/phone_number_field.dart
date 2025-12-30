@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:phone_numbers_parser/phone_numbers_parser.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Phone number input field with country-aware formatting
-/// Follows Single Responsibility - handles phone number input UI only
 class PhoneNumberField extends StatefulWidget {
   final String? initialValue;
   final String countryCode; // ISO code (US, CA)
@@ -32,13 +29,37 @@ class PhoneNumberField extends StatefulWidget {
 class _PhoneNumberFieldState extends State<PhoneNumberField> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
+  late MaskTextInputFormatter _maskFormatter;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialValue ?? '');
+    _maskFormatter = MaskTextInputFormatter(
+      mask: '(###) ###-####',
+      filter: {"#": RegExp(r'[0-9]')},
+      type: MaskAutoCompletionType.lazy,
+    );
+    final initialText =
+        widget.initialValue != null && widget.initialValue!.isNotEmpty
+        ? _maskFormatter.maskText(widget.initialValue!)
+        : '';
+    _controller = TextEditingController(text: initialText);
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(PhoneNumberField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue) {
+      final newText =
+          widget.initialValue != null && widget.initialValue!.isNotEmpty
+          ? _maskFormatter.maskText(widget.initialValue!)
+          : '';
+      if (_controller.text != newText) {
+        _controller.text = newText;
+      }
+    }
   }
 
   @override
@@ -52,55 +73,14 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
     widget.onFocusChanged?.call(_focusNode.hasFocus);
   }
 
-  void _formatPhoneNumber(String value) {
-    if (value.isEmpty) {
-      widget.onChanged('');
-      return;
-    }
-
-    try {
-      // Format as you type using phone_numbers_parser
-      final isoCode = _getIsoCode(widget.countryCode);
-      final parsed = PhoneNumber.parse(value, callerCountry: isoCode);
-      
-      // Get national format for display
-      final formatted = parsed.formatNsn();
-
-      if (formatted.isNotEmpty && formatted != value) {
-        setState(() {
-          // Update controller without triggering onChange again
-          final cursorPos = _controller.selection.baseOffset;
-          _controller.value = TextEditingValue(
-            text: formatted,
-            selection: TextSelection.collapsed(
-              offset: cursorPos.clamp(0, formatted.length),
-            ),
-          );
-        });
-      }
-
-      widget.onChanged(value);
-    } catch (e) {
-      // If formatting fails, use raw value
-      widget.onChanged(value);
-    }
-  }
-
-  /// Convert country code to IsoCode for phone_numbers_parser
-  IsoCode _getIsoCode(String countryCode) {
-    switch (countryCode.toUpperCase()) {
-      case 'US':
-        return IsoCode.US;
-      case 'CA':
-        return IsoCode.CA;
-      default:
-        return IsoCode.US;
-    }
+  void _onChanged(String value) {
+    final digitsOnly = _maskFormatter.getUnmaskedText();
+    widget.onChanged(digitsOnly);
   }
 
   String _getPlaceholder() {
     if (widget.hint != null) return widget.hint!;
-    
+
     switch (widget.countryCode.toUpperCase()) {
       case 'US':
       case 'CA':
@@ -141,7 +121,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
           focusNode: _focusNode,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\(\)\s]')),
+            _maskFormatter, // Apply mask for visual formatting
           ],
           decoration: InputDecoration(
             hintText: _getPlaceholder(),
@@ -159,11 +139,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    width: 1,
-                    height: 24,
-                    color: Colors.grey.shade300,
-                  ),
+                  Container(width: 1, height: 24, color: Colors.grey.shade300),
                 ],
               ),
             ),
@@ -180,7 +156,10 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 2),
+              borderSide: const BorderSide(
+                color: AppTheme.primaryBlue,
+                width: 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -190,18 +169,18 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
           ),
-          onChanged: _formatPhoneNumber,
+          onChanged: _onChanged,
         ),
         if (widget.errorText == null) ...[
           const SizedBox(height: 4),
           Text(
             'Format: ${_getPlaceholder()}',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
         ],
       ],

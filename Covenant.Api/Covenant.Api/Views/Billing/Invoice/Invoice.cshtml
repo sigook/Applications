@@ -1,0 +1,119 @@
+@using System.Globalization
+@using Covenant.Common.Utils;
+@using Covenant.HtmlTemplates.Views.Billing.Invoice
+@using Covenant.Common.Utils.Extensions
+@using Microsoft.Extensions.Configuration
+@model Covenant.Common.Models.Accounting.Invoice.InvoiceViewModel
+@inject IConfiguration Configuration
+
+<div style="margin: 0 auto; padding: 5px;">
+    <table width="100%">
+        <tr>
+            <td style="width:210px">
+                @if (!string.IsNullOrEmpty(Model.AgencyLogoFileName))
+                {
+                    <img src="@await Helpers.DownloadFileInBase64(Configuration.GetFilesBaseUrl(), Model.AgencyLogoFileName)" alt="@Model.AgencyFullName" width="260" style="max-height: 85px; object-position: 0 0;">
+                }
+            </td>
+            <td rowspan="2">
+                <div style="display: inline-block;  float: right; border: 4px solid #21b7ff; padding: 8px; box-sizing: border-box; margin-bottom: 20px; margin-top: 10px; text-align: center;  min-width: 220px;">
+                    <h4 style="text-align: center; font-size: 20px; margin: 0">INVOICE</h4>
+                    <p style="margin:  10px 0;">  <b>Invoice # @Model.InvoiceNumber</b></p>
+                    <p style="margin:  10px 0;"> <b>@Model.CreatedAt.ToString("dd MMMM yyyy")</b></p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p style="margin-top: 6px; font-size: 12px; margin-bottom: 0;">
+                    @Model.AgencyAddress
+                    <br> Phone: @Model.AgencyPhone @(Model.AgencyPhoneExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.AgencyPhoneExt) : "")
+                    <br> Fax: @Model.AgencyFax @(Model.AgencyFaxExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.AgencyFaxExt) : "")
+                </p>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+
+    <table style="margin: 15px 0; width: 100%; padding-bottom: 20px;border-bottom: 1px solid #d3d3d3">
+        <col width="50%">
+        <col width="50%">
+        <tr>
+            <td style="padding: 8px; vertical-align: top"><b>Bill to.</b> <br>@Model.BillTo </td>
+            <td style="padding: 8px; vertical-align: top"><b>Phone:</b> <br>@Model.PhonePrincipal @(Model.PhonePrincipalExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.PhonePrincipalExt) : "") </td>
+        </tr>
+
+        <tr>
+            <td style="padding: 8px; vertical-align: top"><b>Address: </b> <br>@Model.Address</td>
+            <td style="padding: 8px; vertical-align: top"><b>Email:</b> <br>@Model.Email </td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; vertical-align: top"><b>Fax: </b> <br>@Model.Fax @(Model.FaxExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.FaxExt) : "")</td>
+            <td style="padding: 8px; vertical-align: top"></td>
+        </tr>
+    </table>
+
+    <table style="margin: 0 0 20px; float: left; width: 100%;">
+        <col width="50%">
+        <col width="50%">
+        <tbody>
+            <tr>
+                <td style="padding:8px; width: 33%">
+                    <b>Week Ending:</b>
+                    @if (Model.WeekEnding.HasValue && Model.WeekEnding.Value != default)
+                    {
+                        @Model.WeekEnding?.ToString("D",CultureInfo.InvariantCulture)
+                    }
+                    else
+                    {
+                        @("N/A")
+                    }
+                </td>
+                <td style="padding:8px; width: 33%; text-align: right">
+                    @if (!string.IsNullOrEmpty(Model.HstNumber))
+                    {
+                        <b>HTS #:</b> @Model.HstNumber
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    @{
+        this.ViewData.Add("HeaderTableColor", Model.InvoiceColor.HeaderTableColor);
+        this.ViewData.Add("ItemsTableColor", Model.InvoiceColor.ItemsTableColor);
+        this.ViewData.Add("FooterContentColor", Model.InvoiceColor.FooterContentColor);
+    }
+    @await Html.PartialAsync("_DescriptionTable", Model.Items, this.ViewData)
+    @await Html.PartialAsync("_NotesComments", Model.HtmlNotes, this.ViewData)
+
+    <table style="display: inline-block; width: 30%; float: right; margin-top: 10px;">
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b>Subtotal</b>
+            </td>
+            <td style="background: @Model.InvoiceColor.FooterContentColor; padding: 5px; width: 100%; border-radius: 14px 14px 0 0;">
+                <b>@Model.SubTotal.ToString("C")</b>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b>@Model.TaxName</b>
+            </td>
+            <td style="background: @Model.InvoiceColor.FooterContentColor; padding: 5px; width: 100%">
+                <b>@Model.Hst.ToString("C")</b>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; text-align: right">
+                <b>Total</b>
+            </td>
+            <td style="background: @Model.InvoiceColor.FooterContentColor; padding: 5px; width: 100%; border-radius: 0 0 14px 14px;">
+                <b>@Model.Total.ToString("C")</b>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <p style="text-align: center;font-size: 12px;">If you have any questions about this invoice, please contact: @Model.AgencyFullName. ph: @Model.AgencyPhone @(Model.AgencyPhoneExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.AgencyPhoneExt) : "")</p>
+    </div>
+    @await Html.PartialAsync("_PowerBy")
+</div>

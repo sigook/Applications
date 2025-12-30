@@ -1,0 +1,295 @@
+# Azure Pipeline for covenantWeb (Vue.js Marketing Website)
+# Builds and deploys Vue.js app to Azure App Service (Linux)
+
+name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
+
+# Trigger on main, master, or dev branches with covenantWeb changes
+trigger:
+  branches:
+    include:
+      # - main
+      # - master
+      - dev
+  paths:
+    include:
+      - covenantWeb/**
+      - .azure-pipelines/covenantweb-pipeline.yml
+    exclude:
+      - covenantWeb/**/*.md
+
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - covenantWeb/**
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+# Environment detection variables
+variables:
+  workingDirectory: '$(System.DefaultWorkingDirectory)/covenantWeb'
+  nodeVersion: '20.x'
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  # For PRs, determine environment based on target branch
+  targetBranch: $[coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranchName'])]
+
+stages:
+  - stage: CI_CD
+    displayName: 'CI/CD Pipeline'
+    jobs:
+      # ============================================
+      # Job 1: Build and Test
+      # ============================================
+      - job: Build_and_Test
+        displayName: 'Build and Test Application'
+        # Run on direct pushes to main/dev OR on Pull Requests
+        condition: or(eq(variables['isDev'], true), eq(variables['isMain'], true), eq(variables['isPR'], true))
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Determine environment and build command
+          - script: |
+              echo "Build Reason: $(Build.Reason)"
+              echo "Source Branch: $(Build.SourceBranch)"
+
+              # For Pull Requests, use target branch to determine environment
+              if [ "$(Build.Reason)" = "PullRequest" ]; then
+                targetBranch="$(System.PullRequest.TargetBranch)"
+                echo "Pull Request detected"
+                echo "Target Branch: $targetBranch"
+
+                # Determine environment based on PR target branch
+                if [[ "$targetBranch" == *"main"* ]] || [[ "$targetBranch" == *"master"* ]]; then
+                  environment=production
+                  buildCommand=build:production
+                else
+                  environment=staging
+                  buildCommand=build:staging
+                fi
+              else
+                # Regular push - use source branch
+                echo "Direct push to $(Build.SourceBranchName)"
+                if [ "$(isDev)" = True ]; then
+                  environment=staging
+                  buildCommand=build:staging
+                else
+                  environment=production
+                  buildCommand=build:production
+                fi
+              fi
+
+              echo "##vso[task.setvariable variable=environment]$environment"
+              echo "##vso[task.setvariable variable=environment;isOutput=true]$environment"
+              echo "##vso[task.setvariable variable=buildCommand]$buildCommand"
+              echo ""
+              echo "Environment: $environment"
+              echo "Build Command: npm run $buildCommand"
+            name: SetEnvironment
+            displayName: 'Determine Environment'
+
+          # Install Node.js
+          - task: NodeTool@0
+            displayName: 'Install Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          # Display build information
+          - task: Bash@3
+            displayName: 'Build Information'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "============================================"
+                echo "CovenantWeb Build Pipeline"
+                echo "============================================"
+                echo "Build Number: $(Build.BuildNumber)"
+                echo "Build ID: $(Build.BuildId)"
+                echo "Branch: $(Build.SourceBranch)"
+                echo "Environment: $(environment)"
+                echo "Build Command: $(buildCommand)"
+                echo "Node: $(node --version)"
+                echo "NPM: $(npm --version)"
+                echo "============================================"
+
+          # Cache node_modules
+          - task: Cache@2
+            displayName: 'Cache node_modules'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
+              path: '$(workingDirectory)/node_modules'
+              cacheHitVar: 'CacheRestored'
+
+          # Install dependencies
+          - task: Npm@1
+            displayName: 'npm ci'
+            inputs:
+              command: 'ci'
+              workingDir: $(workingDirectory)
+
+          # Type checking
+          - task: Npm@1
+            displayName: 'Type Check'
+            inputs:
+              command: 'custom'
+              customCommand: 'run type-check'
+              workingDir: $(workingDirectory)
+            continueOnError: false
+
+          # Linting
+          - task: Npm@1
+            displayName: 'Lint Code'
+            inputs:
+              command: 'custom'
+              customCommand: 'run lint'
+              workingDir: $(workingDirectory)
+
+          # Build application
+          - task: Npm@1
+            displayName: 'Build $(environment)'
+            inputs:
+              command: 'custom'
+              customCommand: 'run $(buildCommand)'
+              workingDir: $(workingDirectory)
+
+          # Verify build output
+          - task: Bash@3
+            displayName: 'Verify Build Output'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Verifying build output..."
+                if [ ! -d "$(workingDirectory)/dist" ]; then
+                  echo "❌ Error: dist directory not found!"
+                  exit 1
+                fi
+                if [ ! -f "$(workingDirectory)/dist/index.html" ]; then
+                  echo "❌ Error: index.html not found in dist!"
+                  exit 1
+                fi
+                echo "✅ Build output verified"
+                echo ""
+                echo "Build contents:"
+                ls -lh $(workingDirectory)/dist
+
+          # Archive for deployment (only on direct pushes, not PRs)
+          - task: ArchiveFiles@2
+            displayName: 'Archive Application'
+            condition: ne(variables['Build.Reason'], 'PullRequest')
+            inputs:
+              rootFolderOrFile: '$(workingDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/covenantweb-$(environment)-$(Build.BuildId).zip'
+              replaceExistingArchive: true
+
+          # Publish artifacts (only on direct pushes, not PRs)
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifacts'
+            condition: ne(variables['Build.Reason'], 'PullRequest')
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'covenantweb-drop'
+              publishLocation: 'Container'
+
+          # Build summary
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "✅ Build completed successfully!"
+                echo "🌍 Environment: $(environment)"
+
+                # Show artifact info only if created (not on PRs)
+                if [ "$(Build.Reason)" != "PullRequest" ]; then
+                  echo "📦 Artifact: covenantweb-$(environment)-$(Build.BuildId).zip"
+                  echo ""
+                  echo "Artifact size:"
+                  ls -lh $(Build.ArtifactStagingDirectory)/*.zip
+                else
+                  echo "📋 PR validation completed - no artifacts created"
+                fi
+
+      # ============================================
+      # Job 2: Deploy to Azure
+      # ============================================
+      - job: Deploy_to_Azure
+        displayName: 'Deploy to Azure App Service'
+        dependsOn: Build_and_Test
+        # Only deploy on direct pushes to main/dev, NOT on Pull Requests
+        condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)), ne(variables['isPR'], true))
+        variables:
+          environment: $[ dependencies.Build_and_Test.outputs['SetEnvironment.environment'] ]
+        steps:
+          - download: current
+            artifact: covenantweb-drop
+            displayName: 'Download Build Artifacts'
+
+          # Determine Azure App Service name
+          - script: |
+              echo "Determining Azure App Service name for environment: $(environment)"
+              if [ "$(isDev)" = True ]; then
+                azureAppName="covenantgroup-staging"
+                envLabel="Staging"
+              else
+                azureAppName="covenantgroup"
+                envLabel="Production"
+              fi
+              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
+              echo "##vso[task.setvariable variable=envLabel]$envLabel"
+              echo ""
+              echo "Deploying to: $azureAppName ($envLabel)"
+              echo "Build ID: $(Build.BuildId)"
+            displayName: 'Set Azure App Name'
+
+          # Deploy to Azure App Service (Linux)
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Azure App Service (Linux)'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              appType: 'webAppLinux'
+              appName: '$(azureAppName)'
+              package: '$(Pipeline.Workspace)/covenantweb-drop/*.zip'
+              runtimeStack: 'NODE|20-lts'
+              startUpCommand: 'npm start'
+              appSettings: '-CVN_VERSION $(Build.BuildId)'
+
+          # Deployment summary
+          - task: Bash@3
+            displayName: 'Deployment Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "✅ Deployment Completed!"
+                echo "============================================"
+                echo "Environment: $(envLabel)"
+                echo "App Service: $(azureAppName)"
+                echo "Version: $(Build.BuildId)"
+                echo "Runtime: Node.js 20 LTS"
+                echo "Start Command: npm start"
+                echo "============================================"
+                echo ""
+                echo "URLs:"
+                if [ "$(isDev)" = True ]; then
+                  echo "🌐 Staging: https://covenantgroup-staging.azurewebsites.net"
+                else
+                  echo "🌐 Production: https://covenantgroup.azurewebsites.net"
+                fi
+                echo ""
+                echo "Next steps:"
+                echo "1. Wait 2-3 minutes for deployment to complete"
+                echo "2. Verify deployment in Azure Portal"
+                echo "3. Test the application at the URL above"
+                echo "4. Check App Service logs if needed:"
+                echo "   az webapp log tail --name $(azureAppName) --resource-group <your-rg>"

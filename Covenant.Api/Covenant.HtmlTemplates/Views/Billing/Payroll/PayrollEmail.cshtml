@@ -1,0 +1,36 @@
+@{
+    Layout = null;
+}
+@using Covenant.HtmlTemplates.Views.Shared
+@model Covenant.HtmlTemplates.Views.Billing.Payroll.PayrollEmailViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payroll</title>
+</head>
+<body  style="font-family: 'Open Sans', 'Helvetica Neue', sans-serif; box-sizing: border-box; padding: 30px; font-size: 14px;">
+    <div>
+        <p> Hi @Model.WorkerFullName,</p>
+        <p> You are receiving an EFT payment of @Model.TotalNet.ToUsMoney() of the week ended on @Model.EndDate.ToString("M"). Funds will be accredited in your account any time on @Model.PaymentDate.ToString("D") Attached we send the pay stub of this payment.
+        </p>
+        <p>Thank you very much for your work and have a nice weekend,</p>
+    </div>
+    <div style="margin-top: 15px; color: #203864; line-height: 18px;">
+        <span style="color: #0070c0;">Payroll Covenant</span> <br>
+        Off.  647 660 4440 <br>
+        Mob.  647 428 7692 <br>
+        <a href="https://www.covenantgroupl.com" target="_blank">www.covenantgroupl.com</a> <br>
+        6625 Kitimat Rd. Unit 45 MISSISSAUGA, ON L5N 6J1<br>
+        <a href="mailto:payroll@covenantgroupl.com" style="color: #0563c1;">payroll@covenantgroupl.com</a> <br>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <img src="data:image/jpeg;base64,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" alt="logo">
+    </div>
+
+    <div>
+        <p style="font-size: 11px; font-style: italic; line-height: 16px">This message (including any attachments) may contain information that is privileged or confidential and is intended for a specific individual and purpose, and is protected by law.  If you are not the intended recipient, please notify the sender and delete this message from your system.  Any disclosure, copying, or distribution, of this message, or the taking of any action based on it, is strictly prohibited.</p>
+    </div>
+</body>
+</html>

@@ -53,9 +53,16 @@ dependencies:
   intl: ^0.20.2
   equatable: ^2.0.5
   phone_numbers_parser: ^9.0.16
+  uuid: ^4.5.1
+  mask_text_input_formatter: ^2.9.0
+  table_calendar: ^3.1.2
 
   # Local Storage
   shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.2.2
+
+  # Environment Configuration
+  flutter_dotenv: ^5.2.1
 
   # Routing
   go_router: ^17.0.0
@@ -74,6 +81,9 @@ dependencies:
   permission_handler: ^12.0.1
   openid_client: ^0.4.9+1
   flutter_appauth: ^11.0.0
+  webview_flutter: ^4.13.0
+  riverpod: ^3.0.3
+  jwt_decoder: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -104,9 +114,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - .env.staging
+    - .env.production
+    - assets/images/logo/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

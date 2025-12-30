@@ -1,0 +1,104 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}|Covenant.Core.BL\\Covenant.Core.BL.csproj|c:\\src\\covenant\\covenant.api\\covenant.api\\covenant.core.bl\\services\\invoices\\canadainvoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}|Covenant.Core.BL\\Covenant.Core.BL.csproj|solutionrelative:covenant.core.bl\\services\\invoices\\canadainvoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9647DB02-9503-4D7E-A5A0-D7A7EB4BFBED}|Covenant.Infrastructure\\Covenant.Infrastructure.csproj|c:\\src\\covenant\\covenant.api\\covenant.api\\covenant.infrastructure\\repositories\\accounting\\invoicerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9647DB02-9503-4D7E-A5A0-D7A7EB4BFBED}|Covenant.Infrastructure\\Covenant.Infrastructure.csproj|solutionrelative:covenant.infrastructure\\repositories\\accounting\\invoicerepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{66AC4CDA-5A1F-4658-842E-DF502E5AC17C}|Covenant.Api\\Covenant.Api.csproj|c:\\src\\covenant\\covenant.api\\covenant.api\\covenant.api\\controllers\\sigook\\agency\\accounting\\invoicescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66AC4CDA-5A1F-4658-842E-DF502E5AC17C}|Covenant.Api\\Covenant.Api.csproj|solutionrelative:covenant.api\\controllers\\sigook\\agency\\accounting\\invoicescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 9,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "InvoiceRepository.cs",
+              "DocumentMoniker": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Repositories\\Accounting\\InvoiceRepository.cs",
+              "RelativeDocumentMoniker": "Covenant.Infrastructure\\Repositories\\Accounting\\InvoiceRepository.cs",
+              "ToolTip": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Infrastructure\\Repositories\\Accounting\\InvoiceRepository.cs",
+              "RelativeToolTip": "Covenant.Infrastructure\\Repositories\\Accounting\\InvoiceRepository.cs",
+              "ViewState": "AgIAAM4AAAAAAAAAAAAswAsBAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T20:48:07.112Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CanadaInvoiceService.cs",
+              "DocumentMoniker": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Services\\Invoices\\CanadaInvoiceService.cs",
+              "RelativeDocumentMoniker": "Covenant.Core.BL\\Services\\Invoices\\CanadaInvoiceService.cs",
+              "ToolTip": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Core.BL\\Services\\Invoices\\CanadaInvoiceService.cs",
+              "RelativeToolTip": "Covenant.Core.BL\\Services\\Invoices\\CanadaInvoiceService.cs",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAAwHQAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T19:09:42.489Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "InvoicesController.cs",
+              "DocumentMoniker": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Controllers\\Sigook\\Agency\\Accounting\\InvoicesController.cs",
+              "RelativeDocumentMoniker": "Covenant.Api\\Controllers\\Sigook\\Agency\\Accounting\\InvoicesController.cs",
+              "ToolTip": "C:\\Src\\Covenant\\Covenant.Api\\Covenant.Api\\Covenant.Api\\Controllers\\Sigook\\Agency\\Accounting\\InvoicesController.cs",
+              "RelativeToolTip": "Covenant.Api\\Controllers\\Sigook\\Agency\\Accounting\\InvoicesController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAwC8AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T19:09:32.755Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

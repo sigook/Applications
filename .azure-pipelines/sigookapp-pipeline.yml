@@ -1,0 +1,200 @@
+# Azure Pipeline for SigookApp (Flutter Mobile Application)
+# This is a PLACEHOLDER pipeline - will be expanded later with full Flutter build process
+
+name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
+
+# Only trigger when SigookApp files change
+trigger:
+  branches:
+    include:
+      # - main
+      # - master
+      - dev
+  paths:
+    include:
+      - SigookApp/**
+      - .azure-pipelines/sigookapp-pipeline.yml
+    exclude:
+      - SigookApp/README.md
+      - SigookApp/docs/**
+      - SigookApp/**/*.md
+
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - SigookApp/**
+      - .azure-pipelines/sigookapp-pipeline.yml
+    exclude:
+      - SigookApp/README.md
+      - SigookApp/docs/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+stages:
+  - stage: Validate
+    displayName: 'Validate SigookApp'
+    jobs:
+      - job: BasicValidation
+        displayName: 'Basic Validation'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: PowerShell@2
+            displayName: 'Display Build Information'
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "============================================"
+                Write-Host "SigookApp Pipeline Triggered"
+                Write-Host "============================================"
+                Write-Host "Build Number: $(Build.BuildNumber)"
+                Write-Host "Build ID: $(Build.BuildId)"
+                Write-Host "Source Branch: $(Build.SourceBranch)"
+                Write-Host "Source Version: $(Build.SourceVersion)"
+                Write-Host "Build Reason: $(Build.Reason)"
+                Write-Host "Working Directory: $(workingDirectory)"
+
+                # Display PR information if applicable
+                if ("$(Build.Reason)" -eq "PullRequest") {
+                    Write-Host ""
+                    Write-Host "Pull Request Information:"
+                    Write-Host "PR Number: $(System.PullRequest.PullRequestNumber)"
+                    Write-Host "Target Branch: $(System.PullRequest.TargetBranch)"
+                    Write-Host "Source Branch: $(System.PullRequest.SourceBranch)"
+                }
+
+                Write-Host "============================================"
+
+          - task: Bash@3
+            displayName: 'List SigookApp Files'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Listing SigookApp directory structure..."
+                ls -la $(workingDirectory)
+                echo ""
+                echo "Main Dart files:"
+                ls -la $(workingDirectory)/lib/main*.dart 2>/dev/null || echo "No main files found"
+                echo ""
+                echo "Pubspec.yaml content:"
+                cat $(workingDirectory)/pubspec.yaml | head -n 30
+
+          - task: PowerShell@2
+            displayName: 'Validate Project Structure'
+            inputs:
+              targetType: 'inline'
+              script: |
+                $projectPath = "$(workingDirectory)"
+
+                Write-Host "Validating Flutter project structure..."
+
+                # Check if pubspec.yaml exists
+                if (Test-Path "$projectPath/pubspec.yaml") {
+                    Write-Host "✅ pubspec.yaml found"
+                } else {
+                    Write-Host "❌ pubspec.yaml not found"
+                    exit 1
+                }
+
+                # Check if lib folder exists
+                if (Test-Path "$projectPath/lib") {
+                    Write-Host "✅ lib/ directory found"
+                } else {
+                    Write-Host "❌ lib/ directory not found"
+                    exit 1
+                }
+
+                # Check for main files
+                if (Test-Path "$projectPath/lib/main*.dart") {
+                    Write-Host "✅ Main dart files found"
+                    Get-ChildItem "$projectPath/lib/main*.dart" | ForEach-Object { Write-Host "   - $($_.Name)" }
+                } else {
+                    Write-Host "⚠️  No main dart files found"
+                }
+
+                Write-Host ""
+                Write-Host "✅ Basic project structure validation passed!"
+
+          - task: Bash@3
+            displayName: 'Environment Detection'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Checking for environment files..."
+
+                if [ -f "$(workingDirectory)/.env.staging" ]; then
+                  echo "✅ .env.staging found"
+                else
+                  echo "⚠️  .env.staging not found (will need to be created in future)"
+                fi
+
+                if [ -f "$(workingDirectory)/.env.production" ]; then
+                  echo "✅ .env.production found"
+                else
+                  echo "⚠️  .env.production not found (will need to be created in future)"
+                fi
+
+  # Placeholder for future stages
+  - stage: BuildStaging
+    displayName: 'Build Staging (TODO)'
+    dependsOn: Validate
+    # Only build on direct push to dev, not on PRs
+    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    jobs:
+      - job: PlaceholderBuild
+        displayName: 'Placeholder - Flutter Build Coming Soon'
+        steps:
+          - task: PowerShell@2
+            displayName: 'Staging Build Placeholder'
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "============================================"
+                Write-Host "TODO: Implement Flutter Staging Build"
+                Write-Host "============================================"
+                Write-Host "This stage will include:"
+                Write-Host "  - Flutter SDK installation"
+                Write-Host "  - Dependencies installation (flutter pub get)"
+                Write-Host "  - Code generation (build_runner)"
+                Write-Host "  - Build APK for staging flavor"
+                Write-Host "  - Publish artifacts"
+                Write-Host "============================================"
+
+  - stage: BuildProduction
+    displayName: 'Build Production (TODO)'
+    dependsOn: Validate
+    # Only build on direct push to main, not on PRs
+    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
+    jobs:
+      - job: PlaceholderBuild
+        displayName: 'Placeholder - Flutter Production Build Coming Soon'
+        steps:
+          - task: PowerShell@2
+            displayName: 'Production Build Placeholder'
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "============================================"
+                Write-Host "TODO: Implement Flutter Production Build"
+                Write-Host "============================================"
+                Write-Host "This stage will include:"
+                Write-Host "  - Flutter SDK installation"
+                Write-Host "  - Dependencies installation"
+                Write-Host "  - Code generation"
+                Write-Host "  - Keystore configuration"
+                Write-Host "  - Build signed APK/AAB"
+                Write-Host "  - Publish production artifacts"
+                Write-Host "============================================"

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow all HTTPS traffic -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Debug-only config for emulator -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+    
+    <!-- Specific domain configurations -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">staging.api.sigook.ca</domain>
+        <domain includeSubdomains="true">staging.accounts.sigook.ca</domain>
+        <domain includeSubdomains="true">api.sigook.com</domain>
+        <domain includeSubdomains="true">accounts.sigook.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

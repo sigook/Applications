@@ -32,6 +32,20 @@ class BasicInfo extends Equatable {
   final String? identificationType;
   final String? identificationNumber;
 
+  factory BasicInfo.empty() => BasicInfo(
+    firstName: Name(''),
+    lastName: Name(''),
+    dateOfBirth: DateTime(1900),
+    gender: Gender(value: ''),
+    country: null,
+    provinceState: null,
+    city: null,
+    address: '',
+    zipCode: ZipCode.emptyUS,
+    mobileNumber: PhoneNumber.empty(),
+    profilePhoto: ProfilePhoto.empty(),
+  );
+
   const BasicInfo({
     required this.profilePhoto,
     required this.firstName,
@@ -121,6 +135,26 @@ class BasicInfo extends Equatable {
       identificationType: identificationType ?? this.identificationType,
       identificationNumber: identificationNumber ?? this.identificationNumber,
     );
+  }
+
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      'profilePhoto': profilePhoto.toJson(),
+      'firstName': firstName.toString(),
+      'lastName': lastName.toString(),
+      'dateOfBirth': dateOfBirth.toIso8601String(),
+      'gender': gender.toJson(),
+      if (country != null) 'country': country!.toJson(),
+      if (provinceState != null) 'provinceState': provinceState!.toJson(),
+      if (city != null) 'city': city!.toJson(),
+      'address': address,
+      'zipCode': zipCode.value,
+      'mobileNumber': mobileNumber.nationalFormat,
+      if (identificationType != null) 'identificationType': identificationType,
+      if (identificationNumber != null)
+        'identificationNumber': identificationNumber,
+    };
   }
 
   @override

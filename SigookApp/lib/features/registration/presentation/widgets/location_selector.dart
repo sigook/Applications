@@ -40,13 +40,11 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     final countriesAsync = ref.watch(countriesListProvider);
     final countries = countriesAsync.value ?? [];
 
-    // Get provinces for selected country
     final provincesAsync = widget.selectedCountry != null
         ? ref.watch(provincesProvider(widget.selectedCountry!.id ?? ''))
         : null;
     final provinces = provincesAsync?.value ?? [];
 
-    // Get cities for selected province
     final citiesAsync = widget.selectedProvince != null
         ? ref.watch(citiesProvider(widget.selectedProvince!.id ?? ''))
         : null;
@@ -55,7 +53,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Country - searchable dropdown
         _buildDropdown(
           label: 'Country',
           value: widget.selectedCountry,

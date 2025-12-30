@@ -1,0 +1,20 @@
+{
+    "professional": {
+      "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed. Whether you're looking for a new challenge or the next step in your career, we're here to guide you toward lasting success.",
+      "card1Title": "Direct Hiring",
+      "card1Desc": "Build a lasting career with stable opportunities and long-term professional growth.",
+      "card2Title": "Contract",
+      "card2Desc": "Flexibility and growth through project-based roles across diverse industries.",
+      "iconLeftComponent": "div",
+      "iconRightComponent": "div"
+    },
+    "industrial": {
+      "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed.",
+      "card1Title": "Temp to Perm",
+      "card1Desc": "Gain experience, prove your value, and grow into permanent opportunities.",
+      "card2Title": "Temporal/Seasonal",
+      "card2Desc": "Work on your terms. Seasonal jobs offer flexibility and experience.",
+      "iconLeftComponent": "div",
+      "iconRightComponent": "div"
+    }
+  }

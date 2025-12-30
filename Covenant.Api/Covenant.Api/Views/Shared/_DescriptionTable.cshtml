@@ -1,0 +1,44 @@
+@using Covenant.Common.Models.Accounting
+@model IEnumerable<DescriptionTableViewModel>
+<table width="100%" border="1" style="border-collapse: collapse; border: 1px solid white; clear: both">
+    <col width="10%">
+    <col width="54%">
+    <col width="12%">
+    <col width="12%">
+    <col width="12%">
+    <thead style="color: #fff; font-weight: bold;">
+        <tr>
+            <td style="background: @this.ViewData["HeaderTableColor"].ToString(); padding: 8px; border-radius: 14px 0 0 0;">Item No.</td>
+            <td style="background: @this.ViewData["HeaderTableColor"].ToString(); padding: 8px;">Description</td>
+            <td style="background: @this.ViewData["HeaderTableColor"].ToString(); padding: 8px;">Qty</td>
+            <td style="background: @this.ViewData["HeaderTableColor"].ToString(); padding: 8px;">Unit Price</td>
+            <td style="background: @this.ViewData["HeaderTableColor"].ToString(); padding: 8px; border-radius: 0 14px 0 0;">Total</td>
+        </tr>
+    </thead>
+    <tbody style="background: @this.ViewData["ItemsTableColor"].ToString();">
+        @{
+            int totalElements = Model.Count();
+        }
+        @for (int i = 1; i <= totalElements; i++)
+        {
+            var element = Model.ElementAt(i - 1);
+            <tr>
+                <td style="padding: 8px; @(i == totalElements ? "border-radius: 0 0 0 14px;" : "")"> @i </td>
+                <td style="padding: 8px;"> @element.Description </td>
+                <td style="padding: 8px;">
+                    @if (!element.Quantity.Equals(0))
+                    {
+                        @element.Quantity.ToString("F2")
+                    }
+                </td>
+                <td style="padding: 8px;">
+                    @if (element.UnitPrice != 0)
+                    {
+                        @element.UnitPrice.ToString("C")
+                    }
+                </td>
+                <td style="padding: 8px; @(i == totalElements ? "border-radius: 0 0 14px 0;" : "")"> @element.Total.ToString("C") </td>
+            </tr>
+        }
+    </tbody>
+</table>

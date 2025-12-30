@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/registration_form.dart';
+import 'worker_profile_data.dart';
 import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
 import '../../domain/entities/available_time.dart';
@@ -12,6 +14,7 @@ import '../../domain/entities/province.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/lifting_capacity.dart';
 import '../../domain/entities/uploaded_file.dart';
+import '../../domain/entities/profile_image.dart';
 
 /// Request model for worker profile registration
 /// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
@@ -21,6 +24,7 @@ class WorkerRegistrationRequest {
   final String lastName;
   final String birthDay; // ISO 8601 format
   final Gender gender;
+  final ProfileImage? profileImage;
 
   // Identification 1 (required)
   final String identificationNumber1;
@@ -65,6 +69,7 @@ class WorkerRegistrationRequest {
     required this.lastName,
     required this.birthDay,
     required this.gender,
+    this.profileImage,
     required this.identificationNumber1,
     required this.identificationType1,
     this.identificationType1File,
@@ -158,6 +163,14 @@ class WorkerRegistrationRequest {
     final identification2 = documentsInfo?.identification2;
     final resumeFile = documentsInfo?.resume;
 
+    debugPrint('🔍 DEBUG fromFormState: identification1 = $identification1');
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file = ${identification1?.file}',
+    );
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file.filePath = ${identification1?.file.filePath}',
+    );
+
     // Create IdentificationType from document data if available
     final identType1 = identification1 != null
         ? IdentificationType(
@@ -169,11 +182,17 @@ class WorkerRegistrationRequest {
     final identNumber1 =
         identification1?.identificationNumber ?? identificationNumber;
 
+    // Convert profile photo to profile image
+    final profileImage = basicInfo.profilePhoto.hasPhoto
+        ? ProfileImage.fromPath(basicInfo.profilePhoto.path)
+        : null;
+
     return WorkerRegistrationRequest(
       firstName: basicInfo.firstName.value,
       lastName: basicInfo.lastName.value,
       birthDay: formattedDate,
       gender: basicInfo.gender,
+      profileImage: profileImage,
       identificationNumber1: identNumber1,
       identificationType1: identType1,
       identificationType1File: identification1?.file,
@@ -202,54 +221,38 @@ class WorkerRegistrationRequest {
     );
   }
 
-  /// Convert to JSON for API request
-  Map<String, dynamic> toJson() {
-    // Debug: Print entity values before conversion
-    print('═══ DEBUG: Entity Values ═══');
-    print('Gender: id=${gender.id}, value=${gender.value}');
-    print('Languages count: ${languages.length}');
-    if (languages.isNotEmpty) {
-      print(
-        'First language: id=${languages.first.id}, value=${languages.first.value}',
-      );
-    }
-    print('Skills count: ${skills.length}');
-    if (skills.isNotEmpty) {
-      print('First skill: skill=${skills.first.skill}');
-    }
-    print('═══════════════════════════');
-
-    return {
-      'firstName': firstName,
-      'lastName': lastName,
-      'birthDay': birthDay,
-      'gender': {'id': gender.id}, // Only id per API spec
-      'identificationNumber1': identificationNumber1,
-      'identificationType1': identificationType1.toJson(),
-      if (mobileNumber != null) 'mobileNumber': mobileNumber,
-      if (phone != null) 'phone': phone,
-      'location': location.toJson(),
-      if (lift != null) 'lift': lift!.toJson(),
-      'availabilities': availabilities.map((a) => a.toJson()).toList(),
-      'availabilityTimes': availabilityTimes.map((a) => a.toJson()).toList(),
-      'availabilityDays': availabilityDays.map((d) => d.toJson()).toList(),
-      'languages': languages.map((l) => l.toJson()).toList(),
-      'skills': skills.map((s) => s.toJson()).toList(),
-      'email': email,
-      'password': password,
-      'confirmPassword': confirmPassword,
-      'agreeTermsAndConditions': agreeTermsAndConditions,
-      // File uploads
-      'identificationType1File': identificationType1File?.toJson(),
-      'identificationType2File': identificationType2File?.toJson(),
-      'identificationType2': identificationType2?.toJson(),
-      if (identificationNumber2 != null)
-        'identificationNumber2': identificationNumber2,
-      'resume': resume?.toJson(),
-      // Empty arrays for now
-      'licenses': [],
-      'certificates': [],
-      'otherDocuments': [],
-    };
+  WorkerProfileData toWorkerProfileData({
+    String? profileImageFileName,
+    String? identificationType1FileName,
+    String? identificationType2FileName,
+    String? resumeFileName,
+  }) {
+    return WorkerProfileData(
+      firstName: firstName,
+      lastName: lastName,
+      birthDay: birthDay,
+      gender: gender,
+      identificationNumber1: identificationNumber1,
+      identificationType1: identificationType1,
+      identificationNumber2: identificationNumber2,
+      identificationType2: identificationType2,
+      mobileNumber: mobileNumber,
+      phone: phone,
+      location: location,
+      lift: lift,
+      availabilities: availabilities,
+      availabilityTimes: availabilityTimes,
+      availabilityDays: availabilityDays,
+      languages: languages,
+      skills: skills,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      agreeTermsAndConditions: agreeTermsAndConditions,
+      profileImageFileName: profileImageFileName,
+      identificationType1FileName: identificationType1FileName,
+      identificationType2FileName: identificationType2FileName,
+      resumeFileName: resumeFileName,
+    );
   }
 }

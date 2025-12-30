@@ -1,0 +1,17 @@
+# Reusable template for .NET SDK installation
+# Usage:
+#   - template: templates/dotnet-setup.yml
+#     parameters:
+#       sdkVersion: '6.0.400'
+
+parameters:
+  - name: sdkVersion
+    type: string
+    default: '6.0.400'
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET SDK ${{ parameters.sdkVersion }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ parameters.sdkVersion }}

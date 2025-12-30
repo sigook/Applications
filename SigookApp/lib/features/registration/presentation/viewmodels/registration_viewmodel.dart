@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/preferences_info.dart';
@@ -35,7 +36,9 @@ class RegistrationViewModel extends _$RegistrationViewModel {
 
   /// Update basic info section (Section 1)
   void updateBasicInfo(BasicInfo info) {
+    debugPrint('updateBasicInfo: new photo path = ${info.profilePhoto.path}');
     state = state.copyWith(basicInfo: info);
+    debugPrint('State updated');
     _saveDraft();
   }
 
@@ -66,12 +69,6 @@ class RegistrationViewModel extends _$RegistrationViewModel {
   Future<String> submitRegistration() async {
     final result = await _submitUseCase(state);
     return result.fold((failure) => failure.message, (_) => 'Success');
-  }
-
-  /// Check email availability
-  Future<bool> checkEmailAvailability(String email) async {
-    final result = await _repository.isEmailAvailable(email);
-    return result.fold((failure) => false, (isAvailable) => isAvailable);
   }
 
   /// Clear all form data

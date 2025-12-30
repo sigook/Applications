@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/catalog_item_model.dart';
@@ -36,17 +37,17 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
 
   @override
   Future<List<CatalogItemModel>> getCountries() async {
-    return _getCatalogItems('/Catalog/country');
+    return _getCatalogItems('/Location/country');
   }
 
   @override
   Future<List<CatalogItemModel>> getProvinces(String countryId) async {
-    return _getCatalogItems('/Catalog/province/$countryId');
+    return _getCatalogItems('/Location/province/$countryId');
   }
 
   @override
   Future<List<CatalogItemModel>> getCities(String provinceId) async {
-    return _getCatalogItems('/Catalog/city/$provinceId');
+    return _getCatalogItems('/Location/city/$provinceId');
   }
 
   @override
@@ -89,9 +90,9 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
 
         // Debug: Show first item from API
         if (jsonList.isNotEmpty && endpoint.contains('skill')) {
-          print('═══ DEBUG: Skills API Response ═══');
-          print('First item: ${jsonList.first}');
-          print('═══════════════════════════════');
+          debugPrint('═══ DEBUG: Skills API Response ═══');
+          debugPrint('First item: ${jsonList.first}');
+          debugPrint('═══════════════════════════════');
         }
 
         // Use safe parsing and filter out invalid items

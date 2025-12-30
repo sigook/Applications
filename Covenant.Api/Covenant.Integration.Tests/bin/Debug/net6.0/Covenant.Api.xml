@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Covenant.Api</name>
+    </assembly>
+    <members>
+        <member name="T:Covenant.Api.Authorization.AgencyIdFilter">
+            <summary>
+            Add the claim agencyId to users that belong to a specific agency
+            </summary>
+        </member>
+        <member name="T:Covenant.Api.Authorization.CompanyIdFilter">
+            <summary>
+            Add the claim companyId to users that belong to a specific company
+            </summary>
+        </member>
+        <member name="M:Covenant.Api.WorkerModule.WorkerRequest.Controllers.WorkerRequestController.Get(Covenant.Common.Models.Pagination)">
+            <summary>
+            List all request that worker can apply
+            </summary>
+            <param name="pagination"></param>
+            <returns>PaginatedList</returns>
+        </member>
+    </members>
+</doc>

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:retry/retry.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/file_naming_service.dart';
 import '../models/worker_registration_request.dart';
 
 /// Remote data source for registration operations
@@ -20,15 +21,131 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
 
   @override
   Future<void> registerWorker(WorkerRegistrationRequest request) async {
-    final jsonData = request.toJson();
+    String? profileImageFileName;
+    String? identificationType1FileName;
+    String? identificationType2FileName;
+    String? resumeFileName;
 
-    // Debug: Log the actual JSON being sent
-    debugPrint('╔═══ WORKER REGISTRATION REQUEST ═══');
-    debugPrint('║ JSON Data:');
+    debugPrint(
+      '🔍 DEBUG: identificationType1File = ${request.identificationType1File}',
+    );
+    debugPrint(
+      '🔍 DEBUG: identificationType1File?.filePath = ${request.identificationType1File?.filePath}',
+    );
+
+    if (request.profileImage != null) {
+      profileImageFileName = FileNamingService.generateProfileImageName(
+        request.profileImage!.pathFile,
+      );
+    }
+
+    if (request.identificationType1File?.filePath != null) {
+      identificationType1FileName = FileNamingService.generateDocumentName(
+        request.identificationType1File!.filePath!,
+      );
+      debugPrint(
+        '🔍 DEBUG: Generated identificationType1FileName = $identificationType1FileName',
+      );
+    } else {
+      debugPrint(
+        '⚠️ DEBUG: identificationType1File is null or has no filePath!',
+      );
+    }
+
+    if (request.identificationType2File?.filePath != null) {
+      identificationType2FileName = FileNamingService.generateDocumentName(
+        request.identificationType2File!.filePath!,
+      );
+    }
+
+    if (request.resume?.filePath != null) {
+      resumeFileName = FileNamingService.generateResumeName(
+        request.resume!.filePath!,
+      );
+    }
+
+    final workerData = request.toWorkerProfileData(
+      profileImageFileName: profileImageFileName,
+      identificationType1FileName: identificationType1FileName,
+      identificationType2FileName: identificationType2FileName,
+      resumeFileName: resumeFileName,
+    );
+    final jsonData = workerData.toJson();
+
+    debugPrint('╔═══ WORKER REGISTRATION REQUEST (MULTIPART) ═══');
+    debugPrint('║');
+    debugPrint('║ 📋 Form Field: "data" (JSON string)');
     const encoder = JsonEncoder.withIndent('  ');
     final prettyJson = encoder.convert(jsonData);
-    debugPrint(prettyJson);
-    debugPrint('╚═══════════════════════════════════');
+    debugPrint('║ ${prettyJson.replaceAll('\n', '\n║ ')}');
+    debugPrint('║');
+    debugPrint('║ 📎 Files to attach:');
+
+    final data = FormData();
+    data.fields.add(MapEntry('data', jsonEncode(jsonData)));
+
+    if (request.profileImage != null && profileImageFileName != null) {
+      debugPrint('║   - $profileImageFileName');
+      data.files.add(
+        MapEntry(
+          profileImageFileName,
+          await MultipartFile.fromFile(
+            request.profileImage!.pathFile,
+            filename: profileImageFileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.identificationType1File != null &&
+        request.identificationType1File!.filePath != null &&
+        identificationType1FileName != null) {
+      debugPrint('║   - $identificationType1FileName');
+      data.files.add(
+        MapEntry(
+          identificationType1FileName,
+          await MultipartFile.fromFile(
+            request.identificationType1File!.filePath!,
+            filename: identificationType1FileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.identificationType2File != null &&
+        request.identificationType2File!.filePath != null &&
+        identificationType2FileName != null) {
+      debugPrint('║   - $identificationType2FileName');
+      data.files.add(
+        MapEntry(
+          identificationType2FileName,
+          await MultipartFile.fromFile(
+            request.identificationType2File!.filePath!,
+            filename: identificationType2FileName,
+          ),
+        ),
+      );
+    }
+
+    if (request.resume != null &&
+        request.resume!.filePath != null &&
+        resumeFileName != null) {
+      debugPrint('║   - $resumeFileName');
+      data.files.add(
+        MapEntry(
+          resumeFileName,
+          await MultipartFile.fromFile(
+            request.resume!.filePath!,
+            filename: resumeFileName,
+          ),
+        ),
+      );
+    }
+
+    debugPrint('║');
+    debugPrint('║ 📦 Total files: ${data.files.length}');
+    debugPrint('║ 📋 Total form fields: ${data.fields.length}');
+    debugPrint('╚════════════════════════════════════════════════');
 
     // Retry configuration with exponential backoff
     const retryOptions = RetryOptions(
@@ -41,7 +158,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     try {
       final response = await retryOptions.retry(
         () async {
-          return await apiClient.post('/WorkerProfile', data: jsonData);
+          return await apiClient.post('/WorkerProfile', data: data);
         },
         // Only retry on network/timeout errors, not on server errors (4xx/5xx)
         retryIf: (e) {

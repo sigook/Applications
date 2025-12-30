@@ -101,16 +101,15 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               Text(
                 'Account Setup',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Create your account credentials and accept our terms',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey.shade600),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
 
@@ -118,11 +117,10 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               CustomTextField(
                 label: 'Email',
                 hint: 'example@email.com',
-                initialValue: _emailController.text,
+                controller: _emailController,
                 errorText: _emailError,
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (value) {
-                  _emailController.text = value;
                   _validateAndSave();
                 },
               ),
@@ -132,7 +130,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               CustomTextField(
                 label: 'Password',
                 hint: 'Enter a strong password',
-                initialValue: _passwordController.text,
+                controller: _passwordController,
                 errorText: _passwordError,
                 obscureText: _obscurePassword,
                 suffixIcon: IconButton(
@@ -146,7 +144,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   },
                 ),
                 onChanged: (value) {
-                  _passwordController.text = value;
                   _validateAndSave();
                 },
               ),
@@ -195,7 +192,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               CustomTextField(
                 label: 'Confirm Password',
                 hint: 'Re-enter your password',
-                initialValue: _confirmPasswordController.text,
+                controller: _confirmPasswordController,
                 errorText: _confirmPasswordError,
                 obscureText: _obscureConfirmPassword,
                 suffixIcon: IconButton(
@@ -211,7 +208,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   },
                 ),
                 onChanged: (value) {
-                  _confirmPasswordController.text = value;
                   _validateAndSave();
                 },
               ),
@@ -266,8 +262,10 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     });
                     _validateAndSave();
                   },
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   controlAffinity: ListTileControlAffinity.leading,
                 ),
               ),
@@ -277,10 +275,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   padding: const EdgeInsets.only(left: 16),
                   child: Text(
                     _termsError!,
-                    style: TextStyle(
-                      color: Colors.red.shade700,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.red.shade700, fontSize: 12),
                   ),
                 ),
               ],

@@ -25,7 +25,11 @@ class UploadedFile extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
-    return {'fileName': fileName, 'description': description};
+    return {
+      'fileName': fileName,
+      'description': description,
+      'filePath': filePath,
+    };
   }
 
   @override
@@ -63,6 +67,16 @@ class IdentificationDocument extends Equatable {
       identificationNumber: identificationNumber ?? this.identificationNumber,
       file: file ?? this.file,
     );
+  }
+
+  /// Convert to JSON for debugging/logging purposes
+  Map<String, dynamic> toJson() {
+    return {
+      'identificationTypeId': identificationTypeId,
+      'identificationTypeValue': identificationTypeValue,
+      'identificationNumber': identificationNumber,
+      'file': file.toJson(),
+    };
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../data/datasources/registration_local_datasource.dart';
 import '../../data/datasources/registration_remote_datasource.dart';
 import '../../data/repositories/registration_repository_impl.dart';
@@ -20,11 +20,6 @@ final imagePickerProvider = Provider((ref) => ImagePickerRepositoryImp());
 final pickProfilePhotoProvider = Provider(
   (ref) => ref.read(imagePickerProvider),
 );
-
-/// SharedPreferences provider
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError('SharedPreferences must be overridden');
-});
 
 /// Local data source provider
 final registrationLocalDataSourceProvider =

@@ -1,0 +1,51 @@
+@using Covenant.HtmlTemplates.Views.Shared
+@model Covenant.HtmlTemplates.Views.Billing.Payment.PaymentSucceededViewModel
+<div style="background-color: #F5F5F5; padding-bottom: 20px;">
+    <table style="padding: 10px 20px 10px; text-align: center;" width="100%">
+        <tr>
+            <td>
+                <h2 style="font-weight: 300;">Thanks for using @await Html.PartialAsync("_Sigook")</h2>
+                <div style="font-weight: 200;">
+                    <p style="margin:0">We successfully authorized your credit card for you usage charges </p>
+                    <p style="margin:0">so you're all set!.</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table style="padding: 10px 20px 10px; font-weight: 200; width: 100%; font-size: 16px; max-width: 600px; margin: 0 auto; border-collapse: collapse">
+        <tr>
+            <td colspan="2" style="padding-bottom: 20px">Invoice # <b>@Model.InvoiceNumber</b></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding-bottom: 20px">Transaction Id: <b>@Model.TransactionId.ToUpper()</b></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding-bottom: 20px">Transaction Date: <b>@Model.TransactionDate.ToString("F")</b></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0;">@Model.Description</td>
+            <td style="padding: 8px 0;">@Model.Amount.ToUsMoney()</td>
+        </tr>
+        <tr>
+            <td style="border-top: 1px solid #b1b1b1; padding: 8px 0;">
+                <b>Amount paid</b>
+            </td>
+            <td style="border-top: 1px solid #b1b1b1; padding: 8px 0;">
+                <b>@Model.Amount.ToUsMoney()</b>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="padding-top: 30px; text-align: center">
+                <span style="font-size: 12px;">
+                    If you have questions about your order, please contact our customer support team at +1 (289) 681 8313.
+                    <br>
+                    You can check the detail on your
+                    <i style="color: deepskyblue; font-style: normal;">
+                        SIGOOK&trade;
+                    </i>Account.
+                </span>
+            </td>
+        </tr>
+    </table>
+</div>

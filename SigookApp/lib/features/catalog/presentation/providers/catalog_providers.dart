@@ -1,7 +1,5 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/network_info.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../data/datasources/catalog_remote_datasource.dart';
 import '../../data/repositories/catalog_repository_impl.dart';
@@ -10,16 +8,6 @@ import '../../domain/repositories/catalog_repository.dart';
 import '../../domain/usecases/get_catalog_data.dart';
 import '../../domain/usecases/get_provinces.dart';
 import '../../domain/usecases/get_cities.dart';
-
-/// Provider for API client
-final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
-});
-
-/// Provider for network info
-final networkInfoProvider = Provider<NetworkInfo>((ref) {
-  return NetworkInfoImpl(Connectivity());
-});
 
 /// Provider for remote data source
 final catalogRemoteDataSourceProvider = Provider<CatalogRemoteDataSource>((
@@ -179,7 +167,9 @@ final daysOfWeekProvider = FutureProvider<List<CatalogItem>>((ref) async {
 });
 
 /// Lifting capacities provider
-final liftingCapacitiesProvider = FutureProvider<List<CatalogItem>>((ref) async {
+final liftingCapacitiesProvider = FutureProvider<List<CatalogItem>>((
+  ref,
+) async {
   final catalogRepository = ref.watch(catalogRepositoryProvider);
   final result = await catalogRepository.getLiftingCapacities();
   return result.fold(
