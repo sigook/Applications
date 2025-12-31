@@ -117,7 +117,7 @@ stages:
           - task: qetza.replacetokens.replacetokens-task.replacetokens@6
             displayName: 'Set Version in index.html and version.json'
             inputs:
-              root: 'Sigook.Web/public'
+              root: '$(Build.SourcesDirectory)/Sigook.Web/public'
               sources: |
                 **/*.html
                 **/*.json
