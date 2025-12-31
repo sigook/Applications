@@ -416,6 +416,9 @@ dist
 .cache/
 public
 
+# Exception: Sigook.Web needs public directory for static assets
+!Sigook.Web/public/
+
 # vuepress build output
 .vuepress/dist
 
