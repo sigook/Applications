@@ -126,7 +126,7 @@ stages:
               tokenSuffix: '}#'
               actionOnMissing: 'warn'
               writeBOM: true
-              encoding: 'auto utf-8'
+              encoding: 'auto'
 
           # Build and Push Docker Image
           - task: Docker@2
