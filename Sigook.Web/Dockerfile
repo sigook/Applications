@@ -4,22 +4,34 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 ARG ENV
-RUN echo "🔍 DEBUG: ENV variable = $ENV" && \
-    echo "🔍 DEBUG: Checking .env files:" && \
-    ls -la .env* || echo "No .env files found" && \
-    echo "🔍 DEBUG: Available npm scripts:" && \
-    npm run && \
-    echo "🔍 DEBUG: Starting build with: npm run $ENV" && \
-    npm run $ENV 2>&1 || (echo "❌ Build failed with exit code $?" && exit 1) && \
-    echo "✅ Build completed successfully" && \
-    echo "🔍 DEBUG: Listing /app directory:" && \
+
+# Debug: Show environment and files
+RUN echo "========================================" && \
+    echo "DEBUG INFO" && \
+    echo "========================================" && \
+    echo "ENV variable: $ENV" && \
+    echo "----------------------------------------" && \
+    echo "Listing .env files:" && \
+    ls -la .env* 2>/dev/null || echo "No .env files found!" && \
+    echo "----------------------------------------" && \
+    echo "All files in /app:" && \
+    ls -la
+
+# Run the build
+RUN npm run ${ENV}
+
+# Verify build output
+RUN echo "========================================" && \
+    echo "BUILD VERIFICATION" && \
+    echo "========================================" && \
     ls -la && \
-    if [ ! -d "wwwroot" ]; then \
+    if [ -d "wwwroot" ]; then \
+      echo "✅ wwwroot directory found" && \
+      ls -la wwwroot/; \
+    else \
       echo "❌ ERROR: wwwroot directory not found!" && \
       exit 1; \
-    fi && \
-    echo "✅ wwwroot directory verified" && \
-    ls -la wwwroot/
+    fi
 
 FROM nginx:stable-alpine AS production-stage
 EXPOSE 80
