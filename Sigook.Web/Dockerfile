@@ -4,13 +4,18 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 ARG ENV
-RUN npm run $ENV && \
+RUN echo "🔍 DEBUG: ENV variable = $ENV" && \
+    echo "🔍 DEBUG: Checking .env files:" && \
+    ls -la .env* || echo "No .env files found" && \
+    echo "🔍 DEBUG: Available npm scripts:" && \
+    npm run && \
+    echo "🔍 DEBUG: Starting build with: npm run $ENV" && \
+    npm run $ENV 2>&1 || (echo "❌ Build failed with exit code $?" && exit 1) && \
     echo "✅ Build completed successfully" && \
+    echo "🔍 DEBUG: Listing /app directory:" && \
     ls -la && \
     if [ ! -d "wwwroot" ]; then \
       echo "❌ ERROR: wwwroot directory not found!" && \
-      echo "Contents of /app:" && \
-      ls -la && \
       exit 1; \
     fi && \
     echo "✅ wwwroot directory verified" && \
