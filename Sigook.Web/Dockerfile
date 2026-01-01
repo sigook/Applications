@@ -1,53 +1,34 @@
 FROM node:16 AS build-stage
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
 
-# Copy all source files
+# Copy source code
 COPY . .
 
-# Debug: Show what was copied
-RUN echo "========================================" && \
-    echo "FILES COPIED TO CONTAINER" && \
-    echo "========================================" && \
-    find . -maxdepth 1 -name ".env*" && \
-    echo "----------------------------------------" && \
-    ls -la | grep -E "^-" | wc -l && echo "files copied" && \
-    echo "----------------------------------------"
+# Set build argument
+ARG ENV=production
+RUN echo "Building for environment: ${ENV}"
 
-ARG ENV
-
-# Debug: Show environment and files
-RUN echo "========================================" && \
-    echo "DEBUG INFO" && \
-    echo "========================================" && \
-    echo "ENV variable: $ENV" && \
-    echo "----------------------------------------" && \
-    echo "Checking for .env files:" && \
-    ls -la .env* 2>/dev/null || echo "❌ No .env files found!" && \
-    echo "----------------------------------------" && \
-    echo "Checking if .env.staging exists:" && \
-    test -f .env.staging && echo "✅ .env.staging exists" || echo "❌ .env.staging missing" && \
-    echo "Checking if .env.production exists:" && \
-    test -f .env.production && echo "✅ .env.production exists" || echo "❌ .env.production missing"
-
-# Run the build
-RUN npm run ${ENV}
-
-# Verify build output
-RUN echo "========================================" && \
-    echo "BUILD VERIFICATION" && \
-    echo "========================================" && \
-    ls -la && \
-    if [ -d "wwwroot" ]; then \
-      echo "✅ wwwroot directory found" && \
-      ls -la wwwroot/; \
+# Run Vue CLI build
+# Force production build mode and output to wwwroot
+RUN set -e && \
+    if [ "${ENV}" = "staging" ]; then \
+      echo "Running: npm run staging" && \
+      npm run staging && \
+      echo "✅ Staging build completed"; \
     else \
-      echo "❌ ERROR: wwwroot directory not found!" && \
-      exit 1; \
-    fi
+      echo "Running: npm run production" && \
+      npm run production && \
+      echo "✅ Production build completed"; \
+    fi && \
+    echo "Checking for wwwroot..." && \
+    ls -la
+
+# Verify wwwroot was created
+RUN ls -la wwwroot/ || (echo "ERROR: Build did not create wwwroot directory!" && exit 1)
 
 FROM nginx:stable-alpine AS production-stage
 EXPOSE 80
