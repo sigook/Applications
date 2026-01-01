@@ -1,0 +1,190 @@
+{
+  "jobSeekers": [
+    {
+      "id": "general-labor",
+      "title": "General Labor",
+      "shortDescription": "With our extensive experience in screening and hiring General Labor candidates across North America, we will find the right employer for you. As an Assembler, Machine Operator, Packing and Shipping, or any other Warehouse role. SIGOOK® is here to help you build a lifetime career.",
+      "backgroundImage": "worker_general_labor.jpg",
+      "positions": [
+        {
+          "title": "ASSEMBLER",
+          "description": "Are you ready to join a team of efficient assemblers who work to ensure all production needs are met on time? Whether you are interested in simple tasks or highly complex assembly jobs, we are ready to find the right employer for you.",
+          "image": "General_Labor_ASSEMBLER.png"
+        },
+        {
+          "title": "MACHINE OPERATOR",
+          "description": "Machine operators need a variety of hard and soft skills to operate complex machines daily. If you are a diligent, versatile machine operator, we are ready to find you the machine operator job you desire.",
+          "image": "GENERAL_LABOR_Machine_Operator.png"
+        },
+        {
+          "title": "PACKING",
+          "description": "Packing jobs required workers with attention to detail. From labeling to inspecting for tears, cracks and dents, we are ready to guide you along the way. Contact us today and be ready for your next opportunity.",
+          "image": "GENERAL_LABOUR_PACKING.png"
+        },
+        {
+          "title": "WAREHOUSING",
+          "description": "There has never been a better moment to become part of our warehouse personnel. If you are ready to sort, handle and stock goods for latter dispatching, a warehouse job is perfect for you. Contact us today and you might start tomorrow.",
+          "image": "GENERAL_LABOR_WAREHOUSING.png"
+        },
+        {
+          "title": "ORDER PICKER",
+          "description": "Join a dynamic and collaborative team. If you are ready to provide excellent service picking ticket orders from warehouse staff and pulling inventory from the shelves, we want to hear from you to find the perfect match.",
+          "image": "GENERAL_LABOR_ORDER_PICKING.png"
+        },
+        {
+          "title": "FORKLIFT",
+          "description": "Safety is our main requirement when considering forklift candidates. If you put safety before anything, and you are ready to take on a new career challenge, we are here to offer the opportunity to work for major employers who need Forklift Drivers.",
+          "image": "GENERAL_LABOR_FORKLIFT.png",
+          "comingSoon": true
+        }
+      ]
+    },
+    {
+      "id": "clerical",
+      "title": "Clerical",
+      "shortDescription": "Temporary, Temp to Perm, or On-demand Clerical roles are our forte. If you want to enter the Clerical Market anywhere in USA, and enjoy wearing multiple hats, we are ready to help you. Contact us today and start working right away at your dream job.",
+      "backgroundImage": "worker_clerical.jpg",
+      "positions": [
+        {
+          "title": "ADMINISTRATIVE ASSISTANT",
+          "description": "We are looking for you, a result-oriented candidate who is excited about performing diverse administrative and office support duties. Call us, send an email or feel free to use our Sigook App!",
+          "image": "Clerical_Admini_Assistant.png"
+        },
+        {
+          "title": "CALL CENTER",
+          "description": "If you have a strong communications skill, are an attentive listener to fully understand a caller’s query and provide a solution that meets their needs, we need you. Become part of an amazing customer service team.",
+          "image": "CLERICAL_CALL_CENTER.png"
+        },
+        {
+          "title": "RECEPTIONIST",
+          "description": "Be the front face of our clients! We have helped many candidates to land on receptionist roles that have turned into permanent positions. If you are professional and personable with strong multi-tasking skills, we want to meet with you.",
+          "image": "CLERICAL_RECECCIONIST.png"
+        }
+      ]
+    },
+    {
+      "id": "skilled-job",
+      "title": "Skilled Jobs",
+      "shortDescription": "Our commitment is to find the best Skilled Trade placement for our talent. We match your skills and experience with our client’s needs. This is a win-win!!! SIGOOK® will help you find a skilled position in any sector.",
+      "backgroundImage": "worker_skill_jobs.jpg",
+      "positions": [
+        {
+          "title": "IT SPECIALIST",
+          "description": "Are you ready to join a team with in-depth knowledge of computer hardware/software technologies with an amiable personality, and focused on customer service? We are ready to help you find the perfect employer where your career can take off.",
+          "image": "SKILLED_JOBS_IT_SUPPORT.png"
+        },
+        {
+          "title": "SALES REPRESENTATIVE",
+          "description": "Join a team of professionals who are passionate about moving businesses forward if you have experience on customer service, and have strong communication and sales skills, we are ready to meet with you.",
+          "image": "SKILLED_SALES_REP.png"
+        },
+        {
+          "title": "HEALTH CARE AND PHARMACEUTICAL WORKERS",
+          "description": "Your talent is much needed. If you are passionate about providing primary health care that emphasizes health promotion and illness - prevention, we want to hear from you.",
+          "image": "SKILLED_JOBS_HEALTH_CARE_SPECIALIST.png",
+          "comingSoon": true
+        },
+        {
+          "title": "DRIVERS",
+          "description": "Let us drive your career. If you are highly experienced, professional, licensed drivers with a good safety track record, SIGOOK Staffing Agency has the right opportunity for you. Contact us today and allow us to match your expertise with the best employers.",
+          "image": "SKILLED_DRIVER.png",
+          "comingSoon": true
+        }
+      ]
+    }
+  ],
+  "business": [
+    {
+      "id": "general-labor",
+      "title": "General Labor",
+      "shortDescription": "With our extensive experience in screening and hiring General Labor candidates in North America, we will find the right talent for you. Temporary, temp-to-perm, or On-demand. Assemblers, Machine Operators, Packing and Shipping, or any other Warehouse roles. SIGOOK® is here to help you build the most productive team.",
+      "backgroundImage": "business_general_labor.jpg",
+      "positions": [
+        {
+          "title": "ASSEMBLING",
+          "description": "SIGOOK® has many qualified Assembly Workers, whose techniques and assembly styles allow for a speedy, flexible, and efficient production. All candidates go through a meticulous screening process. Simple tasks or highly complex assembly processes, we have people ready to work as soon as you are.",
+          "image": "GENERAL_LABOR_ASSEMBLING.png"
+        },
+        {
+          "title": "MACHINE OPERATOR",
+          "description": "Operate your business with the most qualified people. Small or large equipment, we have the right Machine Operator ready to safely operate, repair, or improve your assets.",
+          "image": "GENERAL_LABOR_MACHINE_OPERATOR.png"
+        },
+        {
+          "title": "PACKING",
+          "description": "Our qualified candidates go beyond packing, they are ready to label, inspect for tears, cracks, and dents, as well as make sure the materials inside are properly placed to minimize breakage during transit. All you need is to let us do what we know best. Hiring the best ones!",
+          "image": "GENERAL_LABOUR_PACKING_LOWRES.png"
+        },
+        {
+          "title": "WAREHOUSING",
+          "description": "Our warehouse staff is experienced in different warehousing production, manufacturing, and distribution environments. Qualified to sort, handle, store all kind of goods including food, tech items, clothing, furniture and more. Test their skills now!",
+          "image": "GENERAL_LABOR_WAREHOUSING.png"
+        },
+        {
+          "title": "ORDER PICKER",
+          "description": "End-to-end solutions for order picking. Our candidates are ready to pick ticket orders from warehouse staff and pull inventory from the shelves. They are also ready to pack orders and load them on trucks for delivery. Our order pickers do all this while ensuring order-picking accuracy for a smooth flow in warehouse operations.",
+          "image": "GENERAL_LABOR_ORDER_PICKER.png"
+        },
+        {
+          "title": "FORKLIFT",
+          "description": "Safety is our main requirement when considering Forklift candidates. Be confident that all our Forklift staff comply with specific Health and Safety Act guidelines. They will be moving materials always considering their own safety, the safety of their coworkers, and one of your clients.",
+          "image": "GENERAL_LABOR_FORKLIFT.png",
+          "comingSoon": true
+        }
+      ]
+    },
+    {
+      "id": "clerical",
+      "title": "Clerical",
+      "shortDescription": "Clerical staff is one of the favorites at SIGOOK®. We hire qualified personnel to keep your office running smoothly. Permanent, temporary, temp to perm, or On-demand, Our screening process is designed to help us identify clerical staff who can wear multiple hats with strong organizational skills and attention to detail. We have great people waiting for you. Contact us today!",
+      "backgroundImage": "business_clerical.jpg",
+      "positions": [
+        {
+          "title": "ADMINISTRATIVE ASSISTANT",
+          "description": "Ready to hire someone to help you keep your business running? Our Administrative Assistant staff is fully equipped to do basic tasks such as filling the printer with paper to using computer software to create spreadsheets, compose messages, manage databases, and produce presentations. As if that is not enough, they are ready to take care of your daily office needs and manage stockrooms or corporate libraries. All you need to do is call us or send an email.",
+          "image": "CLERICAL_ADMINISRATIVE_ASSISTANT.png"
+        },
+        {
+          "title": "CALL CENTER",
+          "description": "We help you to find the right Call Center agent, efficient, detail-oriented who is going to give your company the best support and greater customer satisfaction. Contact us today!",
+          "image": "CLERICAL_CALL_CENTER.png"
+        },
+        {
+          "title": "RECEPTIONIST",
+          "description": "Professional presence and strong communication skills are a must for a candidate to become our staff receptionist. Our laser-focused screening process has helped us over and over to find receptionists that project our client’s image and culture.",
+          "image": "CLERICAL_RECEPCIONIST.png"
+        }
+      ]
+    },
+    {
+      "id": "skilled-job",
+      "title": "Skilled Jobs",
+      "shortDescription": "We provide highly skilled trade professionals well matched to your unique hiring needs as but not limited to the Industrial, Service, and Residential Sector. The best of all is that our response to your staffing request is immediate.",
+      "backgroundImage": "business_skill_jobs.jpg",
+      "positions": [
+        {
+          "title": "IT SPECIALIST",
+          "description": "Our IT specialists are ready to assist your company with managing hardware, software, and networking. Their familiarity with project management software, customer management software, server operating systems, and web platform development software allows them to be of value in most aspects of your business. Need an IT specialist? Contact SIGOOK Staffing Agency.",
+          "image": "SKILLED_JOBS_IT_SPECIALIST.png"
+        },
+        {
+          "title": "SALES REPRESENTATIVE",
+          "description": "Our Sales representatives work with you to create solutions and ensure your clientele sees the value of your product/services. From retail products, and goods to services, our sales candidates are ready to move your business forward.",
+          "image": "SKILLED_JOB_SALES_REP.png"
+        },
+        {
+          "title": "HEALTH CARE AND PHARMACEUTICAL WORKERS",
+          "description": "SIGOOK Staffing Agency specializes in medical and pharmaceutical staffing both on a contract and employment basis. We provide healthcare workers for families and facilities. We understand that every company is unique, with unique staffing needs, and because of that; we work diligently to provide you with the kind of reliable personalized care that you deserve.",
+          "image": "SKILLED_HEALTH_CARE_SUPPORT.png",
+          "comingSoon": true
+        },
+        {
+          "title": "DRIVERS",
+          "description": "In the transportation industry, it is about making sure things keep moving forward, and that is exactly what we do for your business. We move it forward. We find the best professional, licensed drivers, all with a good safety track record, so your business can run smoothly.",
+          "image": "SKILLED_JOB_DRIVERS.png",
+          "comingSoon": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+#app{
+    .vdp-datepicker__calendar .disabled {
+        background-color: transparent;
+    }
+
+    .disabled-calendar {
+        .vdp-datepicker__calendar .cell:not(.blank):not(.disabled).day:hover,
+        .vdp-datepicker__calendar .cell:not(.blank):not(.disabled).month:hover,
+        .vdp-datepicker__calendar .cell:not(.blank):not(.disabled).year:hover {
+            border: 0;
+        }
+        .vdp-datepicker__calendar .cell.selected.highlighted,
+        .vdp-datepicker__calendar .cell.selected {
+            background-color: transparent;
+            color: black;
+            &::after {
+                background-color: #d8d8d8;
+            }
+        }
+    }
+
+    .calendar-custom {
+        .vdp-datepicker__calendar {
+            width: 100%;
+            border: 0;
+            .day__month_btn {
+                color: $primary;
+                font-size: 16px;
+            }
+            .prev::after{
+                border-right-color: $primary;
+            }
+            .next::after {
+                border-left-color: $primary;
+            }
+        }
+    }
+
+    .vdp-datepicker__calendar .cell.highlighted {
+        background-color: transparent;
+        position: relative;
+        z-index: 1;
+        color: black;
+        &:after {
+            content: "";
+            width: 36px;
+            height: 36px;
+            background: #d8d8d8;
+            position: absolute;
+            left: 50%;
+            top: 2px;
+            transform: translateX(-50%);
+            border-radius: 60px;
+            z-index: -3;
+        }
+    }
+
+    .vdp-datepicker__calendar .cell.selected {
+        background-color: #999999;
+        //border-radius: 50%;
+
+        &:hover,  &:focus{
+            border-radius: 0;
+        }
+    }
+
+    .vdp-datepicker__calendar .cell.selected.highlighted {
+        background-color: transparent;
+        color: white;
+        &:after {
+            background: #424242;
+        }
+    }
+
+    .vdp-datepicker__calendar .cell.day.today {
+        color: $primary;
+        font-weight: bold;
+    }
+
+    .disablePrevButton {
+        .prev {
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
+
+    .disableNextButton {
+        .next {
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
+
+
+
+
+    // buefy picker
+    .filter-week-calendar {
+        .datepicker-row:hover > .datepicker-cell {
+            color: $primary;
+            opacity: 1;
+        }
+        .is-selectable {
+            font-weight: 400;
+        }
+    }
+}
+

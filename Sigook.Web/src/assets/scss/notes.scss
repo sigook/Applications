@@ -1,0 +1,75 @@
+.color-picker {
+  display: inline-block;
+}
+.colors-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 180px;
+  padding: 6px;
+  position: absolute;
+  background: rgba(255,255,255, .8);
+  box-shadow: 0 0 4px #f1f1f1;
+  bottom: -75px;
+  left: -10px;
+  border-radius: 6px;
+}
+.color-item {
+  flex-basis: 25%;
+  .dot-color{
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    border-radius: 50%;
+    border: 1px solid #f1f1f1;
+  }
+  &.active .dot-color{
+    border: 2px solid #ff9932;
+  }
+}
+.b-tooltip.is-mini .tooltip-content {
+  width: auto !important;
+}
+
+#button-select-color {
+  border: 0;
+  margin: 0 10px 0 0;
+  vertical-align: middle;
+  img {
+    width: 20px;
+    height: auto;
+  }
+}
+
+.note-color-icon {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: 6px;
+  &.border {
+    border: 1px solid #eaeaea;
+  }
+}
+
+.note-list {
+  border-radius: 5px;
+  padding: 0;
+  margin-bottom: 10px;
+  li {
+    border: 1px solid #dbdcdb;
+    border-radius: 5px;
+    padding: 5px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
+
+.top-2{
+  top: 2px;
+}

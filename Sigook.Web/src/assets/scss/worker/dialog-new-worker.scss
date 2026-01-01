@@ -1,0 +1,21 @@
+@import '../variables';
+.contain-new-worker {
+  padding: 10px 5px 10px;
+  text-align: left;
+  p {
+    margin-top: 10px;
+    opacity: .8;
+  }
+  input, textarea {
+    margin-top: 5px;
+    border: 1px solid $border-input;
+    background: #f7f7f7;
+    width: 100%;
+  }
+
+  textarea{
+    height: 80px;
+    padding: 7px 10px;
+  }
+}
+

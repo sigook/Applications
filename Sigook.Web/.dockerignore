@@ -1,0 +1,50 @@
+# Dockerignore for Sigook.Web Vue.js application
+# This file controls what gets copied into the Docker build context
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE*
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output (will be generated during Docker build)
+wwwroot/
+dist/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+tests/
+*.test.js
+*.spec.js
+coverage/
+
+# CI/CD files (not needed in container)
+.azure-pipelines/
+
+# IMPORTANT: Include .env files for build
+# Do NOT ignore .env files - they are needed for the build!
+# Lines below ensure .env.staging and .env.production are included:
+!.env.staging
+!.env.production

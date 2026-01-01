@@ -1,0 +1,125 @@
+@import "../../assets/scss/variables";
+.wrapper-calendar {
+  table {
+    border-collapse: collapse;
+
+    td:nth-child(1),
+    td:nth-last-child(1) {
+      background: #f7f7f7;
+    }
+
+    /* change for punch card calendar*/
+    &.isPunchCard {
+      th:nth-child(1),
+      td:nth-child(1) {
+        width: 40px;
+        background: #e4e4e4;
+        border-left: 1px solid white;
+      }
+      td:nth-child(2),
+      td:nth-last-child(1) {
+        background: #f7f7f7;
+      }
+    }
+    /* change for punch card calendar*/
+
+    td {
+      padding: 0 !important;
+    }
+    tbody td {
+      border: 1px solid #d2d2d2;
+      // width: calc((100% - 40px) / 7 );
+      width: 100px;
+    }
+    .wrapper-day {
+      min-height: 60px;
+      padding: 5px;
+      font-size: 14px;
+    }
+
+    .isToday {
+      color: $primary;
+      font-weight: bold;
+    }
+
+    .notCurrentMonth {
+      color: #bebebe;
+    }
+    tr:hover {
+      background: white !important;
+    }
+  }
+  .btn-calendar {
+    width: 14px;
+    border: 0;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 5px;
+  }
+  .btn-prev img {
+    transform: rotate(180deg);
+  }
+  .btn-today {
+    border: 1px solid #a7a7a7;
+    border-radius: 5px;
+    margin: 0 5px;
+    font-weight: bold;
+    color: #b5b5b5;
+    font-size: 14px;
+    padding: 3px 8px;
+  }
+  .no-border {
+    border: 0;
+  }
+  .highlight-day {
+    & > span {
+      line-height: 1;
+      width: 22px;
+      height: 22px;
+      background: #ff9c28;
+      display: inline-block;
+      text-align: center;
+      border-radius: 50%;
+      padding: 5px 0;
+      font-size: 13px;
+      color: white;
+    }
+  }
+
+  .calendar-options-absolute {
+    position: inherit;
+    top: 5px;
+    right: 5px;
+  }
+
+  .bg-gray {
+    background-color: #dadada !important;
+    opacity: .5;
+  }
+}
+.totalHours {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 50px;
+  background: #e4e4e4;
+  align-items: center;
+
+  button {
+    border: 1px solid black;
+    padding: 3px;
+    width: 100%;
+  }
+
+  input {
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    text-align: center;
+    font-weight: 400;
+    border-bottom: 1px solid gray;
+    margin-bottom: 3px;
+    font-size: 14px;
+  }
+}
