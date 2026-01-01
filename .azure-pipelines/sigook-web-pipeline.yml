@@ -98,20 +98,46 @@ stages:
 
           # Determine Docker tag and environment
           - script: |
-              echo "Calculating Docker tag based on branch $(Build.SourceBranchName)..."
-              if [ "$(isDev)" = True ]; then
-                tag=latest_staging
-                environment=staging
+              echo "============================================"
+              echo "ENVIRONMENT DETECTION"
+              echo "============================================"
+              echo "Branch: $(Build.SourceBranchName)"
+              echo "isDev: $(isDev)"
+              echo "isMain: $(isMain)"
+
+              if [ "$(isDev)" = "True" ]; then
+                TAG="latest_staging"
+                BUILD_ENV="staging"
+                echo "✅ Detected: STAGING environment"
               else
-                tag=latest_production
-                environment=production
+                TAG="latest_production"
+                BUILD_ENV="production"
+                echo "✅ Detected: PRODUCTION environment"
               fi
-              echo "##vso[task.setvariable variable=tag]$tag"
-              echo "##vso[task.setvariable variable=environment]$environment"
-              echo "TAG: $tag"
-              echo "Environment: $environment"
+
+              echo "##vso[task.setvariable variable=dockerTag]$TAG"
+              echo "##vso[task.setvariable variable=dockerTag;isOutput=true]$TAG"
+              echo "##vso[task.setvariable variable=buildEnvironment]$BUILD_ENV"
+              echo "##vso[task.setvariable variable=buildEnvironment;isOutput=true]$BUILD_ENV"
+
+              echo "============================================"
+              echo "Docker Tag: $TAG"
+              echo "Build Environment: $BUILD_ENV"
+              echo "============================================"
             name: SetDockerTag
-            displayName: 'Determine Docker Tag'
+            displayName: 'Determine Build Environment'
+
+          # Verify environment variable was set
+          - script: |
+              echo "Verifying variables for Docker build..."
+              echo "dockerTag = $(dockerTag)"
+              echo "buildEnvironment = $(buildEnvironment)"
+              if [ -z "$(buildEnvironment)" ]; then
+                echo "❌ ERROR: buildEnvironment is empty!"
+                exit 1
+              fi
+              echo "✅ Variables verified"
+            displayName: 'Verify Build Variables'
 
           # Replace tokens in public files (version number)
           - task: qetza.replacetokens.replacetokens-task.replacetokens@6
@@ -130,15 +156,15 @@ stages:
 
           # Build and Push Docker Image
           - task: Docker@2
-            displayName: 'Build and Push Docker Image'
+            displayName: 'Build and Push Docker Image (ENV=$(buildEnvironment))'
             inputs:
               containerRegistry: 'acrServiceConnectionSigook'
               repository: 'web'
               command: 'buildAndPush'
               Dockerfile: 'Sigook.Web/Dockerfile'
               buildContext: 'Sigook.Web'
-              tags: $(tag)
-              arguments: '--build-arg ENV=$(environment)'
+              tags: $(dockerTag)
+              arguments: '--build-arg ENV=$(buildEnvironment)'
 
           - task: Bash@3
             displayName: 'Docker Build Summary'
@@ -150,8 +176,8 @@ stages:
                 echo "✅ Docker Image Built and Pushed"
                 echo "============================================"
                 echo "Repository: sigook.azurecr.io/web"
-                echo "Tag: $(tag)"
-                echo "Environment: $(environment)"
+                echo "Tag: $(dockerTag)"
+                echo "Build Environment: $(buildEnvironment)"
                 echo "Build ID: $(Build.BuildId)"
                 echo "============================================"
 
@@ -159,31 +185,37 @@ stages:
         displayName: 'Deploy to Azure App Service'
         dependsOn: Build_Docker_Image
         condition: succeeded()
+        variables:
+          dockerTag: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.dockerTag'] ]
         steps:
           - checkout: none
             displayName: 'Skip Checkout'
 
           # Determine Azure App Service name
           - script: |
-              if [ "$(isDev)" = True ]; then
+              if [ "$(isDev)" = "True" ]; then
                 azureAppName="sigook-web-staging"
-                environment="Staging"
+                deployEnv="Staging"
+                dockerTag="latest_staging"
               else
                 azureAppName="sigook"
-                environment="Production"
+                deployEnv="Production"
+                dockerTag="latest_production"
               fi
               echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
-              echo "##vso[task.setvariable variable=environment]$environment"
-              echo "Deploying to: $azureAppName ($environment)"
-            displayName: 'Determine Azure App Service'
+              echo "##vso[task.setvariable variable=deployEnv]$deployEnv"
+              echo "##vso[task.setvariable variable=dockerTag]$dockerTag"
+              echo "Deploying to: $azureAppName ($deployEnv)"
+              echo "Docker Tag: $dockerTag"
+            displayName: 'Determine Deployment Target'
 
           # Deploy to Azure App Service (Container)
           - task: AzureWebAppContainer@1
-            displayName: 'Deploy to $(environment)'
+            displayName: 'Deploy to $(deployEnv)'
             inputs:
               azureSubscription: 'SigookPipelines'
               appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/web:$(tag)'
+              containers: 'sigook.azurecr.io/web:$(dockerTag)'
               appSettings: '-CVN_VERSION $(Build.BuildId)'
 
           # Deployment Summary
@@ -196,9 +228,10 @@ stages:
                 echo "============================================"
                 echo "🚀 Deployment Successful!"
                 echo "============================================"
-                echo "Environment: $(environment)"
+                echo "Environment: $(deployEnv)"
                 echo "App Service: $(azureAppName)"
-                if [ "$(isDev)" = True ]; then
+                echo "Docker Image: sigook.azurecr.io/web:$(dockerTag)"
+                if [ "$(isDev)" = "True" ]; then
                   echo "URL: https://sigook-web-staging.azurewebsites.net"
                 else
                   echo "URL: https://sigook.azurewebsites.net"
