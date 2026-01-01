@@ -98,21 +98,17 @@ stages:
 
           # Determine Docker tag and environment
           - script: |
-              echo "============================================"
-              echo "ENVIRONMENT DETECTION"
-              echo "============================================"
+              echo "Environment Detection"
               echo "Branch: $(Build.SourceBranchName)"
-              echo "isDev: $(isDev)"
-              echo "isMain: $(isMain)"
 
               if [ "$(isDev)" = "True" ]; then
                 TAG="latest_staging"
                 BUILD_ENV="staging"
-                echo "✅ Detected: STAGING environment"
+                echo "✅ Environment: STAGING"
               else
                 TAG="latest_production"
                 BUILD_ENV="production"
-                echo "✅ Detected: PRODUCTION environment"
+                echo "✅ Environment: PRODUCTION"
               fi
 
               echo "##vso[task.setvariable variable=dockerTag]$TAG"
@@ -120,10 +116,7 @@ stages:
               echo "##vso[task.setvariable variable=buildEnvironment]$BUILD_ENV"
               echo "##vso[task.setvariable variable=buildEnvironment;isOutput=true]$BUILD_ENV"
 
-              echo "============================================"
-              echo "Docker Tag: $TAG"
-              echo "Build Environment: $BUILD_ENV"
-              echo "============================================"
+              echo "Docker Tag: $TAG | Build Environment: $BUILD_ENV"
             name: SetDockerTag
             displayName: 'Determine Build Environment'
 
@@ -172,14 +165,9 @@ stages:
               targetType: 'inline'
               script: |
                 echo ""
-                echo "============================================"
                 echo "✅ Docker Image Built and Pushed"
-                echo "============================================"
-                echo "Repository: sigook.azurecr.io/web"
-                echo "Tag: $(dockerTag)"
-                echo "Build Environment: $(buildEnvironment)"
-                echo "Build ID: $(Build.BuildId)"
-                echo "============================================"
+                echo "Repository: sigook.azurecr.io/web:$(dockerTag)"
+                echo "Environment: $(buildEnvironment) | Build ID: $(Build.BuildId)"
 
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
@@ -225,16 +213,12 @@ stages:
               targetType: 'inline'
               script: |
                 echo ""
-                echo "============================================"
                 echo "🚀 Deployment Successful!"
-                echo "============================================"
-                echo "Environment: $(deployEnv)"
-                echo "App Service: $(azureAppName)"
-                echo "Docker Image: sigook.azurecr.io/web:$(dockerTag)"
+                echo "Environment: $(deployEnv) | App Service: $(azureAppName)"
+                echo "Image: sigook.azurecr.io/web:$(dockerTag)"
                 if [ "$(isDev)" = "True" ]; then
                   echo "URL: https://sigook-web-staging.azurewebsites.net"
                 else
                   echo "URL: https://sigook.azurewebsites.net"
                 fi
                 echo "Version: $(Build.BuildId)"
-                echo "============================================"

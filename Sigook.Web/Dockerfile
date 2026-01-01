@@ -8,27 +8,21 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set build argument
+# Set build argument (default: production)
 ARG ENV=production
-RUN echo "Building for environment: ${ENV}"
 
 # Run Vue CLI build
-# Force production build mode and output to wwwroot
 RUN set -e && \
+    echo "Building for environment: ${ENV}" && \
     if [ "${ENV}" = "staging" ]; then \
-      echo "Running: npm run staging" && \
-      npm run staging && \
-      echo "✅ Staging build completed"; \
+      npm run staging; \
     else \
-      echo "Running: npm run production" && \
-      npm run production && \
-      echo "✅ Production build completed"; \
+      npm run production; \
     fi && \
-    echo "Checking for wwwroot..." && \
-    ls -la
+    echo "Build completed successfully"
 
-# Verify wwwroot was created
-RUN ls -la wwwroot/ || (echo "ERROR: Build did not create wwwroot directory!" && exit 1)
+# Verify build output exists
+RUN test -d wwwroot || (echo "ERROR: Build did not create wwwroot directory" && exit 1)
 
 FROM nginx:stable-alpine AS production-stage
 EXPOSE 80
