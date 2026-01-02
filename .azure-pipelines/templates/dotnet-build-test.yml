@@ -38,6 +38,10 @@ parameters:
     displayName: 'Integration test project pattern'
 
 steps:
+  # Authenticate with Azure Artifacts for private NuGet feeds
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate with Azure Artifacts'
+
   # Build Solution/Projects
   - task: DotNetCoreCLI@2
     displayName: 'Build ${{ parameters.buildConfiguration }}'
