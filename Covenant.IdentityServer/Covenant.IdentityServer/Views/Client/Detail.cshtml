@@ -1,0 +1,149 @@
+﻿@model IdentityServer4.EntityFramework.Entities.Client;
+@using IdentityServer4.Models;
+
+<h2><strong>Id:</strong> @Model.Id</h2>
+<div class="col-md-12">
+    <div class="col-md-3">
+        <p><strong>Enabled:</strong> @(Model.Enabled ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Client Id:</strong> @Model.ClientId</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Require Client Secret:</strong> @(Model.RequireClientSecret ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Client Name:</strong> @Model.ClientName</p>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-3">
+        <p><strong>Description:</strong> @Model.Description</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Client Uri:</strong> @Model.ClientUri</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Require Consent:</strong> @(Model.RequireConsent ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Always Include User Claims In IdToken:</strong> @(Model.AlwaysIncludeUserClaimsInIdToken ? "Yes" : "No")</p>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-3">
+        <p><strong>Require Pkce:</strong> @(Model.RequirePkce ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Allow Access Tokens Via Browser:</strong> @(Model.AllowAccessTokensViaBrowser ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Allow Offline Access:</strong> @(Model.AllowOfflineAccess ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Identity Token Lifetime:</strong> @Model.IdentityTokenLifetime</p>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-3">
+        <p><strong>Access Token Lifetime:</strong> @Model.AccessTokenLifetime</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Authorization Code Lifetime:</strong> @Model.AuthorizationCodeLifetime</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Update Access Token Claims On Refresh:</strong> @(Model.UpdateAccessTokenClaimsOnRefresh ? "Yes" : "No")</p>
+    </div>
+    <div class="col-md-3">
+        <p><strong>Access Token Type:</strong> @(((AccessTokenType)Model.AccessTokenType).ToString())</p>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-6">
+        <strong>Client Redirect Uris:</strong>
+        @if (Model.RedirectUris.Any())
+        {
+            <ul class="list-unstyled">
+                @foreach (var redirectUri in Model.RedirectUris)
+                {
+                    <li>@redirectUri.RedirectUri</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </div>
+    <div class="col-md-6">
+        <strong>Client Post Logout Redirect Uris:</strong>
+        @if (Model.PostLogoutRedirectUris.Any())
+        {
+            <ul class="list-unstyled">
+                @foreach (var postLogoutRedirectUri in Model.PostLogoutRedirectUris)
+                {
+                    <li>@postLogoutRedirectUri.PostLogoutRedirectUri</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-6">
+        <strong>Client Cors Origins:</strong>
+        @if (Model.AllowedCorsOrigins.Any())
+        {
+            <ul class="list-unstyled">
+                @foreach (var allowedCorsOrigin in Model.AllowedCorsOrigins)
+                {
+                    <li>@allowedCorsOrigin.Origin</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </div>
+    <div class="col-md-6">
+        <strong>Client Claims:</strong>
+        @if (Model.Claims.Any())
+        {
+            <ul class="list-unstyled">
+                @foreach (var claim in Model.Claims)
+                {
+                    <li>{ @claim.Type: @claim.Value }</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="col-md-6">
+        <strong>Client Scopes:</strong>
+        @if (Model.AllowedScopes.Any())
+        {
+            <ul class="list-unstyled">
+                @foreach (var allowedScope in Model.AllowedScopes)
+                {
+                    <li>@allowedScope.Scope</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </div>
+</div>
+<a asp-controller="Client" asp-action="Index" class="btn btn-primary">Back to list</a>
+
+

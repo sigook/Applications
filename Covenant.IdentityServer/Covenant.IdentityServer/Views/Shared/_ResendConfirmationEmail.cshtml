@@ -1,0 +1,31 @@
+@model string
+<form id="form-resend-confirmation-link">
+    <div id="example1"></div>
+    <button class="background-btn orange-button" id="btn-resend-confirmation-link" disabled type="button">Resend confirmation email</button>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
+    <script>
+                                         var verifyCallback = function(response) {
+                                                document.getElementById("btn-resend-confirmation-link").removeAttribute("disabled");
+                                                console.log(response);
+                                              };
+                                           var onloadCallback = function() {
+                                                widgetId1 = grecaptcha.render('example1', {
+                                                  'sitekey' : '6LdE-rQUAAAAAHSInvv-tveIZz5osm7djslAbdgz',
+                                                  'theme' : 'dark',
+                                                  'callback' : verifyCallback
+                                                });
+                                              };
+                                           
+                                           document.getElementById("btn-resend-confirmation-link").addEventListener("click",function (ev) { 
+                                                var xhr = new XMLHttpRequest();
+                                                    xhr.onreadystatechange = function () {
+                                                    if (this.readyState === 4 && this.status === 200) {
+                                                            document.getElementById("form-resend-confirmation-link").remove();
+                                                                                                       }
+                                                                            };
+                                                    xhr.open('POST', '/Account/ResendConfirmationLink?userName=@Model');
+                                                    xhr.send();
+                                            });
+                                        </script>
+
+</form>
