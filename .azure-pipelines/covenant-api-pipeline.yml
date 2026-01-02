@@ -84,7 +84,6 @@ stages:
               tagVariableName: 'tag'
               environmentVariableName: 'environment'
               stepName: 'SetDockerTag'
-              setEnvironmentVariable: true
 
           # Build and Push Docker Image
           - task: Docker@2

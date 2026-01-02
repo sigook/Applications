@@ -131,20 +131,18 @@ Template para build y ejecución de tests:
 Template para calcular Docker tags y ambiente basado en la rama:
 
 ```yaml
-# Uso básico (solo tag):
+# Uso básico:
 - template: templates/calculate-docker-tag.yml
   parameters:
     tagVariableName: 'tag'
     stepName: 'SetTag'
-    setEnvironmentVariable: false
 
-# Uso completo (tag + environment):
+# Uso con nombres personalizados:
 - template: templates/calculate-docker-tag.yml
   parameters:
     tagVariableName: 'dockerTag'
     environmentVariableName: 'buildEnvironment'
     stepName: 'SetDockerTag'
-    setEnvironmentVariable: true
     stagingTag: 'latest_staging'
     productionTag: 'latest_production'
 ```
@@ -156,8 +154,9 @@ Template para calcular Docker tags y ambiente basado en la rama:
 - `productionTag` (string): Tag de Docker para production/main (default: 'latest_production')
 - `stagingEnvironment` (string): Nombre del ambiente para staging (default: 'staging')
 - `productionEnvironment` (string): Nombre del ambiente para production (default: 'production')
-- `setEnvironmentVariable` (bool): Si debe establecer la variable de environment (default: true)
 - `stepName` (string): Nombre del step para referenciar outputs desde otros jobs (default: 'SetTag')
+
+**Nota:** El template siempre establece dos variables: el tag de Docker y el nombre del ambiente.
 
 **Beneficios:**
 - ✅ Elimina código repetitivo de cálculo de tags

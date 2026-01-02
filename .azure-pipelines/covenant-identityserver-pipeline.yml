@@ -75,7 +75,6 @@ stages:
             parameters:
               tagVariableName: 'tag'
               stepName: 'SetTag'
-              setEnvironmentVariable: false
 
           - task: Docker@2
             displayName: 'Build Docker Image'
