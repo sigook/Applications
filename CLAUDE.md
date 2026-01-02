@@ -10,6 +10,7 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 - **Sigook.Web** - Vue.js 2 main web application for Sigook platform
 - **covenantWeb** - Vue.js 3 marketing/informational website for Covenant
 - **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system
+- **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
 
 ## SigookApp (Flutter Mobile Application)
 
@@ -415,6 +416,63 @@ dotnet ef migrations add MigrationName --project Covenant.Infrastructure --start
 - Publishes NuGet package: `Covenant.Common`
 - Deployed as Docker container to Azure App Service
 
+## Covenant.IdentityServer (.NET 6 IdentityServer4)
+
+### Architecture
+
+The Covenant IdentityServer is a centralized authentication and authorization server based on IdentityServer4, providing OpenID Connect and OAuth 2.0 protocols for the Covenant/Sigook platform.
+
+**Tech Stack:**
+- .NET 6.0 with ASP.NET Core
+- IdentityServer4 for authentication/authorization
+- Docker containerization
+- Azure Artifacts for private NuGet packages
+
+### Project Structure
+
+```
+Covenant.IdentityServer/
+├── Covenant.IdentityServer/       # Main IdentityServer project
+├── Covenant.IdentityServer.Tests/ # Unit tests
+├── Dockerfile                     # Multi-stage Docker build
+├── global.json                    # .NET SDK version (6.0.400)
+└── Covenant.IdentityServer.sln    # Solution file
+```
+
+### Development Commands
+
+```bash
+cd Covenant.IdentityServer
+
+# Build solution
+dotnet build Covenant.IdentityServer.sln
+
+# Run IdentityServer
+dotnet run --project Covenant.IdentityServer/Covenant.IdentityServer.csproj
+
+# Run with watch mode (auto-restart)
+dotnet watch run --project Covenant.IdentityServer/Covenant.IdentityServer.csproj
+
+# Run tests
+dotnet test **/Covenant.IdentityServer.Tests.csproj
+```
+
+### Key Features
+
+- **OpenID Connect & OAuth 2.0**: Standards-based authentication and authorization
+- **Centralized Authentication**: Single sign-on (SSO) for all platform applications
+- **Azure Artifacts Integration**: Consumes Covenant.Common NuGet package from private feed
+- **Docker Deployment**: Multi-stage build for optimized container size
+
+### Important Notes
+
+- Requires `PatSigookPackages` environment variable for NuGet restore (Azure Artifacts PAT)
+- Uses custom nuget.config to authenticate with Azure Artifacts feed
+- Health check endpoint available at `/health`
+- Deployed as Docker container to Azure App Service
+- Staging: `sigook-accounts-staging.azurewebsites.net`
+- Production: `sigook-accounts.azurewebsites.net`
+
 ## Azure DevOps Pipelines
 
 The repository uses **path-based triggers** to run pipelines only when relevant files change:
@@ -425,6 +483,7 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 - **`.azure-pipelines/sigook-web-pipeline.yml`** - Sigook.Web Vue.js 2 app CI/CD (fully functional)
 - **`.azure-pipelines/covenantweb-pipeline.yml`** - CovenantWeb Vue.js 3 marketing CI/CD (fully functional)
 - **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
+- **`.azure-pipelines/covenant-identityserver-pipeline.yml`** - IdentityServer CI/CD (fully functional)
 - **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
 
 ### Intelligent Triggering
@@ -452,6 +511,13 @@ paths:
     - Covenant.Api/**
   exclude:
     - Covenant.Api/**/*.md
+
+# Example: Covenant.IdentityServer pipeline only triggers on:
+paths:
+  include:
+    - Covenant.IdentityServer/**
+  exclude:
+    - Covenant.IdentityServer/**/*.md
 ```
 
 **Benefits:**
@@ -522,6 +588,20 @@ No duplicate stages - one pipeline handles both environments using conditional v
    - Staging: `sigook-api-staging`
    - Production: `sigook-api`
 
+**Covenant.IdentityServer Pipeline (complete):**
+1. **Build and Test Stage** (uses templates)
+   - Install .NET SDK 6.0.400 (template: dotnet-setup.yml)
+   - Build solution (template: dotnet-build-test.yml)
+   - Run unit tests
+   - Only runs on PRs or push to dev
+
+2. **Build Docker and Deploy Stage**
+   - Build Docker image with PAT for Azure Artifacts
+   - Push to Azure Container Registry
+   - Deploy to Azure App Service Container
+   - Staging: `sigook-accounts-staging`
+   - Production: `sigook-accounts`
+
 **Covenant.Common NuGet Pipeline (complete):**
 1. **Build, Test, and Publish Stage** (dev only, uses templates)
    - Quality Gate: Build + Unit Tests
@@ -558,6 +638,11 @@ git push origin dev
 # Test Covenant.Api pipeline only
 echo "// test" >> Covenant.Api/Covenant.Api/Program.cs
 git add . && git commit -m "test: trigger covenant-api pipeline"
+git push origin dev
+
+# Test Covenant.IdentityServer pipeline only
+echo "// test" >> Covenant.IdentityServer/Covenant.IdentityServer/Program.cs
+git add . && git commit -m "test: trigger covenant-identityserver pipeline"
 git push origin dev
 
 # Test Covenant.Common NuGet pipeline only

@@ -10,6 +10,7 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 ├── sigook-web-pipeline.yml                # Pipeline para Sigook.Web Vue.js app (completo)
 ├── covenantweb-pipeline.yml               # Pipeline para CovenantWeb marketing (completo)
 ├── covenant-api-pipeline.yml              # Pipeline para .NET API (completo)
+├── covenant-identityserver-pipeline.yml   # Pipeline para IdentityServer (completo)
 ├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
 ├── templates/                             # Templates reutilizables
 │   ├── dotnet-setup.yml                   # Template: Instalar .NET SDK
@@ -27,6 +28,7 @@ Cada pipeline **solo se ejecuta cuando hay cambios en su aplicación específica
 - **sigook-web-pipeline.yml**: Se activa solo con cambios en `Sigook.Web/**`
 - **covenantweb-pipeline.yml**: Se activa solo con cambios en `covenantWeb/**`
 - **covenant-api-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/**` (excepto Covenant.Common)
+- **covenant-identityserver-pipeline.yml**: Se activa solo con cambios en `Covenant.IdentityServer/**`
 - **covenant-common-nuget-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/Covenant.Common/**` (solo rama dev)
 
 **Beneficios:**
@@ -159,7 +161,14 @@ Template para build y ejecución de tests:
 3. Rename pipeline a: "Covenant.Api-CI/CD"
 ```
 
-#### Pipeline 5: Covenant.Common (NuGet)
+#### Pipeline 5: Covenant.IdentityServer
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-identityserver-pipeline.yml
+3. Rename pipeline a: "Covenant.IdentityServer-CI/CD"
+```
+
+#### Pipeline 6: Covenant.Common (NuGet)
 ```
 1. Repetir proceso anterior
 2. Path: /.azure-pipelines/covenant-common-nuget-pipeline.yml
@@ -343,6 +352,43 @@ Cuando estés listo para implementar el build completo de Flutter, el pipeline d
 **Deployment Targets:**
 - Staging: `sigook-api-staging.azurewebsites.net`
 - Production: `sigook-api.azurewebsites.net`
+
+### Covenant.IdentityServer Pipeline
+
+**Archivo:** `covenant-identityserver-pipeline.yml`
+
+**Propósito:** Servidor de identidad basado en IdentityServer4 para autenticación y autorización centralizada.
+
+**Stages:**
+1. **Build and Test** - Compilación y Quality Gate
+   - Instala .NET SDK 6.0.400 (usando template)
+   - Build de la solución completa
+   - Corre Unit Tests
+   - Usa templates reutilizables
+   - Solo se ejecuta en PRs o en push a dev
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Build de imagen Docker con PAT para NuGet privado
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service Container
+   - Tags: `latest_staging` o `latest_production`
+
+**Tecnología:**
+- IdentityServer4 (.NET 6.0)
+- Docker multi-stage build
+- Azure Artifacts NuGet feed (requiere PAT)
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Covenant.IdentityServer/**`
+- Pull Requests a `dev` (NO a main)
+- Excluye: archivos markdown y templates
+
+**Deployment Targets:**
+- Staging: `sigook-accounts-staging.azurewebsites.net`
+- Production: `sigook-accounts.azurewebsites.net`
+
+**Variables Requeridas:**
+- `PatSigookPackages`: Personal Access Token para Azure Artifacts (usado como build argument en Docker)
 
 ### Covenant.Common NuGet Pipeline
 

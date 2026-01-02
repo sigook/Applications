@@ -1,0 +1,213 @@
+﻿@model Covenant.IdentityServer.Models.ViewModels.ClientViewModel
+<h1>Add New Client</h1>
+<form asp-action="Create" method="post" class="form-horizontal" role="form">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label asp-for="ClientId" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <input asp-for="ClientId" class="form-control" />
+            <span asp-validation-for="ClientId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ClientName" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <input asp-for="ClientName" class="form-control" />
+            <span asp-validation-for="ClientName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="RequireConsent" class="col-md-2 control-label"></label>
+        <div class="col-md-4 col-md-offset-2">
+            <input asp-for="RequireConsent" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="RequirePkce" class="col-md-2 control-label"></label>
+        <div class="col-md-4 col-md-offset-2">
+            <input asp-for="RequirePkce" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AllowedGrantType" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <select asp-for="AllowedGrantType" asp-items="Html.GetEnumSelectList<Covenant.IdentityServer.Models.Enums.GrantTypes>()" class="form-control">
+                <option selected="selected" value="">Select</option>
+            </select>
+            <span asp-validation-for="AllowedGrantType" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AccessTokenLifetime" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <input asp-for="AccessTokenLifetime" class="form-control" />
+            <span asp-validation-for="AccessTokenLifetime" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AllowAccessTokensViaBrowser" class="col-md-2 control-label"></label>
+        <div class="col-md-4 col-md-offset-2">
+            <input asp-for="AllowAccessTokensViaBrowser" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AllowOfflineAccess" class="col-md-2 control-label"></label>
+        <div class="col-md-4 col-md-offset-2">
+            <input asp-for="AllowOfflineAccess" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="RedirectUris" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <ul class="listChips" id="redirectUrisList"></ul>
+            <input type="url" id="redirectUri" placeholder="Type URI and Press Enter" class="form-control" />
+            @Html.HiddenFor(vm => vm.RedirectUris)
+            <span asp-validation-for="RedirectUris" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PostLogoutRedirectUris" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <ul class="listChips" id="postLogoutRedirectUrisList"></ul>
+            <input type="url" id="postLogoutRedirectUri" placeholder="Type URI and Press Enter" class="form-control" />
+            @Html.HiddenFor(vm => vm.PostLogoutRedirectUris)
+            <span asp-validation-for="PostLogoutRedirectUris" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AllowedCorsOrigins" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <ul class="listChips" id="allowedCorsOriginList"></ul>
+            <input type="url" id="allowedCorsOrigin" placeholder="Type URI and Press Enter" class="form-control" />
+            @Html.HiddenFor(vm => vm.AllowedCorsOrigins)
+            <span asp-validation-for="AllowedCorsOrigins" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ClientUri" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <input asp-for="ClientUri" class="form-control" />
+            <span asp-validation-for="ClientUri" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AllowedScopes" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            <select asp-for="AllowedScopes" class="form-control" asp-items="ViewBag.AllowedScopes">
+            </select>
+            <span asp-validation-for="AllowedScopes" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ClientSecret" class="col-md-2 control-label"></label>
+        <div class="col-md-4">
+            @Html.HiddenFor(vm => vm.ClientSecret)
+            <input type="button" class="btn btn-primary" data-toggle="modal" data-target="#secretsModal" value="Add New Secret" id="addNewSecret" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-5">
+            <input type="submit" class="btn btn-success" value="Save Client" />
+            <a asp-controller="Client" asp-action="Index" class="btn btn-primary">Back to list</a>
+        </div>
+    </div>
+</form>
+<div class="modal fade" id="secretsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Client Secrets</h4>
+            </div>
+            <div class="modal-body">
+                <button type="button" id="addRow" class="btn btn-success">Add Secret</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="saveSecrets">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+<script src="~/lib/jquery.tabletojson/jquery.tabletojson.min.js"></script>
+<script src="~/js/client.js"></script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let secrets = [];
+            $("#secretsModal").on("show.bs.modal", () => {
+                if (document.querySelector("table")) {
+                    document.querySelector(".modal-body").removeChild(document.querySelector("table"));
+                }
+                const table = document.createElement("table");
+                table.classList.add("table");
+                table.id = "secrets";
+                const header = table.createTHead();
+                const headerRow = header.insertRow();
+                headerRow.insertCell(0).innerHTML = "Value";
+                headerRow.insertCell(1).innerHTML = "Description";
+                headerRow.insertCell(2);
+                const body = table.createTBody();
+                secrets.forEach((item, value) => {
+                    const bodyRow = body.insertRow(-1);
+                    const inputValue = document.createElement("input");
+                    inputValue.classList.add("form-control");
+                    inputValue.value = item.Value;
+                    const inputDescription = document.createElement("input");
+                    inputDescription.classList.add("form-control");
+                    inputDescription.value = item.Description;
+                    const deleteButton = document.createElement("button");
+                    deleteButton.className = "btn btn-danger btn-xs";
+                    deleteButton.innerHTML = "Delete";
+                    deleteButton.onclick = deleteRow;
+                    bodyRow.insertCell(0).appendChild(inputValue);
+                    bodyRow.insertCell(1).appendChild(inputDescription);
+                    bodyRow.insertCell(2).appendChild(deleteButton);
+                });
+                const bodyRow = body.insertRow(-1);
+                const inputValue = document.createElement("input")
+                inputValue.classList.add("form-control")
+                const inputDescription = document.createElement("input");
+                inputDescription.classList.add("form-control");
+                bodyRow.insertCell(0).appendChild(inputValue);
+                bodyRow.insertCell(1).appendChild(inputDescription);
+                bodyRow.insertCell(2);
+                document.querySelector(".modal-body").prepend(table);
+            });
+
+            document.querySelector("#addRow").onclick = () => {
+                const table = document.querySelector("#secrets");
+                const row = table.insertRow(-1);
+                const value = row.insertCell(0);
+                const description = row.insertCell(1);
+                const inputValue = document.createElement("input")
+                inputValue.classList.add("form-control")
+                const inputDescription = document.createElement("input");
+                inputDescription.classList.add("form-control");
+                value.appendChild(inputValue);
+                description.appendChild(inputDescription);
+            }
+
+            document.querySelector("#saveSecrets").onclick = () => {
+                secrets = $(".table").tableToJSON({
+                    extractor: function (cellIndex, $cell) {
+                        return $cell.find('input').val();
+                    }
+                });
+                secrets = secrets.filter(s => s.Value && s.Description);
+            }
+
+            document.querySelector("form").onsubmit = () => {
+                document.querySelector("#RedirectUris").value = Client.RedirectUris.join(",");
+                document.querySelector("#PostLogoutRedirectUris").value = Client.PostLogoutRedirectUris.join(",");
+                document.querySelector("#AllowedCorsOrigins").value = Client.AllowedCorsOrigins.join(",");
+                document.querySelector("#ClientSecret").value = JSON.stringify(secrets);
+            }
+
+            function deleteRow(el) {
+                document.querySelector("table").deleteRow(this.parentNode.parentNode.rowIndex);
+            }
+        });
+</script>
+}
+

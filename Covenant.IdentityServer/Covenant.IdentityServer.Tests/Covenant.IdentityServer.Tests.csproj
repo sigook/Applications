@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+      <UserSecretsId>6d6785f1-11f6-4d8c-930f-01109fb5f35d</UserSecretsId>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="IdentityModel" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+        <PackageReference Include="xunit" Version="2.4.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="3.2.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Covenant.IdentityServer\Covenant.IdentityServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="appsettings.Test.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
+</Project>
