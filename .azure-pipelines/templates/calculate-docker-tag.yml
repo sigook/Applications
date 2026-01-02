@@ -1,0 +1,85 @@
+# Reusable template for calculating Docker tags and environment based on branch
+# Usage:
+#   - template: templates/calculate-docker-tag.yml
+#     parameters:
+#       tagVariableName: 'tag'                    # Output variable name for tag
+#       environmentVariableName: 'environment'    # Output variable name for environment
+#       stepName: 'SetTag'                        # Name for referencing outputs from other jobs
+
+parameters:
+  - name: tagVariableName
+    type: string
+    default: 'tag'
+    displayName: 'Name of the tag output variable'
+
+  - name: environmentVariableName
+    type: string
+    default: 'environment'
+    displayName: 'Name of the environment output variable'
+
+  - name: stagingTag
+    type: string
+    default: 'latest_staging'
+    displayName: 'Docker tag for staging/dev'
+
+  - name: productionTag
+    type: string
+    default: 'latest_production'
+    displayName: 'Docker tag for production/main'
+
+  - name: stagingEnvironment
+    type: string
+    default: 'staging'
+    displayName: 'Environment name for staging/dev'
+
+  - name: productionEnvironment
+    type: string
+    default: 'production'
+    displayName: 'Environment name for production/main'
+
+  - name: setEnvironmentVariable
+    type: boolean
+    default: true
+    displayName: 'Whether to set environment variable (in addition to tag)'
+
+  - name: stepName
+    type: string
+    default: 'SetTag'
+    displayName: 'Step name for output variable reference'
+
+steps:
+  - script: |
+      echo "========================================"
+      echo "Docker Tag Calculation"
+      echo "========================================"
+      echo "Branch: $(Build.SourceBranchName)"
+      echo "Source Branch: $(Build.SourceBranch)"
+
+      if [ "$(isDev)" = "True" ]; then
+        TAG="${{ parameters.stagingTag }}"
+        ENV="${{ parameters.stagingEnvironment }}"
+        echo "✅ Detected: STAGING/DEV Environment"
+      else
+        TAG="${{ parameters.productionTag }}"
+        ENV="${{ parameters.productionEnvironment }}"
+        echo "✅ Detected: PRODUCTION/MAIN Environment"
+      fi
+
+      echo "----------------------------------------"
+      echo "Calculated Values:"
+      echo "  Docker Tag: $TAG"
+      echo "  Environment: $ENV"
+      echo "----------------------------------------"
+
+      # Set tag variable (both job-scoped and output for cross-job access)
+      echo "##vso[task.setvariable variable=${{ parameters.tagVariableName }}]$TAG"
+      echo "##vso[task.setvariable variable=${{ parameters.tagVariableName }};isOutput=true]$TAG"
+
+      ${{ if eq(parameters.setEnvironmentVariable, true) }}:
+        # Set environment variable (both job-scoped and output for cross-job access)
+        echo "##vso[task.setvariable variable=${{ parameters.environmentVariableName }}]$ENV"
+        echo "##vso[task.setvariable variable=${{ parameters.environmentVariableName }};isOutput=true]$ENV"
+
+      echo "✅ Variables set successfully"
+    name: ${{ parameters.stepName }}
+    displayName: 'Calculate Docker Tag and Environment'

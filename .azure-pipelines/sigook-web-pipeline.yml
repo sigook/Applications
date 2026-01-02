@@ -96,29 +96,13 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Determine Docker tag and environment
-          - script: |
-              echo "Environment Detection"
-              echo "Branch: $(Build.SourceBranchName)"
-
-              if [ "$(isDev)" = "True" ]; then
-                TAG="latest_staging"
-                BUILD_ENV="staging"
-                echo "✅ Environment: STAGING"
-              else
-                TAG="latest_production"
-                BUILD_ENV="production"
-                echo "✅ Environment: PRODUCTION"
-              fi
-
-              echo "##vso[task.setvariable variable=dockerTag]$TAG"
-              echo "##vso[task.setvariable variable=dockerTag;isOutput=true]$TAG"
-              echo "##vso[task.setvariable variable=buildEnvironment]$BUILD_ENV"
-              echo "##vso[task.setvariable variable=buildEnvironment;isOutput=true]$BUILD_ENV"
-
-              echo "Docker Tag: $TAG | Build Environment: $BUILD_ENV"
-            name: SetDockerTag
-            displayName: 'Determine Build Environment'
+          # Calculate Docker tag using template
+          - template: templates/calculate-docker-tag.yml
+            parameters:
+              tagVariableName: 'dockerTag'
+              environmentVariableName: 'buildEnvironment'
+              stepName: 'SetDockerTag'
+              setEnvironmentVariable: true
 
           # Verify environment variable was set
           - script: |
@@ -179,23 +163,24 @@ stages:
           - checkout: none
             displayName: 'Skip Checkout'
 
-          # Determine Azure App Service name
+          # Calculate Azure App Service name using template
+          - template: templates/calculate-azure-appname.yml
+            parameters:
+              appNameVariableName: 'azureAppName'
+              stagingAppName: 'sigook-web-staging'
+              productionAppName: 'sigook'
+              stepName: 'SetAppName'
+
           - script: |
               if [ "$(isDev)" = "True" ]; then
-                azureAppName="sigook-web-staging"
                 deployEnv="Staging"
-                dockerTag="latest_staging"
               else
-                azureAppName="sigook"
                 deployEnv="Production"
-                dockerTag="latest_production"
               fi
-              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
               echo "##vso[task.setvariable variable=deployEnv]$deployEnv"
-              echo "##vso[task.setvariable variable=dockerTag]$dockerTag"
-              echo "Deploying to: $azureAppName ($deployEnv)"
-              echo "Docker Tag: $dockerTag"
-            displayName: 'Determine Deployment Target'
+              echo "Deploying to: $(azureAppName) ($deployEnv)"
+              echo "Docker Tag: $(dockerTag)"
+            displayName: 'Set Environment Label'
 
           # Deploy to Azure App Service (Container)
           - task: AzureWebAppContainer@1

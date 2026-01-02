@@ -14,7 +14,9 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 ├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
 ├── templates/                             # Templates reutilizables
 │   ├── dotnet-setup.yml                   # Template: Instalar .NET SDK
-│   └── dotnet-build-test.yml              # Template: Build y Tests
+│   ├── dotnet-build-test.yml              # Template: Build y Tests
+│   ├── calculate-docker-tag.yml           # Template: Calcular Docker tags
+│   └── calculate-azure-appname.yml        # Template: Calcular nombre de App Service
 └── README.md                              # Esta guía
 ```
 
@@ -122,6 +124,77 @@ Template para build y ejecución de tests:
 - ✅ Fácil mantenimiento (cambios en un solo lugar)
 - ✅ Consistencia entre pipelines
 - ✅ Configuración flexible mediante parámetros
+- ✅ Autentica automáticamente con Azure Artifacts para feeds privados de NuGet
+
+#### 📄 `templates/calculate-docker-tag.yml`
+
+Template para calcular Docker tags y ambiente basado en la rama:
+
+```yaml
+# Uso básico (solo tag):
+- template: templates/calculate-docker-tag.yml
+  parameters:
+    tagVariableName: 'tag'
+    stepName: 'SetTag'
+    setEnvironmentVariable: false
+
+# Uso completo (tag + environment):
+- template: templates/calculate-docker-tag.yml
+  parameters:
+    tagVariableName: 'dockerTag'
+    environmentVariableName: 'buildEnvironment'
+    stepName: 'SetDockerTag'
+    setEnvironmentVariable: true
+    stagingTag: 'latest_staging'
+    productionTag: 'latest_production'
+```
+
+**Parámetros:**
+- `tagVariableName` (string): Nombre de la variable de salida para el tag (default: 'tag')
+- `environmentVariableName` (string): Nombre de la variable de salida para el environment (default: 'environment')
+- `stagingTag` (string): Tag de Docker para staging/dev (default: 'latest_staging')
+- `productionTag` (string): Tag de Docker para production/main (default: 'latest_production')
+- `stagingEnvironment` (string): Nombre del ambiente para staging (default: 'staging')
+- `productionEnvironment` (string): Nombre del ambiente para production (default: 'production')
+- `setEnvironmentVariable` (bool): Si debe establecer la variable de environment (default: true)
+- `stepName` (string): Nombre del step para referenciar outputs desde otros jobs (default: 'SetTag')
+
+**Beneficios:**
+- ✅ Elimina código repetitivo de cálculo de tags
+- ✅ Lógica centralizada de detección de ambiente (dev vs main)
+- ✅ Flexible para diferentes nombres de variables
+- ✅ Usado en Covenant.Api, Covenant.IdentityServer, y Sigook.Web
+
+#### 📄 `templates/calculate-azure-appname.yml`
+
+Template para calcular el nombre del Azure App Service basado en el ambiente:
+
+```yaml
+# Uso:
+- template: templates/calculate-azure-appname.yml
+  parameters:
+    appNameVariableName: 'azureAppName'
+    stagingAppName: 'myapp-staging'
+    productionAppName: 'myapp'
+    stepName: 'SetAppName'
+```
+
+**Parámetros:**
+- `appNameVariableName` (string): Nombre de la variable de salida para el App Service (default: 'azureAppName')
+- `stagingAppName` (string, requerido): Nombre del App Service para staging/dev
+- `productionAppName` (string, requerido): Nombre del App Service para production/main
+- `stepName` (string): Nombre del step para referenciar outputs (default: 'SetAppName')
+
+**Ejemplos de uso en pipelines:**
+- Covenant.Api: `sigook-api-staging` / `sigook-api`
+- Covenant.IdentityServer: `sigook-accounts-staging` / `sigook-accounts`
+- Sigook.Web: `sigook-web-staging` / `sigook`
+
+**Beneficios:**
+- ✅ Elimina duplicación de lógica de selección de App Service
+- ✅ Nombres de App Service centralizados y fáciles de actualizar
+- ✅ Consistencia en deployment targets
+- ✅ Reduce errores de deployment al ambiente incorrecto
 
 ## 🚀 Configuración Inicial en Azure DevOps
 

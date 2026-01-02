@@ -9,8 +9,12 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 - **SigookApp** - Flutter mobile application for worker registration and job matching
 - **Sigook.Web** - Vue.js 2 main web application for Sigook platform
 - **covenantWeb** - Vue.js 3 marketing/informational website for Covenant
-- **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system
+- **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system (15+ projects)
 - **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
+
+**Additional Components:**
+- **`.azure-pipelines/`** - CI/CD pipelines with path-based triggers and reusable templates
+- **Individual project READMEs** - Each application has its own detailed README.md
 
 ## SigookApp (Flutter Mobile Application)
 
@@ -333,10 +337,38 @@ Configuration: `src/router/index.ts`
 - Components are organized by feature/page for maintainability
 - Layout components (MainNavbar, MainFooter, ContactForm) are shared across views
 
+## Debugging
+
+### SigookApp (Flutter)
+The Flutter app includes VS Code debugging configurations in `.vscode/launch.json`:
+- Press `F5` in VS Code to debug
+- Available configurations: Development (Staging), Staging Environment, Production Environment
+- Each configuration automatically loads the appropriate `.env` file
+- See `SigookApp/.vscode/README.md` for details
+
+### Covenant.Api (.NET)
+The API includes VS Code debugging configurations in `Covenant.Api/.vscode/launch.json`:
+- **F5** or **Run > Start Debugging** in VS Code (official Microsoft version only)
+- Configurations: Launch Covenant API, Launch (Simple), Attach to dotnet process
+- **Note:** .NET debugging only works in official Microsoft VS Code, not in Cursor or other forks
+- Alternative for Cursor users: Use console logging, logger framework, or Visual Studio Community
+- See `Covenant.Api/.vscode/README.md` for details
+
+### Vue.js Applications (Sigook.Web, covenantWeb)
+- Use browser DevTools for debugging
+- Vue DevTools extension recommended for component inspection
+- `npm run serve` runs with hot-reload for rapid development
+
 ## Git Workflow
 
 **Main branch**: `main`
 **Development branch**: `dev`
+
+**Branching Strategy:**
+- Create feature branches from `dev`
+- Submit PRs to `dev` for review and testing
+- Merge `dev` to `main` for production releases
+- `main` should require PR approval and branch protection
 
 Recent development focuses on:
 - Worker registration form completion
@@ -537,6 +569,53 @@ Pipelines automatically detect the environment based on the branch:
 
 No duplicate stages - one pipeline handles both environments using conditional variables.
 
+### PR Validation Strategy
+
+The pipelines implement an **optimized validation strategy** to avoid test duplication:
+
+**✅ Pull Requests to `dev`:**
+- Pipeline runs with full validation (build, tests, linting)
+- Ensures nothing broken reaches dev
+- Primary quality gate for the project
+
+**❌ Pull Requests to `main`:**
+- Pipeline does NOT run
+- Relies on dev branch having already validated the code
+- Avoids unnecessary test duplication
+- Saves Azure DevOps minutes
+
+**🔒 Direct Push to `dev` or `main`:**
+- Pipeline runs with full flow (build, test, deploy)
+- `dev` → Deploy to Staging
+- `main` → Deploy to Production
+
+**Requirement:** Branch protection on `main` should be configured to require PRs and approvals.
+
+### Pipeline Templates
+
+The pipelines use **reusable templates** located in `.azure-pipelines/templates/` to avoid code duplication:
+
+**Available Templates:**
+- **`dotnet-setup.yml`** - Installs .NET SDK with specified version
+- **`dotnet-build-test.yml`** - Builds solution and runs unit/integration tests with Azure Artifacts authentication
+- **`calculate-docker-tag.yml`** - Calculates Docker tags and environment based on branch (staging for dev, production for main)
+- **`calculate-azure-appname.yml`** - Determines Azure App Service name based on environment
+
+**Template Usage Example:**
+```yaml
+# Install .NET SDK
+- template: templates/dotnet-setup.yml
+  parameters:
+    sdkVersion: '6.0.400'
+
+# Build and test
+- template: templates/dotnet-build-test.yml
+  parameters:
+    buildProjects: '**/*.sln'
+    runUnitTests: true
+    runIntegrationTests: true
+```
+
 ### Pipeline Structure
 
 **CovenantWeb Pipeline (complete):**
@@ -575,18 +654,20 @@ No duplicate stages - one pipeline handles both environments using conditional v
 
 **Covenant.Api Pipeline (complete):**
 1. **Build and Test Stage** (uses templates)
-   - Install .NET SDK 6.0 (template: dotnet-setup.yml)
+   - Install .NET SDK 6.0.400 (template: dotnet-setup.yml)
    - Build solution (template: dotnet-build-test.yml)
    - Run unit tests
    - Run integration tests
    - Publish test results
 
 2. **Build Docker and Deploy Stage**
-   - Build Docker image (staging or production tag)
+   - Calculate Docker tag using template (latest_staging or latest_production)
+   - Calculate Azure App Service name using template
+   - Build Docker image
    - Push to Azure Container Registry
    - Deploy to Azure App Service
-   - Staging: `sigook-api-staging`
-   - Production: `sigook-api`
+   - Staging: `sigook-api-staging.azurewebsites.net`
+   - Production: `sigook-api.azurewebsites.net`
 
 **Covenant.IdentityServer Pipeline (complete):**
 1. **Build and Test Stage** (uses templates)
@@ -596,11 +677,13 @@ No duplicate stages - one pipeline handles both environments using conditional v
    - Only runs on PRs or push to dev
 
 2. **Build Docker and Deploy Stage**
-   - Build Docker image with PAT for Azure Artifacts
+   - Calculate Docker tag using template (latest_staging or latest_production)
+   - Calculate Azure App Service name using template
+   - Build Docker image with PAT for Azure Artifacts (required for Covenant.Common NuGet package)
    - Push to Azure Container Registry
    - Deploy to Azure App Service Container
-   - Staging: `sigook-accounts-staging`
-   - Production: `sigook-accounts`
+   - Staging: `sigook-accounts-staging.azurewebsites.net`
+   - Production: `sigook-accounts.azurewebsites.net`
 
 **Covenant.Common NuGet Pipeline (complete):**
 1. **Build, Test, and Publish Stage** (dev only, uses templates)
@@ -608,14 +691,16 @@ No duplicate stages - one pipeline handles both environments using conditional v
    - Pack and Publish to Azure Artifacts (sigook/Covenant.Common)
    - Only triggers on changes to Covenant.Api/Covenant.Common/**
 
-### Setup Guide
+### Detailed Pipeline Documentation
 
-See `.azure-pipelines/README.md` for detailed setup instructions including:
-- Creating pipelines in Azure DevOps
-- Configuring environments and approvals
-- Setting up variables and secrets
-- Deployment options (Azure Static Web Apps, App Service, etc.)
-- Testing and troubleshooting
+For comprehensive pipeline documentation including setup, configuration, and troubleshooting, see **`.azure-pipelines/README.md`**. This includes:
+- Step-by-step setup instructions for Azure DevOps
+- Environment and approval configuration
+- Variables and secrets management
+- Template usage and parameters
+- Deployment configuration details
+- Testing and troubleshooting guides
+- Common issues and solutions
 
 ### Quick Commands for Testing Triggers
 
