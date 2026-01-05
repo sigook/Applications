@@ -16,7 +16,7 @@
                 {{ $t('Close') }}
               </button>
               <upload-image v-if="profileImage"
-                @imageSelected="profileImg => this.profileImage = { fileName: profileImg }"
+                @imageSelected="profileImg => this.profileImageFile = profileImg"
                 :edited-image="this.data.profileImage" :required="true" @onUpload="() => subscribe('file')"
                 @finishUpload="() => unsubscribe()" class="margin-10-auto">
               </upload-image>
@@ -38,29 +38,55 @@
 </template>
 <script>
 import pubSub from '../../mixins/pubSub';
+import multipartUploadMixin from '../../mixins/multipartUploadMixin';
 export default {
   props: ['data'],
-  mixins: [pubSub],
+  mixins: [pubSub, multipartUploadMixin],
   data() {
     return {
       showEditModal: false,
       profileImage: {},
+      profileImageFile: null,
       isLoading: false
     }
   },
   methods: {
-    createWorkerImage() {
+    async createWorkerImage() {
+      if (!this.profileImageFile) {
+        this.showAlertError('Please select an image');
+        return;
+      }
+
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerImage', { profileId: this.data.id, model: this.profileImage })
-        .then(() => {
-          this.isLoading = false;
-          this.showEditModal = false;
-          this.$emit('updateProfile', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
+
+      try {
+        // Generate unique filename with GUID (same pattern as registration)
+        const generatedFileName = this.generateFileName('ProfileImage', this.profileImageFile.name);
+
+        // Compress the image
+        let fileToUpload;
+        try {
+          fileToUpload = await this.compressFile(this.profileImageFile);
+        } catch (error) {
+          fileToUpload = this.profileImageFile;
+        }
+
+        // Create FormData
+        const formData = new FormData();
+        formData.append(generatedFileName, fileToUpload, generatedFileName);
+
+        await this.$store.dispatch('worker/createWorkerImage', {
+          profileId: this.data.id,
+          formData
+        });
+
+        this.isLoading = false;
+        this.showEditModal = false;
+        this.$emit('updateProfile', true);
+      } catch (error) {
+        this.isLoading = false;
+        this.showAlertError(error);
+      }
     }
   },
   components: {

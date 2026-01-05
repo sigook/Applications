@@ -226,18 +226,9 @@ namespace Covenant.Common.Entities.Worker
         public Result PatchProfileImage(ICovenantFile profileImage)
         {
             if (string.IsNullOrEmpty(profileImage?.FileName)) return Result.Ok();
-            if (ProfileImage is null)
-            {
-                ProfileImage = new CovenantFile(profileImage.FileName, profileImage.Description);
-                ProfileImageId = ProfileImage.Id;
-                OnNewDocumentAdded?.Invoke(this, ProfileImage);
-            }
-            else
-            {
-                if (ProfileImage.FileName == profileImage.FileName) return Result.Ok();
-                ProfileImage.Update(profileImage);
-            }
-
+            ProfileImage = new CovenantFile(profileImage.FileName, profileImage.Description);
+            ProfileImageId = ProfileImage.Id;
+            OnNewDocumentAdded?.Invoke(this, ProfileImage);
             return Result.Ok();
         }
 

@@ -11,6 +11,9 @@ trigger:
   paths:
     include:
       - Covenant.Api/Covenant.Common/**
+      - Covenant.Api/Covenant.Integration.Tests/**
+      - Covenant.Api/Covenant.Tests/**
+      - .azure-pipelines/covenant-common-nuget-pipeline.yml
     exclude:
       - Covenant.Api/Covenant.Common/**/*.md
 
@@ -22,6 +25,9 @@ pr:
   paths:
     include:
       - Covenant.Api/Covenant.Common/**
+      - Covenant.Api/Covenant.Integration.Tests/**
+      - Covenant.Api/Covenant.Tests/**
+      - .azure-pipelines/covenant-common-nuget-pipeline.yml
     exclude:
       - Covenant.Api/Covenant.Common/**/*.md
 
