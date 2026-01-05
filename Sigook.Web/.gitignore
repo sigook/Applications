@@ -9,11 +9,8 @@ wwwroot/
 out/
 dist/
 
-# Environment Variables (project-local)
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment Variables - allowing .local files to be versioned for developer reference
+# Each developer can modify their local .env files as needed
 
 # Logs (npm/yarn specific to this project)
 npm-debug.log*
