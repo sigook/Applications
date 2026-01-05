@@ -1,0 +1,32 @@
+@using System.Security.Claims
+@using IdentityServer4.Extensions
+@{
+    string name = null;
+    if (!true.Equals(ViewData["signed-out"]))
+    {
+        name = Context.User?.GetDisplayName();
+    }
+}
+<div class="welcome-page">
+    <div class="row">
+        <div class="col-xs-12 text-center">
+            @if (!string.IsNullOrWhiteSpace(name))
+            {
+                <label class="text-center">
+                    @name <a asp-action="Logout" asp-controller="Account">logout</a>
+                </label>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            @if (User.IsAuthenticated())
+            {
+                @foreach (Claim c in User.Claims)
+                {
+                    <p>@c.Type - @c.Value</p>
+                }
+            }
+        </div>
+    </div>
+</div>

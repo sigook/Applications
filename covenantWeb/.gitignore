@@ -1,5 +1,15 @@
-# Logs
-logs
+# ============================================
+# covenantWeb - Vue.js 3 + Vite + TypeScript
+# ============================================
+# Project-specific rules
+# Generic rules (.NET, IDEs, node_modules) are in the root .gitignore
+
+# Build Output (Vite specific)
+dist/
+dist-ssr/
+
+# Logs (npm/yarn/pnpm specific to this project)
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,30 +17,25 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
+# Coverage
+coverage/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
+# TypeScript
 *.tsbuildinfo
 
+# Environment files (project-local)
+*.local
+
+# Vue/Vite cache
 .eslintcache
 
-# Cypress
+# Cypress (testing)
 /cypress/videos/
 /cypress/screenshots/
 
-# Vitest
+# Vitest (testing)
 __screenshots__/
+
+# VS Code extensions (useful for the project)
+.vscode/*
+!.vscode/extensions.json

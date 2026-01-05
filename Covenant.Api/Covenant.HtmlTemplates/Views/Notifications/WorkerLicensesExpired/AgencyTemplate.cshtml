@@ -1,0 +1,50 @@
+@model IEnumerable<Covenant.Common.Models.Worker.WorkerLicenseExpiredModel>
+
+<div>
+    <table style="background-color: #F5F5F5;padding: 10px 20px 10px; text-align: center;width:100%" >
+        <tr>
+            <td>
+                <div>
+                    @await Html.PartialAsync("_EnvelopeLogo")
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2 style="font-weight: 300;">Hi</h2>
+                <div style="font-weight: 200;">
+                    <p style="margin:0">
+                        <b>The following workers need to update their licenses.</b>
+                    </p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table style="width: 100%;">
+                    <tr>
+                        <th>Worker ID</th>
+                        <th>Worker</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>License Description</th>
+                        <th>License #</th>
+                        <th>Expires</th>
+                    </tr>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.NumberId</td>
+                            <td style="border-bottom: 1px solid black;">@item.WorkerFullName</td>
+                            <td style="border-bottom: 1px solid black;">@item.WorkerEmail</td>
+                            <td style="border-bottom: 1px solid black;">@item.MobileNumber</td>
+                            <td style="border-bottom: 1px solid black;">@item.LicenseDescription</td>
+                            <td style="border-bottom: 1px solid black;">@item.LicenseNumber</td>
+                            <td style="border-bottom: 1px solid black;">@item.Expires.GetValueOrDefault().ToString("yyyy MMMM dd")</td>
+                        </tr>
+                    }
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,37 @@
+@import './variables';
+@import './mixins.scss';
+
+@import "./base.scss";
+@import "./main";
+@import './base-calendar';
+@import "./base-forms";
+@import "./toast";
+
+@import "./register";
+@import "./register-banner";
+
+@import './profile';
+@import "./table-reports";
+
+@import "./worker/dialog-new-worker";
+@import "./worker/container-worker";
+@import "./container-request";
+@import "./candidiates";
+@import "./invoice";
+@import "./time-sheet";
+@import "./worker-filter";
+@import "./detail-worker";
+
+@import "./company";
+@import "./notes";
+@import "./requests";
+
+@import "./tables";
+@import "./calendar";
+
+// only for ie
+@import './ie';
+
+// mobile
+@import '_m-base.scss';
+

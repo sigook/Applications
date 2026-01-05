@@ -1,0 +1,365 @@
+/*
+.invoice {
+  background: white;
+  padding: 10px;
+  font-size: 14px;
+  -webkit-print-color-adjust: exact;
+  .header {
+    display: flex;
+    padding-top: 20px;
+    .logo {
+      flex-basis: 65%;
+      img {
+        width: 170px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .slogan {
+        width: calc(100% - 180px);
+        display: inline-block;
+        vertical-align: middle;
+        padding-left: 30px;
+        font-weight: 700;
+        font-style: italic;
+      }
+    }
+    .contactInfo {
+      flex-basis: 35%;
+      font-weight: 700;
+      font-style: italic;
+      border: 2px solid #c1c1c1;
+      padding: 10px 6px;
+    }
+  }
+
+  .detail {
+    width: calc(65% + 20px);
+    display: inline-block;
+
+    .section {
+      width: 50%;
+      display: inline-block;
+      vertical-align: top;
+      padding: 30px 10px;
+    }
+
+    .item {
+      .title {
+        font-size: 16px;
+        display: block;
+        margin-bottom: 0;
+      }
+      .detail {
+        display: block;
+        margin-bottom: 10px;
+      }
+    }
+  }
+  .invoiceNumber {
+    width: calc(35% - 20px);
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 20px;
+    border: 2px solid #47afe4;
+    padding: 5px 20px;
+    h2 {
+      font-weight: 700;
+      color: #47afe4;
+      font-size: 20px;
+      text-align: center;
+    }
+  }
+
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-height: 30vh;
+    thead {
+      th {
+        padding: 10px 5px;
+        color: #fff;
+        font-weight: bold;
+        border-right: 2px solid #fff;
+        text-align: center;
+      }
+      th:nth-child(1){
+        background-image: linear-gradient(to right, #374620 , #42522B);
+        border-radius: 14px 0 0 0 ;
+      }
+      th:nth-child(2){
+        background: #42522B;
+      }
+      th:nth-child(3){
+        background-image: linear-gradient(to right, #42522B , #536C34);
+      }
+      th:nth-child(4){
+        background: #536C34;
+      }
+      th:nth-child(5){
+        background-image: linear-gradient(to right, #536C34 , #5C7A3A);
+      }
+      th:nth-child(6){
+        background-image: linear-gradient(to right, #5C7A3A,#80B84B);
+      }
+
+      th:nth-last-child(1){
+        border-radius: 0 14px  0 0 ;
+        border-right: 0;
+      }
+
+    }
+
+    tbody {
+      background : #CFE2AA;
+      td {
+        padding: 10px 8px;
+        border-right: 2px solid #fff;
+        font-weight: 400;
+      }
+
+      tr:nth-last-child(1){
+        td:nth-child(1){
+          border-radius: 0 0 0 14px ;
+        }
+
+        td:nth-last-child(1){
+          border-radius: 0  0 14px 0 ;
+        }
+      }
+    }
+  }
+
+  .footer {
+    padding: 8px 0;
+    background-color: #fff;
+    .notes {
+      margin-top: 20px;
+      width: 55%;
+      display: inline-block;
+      background-color: #A4CB7C;
+      border-radius: 14px;
+      & > div:nth-child(1){
+        background-image: linear-gradient(to right, #374620 , #80B84B);
+        padding: 10px;
+        border-radius: 14px 14px 0 0;
+      }
+
+      & > div:nth-child(2) {
+        padding: 10px;
+        min-height: 100px;
+        i {
+          font-weight: 700;
+        }
+      }
+    }
+
+
+    .total {
+      width: 45%;
+      display: inline-block;
+      vertical-align: top;
+      & > div {
+        padding-left: 40%;
+        margin-bottom: 5px;
+        p {
+          display: inline-block;
+          vertical-align: middle;
+          margin: 0 5px;
+          font-weight: 900;
+          width: 70px;
+          text-align: right;
+        }
+
+        div {
+          display: inline-block;
+          vertical-align: middle;
+          background: #A4CB7C;
+          padding: 8px;
+          font-size: 16px;
+          font-weight: bold;
+          width: calc(100% - 80px);
+        }
+
+        &:nth-child(1) div{
+          border-radius: 14px 14px 0 0 ;
+        }
+
+        &:nth-last-child(1) div{
+          border-radius:0 0  14px 14px;
+        }
+      }
+    }
+
+  }
+  .print {
+    display: inline-block;
+    font-weight: 800;
+    text-align: center;
+    background: #e8e8e8;
+    padding: 8px 10px 5px;
+    float: right;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+      background: #cccccc;
+    }
+    img {
+      width: 20px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+  }
+  .print {
+    display: none;
+  }
+
+  &.payroll {
+    .detail {
+      width: calc(65% + 20px);
+      display: inline-block;
+
+      .section {
+        width: 100%;
+        display: inline-block;
+        vertical-align: top;
+        padding: 30px 10px;
+      }
+
+      .item {
+
+        .title {
+          font-size: 16px;
+          display: inline-block;
+          margin-bottom: 0;
+        }
+        .detail {
+          display: inline-block;
+          margin-bottom: 10px;
+          padding-left: 10px;
+        }
+      }
+
+      .agency-info {
+        margin-top: 15px;
+        padding-left: 10px;
+        h4 {
+          font-size: 16px;
+        }
+      }
+    }
+    
+    table {
+      thead tr {
+        background-image: linear-gradient(to right, #374620 , #80B84B);
+        th {
+          background: transparent;
+        }
+      }
+      tr:nth-child(2){
+        th {
+          border-radius: 0;
+        }
+      }
+    }
+  }
+}
+
+@media screen {
+  .invoice .container {
+    width: 70%;
+    min-width: 600px;
+    margin: 0 auto;
+  }
+  .invoice .print {
+    display: block;
+  }
+
+  .invoice.payroll .container{
+    width: 100%;
+    margin: 0;
+    td {
+      min-width: 90px;
+    }
+  }
+
+  .invoice.payroll {
+    overflow: auto;
+  }
+}
+
+@media print {
+  .print {
+    display: none;
+  }
+}
+*/
+/// last styles
+.reset-css {
+  background: white;
+  padding: 20px 10px;
+  font-size: 14px;
+  font-weight: normal;
+
+  table td, table th {
+    text-align: left;
+    vertical-align: middle;
+  }
+}
+
+.payroll.reset-css {
+  overflow: auto;
+  & > div > div > div > table{
+    width: 100%;
+  }
+}
+
+.appCommission {
+  -webkit-print-color-adjust: exact;
+  .print {
+    display: inline-block;
+    font-weight: 800;
+    text-align: center;
+    background: #e8e8e8;
+    padding: 8px 10px 5px;
+    float: right;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+      background: #cccccc;
+    }
+    img {
+      width: 20px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+  }
+  .print {
+    display: none;
+  }
+
+  table th {
+    color: #fff;
+  }
+}
+
+@media screen {
+  .appCommission .container {
+    width: 70%;
+    min-width: 600px;
+    margin: 0 auto;
+  }
+  .appCommission .print {
+    display: block;
+  }
+}
+
+@media print {
+  .appCommission .print {
+    display: none;
+  }
+}

@@ -1,0 +1,238 @@
+@import '../variables.scss';
+
+.container-worker{
+  border: 1px solid $gray-border;
+  display: inline-block;
+  min-width: 140px;
+  width: calc(20% - 16px);
+  text-align:center;
+  padding-top: 10px;
+  margin: 0 8px 15px;
+  position: relative;
+  padding-bottom: 65px;
+
+  &:hover {
+    box-shadow: 0 0 10px gainsboro;
+    transition: .2s all ease;
+  }
+
+  span {
+    margin-right: 5px;
+  }
+  img {
+    width: 100px;
+    height: 100px;
+    display:block;
+    border-radius: 50%;
+    margin: 10px auto 10px;
+    object-fit: cover;
+  }
+
+  .bg-gray{
+    margin-top: 10px;
+    background: #f7f7f7;
+    text-align: left;
+    padding: 6px 15px;
+    font-size: 14px;
+    font-weight: 400;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+  }
+
+  &:hover {
+    .action-buttons {
+      visibility: visible;
+    }
+  }
+  .fz1.fw-200{
+    padding: 0 5px;
+  }
+
+  .action-buttons {
+    padding-right: 11px;
+    margin-top: -5px;
+    visibility: hidden;
+  }
+
+  .xs-btn {
+    opacity: 0;
+    transition: .4s all ease;
+  }
+
+  &:hover {
+    .xs-btn {
+      opacity: 1;
+    }
+  }
+
+  &.disabled {
+    opacity: .6;
+
+    
+    .green-button {
+      display: none;
+    }
+  }
+
+  &.container-worker-inline {
+    width: 100%;
+    padding: 0;
+    .action-buttons {
+      position: absolute;
+      right: 0;
+      top: 10px;
+    }
+    img {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      vertical-align: middle;
+    }
+    .container-worker-inline-name {
+      display: inline-block;
+      width: calc(100% - 280px);
+      text-align: left;
+      padding-left: 16px;
+      vertical-align: middle;
+    }
+    .fz1.fw-200 {
+      padding-left: 0;
+    }
+    h3 {
+      display: block;
+      br {
+        display: none;
+      }
+    }
+
+    .container-worker-inline-bottom {
+      width: 150px;
+      display: inline-block;
+      vertical-align: middle;
+      text-align: right;
+      margin-top: 10px;
+      .bg-gray {
+        position: static;
+        background: transparent;
+        text-align: right;
+        padding: 0;
+        margin: 0;
+      }
+      .text-center {
+        text-align: right;
+      }
+    }
+
+    .container-worker-inline-company {
+      width: calc(100% - 170px);
+      display: inline-block;
+      .container-worker-inline-name {
+        width: calc(100% - 100px);
+      }
+    }
+  }
+}
+
+/*
+@media (max-width: 790px){
+  .container-worker {
+    width: 25%;
+    margin: 0;
+    background-color: white;
+    min-width: 160px;
+  }
+}
+*/
+
+.button-mode-view {
+  opacity: 0.3;
+  transition: .3s all ease;
+  height: 34px;
+  background: whitesmoke;
+  border: 1px solid #d8d8d8;
+  width: 34px;
+  display: inline-block;
+  flex-basis: 34px;
+  padding: 8px;
+  border-radius: 4px;
+  &:hover {
+    opacity: .5;
+  }
+}
+
+@media (max-width: 767px){
+  .container-worker {
+      width: calc(50% - 10px);
+      margin: 10px 0;
+      background-color: white;
+      min-width: 160px;
+
+      .bg-gray.button-right button{
+        display: none;
+      }
+
+      .text-right{
+        display: block;
+        text-align: right;
+        button.btn-icon-sm {
+          width: 24px;
+          height: 24px;
+          font-size: 0;
+          margin-left: 10px;
+          display: inline-block;
+          vertical-align: top;
+          border-radius: 50%;
+        }
+      }
+    }
+
+  .mobile-bottom-buttons {
+    //position: fixed;
+    display: flex;
+    left: 0;
+    bottom: 0;
+    padding: 5px 10px;
+    width: 100%;
+    align-items: center;
+    z-index: 1;
+    background: #f3f3f3;
+    a, button {
+      flex-basis: 100%;
+      margin: 5px;
+    }
+    button {
+      padding: 5px 0;
+      display: block;
+      height: 40px;
+    }
+  }
+
+  .content-flex-between button.button-mode-view {
+    width: 35px;
+    position: absolute;
+    top: 48px;
+    right: 15px;
+  }
+
+  .container-worker.container-worker-inline{
+    .container-worker-inline-name {
+      width: calc(100% - 100px);
+    }
+    .container-worker-inline-bottom {
+      width: 100%;
+      display: flex;
+      padding: 0 30px 7px 30px;
+    }
+
+    .container-worker-inline-company {
+      width: 100%;
+      .text-center {
+        text-align: center;
+      }
+    }
+  }
+
+
+
+}

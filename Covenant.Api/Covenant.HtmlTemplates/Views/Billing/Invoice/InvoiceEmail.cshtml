@@ -1,0 +1,43 @@
+@using Covenant.Common.Utils;
+@using Covenant.HtmlTemplates.Views.Shared;
+@using Microsoft.Extensions.Configuration
+@model Covenant.HtmlTemplates.Views.Billing.Invoice.InvoiceEmailViewModel
+@inject IConfiguration Configuration
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payroll</title>
+</head>
+<body style="font-family: 'Open Sans', 'Helvetica Neue', sans-serif; box-sizing: border-box; padding: 30px; font-size: 14px;">
+
+    @Html.Raw(Model.Message)
+
+    <div style="margin-top: 15px; color: #203864; line-height: 18px;">
+        <span style="color: #0070c0;">@Model.InvoicePayroll.Position</span>
+        <br>
+        Off. @Model.AgencyPhone
+        <br>
+        Fax. @Model.AgencyFax
+        <br>
+        <a href="@Model.AgencyWebSite" target="_blank">@Model.AgencyWebSite</a>
+        <br>
+        @Model.AgencyAddress
+        <br>
+        <a href="mailto:@Model.InvoicePayroll.Email" style="color: #0563c1;">@Model.InvoicePayroll.Email</a>
+        <br>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <img src="@await Helpers.DownloadFileInBase64(Configuration.GetFilesBaseUrl(), Model.AgencyLogoFileName)" alt="logo" width="260" style="max-height: 85px; object-position: 0 0;">
+    </div>
+
+    <div>
+        <p style="font-size: 11px; font-style: italic; line-height: 16px">This message (including any attachments) may contain information that is privileged or confidential and is intended for a specific individual and purpose, and is protected by law.  If you are not the intended recipient, please notify the sender and delete this message from your system.  Any disclosure, copying, or distribution, of this message, or the taking of any action based on it, is strictly prohibited.</p>
+    </div>
+</body>
+</html>

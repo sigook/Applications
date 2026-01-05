@@ -1,0 +1,106 @@
+# Azure Pipeline for Covenant.Common NuGet Package
+# Builds, tests, and publishes NuGet package when Covenant.Common changes in dev branch
+
+name: CovenantCommon-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+
+# Only trigger on dev branch when Covenant.Common files change
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Covenant.Api/Covenant.Common/**
+    exclude:
+      - Covenant.Api/Covenant.Common/**/*.md
+
+# No PR trigger - only direct pushes to dev
+pr: none
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+variables:
+  dotnetSdkVersion: '6.0.400'
+
+stages:
+  # ============================================
+  # Stage 1: Build, Test, and Publish NuGet
+  # ============================================
+  - stage: Build_Test_Publish
+    displayName: 'Build, Test, and Publish NuGet Package'
+    jobs:
+      - job: Quality_Gate
+        displayName: 'Run Tests (Quality Gate)'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Build and Test using template (ensures quality before publishing)
+          - template: templates/dotnet-build-test.yml
+            parameters:
+              buildProjects: 'Covenant.Api/**/*.sln'
+              buildConfiguration: 'Release'
+              runUnitTests: true
+              unitTestProjects: 'Covenant.Api/**/Covenant.Tests/*.csproj'
+              runIntegrationTests: false  # Skip integration tests for faster feedback
+
+      - job: Pack_and_Publish
+        displayName: 'Pack and Publish NuGet Package'
+        dependsOn: Quality_Gate
+        condition: succeeded()
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install .NET SDK
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Pack Covenant.Common
+          - task: DotNetCoreCLI@2
+            displayName: 'Pack Covenant.Common'
+            inputs:
+              command: 'pack'
+              packagesToPack: 'Covenant.Api/Covenant.Common/Covenant.Common.csproj'
+              versioningScheme: 'byBuildNumber'
+              configuration: 'Release'
+
+          # Authenticate to NuGet Feed
+          - task: NuGetAuthenticate@1
+            displayName: 'Authenticate to NuGet Feed'
+
+          # Push to Azure Artifacts Feed
+          - task: NuGetCommand@2
+            displayName: 'Push Package to Feed'
+            inputs:
+              command: 'push'
+              publishVstsFeed: 'sigook/Covenant.Common'
+              allowPackageConflicts: true
+
+          # Summary
+          - task: Bash@3
+            displayName: 'Publish Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "✅ NuGet Package Published Successfully!"
+                echo "============================================"
+                echo "Package: Covenant.Common"
+                echo "Version: $(Build.BuildNumber)"
+                echo "Feed: sigook/Covenant.Common"
+                echo "============================================"
+                echo ""
+                echo "The package is now available for consumption"
+                echo "by other projects in the organization."
+                echo ""
+                echo "To use this package, run:"
+                echo "  dotnet add package Covenant.Common --version $(Build.BuildNumber)"

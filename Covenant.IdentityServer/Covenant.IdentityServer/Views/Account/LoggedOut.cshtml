@@ -1,0 +1,42 @@
+﻿@model Covenant.IdentityServer.Controllers.Account.Models.LoggedOutViewModel
+
+@{ 
+    ViewData["signed-out"] = true;
+    Layout = "_LayoutLogin";
+}
+
+<div class="main bg-login">
+    <div class="logo"></div>
+    <div class="main-container path-login">
+        <div class="white-container">
+            <div>
+                <div class="login-top">
+                    @await Html.PartialAsync("_Logo")
+                    <h2>Logout</h2>
+                    <p>You are now logged out</p>
+                </div>
+
+                @if (Model.PostLogoutRedirectUri != null)
+                {
+                    <div class="container-return">
+                        Click <a class="PostLogoutRedirectUri" href="@Model.PostLogoutRedirectUri">here</a> to return to the
+                        <span>@Model.ClientName</span> application.
+                    </div>
+                }
+                @if (Model.SignOutIframeUrl != null)
+                {
+                    <iframe width="0" height="0" class="signout" src="@Model.SignOutIframeUrl"></iframe>
+                }
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("_LogoBottom")
+</div>
+
+@section scripts
+{
+    @if (Model.AutomaticRedirectAfterSignOut)
+    {
+        <script src="~/js/signout-redirect.js"></script>
+    }
+}

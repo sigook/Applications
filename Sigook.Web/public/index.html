@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="build" content="#{Build.BuildNumber}#">
+  <meta name="description" content="Waiting covenant information">
+  <meta name="keywords" content="Waiting covenant information">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.8.55/css/materialdesignicons.min.css">
+  <title>Sigook®</title>
+
+  <style>
+    .v-data {
+      position: absolute;
+      transform: translateY(-18px);
+      right: 4px;
+      z-index: 999999999;
+      font-size: 10px;
+      color: #a7a7a7;
+    }
+
+    .v-data::selection {
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <div class="v-data"> v#{Build.BuildNumber}# </div>
+</body>
+
+</html>

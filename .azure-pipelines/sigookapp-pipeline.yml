@@ -7,7 +7,8 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      - main
+      # - main
+      # - master
       - dev
   paths:
     include:
@@ -18,11 +19,11 @@ trigger:
       - SigookApp/docs/**
       - SigookApp/**/*.md
 
-# PR trigger
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
 pr:
   branches:
     include:
-      - main
       - dev
   paths:
     include:

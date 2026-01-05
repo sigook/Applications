@@ -1,0 +1,124 @@
+name: CovenantIdentityServer-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+      - dev
+  paths:
+    include:
+      - Covenant.IdentityServer/**
+      - .azure-pipelines/covenant-identityserver-pipeline.yml
+      - .azure-pipelines/templates/**
+    exclude:
+      - Covenant.IdentityServer/**/*.md
+
+# PR trigger - only validate PRs to dev (not to main)
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Covenant.IdentityServer/**
+      - .azure-pipelines/covenant-identityserver-pipeline.yml
+      - .azure-pipelines/templates/**
+    exclude:
+      - Covenant.IdentityServer/**/*.md
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+variables:
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev', 'refs/heads/development')]
+  dotnetSdkVersion: '6.0.400'
+  workingDirectory: 'Covenant.IdentityServer'
+  dockerRegistry: 'acrServiceConnectionSigook'
+  dockerRepository: 'identityserver'
+  azureSubscription: 'SigookPipelines'
+
+stages:
+  # Stage 1: Build and Test
+  - stage: Build_and_Test
+    displayName: 'Build and Test'
+    jobs:
+      - job: Build_Test_Solution
+        displayName: 'Build and Test IdentityServer Solution'
+        steps:
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Build and Test using template
+          - template: templates/dotnet-build-test.yml
+            parameters:
+              buildProjects: '$(workingDirectory)/**/*.sln'
+              buildConfiguration: 'Release'
+              runUnitTests: true
+              unitTestProjects: '$(workingDirectory)/**/Covenant.IdentityServer.Tests/*.csproj'
+              runIntegrationTests: false
+
+  # Stage 2: Build Docker and Deploy
+  - stage: Build_Docker_and_Deploy
+    displayName: 'Build Docker Image and Deploy'
+    dependsOn: Build_and_Test
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: Build_Docker_Image
+        displayName: 'Build and Push Docker Image'
+        steps:
+          # Calculate Docker tag using template
+          - template: templates/calculate-docker-tag.yml
+            parameters:
+              tagVariableName: 'tag'
+              stepName: 'SetTag'
+
+          - task: Docker@2
+            displayName: 'Build Docker Image'
+            inputs:
+              containerRegistry: $(dockerRegistry)
+              repository: $(dockerRepository)
+              command: 'build'
+              Dockerfile: '$(workingDirectory)/Dockerfile'
+              buildContext: '$(workingDirectory)'
+              tags: $(tag)
+              arguments: '--build-arg PAT=$(PatSigookPackages)'
+
+          - task: Docker@2
+            displayName: 'Push Docker Image to ACR'
+            inputs:
+              containerRegistry: $(dockerRegistry)
+              repository: $(dockerRepository)
+              command: 'push'
+              tags: $(tag)
+
+      - job: Deploy_to_Azure
+        displayName: 'Deploy to Azure App Service'
+        dependsOn: Build_Docker_Image
+        variables:
+          imageTag: $[ dependencies.Build_Docker_Image.outputs['SetTag.tag'] ]
+        steps:
+          # Calculate Azure App Service name using template
+          - template: templates/calculate-azure-appname.yml
+            parameters:
+              appNameVariableName: 'azureAppName'
+              stagingAppName: 'sigook-accounts-staging'
+              productionAppName: 'sigook-accounts'
+              stepName: 'SetAppName'
+
+          - script: |
+              echo "Deploying to $(azureAppName)"
+              echo "Using tag: $(imageTag)"
+              echo "Build ID: $(Build.BuildId)"
+            displayName: 'Display Deployment Info'
+
+          - task: AzureWebAppContainer@1
+            displayName: 'Deploy Container to Azure App Service'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              appName: $(azureAppName)
+              containers: 'sigook.azurecr.io/$(dockerRepository):$(imageTag)'
+              appSettings: '-CVN_VERSION $(Build.BuildId)'

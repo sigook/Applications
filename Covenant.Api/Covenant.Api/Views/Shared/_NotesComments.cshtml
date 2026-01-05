@@ -1,0 +1,10 @@
+@model string
+<div style="display: inline-block; width: 60%;">
+    <p style="border-radius: 14px 14px 0 0; padding: 10px; background: @this.ViewData["HeaderTableColor"].ToString(); margin: 15px 0 0"></p>
+    <div style="background: @this.ViewData["FooterContentColor"].ToString(); padding: 8px; border-radius: 0 0 14px 14px;  min-height: 100px;">
+        <b>Notes / Comments :</b>
+        <div>
+            @Html.Raw(Model)
+        </div>
+    </div>
+</div>

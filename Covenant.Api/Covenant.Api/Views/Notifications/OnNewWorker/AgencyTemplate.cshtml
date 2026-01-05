@@ -1,0 +1,10 @@
+@model Covenant.Common.Models.Worker.OnNewWorkerAgencyTemplateViewModel
+
+@if (Model.ApprovedToWork)
+{
+    @await Html.PartialAsync("_GenericBody",$"Worker {Model.WorkerFullName} has registered and is approved to work")    
+}
+else
+{
+    @await Html.PartialAsync("_GenericBody",$"Worker {Model.WorkerFullName} has registered and needs to be verified")
+}

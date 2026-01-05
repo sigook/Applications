@@ -1,0 +1,25 @@
+@model Covenant.HtmlTemplates.Views.Notifications.OnWorkerApply.CompanyTemplateViewModel
+<table style="background-color: #F5F5F5; padding: 10px 20px 10px; text-align: center;" width="100%">
+    <tr>
+        <td>
+            <div>
+                @await Html.PartialAsync("_EnvelopeLogo")
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h2 style="font-weight: 300;">Hello</h2>
+            <div style="font-weight: 200;">
+                <p style="margin: 0">
+                    Worker @Model.WorkerFullName from agency @Model.AgencyFullName has applied to request @Model.JobTitle.
+                </p>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            @await Html.PartialAsync("_GoToAppClient")
+        </td>
+    </tr>
+</table>
