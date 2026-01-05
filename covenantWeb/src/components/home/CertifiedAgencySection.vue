@@ -62,7 +62,7 @@
 .cert-card {
   position: relative;
   width: 100%;
-  min-height: 340px;
+  min-height: 540px;
   border-radius: 150px 0 150px 0;   /* curva fuerte arriba izq / abajo der */
   overflow: hidden;
   background-image: url("@/assets/images/certified-agency-bg.jpg"); /* 👉 cambia la ruta */
@@ -77,8 +77,8 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(4, 28, 45, 0.65),
-    rgba(4, 28, 45, 0.25)
+    rgba(4, 28, 45, 0.45),
+    rgba(4, 28, 45, 0.15)
   );
   z-index: 0;
 }
@@ -95,14 +95,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  text-align: left;
   color: #ffffff;
 }
 
 .cert-title {
   margin: 0 0 24px;
-  font-size: 2.1rem;
-  font-weight: 600;
+  font-size: 2.3rem;
+  font-weight: 300;
   letter-spacing: 0.18em;
 }
 
@@ -176,7 +176,7 @@
   }
 
   .cert-card {
-    border-radius: 70px 0 70px 70px;
+    border-radius: 100px 0 100px 0;
   }
 
   .cert-title {

@@ -16,9 +16,7 @@
 
         <div class="why-work__media why-work__media--1">
           <img src="@/assets/images/why-work-1.png" alt="Toronto skyline" />
-          <div class="decor-outline-green-large"></div>
-          <div class="decor-lines-left"></div>
-        </div>
+          <div class="decor-ring-green"></div> <div class="decor-lines-left"></div> </div>
       </div>
 
       <div class="why-work__item why-work__item--left">
@@ -27,9 +25,7 @@
             src="@/assets/images/why-work-2.png"
             alt="People talking in an interview"
           />
-          <div class="decor-outline-dark-big"></div>
-          <div class="decor-green-dots-right"></div>
-        </div>
+          <div class="decor-ring-dark"></div> <div class="decor-blob-green-front"></div> </div>
 
         <div class="why-work__content">
           <h3 class="why-work__heading">We care about you</h3>
@@ -54,9 +50,7 @@
 
         <div class="why-work__media why-work__media--3">
           <img src="@/assets/images/why-work-3.png" alt="People reviewing reports" />
-          <div class="decor-lines-center"></div>
-          <div class="decor-outline-small-bottom"></div>
-        </div>
+          <div class="decor-ring-green-bottom"></div> <div class="decor-blob-blue-back"></div> <div class="decor-lines-center"></div> </div>
       </div>
     </div>
   </section>
@@ -75,8 +69,8 @@
 .why-work {
   width: 100%;
   background-color: #ffffff;
-  padding: 90px 0 200px; /* Ajustado padding inferior */
-  overflow: hidden; /* Para que los circulos grandes no rompan el layout */
+  padding: 90px 0 200px;
+  overflow: hidden;
 }
 
 .why-work__inner {
@@ -99,16 +93,30 @@
   align-items: center;
   justify-content: space-between;
   gap: 60px;
-  /* Margen negativo para acercar los items verticalmente como en el diseño */
+  /* Margen negativo para acercar los items verticalmente (efecto zigzag) */
   margin-bottom: -100px;
 }
 
-/* Contenido Texto */
+/* Contenido Texto Base */
 .why-work__content {
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  z-index: 2; /* Texto por encima */
+  z-index: 2;
+}
+
+/* --- LÓGICA DE ALINEACIÓN DE TEXTO HACIA EL CENTRO --- */
+
+/* Caso 1: Imagen a la derecha -> Texto a la izquierda -> Alinear texto a la DERECHA */
+.why-work__item--right .why-work__content {
+  text-align: right;       /* Alinea el texto */
+  align-items: flex-end;   /* Alinea el contenedor flex (para que el h3 pegue a la derecha) */
+}
+
+/* Caso 2: Imagen a la izquierda -> Texto a la derecha -> Alinear texto a la IZQUIERDA */
+.why-work__item--left .why-work__content {
+  text-align: left;        /* Alinea el texto */
+  align-items: flex-start; /* Alinea el contenedor flex */
 }
 
 .why-work__heading {
@@ -139,29 +147,30 @@
   object-fit: cover;
   border-radius: 50%;
   position: relative;
-  z-index: 1; /* Imagen base */
+  z-index: 1; /* Imagen base en nivel 1 */
 }
 
 /* AJUSTES DE POSICIÓN Y "SALIDA" POR LOS BORDES */
 .why-work__item--right .why-work__media {
-  margin-right: -280px; /* Saca la imagen hacia la derecha */
+  margin-right: -280px;
 }
 
 .why-work__item--left .why-work__media {
-  margin-left: -280px; /* Saca la imagen hacia la izquierda */
+  margin-left: -280px;
 }
 
 /* ========================================= */
-/* === DECORACIONES ESPECÍFICAS POR ITEM === */
+/* === DECORACIONES === */
 /* ========================================= */
 
 /* --- ITEM 1 (TORONTO) --- */
-/* Blob sólido verde arriba a la izquierda */
+
+/* 1. Mancha verde sólida detrás (Arriba Izquierda) */
 .why-work__media--1::before {
   content: '';
   position: absolute;
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   background-color: #5ce07d; /* Verde brillante */
   border-radius: 50%;
   top: 0;
@@ -169,22 +178,23 @@
   z-index: 0; /* Detrás de la imagen */
 }
 
-/* Círculo contorno verde grande desplazado a la izquierda */
-.decor-outline-green-large {
+/* 2. Anillo fino verde grande (Rodeando la imagen) */
+.decor-ring-green {
   position: absolute;
-  top: 5%;
-  left: -10%;
-  width: 110%;
-  height: 110%;
+  top: 60%;
+  left: 25%;
+  transform: translate(-50%, -50%); /* Centrado */
+  width: 60%; /* Ligeramente más grande que la imagen */
+  height: 60%;
   border: 1px solid #5ce07d;
   border-radius: 50%;
   z-index: 0;
 }
 
-/* Líneas blancas a la izquierda */
+/* 3. Líneas blancas a la izquierda */
 .decor-lines-left {
   position: absolute;
-  bottom: 25%;
+  bottom: 30%;
   left: 15%;
   width: 80px;
   height: 40px;
@@ -199,73 +209,69 @@
 }
 
 /* --- ITEM 2 (ENTREVISTA) --- */
-/* Círculo contorno oscuro grande centrado */
-.decor-outline-dark-big {
+
+/* 1. Anillo fino oscuro grande (Azul/Gris) */
+.decor-ring-dark {
   position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 120%;
-  height: 120%;
+  top: 42%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90%;
   border: 1px solid #05162d; /* Azul oscuro */
   border-radius: 50%;
+  z-index: 2;
+}
+
+/* 2. Mancha verde sólida EN FRENTE (Abajo Izquierda) */
+/* Según captura, esta mancha muerde la imagen */
+.decor-blob-green-front {
+  position: absolute;
+  bottom: 10px;
+  left: 350px;
+  width: 380px;
+  height: 380px;
+  background-color: #5ce07d;
+  border-radius: 50%;
+  z-index: 0; /* Encima de la imagen */
+}
+
+/* --- ITEM 3 (TABLET/ANALYTICS) --- */
+
+/* 1. Anillo/Sombra verde abajo */
+.decor-ring-green-bottom {
+  position: absolute;
+  bottom: -20px;
+  right: 20px;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* Borde grueso solo abajo y derecha simulando el efecto de la captura */
+  border-bottom: 40px solid #5ce07d;
+  border-right: 40px solid #5ce07d;
+  border-top: 40px solid #5ce07d;
+  border-left: 40px solid #5ce07d;
+  transform: rotate(45deg); /* Rotamos para acomodar el borde */
+  opacity: 0.8;
   z-index: 0;
 }
 
-/* Decoración pequeña verde abajo a la derecha */
-.decor-green-dots-right {
+/* 2. Mancha azul oscura sólida DETRÁS (Abajo Izquierda) */
+.decor-blob-blue-back {
   position: absolute;
-  bottom: 15%;
-  right: 0;
-  width: 60px;
-  height: 60px;
+  bottom: -40px;
+  left: 20px;
+  width: 160px;
+  height: 160px;
+  background-color: #05162d; /* Azul oscuro corporativo */
   border-radius: 50%;
-  /* Usamos box-shadow para crear el punto sólido y el contorno */
-  background: #5ce07d; /* El punto sólido */
-  z-index: 2;
-  box-shadow: 40px 20px 0 -15px transparent,
-              50px 50px 0 0px #ffffff, /* espacio blanco */
-              50px 50px 0 2px #5ce07d; /* anillo verde */
-}
-/* Alternativa más simple para los puntos si el box-shadow es confuso: */
-.decor-green-dots-right::after {
-  content: '';
-  position: absolute;
-  width: 40px; height: 40px;
-  border: 2px solid #5ce07d;
-  border-radius: 50%;
-  top: 50px; left: 40px;
-}
-
-/* --- ITEM 3 (TABLET) --- */
-/* Blob sólido verde abajo a la izquierda */
-.why-work__media--3::before {
-  content: '';
-  position: absolute;
-  width: 250px;
-  height: 250px;
-  background-color: #5ce07d;
-  border-radius: 50%;
-  bottom: -20px;
-  left: -20px;
   z-index: 0; /* Detrás */
 }
 
-/* Pequeño círculo contorno verde abajo a la izquierda */
-.decor-outline-small-bottom {
-  position: absolute;
-  bottom: 0;
-  left: -40px;
-  width: 60px;
-  height: 60px;
-  border: 2px solid #5ce07d;
-  border-radius: 50%;
-  z-index: 2;
-}
-
-/* Líneas blancas centradas abajo */
+/* 3. Líneas blancas centradas abajo */
 .decor-lines-center {
   position: absolute;
-  bottom: 30px;
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   width: 100px;
@@ -305,11 +311,23 @@
     margin-bottom: 80px;
     gap: 40px;
   }
-  .why-work__content { order: 2; margin: 0 !important; }
+
+  /* En móvil reseteamos la alineación al centro */
+  .why-work__item--right .why-work__content,
+  .why-work__item--left .why-work__content {
+    text-align: center;
+    align-items: center;
+    order: 2;
+    margin: 0 !important;
+  }
+
   .why-work__media {
     order: 1; margin: 0 !important;
     width: 360px; height: 360px;
   }
+
+  /* Ajuste decoraciones en movil para que no estorben */
+  .decor-blob-green-front { width: 100px; height: 100px; bottom: 20px; left: -10px; }
 }
 
 @media (max-width: 520px) {

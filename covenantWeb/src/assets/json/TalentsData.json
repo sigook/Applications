@@ -1,20 +1,40 @@
 {
-    "professional": {
-      "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed. Whether you're looking for a new challenge or the next step in your career, we're here to guide you toward lasting success.",
-      "card1Title": "Direct Hiring",
-      "card1Desc": "Build a lasting career with stable opportunities and long-term professional growth.",
-      "card2Title": "Contract",
-      "card2Desc": "Flexibility and growth through project-based roles across diverse industries.",
-      "iconLeftComponent": "div",
-      "iconRightComponent": "div"
-    },
-    "industrial": {
-      "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed.",
-      "card1Title": "Temp to Perm",
-      "card1Desc": "Gain experience, prove your value, and grow into permanent opportunities.",
-      "card2Title": "Temporal/Seasonal",
-      "card2Desc": "Work on your terms. Seasonal jobs offer flexibility and experience.",
-      "iconLeftComponent": "div",
-      "iconRightComponent": "div"
-    }
+  "professional": {
+    "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed. Whether you're looking for a new challenge or the next step in your career, we're here to guide you toward lasting success.",
+    "card1Title": "Direct Hiring",
+    "card1Desc": "Build a lasting career with stable opportunities and long-term professional growth.",
+    "card1Benefits": [
+      { "title": "Stability:", "text": "Secure long-term professionals who grow with your company." },
+      { "title": "Culture Fit:", "text": "Hire individuals aligned with your organization's values and vision." },
+      { "title": "Retention:", "text": "Build loyalty and reduce turnover through permanent placements." }
+    ],
+    "card2Title": "Contract",
+    "card2Desc": "Flexibility and growth through project-based roles across diverse industries.",
+    "card2Benefits": [
+      { "title": "Flexibility:", "text": "Scale your workforce quickly to meet project or seasonal demands." },
+      { "title": "On-Demand Talent:", "text": "Access specialized expertise without the long-term obligation." },
+      { "title": "Cost Control:", "text": "Pay only for the duration and skills you need." }
+    ],
+    "iconLeft": "professional-icon-left.png",   
+    "iconRight": "professional-icon-right.png"
+  },
+  "industrial": {
+    "introText": "At Covenant Group, we connect talented people with top employers, matching your skills and aspirations with opportunities to grow and succeed.",
+    "card1Title": "Temp to Perm",
+    "card1Desc": "Gain experience, prove your value, and grow into permanent opportunities.",
+    "card1Benefits": [
+      { "title": "", "text": "Evaluate performance and fit before making a long-term hire." },
+      { "title": "", "text": "Reduce hiring risks and training costs with pre-screened talent." },
+      { "title": "", "text": "Seamless transition from temporary to permanent employment." }
+    ],
+    "card2Title": "Temporal/Seasonal",
+    "card2Desc": "Work on your terms. Seasonal jobs offer flexibility and experience.",
+    "card2Benefits": [
+      { "title": "", "text": "Quickly fill roles during peak demand or staff shortages." },
+      { "title": "", "text": "Maintain productivity with qualified, safety-trained workers." },
+      { "title": "", "text": "Flexible contracts that adapt to your business cycles." }
+    ],
+    "iconLeft":"industrial-icon-left.png",
+    "iconRight": "industrial-icon-right.png"
   }
+}

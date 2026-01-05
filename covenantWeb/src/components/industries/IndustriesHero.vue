@@ -28,12 +28,49 @@
   min-height: 680px;
   overflow: hidden;
   color: #ffffff;
+  /* Importante: Establecemos un contexto de apilamiento para los pseudo-elementos */
+  z-index: 0;
 }
+
+/* --- NUEVO: CÍRCULOS DECORATIVOS --- */
+
+/* Círculo grande superior derecho */
+.ind-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; /* Ajusta para moverlo verticalmente */
+  right: -100px; /* Ajusta para moverlo horizontalmente */
+  width: 500px; /* Tamaño del círculo */
+  height: 500px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Borde fino y sutil */
+  background: radial-gradient(circle, rgba(82, 201, 131, 0.1) 0%, transparent 70%); /* Degradado verde sutil */
+  z-index: 1; /* Detrás del texto (que tendrá z-index 2) */
+  pointer-events: none; /* Para que no interfiera con clicks */
+}
+
+/* Círculo mediano inferior izquierdo */
+.ind-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0px; /* Ajusta para moverlo verticalmente */
+  left: -50px; /* Ajusta para moverlo horizontalmente */
+  width: 300px; /* Tamaño del círculo */
+  height: 300px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde aún más sutil */
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%); /* Degradado blanco sutil */
+  z-index: 1; /* Detrás del texto */
+  pointer-events: none;
+}
+
+/* --- FIN NUEVO --- */
 
 /* Imagen de fondo */
 .ind-hero__bg {
   position: absolute;
   inset: 0;
+  z-index: 0; /* Al fondo de todo */
 }
 .ind-hero__bg img {
   width: 100%;
@@ -47,7 +84,7 @@
   background: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0.2),
-      rgba(2, 13, 30, 1)
+      #0F2F44
     ),
     radial-gradient(circle at 20% 0, rgba(82, 201, 131, 0.6), transparent 60%);
 }
@@ -55,7 +92,8 @@
 /* Contenido centrado */
 .ind-hero__content {
   position: relative;
-  z-index: 1;
+  /* Aumentamos el z-index para que quede por encima de los círculos */
+  z-index: 2;
   max-width: 720px;
   margin: 0 auto;
   padding: 230px 24px 80px;
@@ -90,6 +128,8 @@
   .ind-hero {
     min-height: 380px;
   }
+  .ind-hero::before { width: 100px; height: 100px; top: 0px; right: -50px; }
+  .ind-hero::after { width: 100px; height: 100px; bottom: 0px; left: -30px; }
   .ind-hero__content {
     padding-top: 100px;
     padding-bottom: 60px;

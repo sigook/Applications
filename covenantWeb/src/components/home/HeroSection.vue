@@ -100,7 +100,7 @@
       rgba(255, 255, 255, 0.05),
       transparent 55%
     ),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(2, 13, 30, 0.85));
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), #0F2F44);
 }
 
 /* Contenido centrado */
@@ -109,7 +109,7 @@
   z-index: 1;
   max-width: 540px;
   margin: 0 auto;
-  padding-top: 32vh;
+  padding-top: 40vh;
   text-align: center;
   animation: hero-enter 1s ease-out;
 }
@@ -158,7 +158,7 @@
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
+  background: #D9D9D9;
 }
 
 .hero__dot {
@@ -246,7 +246,7 @@
 }
 
 .hero__logo {
-  max-width: 180px;
+  max-width: 340px;
 }
 
 .hero__title {

@@ -19,19 +19,21 @@ defineEmits(['scrollToContact'])
 
 <style scoped>
 .industries-cta {
-  background-color: #cccccc; /* Gris de la imagen 1 */
+  background-color: #C9C9C9;
   padding: 120px 20px;
-  text-align: center;
   color: #333;
-  /* Curva inferior */
   border-bottom-right-radius: 160px;
   position: relative;
-  z-index: 1; /* Por encima del siguiente componente */
+  z-index: 1;
 }
 
 .industries-cta__content {
   max-width: 700px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
 }
 
 .industries-cta__title {

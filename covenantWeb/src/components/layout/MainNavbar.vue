@@ -101,7 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 4vw;
+  padding: 36px 4vw;
   color: #fff;
   background: linear-gradient(
     to bottom,
