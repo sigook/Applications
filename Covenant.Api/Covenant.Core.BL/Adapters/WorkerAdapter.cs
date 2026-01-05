@@ -87,7 +87,7 @@ public class WorkerAdapter : IWorkerAdapter
         });
         if (!user) return Result.Fail<WorkerProfile>(user.Errors);
         entity.Worker = user.Value;
-        var profileImageFile = request.Form.Files[entity.ProfileImage.FileName];
+        var profileImageFile = request.Form.Files[entity.ProfileImage?.FileName];
         if (profileImageFile != null) await filesContainer.UploadAsync(profileImageFile.OpenReadStream(), profileImageFile.FileName);
         var identificationType1File = request.Form.Files[entity.IdentificationType1File.FileName];
         if (identificationType1File != null) await filesContainer.UploadAsync(identificationType1File.OpenReadStream(), identificationType1File.FileName);
@@ -97,17 +97,17 @@ public class WorkerAdapter : IWorkerAdapter
         if (resume != null) await filesContainer.UploadAsync(resume.OpenReadStream(), entity.Resume.FileName);
         foreach (var license in entity.Licenses)
         {
-            var licenseFile = request.Form.Files[license.License.FileName];
+            var licenseFile = request.Form.Files[license.License?.FileName];
             if (licenseFile != null) await filesContainer.UploadAsync(licenseFile.OpenReadStream(), license.License.FileName);
         }
         foreach (var certificate in entity.Certificates)
         {
-            var certificateFile = request.Form.Files[certificate.Certificate.FileName];
+            var certificateFile = request.Form.Files[certificate.Certificate?.FileName];
             if (certificateFile != null) await filesContainer.UploadAsync(certificateFile.OpenReadStream(), certificate.Certificate.FileName);
         }
         foreach (var otherDocument in entity.OtherDocuments)
         {
-            var otherDocumentFile = request.Form.Files[otherDocument.Document.FileName];
+            var otherDocumentFile = request.Form.Files[otherDocument.Document?.FileName];
             if (otherDocumentFile != null) await filesContainer.UploadAsync(otherDocumentFile.OpenReadStream(), otherDocument.Document.FileName);
         }
         return Result.Ok(entity);
