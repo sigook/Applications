@@ -51,11 +51,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-// 1. IMPORTAR LOS DATOS DEL JSON
-// Ajusta la ruta relativa (../../) según donde esté ubicado tu componente
+// Asegúrate de que esta ruta sea correcta según tu estructura de carpetas
 import rolesData from '../../assets/json/RolesEmployersData.json'
 
-// (Opcional) Definir interfaz para TypeScript para mayor seguridad
 interface Role {
   title: string;
   image: string;
@@ -63,33 +61,26 @@ interface Role {
   description: string;
 }
 
-// --- ESTADO Y LÓGICA ---
 const activeIndex = ref<number | null>(null);
 
 const toggleCard = (index: number) => {
   activeIndex.value = activeIndex.value === index ? null : index;
 }
 
-// Función para cargar la IMAGEN DE FONDO (Igual que antes)
 const getRoleImage = (imageName: string) => {
   return new URL(`../../assets/images/roles/${imageName}`, import.meta.url).href
 }
 
-// Función NUEVA para cargar el ICONO desde la subcarpeta "icons"
 const getRoleIcon = (iconName: string) => {
-  // Asume ruta: src/assets/images/roles/icons/nombre.svg
   return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
 }
 
-// --- DATA ---
-// Asignamos los datos importados a la constante roles
 const roles: Role[] = rolesData;
 </script>
 
 <style scoped>
-/* SE MANTIENEN TUS ESTILOS EXACTOS */
 .roles-section {
-  background-color: #05162d;
+  background-color: #0F2F44;
   padding: 80px 0 120px;
   overflow: hidden;
 }
@@ -105,8 +96,8 @@ const roles: Role[] = rolesData;
   color: white;
   margin-bottom: 60px;
   font-size: 2.2rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 300;
+  text-transform: capitalize;
   letter-spacing: 1px;
 }
 
@@ -120,11 +111,10 @@ const roles: Role[] = rolesData;
   position: relative;
   width: 65%;
   height: 240px;
-  overflow: hidden;
   cursor: pointer;
+  z-index: 1;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  z-index: 1;
 }
 
 .role-card:hover {
@@ -136,18 +126,17 @@ const roles: Role[] = rolesData;
   transform: scale(1.05);
 }
 
+/* Formas de las tarjetas */
 .role-card--left {
   align-self: flex-start;
   border-radius: 0 150px 150px 0;
-  text-align: left;
   box-shadow: 0 50px 0 #010914;
 }
 
 .role-card--right {
   align-self: flex-end;
   border-radius: 150px 0 0 150px;
-  text-align: right;
-  box-shadow: 0 50px 0 #0F2F44;
+  box-shadow: 0 50px 0 #184461;
 }
 
 /* LÓGICA INTERNA DE CARAS */
@@ -155,6 +144,11 @@ const roles: Role[] = rolesData;
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0);
 }
 
 .role-card__face {
@@ -165,6 +159,7 @@ const roles: Role[] = rolesData;
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
+/* --- CARA FRONTAL --- */
 .role-card__face--front {
   display: flex;
   align-items: center;
@@ -172,10 +167,7 @@ const roles: Role[] = rolesData;
   opacity: 1;
 }
 
-.role-card--right .role-card__face--front {
-  flex-direction: row-reverse;
-}
-
+/* --- CARA TRASERA --- */
 .role-card__face--back {
   background-color: #0d2644;
   z-index: 1;
@@ -198,7 +190,7 @@ const roles: Role[] = rolesData;
   z-index: 3;
 }
 
-/* CONTENIDO */
+/* IMAGEN Y OVERLAY */
 .role-card__bg-wrapper {
   position: absolute;
   inset: 0;
@@ -226,11 +218,25 @@ const roles: Role[] = rolesData;
   position: relative;
   z-index: 2;
   width: 100%;
-  padding: 0 60px;
+  padding: 0 80px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   color: white;
+  gap: 30px;
+}
+
+/* Tarjeta Izquierda: Contenido alineado a la derecha (Centro pantalla) */
+.role-card--left .role-card__content {
+  justify-content: flex-end;
+  text-align: right;
+  flex-direction: row;
+}
+
+/* Tarjeta Derecha: Contenido alineado a la izquierda (Centro pantalla) */
+.role-card--right .role-card__content {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+  text-align: left;
 }
 
 .role-card__title {
@@ -263,42 +269,43 @@ const roles: Role[] = rolesData;
   transform: rotate(180deg);
 }
 
-/* CONTENIDO TRASERO */
 .info-content {
   width: 100%;
   padding: 0 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 40px;
   color: white;
 }
 
-.role-card--right .info-content {
+/* Tarjeta Izquierda: Icono al borde izquierdo (pantalla), Texto al centro */
+.role-card--left .info-content {
   flex-direction: row-reverse;
+  text-align: right;
+}
+
+/* Tarjeta Derecha: Icono al borde derecho (pantalla), Texto al centro */
+.role-card--right .info-content {
+  flex-direction: row;
+  text-align: left;
 }
 
 .info-text {
   font-size: 1.1rem;
   line-height: 1.5;
   flex: 1;
-  margin-right: 40px;
-}
-
-.role-card--right .info-text {
-  margin-right: 0;
-  margin-left: 40px;
 }
 
 .info-icon {
-  width: 70px;
-  height: 70px;
+  width: 110px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border-radius: 50%;
 }
 
-/* NUEVO: ESTILO PARA LA IMAGEN DEL ICONO */
 .info-icon img {
   width: 100%;
   height: 100%;
@@ -306,31 +313,65 @@ const roles: Role[] = rolesData;
 }
 
 @media (max-width: 768px) {
+
   .role-card {
     width: 100%;
-    height: 180px;
-    border-radius: 20px !important;
-    margin-bottom: 20px;
+    height: 200px;
+    margin: 0 auto 25px auto;
+    align-self: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
   }
 
-  .role-card__content, .info-content {
+  .role-card--left, .role-card--right {
+    align-self: auto;
+  }
+
+  .role-card--left {
+    box-shadow: 0 50px 0 #010914;
+  }
+
+  .role-card--right {
+    box-shadow: 0 50px 0 #184461;
+  }
+
+  .role-card__inner {
+    border-radius: inherit !important;
+    overflow: hidden;
+  }
+
+  .role-card__content {
     padding: 0 30px;
+    gap: 15px;
   }
 
   .role-card__title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .role-card__arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .role-card__arrow svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .info-content {
+    padding: 0 30px;
+    gap: 20px;
   }
 
   .info-text {
     font-size: 0.9rem;
-    margin-right: 20px;
+    flex: 1;
+    margin: 0 !important;
   }
-  .role-card--right .info-text {
-    margin-left: 20px;
-  }
+
   .info-icon {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
   }
 }
 </style>

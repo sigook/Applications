@@ -12,7 +12,7 @@
 <style scoped>
 .about-page {
   min-height: 100vh;
-  background-color: #020d1e;
+  background-color: #0F2F44;
   margin: 0;
   padding: 0;
 }

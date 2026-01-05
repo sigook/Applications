@@ -247,10 +247,25 @@
   gap: 40px;
 }
 
-.attendance-icon__img {
-  width: 150px;
-  height: auto;
+/* ★ NUEVO: Estilo para el contenedor del icono (Círculo Verde) */
+.attendance-icon {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  width: 260px;       /* Tamaño del círculo */
+  height: 260px;
+  background-color: #37d56e; /* Mismo verde que el círculo superior */
+  border-radius: 50%;
+  flex-shrink: 0;     /* Evita que se aplaste */
 }
+
+/* ★ ACTUALIZADO: La imagen del icono */
+.attendance-icon__img {
+  width: 150px;       /* Ajustado para caber dentro del círculo de 220px */
+  height: auto;
+  display: block;
+}
+
 
 .attendance-text {
   max-width: 540px;
@@ -346,6 +361,12 @@
     align-items: flex-start;
   }
 
+  /* ★ ACTUALIZADO: Ajustes del círculo en Tablet/Móvil */
+  .attendance-icon {
+      width: 140px;
+      height: 140px;
+  }
+
   .attendance-icon__img {
     width: 90px;
   }
@@ -426,10 +447,20 @@
     gap: 16px;
   }
 
-  .attendance-icon__img {
-    margin-top: 100px;
-    width: 80px;
+  /* ★ ACTUALIZADO: Manejo de márgenes y tamaño en móvil */
+  .attendance-icon {
+    width: 130px;
+    height: 130px;
+    margin-top: 100px; /* El margen ahora se aplica al contenedor del círculo */
+    justify-content: center;
   }
+
+  .attendance-icon__img {
+    width: 80px;
+    margin-top: 0; /* Quitamos el margen de la imagen para que se centre bien */
+  }
+
+
 
   .attendance-title {
     font-size: 1.3rem;

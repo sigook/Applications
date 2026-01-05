@@ -129,6 +129,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+*{
+  box-sizing: border-box;
+}
+
 .jobs-section {
   padding: 60px 0 100px;
   background-color: #f9f9f9;
@@ -332,15 +336,23 @@ onMounted(() => {
 
   .jobs-list-col {
     width: 100%;
+    margin: 0;
+    padding: 0 20px;
+  }
+
+  .job-detail-col {
+    margin: 0;
+    width: 100%;
+    padding: 0 20px;
   }
 
   .scrollable-list {
-    max-height: 300px;
+    max-height: 350px;
   }
 
   .detail-card {
     position: static;
-    max-height: none; /* En móvil dejamos que crezca */
+    max-height: none;
     overflow-y: visible;
   }
 }
