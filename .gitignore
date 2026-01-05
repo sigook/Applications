@@ -458,12 +458,9 @@ public
 # Build outputs
 dist/
 wwwroot/
-*.local
 
-# Environment files (keep templates, ignore actual secrets)
-.env.local
-.env.*.local
-.env.development.local
+# Environment files - allowing .local files to be versioned for developer reference
+# Each developer can modify their local .env.development.local as needed
 
 # Editor directories and files
 .idea

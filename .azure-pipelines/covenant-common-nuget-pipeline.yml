@@ -14,8 +14,16 @@ trigger:
     exclude:
       - Covenant.Api/Covenant.Common/**/*.md
 
-# No PR trigger - only direct pushes to dev
-pr: none
+# PR trigger with path filters - only validate when Covenant.Common changes
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Covenant.Api/Covenant.Common/**
+    exclude:
+      - Covenant.Api/Covenant.Common/**/*.md
 
 pool:
   vmImage: 'ubuntu-22.04'
@@ -53,7 +61,7 @@ stages:
       - job: Pack_and_Publish
         displayName: 'Pack and Publish NuGet Package'
         dependsOn: Quality_Gate
-        condition: succeeded()
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
