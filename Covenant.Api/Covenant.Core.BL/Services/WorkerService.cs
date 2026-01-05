@@ -5,6 +5,7 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
@@ -41,6 +42,8 @@ namespace Covenant.Core.BL.Services
         private readonly IWorkerAdapter workerAdapter;
         private readonly IValidator<WorkerProfileCreateModel> workerProfileValidator;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IFilesContainer filesContainer;
+        private readonly IDocumentService documentService;
 
         public WorkerService(
             IAgencyRepository agencyRepository,
@@ -59,7 +62,9 @@ namespace Covenant.Core.BL.Services
             ILogger<WorkerService> logger,
             IWorkerAdapter workerAdapter,
             IValidator<WorkerProfileCreateModel> workerProfileValidator,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IFilesContainer filesContainer,
+            IDocumentService documentService)
         {
             this.agencyRepository = agencyRepository;
             this.workerRepository = workerRepository;
@@ -76,6 +81,8 @@ namespace Covenant.Core.BL.Services
             this.workerAdapter = workerAdapter;
             this.workerProfileValidator = workerProfileValidator;
             this.httpContextAccessor = httpContextAccessor;
+            this.filesContainer = filesContainer;
+            this.documentService = documentService;
         }
 
         public async Task<Result<Guid>> CreateWorker(int? orderId)
@@ -85,9 +92,9 @@ namespace Covenant.Core.BL.Services
             var validationResult = await workerProfileValidator.ValidateAsync(model);
             if (!validationResult.IsValid) return Result.Fail<Guid>(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
 
-            var wp = await workerAdapter.MapToWorkerProfile(model);
-            if (!wp) return Result.Fail<Guid>(wp.Errors);
-            var entity = wp.Value;
+            var workerProfile = await workerAdapter.MapToWorkerProfile(model);
+            if (!workerProfile) return Result.Fail<Guid>(workerProfile.Errors);
+            var entity = workerProfile.Value;
 
             await workerRepository.Create(entity);
             await workerRepository.SaveChangesAsync();
@@ -156,6 +163,34 @@ namespace Covenant.Core.BL.Services
                 WorkerId = worker.WorkerId,
                 WorkerProfileId = worker.Id
             });
+        }
+
+        public async Task<Result> UpdateProfileImage(Guid profileId)
+        {
+            var request = httpContextAccessor.HttpContext.Request;
+            var profileImageFile = request.Form.Files[0];
+            if (profileImageFile is null)
+            {
+                return Result.Fail("Profile image file is required");
+            }
+            var entity = await workerRepository.GetProfile(p => p.Id == profileId);
+            if (entity is null)
+            {
+                return Result.Fail("Worker profile not found");
+            }
+            var oldProfileImageId = entity.ProfileImage?.Id;
+            var fileModel = new CovenantFileModel(profileImageFile.FileName);
+            var result = entity.PatchProfileImage(fileModel);
+            if (!result) return result;
+            await workerRepository.Create(entity.ProfileImage);
+            await workerRepository.UpdateProfile(entity);
+            await workerRepository.SaveChangesAsync();
+            await filesContainer.UploadAsync(profileImageFile.OpenReadStream(), profileImageFile.FileName);
+            if (oldProfileImageId.HasValue)
+            {
+                await documentService.DeleteFile(oldProfileImageId.Value);
+            }
+            return Result.Ok();
         }
 
         private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)

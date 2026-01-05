@@ -10,4 +10,5 @@ public interface IWorkerService
     Task<Result> DeleteWorker(Guid workerProfileId);
     Task<Result> UpdateWorkerPunchCardId(Guid profileId, Guid agencyId, string punchCardId);
     Task<Result<RequestApplicantDetailModel>> Apply(Guid requestId, WorkerRequestApplyModel model, Guid? workerId = null);
+    Task<Result> UpdateProfileImage(Guid profileId);
 }

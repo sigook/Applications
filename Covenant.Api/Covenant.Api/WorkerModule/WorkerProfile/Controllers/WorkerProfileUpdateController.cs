@@ -6,6 +6,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
+using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,11 +20,13 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
         public const string RouteName = "api/WorkerProfile/{profileId}";
         private readonly IWorkerRepository _workerRepository;
         private readonly IDocumentService documentService;
+        private readonly IWorkerService _workerService;
 
-        public WorkerProfileUpdateController(IWorkerRepository workerRepository, IDocumentService documentService)
+        public WorkerProfileUpdateController(IWorkerRepository workerRepository, IDocumentService documentService, IWorkerService workerService)
         {
             _workerRepository = workerRepository;
             this.documentService = documentService;
+            _workerService = workerService;
         }
 
         private async Task<IActionResult> CommonFunctionUpdate<T>(T model, Guid profileId, Func<Covenant.Common.Entities.Worker.WorkerProfile, Task<Result>> update) where T : class
@@ -118,12 +121,13 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 
         [HttpPost]
         [Route("ProfileImage")]
-        public async Task<IActionResult> ProfileImage(Guid profileId, [FromBody] CovenantFileModel model) =>
-            await CommonFunctionUpdate(model, profileId, async entity =>
-            {
-                entity.OnNewDocumentAdded += async (sender, args) => await _workerRepository.Create(args);
-                return await Task.FromResult(entity.PatchProfileImage(model));
-            });
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ProfileImage([FromRoute] Guid profileId)
+        {
+            var result = await _workerService.UpdateProfileImage(profileId);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
+        }
 
         [HttpPost]
         [Route("SinInformation")]

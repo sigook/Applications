@@ -444,10 +444,12 @@ export default {
           .catch((error) => reject(error.response));
       })
     },
-    createWorkerImage(context, { profileId, model }) {
+    createWorkerImage(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
         http
-          .post("/api/WorkerProfile/" + profileId + "/ProfileImage", model)
+          .post("/api/WorkerProfile/" + profileId + "/ProfileImage", formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
           .then((response) => {
             resolve(response.data);
           })
