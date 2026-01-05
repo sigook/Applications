@@ -24,7 +24,18 @@
     <section class="et-talents-wrapper" data-aos="fade-up" data-aos-delay="150">
       <div class="et-talents-banner">
         <div class="et-talents-img">
-          <img src="@/assets/images/talents-worker.jpg" alt="Talent" />
+          <picture>
+            <source
+              media="(max-width: 600px)"
+              srcset="@/assets/images/talents-worker-mobile.jpg"
+            />
+
+            <img
+              src="@/assets/images/talents-worker.jpg"
+              alt="Talent"
+            />
+          </picture>
+
           <div class="et-talents-overlay"></div>
         </div>
 
@@ -49,11 +60,11 @@
 </script>
 
 <style scoped>
-  /* CONTEXTO GENERAL (fondo azul que viene del hero) */
+  /* CONTEXTO GENERAL */
   .et-section {
     width: 100%;
-    background: #0f2f44;
-    background: linear-gradient(180deg, rgb(5, 23, 35) 43%, rgba(255, 255, 255, 1) 61%);
+    background: #0F2F44;
+    background: linear-gradient(180deg, #0F2F44 43%, rgba(255, 255, 255, 1) 61%);
     color: #ffffff;
     padding: 0;
     margin: 0;
@@ -65,7 +76,7 @@
     position: relative;
     width: 100%;
     overflow: hidden;
-    padding-top: 25px; /* altura de la franja verde oscura */
+    padding-top: 25px;
     border-top-right-radius: 125px;
   }
 
@@ -77,7 +88,6 @@
     border-top-right-radius: 130px;
   }
 
-  /* franja verde oscura superior curvada */
   .et-employers-wrapper::before {
     content: "";
     position: absolute;
@@ -100,68 +110,71 @@
     border-top-right-radius: 150px;
   }
 
-  /* bloque principal verde claro */
+  /* BLOQUE PRINCIPAL VERDE CLARO (Employers) */
   .et-employers {
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 14rem;
+    height: 16rem;
     background: #59dc76;
     border-radius: 0 150px 0 0;
-    padding: 40px 9vw 54px;
-    display: flex;
+    padding: 40px 0 54px; /* Sin padding lateral para usar todo el ancho */
+
+    /* GRID DE 2 COLUMNAS PARA CENTRADO PERFECTO */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50% y 50% */
+    gap: 80px; /* Separación entre flecha y texto */
     align-items: center;
-    justify-content: space-between;
-    gap: 40px;
     box-sizing: border-box;
   }
 
-  /* flecha grande a la izquierda */
+  /* Columna Izquierda (Flecha): Se alinea a la derecha (al centro de la pantalla) */
   .et-employers__left {
-    flex: 0 0 auto;
+    justify-self: end;
+    display: flex;
   }
 
   .et-employers__arrow {
-    font-size: 3.1rem;
-    font-weight: 600;
+    font-size: 4rem;
+    font-weight: 400;
   }
 
-  /* texto alineado a la derecha */
+  /* Columna Derecha (Texto): Se alinea a la izquierda (al centro de la pantalla) */
   .et-employers__right {
-    flex: 1;
+    justify-self: start;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
+    align-items: flex-start; /* Texto alineado a la izquierda */
+    text-align: left;
   }
 
   .et-employers__title {
-    margin: 0 0 8px;
-    font-size: 1.7rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
+    margin: 0 0 12px;
+    font-size: 2.8rem;
+    font-weight: 700; /* GROSOR MANTENIDO EN 700 */
+    letter-spacing: 0.05em;
+    line-height: 1.1;
   }
 
   .et-employers__divider {
-    width: 80px;
-    height: 2px;
+    width: 100px;
+    height: 3px;
     background: #ffffff;
-    opacity: 0.8;
-    margin-bottom: 10px;
+    opacity: 1;
+    margin-bottom: 12px;
   }
 
   .et-employers__text {
     margin: 0;
-    font-size: 0.96rem;
+    font-size: 1.1rem;
     line-height: 1.5;
   }
 
   /* ===================== FOR TALENTS ===================== */
 
-  /* Wrapper que mantiene continuidad del verde y crea la base gris */
   .et-talents-wrapper {
     position: relative;
-    margin-top: -20px; /* pequeño solape con la sección de arriba */
+    margin-top: -20px;
     width: 100%;
     padding: 60px 0 90px;
     background: linear-gradient(#59dc76 0 55%, #dedfe4 55% 100%);
@@ -169,31 +182,29 @@
     border-bottom-right-radius: 120px;
   }
 
-  /* Banner con la imagen (ocupa 100% del ancho) */
   .et-talents-banner {
     position: relative;
-    z-index: 1; /* por encima de las formas de fondo */
+    z-index: 1;
     width: 100%;
     top: 70px;
-    height: 25rem;
+    height: 28rem;
     border-radius: 150px 0 150px 0;
     overflow: hidden;
   }
 
-  /* imagen que llena todo el banner */
   .et-talents-img {
     position: absolute;
     inset: 0;
   }
 
+  .et-talents-img picture,
   .et-talents-img img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
     display: block;
+    object-fit: cover;
   }
 
-  /* overlay para oscurecer un poco */
   .et-talents-overlay {
     position: absolute;
     inset: 0;
@@ -204,47 +215,61 @@
     );
   }
 
-  /* contenido encima de la imagen */
+  /* CONTENIDO TALENTS */
   .et-talents-content {
     position: relative;
     z-index: 1;
     height: 100%;
-    padding: 32px 60px;
-    display: flex;
+    padding: 32px 0;
+
+    /* GRID DE 2 COLUMNAS PARA CENTRADO PERFECTO */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50% y 50% */
+    gap: 80px; /* Separación */
     align-items: center;
-    justify-content: space-between;
+
     box-sizing: border-box;
     color: #ffffff;
   }
 
+  /* Columna Izquierda (Texto): Se alinea a la derecha (hacia el centro) */
   .et-talents-text {
-    max-width: 360px;
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Alineamos los elementos a la derecha */
+    text-align: right;     /* Texto alineado a la derecha */
+    max-width: 450px;
   }
 
   .et-talents-title {
-    margin: 0 0 8px;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    margin: 0 0 12px;
+    font-size: 2.8rem;
+    font-weight: 700; /* GROSOR MANTENIDO EN 700 */
+    letter-spacing: 0.05em;
+    line-height: 1.1;
   }
 
   .et-talents-divider {
-    width: 80px;
-    height: 2px;
+    display: block;
+    width: 100px;
+    height: 3px;
     background: #ffffff;
-    opacity: 0.9;
-    margin-bottom: 10px;
+    opacity: 1;
+    margin-bottom: 12px;
   }
 
   .et-talents-subtitle {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     line-height: 1.6;
   }
 
+  /* Columna Derecha (Flecha): Se alinea a la izquierda (hacia el centro) */
   .et-talents-arrow {
-    font-size: 2.3rem;
-    font-weight: 600;
+    justify-self: start;
+    font-size: 4rem;
+    font-weight: 400;
     color: #59dc76;
   }
 
@@ -283,130 +308,182 @@
   }
 
   @media (max-width: 600px) {
-  /* Fondo general más simple en mobile */
-  .et-section {
-    background: #04141f;
+    /* Fondo general */
+    .et-section {
+      background: #0F2F44;
+    }
+
+    /* =================================
+      1. FOR EMPLOYERS (Tarjeta Arriba)
+    ================================= */
+
+    /* Reset de bordes y padding */
+    .et-employers-wrapper,
+    .et-employers-wrapper-2 {
+      padding-top: 0;
+      border-top-right-radius: 0;
+    }
+    .et-employers-wrapper::before,
+    .et-employers-wrapper-2::before {
+      display: none;
+    }
+
+    .et-employers {
+      margin-top: 0;
+      width: 100%;
+      /* Altura automática para ajustarse al contenido */
+      height: auto;
+      min-height: 24rem;
+      padding: 50px 24px; /* Más padding vertical */
+      border-radius: 0 80px 0 0;
+
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    /* TEXTO PRIMERO (Arriba) */
+    .et-employers__right {
+      order: 1;
+      width: 100%;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    /* Título más grande */
+    .et-employers__title {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 15px;
+    }
+
+    .et-employers__divider {
+      display: block;
+      margin-bottom: 20px;
+      width: 80px;
+      height: 3px;
+      background: #ffffff;
+      opacity: 1;
+    }
+
+    .et-employers__text {
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    /* FLECHA SEGUNDA (Abajo) */
+    .et-employers__left {
+      order: 2;
+      align-self: center;
+      margin-top: 10px;
+    }
+
+    .et-employers__arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    /* =================================
+      2. FOR TALENTS (Tarjeta Abajo)
+    ================================= */
+
+    .et-talents-wrapper {
+      margin-top: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #59dc76 40%, #ffffff 40%);
+      border-bottom-right-radius: 0;
+    }
+
+    .et-talents-banner {
+      top: 0;
+      width: 100%;
+      height: 30rem;
+      border-radius: 80px 0 80px 0;
+      overflow: hidden;
+      position: relative;
+      background: transparent;
+    }
+
+    .et-talents-img img {
+      object-position: center center;
+    }
+
+    /* Ajuste del overlay para que no oscurezca tanto la imagen */
+    .et-talents-overlay {
+      background: linear-gradient(
+        to right,
+        rgba(5, 10, 20, 0.6),
+        rgba(5, 10, 20, 0.2)
+      );
+    }
+
+    .et-talents-content {
+      position: absolute;
+      inset: 0;
+      padding: 50px 24px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* Alineado a la izquierda */
+      justify-content: flex-start;
+    }
+
+    .et-talents-text {
+      width: 100%;
+      text-align: left;
+    }
+
+    /* Título más grande */
+    .et-talents-title {
+      font-size: 2.4rem; /* Aumentado */
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 15px;
+    }
+
+    .et-talents-divider {
+      display: block;
+      width: 80px;
+      height: 3px;
+      background-color: #ffffff;
+      margin-bottom: 20px;
+      opacity: 1;
+    }
+
+    .et-talents-subtitle {
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    /* Flecha abajo al centro */
+    .et-talents-arrow {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid #59dc76;
+      background: transparent;
+      font-size: 2rem;
+      color: #59dc76;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
   }
-
-  /* ---------- FOR EMPLOYERS ---------- */
-
-  /* quitamos las franjas curvas de fondo en mobile */
-  .et-employers-wrapper,
-  .et-employers-wrapper-2 {
-    padding-top: 0;
-    border-top-right-radius: 0;
-  }
-
-  .et-employers-wrapper::before,
-  .et-employers-wrapper-2::before {
-    display: none;
-  }
-
-  /* tarjeta verde principal */
-  .et-employers {
-    margin-top: 0;
-    width: 100%;
-    height: 24rem;
-    padding: 32px 20px 44px;
-    border-radius: 0 80px 0 0;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .et-employers__right {
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .et-employers__title {
-    font-size: 1.7rem;
-    letter-spacing: 0.08em;
-  }
-
-  .et-employers__text {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  /* flecha en círculo centrada */
-  .et-employers__left {
-    align-self: center;
-    margin-top: 20px;
-  }
-
-  .et-employers__arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 74px;
-    height: 74px;
-    border-radius: 50%;
-    border: 3px solid #ffffff;
-    font-size: 2rem;
-    font-weight: 600;
-  }
-
-  /* ---------- FOR TALENTS ---------- */
-
-  /* quitamos gradiente raro y dejamos fondo liso */
-  .et-talents-wrapper {
-    margin-top: 0;
-    padding: 0;
-    background: #59DC76;
-    background: linear-gradient(180deg,rgba(89, 220, 118, 1) 52%, rgba(255, 255, 255, 1) 56%);
-    border-bottom-right-radius: 0;
-  }
-
-  /* tarjeta de talentos: se pega al bloque verde anterior */
-  .et-talents-banner {
-    top: 0;
-    width: 100%;
-    height: 24rem;
-    border-radius: 80px 0 80px 0;
-    overflow: hidden;
-  }
-
-  .et-talents-img img {
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .et-talents-content {
-    padding: 22px 22px 80px; /* espacio extra abajo para la flecha */
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-  }
-
-  .et-talents-title {
-    font-size: 1.7rem;
-    letter-spacing: 0.09em;
-  }
-
-  .et-talents-subtitle {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  /* flecha en círculo centrada al final de la tarjeta */
-  .et-talents-arrow {
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 74px;
-    height: 74px;
-    border-radius: 50%;
-    border: 3px solid #59dc76;
-    font-size: 2rem;
-    color: #59dc76;
-  }
-}
 
 </style>
 

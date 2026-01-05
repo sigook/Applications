@@ -1,0 +1,54 @@
+# Reusable template for calculating Azure App Service name based on environment
+# Usage:
+#   - template: templates/calculate-azure-appname.yml
+#     parameters:
+#       appNameVariableName: 'azureAppName'
+#       stagingAppName: 'myapp-staging'
+#       productionAppName: 'myapp'
+
+parameters:
+  - name: appNameVariableName
+    type: string
+    default: 'azureAppName'
+    displayName: 'Name of the output variable for Azure App Service name'
+
+  - name: stagingAppName
+    type: string
+    displayName: 'Azure App Service name for staging/dev environment'
+
+  - name: productionAppName
+    type: string
+    displayName: 'Azure App Service name for production/main environment'
+
+  - name: stepName
+    type: string
+    default: 'SetAppName'
+    displayName: 'Step name for output variable reference'
+
+steps:
+  - script: |
+      echo "========================================"
+      echo "Azure App Service Name Calculation"
+      echo "========================================"
+      echo "Branch: $(Build.SourceBranchName)"
+      echo "Source Branch: $(Build.SourceBranch)"
+
+      if [ "$(isDev)" = "True" ]; then
+        APP_NAME="${{ parameters.stagingAppName }}"
+        echo "✅ Detected: STAGING/DEV Environment"
+      else
+        APP_NAME="${{ parameters.productionAppName }}"
+        echo "✅ Detected: PRODUCTION/MAIN Environment"
+      fi
+
+      echo "----------------------------------------"
+      echo "Calculated Azure App Service Name: $APP_NAME"
+      echo "----------------------------------------"
+
+      # Set app name variable (both job-scoped and output for cross-job access)
+      echo "##vso[task.setvariable variable=${{ parameters.appNameVariableName }}]$APP_NAME"
+      echo "##vso[task.setvariable variable=${{ parameters.appNameVariableName }};isOutput=true]$APP_NAME"
+
+      echo "✅ Azure App Service name set successfully"
+    name: ${{ parameters.stepName }}
+    displayName: 'Calculate Azure App Service Name'

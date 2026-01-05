@@ -44,7 +44,6 @@
   height: 720px;
   border-radius: 50%;
   background-color: #32d26a;
-  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,6 +51,25 @@
   padding: 40px 40px 80px; /* mueve el texto un poco hacia arriba */
   z-index: 10;
 }
+
+/* --- NUEVO: CÍRCULO BLANCO (OUTLINE) --- */
+.contact-cta__circle::after {
+  content: '';
+  position: absolute;
+  width: 720px; /* Mismo tamaño que el verde */
+  height: 720px;
+  border-radius: 50%;
+  border: 2px solid #ffffff; /* Borde blanco */
+
+  /* Posicionamiento para el efecto "desfasado" */
+  top: -10px;  /* Un poco más arriba que el verde (-50px) */
+  left: 55%;   /* Un poco a la derecha del centro (50%) */
+  transform: translateX(-50%);
+
+  z-index:1.2; /* Detrás del círculo verde si quieres, o -1 si quieres que se crucen */
+  pointer-events: none;
+}
+
 
 /* Texto dentro del círculo */
 .contact-cta__title {
@@ -70,7 +88,7 @@
 /* BANDA AZUL DE FONDO */
 .contact-cta__blue {
   position: relative;
-  background-color: #020d1e;
+  background-color: #0F2F44;
   padding: 260px 0 140px;  /* deja espacio para que el círculo se meta dentro */
   margin-top: 180px;       /* baja la banda azul para que el círculo sobresalga por arriba */
 }
@@ -114,6 +132,16 @@
     height: 440px;
     top: 140px;
     padding: 32px 28px 64px;
+  }
+
+  /* --- NUEVO: CÍRCULO BLANCO (OUTLINE) --- */
+  .contact-cta__circle::after {
+    width: 400px; /* Mismo tamaño que el verde */
+    height: 400px;
+    /* Posicionamiento para el efecto "desfasado" */
+    top: -10px;  /* Un poco más arriba que el verde (-50px) */
+    left: 60%;   /* Un poco a la derecha del centro (50%) */
+    transform: translateX(-50%);
   }
 
   .contact-cta__title {

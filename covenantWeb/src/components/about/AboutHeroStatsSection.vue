@@ -26,7 +26,7 @@
         </p>
 
         <button class="about__cta">
-          Get in Touch
+          Get in Touch >
         </button>
       </div>
     </div>
@@ -82,7 +82,7 @@
 
 .about {
   position: relative;
-  background-color: #020d1e;
+  background-color: #0F2F44;
   color: #ffffff;
   padding-bottom: 70px;
 }
@@ -113,14 +113,14 @@
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.2),
-    rgba(2, 13, 30, 0.95)
+    #0F2F44
   );
 }
 
 .about__hero-content {
   position: relative;
   z-index: 1;
-  max-width: 520px;
+  max-width: 820px;
   padding: 120px 8vw 80px;
 }
 
@@ -138,7 +138,7 @@
 .about__text {
   font-size: 0.95rem;
   line-height: 1.7;
-  max-width: 460px;
+  max-width: 860px;
   margin-bottom: 28px;
   color: #e4edf6;
 }
@@ -208,16 +208,22 @@
 }
 
 .about__card:nth-child(4) {
+  position: relative;
+  z-index: 1;
   border-radius: 0 220px 220px 220px;
+  overflow: visible;
 }
 
 /* Sutil contorno para la card 4 como en el diseño */
 .about__card:nth-child(4)::after {
   content: '';
   position: absolute;
-  inset: 10px;
+  inset: 0;
+  right: -10px;
+  top: -10px;
   border-radius: inherit;
   border: 2px solid rgba(255, 255, 255, 0.1);
+  transform: translate(25px, 0);
 }
 
 /* contenido interno */
@@ -262,6 +268,11 @@
 
   .about__stats-grid {
     max-width: 480px;
+  }
+
+  /* Sutil contorno para la card 4 como en el diseño */
+  .about__card:nth-child(4)::after {
+    transform: translate(5px, 0);
   }
 }
 

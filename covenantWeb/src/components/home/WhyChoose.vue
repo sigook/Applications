@@ -79,7 +79,7 @@
 .why-title {
   flex: 0 0 40%;
   margin: 0;
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -123,12 +123,12 @@
 
 @media (max-width: 768px) {
   .why-section {
-    min-height: 20rem;
+    min-height: 25rem;
     padding: 40px 0 50px;
   }
 
   .why-card {
-    border-radius: 80px 0 80px 0;
+    border-radius: 100px 0 100px 0;
     background-position: center top;
   }
 
@@ -145,12 +145,12 @@
     flex: none;
     font-size: 2.5rem;
     line-height: 1.2;
-    margin: 0 0 6px;
+    margin: 50px 0 6px;
   }
 
   .why-text {
     max-width: 260px;
-    font-size: 1rem;                    
+    font-size: 1rem;
     line-height: 1.5;
   }
 

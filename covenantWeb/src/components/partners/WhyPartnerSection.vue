@@ -61,7 +61,7 @@
 
 <style scoped>
 .why-partner {
-  background: #05162d;
+  background: #0F2F44;
   padding: 70px 0;
   color: #ffffff;
 }
@@ -74,8 +74,8 @@
 
 .why-partner__title {
   text-align: center;
-  font-size: 1.7rem;
-  margin-bottom: 40px;
+  font-size: 2rem;
+  margin-bottom: 60px;
 }
 
 /* grid 2x2 en desktop */
@@ -104,9 +104,9 @@
 
 /* Icono a la izquierda */
 .why-card__icon {
-  flex: 0 0 56px;
-  width: 56px;
-  height: 56px;
+  flex: 0 0 90px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   background: #05162d;      /* azul oscuro de la web */
   display: flex;
@@ -128,13 +128,13 @@
 }
 
 .why-card__title {
-  font-size: 1rem;
+  font-size: 1.3rem;
   font-weight: 700;
   margin: 0 0 4px 0;
 }
 
 .why-card__text {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   line-height: 1.6;
   margin: 0;
   color: inherit;

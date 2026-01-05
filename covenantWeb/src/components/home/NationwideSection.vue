@@ -120,11 +120,11 @@
 }
 
 .nw-image--map {
-  max-width: 420px;
+  max-width: 500px;
 }
 
 .nw-image--icon {
-  max-width: 360px;
+  max-width: 500px;
 }
 
 /* texto */
@@ -258,7 +258,7 @@
 
   .nw-image--map,
   .nw-image--icon {
-    max-width: 260px;
+    max-width: 360px;
   }
 }
 

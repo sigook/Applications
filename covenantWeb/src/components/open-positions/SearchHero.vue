@@ -112,17 +112,20 @@ const handleSearch = () => {
 </script>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+}
+
 .search-hero {
-  background-color: #05162d; /* Azul oscuro del tema */
+  background-color: #0F2F44;
   width: 100%;
-  min-height: 85vh; /* Altura considerable para el hero */
+  min-height: 85vh;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Curva inferior izquierda grande */
   border-bottom-left-radius: 250px;
-  padding: 120px 0 100px; /* Padding top para compensar navbar */
+  padding: 120px 0 100px;
   overflow: hidden;
 }
 
@@ -175,6 +178,7 @@ const handleSearch = () => {
   z-index: 2;
   top: -5%;
   left: 7%;
+  pointer-events: none; /* Para que no bloquee clicks */
 }
 
 /* Círculo Verde */
@@ -196,9 +200,12 @@ const handleSearch = () => {
   background: white;
   border-radius: 12px;
   padding: 30px;
-  width: 360px; /* Ancho fijo para que quepa en el círculo */
+  width: 380px; /* Aumenté un poco el ancho para que respire mejor */
+  max-width: 100%; /* Seguridad para pantallas pequeñas */
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   text-align: center;
+  position: relative;
+  z-index: 10;
 }
 
 .form-header h3 {
@@ -206,6 +213,7 @@ const handleSearch = () => {
   font-weight: 700;
   color: #171717;
   margin-bottom: 5px;
+  margin-top: 0;
 }
 .form-header p {
   font-size: 0.85rem;
@@ -217,6 +225,7 @@ const handleSearch = () => {
 .form-group {
   margin-bottom: 15px;
   text-align: left;
+  width: 100%; /* Asegura que el grupo ocupe el espacio disponible */
 }
 
 .form-group label {
@@ -229,7 +238,7 @@ const handleSearch = () => {
 
 .form-group input,
 .form-group select {
-  width: 100%;
+  width: 100%; /* Ocupa el 100% del padre */
   padding: 10px 15px;
   border: 1px solid #eee;
   border-radius: 8px;
@@ -237,30 +246,35 @@ const handleSearch = () => {
   background: #fafafa;
   outline: none;
   transition: border-color 0.3s;
+  /* CORRECCIÓN CRÍTICA: Asegura que padding y borde estén dentro del ancho */
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   border-color: #32d26a;
+  background: #fff;
 }
 
 /* Fila de selects */
 .form-row {
   display: flex;
   gap: 15px;
+  width: 100%;
 }
 .form-group.half {
-  flex: 1;
+  flex: 1; /* Se reparten el espacio 50/50 */
+  min-width: 0; /* Evita que el flex item se desborde si el contenido es muy ancho */
 }
 
 /* Select de país con bandera */
 .country-select {
   position: relative;
+  width: 100%;
 }
 .country-select select {
-  padding-right: 30px; /* Espacio para la bandera si fuera imagen de fondo */
-  text-align: right; /* Alineación del texto para dar espacio a la izq si quieres */
-  appearance: none; /* Reset nativo */
+  padding-right: 35px;
+  /* appearance: none; Quitado para mantener la flecha nativa en algunos navegadores si se prefiere, o déjalo si usas un icono custom */
 }
 .flag-icon {
   position: absolute;
@@ -269,6 +283,7 @@ const handleSearch = () => {
   transform: translateY(-50%);
   pointer-events: none;
   font-size: 1.2rem;
+  z-index: 2;
 }
 
 /* Botón Search */
@@ -283,6 +298,7 @@ const handleSearch = () => {
   cursor: pointer;
   margin-top: 10px;
   transition: transform 0.2s, background-color 0.2s;
+  box-sizing: border-box;
 }
 
 .btn-search:hover {
@@ -306,6 +322,7 @@ const handleSearch = () => {
   .hero-graphic {
     width: 450px;
     height: 450px;
+    margin-top: 40px;
   }
 
   .decorative-ring {
@@ -316,13 +333,20 @@ const handleSearch = () => {
 
 @media (max-width: 600px) {
   .hero-graphic {
-    width: 340px;
-    height: 340px;
+    width: 320px;
+    height: 320px;
   }
 
+  /* Ajuste de la tarjeta en móvil */
   .form-card {
     width: 280px;
     padding: 20px;
+  }
+
+  /* CORRECCIÓN MÓVIL: Apilar los campos de la fila inferior */
+  .form-row {
+    flex-direction: column;
+    gap: 0; /* Quitamos gap horizontal, usamos margin-bottom del form-group */
   }
 
   .hero-title {
@@ -330,11 +354,12 @@ const handleSearch = () => {
   }
 
   .decorative-ring {
-    display: none; /* Ocultar anillo en móvil si molesta */
+    display: none;
   }
 
   .search-hero {
     border-bottom-left-radius: 50px;
+    padding-top: 100px;
   }
 }
 </style>

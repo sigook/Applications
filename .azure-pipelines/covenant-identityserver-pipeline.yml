@@ -70,18 +70,11 @@ stages:
       - job: Build_Docker_Image
         displayName: 'Build and Push Docker Image'
         steps:
-          - script: |
-              echo "Calculating TAG based on branch $(Build.SourceBranchName)..."
-              if [ "$(isDev)" = True ]; then
-                tag=latest_staging
-              else
-                tag=latest_production
-              fi
-              echo "##vso[task.setvariable variable=tag]$tag"
-              echo "##vso[task.setvariable variable=tag;isOutput=true]$tag"
-              echo "TAG calculated: $tag"
-            name: SetTag
-            displayName: 'Calculate Docker Tag'
+          # Calculate Docker tag using template
+          - template: templates/calculate-docker-tag.yml
+            parameters:
+              tagVariableName: 'tag'
+              stepName: 'SetTag'
 
           - task: Docker@2
             displayName: 'Build Docker Image'
@@ -108,17 +101,19 @@ stages:
         variables:
           imageTag: $[ dependencies.Build_Docker_Image.outputs['SetTag.tag'] ]
         steps:
+          # Calculate Azure App Service name using template
+          - template: templates/calculate-azure-appname.yml
+            parameters:
+              appNameVariableName: 'azureAppName'
+              stagingAppName: 'sigook-accounts-staging'
+              productionAppName: 'sigook-accounts'
+              stepName: 'SetAppName'
+
           - script: |
-              if [ "$(isDev)" = True ]; then
-                azureAppName="sigook-accounts-staging"
-              else
-                azureAppName="sigook-accounts"
-              fi
-              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
-              echo "Deploying to $azureAppName"
+              echo "Deploying to $(azureAppName)"
               echo "Using tag: $(imageTag)"
               echo "Build ID: $(Build.BuildId)"
-            displayName: 'Calculate Deployment Variables'
+            displayName: 'Display Deployment Info'
 
           - task: AzureWebAppContainer@1
             displayName: 'Deploy Container to Azure App Service'

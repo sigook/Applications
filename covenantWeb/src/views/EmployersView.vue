@@ -27,7 +27,7 @@ import EmployersMainSection from '@/components/employers/EmployersMainSection.vu
 
 <style scoped>
 .employers-page {
-  background-color: #05162d;
+  background-color: #0F2F44;
   min-height: 100vh;
 }
 </style>

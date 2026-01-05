@@ -33,7 +33,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 
 <style scoped>
 .partner-contact {
-  background: #05162d;
+  background: #0F2F44;
   padding: 80px 0 90px;
   overflow: hidden;
 }
@@ -55,8 +55,8 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 }
 
 .partner-contact__circle--main {
-  width: 720px;
-  height: 720px;
+  width: 860px;
+  height: 860px;
   background: #32d26a;
   top: 10px;
   left: 50%;
@@ -65,8 +65,8 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 }
 
 .partner-contact__circle--outline {
-  width: 720px;
-  height: 720px;
+  width: 860px;
+  height: 860px;
   border: 2px solid #ffffff;
   top: 0;
   left: 55%;
@@ -85,14 +85,14 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 }
 
 .partner-contact__title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #05162d;
   margin: 0 0 6px 0;
 }
 
 .partner-contact__subtitle {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: #0f2b3f;
   margin: 0;
 }
@@ -105,7 +105,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   max-width: 420px;
   background: #ffffff;
   border-radius: 18px;
-  padding: 28px 24px 24px;
+  padding: 38px 34px 34px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   margin-top: 220px;        /* hace que la card “baje” y se monte sobre el círculo */
 }

@@ -50,7 +50,7 @@
   width: 100%;
   min-height: 500px;
   overflow: hidden;
-  background-color: #020d1e;
+  background-color: #0F2F44;
   color: #ffffff;
   border-radius: 150px 0 0 0;
 }

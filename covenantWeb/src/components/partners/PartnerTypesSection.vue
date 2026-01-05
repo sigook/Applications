@@ -28,44 +28,40 @@
       <h2 class="partner-types__title">Business Partner</h2>
 
       <div class="partner-types__grid">
-        <!-- Columna izquierda -->
+
         <article class="partner-types__card">
-          <div class="partner-types__image-circle">
-            <!-- Cambia la imagen -->
-            <img
-              src="@/assets/images/partner-toronto.jpg"
-              alt="City skyline"
-            />
-          </div>
+          <div class="partner-types__img-wrapper">
+
+            <div class="partner-types__img-main">
+              <img src="@/assets/images/partner-toronto.jpg" alt="City skyline" />
+            </div>
+
+            <div class="decor-circle-green-right"></div> <div class="decor-outline-left"></div>       <div class="decor-dot-blue-top"></div>       <div class="decor-dot-green-bottom"></div>   </div>
 
           <p class="partner-types__text">
             As a Business Partner, you remain independent, managing your own
             relationships and pace, while
-            <strong>Covenant handles contracts, compliance, payroll, and
-              client support.</strong>
+            <strong>Covenant handles contracts, compliance, payroll, and client support.</strong>
             Once a client begins working with us, you participate in the
             ongoing revenue from each successful placement or project.
           </p>
         </article>
 
-        <!-- Columna derecha -->
         <article class="partner-types__card">
-          <div class="partner-types__image-circle">
-            <!-- Cambia la imagen -->
-            <img
-              src="@/assets/images/partner-business-woman.jpg"
-              alt="Business partner"
-            />
-          </div>
+          <div class="partner-types__img-wrapper">
+
+            <div class="partner-types__img-main">
+              <img src="@/assets/images/partner-business-woman.jpg" alt="Business partner" />
+            </div>
+
+            <div class="decor-circle-green-left"></div>  <div class="decor-outline-right"></div>      <div class="decor-semicircle-blue"></div>    <div class="decor-dot-green-far-right"></div></div>
 
           <p class="partner-types__text">
             This model is ideal for
-            <strong>business developers, industry professionals, or
-              consultants</strong>
+            <strong>business developers, industry professionals, or consultants</strong>
             who want to expand their reach and income by partnering with a
             licensed, established staffing and talent management company.
-            Together, we build success through trust, fairness, and shared
-            results.
+            Together, we build success through trust, fairness, and shared results.
           </p>
         </article>
       </div>
@@ -82,17 +78,16 @@
     >
       <h2 class="partner-types__title">Recruiter Partner</h2>
 
-      <!-- ahora usamos el grid normal, igual que Business -->
       <div class="partner-types__grid">
-        <!-- Columna izquierda -->
         <article class="partner-types__card">
-          <div
-            class="partner-types__image-circle partner-types__image-circle--decor"
-          >
-            <img
-              src="@/assets/images/partner-recruiter-flag.png"
-              alt="Canada flag"
-            />
+          <div class="partner-types__img-wrapper">
+             <div class="partner-types__img-main">
+              <img src="@/assets/images/partner-recruiter-flag.png" alt="Canada flag" />
+            </div>
+             <div class="decor-circle-green-right"></div>
+            <div class="decor-outline-left"></div>
+            <div class="decor-dot-blue-top"></div>
+            <div class="decor-dot-green-bottom"></div>
           </div>
 
           <p class="partner-types__text">
@@ -104,15 +99,15 @@
           </p>
         </article>
 
-        <!-- Columna derecha -->
         <article class="partner-types__card">
-          <div
-            class="partner-types__image-circle partner-types__image-circle--decor"
-          >
-            <img
-              src="@/assets/images/partner-recruiter-meeting.png"
-              alt="Recruiter meeting"
-            />
+           <div class="partner-types__img-wrapper">
+             <div class="partner-types__img-main">
+               <img src="@/assets/images/partner-recruiter-meeting.png" alt="Recruiter meeting" />
+            </div>
+             <div class="decor-circle-green-left"></div>
+            <div class="decor-outline-right"></div>
+            <div class="decor-semicircle-blue"></div>
+            <div class="decor-dot-green-far-right"></div>
           </div>
 
           <p class="partner-types__text">
@@ -135,13 +130,13 @@
 <script setup lang="ts">
   import { ref } from 'vue'
 
-  const activeTab = ref<'business' | 'recruiter'>('business') // ajusta las opciones si tienes más tabs
+  const activeTab = ref<'business' | 'recruiter'>('business')
   </script>
 
 <style scoped>
 .partner-types {
   background: #32D26A;
-  background: linear-gradient(180deg,rgba(50, 210, 106, 1) 43%, rgba(5, 22, 45, 1) 61%);
+  background: linear-gradient(180deg,rgba(50, 210, 106, 1) 43%, #0F2F44 61%);
   padding: 0;
 }
 
@@ -190,7 +185,7 @@
 .partner-types__content {
   max-width: 100%;
   margin: 0 auto;
-  padding: 0;
+  padding: 30px 0 0 0;
   border-radius: 0 65px 65px 0;
   background: #ffffff;
   height: auto;
@@ -201,7 +196,7 @@
   font-size: 2rem;
   color: #59DC76;
   margin: 0;
-  padding: 40px 0 0 0;
+  padding: 40px 0 40px 0;
 }
 
 .partner-types__grid {
@@ -219,20 +214,165 @@
   text-align: center;
 }
 
-.partner-types__image-circle {
+/* =========================================
+   NUEVOS ESTILOS DE IMAGEN Y DECORACIÓN
+========================================= */
+
+/* Wrapper principal que posiciona todo el conjunto */
+.partner-types__img-wrapper {
+  position: relative;
   width: 260px;
   height: 260px;
-  border-radius: 50%;
-  margin: 0 auto 22px;
-  position: relative;
-  overflow: hidden;
-  background: #32d26a;
+  margin: 0 auto 40px; /* Aumenté el margen inferior para dar aire a las decoraciones */
+  z-index: 1;
 }
 
-.partner-types__image-circle img {
+/* El círculo central con la foto */
+.partner-types__img-main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 10; /* La foto va por encima de los fondos grandes */
+  /* Sombra suave opcional para separar del fondo */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.partner-types__img-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* === ELEMENTOS DECORATIVOS COMUNES === */
+[class^="decor-"] {
+  position: absolute;
+  border-radius: 50%;
+}
+
+/* Colores base */
+.bg-green { background-color: #5ce07d; } /* Verde brillante de la captura */
+.bg-blue { background-color: #05162d; }  /* Azul oscuro */
+.border-outline { border: 1px solid #e0e0e0; }
+
+/* === DECORACIONES TARJETA IZQUIERDA (Toronto) === */
+
+/* 1. Círculo Verde Grande (Detrás, derecha) */
+.decor-circle-green-right {
+  width: 100%;
+  height: 100%;
+  background-color: #5ce07d;
+  top: 0;
+  left: 60px; /* Desplazado a la derecha */
+  z-index: 0; /* Detrás de la foto */
+}
+
+/* 2. Círculo Outline (Detrás, izquierda) */
+.decor-outline-left {
+  width: 110%;
+  height: 110%;
+  border: 1px solid #cccccc;
+  top: -5%;
+  left: -75%; /* Desplazado bastante a la izquierda */
+  z-index: 0;
+}
+
+/* 3. Punto Azul Oscuro (Arriba Izquierda, superpuesto) */
+.decor-dot-blue-top {
+  width: 100px;
+  height: 100px;
+  background-color: #05162d;
+  top: 10px;
+  left: -15px;
+  z-index: 1; /* Encima de la foto */
+}
+
+/* 4. Punto Verde Pequeño (Abajo Izquierda, superpuesto) */
+.decor-dot-green-bottom {
+  width: 60px;
+  height: 60px;
+  background-color: #5ce07d;
+  bottom: -40px;
+  left: -100px;
+  z-index: 11; /* Encima de la foto */
+}
+
+
+/* === DECORACIONES TARJETA DERECHA (Mujer) === */
+
+/* 1. Círculo Verde Grande (Detrás, izquierda) */
+.decor-circle-green-left {
+  width: 100%;
+  height: 100%;
+  background-color: #5ce07d;
+  top: 0;
+  left: -70px; /* Desplazado a la izquierda */
+  z-index: 0;
+}
+
+/* 2. Círculo Outline (Detrás, derecha) */
+.decor-outline-right {
   width: 115%;
   height: 115%;
-  object-fit: cover;
+  border: 1px solid #cccccc;
+  top: -10%;
+  left: 20%; /* Desplazado a la derecha */
+  z-index: 0;
+}
+
+/* 3. Semicírculo/Círculo Azul (Arriba Izquierda, detrás) */
+.decor-semicircle-blue {
+  width: 140px;
+  height: 140px;
+  background-color: #05162d;
+  top: -20px;
+  left: -10px;
+  z-index: 1; /* Detrás del verde incluso */
+}
+
+/* 4. Punto Verde Lejano (Arriba Derecha) */
+.decor-dot-green-far-right {
+  width: 80px;
+  height: 80px;
+  background-color: #5ce07d;
+  top: 10px;
+  right: -100px; /* Muy a la derecha, flotando */
+  z-index: 11;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  /* En móvil reducimos un poco el wrapper para que las decoraciones no se salgan de pantalla */
+  .partner-types__img-wrapper {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 30px;
+  }
+
+  /* Ajustamos tamaños de decoraciones proporcionalmente si es necesario */
+  .decor-outline-left { left: -45%; }
+  .decor-circle-green-right { left: 40px; }
+
+  /* 3. Punto Azul Oscuro (Arriba Izquierda, superpuesto) */
+.decor-dot-blue-top {
+  width: 100px;
+  height: 100px;
+  background-color: #05162d;
+  top: 10px;
+  left: -25px;
+  z-index: 1; /* Encima de la foto */
+}
+
+/* 4. Punto Verde Pequeño (Abajo Izquierda, superpuesto) */
+.decor-dot-green-bottom {
+  width: 40px;
+  height: 40px;
+  background-color: #5ce07d;
+  bottom: -25px;
+  left: -30px;
+  z-index: 11; /* Encima de la foto */
+}
 }
 
 .partner-types__text {
@@ -252,7 +392,7 @@
 
 .partner-types__cta {
   border: none;
-  padding: 18px 100px;
+  padding: 18px 130px;
   border-radius: 999px;
   background: #32d26a;
   color: #ffffff;

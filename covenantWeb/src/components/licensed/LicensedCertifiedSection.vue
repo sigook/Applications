@@ -8,6 +8,11 @@
           alt="Toronto skyline"
         />
         <div class="licensed__hero-overlay"></div>
+        <img
+          class="licensed__hero-icon"
+          src="@/assets/images/medal-icon-placeholder.png"
+          alt=""
+        />
       </div>
 
       <div class="licensed__hero-content">
@@ -113,7 +118,7 @@
 
 .licensed {
   position: relative;
-  background-color: rgba(7, 24, 50, 0.95);
+  background-color: #0F2F44;
   color: #ffffff;
   padding-bottom: 60px;
   border-radius: 0 0 200px 0;
@@ -145,22 +150,56 @@
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.15),
-    rgba(7, 24, 50, 0.95)
+    #0F2F44
   );
+}
+
+.licensed__hero-icon {
+  position: absolute;
+  z-index: 2;
+  /* Ajustamos la posición para que baje y no quede tan pegado a la esquina */
+  top: -10%;      /* Antes era 5%, ahora baja más */
+  right: 10%;    /* Antes era 2%, ahora se mueve más a la izquierda */
+
+  /* --- REDUCCIÓN DE TAMAÑO --- */
+
+  max-width: fit-content;  /* Reducido de 650px a 300px */
+  /* --------------------------- */
+
+  height: auto;
+  opacity: 0.05; /* Opacidad sutil */
+  pointer-events: none;
 }
 
 .licensed__hero-content {
   position: relative;
-  z-index: 1;
-  max-width: 520px;
-  padding: 120px 8vw 60px;
+  z-index: 10;
+  max-width: 620px;
+  padding: 200px 8vw 80px;
 }
 
 .licensed__title {
   font-size: 2.8rem;
   line-height: 1.1;
-  margin-bottom: 20px;
   font-weight: 700;
+  /* --- CAMBIOS AQUÍ --- */
+  /* 1. Necesitamos posición relativa para que la línea absoluta se guíe por este contenedor */
+  position: relative;
+  /* 2. Añadimos espacio interno abajo para que quepa la línea */
+  padding-bottom: 20px;
+  /* 3. Reducimos un poco el margen externo inferior para compensar el padding añadido */
+  margin-bottom: 15px;
+}
+
+/* Linea Blanca */
+.licensed__title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 110px;
+  height: 2px;  /* El grosor de la línea */
+  background-color: #ffffff; /* Color blanco */
 }
 
 .licensed__title span {
@@ -178,7 +217,7 @@
 .licensed__cta {
   border: none;
   outline: none;
-  padding: 12px 32px;
+  padding: 16px 36px;
   border-radius: 999px;
   background-color: #ffffff;
   color: #020d1e;
@@ -225,6 +264,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   aspect-ratio: 1 / 1;
   cursor: default;
   transition: background-color 0.2s ease, color 0.2s ease,
@@ -264,6 +304,7 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  max-width: 250px;
 }
 
 .licensed__card-title {
@@ -304,6 +345,15 @@
     padding: 100px 24px 50px;
   }
 
+  /* Ajustes del icono para tablet */
+  .licensed__hero-icon {
+     top: 20px;
+     right: -5%; /* Lo sacamos un poco a la derecha */
+
+     max-width: fit-content;
+     opacity: 0.05; /* Un poco más sutil para no pelear con el texto centrado */
+  }
+
   .licensed__title {
     font-size: 2.2rem;
   }
@@ -333,6 +383,14 @@
     max-width: 360px;
     text-align: left; /* puedes poner center si lo prefieres */
     padding: 90px 20px 40px;
+  }
+
+  /* Ajustes del icono para móvil */
+  .licensed__hero-icon {
+     top: 0px;
+     right: -30%;
+     max-width: fit-content;
+     opacity: 0.05; /* Muy sutil en móvil */
   }
 
   .licensed__title {
