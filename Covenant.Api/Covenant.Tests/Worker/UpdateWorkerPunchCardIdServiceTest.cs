@@ -6,6 +6,7 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;
@@ -53,7 +54,9 @@ namespace Covenant.Tests.Worker
                 Mock.Of<ILogger<WorkerService>>(),
                 Mock.Of<IWorkerAdapter>(),
                 Mock.Of<IValidator<WorkerProfileCreateModel>>(),
-                Mock.Of<IHttpContextAccessor>());
+                Mock.Of<IHttpContextAccessor>(),
+                Mock.Of<IFilesContainer>(),
+                Mock.Of<IDocumentService>());
         }
         [Fact]
         public async Task Invalid_Profile()
