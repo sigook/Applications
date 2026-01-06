@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "_LayoutLogin";
+}
+<div class="main bg-login">
+    <div class="logo">
+        @await Html.PartialAsync("_Logo")
+    </div>
+    <div class="main-container path-login">
+        <div class="white-container">
+            <div>
+                <div class="login-top">
+                    @await Html.PartialAsync("_Logo")
+                    <p>@ViewData["Message"]</p>
+                </div>
+
+                <button class="background-btn full-btn orange-button login-button">
+                    <a href="@ViewData["WebClientUrl"]"> Go to Sigook</a>
+                </button>
+
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("_LogoBottom")
+</div>

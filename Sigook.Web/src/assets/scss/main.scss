@@ -1,0 +1,132 @@
+@import "variables";
+@import "mixins";
+@import url("https://fonts.googleapis.com/css?family=Raleway");
+
+html,
+body,
+form {
+  margin: 0;
+  padding: 0;
+  font-family: 'Raleway', sans-serif;
+  font-weight: normal;
+  scroll-behavior: smooth;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.main {
+  display: block;
+  flex: 1 0 auto;
+}
+
+.app-section-bg {
+  background: url("assets/images/app_mobile_home_bg.png") no-repeat center;
+  background-size: contain;
+
+  @include only-mobile {
+    background-size: cover;
+  }
+}
+
+.app-section-font {
+  margin: 0;
+  width: 100%;
+  font-size: 28px;
+
+  @include only-mobile {
+    font-size: 20px;
+  }
+
+  @include desktop {
+    font-size: 42px;
+  }
+}
+
+.start-working-section {
+  background: url("assets/images/start_working_home_section.png") center no-repeat;
+  background-size: cover;
+}
+
+.grid-home-looking-section {
+  display: grid;
+
+  @include tablet {
+    grid-template-columns: 50% 50%;
+    align-items: center;
+  }
+}
+
+.looking-for-worker-section {
+  background: url("assets/images/looking_for_worker_home_section.png") center no-repeat;
+  background-size: cover;
+
+  > div {
+    > div {
+      @include notebook {
+        margin-top: 2rem !important;
+      }
+
+      @include desktop {
+        margin-top: 2.5rem !important;
+      }
+
+      @media (min-width: #{1695px}) {
+        margin-top: 3.5rem !important;
+      }
+
+      @include superdesktop {
+        margin-top: 2rem !important;
+      }
+    }
+  }
+
+  a:hover {
+    color: $white;
+    text-decoration: none;
+  }
+}
+
+.businesses-staff-form {
+  display: grid;
+
+  @include tablet {
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto auto;
+    grid-gap: 12px;
+  }
+
+  @include only-mobile {
+    .control-borderer {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+#sigookMainMenu .nav-link {
+  font-weight: 600;
+  color: $grey-dark-font!important;
+  text-decoration: none;
+
+  &:hover {
+    color: $grey-dark!important;
+  }
+
+  &.menu-active {
+    color: $grey-light!important;  
+  }
+  
+  @include tablet {
+    padding: 0.5rem !important;
+  }
+}
+
+#sigookMainMenu ul {
+  @include only-mobile {
+    display: flex;
+    flex-direction: column;
+  }
+}

@@ -185,7 +185,7 @@
   }
 
   .partner-hero__title {
-    font-size: 3.2rem;
+    font-size: 3.1rem;
   }
 
   .partner-hero__title::after {
@@ -254,7 +254,7 @@
   }
 
   .partner-hero__title {
-    font-size: 3.6rem;
+    font-size: 3.1rem;
   }
 }
 

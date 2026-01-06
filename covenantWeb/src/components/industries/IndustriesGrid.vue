@@ -25,7 +25,12 @@
               >
                 +
               </button>
-              <p class="ind-card__label">{{ industry.label }}</p>
+              <p
+                class="ind-card__label"
+                :class="{ 'ind-card__label--hidden': activeId === industry.id }"
+              >
+                {{ industry.label }}
+              </p>
             </div>
           </div>
 
@@ -155,24 +160,24 @@
 
 <style scoped>
 .ind-grid {
-  background: linear-gradient(to bottom, #020d1e, #06152c);
+  background: #0F2F44;
   padding: 40px 0 80px;
 }
 
 .ind-grid__inner {
-  max-width: 1400px;              /* más ancho */
+  max-width: 1600px;              /* más ancho */
   margin: 0 auto;
   padding: 0 10px;                /* menos margen lateral */
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 11px;
+  gap: 30px;
 }
 
 /* ========== CARD CON GIRO 3D ========= */
 
 .ind-card {
   position: relative;
-  height: 500px;
+  height: 550px;
   perspective: 1200px; /* necesario para el efecto 3D */
   overflow: hidden;
 
@@ -230,8 +235,8 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.35),
-    rgba(0, 0, 0, 0.85)
+    rgba(0, 0, 0, 0.05),
+    rgba(0, 0, 0, 0.45)
   );
 }
 
@@ -252,8 +257,8 @@
 
 /* icono verde que sirve de botón (frente y dorso) */
 .ind-card__icon {
-  width: 76px;
-  height: 76px;
+  width: 86px;
+  height: 86px;
   border-radius: 999px;
   border: none;
   outline: none;
@@ -324,6 +329,44 @@
   max-width: 260px;
   opacity: 0.95;
 }
+
+
+/* caras */
+.ind-card__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* fix iOS */
+}
+
+/* frontal */
+.ind-card__face--front {
+}
+
+/* trasera */
+.ind-card__face--back {
+  background: #334e60;
+  color: #ffffff;
+  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
+  height: 100%;
+
+  /* opcional: la escondemos hasta que se gire */
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* cuando está girada, mostramos la cara trasera */
+.ind-card__inner--flipped .ind-card__face--back {
+  opacity: 1;
+}
+
+/* ===== título frontal oculto al girar ===== */
+.ind-card__label--hidden {
+  opacity: 0;
+}
+
 
 /* Responsive */
 @media (max-width: 1024px) {

@@ -1,0 +1,73 @@
+# Reusable template for .NET Build and Test
+# Usage:
+#   - template: templates/dotnet-build-test.yml
+#     parameters:
+#       buildProjects: '**/*.sln'
+#       runUnitTests: true
+#       unitTestProjects: '**/Covenant.Tests/*.csproj'
+#       runIntegrationTests: false
+
+parameters:
+  - name: buildProjects
+    type: string
+    displayName: 'Projects or solutions to build'
+
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
+    displayName: 'Build configuration (Release/Debug)'
+
+  - name: runUnitTests
+    type: boolean
+    default: true
+    displayName: 'Run unit tests'
+
+  - name: unitTestProjects
+    type: string
+    default: ''
+    displayName: 'Unit test project pattern'
+
+  - name: runIntegrationTests
+    type: boolean
+    default: false
+    displayName: 'Run integration tests'
+
+  - name: integrationTestProjects
+    type: string
+    default: ''
+    displayName: 'Integration test project pattern'
+
+steps:
+  # Authenticate with Azure Artifacts for private NuGet feeds
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate with Azure Artifacts'
+
+  # Build Solution/Projects
+  - task: DotNetCoreCLI@2
+    displayName: 'Build ${{ parameters.buildConfiguration }}'
+    inputs:
+      command: 'build'
+      projects: ${{ parameters.buildProjects }}
+      arguments: '--configuration ${{ parameters.buildConfiguration }}'
+
+  # Run Unit Tests (if enabled)
+  - ${{ if eq(parameters.runUnitTests, true) }}:
+    - task: DotNetCoreCLI@2
+      displayName: 'Run Unit Tests'
+      inputs:
+        command: 'test'
+        projects: ${{ parameters.unitTestProjects }}
+        arguments: '--logger "console;verbosity=detailed" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        testRunTitle: 'Unit Tests'
+        publishTestResults: true
+
+  # Run Integration Tests (if enabled)
+  - ${{ if eq(parameters.runIntegrationTests, true) }}:
+    - task: DotNetCoreCLI@2
+      displayName: 'Run Integration Tests'
+      inputs:
+        command: 'test'
+        projects: ${{ parameters.integrationTestProjects }}
+        arguments: '--logger "console;verbosity=detailed" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        testRunTitle: 'Integration Tests'
+        publishTestResults: true

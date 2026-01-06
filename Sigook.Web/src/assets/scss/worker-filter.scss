@@ -1,0 +1,118 @@
+.filter-list.margin-h8
+.worker-filter {
+    button.open-filters {
+        border: 1px solid #d8d8d8;
+        border-radius: 20px;
+        padding: 0 20px;
+        height: 34px;
+        line-height: 2;
+        background: #f5f5f5;
+        text-align: center;
+        margin-left: 0;
+        font-size: 14px;
+        color: #a5a5a5;
+    }
+
+    .modal-container {
+        width: 80%;
+    }
+
+    .flex {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        input {
+            width: initial
+        }
+        input[type="text"]{
+            width: calc(100% - 20px);
+        }
+        .col-4 {
+            flex-basis: 33%;
+        }
+    }
+
+    .contain-check {
+        display: block;
+        height: auto;
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            opacity: 1;
+        }
+    }
+}
+
+@media (max-width: 767px){
+    .filter-list.margin-h8
+    .worker-filter {
+        display: flex;
+        .modal-container {
+            width: 100%;
+        }
+        input[type="radio"],
+        input[type="checkbox"] {
+            min-width: auto;
+            transform: scale(1.5);
+        }
+
+        .flex.border-bottom > div{
+            width: 100%;
+            display: flex;
+        }
+
+        .modal-overflow {
+            max-height: calc(100vh - 130px);
+        }
+    }
+}
+
+/*
+* Worker SideBar For Company and Agency
+*/
+
+.container-section-filter {
+  .contain-check label {
+    display: block;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  .contain-yes-no label{
+    display: inline-block;
+    width: auto;
+    margin-right: 30px;
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  /*Small selectors to show in filter*/
+
+  .ml-20 {
+    margin-left: 20px;
+  }
+
+  .small-selector {
+    max-width: calc(100% - 20px);
+  }
+
+  .height-125 {
+    height: auto;
+    max-height: 215px;
+    overflow: auto;
+  }
+}
+
+@media(max-width: 767px) {
+  .worker-filter-mobile {
+    padding: 20px;
+    background: white;
+    width: calc(75% + 20px);
+    position: absolute;
+    z-index: 99;
+    top: -20px;
+    left: -20px;
+  }
+}

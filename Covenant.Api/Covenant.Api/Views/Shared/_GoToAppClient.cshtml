@@ -1,0 +1,6 @@
+@using Covenant.Common.Utils.Extensions
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+<a href="@Configuration?.GetWebClientUrl()" style="text-decoration: none; display: block; border: 2px solid #21b7ff; color: #21b7ff; width: 230px; padding: 10px; margin: 20px auto; background: transparent; font-size: 14px;">
+    GO TO @await Html.PartialAsync("_Sigook")
+</a>

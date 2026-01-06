@@ -1,0 +1,11 @@
+@model Covenant.Common.Models.Worker.OnNewWorkerAgencyTemplateViewModel
+
+@if (Model.ApprovedToWork)
+{
+    @await Html.PartialAsync("_GenericBody",$"Welcome to SIGOOK you are approved to work and you can apply to any new requests")    
+}
+else
+{
+    @await Html.PartialAsync("_GenericBody",$"Welcome to SIGOOK at the moment you are not approved to work but very soon we will verify your information so you can start applying to new requests soon")
+}
+

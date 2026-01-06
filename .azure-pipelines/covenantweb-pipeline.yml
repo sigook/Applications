@@ -7,8 +7,8 @@ name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      - main
-      - master
+      # - main
+      # - master
       - dev
   paths:
     include:
@@ -17,12 +17,11 @@ trigger:
     exclude:
       - covenantWeb/**/*.md
 
-# PR trigger
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
 pr:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:
@@ -37,6 +36,9 @@ variables:
   nodeVersion: '20.x'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  # For PRs, determine environment based on target branch
+  targetBranch: $[coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranchName'])]
 
 stages:
   - stage: CI_CD
@@ -47,21 +49,43 @@ stages:
       # ============================================
       - job: Build_and_Test
         displayName: 'Build and Test Application'
-        condition: or(eq(variables['isDev'], true), eq(variables['isMain'], true))
+        # Run on direct pushes to main/dev OR on Pull Requests
+        condition: or(eq(variables['isDev'], true), eq(variables['isMain'], true), eq(variables['isPR'], true))
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
 
           # Determine environment and build command
           - script: |
-              echo "Calculating environment based on branch $(Build.SourceBranchName)..."
-              if [ "$(isDev)" = True ]; then
-                environment=staging
-                buildCommand=build:staging
+              echo "Build Reason: $(Build.Reason)"
+              echo "Source Branch: $(Build.SourceBranch)"
+
+              # For Pull Requests, use target branch to determine environment
+              if [ "$(Build.Reason)" = "PullRequest" ]; then
+                targetBranch="$(System.PullRequest.TargetBranch)"
+                echo "Pull Request detected"
+                echo "Target Branch: $targetBranch"
+
+                # Determine environment based on PR target branch
+                if [[ "$targetBranch" == *"main"* ]] || [[ "$targetBranch" == *"master"* ]]; then
+                  environment=production
+                  buildCommand=build:production
+                else
+                  environment=staging
+                  buildCommand=build:staging
+                fi
               else
-                environment=production
-                buildCommand=build:production
+                # Regular push - use source branch
+                echo "Direct push to $(Build.SourceBranchName)"
+                if [ "$(isDev)" = True ]; then
+                  environment=staging
+                  buildCommand=build:staging
+                else
+                  environment=production
+                  buildCommand=build:production
+                fi
               fi
+
               echo "##vso[task.setvariable variable=environment]$environment"
               echo "##vso[task.setvariable variable=environment;isOutput=true]$environment"
               echo "##vso[task.setvariable variable=buildCommand]$buildCommand"
@@ -155,9 +179,10 @@ stages:
                 echo "Build contents:"
                 ls -lh $(workingDirectory)/dist
 
-          # Archive for deployment
+          # Archive for deployment (only on direct pushes, not PRs)
           - task: ArchiveFiles@2
             displayName: 'Archive Application'
+            condition: ne(variables['Build.Reason'], 'PullRequest')
             inputs:
               rootFolderOrFile: '$(workingDirectory)'
               includeRootFolder: false
@@ -165,9 +190,10 @@ stages:
               archiveFile: '$(Build.ArtifactStagingDirectory)/covenantweb-$(environment)-$(Build.BuildId).zip'
               replaceExistingArchive: true
 
-          # Publish artifacts
+          # Publish artifacts (only on direct pushes, not PRs)
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Build Artifacts'
+            condition: ne(variables['Build.Reason'], 'PullRequest')
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: 'covenantweb-drop'
@@ -181,11 +207,17 @@ stages:
               script: |
                 echo ""
                 echo "✅ Build completed successfully!"
-                echo "📦 Artifact: covenantweb-$(environment)-$(Build.BuildId).zip"
                 echo "🌍 Environment: $(environment)"
-                echo ""
-                echo "Artifact size:"
-                ls -lh $(Build.ArtifactStagingDirectory)/*.zip
+
+                # Show artifact info only if created (not on PRs)
+                if [ "$(Build.Reason)" != "PullRequest" ]; then
+                  echo "📦 Artifact: covenantweb-$(environment)-$(Build.BuildId).zip"
+                  echo ""
+                  echo "Artifact size:"
+                  ls -lh $(Build.ArtifactStagingDirectory)/*.zip
+                else
+                  echo "📋 PR validation completed - no artifacts created"
+                fi
 
       # ============================================
       # Job 2: Deploy to Azure
@@ -193,7 +225,8 @@ stages:
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
         dependsOn: Build_and_Test
-        condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+        # Only deploy on direct pushes to main/dev, NOT on Pull Requests
+        condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)), ne(variables['isPR'], true))
         variables:
           environment: $[ dependencies.Build_and_Test.outputs['SetEnvironment.environment'] ]
         steps:

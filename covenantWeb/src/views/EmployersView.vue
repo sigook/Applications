@@ -22,13 +22,12 @@ import MainFooter from '@/components/layout/MainFooter.vue'
 import PartnerContactSection from '@/components/partners/PartnerContactSection.vue'
 import RolesWeRecruit from '@/components/employers/RolesWeRecruit.vue'
 import IndustriesCTA from '@/components/employers/IndustriesCTA.vue'
-// El nuevo componente unificado
 import EmployersMainSection from '@/components/employers/EmployersMainSection.vue'
 </script>
 
 <style scoped>
 .employers-page {
-  background-color: #05162d;
+  background-color: #0F2F44;
   min-height: 100vh;
 }
 </style>

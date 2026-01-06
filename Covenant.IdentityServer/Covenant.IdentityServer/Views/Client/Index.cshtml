@@ -1,0 +1,57 @@
+﻿@model IEnumerable<IdentityServer4.EntityFramework.Entities.Client>
+<h1>Clients</h1>
+<a asp-controller="Client" asp-action="Create" class="btn btn-primary">Add New Client</a>
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Client Id</td>
+                <td>Client Name</td>
+                <td>Enabled</td>
+                <td>Client Uri</td>
+                <td>Require Pkce</td>
+                <td>Allow Offline Access</td>
+                <td></td>
+        </thead>
+        <tbody>
+            @foreach (var client in Model)
+            {
+                <tr>
+                    <td>@client.Id</td>
+                    <td>@client.ClientId</td>
+                    <td>@client.ClientName</td>
+                    @if (client.Enabled)
+                    {
+                        <td>Yes</td>
+                    }
+                    else
+                    {
+                        <td>No</td>
+                    }
+                    <td>@client.ClientUri</td>
+                    @if (client.RequirePkce)
+                    {
+                        <td>Yes</td>
+                    }
+                    else
+                    {
+                        <td>No</td>
+                    }
+                    @if (client.AllowOfflineAccess)
+                    {
+                        <td>Yes</td>
+                    }
+                    else
+                    {
+                        <td>No</td>
+                    }
+                    <td>
+                        <a asp-controller="Client" asp-action="Edit" asp-route-id="@client.Id" class="btn btn-primary btn-xs">Edit</a>
+                        <a asp-controller="Client" asp-action="Detail" asp-route-id="@client.Id" class="btn btn-info btn-xs">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

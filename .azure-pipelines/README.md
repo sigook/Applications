@@ -6,10 +6,18 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 
 ```
 .azure-pipelines/
-├── sigookapp-pipeline.yml      # Pipeline para Flutter mobile app (placeholder)
-├── covenantweb-pipeline.yml    # Pipeline para Vue.js website (completo)
-├── templates/                  # Templates reutilizables (futuro)
-└── README.md                   # Esta guía
+├── sigookapp-pipeline.yml                 # Pipeline para Flutter mobile app (placeholder)
+├── sigook-web-pipeline.yml                # Pipeline para Sigook.Web Vue.js app (completo)
+├── covenantweb-pipeline.yml               # Pipeline para CovenantWeb marketing (completo)
+├── covenant-api-pipeline.yml              # Pipeline para .NET API (completo)
+├── covenant-identityserver-pipeline.yml   # Pipeline para IdentityServer (completo)
+├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
+├── templates/                             # Templates reutilizables
+│   ├── dotnet-setup.yml                   # Template: Instalar .NET SDK
+│   ├── dotnet-build-test.yml              # Template: Build y Tests
+│   ├── calculate-docker-tag.yml           # Template: Calcular Docker tags
+│   └── calculate-azure-appname.yml        # Template: Calcular nombre de App Service
+└── README.md                              # Esta guía
 ```
 
 ## 🎯 Características Clave
@@ -19,7 +27,11 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 Cada pipeline **solo se ejecuta cuando hay cambios en su aplicación específica**:
 
 - **sigookapp-pipeline.yml**: Se activa solo con cambios en `SigookApp/**`
+- **sigook-web-pipeline.yml**: Se activa solo con cambios en `Sigook.Web/**`
 - **covenantweb-pipeline.yml**: Se activa solo con cambios en `covenantWeb/**`
+- **covenant-api-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/**` (excepto Covenant.Common)
+- **covenant-identityserver-pipeline.yml**: Se activa solo con cambios en `Covenant.IdentityServer/**`
+- **covenant-common-nuget-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/Covenant.Common/**` (solo rama dev)
 
 **Beneficios:**
 - ✅ Ahorro de tiempo de build (no ejecuta pipelines innecesarios)
@@ -37,6 +49,151 @@ Los pipelines detectan automáticamente el ambiente basado en la rama:
 | `feature/*` | Staging | `build:staging` |
 
 **No hay stages duplicados** - un solo pipeline maneja ambos ambientes con variables condicionales.
+
+### Estrategia de Validación de PRs
+
+Los pipelines implementan una **estrategia optimizada** para evitar duplicación de tests:
+
+**✅ Pull Requests hacia `dev`:**
+- Pipeline **SÍ se ejecuta** con validación completa (build, tests, linting)
+- Garantiza que nada roto llegue a dev
+- Quality gate principal del proyecto
+
+**❌ Pull Requests hacia `main`:**
+- Pipeline **NO se ejecuta**
+- Se confía en que dev ya validó el código
+- Evita duplicación innecesaria de tests
+- Ahorra tiempo y recursos
+
+**🔒 Push directo a `dev` o `main`:**
+- Pipeline **SÍ se ejecuta** con todo el flujo (build, test, deploy)
+- `dev` → Deploy a Staging
+- `main` → Deploy a Production
+
+**Ventajas:**
+- ✅ Evita correr tests 2-3 veces para el mismo código
+- ✅ Feedback más rápido en PRs hacia main
+- ✅ Ahorra minutos de Azure DevOps
+- ✅ Dev actúa como el quality gate principal
+
+**Requisito:** Branch protection configurado en `main` para requerir PRs y approvals (ver sección de configuración).
+
+### Templates Reutilizables
+
+Los pipelines de .NET usan **templates reutilizables** para evitar duplicación de código y mantener consistencia:
+
+#### 📄 `templates/dotnet-setup.yml`
+
+Template para instalar .NET SDK:
+
+```yaml
+# Uso:
+- template: templates/dotnet-setup.yml
+  parameters:
+    sdkVersion: '6.0.400'
+```
+
+**Parámetros:**
+- `sdkVersion` (string): Versión del SDK a instalar (default: '6.0.400')
+
+#### 📄 `templates/dotnet-build-test.yml`
+
+Template para build y ejecución de tests:
+
+```yaml
+# Uso:
+- template: templates/dotnet-build-test.yml
+  parameters:
+    buildProjects: '**/*.sln'
+    buildConfiguration: 'Release'
+    runUnitTests: true
+    unitTestProjects: '**/Covenant.Tests/*.csproj'
+    runIntegrationTests: false
+```
+
+**Parámetros:**
+- `buildProjects` (string, requerido): Pattern de proyectos/soluciones a compilar
+- `buildConfiguration` (string): Configuración de build (default: 'Release')
+- `runUnitTests` (bool): Ejecutar unit tests (default: true)
+- `unitTestProjects` (string): Pattern de proyectos de unit tests
+- `runIntegrationTests` (bool): Ejecutar integration tests (default: false)
+- `integrationTestProjects` (string): Pattern de proyectos de integration tests
+
+**Beneficios:**
+- ✅ Código DRY (Don't Repeat Yourself)
+- ✅ Fácil mantenimiento (cambios en un solo lugar)
+- ✅ Consistencia entre pipelines
+- ✅ Configuración flexible mediante parámetros
+- ✅ Autentica automáticamente con Azure Artifacts para feeds privados de NuGet
+
+#### 📄 `templates/calculate-docker-tag.yml`
+
+Template para calcular Docker tags y ambiente basado en la rama:
+
+```yaml
+# Uso básico:
+- template: templates/calculate-docker-tag.yml
+  parameters:
+    tagVariableName: 'tag'
+    stepName: 'SetTag'
+
+# Uso con nombres personalizados:
+- template: templates/calculate-docker-tag.yml
+  parameters:
+    tagVariableName: 'dockerTag'
+    environmentVariableName: 'buildEnvironment'
+    stepName: 'SetDockerTag'
+    stagingTag: 'latest_staging'
+    productionTag: 'latest_production'
+```
+
+**Parámetros:**
+- `tagVariableName` (string): Nombre de la variable de salida para el tag (default: 'tag')
+- `environmentVariableName` (string): Nombre de la variable de salida para el environment (default: 'environment')
+- `stagingTag` (string): Tag de Docker para staging/dev (default: 'latest_staging')
+- `productionTag` (string): Tag de Docker para production/main (default: 'latest_production')
+- `stagingEnvironment` (string): Nombre del ambiente para staging (default: 'staging')
+- `productionEnvironment` (string): Nombre del ambiente para production (default: 'production')
+- `stepName` (string): Nombre del step para referenciar outputs desde otros jobs (default: 'SetTag')
+
+**Nota:** El template siempre establece dos variables: el tag de Docker y el nombre del ambiente.
+
+**Beneficios:**
+- ✅ Elimina código repetitivo de cálculo de tags
+- ✅ Lógica centralizada de detección de ambiente (dev vs main)
+- ✅ Flexible para diferentes nombres de variables
+- ✅ Usado en Covenant.Api, Covenant.IdentityServer, y Sigook.Web
+
+#### 📄 `templates/calculate-azure-appname.yml`
+
+Template para calcular el nombre del Azure App Service basado en el ambiente:
+
+```yaml
+# Uso:
+- template: templates/calculate-azure-appname.yml
+  parameters:
+    appNameVariableName: 'azureAppName'
+    stagingAppName: 'myapp-staging'
+    productionAppName: 'myapp'
+    stepName: 'SetAppName'
+```
+
+**Parámetros:**
+- `appNameVariableName` (string): Nombre de la variable de salida para el App Service (default: 'azureAppName')
+- `stagingAppName` (string, requerido): Nombre del App Service para staging/dev
+- `productionAppName` (string, requerido): Nombre del App Service para production/main
+- `stepName` (string): Nombre del step para referenciar outputs (default: 'SetAppName')
+
+**Ejemplos de uso en pipelines:**
+- Covenant.Api: `sigook-api-staging` / `sigook-api`
+- Covenant.IdentityServer: `sigook-accounts-staging` / `sigook-accounts`
+- Sigook.Web: `sigook-web-staging` / `sigook`
+
+**Beneficios:**
+- ✅ Elimina duplicación de lógica de selección de App Service
+- ✅ Nombres de App Service centralizados y fáciles de actualizar
+- ✅ Consistencia en deployment targets
+- ✅ Reduce errores de deployment al ambiente incorrecto
 
 ## 🚀 Configuración Inicial en Azure DevOps
 
@@ -60,6 +217,35 @@ Los pipelines detectan automáticamente el ambiente basado en la rama:
 1. Repetir proceso anterior
 2. Path: /.azure-pipelines/sigookapp-pipeline.yml
 3. Rename pipeline a: "SigookApp-CI/CD"
+```
+
+#### Pipeline 3: Sigook.Web
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/sigook-web-pipeline.yml
+3. Rename pipeline a: "Sigook.Web-CI/CD"
+```
+
+#### Pipeline 4: Covenant.Api
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-api-pipeline.yml
+3. Rename pipeline a: "Covenant.Api-CI/CD"
+```
+
+#### Pipeline 5: Covenant.IdentityServer
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-identityserver-pipeline.yml
+3. Rename pipeline a: "Covenant.IdentityServer-CI/CD"
+```
+
+#### Pipeline 6: Covenant.Common (NuGet)
+```
+1. Repetir proceso anterior
+2. Path: /.azure-pipelines/covenant-common-nuget-pipeline.yml
+3. Rename pipeline a: "Covenant.Common-NuGet"
+4. ⚠️ Este pipeline solo se ejecuta en rama dev cuando hay cambios en Covenant.Common
 ```
 
 ### Paso 2: Crear Environments
@@ -173,6 +359,145 @@ Cuando estés listo para implementar el build completo de Flutter, el pipeline d
 - `flutter build apk/aab` con flavors
 - Firma de APK con keystore
 - Publicación a Firebase App Distribution o Play Store
+
+### Sigook.Web Pipeline
+
+**Archivo:** `sigook-web-pipeline.yml`
+
+**Propósito:** Aplicación web principal de Sigook (Vue.js 2) desplegada como contenedor Docker.
+
+**Stages:**
+1. **Build and Validate** - Validación y Linting
+   - Instala Node.js 16.x
+   - Usa caché para node_modules
+   - Linting con ESLint
+   - Validación de build
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Replace tokens (versión en index.html y version.json)
+   - Build de imagen Docker multi-stage (Node.js → Nginx)
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service Container
+   - Tags: `latest_staging` o `latest_production`
+
+**Tecnología:**
+- Vue.js 2 con vue-cli-service
+- Node.js 16 para build
+- Nginx stable-alpine para serving
+- Docker multi-stage build
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Sigook.Web/**`
+- Pull Requests a `dev` (NO a main)
+- Excluye: archivos markdown
+
+**Deployment Targets:**
+- Staging: `sigook-web-staging.azurewebsites.net`
+- Production: `sigook.azurewebsites.net`
+
+**Build Arguments:**
+- `ENV=staging` o `ENV=production` (usado en Dockerfile para ejecutar `npm run staging` o `npm run production`)
+
+### Covenant.Api Pipeline
+
+**Archivo:** `covenant-api-pipeline.yml`
+
+**Stages:**
+1. **Build and Test** - Compilación y Quality Gate
+   - Instala .NET SDK 6.0.400 (usando template)
+   - Build de la solución completa
+   - Corre Unit Tests
+   - Corre Integration Tests
+   - Usa templates reutilizables
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Build de imagen Docker
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service (staging o production)
+   - Tags: `latest_staging` o `latest_production`
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Covenant.Api/**`
+- Pull Requests a `main`, `master`, o `dev`
+- Excluye: archivos markdown
+
+**Deployment Targets:**
+- Staging: `sigook-api-staging.azurewebsites.net`
+- Production: `sigook-api.azurewebsites.net`
+
+### Covenant.IdentityServer Pipeline
+
+**Archivo:** `covenant-identityserver-pipeline.yml`
+
+**Propósito:** Servidor de identidad basado en IdentityServer4 para autenticación y autorización centralizada.
+
+**Stages:**
+1. **Build and Test** - Compilación y Quality Gate
+   - Instala .NET SDK 6.0.400 (usando template)
+   - Build de la solución completa
+   - Corre Unit Tests
+   - Usa templates reutilizables
+   - Solo se ejecuta en PRs o en push a dev
+
+2. **Build Docker and Deploy** - Dockerización y Deployment
+   - Build de imagen Docker con PAT para NuGet privado
+   - Push a Azure Container Registry (ACR)
+   - Deploy a Azure App Service Container
+   - Tags: `latest_staging` o `latest_production`
+
+**Tecnología:**
+- IdentityServer4 (.NET 6.0)
+- Docker multi-stage build
+- Azure Artifacts NuGet feed (requiere PAT)
+
+**Triggers:**
+- Push a `main`, `master`, o `dev` con cambios en `Covenant.IdentityServer/**`
+- Pull Requests a `dev` (NO a main)
+- Excluye: archivos markdown y templates
+
+**Deployment Targets:**
+- Staging: `sigook-accounts-staging.azurewebsites.net`
+- Production: `sigook-accounts.azurewebsites.net`
+
+**Variables Requeridas:**
+- `PatSigookPackages`: Personal Access Token para Azure Artifacts (usado como build argument en Docker)
+
+### Covenant.Common NuGet Pipeline
+
+**Archivo:** `covenant-common-nuget-pipeline.yml`
+
+**Propósito:** Publicar el paquete NuGet `Covenant.Common` cuando hay cambios en la librería compartida.
+
+**Stages:**
+1. **Build, Test, and Publish NuGet**
+   - **Quality Gate Job**:
+     - Instala .NET SDK (usando template)
+     - Build de la solución completa
+     - Corre Unit Tests (garantiza calidad antes de publicar)
+     - Usa templates reutilizables
+
+   - **Pack and Publish Job**:
+     - Pack del proyecto Covenant.Common
+     - Autentica con Azure Artifacts
+     - Publica a feed `sigook/Covenant.Common`
+     - Versión automática basada en build number
+
+**Triggers:**
+- ⚠️ **Solo rama `dev`**
+- Solo cuando hay cambios en `Covenant.Api/Covenant.Common/**`
+- Excluye: archivos markdown
+- **No se ejecuta en PRs** (solo pushes directos)
+
+**Características Especiales:**
+- ✅ **Quality Gate obligatorio**: Los tests deben pasar antes de publicar
+- ✅ **Path-based trigger**: Solo se ejecuta cuando Covenant.Common cambia
+- ✅ **Versión automática**: Usa el build number como versión del paquete
+- ✅ **Templates compartidos**: Reutiliza templates de .NET
+
+**Consumir el paquete:**
+```bash
+dotnet add package Covenant.Common --version <Build.BuildNumber>
+```
 
 ## 🔧 Deployment Configuration
 

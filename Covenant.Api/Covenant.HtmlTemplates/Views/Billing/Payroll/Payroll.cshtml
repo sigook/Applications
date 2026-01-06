@@ -1,0 +1,129 @@
+@using System.Globalization
+@using Covenant.Common.Utils;
+@using Covenant.HtmlTemplates.Views.Billing.Invoice
+@using Covenant.HtmlTemplates.Views.Billing.Payroll
+@using Covenant.HtmlTemplates.Views.Shared
+@using Microsoft.Extensions.Configuration
+@model Covenant.HtmlTemplates.Views.Billing.Payroll.PayrollViewModel
+@inject IConfiguration _configuration
+<div style="margin: 0 auto; padding: 5px;" class="container">
+    <table width="100%">
+        <tr>
+            <td style="width: 210px">
+                @if (!string.IsNullOrEmpty(Model.AgencyLogoFileName))
+                {
+                    <img width="200px" src="@await Helpers.DownloadFileInBase64(_configuration.GetFilesBaseUrl(), Model.AgencyLogoFileName)" alt="sigook" style="max-height: 85px; object-fit: contain; object-position: 0 0;">
+                }
+            </td>
+            <td>@await Html.PartialAsync("_Slogan")</td>
+        </tr>
+    </table>
+
+    <div style="margin: 10px 0; padding: 15px; display: inline-block; float: left" width="73%">
+
+        <div>
+            <h4 style="margin: 0;">@Model.AgencyFullName</h4>
+            <span style="font-weight: 200;">@Model.AgencyLocation</span> <br>
+            <span style="font-weight: 200;">@Model.AgencyPhone@(Model.AgencyPhoneExt.HasValue ? string.Concat(" Ext: ", Model.AgencyPhoneExt) : "")</span> <br>
+            <span style="font-weight: 200;"></span> <br>
+        </div>
+        <div style="margin: 15px 0 0">
+            <div style="margin-bottom: 3px;">
+                <b> Worker Full Name: </b><span style="font-weight: 200;">@Model.WorkerFullName</span>
+            </div>
+
+            <div style="margin-bottom: 3px;">
+                <b> Type of work: </b><span style="font-weight: 200;">@Model.TypeOfJob</span>
+            </div>
+
+            <div style="margin-bottom: 3px;">
+                <b> Dates of work: </b><span style="font-weight: 200;">@Model.StartDate.ToString("D",CultureInfo.InvariantCulture) - @Model.EndDate.ToString("D",CultureInfo.InvariantCulture)</span>
+            </div>
+
+            <div style="margin-bottom: 3px;">
+                @if (Model.PaymentDate != default)
+                {
+                    <b> Payment date: </b>
+                    <span style="font-weight: 200;">@Model.PaymentDate.ToString("D",CultureInfo.InvariantCulture)</span>
+                }
+            </div>
+
+            <div style="margin-bottom: 3px;">
+                <b> Email: </b><span style="font-weight: 200;"> @Model.WorkerEmail</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: inline-block;  float: right; border: 2px solid #21b7ff; width: 27%; padding: 8px; box-sizing: border-box; margin-bottom: 20px; margin-top: 20px;">
+        <h4 style="text-align: center; color: #21b7ff; margin: 7px 0;">@Model.DocumentName?.ToUpper()</h4>
+        <p>
+            <b>@Model.DocumentName # </b> @Model.PayrollNumber
+        </p>
+        <p>
+            <b>Date:</b> @Model.CreatedAt.PayStubDateDisplay()
+        </p>
+    </div>
+
+    <table width="100%" border="1" style="border-collapse: collapse; border: 1px solid white;">
+        <col width="10%">
+        <col width="30%">
+        <col width="10%">
+        <col width="25%">
+        <col width="25%">
+
+        <thead style="color: #fff; font-weight: bold;">
+            <tr>
+                <th style="background: #577533; padding: 8px; border-radius: 14px 0 0 0 ;">Item no.</th>
+                <th style="background: #577533; padding: 8px;">Description</th>
+                <th style="background: #577533; padding: 8px;">Qty</th>
+                <th style="background: #577533; padding: 8px;">Unit price</th>
+                <th style="background: #577533; padding: 8px; border-radius: 0 14px  0 0 ;">Total</th>
+            </tr>
+        </thead>
+        <tbody style="background: #CFE2AA;">
+            @for (var i = 0; i < Model.Table1Items.Count(); i++)
+            {
+                <tr>
+                    <td style="padding: 8px; text-align: right;">@(i + 1)</td>
+                    <td style="padding: 8px">@Model.Table1Items.ElementAt(i).Description</td>
+                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).Quantity.ToString("F2")</td>
+                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).UnitPrice.ToString("C")</td>
+                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).Total.ToString("C")</td>
+                </tr>
+            }
+            <tr>
+                <td style="padding: 8px; border-radius: 0 0 0 14px; text-align: right;"></td>
+                <td style="padding: 8px"></td>
+                <td style="padding: 8px; text-align: right;"></td>
+                <td style="padding: 8px; text-align: right;"></td>
+                <td style="padding: 8px; border-radius: 0 0 14px 0; text-align: right;"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div>
+
+        <table style="margin-top: 16px; display: inline-table; width: 50%; vertical-align: bottom;float: right">
+            <col width="50%">
+            <col width="50%">
+            <tbody style="background: #CFE2AA">
+                @{
+                    int lenghtTable2 = Model.Table2Items.Count();
+                }
+                @for (var i = 0; i < lenghtTable2; i++)
+                {
+                    <tr style="@( i + 1 == lenghtTable2 ? "background-color: #A4CB7C;" : "" )">
+                        <td style="padding: 8px; @Model.GetBorderRadiosTable2(i).left">
+                            <strong>@Model.Table2Items.ElementAt(i).Label</strong>
+                        </td>
+                        <td style="padding: 8px; text-align: right; @Model.GetBorderRadiosTable2(i).right">
+                            @Model.Table2Items.ElementAt(i).Value
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div style="clear: both;">
+    </div>
+    @await Html.PartialAsync("_PowerBy")
+</div>

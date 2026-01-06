@@ -42,7 +42,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 /* bloque azul oscuro donde vive el círculo verde */
 .ind-contact__circle {
   position: relative;
-  background: #06152c;
+  background: #0F2F44;
   padding:  40px 0;
   display: flex;
   flex-direction: column;
@@ -60,6 +60,25 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   top: -50px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* --- NUEVO: CÍRCULO BLANCO (OUTLINE) --- */
+/* Usamos ::after para crear el borde sin tocar el HTML */
+.ind-contact__circle::after {
+  content: '';
+  position: absolute;
+  width: 720px; /* Mismo tamaño que el verde */
+  height: 720px;
+  border-radius: 50%;
+  border: 2px solid #ffffff; /* Borde blanco */
+
+  /* Posicionamiento para el efecto "desfasado" */
+  top: -65px;  /* Un poco más arriba que el verde (-50px) */
+  left: 52%;   /* Un poco a la derecha del centro (50%) */
+  transform: translateX(-50%);
+
+  z-index:1.2; /* Detrás del círculo verde si quieres, o -1 si quieres que se crucen */
+  pointer-events: none;
 }
 
 /* headline dentro del círculo (Get in Touch!) */
@@ -121,6 +140,11 @@ import ContactForm from '@/components/layout/ContactForm.vue'
     height: 420px;
     top: 0px;
   }
+  .ind-contact__circle::after {
+    width: 420px;
+    height: 420px;
+    top: 0px;
+  }
 
   .ind-contact__title {
     font-size: 1.6rem;
@@ -134,6 +158,12 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 
 @media (max-width: 480px) {
   .ind-contact__circle::before {
+    width: 360px;
+    height: 360px;
+    top: 0px;
+  }
+
+  .ind-contact__circle::after {
     width: 360px;
     height: 360px;
     top: 0px;

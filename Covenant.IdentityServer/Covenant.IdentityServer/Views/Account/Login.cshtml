@@ -1,0 +1,105 @@
+@using Covenant.IdentityServer.Controllers.Account.Models
+@model LoginViewModel
+@{
+    Layout = "_LayoutLogin";
+}
+<div class="main bg-login">
+    <div>
+        <environment include="Development">
+            <h1 class="env-name">DEVELOPMENT - @Context.Request.Host</h1>
+        </environment>
+        <environment include="Staging">
+            <h1 class="env-name">STAGING - @Context.Request.Host</h1>
+            <p>@Model.ClientUri</p>
+        </environment>
+        <environment include="QA">
+            <h1 class="env-name"></h1>
+        </environment>
+        <environment include="Covenant">
+            <img class="env-img" src="~/assets/images/logo-covenant.gif" alt="Covenant" />
+        </environment>
+    </div>
+
+    <div class="logo"></div>
+    <div class="main-container path-login">
+        <div class="white-container">
+            <div>
+                <div class="login-top">
+                    @if (Model.ShowLinkHome)
+                    {
+                        <a href="@Model.ClientUri">
+                            @await Html.PartialAsync("_Logo")
+                        </a>
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_Logo")
+                    }
+
+                    <p>Sign in your account</p>
+                </div>
+
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div class="float-label icon-left icon-email" id="label-login">
+                        <input id="username" class="input-underline" asp-for="Username" required autofocus />
+                        <label>Email</label>
+                    </div>
+
+                    <div class="float-label icon-left icon-password" id="label-password">
+                        <input class="input-underline" asp-for="Password" autocomplete="off" type="password" id="password" required />
+                        <label>Password</label>
+                    </div>
+
+                    @if (Model.AllowRememberLogin)
+                    {
+                        <div class="remember">
+                            <label asp-for="RememberLogin">
+                                <input class="" asp-for="RememberLogin" />
+                                Remember Login
+                            </label>
+                        </div>
+                    }
+
+                    @if (!ViewContext.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All"></div>
+                    }
+                    <button class="background-btn full-btn orange-button login-button" name="button" value="login">
+                        LOGIN
+                    </button>
+
+                    @if (Model.VisibleExternalProviders.Any() && Model.ShowMicrosoft365Button)
+                    {
+                        @foreach (ExternalProvider provider in Model.VisibleExternalProviders)
+                        {
+                            <a class="background-btn full-btn office-button"
+                               asp-controller="External"
+                               asp-action="Challenge"
+                               asp-route-provider="@provider.AuthenticationScheme"
+                               asp-route-returnUrl="@Model.ReturnUrl">
+                                <img src="~/assets/images/office.svg" alt="office">
+                                Login with Microsoft 365
+                            </a>
+                        }
+                    }
+
+                </form>
+                @if (!Model.IsAccountConfirmed)
+                {
+                    @await Html.PartialAsync("_ResendConfirmationEmail", Model.Username)
+                }
+                <p class="login-forget-pass">
+                    <a asp-action="RequestResetPassword" asp-controller="Account">Forgot your password?</a>
+                </p>
+                @if (Model.ShowLinkHome)
+                {
+                    <p class="login-register">
+                        <a href="@Model.ClientUri">Create an account</a>
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("_LogoBottom")
+</div>

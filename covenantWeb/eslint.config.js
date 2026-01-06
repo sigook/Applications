@@ -30,7 +30,12 @@ export default [
       },
       globals: {
         ...globals.browser,
-        ...globals.es2021
+        ...globals.es2021,
+        defineProps: 'readonly',
+        defineEmits: 'readonly',
+        defineExpose: 'readonly',
+        withDefaults: 'readonly',
+        defineOptions: 'readonly'
       }
     },
     plugins: {

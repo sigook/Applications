@@ -1,0 +1,3 @@
+@model Covenant.Common.Models.Notification.NotificationWorkerModel
+
+@await Html.PartialAsync("_GenericBody",$"Agency {Model.AgencyFullName} has booked you for request {Model.JobTitle} ({Model.CompanyFullName})")

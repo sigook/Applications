@@ -1,0 +1,60 @@
+@using IdentityServer4.Extensions
+@{
+    ViewBag.Title = "Info";
+}
+
+<h2>Info</h2>
+
+<table>
+    @foreach (var i in Context.Request.Headers)
+    {
+        <tr>
+            <th>@i.Key</th>
+            <td>@i.Value</td>
+        </tr>
+    }
+    @foreach (var i in  Context.Request.Cookies)
+    {
+        <tr>
+            <th>@i.Key</th>
+            <td>@i.Value</td>
+        </tr>
+    }
+    <tr>
+        <th>Host</th><td>@Context.Request.Host</td>
+    </tr>
+    <tr>
+        <th>Scheme</th><td>@Context.Request.Scheme</td>
+    </tr>
+    <tr>
+        <th>Protocol</th><td>@Context.Request.Protocol</td>
+    </tr>
+    <tr>
+        <th>Path</th><td>@Context.Request.Path</td>
+    </tr>
+    <tr>
+        <th>Id</th><td>@Context.Connection.Id</td>
+    </tr>
+    <tr>
+        <th>LocalPort</th><td>@Context.Connection.LocalPort</td>
+    </tr>
+    <tr>
+        <th>LocalIpAddress</th><td>@Context.Connection.LocalIpAddress</td>
+    </tr>
+    <tr>
+        <th>RemoteIpAddress</th><td>@Context.Connection.RemoteIpAddress</td>
+    </tr>
+    <tr>
+        <th>IpAddressV4</th><td>@Context.Connection.RemoteIpAddress.MapToIPv4()</td>
+    </tr>
+    @if (User.IsAuthenticated())
+    {
+        @foreach (var i in  User.Claims)
+        {
+            <tr>
+                <th>@i.Type</th>
+                <td>@i.Value</td>
+            </tr>
+        }    
+    }
+</table>
