@@ -722,42 +722,60 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ),
-          OutlinedButton.icon(
-            onPressed: () async {
-              Navigator.of(context).pop(false);
-              await _openLocationSettings();
-            },
-            icon: const Icon(Icons.settings, size: 18),
-            label: const Text('Open Settings'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryBlue,
-              side: const BorderSide(color: AppTheme.primaryBlue),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.of(context).pop(false);
+                  await _openLocationSettings();
+                },
+                icon: const Icon(Icons.settings, size: 20),
+                label: const Text(
+                  'Open Location Settings',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
               ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.warningOrange,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.warningOrange,
+                  side: const BorderSide(
+                    color: AppTheme.warningOrange,
+                    width: 2,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continue Anyway',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
-            child: const Text(
-              'Continue Anyway',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text('Cancel', style: TextStyle(fontSize: 15)),
+              ),
+            ],
           ),
         ],
       ),
