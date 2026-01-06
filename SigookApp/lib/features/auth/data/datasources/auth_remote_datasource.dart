@@ -80,47 +80,63 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw NetworkException('No internet connection');
     }
 
+    debugPrint('🔐 Starting logout process...');
+
     try {
-      final request = EndSessionRequest(
+      // Use AppAuth's endSession to properly logout with browser/webview
+      // This is required because IdentityServer needs cookie-based session context
+      final EndSessionRequest endSessionRequest = EndSessionRequest(
         idTokenHint: idToken,
         postLogoutRedirectUrl: EnvironmentConfig.postLogoutRedirectUri,
         issuer: EnvironmentConfig.authority,
       );
 
-      debugPrint('🔐 Starting logout session...');
-      await appAuth.endSession(request);
-      debugPrint('✅ Logout session completed successfully');
+      debugPrint('📤 [LOGOUT] Calling endSession with AppAuth...');
+      debugPrint('   ID Token Hint: ${idToken.substring(0, 20)}...');
+      debugPrint(
+        '   Post Logout Redirect: ${EnvironmentConfig.postLogoutRedirectUri}',
+      );
+
+      final EndSessionResponse? response = await appAuth.endSession(
+        endSessionRequest,
+      );
+
+      debugPrint('✅ [LOGOUT] EndSession completed');
+      if (response != null) {
+        debugPrint('   Response state: ${response.state}');
+      }
     } on PlatformException catch (e) {
-      debugPrint('⚠️ PlatformException during logout: ${e.code}');
+      debugPrint('⚠️ [LOGOUT] PlatformException during endSession: ${e.code}');
+      debugPrint('   Message: ${e.message}');
       debugPrint('   Details: ${e.details}');
 
-      // Handle user cancellation (webview closed)
-      if (e.code == 'end_session_failed' ||
-          e.code == 'CANCELED' ||
-          e.message?.toLowerCase().contains('user cancel') == true) {
+      // Check if it's the state mismatch error (code 9)
+      if (e.code == 'end_session_failed') {
         final details = e.details is Map
             ? Map<String, dynamic>.from(e.details as Map)
             : null;
-        final userCancelled = details?['user_did_cancel'] == true;
+        final errorCode = details?['code'];
 
-        debugPrint('   User cancelled: $userCancelled');
-        debugPrint('   Error code: ${e.code}');
-
-        if (userCancelled || e.code == 'CANCELED') {
+        // State mismatch (code 9) can happen but logout may still be successful
+        // This occurs when the redirect doesn't include state parameter
+        if (errorCode == 9 || errorCode == '9') {
           debugPrint(
-            '✅ User cancelled logout (closed webview) - treating as successful (tokens will be cleared)',
+            '   State mismatch detected - this is expected with some providers',
           );
+          debugPrint('   Logout on server side should still be successful');
+          // Don't throw - allow logout to complete locally
           return;
         }
       }
 
-      debugPrint('❌ Rethrowing as ServerException');
-      throw ServerException(message: 'Logout failed: ${e.message}');
+      // For other errors, log but don't fail - local logout still happens
+      debugPrint('   Continuing with local logout...');
     } catch (e) {
-      debugPrint('❌ Unexpected error during logout: $e');
-      if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Logout failed: ${e.toString()}');
+      debugPrint('⚠️ [LOGOUT] Unexpected error during endSession: $e');
+      debugPrint('   Continuing with local logout...');
     }
+
+    debugPrint('✅ Logout process completed');
   }
 
   @override

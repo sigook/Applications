@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/auth_token_model.dart';
 
@@ -31,6 +32,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> clearToken() async {
+    debugPrint('🗑️ [AUTH_LOCAL] Clearing cached token from secure storage...');
     await secureStorage.delete(key: cachedTokenKey);
+    debugPrint('✅ [AUTH_LOCAL] Token cleared successfully');
   }
 }
