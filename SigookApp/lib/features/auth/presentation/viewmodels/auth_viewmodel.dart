@@ -29,7 +29,7 @@ class AuthViewModel extends _$AuthViewModel {
     // Reset initialization flag on each build (important for hot reload)
     _isInitialized = false;
     debugPrint(
-      '🔑 [AUTH] AuthViewModel build() called (instance: ${hashCode}), starting token load',
+      '🔑 [AUTH] AuthViewModel build() called (instance: $hashCode), starting token load',
     );
     _loadCachedToken();
     return const AuthState();
