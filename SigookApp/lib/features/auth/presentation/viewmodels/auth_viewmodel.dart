@@ -26,6 +26,11 @@ class AuthViewModel extends _$AuthViewModel {
 
   @override
   AuthState build() {
+    // Reset initialization flag on each build (important for hot reload)
+    _isInitialized = false;
+    debugPrint(
+      '🔑 [AUTH] AuthViewModel build() called (instance: ${hashCode}), starting token load',
+    );
     _loadCachedToken();
     return const AuthState();
   }
@@ -34,124 +39,39 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> _loadCachedToken() async {
     try {
+      debugPrint('🔑 [AUTH] Loading cached token from secure storage...');
       final localDataSource = ref.read(authLocalDataSourceProvider);
       final cachedTokenModel = await localDataSource.getCachedToken();
 
       if (!ref.mounted) return;
 
       if (cachedTokenModel != null) {
+        debugPrint(
+          '🔑 [AUTH] Token found in secure storage. Access token: ${cachedTokenModel.accessToken?.substring(0, 20)}...',
+        );
         final cachedToken = cachedTokenModel.toEntity();
 
-        // Check if refresh token is expired (typically 30 days)
-        // Assuming refresh tokens are valid for 30 days from access token expiry
-        if (cachedToken.expirationDateTime != null) {
-          final refreshTokenExpiry = cachedToken.expirationDateTime!.add(
-            const Duration(days: 30),
-          );
-          if (DateTime.now().isAfter(refreshTokenExpiry)) {
-            debugPrint('Refresh token expired, clearing auth state');
-            state = const AuthState();
-            await localDataSource.clearToken();
-            _isInitialized = true;
-            return;
-          }
-        }
-
-        // Check if token is expired locally
-        final expirationDateTime = cachedToken.expirationDateTime;
-        final isExpired =
-            expirationDateTime != null &&
-            DateTime.now().isAfter(expirationDateTime);
-
-        if (isExpired) {
-          debugPrint('Token is expired, attempting refresh');
-          // Try to refresh if we have a refresh token
-          if (cachedToken.refreshToken != null) {
-            state = state.copyWith(token: cachedToken, isAuthenticated: false);
-            _refreshTokenSilent();
-          } else {
-            // No refresh token, clear auth state
-            state = const AuthState();
-          }
-        } else {
-          // Token is not expired, consider it valid
-          // It will be validated naturally when making API calls
-          state = state.copyWith(token: cachedToken, isAuthenticated: true);
-          debugPrint('Token loaded from cache and considered valid');
-
-          // Proactive refresh if expiring soon (within 5 minutes)
-          final isExpiringSoon =
-              expirationDateTime != null &&
-              DateTime.now().isAfter(
-                expirationDateTime.subtract(const Duration(minutes: 5)),
-              );
-
-          if (isExpiringSoon && cachedToken.refreshToken != null) {
-            debugPrint('Token expiring soon, refreshing proactively');
-            _refreshTokenSilent();
-          }
-        }
+        // Simply load the token into state
+        // Validation will be done by the backend via validateToken API
+        state = state.copyWith(token: cachedToken, isAuthenticated: true);
+        debugPrint('🔑 [AUTH] Token loaded from cache and set in state');
+      } else {
+        debugPrint('🔑 [AUTH] No cached token found in secure storage');
+        state = const AuthState();
       }
     } catch (e) {
-      debugPrint('Failed to load cached token: $e');
+      debugPrint('🔑 [AUTH] Failed to load cached token: $e');
+      state = const AuthState();
     } finally {
       _isInitialized = true;
-    }
-  }
-
-  Future<void> _refreshTokenSilent() async {
-    final currentToken = state.token;
-    if (currentToken?.refreshToken == null) {
-      state = state.copyWith(isAuthenticated: false, token: null);
-      return;
-    }
-
-    // Exponential backoff retry for token refresh
-    int retryCount = 0;
-    const maxRetries = 3;
-    const baseDelay = Duration(milliseconds: 500);
-
-    while (retryCount < maxRetries) {
-      final refreshToken = ref.read(refreshTokenProvider);
-      final result = await refreshToken(
-        RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
-      );
-
-      if (!ref.mounted) return;
-
-      final shouldRetry = result.fold(
-        (failure) {
-          debugPrint(
-            'Token refresh attempt ${retryCount + 1} failed: ${failure.message}',
-          );
-
-          // Don't retry on auth failures (401, 403)
-          if (failure.message.contains('401') ||
-              failure.message.contains('403') ||
-              failure.message.contains('unauthorized')) {
-            state = state.copyWith(isAuthenticated: false, token: null);
-            return false;
-          }
-
-          return true; // Retry for network or server errors
-        },
-        (token) {
-          state = state.copyWith(token: token, isAuthenticated: true);
-          return false; // Success, no retry needed
-        },
-      );
-
-      if (!shouldRetry) break;
-
-      retryCount++;
-      if (retryCount < maxRetries) {
-        final delay =
-            baseDelay * (1 << retryCount); // Exponential backoff: 1s, 2s, 4s
-        debugPrint('Retrying token refresh in ${delay.inSeconds}s...');
-        await Future.delayed(delay);
+      if (ref.mounted) {
+        debugPrint(
+          '🔑 [AUTH] _loadCachedToken completed. Token present: ${state.token != null}',
+        );
       } else {
-        debugPrint('Token refresh failed after $maxRetries attempts');
-        state = state.copyWith(isAuthenticated: false, token: null);
+        debugPrint(
+          '🔑 [AUTH] _loadCachedToken completed but ref was unmounted',
+        );
       }
     }
   }
@@ -171,6 +91,9 @@ class AuthViewModel extends _$AuthViewModel {
         }
       },
       (token) {
+        debugPrint(
+          '🔑 [AUTH] Sign-in successful! Token received and cached by repository',
+        );
         state = state.copyWith(
           isLoading: false,
           token: token,

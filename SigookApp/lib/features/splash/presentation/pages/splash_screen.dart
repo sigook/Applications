@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../auth/domain/usecases/validate_token.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -107,28 +109,100 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted || _hasNavigated) return;
 
-    final authNotifier = ref.read(authViewModelProvider.notifier);
+    debugPrint('🔐 [SPLASH] Starting authentication check...');
+
+    // Wait for AuthViewModel to finish loading token from secure storage
     int attempts = 0;
-    while (!authNotifier.isInitialized && attempts < 20) {
+    const maxAttempts = 50;
+
+    bool isInitialized = false;
+    while (!isInitialized && attempts < maxAttempts && mounted) {
       await Future.delayed(const Duration(milliseconds: 100));
       attempts++;
+      final currentNotifier = ref.read(authViewModelProvider.notifier);
+      isInitialized = currentNotifier.isInitialized;
     }
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    debugPrint('🔐 [SPLASH] Token loading completed after ${attempts * 100}ms');
 
     if (!mounted || _hasNavigated) return;
-    _hasNavigated = true;
 
+    // Read current auth state
     final authState = ref.read(authViewModelProvider);
+    final token = authState.token;
 
+    debugPrint(
+      '🔐 [SPLASH] Auth state - isAuthenticated: ${authState.isAuthenticated}, token present: ${token != null}',
+    );
+
+    // No token in secure storage, go to welcome
+    if (token == null ||
+        token.accessToken == null ||
+        token.accessToken!.isEmpty) {
+      debugPrint('🔐 [SPLASH] No token found, redirecting to welcome');
+      _navigateToWelcome();
+      return;
+    }
+
+    // Check if token is expired
+    final expirationDateTime = token.expirationDateTime;
+    final isExpired =
+        expirationDateTime != null &&
+        DateTime.now().isAfter(expirationDateTime);
+
+    if (isExpired) {
+      debugPrint('🔐 [SPLASH] Token is expired, validating with backend...');
+    } else {
+      debugPrint(
+        '🔐 [SPLASH] Token not expired locally, validating with backend...',
+      );
+    }
+
+    // Validate token with backend API
+    final validateTokenUseCase = ref.read(validateTokenProvider);
+    final validationResult = await validateTokenUseCase(
+      ValidateTokenParams(accessToken: token.accessToken!),
+    );
+
+    if (!mounted || _hasNavigated) return;
+
+    validationResult.fold(
+      // Validation failed - redirect to welcome
+      (failure) {
+        debugPrint('🔐 [SPLASH] Token validation failed: ${failure.message}');
+        debugPrint('🔐 [SPLASH] Redirecting to welcome for re-authentication');
+        _navigateToWelcome();
+      },
+      // Validation succeeded - navigate to jobs (ref.listen will also fire if not navigated yet)
+      (isValid) {
+        if (isValid) {
+          debugPrint('🔐 [SPLASH] Token is valid! Navigating to jobs');
+          _navigateToJobs();
+        } else {
+          debugPrint(
+            '🔐 [SPLASH] Token validation returned false, redirecting to welcome',
+          );
+          _navigateToWelcome();
+        }
+      },
+    );
+  }
+
+  void _navigateToJobs() {
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      context.go(AppRoutes.jobs);
+    });
+  }
 
-      if (authState.isAuthenticated && authState.token != null) {
-        context.go(AppRoutes.jobs);
-      } else {
-        context.go(AppRoutes.welcome);
-      }
+  void _navigateToWelcome() {
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go(AppRoutes.welcome);
     });
   }
 
@@ -144,6 +218,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    // Listen to auth state changes reactively (like sign-in page does)
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (_hasNavigated || !mounted) return;
+
+      // If authenticated with valid token, navigate to jobs
+      if (next.isAuthenticated &&
+          next.token != null &&
+          next.token!.accessToken != null &&
+          next.token!.accessToken!.isNotEmpty) {
+        debugPrint(
+          '🔐 [SPLASH] Auth state changed - valid token detected, navigating to jobs',
+        );
+        _navigateToJobs();
+      }
+    });
 
     return Scaffold(
       body: Container(

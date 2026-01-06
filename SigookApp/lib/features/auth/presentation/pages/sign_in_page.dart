@@ -38,7 +38,10 @@ class _SignInPageState extends ConsumerState<SignInPage> {
         );
       }
 
-      if (next.isAuthenticated && next.token != null) {
+      if (next.isAuthenticated &&
+          next.token != null &&
+          next.token!.accessToken != null &&
+          next.token!.accessToken!.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Sign in successful!'),
