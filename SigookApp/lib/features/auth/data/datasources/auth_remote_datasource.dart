@@ -47,14 +47,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       debugPrint('⚠️ PlatformException during sign-in: ${e.code}');
       debugPrint('   Details: ${e.details}');
 
-      if (e.code == 'authorize_and_exchange_code_failed') {
-        final details = e.details as Map<String, dynamic>?;
+      // Handle user cancellation (webview closed)
+      if (e.code == 'authorize_and_exchange_code_failed' ||
+          e.code == 'CANCELED' ||
+          e.message?.toLowerCase().contains('user cancel') == true) {
+        final details = e.details is Map
+            ? Map<String, dynamic>.from(e.details as Map)
+            : null;
         final userCancelled = details?['user_did_cancel'] == true;
 
         debugPrint('   User cancelled: $userCancelled');
+        debugPrint('   Error code: ${e.code}');
 
-        if (userCancelled) {
-          debugPrint('✅ User cancelled sign-in - treating as user action');
+        if (userCancelled || e.code == 'CANCELED') {
+          debugPrint(
+            '✅ User cancelled sign-in (closed webview) - treating as user action',
+          );
           throw ServerException(message: 'User cancelled authentication');
         }
       }
@@ -86,15 +94,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       debugPrint('⚠️ PlatformException during logout: ${e.code}');
       debugPrint('   Details: ${e.details}');
 
-      if (e.code == 'end_session_failed') {
-        final details = e.details as Map<String, dynamic>?;
+      // Handle user cancellation (webview closed)
+      if (e.code == 'end_session_failed' ||
+          e.code == 'CANCELED' ||
+          e.message?.toLowerCase().contains('user cancel') == true) {
+        final details = e.details is Map
+            ? Map<String, dynamic>.from(e.details as Map)
+            : null;
         final userCancelled = details?['user_did_cancel'] == true;
 
         debugPrint('   User cancelled: $userCancelled');
+        debugPrint('   Error code: ${e.code}');
 
-        if (userCancelled) {
+        if (userCancelled || e.code == 'CANCELED') {
           debugPrint(
-            '✅ User cancelled logout - treating as successful (tokens will be cleared)',
+            '✅ User cancelled logout (closed webview) - treating as successful (tokens will be cleared)',
           );
           return;
         }
