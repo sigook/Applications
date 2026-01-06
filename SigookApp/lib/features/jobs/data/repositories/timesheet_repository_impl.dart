@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sigook_app_flutter/core/error/exceptions.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/core/network/network_info.dart';
@@ -71,9 +72,17 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
     int pageSize = 5,
     bool isDescending = false,
   }) async {
+    debugPrint('🟡 [REPOSITORY] getTimesheetEntries called');
+    debugPrint('🟡 [REPOSITORY] Checking network connection...');
+
     if (!await networkInfo.isConnected) {
+      debugPrint('❌ [REPOSITORY] No network connection!');
       return Left(NetworkFailure());
     }
+
+    debugPrint(
+      '🟡 [REPOSITORY] Network connected, calling remote datasource...',
+    );
 
     try {
       final result = await remoteDataSource.getTimesheetEntries(
@@ -82,12 +91,18 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
         pageSize: pageSize,
         isDescending: isDescending,
       );
+      debugPrint('🟡 [REPOSITORY] Datasource returned successfully');
+      debugPrint('🟡 [REPOSITORY] Result items count: ${result.items.length}');
       return Right(result);
     } on ServerException catch (e) {
+      debugPrint('❌ [REPOSITORY] ServerException: ${e.message}');
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
+      debugPrint('❌ [REPOSITORY] NetworkException: ${e.message}');
       return Left(NetworkFailure(message: e.message));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ [REPOSITORY] Unexpected error: $e');
+      debugPrint('❌ [REPOSITORY] Stack trace: $stackTrace');
       return Left(ServerFailure(message: 'Unexpected error: $e'));
     }
   }

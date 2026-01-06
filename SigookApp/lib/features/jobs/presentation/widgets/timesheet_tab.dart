@@ -12,7 +12,18 @@ class TimesheetTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('\n🟪 [TIMESHEET TAB] ===== BUILD METHOD CALLED =====');
+    debugPrint('🟪 [TIMESHEET TAB] JobId: $jobId');
+    debugPrint(
+      '🟪 [TIMESHEET TAB] Watching timesheetViewModelProvider($jobId)...',
+    );
+
     final timesheetState = ref.watch(timesheetViewModelProvider(jobId));
+
+    debugPrint('🟪 [TIMESHEET TAB] State received:');
+    debugPrint('  - isLoading: ${timesheetState.isLoading}');
+    debugPrint('  - entries.length: ${timesheetState.entries.length}');
+    debugPrint('  - error: ${timesheetState.error}');
 
     if (timesheetState.isLoading && timesheetState.entries.isEmpty) {
       return const Center(
@@ -119,47 +130,46 @@ class TimesheetTab extends ConsumerWidget {
   }
 
   Widget _buildShiftCard(TimesheetEntry entry) {
+    final dateFormat = DateFormat('EEE, MMM dd, yyyy');
+    final timeFormat = DateFormat('h:mm a');
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: entry.wasApproved
+              ? Colors.green.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header: Date and Status
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.calendar_today,
-                    color: AppTheme.primaryBlue,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        DateFormat('EEEE, MMMM dd, yyyy').format(entry.date),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: AppTheme.primaryBlue,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        entry.workerName ?? 'Worker',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          dateFormat.format(entry.day),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textDark,
+                          ),
                         ),
                       ),
                     ],
@@ -168,28 +178,45 @@ class TimesheetTab extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 6,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(entry.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
+                    color: entry.wasApproved
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _getStatusColor(entry.status),
+                      color: entry.wasApproved ? Colors.green : Colors.orange,
                       width: 1,
                     ),
                   ),
-                  child: Text(
-                    entry.status,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: _getStatusColor(entry.status),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        entry.wasApproved ? Icons.check_circle : Icons.pending,
+                        size: 14,
+                        color: entry.wasApproved ? Colors.green : Colors.orange,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        entry.wasApproved ? 'Approved' : 'Pending',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: entry.wasApproved
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // Clock In/Out Times
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -199,79 +226,189 @@ class TimesheetTab extends ConsumerWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildInfoColumn(
-                      'Start Time',
-                      entry.startTime != null
-                          ? DateFormat('hh:mm a').format(entry.startTime!)
-                          : 'N/A',
-                      Icons.login,
-                      AppTheme.successGreen,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.login,
+                            size: 18,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Clock In',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              entry.clockIn != null
+                                  ? timeFormat.format(entry.clockIn!)
+                                  : 'N/A',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   Container(width: 1, height: 40, color: Colors.grey.shade300),
                   Expanded(
-                    child: _buildInfoColumn(
-                      'End Time',
-                      entry.endTime != null
-                          ? DateFormat('hh:mm a').format(entry.endTime!)
-                          : 'N/A',
-                      Icons.logout,
-                      AppTheme.errorRed,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.logout,
+                            size: 18,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Clock Out',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              entry.clockOut != null
+                                  ? timeFormat.format(entry.clockOut!)
+                                  : 'In Progress',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: entry.clockOut != null
+                                    ? AppTheme.textDark
+                                    : Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // Hours Information
             Row(
               children: [
                 Expanded(
-                  child: _buildMetricCard(
-                    'Worked Hours',
-                    entry.workedHours != null
-                        ? '${entry.workedHours!.toStringAsFixed(1)} hrs'
-                        : 'N/A',
-                    Icons.access_time,
-                    AppTheme.primaryBlue,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Total Hours',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          entry.totalHours > 0
+                              ? '${entry.totalHours.toStringAsFixed(1)} hrs'
+                              : '0.0 hrs',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _buildMetricCard(
-                    'Approved Hours',
-                    entry.approvedHours != null
-                        ? '${entry.approvedHours!.toStringAsFixed(1)} hrs'
-                        : 'N/A',
-                    Icons.check_circle_outline,
-                    AppTheme.successGreen,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Approved',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          entry.totalHoursApproved > 0
+                              ? '${entry.totalHoursApproved.toStringAsFixed(1)} hrs'
+                              : '0.0 hrs',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            if (entry.notes != null) ...[
+
+            // Comment (if exists)
+            if (entry.comment != null && entry.comment!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
+                  color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.shade200),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 18,
-                      color: Colors.amber.shade800,
-                    ),
+                    Icon(Icons.comment, size: 16, color: Colors.blue.shade700),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        entry.notes!,
+                        entry.comment!,
                         style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.amber.shade900,
+                          fontSize: 12,
+                          color: Colors.grey.shade800,
+                          height: 1.4,
                         ),
                       ),
                     ),
@@ -283,93 +420,5 @@ class TimesheetTab extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Widget _buildInfoColumn(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return AppTheme.successGreen;
-      case 'pending':
-        return Colors.orange;
-      case 'rejected':
-        return AppTheme.errorRed;
-      default:
-        return Colors.grey;
-    }
   }
 }

@@ -8,23 +8,36 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/error_messages.dart';
 
 Future<void> mainCommon() async {
-  final sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    debugPrint('📱 Starting app initialization...');
 
-  await ErrorMessages.load();
+    debugPrint('📦 Loading SharedPreferences...');
+    final sharedPreferences = await SharedPreferences.getInstance();
 
-  const secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+    debugPrint('🌐 Loading error messages...');
+    await ErrorMessages.load();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-        secureStorageProvider.overrideWithValue(secureStorage),
-      ],
-      child: const MyApp(),
-    ),
-  );
+    debugPrint('🔐 Initializing secure storage...');
+    const secureStorage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    );
+
+    debugPrint('✅ App initialization complete, running app...');
+    runApp(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          secureStorageProvider.overrideWithValue(secureStorage),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    debugPrint('❌ Error in mainCommon:');
+    debugPrint('Error: $e');
+    debugPrint('Stack trace: $stackTrace');
+    rethrow;
+  }
 }
 
 class MyApp extends ConsumerStatefulWidget {

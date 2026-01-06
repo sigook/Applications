@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sigook_app_flutter/core/error/exceptions.dart';
 import 'package:sigook_app_flutter/core/network/api_client.dart';
 import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/core/utils/enum_converters.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/timesheet_response_model.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/paginated_timesheet_model.dart';
+import 'dart:convert';
 
 abstract class TimesheetRemoteDatasource {
   Future<ClockType> getClockType(DateTime date, String requestId);
@@ -99,23 +101,67 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
     int pageSize = 5,
     bool isDescending = false,
   }) async {
+    final endpoint = '/WorkerRequest/$jobId/TimeSheet';
+    final queryParams = {
+      'IsDescending': isDescending,
+      'PageIndex': pageIndex,
+      'PageSize': pageSize,
+    };
+
+    debugPrint('🟠 [DATASOURCE] ===== API REQUEST =====');
+    debugPrint('🟠 [DATASOURCE] Endpoint: $endpoint');
+    debugPrint('🟠 [DATASOURCE] Query Params: $queryParams');
+    debugPrint(
+      '🟠 [DATASOURCE] Full URL: ${apiClient.dio.options.baseUrl}$endpoint?IsDescending=$isDescending&PageIndex=$pageIndex&PageSize=$pageSize',
+    );
+
     try {
       final response = await apiClient.dio.get(
-        '/WorkerRequest/$jobId/TimeSheet',
-        queryParameters: {
-          'IsDescending': isDescending,
-          'PageIndex': pageIndex,
-          'PageSize': pageSize,
-        },
+        endpoint,
+        queryParameters: queryParams,
       );
+
+      debugPrint('🟠 [DATASOURCE] ===== API RESPONSE =====');
+      debugPrint('🟠 [DATASOURCE] Status Code: ${response.statusCode}');
+      debugPrint('🟠 [DATASOURCE] Response Headers: ${response.headers}');
+      debugPrint(
+        '🟠 [DATASOURCE] Response Data Type: ${response.data.runtimeType}',
+      );
+      debugPrint('🟠 [DATASOURCE] Response Data: ${jsonEncode(response.data)}');
+
       if (response.statusCode == 200) {
-        return PaginatedTimesheetModel.fromJson(response.data);
+        debugPrint('🟠 [DATASOURCE] Parsing response...');
+
+        try {
+          final model = PaginatedTimesheetModel.fromJson(response.data);
+          debugPrint('🟠 [DATASOURCE] ✅ Parsing successful!');
+          debugPrint(
+            '🟠 [DATASOURCE] Parsed items count: ${model.items.length}',
+          );
+          debugPrint('🟠 [DATASOURCE] Total items: ${model.totalItems}');
+          debugPrint('🟠 [DATASOURCE] Total pages: ${model.totalPages}');
+          return model;
+        } catch (parseError, stackTrace) {
+          debugPrint('❌ [DATASOURCE] Parsing failed!');
+          debugPrint('❌ [DATASOURCE] Parse Error: $parseError');
+          debugPrint('❌ [DATASOURCE] Stack trace: $stackTrace');
+          rethrow;
+        }
       } else {
+        debugPrint(
+          '❌ [DATASOURCE] Non-200 status code: ${response.statusCode}',
+        );
         throw ServerException(
           message: 'Failed to load timesheet: ${response.statusCode}',
         );
       }
     } on DioException catch (e) {
+      debugPrint('❌ [DATASOURCE] DioException caught!');
+      debugPrint('❌ [DATASOURCE] Error Type: ${e.type}');
+      debugPrint('❌ [DATASOURCE] Error Message: ${e.message}');
+      debugPrint('❌ [DATASOURCE] Response: ${e.response?.data}');
+      debugPrint('❌ [DATASOURCE] Status Code: ${e.response?.statusCode}');
+
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         throw NetworkException('Connection timeout');
@@ -128,7 +174,10 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
       } else {
         throw NetworkException('Network error: ${e.message}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ [DATASOURCE] Unexpected exception!');
+      debugPrint('❌ [DATASOURCE] Error: $e');
+      debugPrint('❌ [DATASOURCE] Stack trace: $stackTrace');
       throw ServerException(message: 'Failed to load timesheet: $e');
     }
   }
