@@ -5,7 +5,6 @@ import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/usecases/refresh_token.dart';
-import '../../domain/usecases/validate_token.dart';
 import '../providers/auth_providers.dart';
 
 part 'auth_viewmodel.freezed.dart';
@@ -58,63 +57,39 @@ class AuthViewModel extends _$AuthViewModel {
           }
         }
 
-        state = state.copyWith(token: cachedToken, isAuthenticated: true);
+        // Check if token is expired locally
+        final expirationDateTime = cachedToken.expirationDateTime;
+        final isExpired =
+            expirationDateTime != null &&
+            DateTime.now().isAfter(expirationDateTime);
 
-        // Validate token with server if we have an access token
-        if (cachedToken.accessToken != null) {
-          final validateUseCase = ref.read(validateTokenProvider);
-          final validationResult = await validateUseCase(
-            ValidateTokenParams(accessToken: cachedToken.accessToken!),
-          );
+        if (isExpired) {
+          debugPrint('Token is expired, attempting refresh');
+          // Try to refresh if we have a refresh token
+          if (cachedToken.refreshToken != null) {
+            state = state.copyWith(token: cachedToken, isAuthenticated: false);
+            _refreshTokenSilent();
+          } else {
+            // No refresh token, clear auth state
+            state = const AuthState();
+          }
+        } else {
+          // Token is not expired, consider it valid
+          // It will be validated naturally when making API calls
+          state = state.copyWith(token: cachedToken, isAuthenticated: true);
+          debugPrint('Token loaded from cache and considered valid');
 
-          if (!ref.mounted) return;
+          // Proactive refresh if expiring soon (within 5 minutes)
+          final isExpiringSoon =
+              expirationDateTime != null &&
+              DateTime.now().isAfter(
+                expirationDateTime.subtract(const Duration(minutes: 5)),
+              );
 
-          validationResult.fold(
-            (failure) {
-              debugPrint('Token validation failed: ${failure.message}');
-              // Track token validation failure
-              ref
-                  .read(analyticsServiceProvider)
-                  .logEvent(
-                    name: 'token_validation_failed',
-                    parameters: {'error': failure.message},
-                  );
-              // Try refresh if validation fails
-              if (cachedToken.refreshToken != null) {
-                _refreshTokenSilent();
-              } else {
-                state = const AuthState();
-              }
-            },
-            (isValid) {
-              if (!isValid) {
-                debugPrint('Token is invalid, attempting refresh');
-                ref
-                    .read(analyticsServiceProvider)
-                    .logEvent(
-                      name: 'token_invalid',
-                      parameters: {'action': 'refresh_attempted'},
-                    );
-                if (cachedToken.refreshToken != null) {
-                  _refreshTokenSilent();
-                } else {
-                  state = const AuthState();
-                }
-              } else {
-                // Token is valid, check expiration for proactive refresh
-                final expirationDateTime = cachedToken.expirationDateTime;
-                final isExpired =
-                    expirationDateTime != null &&
-                    DateTime.now().isAfter(
-                      expirationDateTime.subtract(const Duration(minutes: 5)),
-                    );
-
-                if (isExpired && cachedToken.refreshToken != null) {
-                  _refreshTokenSilent();
-                }
-              }
-            },
-          );
+          if (isExpiringSoon && cachedToken.refreshToken != null) {
+            debugPrint('Token expiring soon, refreshing proactively');
+            _refreshTokenSilent();
+          }
         }
       }
     } catch (e) {

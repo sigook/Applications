@@ -4,6 +4,7 @@ import 'package:sigook_app_flutter/core/network/api_client.dart';
 import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/core/utils/enum_converters.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/timesheet_response_model.dart';
+import 'package:sigook_app_flutter/features/jobs/data/models/paginated_timesheet_model.dart';
 
 abstract class TimesheetRemoteDatasource {
   Future<ClockType> getClockType(DateTime date, String requestId);
@@ -11,6 +12,12 @@ abstract class TimesheetRemoteDatasource {
     required String jobId,
     required double latitude,
     required double longitude,
+  });
+  Future<PaginatedTimesheetModel> getTimesheetEntries({
+    required String jobId,
+    int pageIndex = 1,
+    int pageSize = 5,
+    bool isDescending = false,
   });
 }
 
@@ -82,6 +89,47 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
       }
     } catch (e) {
       throw ServerException(message: 'Failed to submit timesheet: $e');
+    }
+  }
+
+  @override
+  Future<PaginatedTimesheetModel> getTimesheetEntries({
+    required String jobId,
+    int pageIndex = 1,
+    int pageSize = 5,
+    bool isDescending = false,
+  }) async {
+    try {
+      final response = await apiClient.dio.get(
+        '/WorkerRequest/$jobId/TimeSheet',
+        queryParameters: {
+          'IsDescending': isDescending,
+          'PageIndex': pageIndex,
+          'PageSize': pageSize,
+        },
+      );
+      if (response.statusCode == 200) {
+        return PaginatedTimesheetModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          message: 'Failed to load timesheet: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw ServerException(message: 'Failed to load timesheet: $e');
     }
   }
 }

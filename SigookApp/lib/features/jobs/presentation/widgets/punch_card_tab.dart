@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:permission_handler/permission_handler.dart'
+    as permission_handler;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/providers/analytics_providers.dart';
@@ -324,6 +327,39 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         return;
       }
 
+      // Check location precision
+      if (!mounted) return;
+      final locationAccuracy = position.accuracy;
+      final isPrecise = locationAccuracy <= 20.0; // 20 meters threshold
+
+      if (!isPrecise) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        final shouldContinue = await _showLocationPrecisionWarning(
+          locationAccuracy,
+        );
+        if (shouldContinue != true) {
+          return;
+        }
+        setState(() {
+          _isSubmitting = true;
+        });
+      }
+
+      // Show confirmation modal
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+      });
+      final confirmed = await _showConfirmationDialog(position, isPrecise);
+      if (confirmed != true) {
+        return;
+      }
+      setState(() {
+        _isSubmitting = true;
+      });
+
       final useCase = ref.read(submitTimesheetUseCaseProvider);
       final result = await useCase(
         SubmitTimesheetParams(
@@ -491,5 +527,263 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
+  }
+
+  Future<bool?> _showConfirmationDialog(
+    Position position,
+    bool isPrecise,
+  ) async {
+    final clockAction = _clockType == ClockType.clockIn
+        ? 'Clock In'
+        : 'Clock Out';
+    final clockActionLower = clockAction.toLowerCase();
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              _clockType == ClockType.clockIn ? Icons.login : Icons.logout,
+              color: _clockType == ClockType.clockIn
+                  ? AppTheme.successGreen
+                  : AppTheme.errorRed,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Text('Confirm $clockAction'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to $clockActionLower?',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        DateFormat('hh:mm:ss a').format(DateTime.now()),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        isPrecise
+                            ? Icons.location_on
+                            : Icons.location_searching,
+                        size: 18,
+                        color: isPrecise
+                            ? AppTheme.successGreen
+                            : AppTheme.warningOrange,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isPrecise
+                              ? 'Location: Precise (±${position.accuracy.toStringAsFixed(0)}m)'
+                              : 'Location: Approximate (±${position.accuracy.toStringAsFixed(0)}m)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isPrecise
+                                ? Colors.black87
+                                : AppTheme.warningOrange,
+                            fontWeight: isPrecise
+                                ? FontWeight.normal
+                                : FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _clockType == ClockType.clockIn
+                  ? AppTheme.successGreen
+                  : AppTheme.errorRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              clockAction,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showLocationPrecisionWarning(double accuracy) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: AppTheme.warningOrange,
+              size: 28,
+            ),
+            SizedBox(width: 12),
+            Text('Location Not Precise'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your location accuracy is not precise enough for clock in/out.',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.warningOrange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppTheme.warningOrange.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_searching,
+                    color: AppTheme.warningOrange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Current accuracy: ±${accuracy.toStringAsFixed(0)} meters',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.warningOrange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'For accurate attendance tracking, please:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '• Enable High Accuracy location mode\n• Ensure GPS is enabled\n• Move to an open area with clear sky view',
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ),
+          OutlinedButton.icon(
+            onPressed: () async {
+              Navigator.of(context).pop(false);
+              await _openLocationSettings();
+            },
+            icon: const Icon(Icons.settings, size: 18),
+            label: const Text('Open Settings'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryBlue,
+              side: const BorderSide(color: AppTheme.primaryBlue),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.warningOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Continue Anyway',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openLocationSettings() async {
+    try {
+      if (Platform.isAndroid) {
+        // Try to open app-specific location settings first
+        final opened = await permission_handler.openAppSettings();
+        if (!opened) {
+          // Fallback to general location settings
+          await Geolocator.openLocationSettings();
+        }
+      } else if (Platform.isIOS) {
+        // iOS opens app-specific settings
+        await permission_handler.openAppSettings();
+      }
+    } catch (e) {
+      debugPrint('Failed to open location settings: $e');
+      if (mounted) {
+        _showErrorSnackBar(
+          'Could not open settings. Please manually enable precise location.',
+        );
+      }
+    }
   }
 }

@@ -229,7 +229,7 @@ class _JobPageState extends ConsumerState<JobPage> {
               ),
               if (showTimesheetPunchcard) ...[
                 PunchCardTab(jobId: widget.jobId),
-                const TimesheetTab(),
+                TimesheetTab(jobId: widget.jobId),
               ],
             ],
           ),

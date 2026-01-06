@@ -5,6 +5,7 @@ import 'package:sigook_app_flutter/features/jobs/data/repositories/timesheet_rep
 import 'package:sigook_app_flutter/features/jobs/domain/repositories/timesheet_repository.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_clock_type.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/usecases/submit_timesheet.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_timesheet_entries.dart';
 
 final timesheetRemoteDatasourceProvider = Provider<TimesheetRemoteDatasource>(
   (ref) =>
@@ -24,4 +25,8 @@ final getClockTypeUseCaseProvider = Provider<GetClockType>(
 
 final submitTimesheetUseCaseProvider = Provider<SubmitTimesheet>(
   (ref) => SubmitTimesheet(ref.read(timesheetRemoteRepositoryProvider)),
+);
+
+final getTimesheetEntriesUseCaseProvider = Provider<GetTimesheetEntries>(
+  (ref) => GetTimesheetEntries(ref.read(timesheetRemoteRepositoryProvider)),
 );

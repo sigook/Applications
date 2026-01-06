@@ -140,7 +140,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     try {
       final response = await dio.get(
-        '/api/auth/validate',
+        '/auth/validate',
         options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
       );
 

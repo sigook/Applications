@@ -1,52 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/timesheet_entry.dart';
+import '../viewmodels/timesheet_viewmodel.dart';
 
-class TimesheetTab extends StatelessWidget {
-  const TimesheetTab({super.key});
+class TimesheetTab extends ConsumerWidget {
+  final String jobId;
+
+  const TimesheetTab({super.key, required this.jobId});
 
   @override
-  Widget build(BuildContext context) {
-    final mockShifts = _getMockShifts();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final timesheetState = ref.watch(timesheetViewModelProvider(jobId));
 
-    return mockShifts.isEmpty
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.assignment_outlined,
-                  size: 80,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No Timesheet Records',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your completed shifts will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                ),
-              ],
+    if (timesheetState.isLoading && timesheetState.entries.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+      );
+    }
+
+    if (timesheetState.error != null && timesheetState.entries.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 80, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to Load Timesheet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
             ),
-          )
-        : ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: mockShifts.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              return _buildShiftCard(mockShifts[index]);
-            },
-          );
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                timesheetState.error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                ref
+                    .read(timesheetViewModelProvider(jobId).notifier)
+                    .loadTimesheetEntries(refresh: true);
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (timesheetState.entries.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.assignment_outlined,
+              size: 80,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Timesheet Records',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your completed shifts will appear here',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref
+          .read(timesheetViewModelProvider(jobId).notifier)
+          .loadTimesheetEntries(refresh: true),
+      color: AppTheme.primaryBlue,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        itemCount:
+            timesheetState.entries.length +
+            (timesheetState.isLoadingMore ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          if (index == timesheetState.entries.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+              ),
+            );
+          }
+          return _buildShiftCard(timesheetState.entries[index]);
+        },
+      ),
+    );
   }
 
-  Widget _buildShiftCard(ShiftRecord shift) {
+  Widget _buildShiftCard(TimesheetEntry entry) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -75,7 +147,7 @@ class TimesheetTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        DateFormat('EEEE, MMMM dd, yyyy').format(shift.date),
+                        DateFormat('EEEE, MMMM dd, yyyy').format(entry.date),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -84,7 +156,7 @@ class TimesheetTab extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        shift.jobTitle,
+                        entry.workerName ?? 'Worker',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -99,19 +171,19 @@ class TimesheetTab extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(shift.status).withValues(alpha: 0.1),
+                    color: _getStatusColor(entry.status).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: _getStatusColor(shift.status),
+                      color: _getStatusColor(entry.status),
                       width: 1,
                     ),
                   ),
                   child: Text(
-                    shift.status,
+                    entry.status,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: _getStatusColor(shift.status),
+                      color: _getStatusColor(entry.status),
                     ),
                   ),
                 ),
@@ -129,7 +201,9 @@ class TimesheetTab extends StatelessWidget {
                   Expanded(
                     child: _buildInfoColumn(
                       'Start Time',
-                      DateFormat('hh:mm a').format(shift.startTime),
+                      entry.startTime != null
+                          ? DateFormat('hh:mm a').format(entry.startTime!)
+                          : 'N/A',
                       Icons.login,
                       AppTheme.successGreen,
                     ),
@@ -138,7 +212,9 @@ class TimesheetTab extends StatelessWidget {
                   Expanded(
                     child: _buildInfoColumn(
                       'End Time',
-                      DateFormat('hh:mm a').format(shift.endTime),
+                      entry.endTime != null
+                          ? DateFormat('hh:mm a').format(entry.endTime!)
+                          : 'N/A',
                       Icons.logout,
                       AppTheme.errorRed,
                     ),
@@ -152,7 +228,9 @@ class TimesheetTab extends StatelessWidget {
                 Expanded(
                   child: _buildMetricCard(
                     'Worked Hours',
-                    '${shift.workedHours.toStringAsFixed(1)} hrs',
+                    entry.workedHours != null
+                        ? '${entry.workedHours!.toStringAsFixed(1)} hrs'
+                        : 'N/A',
                     Icons.access_time,
                     AppTheme.primaryBlue,
                   ),
@@ -161,14 +239,16 @@ class TimesheetTab extends StatelessWidget {
                 Expanded(
                   child: _buildMetricCard(
                     'Approved Hours',
-                    '${shift.approvedHours.toStringAsFixed(1)} hrs',
+                    entry.approvedHours != null
+                        ? '${entry.approvedHours!.toStringAsFixed(1)} hrs'
+                        : 'N/A',
                     Icons.check_circle_outline,
                     AppTheme.successGreen,
                   ),
                 ),
               ],
             ),
-            if (shift.notes != null) ...[
+            if (entry.notes != null) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -188,7 +268,7 @@ class TimesheetTab extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        shift.notes!,
+                        entry.notes!,
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.amber.shade900,
@@ -292,70 +372,4 @@ class TimesheetTab extends StatelessWidget {
         return Colors.grey;
     }
   }
-
-  List<ShiftRecord> _getMockShifts() {
-    final now = DateTime.now();
-    return [
-      ShiftRecord(
-        date: now.subtract(const Duration(days: 1)),
-        jobTitle: 'General Labor - Valdosta GA',
-        startTime: DateTime(now.year, now.month, now.day - 1, 7, 0),
-        endTime: DateTime(now.year, now.month, now.day - 1, 16, 0),
-        workedHours: 8.5,
-        approvedHours: 8.0,
-        status: 'Approved',
-      ),
-      ShiftRecord(
-        date: now.subtract(const Duration(days: 2)),
-        jobTitle: 'General Labor - Valdosta GA',
-        startTime: DateTime(now.year, now.month, now.day - 2, 7, 0),
-        endTime: DateTime(now.year, now.month, now.day - 2, 15, 30),
-        workedHours: 8.0,
-        approvedHours: 8.0,
-        status: 'Approved',
-      ),
-      ShiftRecord(
-        date: now.subtract(const Duration(days: 3)),
-        jobTitle: 'General Labor - Valdosta GA',
-        startTime: DateTime(now.year, now.month, now.day - 3, 7, 0),
-        endTime: DateTime(now.year, now.month, now.day - 3, 16, 15),
-        workedHours: 9.0,
-        approvedHours: 8.5,
-        status: 'Approved',
-        notes: 'Overtime approved by supervisor',
-      ),
-      ShiftRecord(
-        date: now.subtract(const Duration(days: 4)),
-        jobTitle: 'General Labor - Valdosta GA',
-        startTime: DateTime(now.year, now.month, now.day - 4, 7, 0),
-        endTime: DateTime(now.year, now.month, now.day - 4, 16, 0),
-        workedHours: 8.5,
-        approvedHours: 8.5,
-        status: 'Pending',
-        notes: 'Awaiting supervisor approval',
-      ),
-    ];
-  }
-}
-
-class ShiftRecord {
-  final DateTime date;
-  final String jobTitle;
-  final DateTime startTime;
-  final DateTime endTime;
-  final double workedHours;
-  final double approvedHours;
-  final String status;
-  final String? notes;
-
-  ShiftRecord({
-    required this.date,
-    required this.jobTitle,
-    required this.startTime,
-    required this.endTime,
-    required this.workedHours,
-    required this.approvedHours,
-    required this.status,
-    this.notes,
-  });
 }
