@@ -39,7 +39,7 @@
                         :error-messages="errors.email" variant="outlined"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-text-field v-model="phoneFormatted" label="Phone *" placeholder="305 123-4567"
+                      <v-text-field v-model="phoneFormatted" label="Phone *" type="tel" placeholder="305 123-4567"
                         :error-messages="errors.phone" hint="Format: ### ###-####" persistent-hint variant="outlined"
                         @input="handlePhoneInput"></v-text-field>
                     </v-col>
@@ -296,8 +296,15 @@ function handlePhoneInput(event: Event) {
     })
   }
 
-  phoneFormatted.value = target.value
-  setFieldValue('phone', target.value)
+  // Limit to 12 characters max (10 digits + 1 space + 1 dash)
+  let value = target.value
+  if (value.length > 12) {
+    value = value.substring(0, 12)
+    target.value = value
+  }
+
+  phoneFormatted.value = value
+  setFieldValue('phone', value)
 }
 
 function handleResumeChange(files: File | File[] | null) {
@@ -408,5 +415,45 @@ watch(registeredEmail, () => {
 
 .stepper-actions {
   padding: 16px;
+}
+
+/* Responsive fixes for mobile devices (iPhone 16 and similar) */
+@media (max-width: 430px) {
+  /* Reduce stepper header font size on small screens */
+  :deep(.v-stepper-header) {
+    gap: 4px !important;
+  }
+
+  :deep(.v-stepper-item__title) {
+    font-size: 0.7rem !important;
+    line-height: 1.1 !important;
+    max-width: 80px;
+    word-wrap: break-word;
+    text-align: center;
+  }
+
+  :deep(.v-stepper-item) {
+    padding: 8px 2px !important;
+  }
+
+  :deep(.v-stepper-item__avatar) {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* For very small screens like iPhone SE */
+@media (max-width: 375px) {
+  :deep(.v-stepper-item__title) {
+    font-size: 0.65rem !important;
+    max-width: 70px;
+  }
+
+  :deep(.v-stepper-item__avatar) {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.7rem !important;
+  }
 }
 </style>

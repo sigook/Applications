@@ -62,8 +62,7 @@
                 <div class="col-12 col-padding">
                   <b-field label="Resume">
                     <b-field class="file is-primary" :class="{ 'has-name': !!file }">
-                      <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @input="uploadResume"
-                        rounded>
+                      <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" rounded>
                         <span class="file-cta">
                           <b-icon class="file-icon" icon="upload"></b-icon>
                           <span class="file-label">{{ file ? file.name : "Click to upload" }}</span>
@@ -106,7 +105,7 @@
             </b-step-item>
           </b-steps>
         </b-tab-item>
-        <b-tab-item label="Already Registered">
+        <b-tab-item label="Already Registered" :visible="jobToApply">
           <div class="container-flex">
             <div class="col-12 col-padding">
               <b-field :type="errors.has('emailRegistered') ? 'is-danger' : ''" label="Email"
@@ -122,7 +121,6 @@
       <div class="container-flex">
         <div class="col-12 col-padding">
           <b-field position="is-right">
-            <b-button type="is-primary is-light" native-type="button" class="mr-1" @click="close()">Close</b-button>
             <b-button type="is-primary" native-type="submit"
               :disabled="errors.items.length > 0 || !termnsAndConditions">Save Changes</b-button>
           </b-field>
@@ -134,10 +132,11 @@
 
 <script>
 import updateMixin from "@/mixins/uploadFiles";
+import multipartUploadMixin from "@/mixins/multipartUploadMixin";
 
 export default {
   props: ['jobToApply'],
-  mixins: [updateMixin],
+  mixins: [updateMixin, multipartUploadMixin],
   components: {
     phoneInput: () => import("@/components/PhoneInput")
   },
@@ -162,26 +161,60 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoading = true;
+
+        // Set requestId if applying to a specific job
         if (this.jobToApply) {
           this.candidate.requestId = this.jobToApply.requestId;
         }
-        await this.$store.dispatch('createCandidate', this.candidate);
+
+        let formData;
+
+        if (this.isNewApplicantTab) {
+          // New applicant - create FormData with all fields and file
+          formData = new FormData();
+
+          // Generate file name if resume is present
+          let fileName = null;
+          if (this.file) {
+            fileName = this.generateFileName('Resume', this.file.name);
+          }
+
+          // Build candidate data object (similar to CandidateViewModel in covenantWeb)
+          const candidateData = {
+            fullName: this.candidate.fullName,
+            email: this.candidate.email,
+            phone: this.candidate.phone,
+            skills: this.candidate.skills,
+            status: this.candidate.status || '',
+            countryId: this.candidate.countryId,
+            address: this.candidate.address,
+            fileName: fileName,
+            hasVehicle: this.candidate.hasVehicle,
+            requestId: this.candidate.requestId
+          };
+
+          // Append data field with candidate JSON
+          formData.append('data', JSON.stringify(candidateData));
+
+          // Append resume file with generated filename as key
+          if (this.file && fileName) {
+            formData.append(fileName, this.file, fileName);
+          }
+        } else {
+          // Already registered - only send email and requestId
+          formData = new FormData();
+          const candidateData = {
+            email: this.candidate.email,
+            requestId: this.candidate.requestId
+          };
+          formData.append('data', JSON.stringify(candidateData));
+        }
+
+        await this.$store.dispatch('createCandidate', formData);
         this.$emit('candidateCreated');
         this.isLoading = false;
       }
     },
-    async close() {
-      if (this.candidate.resume) {
-        await this.deleteFile(this.candidate.fileName);
-      }
-      this.$emit('candidateCreated');
-    },
-    async uploadResume(file) {
-      this.isLoading = true;
-      const response = await this.uploadFile(file, 'document', 'Resume_');
-      this.candidate.fileName = response;
-      this.isLoading = false;
-    }
   },
   computed: {
     isNewApplicantTab() {

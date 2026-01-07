@@ -268,9 +268,11 @@ export default {
           .catch((error) => reject(error.response));
       })
     },
-    createCandidate(context, candidate) {
+    createCandidate(context, formData) {
       return new Promise((resolve, reject) => {
-        http.post('/api/WebSite/candidate', candidate)
+        http.post('/api/website/candidate', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response))
       });
