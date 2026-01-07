@@ -97,12 +97,42 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Calculate Docker tag using template
-          - template: templates/calculate-docker-tag.yml
-            parameters:
-              tagVariableName: 'dockerTag'
-              environmentVariableName: 'buildEnvironment'
-              stepName: 'SetDockerTag'
+          # Calculate Docker tag and environment
+          - script: |
+              echo "========================================"
+              echo "Docker Tag Calculation"
+              echo "========================================"
+              echo "Branch: $(Build.SourceBranchName)"
+              echo "Source Branch: $(Build.SourceBranch)"
+              echo "isDev: $(isDev)"
+              echo "isMain: $(isMain)"
+
+              if [ "$(isDev)" = "True" ]; then
+                TAG="latest_staging"
+                ENV="staging"
+                echo "✅ Detected: STAGING/DEV Environment"
+              else
+                TAG="latest_production"
+                ENV="production"
+                echo "✅ Detected: PRODUCTION/MAIN Environment"
+              fi
+
+              echo "----------------------------------------"
+              echo "Calculated Values:"
+              echo "  Docker Tag: $TAG"
+              echo "  Environment: $ENV"
+              echo "----------------------------------------"
+
+              # Set variables for this job
+              echo "##vso[task.setvariable variable=dockerTag]$TAG"
+              echo "##vso[task.setvariable variable=buildEnvironment]$ENV"
+
+              # Also set as output variable for cross-job access
+              echo "##vso[task.setvariable variable=dockerTag;isOutput=true]$TAG"
+
+              echo "✅ Variables set successfully"
+            name: SetDockerTag
+            displayName: 'Calculate Docker Tag and Environment'
 
           # Verify environment variable was set
           - script: |
