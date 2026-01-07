@@ -61,10 +61,20 @@ export const applicationService = {
   },
 
   async submitRegisteredApplication(email: string, requestId?: string): Promise<void> {
-    // For already registered users, just send email and requestId
-    await api.post('/api/website/candidate', {
+    // For already registered users, use the same v2 endpoint with multipart/form-data
+    const formData = new FormData()
+
+    // Build minimal CandidateViewModel for registered users
+    const candidateViewModel: Partial<CandidateViewModel> = {
       email: email,
       requestId: requestId
+    }
+
+    // Append data field with CandidateViewModel JSON
+    formData.append('data', JSON.stringify(candidateViewModel))
+
+    await api.post('/api/website/v2/candidate', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
   }
 }

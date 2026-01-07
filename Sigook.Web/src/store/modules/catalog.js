@@ -268,9 +268,12 @@ export default {
           .catch((error) => reject(error.response));
       })
     },
-    createCandidate(context, candidate) {
+    createCandidate(context, formData) {
       return new Promise((resolve, reject) => {
-        http.post('/api/WebSite/candidate', candidate)
+        // Always use v2 endpoint with multipart/form-data
+        http.post('/api/website/v2/candidate', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response))
       });

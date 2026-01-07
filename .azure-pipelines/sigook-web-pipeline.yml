@@ -97,72 +97,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Calculate Docker tag and environment
-          - script: |
-              echo "========================================"
-              echo "Docker Tag Calculation"
-              echo "========================================"
-              echo "Branch: $(Build.SourceBranchName)"
-              echo "Source Branch: $(Build.SourceBranch)"
-              echo "isDev variable: '$(isDev)'"
-              echo "isMain variable: '$(isMain)'"
-              echo "========================================"
-
-              # Normalize branch name for comparison
-              BRANCH=$(Build.SourceBranch)
-              echo "Full branch path: $BRANCH"
-
-              # Check if dev branch
-              if [[ "$BRANCH" == *"/dev"* ]] || [[ "$BRANCH" == *"/development"* ]] || [[ "$(Build.SourceBranchName)" == "dev" ]]; then
-                TAG="latest_staging"
-                ENV="staging"
-                echo "✅ Detected: STAGING/DEV Environment (branch match)"
-              elif [[ "$BRANCH" == *"/main"* ]] || [[ "$BRANCH" == *"/master"* ]] || [[ "$(Build.SourceBranchName)" == "main" ]] || [[ "$(Build.SourceBranchName)" == "master" ]]; then
-                TAG="latest_production"
-                ENV="production"
-                echo "✅ Detected: PRODUCTION/MAIN Environment (branch match)"
-              else
-                # Fallback to checking isDev variable
-                echo "⚠️ Branch not matched, checking isDev variable"
-                if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
-                  TAG="latest_staging"
-                  ENV="staging"
-                  echo "✅ Detected: STAGING/DEV Environment (isDev=True)"
-                else
-                  TAG="latest_production"
-                  ENV="production"
-                  echo "✅ Detected: PRODUCTION/MAIN Environment (default)"
-                fi
-              fi
-
-              echo "========================================"
-              echo "Calculated Values:"
-              echo "  Docker Tag: $TAG"
-              echo "  Environment: $ENV"
-              echo "========================================"
-
-              # Set variables for this job
-              echo "##vso[task.setvariable variable=dockerTag]$TAG"
-              echo "##vso[task.setvariable variable=buildEnvironment]$ENV"
-
-              # Also set as output variable for cross-job access
-              echo "##vso[task.setvariable variable=dockerTag;isOutput=true]$TAG"
-
-              echo "✅ Variables set successfully"
-            name: SetDockerTag
-            displayName: 'Calculate Docker Tag and Environment'
-
-          # Verify environment variable was set
-          - script: |
-              echo "Verifying variables for Docker build..."
-              echo "dockerTag = $(dockerTag)"
-              echo "buildEnvironment = $(buildEnvironment)"
-              if [ -z "$(buildEnvironment)" ]; then
-                echo "❌ ERROR: buildEnvironment is empty!"
-                exit 1
-              fi
-              echo "✅ Variables verified"
-            displayName: 'Verify Build Variables'
+          # Calculate Docker tag using template
+          - template: templates/calculate-docker-tag.yml
+            parameters:
+              tagVariableName: 'dockerTag'
+              environmentVariableName: 'buildEnvironment'
+              stepName: 'SetDockerTag'
 
           # Replace tokens in public files (version number)
           - task: qetza.replacetokens.replacetokens-task.replacetokens@6
@@ -178,28 +118,6 @@ stages:
               actionOnMissing: 'warn'
               writeBOM: true
               encoding: 'auto'
-
-          # Pre-Docker Build Verification
-          - script: |
-              echo "========================================"
-              echo "Pre-Docker Build Verification"
-              echo "========================================"
-              echo "buildEnvironment = $(buildEnvironment)"
-              echo "dockerTag = $(dockerTag)"
-              echo ""
-              echo "Docker build will execute:"
-              echo "  docker build --build-arg ENV=$(buildEnvironment)"
-              echo ""
-              echo "Expected Dockerfile behavior:"
-              if [ "$(buildEnvironment)" = "staging" ]; then
-                echo "  ✅ Will run: npm run staging"
-                echo "  ✅ Will load: .env.staging"
-              else
-                echo "  ✅ Will run: npm run production"
-                echo "  ✅ Will load: .env.production"
-              fi
-              echo "========================================"
-            displayName: 'Pre-Docker Build Verification'
 
           # Build Docker Image
           - task: Docker@2
