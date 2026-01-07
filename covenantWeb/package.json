@@ -24,16 +24,19 @@
     "pinia": "^3.0.3",
     "qs": "^6.13.0",
     "serve": "^14.2.3",
+    "vee-validate": "^4.15.1",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
     "vue3-recaptcha2": "^1.8.0",
-    "vuetify": "^3.7.0"
+    "vuetify": "^3.7.0",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/cleave.js": "^1.4.12",
     "@types/node": "^24.10.2",
     "@types/qs": "^6.9.17",
+    "@types/yup": "^0.29.14",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
     "@vitejs/plugin-vue": "^6.0.1",

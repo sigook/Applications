@@ -12,6 +12,7 @@ trigger:
       - dev
   paths:
     include:
+      - .gitignore
       - Sigook.Web/**
       - .azure-pipelines/sigook-web-pipeline.yml
     exclude:

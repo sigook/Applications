@@ -5,6 +5,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Models.WebSite;
@@ -49,6 +50,7 @@ namespace Covenant.Core.BL.Consumers
             var requestRepository = scope.ServiceProvider.GetService<IRequestRepository>();
             var agencyRepository = scope.ServiceProvider.GetService<IAgencyRepository>();
             var candidateService = scope.ServiceProvider.GetService<ICandidateService>();
+            var filesContainer = scope.ServiceProvider.GetService<IFilesContainer>();
             var message = args.Message.Body.ToObjectFromJson<CandidateViewModel>();
             var response = new ServiceBusMessage();
             if (message is not null)
@@ -110,6 +112,7 @@ namespace Covenant.Core.BL.Consumers
                                     }
                                     else
                                     {
+                                        await filesContainer.DeleteFileIfExists(message.FileName);
                                         response.ApplicationProperties[ServiceBusSqlConstants.ErrorCandidate] = $"The candidate with email {email.Value.Email} attempted to apply for order {request.NumberId}, but the country selected during registration does not match the one in the order.";
                                     }
                                 }
@@ -139,12 +142,14 @@ namespace Covenant.Core.BL.Consumers
                         }
                         else
                         {
+                            await filesContainer.DeleteFileIfExists(message.FileName);
                             response.ApplicationProperties[ServiceBusSqlConstants.ErrorCandidate] = $"Candidate with email: {email.Value.Email} is already registered";
                         }
                     }
                 }
                 else
                 {
+                    await filesContainer.DeleteFileIfExists(message.FileName);
                     var builder = new StringBuilder();
                     builder.AppendLine($"Candidate Details: {message.ToString()}");
                     builder.AppendLine($"Validation Errors: {string.Join(", ", candidateValidation.Errors.Select(e => e.ErrorMessage))}");

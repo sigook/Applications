@@ -35,7 +35,10 @@ export default [
         defineEmits: 'readonly',
         defineExpose: 'readonly',
         withDefaults: 'readonly',
-        defineOptions: 'readonly'
+        defineOptions: 'readonly',
+        File: 'readonly',
+        FormData: 'readonly',
+        crypto: 'readonly'
       }
     },
     plugins: {
@@ -51,6 +54,13 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module'
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        File: 'readonly',
+        FormData: 'readonly',
+        crypto: 'readonly'
       }
     },
     plugins: {
@@ -63,6 +73,7 @@ export default [
     rules: {
       // Desactiva reglas que causan problemas comunes
       'vue/multi-word-component-names': 'off',
+      'vue/valid-v-slot': 'off', // Vuetify uses slots like v-slot:item.1 for steppers
       // Agrega tus reglas personalizadas aquí
       // 'no-console': 'warn',
     }

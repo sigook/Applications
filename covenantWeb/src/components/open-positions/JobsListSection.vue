@@ -70,7 +70,7 @@
             </div>
 
             <div class="apply-container">
-              <button class="btn-apply-large">APPLY</button>
+              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
             </div>
 
             <hr class="divider" />
@@ -99,7 +99,7 @@
             </div>
 
             <div class="detail-footer">
-              <button class="btn-apply-large">APPLY NOW</button>
+              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
             </div>
 
           </div>
@@ -111,6 +111,23 @@
 
       </div>
     </div>
+
+    <!-- Apply Now Dialog -->
+    <ApplyNowDialog
+      v-model="showApplyDialog"
+      :selected-job="jobToApply"
+      @application-submitted="onApplicationSubmitted"
+    />
+
+    <!-- Success Snackbar -->
+    <v-snackbar
+      v-model="successSnackbar"
+      color="success"
+      location="top"
+      :timeout="5000"
+    >
+      ✅ Application submitted successfully! We'll contact you soon.
+    </v-snackbar>
   </section>
 </template>
 
@@ -118,6 +135,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJobs } from '@/composables/useJobs'
+import ApplyNowDialog from '@/components/jobs/ApplyNowDialog.vue'
 import type { Job } from '@/services/types/job.types'
 
 const route = useRoute()
@@ -126,8 +144,15 @@ const router = useRouter()
 // Use jobs composable for API integration
 const { jobs, loading, error, fetchJobs } = useJobs()
 
-// Estado para el trabajo seleccionado
+// Estado para el trabajo seleccionado (para mostrar detalles)
 const selectedJob = ref<Job | null>(null)
+
+// Estado para el trabajo al que se está aplicando (para el modal)
+const jobToApply = ref<Job | null>(null)
+
+// Estado para el dialog y snackbar
+const showApplyDialog = ref(true) // Auto-open on page load
+const successSnackbar = ref(false)
 
 // Función para seleccionar trabajo
 const selectJob = (job: Job) => {
@@ -146,6 +171,19 @@ const viewAllJobs = () => {
 
   // Cargar todos los trabajos sin filtros
   fetchJobs()
+}
+
+// Función para abrir el dialog de Apply
+const handleApplyClick = () => {
+  jobToApply.value = selectedJob.value
+  showApplyDialog.value = true
+}
+
+// Handler cuando se completa la aplicación
+const onApplicationSubmitted = () => {
+  showApplyDialog.value = false
+  jobToApply.value = null // Limpiar el job al cerrar
+  successSnackbar.value = true
 }
 
 // Al montar el componente, cargamos trabajos desde la API
@@ -176,6 +214,13 @@ watch(jobs, (newJobs) => {
     selectedJob.value = newJobs[0]
   } else {
     selectedJob.value = null
+  }
+})
+
+// Limpiar jobToApply cuando se cierra el dialog
+watch(showApplyDialog, (newValue) => {
+  if (!newValue) {
+    jobToApply.value = null
   }
 })
 </script>
