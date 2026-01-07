@@ -55,7 +55,7 @@ export const applicationService = {
       formData.append(fileName, data.resume, fileName)
     }
 
-    await api.post('/api/website/v2/candidate', formData, {
+    await api.post('/api/website/candidate', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   },

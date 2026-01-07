@@ -270,8 +270,7 @@ export default {
     },
     createCandidate(context, formData) {
       return new Promise((resolve, reject) => {
-        // Always use v2 endpoint with multipart/form-data
-        http.post('/api/website/v2/candidate', formData, {
+        http.post('/api/website/candidate', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
           .then((response) => resolve(response.data))
