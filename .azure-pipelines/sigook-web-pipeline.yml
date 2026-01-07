@@ -211,7 +211,9 @@ stages:
               Dockerfile: 'Sigook.Web/Dockerfile'
               buildContext: 'Sigook.Web'
               tags: $(dockerTag)
-              arguments: '--build-arg ENV=$(buildEnvironment)'
+              arguments: '--build-arg ENV=$BUILD_ENVIRONMENT'
+            env:
+              BUILD_ENVIRONMENT: $(buildEnvironment)
 
           - task: Bash@3
             displayName: 'Docker Build Summary'
