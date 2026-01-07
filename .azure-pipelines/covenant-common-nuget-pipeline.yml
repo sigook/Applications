@@ -24,6 +24,7 @@ pr:
       - dev
   paths:
     include:
+      - .gitignore
       - Covenant.Api/Covenant.Common/**
       - Covenant.Api/Covenant.Integration.Tests/**
       - Covenant.Api/Covenant.Tests/**

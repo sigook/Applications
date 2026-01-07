@@ -1,0 +1,113 @@
+body {
+    text-align: center;
+    margin:0;
+    padding:0;
+    background-color:#FFF;
+    font-family:system-ui, Palatino, serif;
+    font-size: 18px;
+    line-height: 1.4
+}
+
+body > div {
+    padding: 50px 20px 20px;
+}
+
+div.logo {
+    font-family: Impact;
+    padding: 10px 15px 35px;
+    font-size: 24px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+div.container {
+    background-color: #F5F5F5;
+    padding: 50px 20px 50px;
+}
+
+.iconTop {
+    width: 90px;
+    height: 60px;
+    margin: 0 auto;
+}
+
+h2 {font-weight: 300;}
+
+.message {
+    font-weight: 200;
+}
+
+p {
+    margin: 0;
+}
+
+a.button {
+    text-decoration:none;
+    display:block;
+    border:2px solid #21b7ff;
+    color:#21b7ff;
+    width: 230px;
+    padding: 10px;
+    margin: 20px auto;
+    background: transparent;
+    font-size: 14px;
+}
+button.button {
+    text-decoration:none;
+    display:block;
+    border:2px solid #21b7ff;
+    color:#21b7ff;
+    width: 230px;
+    padding: 10px;
+    margin: 20px auto;
+    background: transparent;
+    font-size: 14px;
+}
+
+.download {
+    padding: 50px 20px 30px;
+}
+
+.download > div {
+    font-weight: 200;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+
+.download img {
+    height:40px;
+}
+
+.download img:nth-of-type(1) {
+    margin-right:15px;
+}
+.inputs label {
+    display: block;
+    margin: 15px auto;
+}
+.inputs input{
+    font-size: 12px;
+    width: 100%;
+    max-width: 400px;
+    height: 35px;
+    border: 1px solid rgba(0,0,0,.15);
+    background: #ffffff57;
+    padding: 0 10px;
+    border-radius: 5px;
+}
+
+.lock{
+    width: 50px;
+}
+.validation-summary-errors {
+    display: block;
+    color: #f57f6c;
+    font-size: 12px;
+    margin-top: 2px;
+    padding: 5px;
+}
+
+.validation-summary-errors li {
+    display: block;
+    width: 100%;
+}

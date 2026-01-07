@@ -2,12 +2,40 @@
   <section class="jobs-section" id="jobs-results">
     <div class="container">
 
-      <div class="jobs-layout">
+      <!-- LOADING STATE with Vuetify -->
+      <div v-if="loading" class="loading-container">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          :size="70"
+          :width="7"
+        ></v-progress-circular>
+        <p>Loading jobs...</p>
+      </div>
+
+      <!-- ERROR STATE -->
+      <div v-else-if="error" class="error-container">
+        <p class="error-message">{{ error }}</p>
+        <button @click="fetchJobs()" class="retry-button">Retry</button>
+      </div>
+
+      <!-- EMPTY STATE (no jobs available) -->
+      <div v-else-if="jobs.length === 0" class="empty-state-container">
+        <div class="empty-state-icon">📋</div>
+        <h3 class="empty-state-title">No Jobs Available</h3>
+        <p class="empty-state-message">
+          There are currently no job openings matching your search criteria.
+          Please try adjusting your filters or check back later.
+        </p>
+        <button @click="viewAllJobs()" class="retry-button">View All Jobs</button>
+      </div>
+
+      <!-- JOBS LAYOUT (existing content) -->
+      <div v-else class="jobs-layout">
 
         <div class="jobs-list-col">
           <div class="list-header">
             <span>{{ jobs.length }} Jobs Found</span>
-            <span class="sort-link">Most Recent &gt;</span>
           </div>
 
           <div class="scrollable-list">
@@ -42,7 +70,7 @@
             </div>
 
             <div class="apply-container">
-              <button class="btn-apply-large">APPLY</button>
+              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
             </div>
 
             <hr class="divider" />
@@ -71,7 +99,7 @@
             </div>
 
             <div class="detail-footer">
-              <button class="btn-apply-large">APPLY NOW</button>
+              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
             </div>
 
           </div>
@@ -83,47 +111,116 @@
 
       </div>
     </div>
+
+    <!-- Apply Now Dialog -->
+    <ApplyNowDialog
+      v-model="showApplyDialog"
+      :selected-job="jobToApply"
+      @application-submitted="onApplicationSubmitted"
+    />
+
+    <!-- Success Snackbar -->
+    <v-snackbar
+      v-model="successSnackbar"
+      color="success"
+      location="top"
+      :timeout="5000"
+    >
+      ✅ Application submitted successfully! We'll contact you soon.
+    </v-snackbar>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useJobs } from '@/composables/useJobs'
+import ApplyNowDialog from '@/components/jobs/ApplyNowDialog.vue'
+import type { Job } from '@/services/types/job.types'
 
-// IMPORTANTE: Importamos el JSON directamente.
-// Vite se encarga de convertirlo en un objeto JS utilizable.
-import jobsData from '@/assets/json/jobs.json'
+const route = useRoute()
+const router = useRouter()
 
-// Definimos la interfaz para tipado estricto
-interface Job {
-  id: string;
-  numberId: string;
-  title: string;
-  salary: string;
-  location: string;
-  type: string;
-  description: string;
-  requirements: string;
-  responsibilities: string;
-  shift: string;
-  createdAt: string;
-}
+// Use jobs composable for API integration
+const { jobs, loading, error, fetchJobs } = useJobs()
 
-// Convertimos los datos importados al tipo Job[]
-// Si TypeScript se queja, puedes usar 'as unknown as Job[]' pero normalmente lo infiere bien.
-const jobs = ref<Job[]>(jobsData as Job[]);
+// Estado para el trabajo seleccionado (para mostrar detalles)
+const selectedJob = ref<Job | null>(null)
 
-// Estado para el trabajo seleccionado
-const selectedJob = ref<Job | null>(null);
+// Estado para el trabajo al que se está aplicando (para el modal)
+const jobToApply = ref<Job | null>(null)
+
+// Estado para el dialog y snackbar
+const showApplyDialog = ref(true) // Auto-open on page load
+const successSnackbar = ref(false)
 
 // Función para seleccionar trabajo
 const selectJob = (job: Job) => {
-  selectedJob.value = job;
+  selectedJob.value = job
+
+  // Actualizar URL con el jobId (permite deep linking)
+  router.replace({
+    query: { jobId: job.numberId }
+  })
 }
 
-// Al montar el componente, seleccionamos el primero de la lista automáticamente
-onMounted(() => {
+// Función para ver todos los trabajos (limpia filtros y query)
+const viewAllJobs = () => {
+  // Limpiar querystring
+  router.replace({ query: {} })
+
+  // Cargar todos los trabajos sin filtros
+  fetchJobs()
+}
+
+// Función para abrir el dialog de Apply
+const handleApplyClick = () => {
+  jobToApply.value = selectedJob.value
+  showApplyDialog.value = true
+}
+
+// Handler cuando se completa la aplicación
+const onApplicationSubmitted = () => {
+  showApplyDialog.value = false
+  jobToApply.value = null // Limpiar el job al cerrar
+  successSnackbar.value = true
+}
+
+// Al montar el componente, cargamos trabajos desde la API
+onMounted(async () => {
+  // Obtenemos filtros de la URL (incluyendo jobId si existe)
+  const filters = {
+    jobId: route.query.jobId as string | undefined,
+    jobTitle: route.query.jobTitle as string | undefined,
+    location: route.query.location as string | undefined
+  }
+
+  await fetchJobs(filters)
+
   if (jobs.value.length > 0) {
-    selectedJob.value = jobs.value[0];
+    // Si hay jobId en URL y existe ese job, seleccionarlo
+    if (filters.jobId) {
+      const jobFromUrl = jobs.value.find(j => j.numberId === filters.jobId)
+      selectedJob.value = jobFromUrl || jobs.value[0]
+    } else {
+      selectedJob.value = jobs.value[0]
+    }
+  }
+})
+
+// Cuando los resultados cambien (por búsqueda), seleccionar el primero automáticamente
+watch(jobs, (newJobs) => {
+  if (newJobs.length > 0) {
+    selectedJob.value = newJobs[0]
+  } else {
+    selectedJob.value = null
+  }
+})
+
+// Limpiar jobToApply cuando se cierra el dialog
+watch(showApplyDialog, (newValue) => {
+  if (!newValue) {
+    jobToApply.value = null
   }
 })
 </script>
@@ -326,6 +423,79 @@ onMounted(() => {
 
 :deep(.description p) {
   margin-bottom: 15px;
+}
+
+/* LOADING AND ERROR STATES */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  gap: 20px;
+}
+
+.loading-container p {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.error-container {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.retry-button {
+  background-color: #32d26a;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #28a755;
+  transform: translateY(-2px);
+}
+
+/* EMPTY STATE */
+.empty-state-container {
+  text-align: center;
+  padding: 100px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.empty-state-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #05162d;
+  margin-bottom: 15px;
+}
+
+.empty-state-message {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
 }
 
 /* RESPONSIVE */

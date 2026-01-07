@@ -457,7 +457,6 @@ public
 
 # Build outputs
 dist/
-wwwroot/
 
 # Environment files - allowing .local files to be versioned for developer reference
 # Each developer can modify their local .env.development.local as needed

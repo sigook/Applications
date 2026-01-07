@@ -213,7 +213,7 @@ public class IdentityServerService : IIdentityServerService
         }
     }
 
-    public string GetNickname() => httpContextAccessor.HttpContext.User.GetNickname();
+    public string GetNickname() => httpContextAccessor.HttpContext?.User?.GetNickname();
 
     public Guid GetCompanyId() => httpContextAccessor.HttpContext.User.GetCompanyId();
 

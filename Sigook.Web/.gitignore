@@ -23,6 +23,3 @@ pnpm-debug.log*
 
 # Vue CLI cache
 .eslintcache
-
-# Legacy cursor rules (no longer used)
-cursor.rules

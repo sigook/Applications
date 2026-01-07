@@ -32,39 +32,13 @@
               </div>
 
               <div class="form-group">
-                <label for="location">City or Postal Code</label>
+                <label for="location">City</label>
                 <input
                   type="text"
                   id="location"
                   v-model="filters.location"
-                  placeholder="Enter your current location"
+                  placeholder="Enter city name"
                 />
-              </div>
-
-              <div class="form-row">
-                <div class="form-group half">
-                  <label for="jobType">Job Type</label>
-                  <div class="select-wrapper">
-                    <select id="jobType" v-model="filters.jobType">
-                      <option value="" disabled selected>Select One</option>
-                      <option value="full-time">Full Time</option>
-                      <option value="part-time">Part Time</option>
-                      <option value="contract">Contract</option>
-                      <option value="temporary">Temporary</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group half">
-                  <label for="country">Select Country</label>
-                  <div class="select-wrapper country-select">
-                    <span class="flag-icon">🇨🇦</span>
-                    <select id="country" v-model="filters.country">
-                      <option value="canada">Canada</option>
-                      <option value="usa">USA</option>
-                    </select>
-                  </div>
-                </div>
               </div>
 
               <button type="submit" class="btn-search">
@@ -82,32 +56,41 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useJobsStore } from '@/stores/jobs'
 
 // Definimos la estructura de los filtros
 interface SearchFilters {
   jobTitle: string;
   location: string;
-  jobType: string;
-  country: string;
 }
 
 // Estado reactivo del formulario
 const filters = reactive<SearchFilters>({
   jobTitle: '',
-  location: '',
-  jobType: '',
-  country: 'canada' // Valor por defecto
-});
+  location: ''
+})
 
-// Definimos evento para comunicar al padre que se debe buscar
-const emit = defineEmits<{
-  search: [filters: SearchFilters]
-}>();
+const router = useRouter()
+
+// Store de jobs para llamar a la API
+const jobsStore = useJobsStore()
 
 const handleSearch = () => {
-  // Emitimos los filtros actuales al componente padre (View)
-  // El padre se encargará de llamar a la API con estos datos
-  emit('search', { ...filters });
+  // Limpiar el querystring (especialmente jobId)
+  router.replace({ query: {} })
+
+  // Llamamos directamente al store con los filtros
+  jobsStore.fetchJobs({
+    jobTitle: filters.jobTitle || undefined,
+    location: filters.location || undefined
+  })
+
+  // Scroll suave a los resultados
+  const resultsSection = document.getElementById('jobs-results')
+  if (resultsSection) {
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 }
 </script>
 
@@ -256,35 +239,6 @@ const handleSearch = () => {
   background: #fff;
 }
 
-/* Fila de selects */
-.form-row {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-}
-.form-group.half {
-  flex: 1; /* Se reparten el espacio 50/50 */
-  min-width: 0; /* Evita que el flex item se desborde si el contenido es muy ancho */
-}
-
-/* Select de país con bandera */
-.country-select {
-  position: relative;
-  width: 100%;
-}
-.country-select select {
-  padding-right: 35px;
-  /* appearance: none; Quitado para mantener la flecha nativa en algunos navegadores si se prefiere, o déjalo si usas un icono custom */
-}
-.flag-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 1.2rem;
-  z-index: 2;
-}
 
 /* Botón Search */
 .btn-search {
@@ -341,12 +295,6 @@ const handleSearch = () => {
   .form-card {
     width: 280px;
     padding: 20px;
-  }
-
-  /* CORRECCIÓN MÓVIL: Apilar los campos de la fila inferior */
-  .form-row {
-    flex-direction: column;
-    gap: 0; /* Quitamos gap horizontal, usamos margin-bottom del form-group */
   }
 
   .hero-title {
