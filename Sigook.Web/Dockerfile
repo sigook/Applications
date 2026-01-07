@@ -8,31 +8,21 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set build argument (default: production)
-ARG ENV=production
+# Set build argument (NO default - must be passed explicitly)
+ARG ENV
 
-# Display build environment info
-RUN echo "========================================" && \
-    echo "Sigook.Web Docker Build" && \
-    echo "========================================" && \
-    echo "ENV argument received: ${ENV}" && \
-    echo "Node version: $(node --version)" && \
-    echo "NPM version: $(npm --version)" && \
-    echo "========================================"
+# Validate ENV argument
+RUN if [ -z "${ENV}" ]; then \
+      echo "ERROR: ENV build argument is required"; \
+      exit 1; \
+    fi
 
 # Run Vue CLI build
-RUN set -e && \
-    echo "Building for environment: ${ENV}" && \
-    if [ "${ENV}" = "staging" ]; then \
-      echo "✅ Running: npm run staging" && \
-      echo "✅ Will load: .env.staging" && \
+RUN if [ "${ENV}" = "staging" ]; then \
       npm run staging; \
     else \
-      echo "✅ Running: npm run production" && \
-      echo "✅ Will load: .env.production" && \
       npm run production; \
-    fi && \
-    echo "Build completed successfully"
+    fi
 
 # Verify build output exists
 RUN test -d wwwroot || (echo "ERROR: Build did not create wwwroot directory" && exit 1)
