@@ -11,12 +11,25 @@ COPY . .
 # Set build argument (default: production)
 ARG ENV=production
 
+# Display build environment info
+RUN echo "========================================" && \
+    echo "Sigook.Web Docker Build" && \
+    echo "========================================" && \
+    echo "ENV argument received: ${ENV}" && \
+    echo "Node version: $(node --version)" && \
+    echo "NPM version: $(npm --version)" && \
+    echo "========================================"
+
 # Run Vue CLI build
 RUN set -e && \
     echo "Building for environment: ${ENV}" && \
     if [ "${ENV}" = "staging" ]; then \
+      echo "✅ Running: npm run staging" && \
+      echo "✅ Will load: .env.staging" && \
       npm run staging; \
     else \
+      echo "✅ Running: npm run production" && \
+      echo "✅ Will load: .env.production" && \
       npm run production; \
     fi && \
     echo "Build completed successfully"

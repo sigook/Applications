@@ -104,24 +104,42 @@ stages:
               echo "========================================"
               echo "Branch: $(Build.SourceBranchName)"
               echo "Source Branch: $(Build.SourceBranch)"
-              echo "isDev: $(isDev)"
-              echo "isMain: $(isMain)"
+              echo "isDev variable: '$(isDev)'"
+              echo "isMain variable: '$(isMain)'"
+              echo "========================================"
 
-              if [ "$(isDev)" = "True" ]; then
+              # Normalize branch name for comparison
+              BRANCH=$(Build.SourceBranch)
+              echo "Full branch path: $BRANCH"
+
+              # Check if dev branch
+              if [[ "$BRANCH" == *"/dev"* ]] || [[ "$BRANCH" == *"/development"* ]] || [[ "$(Build.SourceBranchName)" == "dev" ]]; then
                 TAG="latest_staging"
                 ENV="staging"
-                echo "✅ Detected: STAGING/DEV Environment"
-              else
+                echo "✅ Detected: STAGING/DEV Environment (branch match)"
+              elif [[ "$BRANCH" == *"/main"* ]] || [[ "$BRANCH" == *"/master"* ]] || [[ "$(Build.SourceBranchName)" == "main" ]] || [[ "$(Build.SourceBranchName)" == "master" ]]; then
                 TAG="latest_production"
                 ENV="production"
-                echo "✅ Detected: PRODUCTION/MAIN Environment"
+                echo "✅ Detected: PRODUCTION/MAIN Environment (branch match)"
+              else
+                # Fallback to checking isDev variable
+                echo "⚠️ Branch not matched, checking isDev variable"
+                if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
+                  TAG="latest_staging"
+                  ENV="staging"
+                  echo "✅ Detected: STAGING/DEV Environment (isDev=True)"
+                else
+                  TAG="latest_production"
+                  ENV="production"
+                  echo "✅ Detected: PRODUCTION/MAIN Environment (default)"
+                fi
               fi
 
-              echo "----------------------------------------"
+              echo "========================================"
               echo "Calculated Values:"
               echo "  Docker Tag: $TAG"
               echo "  Environment: $ENV"
-              echo "----------------------------------------"
+              echo "========================================"
 
               # Set variables for this job
               echo "##vso[task.setvariable variable=dockerTag]$TAG"
@@ -160,6 +178,28 @@ stages:
               actionOnMissing: 'warn'
               writeBOM: true
               encoding: 'auto'
+
+          # Pre-Docker Build Verification
+          - script: |
+              echo "========================================"
+              echo "Pre-Docker Build Verification"
+              echo "========================================"
+              echo "buildEnvironment = $(buildEnvironment)"
+              echo "dockerTag = $(dockerTag)"
+              echo ""
+              echo "Docker build will execute:"
+              echo "  docker build --build-arg ENV=$(buildEnvironment)"
+              echo ""
+              echo "Expected Dockerfile behavior:"
+              if [ "$(buildEnvironment)" = "staging" ]; then
+                echo "  ✅ Will run: npm run staging"
+                echo "  ✅ Will load: .env.staging"
+              else
+                echo "  ✅ Will run: npm run production"
+                echo "  ✅ Will load: .env.production"
+              fi
+              echo "========================================"
+            displayName: 'Pre-Docker Build Verification'
 
           # Build and Push Docker Image
           - task: Docker@2
