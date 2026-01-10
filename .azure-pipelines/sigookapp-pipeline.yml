@@ -210,8 +210,9 @@ stages:
             displayName: 'Prepare Artifacts'
             inputs:
               targetType: 'inline'
+              workingDirectory: '$(workingDirectory)'
               script: |
-                cd $(workingDirectory)
+                echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/android
                 
                 # Find and copy APK
@@ -222,7 +223,8 @@ stages:
                   ls -la $(Build.ArtifactStagingDirectory)/android/
                 else
                   echo "❌ APK not found!"
-                  find build -name "*.apk" -ls
+                  echo "Searching for APKs..."
+                  find . -name "*.apk" 2>/dev/null || echo "No APKs found"
                   exit 1
                 fi
 
@@ -351,8 +353,9 @@ stages:
             displayName: 'Prepare Artifacts'
             inputs:
               targetType: 'inline'
+              workingDirectory: '$(workingDirectory)'
               script: |
-                cd $(workingDirectory)
+                echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/android
                 
                 # Find and copy APK
