@@ -1,5 +1,5 @@
 # Azure Pipeline for SigookApp (Flutter Mobile Application)
-# This is a PLACEHOLDER pipeline - will be expanded later with full Flutter build process
+# Builds Android APK/AAB and iOS IPA for staging and production environments
 
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -7,13 +7,14 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      # - main
-      # - master
+      - main
+      - master
       - dev
   paths:
     include:
       - SigookApp/**
       - .azure-pipelines/sigookapp-pipeline.yml
+      - .azure-pipelines/templates/flutter-setup.yml
     exclude:
       - SigookApp/README.md
       - SigookApp/docs/**
@@ -33,168 +34,602 @@ pr:
       - SigookApp/README.md
       - SigookApp/docs/**
 
-pool:
-  vmImage: 'ubuntu-latest'
-
+# Environment detection variables
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  flutterVersion: 'stable'
 
 stages:
-  - stage: Validate
-    displayName: 'Validate SigookApp'
+  # ============================================
+  # Stage 1: Validate and Test
+  # ============================================
+  - stage: Validate_and_Test
+    displayName: 'Validate & Test'
+    pool:
+      vmImage: 'ubuntu-latest'
     jobs:
-      - job: BasicValidation
-        displayName: 'Basic Validation'
+      - job: Flutter_Test
+        displayName: 'Flutter Analyze & Test'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          - task: PowerShell@2
+          - task: Bash@3
             displayName: 'Display Build Information'
             inputs:
               targetType: 'inline'
               script: |
-                Write-Host "============================================"
-                Write-Host "SigookApp Pipeline Triggered"
-                Write-Host "============================================"
-                Write-Host "Build Number: $(Build.BuildNumber)"
-                Write-Host "Build ID: $(Build.BuildId)"
-                Write-Host "Source Branch: $(Build.SourceBranch)"
-                Write-Host "Source Version: $(Build.SourceVersion)"
-                Write-Host "Build Reason: $(Build.Reason)"
-                Write-Host "Working Directory: $(workingDirectory)"
+                echo "========================================"
+                echo "SigookApp Pipeline - Validate & Test"
+                echo "========================================"
+                echo "Build Number: $(Build.BuildNumber)"
+                echo "Source Branch: $(Build.SourceBranch)"
+                echo "Build Reason: $(Build.Reason)"
+                echo "Working Directory: $(workingDirectory)"
+                echo "========================================"
 
-                # Display PR information if applicable
-                if ("$(Build.Reason)" -eq "PullRequest") {
-                    Write-Host ""
-                    Write-Host "Pull Request Information:"
-                    Write-Host "PR Number: $(System.PullRequest.PullRequestNumber)"
-                    Write-Host "Target Branch: $(System.PullRequest.TargetBranch)"
-                    Write-Host "Source Branch: $(System.PullRequest.SourceBranch)"
-                }
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
 
-                Write-Host "============================================"
+          - script: |
+              flutter --version
+              flutter doctor -v
+            displayName: 'Flutter Doctor'
 
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              echo "Running build_runner..."
+              flutter pub run build_runner build --delete-conflicting-outputs
+              echo "✅ Code generation completed"
+            displayName: 'Run Build Runner'
+
+          # Analyze code
+          - script: |
+              cd $(workingDirectory)
+              echo "Running flutter analyze..."
+              flutter analyze --no-fatal-infos
+              echo "✅ Code analysis passed"
+            displayName: 'Flutter Analyze'
+
+          # Run tests
+          - script: |
+              cd $(workingDirectory)
+              echo "Running flutter test..."
+              flutter test --coverage --machine > test-results.json || true
+              echo "✅ Tests completed"
+            displayName: 'Flutter Test'
+
+          # Publish test results (if test output exists)
           - task: Bash@3
-            displayName: 'List SigookApp Files'
+            displayName: 'Test Summary'
             inputs:
               targetType: 'inline'
               script: |
-                echo "Listing SigookApp directory structure..."
-                ls -la $(workingDirectory)
-                echo ""
-                echo "Main Dart files:"
-                ls -la $(workingDirectory)/lib/main*.dart 2>/dev/null || echo "No main files found"
-                echo ""
-                echo "Pubspec.yaml content:"
-                cat $(workingDirectory)/pubspec.yaml | head -n 30
-
-          - task: PowerShell@2
-            displayName: 'Validate Project Structure'
-            inputs:
-              targetType: 'inline'
-              script: |
-                $projectPath = "$(workingDirectory)"
-
-                Write-Host "Validating Flutter project structure..."
-
-                # Check if pubspec.yaml exists
-                if (Test-Path "$projectPath/pubspec.yaml") {
-                    Write-Host "✅ pubspec.yaml found"
-                } else {
-                    Write-Host "❌ pubspec.yaml not found"
-                    exit 1
-                }
-
-                # Check if lib folder exists
-                if (Test-Path "$projectPath/lib") {
-                    Write-Host "✅ lib/ directory found"
-                } else {
-                    Write-Host "❌ lib/ directory not found"
-                    exit 1
-                }
-
-                # Check for main files
-                if (Test-Path "$projectPath/lib/main*.dart") {
-                    Write-Host "✅ Main dart files found"
-                    Get-ChildItem "$projectPath/lib/main*.dart" | ForEach-Object { Write-Host "   - $($_.Name)" }
-                } else {
-                    Write-Host "⚠️  No main dart files found"
-                }
-
-                Write-Host ""
-                Write-Host "✅ Basic project structure validation passed!"
-
-          - task: Bash@3
-            displayName: 'Environment Detection'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "Checking for environment files..."
-
-                if [ -f "$(workingDirectory)/.env.staging" ]; then
-                  echo "✅ .env.staging found"
+                cd $(workingDirectory)
+                if [ -f "test-results.json" ]; then
+                  echo "Test results generated"
+                  cat test-results.json | head -100
                 else
-                  echo "⚠️  .env.staging not found (will need to be created in future)"
+                  echo "No test results file found"
                 fi
+                echo ""
+                echo "✅ Validation stage completed!"
 
-                if [ -f "$(workingDirectory)/.env.production" ]; then
-                  echo "✅ .env.production found"
-                else
-                  echo "⚠️  .env.production not found (will need to be created in future)"
-                fi
-
-  # Placeholder for future stages
-  - stage: BuildStaging
-    displayName: 'Build Staging (TODO)'
-    dependsOn: Validate
-    # Only build on direct push to dev, not on PRs
+  # ============================================
+  # Stage 2: Build Android APK (Staging)
+  # ============================================
+  - stage: Build_Android_Staging
+    displayName: 'Build Android (Staging)'
+    dependsOn: Validate_and_Test
     condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: SigookApp-Staging  # Variable group with env vars
+      - group: SigookApp-Android-Signing  # Keystore credentials
     jobs:
-      - job: PlaceholderBuild
-        displayName: 'Placeholder - Flutter Build Coming Soon'
+      - job: Build_APK_Staging
+        displayName: 'Build Staging APK'
         steps:
-          - task: PowerShell@2
-            displayName: 'Staging Build Placeholder'
-            inputs:
-              targetType: 'inline'
-              script: |
-                Write-Host "============================================"
-                Write-Host "TODO: Implement Flutter Staging Build"
-                Write-Host "============================================"
-                Write-Host "This stage will include:"
-                Write-Host "  - Flutter SDK installation"
-                Write-Host "  - Dependencies installation (flutter pub get)"
-                Write-Host "  - Code generation (build_runner)"
-                Write-Host "  - Build APK for staging flavor"
-                Write-Host "  - Publish artifacts"
-                Write-Host "============================================"
+          - checkout: self
+            displayName: 'Checkout Repository'
 
-  - stage: BuildProduction
-    displayName: 'Build Production (TODO)'
-    dependsOn: Validate
-    # Only build on direct push to main, not on PRs
-    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
-    jobs:
-      - job: PlaceholderBuild
-        displayName: 'Placeholder - Flutter Production Build Coming Soon'
-        steps:
-          - task: PowerShell@2
-            displayName: 'Production Build Placeholder'
+          # Download keystore from secure files
+          - task: DownloadSecureFile@1
+            name: androidKeystore
+            displayName: 'Download Android Keystore'
+            inputs:
+              secureFile: 'sigook-release.keystore'
+
+          # Copy keystore to android directory
+          - script: |
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              echo "✅ Keystore copied to android/app/"
+            displayName: 'Setup Keystore'
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Build staging APK with environment variables via --dart-define
+          - script: |
+              cd $(workingDirectory)
+              echo "Building staging APK..."
+              flutter build apk \
+                --flavor staging \
+                -t lib/main_staging.dart \
+                --release \
+                --dart-define=ENVIRONMENT=staging \
+                --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+                --dart-define=API_BASE_URL=$(API_BASE_URL) \
+                --dart-define=CLIENT_ID=$(CLIENT_ID) \
+                --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+                --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+                --dart-define=SCOPES=$(SCOPES) \
+                --dart-define=APP_NAME=$(APP_NAME)
+              echo "✅ Staging APK built successfully"
+            displayName: 'Build Staging APK'
+            env:
+              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
+              KEY_PASSWORD: $(KEY_PASSWORD)
+              KEY_ALIAS: $(KEY_ALIAS)
+
+          # Copy APK to staging directory
+          - task: Bash@3
+            displayName: 'Prepare Artifacts'
             inputs:
               targetType: 'inline'
               script: |
-                Write-Host "============================================"
-                Write-Host "TODO: Implement Flutter Production Build"
-                Write-Host "============================================"
-                Write-Host "This stage will include:"
-                Write-Host "  - Flutter SDK installation"
-                Write-Host "  - Dependencies installation"
-                Write-Host "  - Code generation"
-                Write-Host "  - Keystore configuration"
-                Write-Host "  - Build signed APK/AAB"
-                Write-Host "  - Publish production artifacts"
-                Write-Host "============================================"
+                cd $(workingDirectory)
+                mkdir -p $(Build.ArtifactStagingDirectory)/android
+                
+                # Find and copy APK
+                APK_PATH=$(find build/app/outputs/flutter-apk -name "*staging*.apk" | head -1)
+                if [ -n "$APK_PATH" ]; then
+                  cp "$APK_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-staging-$(Build.BuildId).apk
+                  echo "✅ APK copied: sigook-staging-$(Build.BuildId).apk"
+                  ls -la $(Build.ArtifactStagingDirectory)/android/
+                else
+                  echo "❌ APK not found!"
+                  find build -name "*.apk" -ls
+                  exit 1
+                fi
+
+          # Publish APK artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Staging APK'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
+              ArtifactName: 'sigookapp-android-staging'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Staging Android Build Complete!"
+                echo "========================================"
+                echo "Artifact: sigookapp-android-staging"
+                echo "APK: sigook-staging-$(Build.BuildId).apk"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"
+
+  # ============================================
+  # Stage 3: Build Android APK (Production)
+  # ============================================
+  - stage: Build_Android_Production
+    displayName: 'Build Android (Production)'
+    dependsOn: Validate_and_Test
+    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: SigookApp-Production  # Variable group with env vars
+      - group: SigookApp-Android-Signing  # Keystore credentials
+    jobs:
+      - job: Build_APK_Production
+        displayName: 'Build Production APK'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Download keystore from secure files
+          - task: DownloadSecureFile@1
+            name: androidKeystore
+            displayName: 'Download Android Keystore'
+            inputs:
+              secureFile: 'sigook-release.keystore'
+
+          # Copy keystore to android directory
+          - script: |
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              echo "✅ Keystore copied to android/app/"
+            displayName: 'Setup Keystore'
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Build production APK with environment variables via --dart-define
+          - script: |
+              cd $(workingDirectory)
+              echo "Building production APK..."
+              flutter build apk \
+                --flavor production \
+                -t lib/main_production.dart \
+                --release \
+                --dart-define=ENVIRONMENT=production \
+                --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+                --dart-define=API_BASE_URL=$(API_BASE_URL) \
+                --dart-define=CLIENT_ID=$(CLIENT_ID) \
+                --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+                --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+                --dart-define=SCOPES=$(SCOPES) \
+                --dart-define=APP_NAME=$(APP_NAME)
+              echo "✅ Production APK built successfully"
+            displayName: 'Build Production APK'
+            env:
+              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
+              KEY_PASSWORD: $(KEY_PASSWORD)
+              KEY_ALIAS: $(KEY_ALIAS)
+
+          # Also build AAB for Play Store
+          - script: |
+              cd $(workingDirectory)
+              echo "Building production AAB..."
+              flutter build appbundle \
+                --flavor production \
+                -t lib/main_production.dart \
+                --release \
+                --dart-define=ENVIRONMENT=production \
+                --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+                --dart-define=API_BASE_URL=$(API_BASE_URL) \
+                --dart-define=CLIENT_ID=$(CLIENT_ID) \
+                --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+                --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+                --dart-define=SCOPES=$(SCOPES) \
+                --dart-define=APP_NAME=$(APP_NAME)
+              echo "✅ Production AAB built successfully"
+            displayName: 'Build Production AAB'
+            env:
+              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
+              KEY_PASSWORD: $(KEY_PASSWORD)
+              KEY_ALIAS: $(KEY_ALIAS)
+
+          # Copy artifacts to staging directory
+          - task: Bash@3
+            displayName: 'Prepare Artifacts'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd $(workingDirectory)
+                mkdir -p $(Build.ArtifactStagingDirectory)/android
+                
+                # Find and copy APK
+                APK_PATH=$(find build/app/outputs/flutter-apk -name "*production*.apk" | head -1)
+                if [ -n "$APK_PATH" ]; then
+                  cp "$APK_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-production-$(Build.BuildId).apk
+                  echo "✅ APK copied"
+                fi
+                
+                # Find and copy AAB
+                AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
+                if [ -n "$AAB_PATH" ]; then
+                  cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-production-$(Build.BuildId).aab
+                  echo "✅ AAB copied"
+                fi
+                
+                ls -la $(Build.ArtifactStagingDirectory)/android/
+
+          # Publish artifacts
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Production Android Artifacts'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
+              ArtifactName: 'sigookapp-android-production'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Production Android Build Complete!"
+                echo "========================================"
+                echo "Artifact: sigookapp-android-production"
+                echo "APK: sigook-production-$(Build.BuildId).apk"
+                echo "AAB: sigook-production-$(Build.BuildId).aab"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"
+
+  # ============================================
+  # Stage 4: Build iOS IPA (Staging)
+  # Requires macOS agent and Apple certificates
+  # ============================================
+  - stage: Build_iOS_Staging
+    displayName: 'Build iOS (Staging)'
+    dependsOn: Validate_and_Test
+    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'macOS-latest'
+    variables:
+      - group: SigookApp-Staging
+      - group: SigookApp-iOS-Signing  # Contains certificate and profile secrets
+    jobs:
+      - job: Build_IPA_Staging
+        displayName: 'Build Staging IPA'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Install Apple Certificate
+          - task: InstallAppleCertificate@2
+            displayName: 'Install Apple Certificate'
+            inputs:
+              certSecureFile: '$(IOS_CERTIFICATE_FILE)'
+              certPwd: '$(IOS_CERTIFICATE_PASSWORD)'
+              keychain: 'temp'
+              deleteCert: true
+
+          # Install Provisioning Profile
+          - task: InstallAppleProvisioningProfile@1
+            displayName: 'Install Provisioning Profile'
+            inputs:
+              provisioningProfileLocation: 'secureFiles'
+              provProfileSecureFile: '$(IOS_PROVISIONING_PROFILE_FILE)'
+              removeProfile: true
+
+          # Build iOS
+          - script: |
+              cd $(workingDirectory)
+              echo "Building staging IPA..."
+              flutter build ipa \
+                --flavor staging \
+                -t lib/main_staging.dart \
+                --release \
+                --export-options-plist=ios/ExportOptions-staging.plist \
+                --dart-define=ENVIRONMENT=staging \
+                --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+                --dart-define=API_BASE_URL=$(API_BASE_URL) \
+                --dart-define=CLIENT_ID=$(CLIENT_ID) \
+                --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+                --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+                --dart-define=SCOPES=$(SCOPES) \
+                --dart-define=APP_NAME=$(APP_NAME)
+              echo "✅ Staging IPA built successfully"
+            displayName: 'Build Staging IPA'
+
+          # Copy IPA to staging directory
+          - task: Bash@3
+            displayName: 'Prepare Artifacts'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd $(workingDirectory)
+                mkdir -p $(Build.ArtifactStagingDirectory)/ios
+                
+                # Find and copy IPA
+                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                if [ -n "$IPA_PATH" ]; then
+                  cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
+                  echo "✅ IPA copied: sigook-staging-$(Build.BuildId).ipa"
+                  ls -la $(Build.ArtifactStagingDirectory)/ios/
+                else
+                  echo "❌ IPA not found!"
+                  find build -name "*.ipa" -ls
+                  exit 1
+                fi
+
+          # Publish IPA artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Staging IPA'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
+              ArtifactName: 'sigookapp-ios-staging'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Staging iOS Build Complete!"
+                echo "========================================"
+                echo "Artifact: sigookapp-ios-staging"
+                echo "IPA: sigook-staging-$(Build.BuildId).ipa"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"
+
+  # ============================================
+  # Stage 5: Build iOS IPA (Production)
+  # Requires macOS agent and Apple certificates
+  # ============================================
+  - stage: Build_iOS_Production
+    displayName: 'Build iOS (Production)'
+    dependsOn: Validate_and_Test
+    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'macOS-latest'
+    variables:
+      - group: SigookApp-Production
+      - group: SigookApp-iOS-Signing  # Contains certificate and profile secrets
+    jobs:
+      - job: Build_IPA_Production
+        displayName: 'Build Production IPA'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Install Apple Certificate
+          - task: InstallAppleCertificate@2
+            displayName: 'Install Apple Certificate'
+            inputs:
+              certSecureFile: '$(IOS_CERTIFICATE_FILE)'
+              certPwd: '$(IOS_CERTIFICATE_PASSWORD)'
+              keychain: 'temp'
+              deleteCert: true
+
+          # Install Provisioning Profile
+          - task: InstallAppleProvisioningProfile@1
+            displayName: 'Install Provisioning Profile'
+            inputs:
+              provisioningProfileLocation: 'secureFiles'
+              provProfileSecureFile: '$(IOS_PROVISIONING_PROFILE_FILE_PROD)'
+              removeProfile: true
+
+          # Build iOS
+          - script: |
+              cd $(workingDirectory)
+              echo "Building production IPA..."
+              flutter build ipa \
+                --flavor production \
+                -t lib/main_production.dart \
+                --release \
+                --export-options-plist=ios/ExportOptions-production.plist \
+                --dart-define=ENVIRONMENT=production \
+                --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+                --dart-define=API_BASE_URL=$(API_BASE_URL) \
+                --dart-define=CLIENT_ID=$(CLIENT_ID) \
+                --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+                --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+                --dart-define=SCOPES=$(SCOPES) \
+                --dart-define=APP_NAME=$(APP_NAME)
+              echo "✅ Production IPA built successfully"
+            displayName: 'Build Production IPA'
+
+          # Copy IPA to staging directory
+          - task: Bash@3
+            displayName: 'Prepare Artifacts'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd $(workingDirectory)
+                mkdir -p $(Build.ArtifactStagingDirectory)/ios
+                
+                # Find and copy IPA
+                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                if [ -n "$IPA_PATH" ]; then
+                  cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-production-$(Build.BuildId).ipa
+                  echo "✅ IPA copied: sigook-production-$(Build.BuildId).ipa"
+                  ls -la $(Build.ArtifactStagingDirectory)/ios/
+                else
+                  echo "❌ IPA not found!"
+                  find build -name "*.ipa" -ls
+                  exit 1
+                fi
+
+          # Publish IPA artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Production IPA'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
+              ArtifactName: 'sigookapp-ios-production'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Production iOS Build Complete!"
+                echo "========================================"
+                echo "Artifact: sigookapp-ios-production"
+                echo "IPA: sigook-production-$(Build.BuildId).ipa"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"

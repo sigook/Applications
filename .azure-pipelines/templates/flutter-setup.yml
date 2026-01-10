@@ -1,0 +1,53 @@
+# Reusable template for Flutter SDK installation
+# Usage:
+#   - template: templates/flutter-setup.yml
+#     parameters:
+#       flutterVersion: '3.22.0'  # Optional, defaults to stable
+
+parameters:
+  - name: flutterVersion
+    type: string
+    default: 'stable'
+    displayName: 'Flutter version or channel (stable, beta, or specific version)'
+
+  - name: workingDirectory
+    type: string
+    default: '$(System.DefaultWorkingDirectory)'
+    displayName: 'Working directory for Flutter commands'
+
+steps:
+  # Install Flutter SDK
+  - task: FlutterInstall@0
+    displayName: 'Install Flutter SDK (${{ parameters.flutterVersion }})'
+    inputs:
+      mode: 'auto'
+      channel: '${{ parameters.flutterVersion }}'
+      version: 'latest'
+
+  # Verify Flutter installation
+  - script: |
+      echo "========================================"
+      echo "Flutter SDK Installation Verification"
+      echo "========================================"
+      flutter --version
+      echo ""
+      echo "Flutter Doctor:"
+      flutter doctor -v
+      echo "========================================"
+    displayName: 'Verify Flutter Installation'
+
+  # Get Flutter dependencies
+  - script: |
+      cd ${{ parameters.workingDirectory }}
+      echo "Installing Flutter dependencies..."
+      flutter pub get
+      echo "✅ Dependencies installed"
+    displayName: 'Flutter Pub Get'
+
+  # Run code generation (build_runner)
+  - script: |
+      cd ${{ parameters.workingDirectory }}
+      echo "Running code generation (build_runner)..."
+      flutter pub run build_runner build --delete-conflicting-outputs
+      echo "✅ Code generation completed"
+    displayName: 'Run Build Runner'
