@@ -199,6 +199,12 @@ stages:
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
               echo "✅ Staging APK built successfully"
+              echo ""
+              echo "=== Build output structure ==="
+              ls -la build/ || echo "No build directory"
+              ls -la build/app/ || echo "No build/app directory"
+              ls -la build/app/outputs/ || echo "No build/app/outputs directory"
+              find build -name "*.apk" -o -name "*.aab" || echo "No APK/AAB found"
             displayName: 'Build Staging APK'
             env:
               KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
