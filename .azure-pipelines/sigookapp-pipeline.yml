@@ -149,6 +149,35 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
+          # Free up disk space to avoid 95%+ usage warnings
+          - script: |
+              echo "=== Disk space before cleanup ==="
+              df -h /
+              sudo rm -rf /usr/share/dotnet
+              sudo rm -rf /usr/local/lib/android/sdk/ndk
+              sudo rm -rf /opt/ghc
+              echo "=== Disk space after cleanup ==="
+              df -h /
+            displayName: 'Free Disk Space'
+
+          # Cache Gradle dependencies
+          - task: Cache@2
+            displayName: 'Cache Gradle'
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+              path: ~/.gradle/caches
+
+          # Cache Flutter pub packages
+          - task: Cache@2
+            displayName: 'Cache Flutter Packages'
+            inputs:
+              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+              restoreKeys: |
+                pub | "$(Agent.OS)"
+              path: ~/.pub-cache
+
           # Download keystore from secure files
           - task: DownloadSecureFile@1
             name: androidKeystore
@@ -214,12 +243,6 @@ stages:
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
               echo "✅ Staging APK built successfully"
-              echo ""
-              echo "=== Build output structure ==="
-              ls -la build/ || echo "No build directory"
-              ls -la build/app/ || echo "No build/app directory"
-              ls -la build/app/outputs/ || echo "No build/app/outputs directory"
-              find build -name "*.apk" -o -name "*.aab" || echo "No APK/AAB found"
             displayName: 'Build Staging APK'
             env:
               KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
@@ -289,6 +312,35 @@ stages:
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
+
+          # Free up disk space to avoid 95%+ usage warnings
+          - script: |
+              echo "=== Disk space before cleanup ==="
+              df -h /
+              sudo rm -rf /usr/share/dotnet
+              sudo rm -rf /usr/local/lib/android/sdk/ndk
+              sudo rm -rf /opt/ghc
+              echo "=== Disk space after cleanup ==="
+              df -h /
+            displayName: 'Free Disk Space'
+
+          # Cache Gradle dependencies
+          - task: Cache@2
+            displayName: 'Cache Gradle'
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+              path: ~/.gradle/caches
+
+          # Cache Flutter pub packages
+          - task: Cache@2
+            displayName: 'Cache Flutter Packages'
+            inputs:
+              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+              restoreKeys: |
+                pub | "$(Agent.OS)"
+              path: ~/.pub-cache
 
           # Download keystore from secure files
           - task: DownloadSecureFile@1
