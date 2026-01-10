@@ -10,58 +10,28 @@
         <div style="padding: 12px 30px; background: #000b81; color: white;">
             <span style="font-size: 18px; font-weight: 200;">@Model.Title</span>
         </div>
-        @if (!string.IsNullOrEmpty(Model.Message))
-        {
-            <div style="padding: 30px;">
-                <b>From:</b>
-                <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Name</span>
-                <b>Email:</b>
-                <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Email</span>
-                <b>Phone:</b>
-                <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Phone</span>
-                <b>Message:</b>
-                <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Message</span>
-                ―<br>
-                <span style="font-size: 12px; margin-top: 20px; display: block;">
-                    This email was sent by
-                    @if (Model.EmailSetting == EmailSettingName.CovenantNotification)
-                    {
-                        <i>covenantgroupl.com</i>
-                    }
-                    else
-                    {
-                        <i>sigook.com</i>
-                    }
-                    (Don't click any suspicious link)
-                </span>
-            </div>
-        }
-        else
-        {
-            <div style="padding: 30px;">
-                <b>Company Name:</b>
-                <span style="font-size: 16px; font-weight: 100; margin: 2px 0 15px; display: block;">@Model.CompanyName</span>
-                <b>Email:</b>
-                <span style="font-size: 16px; font-weight: 100; margin: 2px 0 15px; display: block;">@Model.Email</span>
-                <b>Phone:</b>
-                <span style="font-size: 16px; font-weight: 100; margin: 2px 0 15px; display: block;">@Model.Phone</span>
-                <b>Address:</b>
-                <span style="font-size: 16px; font-weight: 100; margin: 2px 0 15px; display: block;">@Model.Address</span>
-                <b>Industry:</b>
-                <span style="font-size: 16px; font-weight: 100; margin: 2px 0 15px; display: block;">@Model.Industry</span>
-                ―<br>
-                <span style="font-size: 12px; margin-top: 30px; display: block;">
-                    This email was sent by
-                    @if (Model.EmailSetting == EmailSettingName.CovenantNotification)
-                    {
-                        <i>covenantgroupl.com</i>
-                    }
-                    else
-                    {
-                        <i>sigook.com</i>
-                    }
-                </span>
-            </div>
-        }
+        <div style="padding: 30px;">
+            <b>From:</b>
+            <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Name</span>
+            <b>Email:</b>
+            <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Email</span>
+            <b>Phone:</b>
+            <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Phone</span>
+            <b>Message:</b>
+            <span style="font-size: 16px; font-weight: 300; margin: 2px 0 15px; display: block;">@Model.Message</span>
+            ―<br>
+            <span style="font-size: 12px; margin-top: 20px; display: block;">
+                This email was sent by
+                @if (Model.EmailSetting == EmailSettingName.CovenantNotification)
+                {
+                    <i>covenantgroupl.com</i>
+                }
+                else
+                {
+                    <i>sigook.com</i>
+                }
+                (Don't click any suspicious link)
+            </span>
+        </div>
     </div>
 </div>

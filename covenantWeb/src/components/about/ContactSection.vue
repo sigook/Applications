@@ -9,7 +9,10 @@
     <!-- BANDA AZUL + TARJETA DEL FORMULARIO -->
     <div class="contact-cta__blue">
       <div class="contact-cta__card">
-        <ContactForm />
+        <ContactForm
+          title="CONTACT FORM ~ NOTIFICATION"
+          subject="Contact From Covenant"
+        />
       </div>
     </div>
   </section>

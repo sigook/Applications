@@ -48,7 +48,10 @@
           </p>
 
           <div class="hc-circle__form-placeholder">
-            <ContactForm />
+            <ContactForm
+              title="CONTACT FORM ~ NOTIFICATION"
+              subject="Contact From Covenant"
+            />
           </div>
         </div>
       </div>

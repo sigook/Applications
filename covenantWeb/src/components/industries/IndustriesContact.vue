@@ -11,7 +11,10 @@
 
         <!-- Card blanco con el formulario reutilizable -->
         <div class="ind-contact__card">
-          <ContactForm />
+          <ContactForm
+            title="REQUEST PERSONNEL FORM ~ NOTIFICATION"
+            subject="Contact Request Staff"
+          />
         </div>
 
         <div class="ind-contact__waves">

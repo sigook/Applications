@@ -296,15 +296,8 @@ function handlePhoneInput(event: Event) {
     })
   }
 
-  // Limit to 12 characters max (10 digits + 1 space + 1 dash)
-  let value = target.value
-  if (value.length > 12) {
-    value = value.substring(0, 12)
-    target.value = value
-  }
-
-  phoneFormatted.value = value
-  setFieldValue('phone', value)
+  phoneFormatted.value = target.value
+  setFieldValue('phone', target.value)
 }
 
 function handleResumeChange(files: File | File[] | null) {

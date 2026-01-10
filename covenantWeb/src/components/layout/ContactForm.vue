@@ -8,30 +8,55 @@
     <div class="contact-form__group">
       <div class="contact-form__field">
         <label class="contact-form__label">Name</label>
-        <input v-model="formData.name" type="text" class="contact-form__input" placeholder="First Name" required />
+        <input
+          v-model="name"
+          v-bind="nameAttrs"
+          type="text"
+          class="contact-form__input"
+          :class="{ 'contact-form__input--error': errors.name }"
+          placeholder="Name"
+        />
+        <span v-if="errors.name" class="contact-form__error">{{ errors.name }}</span>
       </div>
     </div>
 
     <div class="contact-form__group">
       <label class="contact-form__label">Email</label>
-      <input v-model="formData.email" type="email" class="contact-form__input" placeholder="Email" required />
+      <input
+        v-model="email"
+        v-bind="emailAttrs"
+        type="email"
+        class="contact-form__input"
+        :class="{ 'contact-form__input--error': errors.email }"
+        placeholder="Email"
+      />
+      <span v-if="errors.email" class="contact-form__error">{{ errors.email }}</span>
     </div>
 
     <div class="contact-form__group">
       <label class="contact-form__label">Phone</label>
       <input
         ref="phoneInput"
-        v-model="formData.phone"
-        type="phone"
+        v-bind="phoneAttrs"
+        type="tel"
         class="contact-form__input"
+        :class="{ 'contact-form__input--error': errors.phone }"
         placeholder="300 123-4567"
-        required
       />
+      <span v-if="errors.phone" class="contact-form__error">{{ errors.phone }}</span>
     </div>
 
     <div class="contact-form__group">
       <label class="contact-form__label">Message</label>
-      <textarea v-model="formData.message" class="contact-form__input contact-form__textarea" rows="4"></textarea>
+      <textarea
+        v-model="message"
+        v-bind="messageAttrs"
+        class="contact-form__input contact-form__textarea"
+        :class="{ 'contact-form__input--error': errors.message }"
+        rows="4"
+        placeholder="Your message (optional)"
+      ></textarea>
+      <span v-if="errors.message" class="contact-form__error">{{ errors.message }}</span>
     </div>
 
     <div class="contact-form__recaptcha">
@@ -48,26 +73,74 @@
       </p>
     </div>
 
-    <button type="submit" class="contact-form__submit">Save & Send</button>
-    <button type="button" class="contact-form__reset" @click="resetForm">Reset Information</button>
+    <v-btn
+      type="submit"
+      class="contact-form__submit"
+      :loading="isSubmitting"
+      :disabled="isSubmitting"
+      block
+    >
+      Save & Send
+    </v-btn>
+    <button type="button" class="contact-form__reset" @click="resetForm" :disabled="isSubmitting">Reset Information</button>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import Vue3Recaptcha2 from 'vue3-recaptcha2';
-// AGREGADO: Importar Cleave
 import Cleave from 'cleave.js';
+import { useForm } from 'vee-validate';
+import * as yup from 'yup';
+import { contactService } from '@/services/contactService';
+import { useToast } from '@/composables/useToast';
+
+// Props
+const props = withDefaults(defineProps<{
+  title?: string;
+  subject: string;
+  useDynamicTitle?: boolean;
+  titleSuffix?: string;
+}>(), {
+  title: '',
+  useDynamicTitle: false,
+  titleSuffix: ''
+});
 
 const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+const { showSuccess, showError } = useToast();
 
-// Datos del formulario
-const formData = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  message: ''
+// Validation schema with Yup
+const validationSchema = yup.object({
+  name: yup.string()
+    .required('Name is required')
+    .min(2, 'Name must be at least 2 characters'),
+  email: yup.string()
+    .required('Email is required')
+    .email('Please enter a valid email address'),
+  phone: yup.string()
+    .required('Phone is required')
+    .matches(/^\d{3} \d{3}-\d{4}$/, 'Phone format must be: ### ###-####'),
+  message: yup.string()
+    .max(1000, 'Message must be less than 1000 characters')
 });
+
+// VeeValidate form setup
+const { errors, defineField, handleSubmit: veeHandleSubmit, resetForm: veeResetForm } = useForm({
+  validationSchema,
+  initialValues: {
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
+  }
+});
+
+// Define fields with VeeValidate
+const [name, nameAttrs] = defineField('name');
+const [email, emailAttrs] = defineField('email');
+const [phone, phoneAttrs] = defineField('phone');
+const [message, messageAttrs] = defineField('message');
 
 // --- LÓGICA CLEAVE.JS (MÁSCARA TELÉFONO) ---
 const phoneInput = ref<HTMLElement | null>(null);
@@ -77,7 +150,11 @@ onMounted(() => {
     new Cleave(phoneInput.value, {
       blocks: [3, 3, 4],       // Formato: 123 456 7890
       delimiters: [' ', '-'],  // Separadores
-      numericOnly: true        // Solo números
+      numericOnly: true,       // Solo números
+      onValueChanged: (e) => {
+        // Update VeeValidate model with formatted value
+        phone.value = e.target.value;
+      }
     });
   }
 });
@@ -86,6 +163,9 @@ onMounted(() => {
 const captchaToken = ref<string | null>(null);
 const captchaError = ref(false);
 const showRecaptcha = ref(true);
+
+// --- LOADING STATE ---
+const isSubmitting = ref(false);
 
 const handleSuccess = (token: string) => {
   console.log("Captcha verificado:", token);
@@ -102,24 +182,51 @@ const handleError = () => {
   console.error("Error en Recaptcha");
 };
 
-const handleSubmit = () => {
+// Handle form submission with VeeValidate
+const handleSubmit = veeHandleSubmit(async (formValues) => {
   if (!captchaToken.value) {
     captchaError.value = true;
     return;
   }
 
-  console.log("Enviando...", formData);
-  alert("Mensaje enviado correctamente");
-  resetForm();
-};
+  isSubmitting.value = true;
+
+  try {
+    // Build title: use dynamic title if enabled, otherwise use static title prop
+    const emailTitle = props.useDynamicTitle
+      ? `${formValues.name} ${props.titleSuffix}`
+      : props.title;
+
+    await contactService.sendContactEmail({
+      title: emailTitle,
+      name: formValues.name,
+      email: formValues.email,
+      phone: formValues.phone,
+      message: formValues.message,
+      subject: props.subject,
+      captchaResponse: captchaToken.value,
+      emailSetting: 4 // CovenantNotification
+    });
+
+    showSuccess('Message sent successfully!');
+    resetForm();
+  } catch (error) {
+    console.error('Error sending contact form:', error);
+    showError('Failed to send message. Please try again.');
+  } finally {
+    isSubmitting.value = false;
+  }
+});
 
 const resetForm = () => {
-  formData.name = '';
-  formData.email = '';
-  formData.phone = '';
-  formData.message = '';
+  veeResetForm();
   captchaToken.value = null;
   captchaError.value = false;
+
+  // Clear phone input manually (since we're not using v-model)
+  if (phoneInput.value) {
+    (phoneInput.value as HTMLInputElement).value = '';
+  }
 
   // Reiniciar Recaptcha
   showRecaptcha.value = false;
@@ -142,6 +249,21 @@ const resetForm = () => {
   color: #e74c3c;
   font-size: 0.85rem;
   margin-top: 5px;
+}
+
+/* Validation error styles */
+.contact-form__input--error,
+.contact-form__textarea--error {
+  border-color: #e74c3c !important;
+  background-color: #fff5f5 !important;
+}
+
+.contact-form__error {
+  display: block;
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  margin-left: 4px;
 }
 
 * {

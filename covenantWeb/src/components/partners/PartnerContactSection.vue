@@ -21,7 +21,11 @@
 
       <!-- Card del formulario -->
       <div class="partner-contact__card">
-        <ContactForm />
+        <ContactForm
+          subject="Contact become a partner"
+          :use-dynamic-title="true"
+          title-suffix="become a partner"
+        />
       </div>
     </div>
   </section>
