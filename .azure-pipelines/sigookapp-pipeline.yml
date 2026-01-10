@@ -189,6 +189,14 @@ stages:
               echo "✅ Cleaned local.properties"
             displayName: 'Clean Android local.properties'
 
+          # Create placeholder .env files (required as assets in pubspec.yaml)
+          - script: |
+              cd $(workingDirectory)
+              echo "# CI environment - using --dart-define instead" > .env.staging
+              echo "# CI environment - using --dart-define instead" > .env.production
+              echo "✅ Created placeholder .env files"
+            displayName: 'Create Placeholder .env Files'
+
           # Build staging APK with environment variables via --dart-define
           - script: |
               cd $(workingDirectory)
@@ -321,6 +329,14 @@ stages:
               rm -f local.properties
               echo "✅ Cleaned local.properties"
             displayName: 'Clean Android local.properties'
+
+          # Create placeholder .env files (required as assets in pubspec.yaml)
+          - script: |
+              cd $(workingDirectory)
+              echo "# CI environment - using --dart-define instead" > .env.staging
+              echo "# CI environment - using --dart-define instead" > .env.production
+              echo "✅ Created placeholder .env files"
+            displayName: 'Create Placeholder .env Files'
 
           # Build production APK with environment variables via --dart-define
           - script: |
