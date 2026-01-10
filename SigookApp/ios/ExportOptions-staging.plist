@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Export method: app-store, ad-hoc, enterprise, development -->
+    <key>method</key>
+    <string>ad-hoc</string>
+    
+    <!-- Team ID from Apple Developer account -->
+    <!-- TODO: Replace with your actual Team ID -->
+    <key>teamID</key>
+    <string>NGXFWU4H7Z</string>
+    
+    <!-- Provisioning profiles mapping -->
+    <!-- Key: Bundle ID, Value: Provisioning Profile Name -->
+    <key>provisioningProfiles</key>
+    <dict>
+        <!-- TODO: Replace with your actual bundle ID and provisioning profile name -->
+        <key>com.sigook.sigookapp</key>
+        <string>Sigook App Staging Ad Hoc</string>
+    </dict>
+    
+    <!-- Code signing style -->
+    <key>signingStyle</key>
+    <string>manual</string>
+    
+    <!-- Code signing certificate type -->
+    <key>signingCertificate</key>
+    <string>Apple Distribution</string>
+    
+    <!-- Strip Swift symbols to reduce size -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+    
+    <!-- Upload symbols for crash reporting -->
+    <key>uploadSymbols</key>
+    <true/>
+    
+    <!-- Compile bitcode (set to false for faster builds) -->
+    <key>compileBitcode</key>
+    <false/>
+    
+    <!-- Destination for export -->
+    <key>destination</key>
+    <string>export</string>
+</dict>
+</plist>
