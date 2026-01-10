@@ -397,11 +397,12 @@ stages:
   # ============================================
   # Stage 4: Build iOS IPA (Staging)
   # Requires macOS agent and Apple certificates
+  # DISABLED - iOS signing not configured yet
   # ============================================
   - stage: Build_iOS_Staging
-    displayName: 'Build iOS (Staging)'
+    displayName: 'Build iOS (Staging) - DISABLED'
     dependsOn: Validate_and_Test
-    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    condition: false  # Disabled until iOS signing is configured
     pool:
       vmImage: 'macOS-latest'
     variables:
@@ -517,11 +518,12 @@ stages:
   # ============================================
   # Stage 5: Build iOS IPA (Production)
   # Requires macOS agent and Apple certificates
+  # DISABLED - iOS signing not configured yet
   # ============================================
   - stage: Build_iOS_Production
-    displayName: 'Build iOS (Production)'
+    displayName: 'Build iOS (Production) - DISABLED'
     dependsOn: Validate_and_Test
-    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
+    condition: false  # Disabled until iOS signing is configured
     pool:
       vmImage: 'macOS-latest'
     variables:
