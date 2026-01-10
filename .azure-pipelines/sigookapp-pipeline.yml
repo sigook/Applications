@@ -8,8 +8,8 @@ trigger:
   branches:
     include:
       - main
-      - master
       - dev
+      - SigookApp
   paths:
     include:
       - SigookApp/**
@@ -37,8 +37,8 @@ pr:
 # Environment detection variables
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','refs/heads/SigookApp','dev','development','SigookApp')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   flutterVersion: 'stable'
 
