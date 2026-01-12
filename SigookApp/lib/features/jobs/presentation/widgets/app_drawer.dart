@@ -13,22 +13,12 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(cachedWorkerProfileProvider);
-
+    // Profile endpoint disabled - show default user display
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          profileAsync.when(
-            data: (profile) => _buildProfileHeader(
-              context,
-              profile?.fullName ?? 'User',
-              profile?.email ?? '',
-              profile?.profilePhoto,
-            ),
-            loading: () => _buildProfileHeader(context, 'Loading...', '', null),
-            error: (_, __) => _buildProfileHeader(context, 'User', '', null),
-          ),
+          _buildProfileHeader(context, 'User', '', null),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
@@ -273,7 +263,28 @@ class AppDrawer extends ConsumerWidget {
 
   void _navigateToProfile(BuildContext context) {
     Navigator.of(context).pop();
-    context.push(AppRoutes.profile);
+    // Profile page disabled - show coming soon message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.white),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'User profile page coming soon!',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {

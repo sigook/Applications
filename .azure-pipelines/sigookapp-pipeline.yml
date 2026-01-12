@@ -194,7 +194,7 @@ stages:
               key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
               restoreKeys: |
                 gradle | "$(Agent.OS)"
-              path: ~/.gradle/caches
+              path: $(HOME)/.gradle/caches
 
           # Cache Flutter pub packages
           - task: Cache@2
@@ -203,7 +203,7 @@ stages:
               key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
               restoreKeys: |
                 pub | "$(Agent.OS)"
-              path: ~/.pub-cache
+              path: $(HOME)/.pub-cache
 
           # Run code generation
           - script: |
@@ -358,7 +358,7 @@ stages:
               key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
               restoreKeys: |
                 gradle | "$(Agent.OS)"
-              path: ~/.gradle/caches
+              path: $(HOME)/.gradle/caches
 
           # Cache Flutter pub packages
           - task: Cache@2
@@ -367,7 +367,7 @@ stages:
               key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
               restoreKeys: |
                 pub | "$(Agent.OS)"
-              path: ~/.pub-cache
+              path: $(HOME)/.pub-cache
 
           # Run code generation
           - script: |
