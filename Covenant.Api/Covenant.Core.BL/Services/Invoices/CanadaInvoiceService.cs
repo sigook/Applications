@@ -84,9 +84,15 @@ public class CanadaInvoiceService : BaseInvoiceService
         }
 
         // 2. Get holidays for the period
-        var from = timesheets.Min(ts => ts.Date);
-        var to = timesheets.Max(ts => ts.Date);
-        var holidays = await GetHolidaysForPeriod(from, to);
+        var holidays = new List<DateTime>();
+        if (timesheets.Any())
+        {
+            var from = timesheets.Min(ts => ts.Date);
+            var to = timesheets.Max(ts => ts.Date);
+            var holidaysData = await GetHolidaysForPeriod(from, to);
+            holidays.AddRange(holidaysData);
+        }
+        
 
         // 3. Process timesheets and build invoice totals with TimeSheetTotal entities
         // EF Core will cascade insert TimeSheetTotal entities when the invoice is saved

@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Covenant.Billing\Covenant.Billing.csproj" />
       <ProjectReference Include="..\Covenant.Common\Covenant.Common.csproj" />
       <ProjectReference Include="..\Covenant.PayStubs\Covenant.PayStubs.csproj" />
       <ProjectReference Include="..\Covenant.Subcontractor\Covenant.Subcontractor.csproj" />
