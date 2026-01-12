@@ -34,16 +34,15 @@
 
             <div class="role-card__face role-card__face--back">
               <div class="info-content">
+                <div class="info-icon">
+                  <img :src="getRoleIcon(role.icon)" alt="icon" />
+                </div>
+
                 <p class="info-text">{{ role.description }}</p>
 
-                <div class="icon-wrapper">
-                  <div class="info-icon">
-                    <img :src="getRoleIcon(role.icon)" alt="icon" />
-                  </div>
-                  <button class="plus-btn" @click.stop="openDetail(index)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  </button>
-                </div>
+                <button class="plus-btn" @click.stop="openDetail(index)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
               </div>
             </div>
 
@@ -62,9 +61,7 @@
                 </ul>
               </div>
 
-              <button class="back-btn" @click.stop="closeDetail()">
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              </button>
+              <!-- Back button removed -->
             </div>
 
           </div>
@@ -109,11 +106,6 @@ const toggleCard = (index: number) => {
 // Click en el botón +
 const openDetail = (index: number) => {
   detailIndex.value = index;
-}
-
-// Click en volver
-const closeDetail = () => {
-  detailIndex.value = null;
 }
 
 const getRoleImage = (imageName: string) => {
@@ -164,7 +156,16 @@ const roles: RoleTalent[] = rolesTalentsData;
 }
 
 /* Inner Wrapper */
-.role-card__inner { position: relative; width: 100%; height: 100%; }
+.role-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0);
+}
 
 /* Common Face Styles */
 .role-card__face {
@@ -199,8 +200,7 @@ const roles: RoleTalent[] = rolesTalentsData;
   opacity: 0;
   transform: translateX(100%); /* Entra deslizando desde el lado */
   display: flex;
-  flex-direction: row; /* Layout horizontal para título y lista */
-  padding: 0;
+  /* flex-direction: row;  <-- Layout horizontal */
   color: #05162d; /* Texto oscuro */
 }
 
@@ -220,53 +220,57 @@ const roles: RoleTalent[] = rolesTalentsData;
 /* Forma decorativa superior derecha (Azul oscura con icono) */
 .detail-header-shape {
   position: absolute;
-  top: 0;
+  top: 50%; /* Centrado vertical */
   right: 0;
-  width: 120px;
-  height: 100px;
+  transform: translateY(-50%);
+  width: 160px;
+  height: 140px; /* Más alto */
   background-color: #05162d; /* Azul oscuro */
-  border-bottom-left-radius: 60px; /* Curva suave */
+  border-radius: 100px 0 0 100px; /* Curva borde izquierdo */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
+  box-shadow: -5px 0 10px rgba(0,0,0,0.1);
 }
-/* Ajuste para tarjetas izquierdas (si quisieras cambiar lado, pero mantenemos diseño consistente) */
-/* Nota: En la captura el icono siempre está a la derecha arriba */
 
 .detail-icon {
-  width: 40px; height: 40px;
+  width: 50px; height: 50px;
 }
 .detail-icon img {
   width: 100%; height: 100%; object-fit: contain;
   filter: brightness(0) saturate(100%) invert(80%) sepia(35%) saturate(860%) hue-rotate(86deg) brightness(98%) contrast(89%);
-  /* Filtro aproximado para volver el icono verde si es SVG/PNG blanco, o dejarlo natural si ya es verde */
 }
 
 .detail-content {
-  padding: 30px 40px;
-  padding-right: 130px; /* Espacio para no chocar con el icono azul */
   width: 100%;
+  height: 100%;
+  padding: 0 140px 0 60px; /* Espacio derecho para el icono */
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: left;
+  flex-direction: row; /* Horizontal */
+  align-items: center; /* Centrado vertical */
+  justify-content: space-between;
+  gap: 40px;
 }
 
 .detail-title {
-  font-size: 1.2rem;
+  flex: 0 0 40%; /* Título ocupa 40% */
+  font-size: 1.8rem;
   font-weight: 800;
-  margin-bottom: 15px;
-  line-height: 1.2;
+  margin-bottom: 0;
+  line-height: 1.1;
+  text-align: left;
 }
 
 .detail-list {
+  flex: 1;
   list-style: disc;
   padding-left: 20px;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   line-height: 1.6;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: left; /* Asegurar alineación izquierda incluso en cartas 'right' */
 
   /* Layout columnas para la lista */
   display: grid;
@@ -274,18 +278,7 @@ const roles: RoleTalent[] = rolesTalentsData;
   gap: 5px 20px;
 }
 
-.back-btn {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #05162d;
-  opacity: 0.5;
-  transition: opacity 0.3s;
-}
-.back-btn:hover { opacity: 1; }
+
 
 /* ========================================= */
 /* === CONTENIDO EXISTENTE (Frente/Dorso) === */
@@ -295,104 +288,160 @@ const roles: RoleTalent[] = rolesTalentsData;
 .role-card__overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(12, 34, 59, 0.9) 0%, rgba(12, 34, 59, 0.3) 100%); }
 .role-card--right .role-card__overlay { background: linear-gradient(to left, rgba(12, 34, 59, 0.9) 0%, rgba(12, 34, 59, 0.3) 100%); }
 
-.role-card__content { position: relative; z-index: 2; width: 100%; padding: 0 60px; display: flex; justify-content: space-between; align-items: center; color: white; }
+.role-card__content { 
+  position: relative; 
+  z-index: 2; 
+  width: 100%; 
+  padding: 0 60px; 
+  display: flex; 
+  justify-content: flex-end; /* Alineado al final */
+  align-items: center; 
+  color: white; 
+  gap: 30px; /* Separación flecha-titulo */
+}
+
+/* LEFT CARD: Title - Arrow (Aligned Right) */
+.role-card--left .role-card__content {
+  flex-direction: row;
+  text-align: right;
+}
+
+/* RIGHT CARD: Arrow - Title (Aligned Left -> Flex Reverse at End) */
+.role-card--right .role-card__content {
+  flex-direction: row-reverse;
+  text-align: left;
+}
+
 .role-card__title { font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .role-card__arrow { background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s; flex-shrink: 0; }
 .role-card:hover .role-card__arrow { background: #32d26a; color: white; }
 .role-card--right .role-card__arrow svg { transform: rotate(180deg); }
 
 /* DORSO */
-.info-content { width: 100%; padding: 0 60px; display: flex; align-items: center; justify-content: space-between; color: white; }
-.role-card--right .info-content { flex-direction: row-reverse; }
+.info-content { 
+  width: 100%; 
+  padding: 0 60px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  color: white; 
+  gap: 20px;
+}
 
-.info-text { font-size: 1.1rem; line-height: 1.5; flex: 1; margin-right: 40px; }
-.role-card--right .info-text { margin-right: 0; margin-left: 40px; }
+/* RIGHT CARD (Redondeado Izq): Icono Izq - Texto - Botón Der */
+.role-card--right .info-content {
+  flex-direction: row;
+  text-align: left;
+}
 
-.icon-wrapper { display: flex; flex-direction: column; align-items: center; gap: 15px; flex-shrink: 0; }
-.info-icon { width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; }
+/* LEFT CARD (Redondeado Der): Botón Izq - Texto - Icono Der */
+.role-card--left .info-content {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.info-text { font-size: 1.1rem; line-height: 1.5; flex: 1; }
+
+.info-icon { width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .info-icon img { width: 100%; height: 100%; object-fit: contain; }
 
 .plus-btn {
-  width: 30px; height: 30px; border-radius: 50%; border: 1px solid #32d26a; background: transparent; color: #32d26a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid #32d26a; background: transparent; color: #32d26a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;
 }
 .plus-btn:hover { background: #32d26a; color: #12223b; transform: scale(1.1); }
 
 /* RESPONSIVE */
-/* === RESPONSIVE (CORREGIDO) === */
 @media (max-width: 768px) {
   .role-card {
     width: 100%;
-    /* CORRECCIÓN IMPORTANTE: */
-    /* Cambiamos height: auto por una altura fija suficiente para el contenido */
-    height: 280px;
-    /* min-height ya no es necesario si fijamos height, pero lo dejamos por seguridad */
-    min-height: 280px;
-
-    border-radius: 20px !important;
-    margin-bottom: 20px;
-    overflow: hidden; /* Asegura que la imagen no se salga de los bordes redondeados */
+    height: 200px;
+    min-height: 200px;
+    margin: 0 auto 25px auto;
+    align-self: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
   }
 
-  /* Aseguramos que las caras respeten el borde del móvil */
-  .role-card__face {
-    border-radius: 20px !important;
+  .role-card--left, .role-card--right {
+    align-self: auto;
   }
 
-  /* Ajustes de padding para que quepa la información en pantalla pequeña */
+  /* Sombras de color sólidas en móvil para mantener consistencia */
+  .role-card--left {
+    box-shadow: 0 50px 0 #010914;
+  }
+  .role-card--right {
+    box-shadow: 0 50px 0 #0F2F44;
+  }
+
+  .role-card__inner {
+    border-radius: inherit !important;
+    overflow: hidden;
+  }
+
   .role-card__content,
   .info-content,
   .detail-content {
-    padding: 20px 25px;
+    padding: 20px 30px;
   }
-
+  
+  /* Ajuste de detalle en móvil: Columna vertical */
   .detail-content {
-    padding-top: 60px; /* Espacio para el icono de esquina */
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 60px; /* Espacio para icono */
     padding-right: 25px;
+    justify-content: center;
+    gap: 15px;
   }
 
-  /* Ajuste de los elementos decorativos de la tarjeta de detalle */
+  /* Reset de la forma decorativa en móvil */
   .detail-header-shape {
+    top: 20px;
+    right: 0;
+    transform: none;
     width: 80px;
     height: 60px;
-    border-bottom-left-radius: 40px;
+    border-radius: 40px 0 0 40px;
+    box-shadow: none;
+  }
+  
+  .detail-icon {
+    width: 30px; height: 30px;
   }
 
-  .detail-icon {
-    width: 30px;
-    height: 30px;
+  .detail-title {
+    font-size: 1.3rem; 
+    flex: none; 
+    width: 100%;
+    margin-bottom: 5px;
   }
 
   .role-card__title {
     font-size: 1.4rem;
   }
 
-  /* Ajustamos la lista de detalles para que quepa bien */
-  .detail-list {
-    grid-template-columns: 1fr; /* Una sola columna en móvil */
-    font-size: 0.8rem;
-    gap: 4px;
-    max-height: 160px; /* Evitar desbordamiento si la lista es larga */
-    overflow-y: auto; /* Permitir scroll si es mucho texto */
+  .role-card__arrow {
+    width: 40px; height: 40px;
   }
+  .role-card__arrow svg { width: 20px; height: 20px; }
 
-  /* Ajustes de la cara trasera (Info) */
+  /* Info Content Responsive */
   .info-text {
     font-size: 0.9rem;
-    margin-right: 15px;
-    /* Limitamos las líneas para que no se corte el botón */
     display: -webkit-box;
     -webkit-line-clamp: 6;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .role-card--right .info-text {
-    margin-left: 15px;
-  }
+  .info-icon { width: 50px; height: 50px; }
 
-  .info-icon {
-    width: 40px;
-    height: 40px;
+  .detail-list {
+    grid-template-columns: 1fr;
+    font-size: 0.8rem;
+    gap: 4px;
+    max-height: 140px;
+    overflow-y: auto;
   }
 }
 </style>

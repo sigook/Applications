@@ -102,6 +102,7 @@
 .app-section {
   width: 100%;
   background: #ffffff;
+  padding-top: 120px; /* Aumentado para evitar solapamiento con la sección anterior */
 }
 
 .app-container {
@@ -327,6 +328,37 @@
     left: 90%;
     transform: translate(-90%, -50%);
   }
+
+  /* Ajustes específicos para 1024px (Tablet Landscape / Laptop pequeña) */
+  
+  /* Mover curva azul a la izquierda para cerrar hueco blanco */
+  .attendance-wave--blue {
+    transform: translateX(-1%);
+  }
+
+  /* Reducir contenido para caber en la curva verde */
+  .attendance-content {
+    padding-top: 320px; /* Ajuste para bajar el contenido un poco */
+    padding-inline: 40px;
+  }
+
+  .attendance-icon {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .attendance-icon__img {
+    width: 110px;
+  }
+
+  .attendance-title {
+    font-size: 1.6rem;
+  }
+  
+  .attendance-list {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
 }
 
 @media (max-width: 992px) {
@@ -385,6 +417,7 @@
   .app-section {
     padding-bottom: 0;
     overflow-x: hidden;
+    padding-top: 200px; /* Aumentar separación superior en tablets/móviles */
   }
 
   .app-top__text {
@@ -438,38 +471,60 @@
   }
 
   .attendance-content {
-    padding: 120px 20px 32px;
+    /* Aumentamos padding superior para bajar todo el bloque (ya que quitamos el margin del icono) */
+    padding: 300px 20px 20px;
   }
 
+  /* REORGANIZACIÓN CON GRID: Título arriba, Icono + Lista abajo */
   .attendance-main {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: auto 1fr; /* Columna auto para icono, resto para lista */
+    grid-template-areas:
+      "title title"
+      "icon list";
+    gap: 10px 20px; /* gap vertical 10, horizontal 20 */
+    align-items: center; /* Centrar verticalmente icono y lista */
   }
 
-  /* ★ ACTUALIZADO: Manejo de márgenes y tamaño en móvil */
+  /* "Desempaquetamos" el div intermedio .attendance-text para que sus hijos sean grid items */
+  .attendance-text {
+    display: contents;
+  }
+
+  .attendance-title {
+    grid-area: title;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  .attendance-list {
+    grid-area: list;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    padding-left: 0; /* Reset default padding if needed, or adjust */
+    margin: 0;
+    list-style-position: inside; /* Ahorrar espacio horizontal */
+  }
+  
+  /* Ajuste de items de lista para que no queden feos con list-style-position inside si son multilinea */
+  .attendance-list li {
+    margin-bottom: 6px;
+  }
+
+  /* ★ ACTUALIZADO: Icono ajustado para el grid */
   .attendance-icon {
-    width: 130px;
-    height: 130px;
-    margin-top: 100px; /* El margen ahora se aplica al contenedor del círculo */
+    grid-area: icon;
+    width: 110px;
+    height: 110px;
+    margin-top: 0; /* Eliminado margen superior gigante */
     justify-content: center;
   }
 
   .attendance-icon__img {
-    width: 80px;
-    margin-top: 0; /* Quitamos el margen de la imagen para que se centre bien */
-  }
-
-
-
-  .attendance-title {
-    font-size: 1.3rem;
-    line-height: 1.3;
-  }
-
-  .attendance-list {
-    font-size: 0.8rem;
-    line-height: 1.6;
+    width: 65px;
+    margin-top: 0; 
   }
 
   .attendance-stores {
@@ -479,6 +534,13 @@
 
   .attendance-store__img {
     height: 26px;
+  }
+}
+
+/* Ajuste específico para móviles (pantallas < 500px) */
+@media (max-width: 425px) {
+  .app-section {
+    padding-top: 100px;
   }
 }
 

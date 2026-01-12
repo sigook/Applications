@@ -56,8 +56,8 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 .ind-contact__circle::before {
   content: '';
   position: absolute;
-  width: 720px;
-  height: 720px;
+  width: 820px;
+  height: 820px;
   border-radius: 50%;
   background: #35d46b;
   top: -50px;
@@ -70,8 +70,8 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 .ind-contact__circle::after {
   content: '';
   position: absolute;
-  width: 720px; /* Mismo tamaño que el verde */
-  height: 720px;
+  width: 820px; /* Mismo tamaño que el verde */
+  height: 820px;
   border-radius: 50%;
   border: 2px solid #ffffff; /* Borde blanco */
 
@@ -109,7 +109,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   background: #ffffff;
   border-radius: 18px;
   padding: 30px 26px 26px;
@@ -150,26 +150,41 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   }
 
   .ind-contact__title {
-    font-size: 1.6rem;
+    font-size: 2.3rem;
   }
 
-  /* ocultar waves en pantallas pequeñas si molestan */
-  .ind-contact__waves {
-    display: none;
-  }
 }
 
 @media (max-width: 480px) {
   .ind-contact__circle::before {
-    width: 360px;
-    height: 360px;
+    width: 560px;
+    height: 560px;
     top: 0px;
   }
 
   .ind-contact__circle::after {
-    width: 360px;
-    height: 360px;
-    top: 0px;
+    width: 560px;
+    height: 560px;
+    top: 30px;
+  }
+
+  .ind-contact__title {
+    font-size: 2.3rem;
+  }
+
+  /* Ajuste de waves para móvil: arriba y visibles */
+  .ind-contact__waves {
+    top: -370px;
+    right: 5px; /* Lo movemos un poco a la derecha */
+    width: 140%;
+    overflow: hidden; /* Evitar scroll horizontal si se sale */
+  }
+
+  .ind-contact__waves img {
+    width: 140%; /* Más ancho que el contenedor para cubrir */
+    height: auto; /* Mantener proporción */
+    max-width: none;
+    transform: rotate(270deg); /* Asegurar orientación */
   }
 }
 </style>

@@ -146,15 +146,16 @@
   /* ================== 3. COMILLAS GIGANTES ================== */
   .hc-decor-quote {
     position: absolute;
-    top: -60px; /* Sube para que sobresalga */
-    right: 80px; /* Pegado a la derecha */
-    font-family: sans-serif; /* O una fuente serif si prefieres */
-    font-size: 20rem; /* Gigante */
+    top: -20px; 
+    right: 80px; 
+    font-family: serif; 
+    font-size: 10rem; /* Más pequeñas */
     line-height: 1;
-    color: black; /* Verde */
+    color: #000000; 
     opacity: 1;
     pointer-events: none;
     z-index: 1;
+    font-weight: bold; /* Para que se vean gorditas */
   }
 
   /* ================== 1. TÍTULO IZQUIERDA ================== */
@@ -272,8 +273,8 @@
   /* NUEVO: El círculo principal verde */
   .hc-contact-circle {
     position: relative; /* Necesario para que el ::before se posicione respecto a este */
-    width: 780px;       /* Tamaño fijo del círculo verde */
-    height: 780px;
+    width: 820px;       /* Tamaño fijo del círculo verde */
+    height: 820px;
     border-radius: 50%;
     background: #45d86e; /* Verde brillante */
     display: flex;
@@ -336,10 +337,9 @@
     box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
     margin-top: 20px;
     width: 100%;
-    max-width: 400px;
-    /* Posicionamiento para que se salga un poco del círculo abajo */
+    max-width: 520px;
     position: relative;
-    top: 20px;
+    top: 40px;
   }
 
   /* ============ AJUSTES ContactForm ============ */
@@ -388,13 +388,13 @@
 
     .hc-decor-quote {
       font-size: 8rem;
-      top: -10px;
+      top: -20px;
       right: 0px;
     }
 
     .hc-contact-circle {
-      width: 450px;
-      height: 450px;
+      width: 460px;
+      height: 460px;
     }
 
     .hc-contact-circle::before {
@@ -417,13 +417,28 @@
       padding-bottom: 600px;
     }
 
-    .hc-decor-quote{
-      right: 40px;
+    /* Ajuste título "What Our Clients Say" más pequeño y arriba */
+    .hc-title-wrapper {
+      margin-top: -40px; 
+      margin-bottom: 80px;
+    }
+    
+    .hc-section-title {
+      font-size: 1.5rem; 
     }
 
+    .hc-decor-quote{
+      font-size: 6rem;
+      top: -10px;
+      right: 20px;
+    }
+
+    /* CÍRCULO: Forzar redondez */
     .hc-contact-circle {
-      width: 460px;
-      height: 460px;
+      width: 600px;
+      min-width: 600px; /* Evita que se aplaste */
+      height: 600px;
+      flex-shrink: 0;
     }
     .hc-contact-circle::before {
        transform: translateX(20px);
@@ -431,10 +446,12 @@
 
     .hc-circle__title {
        font-size: 1.5rem;
+       margin-top: 20px;
     }
 
     .hc-circle__form-placeholder {
-      max-width: 300px;
+      max-width: 90%;
+      width: 360px;
     }
   }
 </style>
