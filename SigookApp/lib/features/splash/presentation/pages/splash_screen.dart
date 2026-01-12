@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/domain/usecases/validate_token.dart';
@@ -16,18 +18,13 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _mainController;
-  late AnimationController _pulseController;
-  late AnimationController _rotationController;
-  late AnimationController _shimmerController;
+  late AnimationController _logoController;
+  late AnimationController _blobController;
+  late AnimationController _loadingController;
 
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  late Animation<double> _logoFadeAnimation;
   late Animation<double> _logoScaleAnimation;
-  late Animation<double> _logoRotationAnimation;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _shimmerAnimation;
-  late Animation<Offset> _slideAnimation;
+  late Animation<double> _blobAnimation;
 
   bool _hasNavigated = false;
 
@@ -35,83 +32,60 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
 
-    _mainController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+    _logoController = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+    _blobController = AnimationController(
+      duration: const Duration(milliseconds: 9000),
       vsync: this,
-    )..repeat(reverse: true);
+    );
 
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 20000),
+    _loadingController = AnimationController(
+      duration: const Duration(milliseconds: 1400),
       vsync: this,
-    )..repeat();
-
-    _shimmerController = AnimationController(
-      duration: const Duration(milliseconds: 2500),
-      vsync: this,
-    )..repeat();
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _mainController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-      ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _mainController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-      ),
+    _logoFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeOut));
+
+    _logoScaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
     );
 
-    _logoScaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _mainController,
-        curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
-      ),
+    _blobAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _blobController, curve: Curves.easeInOut),
     );
 
-    _logoRotationAnimation = Tween<double>(begin: -0.1, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _mainController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOutBack),
-      ),
-    );
-
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _mainController,
-            curve: const Interval(0.3, 0.9, curve: Curves.easeOutCubic),
-          ),
-        );
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    _shimmerAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(
-      CurvedAnimation(parent: _shimmerController, curve: Curves.linear),
-    );
-
-    _mainController.forward();
+    _startAnimationSequence();
 
     _checkAuthAndNavigate();
   }
 
+  void _startAnimationSequence() async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+    _logoController.forward();
+
+    await Future.delayed(const Duration(milliseconds: 380));
+    if (!mounted) return;
+    _blobController.repeat();
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+    _loadingController.repeat();
+  }
+
   Future<void> _checkAuthAndNavigate() async {
-    await Future.delayed(const Duration(milliseconds: 2700));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
     if (!mounted || _hasNavigated) return;
 
     debugPrint('🔐 [SPLASH] Starting authentication check...');
 
-    // Wait for AuthViewModel to finish loading token from secure storage
     int attempts = 0;
     const maxAttempts = 50;
 
@@ -127,7 +101,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted || _hasNavigated) return;
 
-    // Read current auth state
     final authState = ref.read(authViewModelProvider);
     final token = authState.token;
 
@@ -135,7 +108,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       '🔐 [SPLASH] Auth state - isAuthenticated: ${authState.isAuthenticated}, token present: ${token != null}',
     );
 
-    // No token in secure storage, go to welcome
     if (token == null ||
         token.accessToken == null ||
         token.accessToken!.isEmpty) {
@@ -144,7 +116,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       return;
     }
 
-    // Check if token is expired
     final expirationDateTime = token.expirationDateTime;
     final isExpired =
         expirationDateTime != null &&
@@ -158,7 +129,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       );
     }
 
-    // Validate token with backend API
     final validateTokenUseCase = ref.read(validateTokenProvider);
     final validationResult = await validateTokenUseCase(
       ValidateTokenParams(accessToken: token.accessToken!),
@@ -167,13 +137,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted || _hasNavigated) return;
 
     validationResult.fold(
-      // Validation failed - redirect to welcome
       (failure) {
         debugPrint('🔐 [SPLASH] Token validation failed: ${failure.message}');
         debugPrint('🔐 [SPLASH] Redirecting to welcome for re-authentication');
         _navigateToWelcome();
       },
-      // Validation succeeded - navigate to jobs (ref.listen will also fire if not navigated yet)
       (isValid) {
         if (isValid) {
           debugPrint('🔐 [SPLASH] Token is valid! Navigating to jobs');
@@ -208,22 +176,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   void dispose() {
-    _mainController.dispose();
-    _pulseController.dispose();
-    _rotationController.dispose();
-    _shimmerController.dispose();
+    _logoController.dispose();
+    _blobController.dispose();
+    _loadingController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    // Listen to auth state changes reactively (like sign-in page does)
     ref.listen<AuthState>(authViewModelProvider, (previous, next) {
       if (_hasNavigated || !mounted) return;
 
-      // If authenticated with valid token, navigate to jobs
       if (next.isAuthenticated &&
           next.token != null &&
           next.token!.accessToken != null &&
@@ -236,337 +199,205 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF0A0E27),
-              const Color(0xFF1A1F3A),
-              const Color(0xFF0D47A1).withValues(alpha: 0.9),
-              const Color(0xFF1976D2),
-            ],
-            stops: const [0.0, 0.3, 0.7, 1.0],
+      backgroundColor: const Color(0xFF070A16),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF070A16),
+                    AppTheme.primaryBlue.withValues(alpha: 0.25),
+                    const Color(0xFF070A16),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            AnimatedBuilder(
-              animation: _rotationController,
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _blobController,
               builder: (context, child) {
-                return Transform.rotate(
-                  angle: _rotationController.value * 2 * 3.14159,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: -size.height * 0.15,
-                        right: -size.width * 0.2,
-                        child: Container(
-                          width: size.width * 0.6,
-                          height: size.width * 0.6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFF42A5F5).withValues(alpha: 0.15),
-                                const Color(0xFF42A5F5).withValues(alpha: 0.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -size.height * 0.2,
-                        left: -size.width * 0.25,
-                        child: Container(
-                          width: size.width * 0.7,
-                          height: size.width * 0.7,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFF1E88E5).withValues(alpha: 0.2),
-                                const Color(0xFF1E88E5).withValues(alpha: 0.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: size.height * 0.3,
-                        right: -size.width * 0.1,
-                        child: Container(
-                          width: size.width * 0.4,
-                          height: size.width * 0.4,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFF64B5F6).withValues(alpha: 0.1),
-                                const Color(0xFF64B5F6).withValues(alpha: 0.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                return CustomPaint(
+                  painter: _BlobPainter(twinkle: _blobAnimation.value),
                 );
               },
             ),
-            Center(
-              child: AnimatedBuilder(
-                animation: Listenable.merge([
-                  _mainController,
-                  _pulseController,
-                  _shimmerController,
-                ]),
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              AnimatedBuilder(
-                                animation: _pulseController,
-                                builder: (context, child) {
-                                  return Transform.scale(
-                                    scale: _pulseAnimation.value,
-                                    child: Container(
-                                      width: 280,
-                                      height: 280,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: RadialGradient(
-                                          colors: [
-                                            const Color(
-                                              0xFF42A5F5,
-                                            ).withValues(alpha: 0.0),
-                                            const Color(
-                                              0xFF42A5F5,
-                                            ).withValues(alpha: 0.3),
-                                            const Color(
-                                              0xFF1E88E5,
-                                            ).withValues(alpha: 0.0),
-                                          ],
-                                          stops: const [0.0, 0.5, 1.0],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              Transform.rotate(
-                                angle: _logoRotationAnimation.value,
-                                child: Transform.scale(
-                                  scale: _logoScaleAnimation.value,
-                                  child: Container(
-                                    width: 200,
-                                    height: 200,
-                                    padding: const EdgeInsets.all(32),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.white.withValues(alpha: 0.25),
-                                          Colors.white.withValues(alpha: 0.05),
-                                        ],
-                                      ),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        width: 2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(
-                                            0xFF42A5F5,
-                                          ).withValues(alpha: 0.5),
-                                          blurRadius: 60,
-                                          spreadRadius: 10,
-                                        ),
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          blurRadius: 40,
-                                          offset: const Offset(0, 20),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipOval(
-                                      child: Stack(
-                                        children: [
-                                          Center(
-                                            child: Image.asset(
-                                              'assets/images/logo/sigook_logo.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return const Icon(
-                                                      Icons.factory,
-                                                      size: 80,
-                                                      color: Colors.white,
-                                                    );
-                                                  },
-                                            ),
-                                          ),
-                                          AnimatedBuilder(
-                                            animation: _shimmerController,
-                                            builder: (context, child) {
-                                              return Transform.translate(
-                                                offset: Offset(
-                                                  _shimmerAnimation.value * 200,
-                                                  0,
-                                                ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      begin:
-                                                          Alignment.centerLeft,
-                                                      end:
-                                                          Alignment.centerRight,
-                                                      colors: [
-                                                        Colors.white.withValues(
-                                                          alpha: 0.0,
-                                                        ),
-                                                        Colors.white.withValues(
-                                                          alpha: 0.3,
-                                                        ),
-                                                        Colors.white.withValues(
-                                                          alpha: 0.0,
-                                                        ),
-                                                      ],
-                                                      stops: const [
-                                                        0.0,
-                                                        0.5,
-                                                        1.0,
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 60),
-                          SlideTransition(
-                            position: _slideAnimation,
-                            child: FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: Column(
-                                children: [
-                                  ShaderMask(
-                                    shaderCallback: (bounds) {
-                                      return const LinearGradient(
-                                        colors: [
-                                          Color(0xFF64B5F6),
-                                          Color(0xFFFFFFFF),
-                                          Color(0xFF42A5F5),
-                                        ],
-                                      ).createShader(bounds);
-                                    },
-                                    child: const Text(
-                                      'SIGOOK',
-                                      style: TextStyle(
-                                        fontSize: 48,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 8,
-                                        color: Colors.white,
-                                        height: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'Your Career Gateway',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w300,
-                                      letterSpacing: 3,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 50),
-                                  SizedBox(
-                                    width: 56,
-                                    height: 56,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        AnimatedBuilder(
-                                          animation: _pulseController,
-                                          builder: (context, child) {
-                                            return Transform.scale(
-                                              scale: _pulseAnimation.value,
-                                              child: Container(
-                                                width: 56,
-                                                height: 56,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: const Color(
-                                                      0xFF42A5F5,
-                                                    ).withValues(alpha: 0.3),
-                                                    width: 2,
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        SizedBox(
-                                          width: 40,
-                                          height: 40,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 3,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  Colors.white.withValues(
-                                                    alpha: 0.95,
-                                                  ),
-                                                ),
-                                            strokeCap: StrokeCap.round,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+          ),
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FadeTransition(
+                      opacity: _logoFadeAnimation,
+                      child: ScaleTransition(
+                        scale: _logoScaleAnimation,
+                        child: _buildWordmark(),
                       ),
                     ),
-                  );
-                },
+                    const SizedBox(height: 44),
+                    AnimatedBuilder(
+                      animation: _loadingController,
+                      builder: (context, child) {
+                        final t = _loadingController.value * math.pi * 2;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _LoadingDot(v: math.sin(t)),
+                            const SizedBox(width: 10),
+                            _LoadingDot(v: math.sin(t - 2.1)),
+                            const SizedBox(width: 10),
+                            _LoadingDot(v: math.sin(t - 4.2)),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWordmark() {
+    const baseStyle = TextStyle(
+      fontSize: 84,
+      fontWeight: FontWeight.w800,
+      height: 1.0,
+      letterSpacing: -2,
+    );
+
+    final sigPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF7DD3FC), Color(0xFF2563EB)],
+      ).createShader(const Rect.fromLTWH(0, 0, 320, 120));
+
+    final ookPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFFFB4B4), Color(0xFFE53935)],
+      ).createShader(const Rect.fromLTWH(0, 0, 320, 120));
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          TextSpan(
+            text: 'sig',
+            style: baseStyle.copyWith(
+              foreground: sigPaint,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 24,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+          ),
+          TextSpan(
+            text: 'ook',
+            style: baseStyle.copyWith(
+              foreground: ookPaint,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 24,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingDot extends StatelessWidget {
+  final double v;
+
+  const _LoadingDot({required this.v});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = (v + 1) / 2;
+    final scale = 0.75 + 0.35 * t;
+    final opacity = 0.35 + 0.55 * t;
+    return Opacity(
+      opacity: opacity,
+      child: Transform.scale(
+        scale: scale,
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.15),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _BlobPainter extends CustomPainter {
+  final double twinkle;
+
+  _BlobPainter({required this.twinkle});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = twinkle * math.pi * 2;
+
+    final blobPaint = Paint()..style = PaintingStyle.fill;
+    blobPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 60);
+
+    final b1 = Offset(
+      size.width * 0.18 + math.sin(t) * 22,
+      size.height * 0.25 + math.cos(t) * 18,
+    );
+    blobPaint.color = AppTheme.primaryBlue.withValues(alpha: 0.28);
+    canvas.drawCircle(b1, size.shortestSide * 0.28, blobPaint);
+
+    final b2 = Offset(
+      size.width * 0.88 + math.sin(t + 1.4) * 26,
+      size.height * 0.35 + math.cos(t + 1.4) * 22,
+    );
+    blobPaint.color = AppTheme.tertiaryBlue.withValues(alpha: 0.22);
+    canvas.drawCircle(b2, size.shortestSide * 0.22, blobPaint);
+
+    final b3 = Offset(
+      size.width * 0.62 + math.sin(t + 2.7) * 18,
+      size.height * 0.86 + math.cos(t + 2.7) * 16,
+    );
+    blobPaint.color = AppTheme.secondaryRed.withValues(alpha: 0.12);
+    canvas.drawCircle(b3, size.shortestSide * 0.26, blobPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BlobPainter oldDelegate) {
+    return oldDelegate.twinkle != twinkle;
   }
 }
