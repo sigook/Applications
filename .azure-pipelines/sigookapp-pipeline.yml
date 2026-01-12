@@ -160,24 +160,6 @@ stages:
               df -h /
             displayName: 'Free Disk Space'
 
-          # Cache Gradle dependencies
-          - task: Cache@2
-            displayName: 'Cache Gradle'
-            inputs:
-              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
-              restoreKeys: |
-                gradle | "$(Agent.OS)"
-              path: ~/.gradle/caches
-
-          # Cache Flutter pub packages
-          - task: Cache@2
-            displayName: 'Cache Flutter Packages'
-            inputs:
-              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
-              restoreKeys: |
-                pub | "$(Agent.OS)"
-              path: ~/.pub-cache
-
           # Download keystore from secure files
           - task: DownloadSecureFile@1
             name: androidKeystore
@@ -204,6 +186,24 @@ stages:
               cd $(workingDirectory)
               flutter pub get
             displayName: 'Flutter Pub Get'
+
+          # Cache Gradle dependencies
+          - task: Cache@2
+            displayName: 'Cache Gradle'
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+              path: ~/.gradle/caches
+
+          # Cache Flutter pub packages
+          - task: Cache@2
+            displayName: 'Cache Flutter Packages'
+            inputs:
+              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+              restoreKeys: |
+                pub | "$(Agent.OS)"
+              path: ~/.pub-cache
 
           # Run code generation
           - script: |
@@ -324,24 +324,6 @@ stages:
               df -h /
             displayName: 'Free Disk Space'
 
-          # Cache Gradle dependencies
-          - task: Cache@2
-            displayName: 'Cache Gradle'
-            inputs:
-              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
-              restoreKeys: |
-                gradle | "$(Agent.OS)"
-              path: ~/.gradle/caches
-
-          # Cache Flutter pub packages
-          - task: Cache@2
-            displayName: 'Cache Flutter Packages'
-            inputs:
-              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
-              restoreKeys: |
-                pub | "$(Agent.OS)"
-              path: ~/.pub-cache
-
           # Download keystore from secure files
           - task: DownloadSecureFile@1
             name: androidKeystore
@@ -368,6 +350,24 @@ stages:
               cd $(workingDirectory)
               flutter pub get
             displayName: 'Flutter Pub Get'
+
+          # Cache Gradle dependencies
+          - task: Cache@2
+            displayName: 'Cache Gradle'
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts'
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+              path: ~/.gradle/caches
+
+          # Cache Flutter pub packages
+          - task: Cache@2
+            displayName: 'Cache Flutter Packages'
+            inputs:
+              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+              restoreKeys: |
+                pub | "$(Agent.OS)"
+              path: ~/.pub-cache
 
           # Run code generation
           - script: |
