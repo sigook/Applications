@@ -103,7 +103,7 @@
   margin: 0 0 24px;
   font-size: 2.3rem;
   font-weight: 300;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
 }
 
 .cert-text {

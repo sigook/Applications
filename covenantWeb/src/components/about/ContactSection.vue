@@ -43,8 +43,8 @@
   left: 50%;
   transform: translateX(-50%);
   top: 40px;               /* controla cuánto sube el círculo */
-  width: 720px;
-  height: 720px;
+  width: 920px;
+  height: 920px;
   border-radius: 50%;
   background-color: #32d26a;
   display: flex;
@@ -59,8 +59,8 @@
 .contact-cta__circle::after {
   content: '';
   position: absolute;
-  width: 720px; /* Mismo tamaño que el verde */
-  height: 720px;
+  width: 920px; /* Mismo tamaño que el verde */
+  height: 920px;
   border-radius: 50%;
   border: 2px solid #ffffff; /* Borde blanco */
 
@@ -101,7 +101,7 @@
   position: relative;
   z-index: 20;
   width: 100%;
-  max-width: 520px;
+  max-width: 620px;
   margin: 0 auto;
   margin-top: -300px;      /* hace que la tarjeta se sobreponga al círculo */
   background-color: #ffffff;
@@ -173,10 +173,16 @@
   }
 
   .contact-cta__circle {
-    width: 360px;
-    height: 360px;
+    width: 580px;
+    height: 580px;
     top: 140px;
     padding: 28px 22px 52px;
+  }
+
+  /* --- NUEVO: CÍRCULO BLANCO (OUTLINE) --- */
+  .contact-cta__circle::after {
+    width: 580px; /* Mismo tamaño que el verde */
+    height: 580px;
   }
 
   .contact-cta__title {
@@ -193,7 +199,7 @@
   }
 
   .contact-cta__card {
-    max-width: 100%;
+    max-width: 85%;
     margin-top: -170px;
     padding: 24px 18px 32px;
   }

@@ -449,8 +449,9 @@
 }
 
 /* 💡 RESPONSIVE:
-   - Desktop: 2 columnas (ya lo tienes en partner-types__grid)
-   - Mobile: 1 columna (queda como la captura vertical) */
+   - Desktop: 2 columnas
+   - Mobile: 1 columna
+*/
 @media (max-width: 900px) {
   .partner-types__grid {
     grid-template-columns: minmax(0, 1fr);
@@ -466,7 +467,7 @@
   }
 
   .partner-types__text {
-    max-width: 100%;
+    max-width: 75%;
   }
 }
 </style>

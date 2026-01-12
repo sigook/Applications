@@ -142,7 +142,8 @@
 
 <script setup lang="ts">
 
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 import imgProfessional from '@/assets/images/hero-professional.png'
 import imgIndustrial from '@/assets/images/hero-industrial.png'
@@ -153,7 +154,25 @@ import iconIndustrialLeft from '@/assets/images/employers-icons/industrial-icon-
 import iconProfessionalRight from '@/assets/images/employers-icons/professional-icon-right.png'
 import iconProfessionalLeft from '@/assets/images/employers-icons/professional-icon-left.png'
 
+const route = useRoute()
 const activeTab = ref<'professional' | 'industrial'>('industrial');
+
+const checkQueryParam = () => {
+  const type = route.query.type as string | undefined
+  if (type === 'professional' || type === 'industrial') {
+    activeTab.value = type
+  }
+}
+
+// Chequear al montar
+onMounted(() => {
+  checkQueryParam()
+})
+
+// Chequear cambios en la URL (si navega desde footer estando ya en la pagina)
+watch(() => route.query.type, () => {
+  checkQueryParam()
+})
 
 const getIcon = (iconName: string) => {
   return new URL(`../../assets/images/roles/icons/${iconName}`, import.meta.url).href
@@ -322,14 +341,14 @@ const scrollToContact = () => {
   .right-icon img {
     background-color: #5ce07d; /* Verde */
     border-radius: 0;
-    padding: 120px;
+    padding: 180px 120px;
     margin: 0;
   }
 
   /* TARJETA BASE */
   .puzzle-card {
     flex: 1;
-    padding: 60px 60px;
+    padding: 60px 100px;
     position: relative;
     box-shadow: none;
     z-index: 5;
@@ -609,10 +628,10 @@ const scrollToContact = () => {
 
   /* 3. TARJETAS */
   .puzzle-card {
-    width: 90%; /* Ancho cómodo en móvil */
+    width: 100%; /* Ancho completo */
     margin: 0 auto;
     /* Padding superior grande para dejar espacio al icono */
-    padding: 80px 30px 40px;
+    padding: 140px 30px 40px;
     text-align: center;
   }
 

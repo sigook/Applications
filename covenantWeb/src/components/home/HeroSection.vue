@@ -242,11 +242,18 @@
 
 /* 🔧 AJUSTE CENTRADO EN MÓVIL */
 .hero__inner {
-  padding: 90px 6vw 50px;  /* aún menos padding para centrar verticalmente */
+  padding: 90px 6vw 50px;
+}
+
+.hero__content {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero__logo {
   max-width: 340px;
+  margin-bottom: 90px;
 }
 
 .hero__title {
@@ -260,6 +267,7 @@
 
 .hero__cta {
   padding-inline: 40px;
+  margin-top: 0;
 }
 
 .hero__scroll-indicator {
