@@ -1,4 +1,4 @@
-package com.example.sigook_app_flutter
+package com.sigook.beta
 
 import io.flutter.embedding.android.FlutterActivity
 

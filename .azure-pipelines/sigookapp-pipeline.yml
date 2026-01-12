@@ -37,8 +37,8 @@ pr:
 # Environment detection variables
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','refs/heads/SigookApp','dev','development','SigookApp')]
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main','refs/heads/SigookApp','SigookApp')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   flutterVersion: 'stable'
 
@@ -390,37 +390,18 @@ stages:
               echo "✅ Created placeholder .env files"
             displayName: 'Create Placeholder .env Files'
 
-          # Build production APK with environment variables via --dart-define
-          - script: |
-              cd $(workingDirectory)
-              echo "Building production APK..."
-              flutter build apk \
-                --flavor production \
-                -t lib/main_production.dart \
-                --release \
-                --dart-define=ENVIRONMENT=production \
-                "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-                "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-                "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-                "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-                "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"
-              echo "✅ Production APK built successfully"
-            displayName: 'Build Production APK'
-            env:
-              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
-              KEY_PASSWORD: $(KEY_PASSWORD)
-              KEY_ALIAS: $(KEY_ALIAS)
+          # Build production AAB with auto-incrementing version code
+          # Note: APK build removed - Play Store only needs AAB
+          # For local testing, use: flutter build apk --flavor production
 
-          # Also build AAB for Play Store
           - script: |
               cd $(workingDirectory)
-              echo "Building production AAB..."
+              echo "Building production AAB with version code: $(Build.BuildId)..."
               flutter build appbundle \
                 --flavor production \
                 -t lib/main_production.dart \
                 --release \
+                --build-number=$(Build.BuildId) \
                 --dart-define=ENVIRONMENT=production \
                 "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
                 "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
@@ -430,15 +411,15 @@ stages:
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
               echo "✅ Production AAB built successfully"
-            displayName: 'Build Production AAB'
+            displayName: 'Build Production AAB (Play Store)'
             env:
               KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
               KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: $(KEY_ALIAS)
 
-          # Copy artifacts to staging directory
+          # Copy AAB artifact to staging directory
           - task: Bash@3
-            displayName: 'Prepare Artifacts'
+            displayName: 'Prepare AAB Artifact'
             inputs:
               targetType: 'inline'
               workingDirectory: '$(workingDirectory)'
@@ -446,18 +427,17 @@ stages:
                 echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/android
                 
-                # Find and copy APK
-                APK_PATH=$(find build/app/outputs/flutter-apk -name "*production*.apk" | head -1)
-                if [ -n "$APK_PATH" ]; then
-                  cp "$APK_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-production-$(Build.BuildId).apk
-                  echo "✅ APK copied"
-                fi
-                
                 # Find and copy AAB
                 AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
                 if [ -n "$AAB_PATH" ]; then
                   cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-production-$(Build.BuildId).aab
-                  echo "✅ AAB copied"
+                  echo "✅ AAB copied: sigook-production-$(Build.BuildId).aab"
+                  echo "Version Code: $(Build.BuildId)"
+                else
+                  echo "❌ AAB not found!"
+                  echo "Searching for AABs..."
+                  find . -name "*.aab" 2>/dev/null || echo "No AABs found"
+                  exit 1
                 fi
                 
                 ls -la $(Build.ArtifactStagingDirectory)/android/
@@ -479,11 +459,79 @@ stages:
                 echo "========================================"
                 echo "✅ Production Android Build Complete!"
                 echo "========================================"
+                echo "Branch: $(Build.SourceBranch)"
                 echo "Artifact: sigookapp-android-production"
-                echo "APK: sigook-production-$(Build.BuildId).apk"
                 echo "AAB: sigook-production-$(Build.BuildId).aab"
+                echo "Version Code: $(Build.BuildId)"
                 echo "Build ID: $(Build.BuildId)"
                 echo "========================================"
+                echo "Note: APK build removed for faster CI/CD"
+                echo "For local APK testing, use:"
+                echo "  flutter build apk --flavor production"
+                echo "========================================"
+
+  # ============================================
+  # Stage 4: Deploy to Google Play Store
+  # ============================================
+  - stage: Deploy_PlayStore
+    displayName: 'Deploy to Play Store'
+    dependsOn: Build_Android_Production
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: SigookApp-Production
+    jobs:
+      - deployment: DeployPlayStore
+        displayName: 'Upload to Play Store'
+        environment: 'PlayStore-Production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: 'sigookapp-android-production'
+                  displayName: 'Download Production AAB'
+
+                - task: DownloadSecureFile@1
+                  name: serviceAccountJson
+                  displayName: 'Download Service Account JSON'
+                  inputs:
+                    secureFile: 'playstore-service-account.json'
+
+                - task: GooglePlayRelease@4
+                  displayName: 'Release to Play Store (Internal Track)'
+                  inputs:
+                    authType: 'JsonFile'
+                    serviceAccountKey: '$(serviceAccountJson.secureFilePath)'
+                    applicationId: 'com.sigook.beta'
+                    action: 'SingleBundle'
+                    bundleFile: '$(Pipeline.Workspace)/sigookapp-android-production/*.aab'
+                    track: 'internal'
+                    rolloutPercentage: 100
+                    changeUpdatePriority: 2
+                    releaseName: '$(Build.BuildNumber)'
+
+                - task: Bash@3
+                  displayName: 'Deployment Summary'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo ""
+                      echo "========================================"
+                      echo "✅ Play Store Deployment Complete!"
+                      echo "========================================"
+                      echo "Track: internal"
+                      echo "Application ID: com.sigook.beta"
+                      echo "Build: $(Build.BuildNumber)"
+                      echo "AAB: $(Pipeline.Workspace)/sigookapp-android-production/*.aab"
+                      echo "========================================"
+                      echo ""
+                      echo "📱 Next Steps:"
+                      echo "1. Check Google Play Console for the release"
+                      echo "2. Promote to alpha/beta when ready"
+                      echo "3. Eventually promote to production"
+                      echo "========================================"
 
   # ============================================
   # iOS Build Stages - REMOVED

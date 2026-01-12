@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.sigook_app_flutter"
+    namespace = "com.sigook.beta"
 
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -54,7 +54,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.sigook_app_flutter"
+        applicationId = "com.sigook.beta"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
