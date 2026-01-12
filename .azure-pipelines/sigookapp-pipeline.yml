@@ -534,8 +534,359 @@ stages:
                       echo "========================================"
 
   # ============================================
-  # iOS Build Stages - REMOVED
-  # iOS signing not configured yet
-  # Re-add these stages when iOS certificates and
-  # provisioning profiles are set up in Azure DevOps
+  # Stage 5: Build iOS IPA (Staging)
   # ============================================
+  - stage: Build_iOS_Staging
+    displayName: 'Build iOS (Staging)'
+    dependsOn: Validate_and_Test
+    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'macos-latest'
+    variables:
+      - group: SigookApp-Staging
+      - group: SigookApp-iOS-Signing
+    jobs:
+      - job: Build_IPA_Staging
+        displayName: 'Build Staging IPA'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: Bash@3
+            displayName: 'Display Build Information'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "========================================"
+                echo "iOS Staging Build"
+                echo "========================================"
+                echo "Build Number: $(Build.BuildNumber)"
+                echo "Source Branch: $(Build.SourceBranch)"
+                echo "========================================"
+
+          # Install Apple Certificate
+          - task: InstallAppleCertificate@2
+            displayName: 'Install Apple Certificate'
+            inputs:
+              certSecureFile: '$(P12_FILE_NAME)'
+              certPwd: '$(P12_PASSWORD)'
+              keychain: 'temp'
+              deleteCert: true
+
+          # Install Provisioning Profile
+          - task: InstallAppleProvisioningProfile@1
+            displayName: 'Install Provisioning Profile'
+            inputs:
+              provisioningProfileLocation: 'secureFiles'
+              provProfileSecureFile: '$(PROVISIONING_PROFILE_STAGING)'
+              removeProfile: true
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Create placeholder .env files
+          - script: |
+              cd $(workingDirectory)
+              echo "# CI environment - using --dart-define instead" > .env.staging
+              echo "# CI environment - using --dart-define instead" > .env.production
+              echo "✅ Created placeholder .env files"
+            displayName: 'Create Placeholder .env Files'
+
+          # Build iOS IPA (Staging)
+          - script: |
+              cd $(workingDirectory)
+              echo "Building staging IPA..."
+              flutter build ipa \
+                --flavor staging \
+                -t lib/main_staging.dart \
+                --release \
+                --export-options-plist=ios/ExportOptions-Staging.plist \
+                --dart-define=ENVIRONMENT=staging \
+                "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
+                "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
+                "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
+                "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
+                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
+                "--dart-define=SCOPES=$(SCOPES)" \
+                "--dart-define=APP_NAME=$(APP_NAME)"
+              echo "✅ Staging IPA built successfully"
+            displayName: 'Build Staging IPA'
+
+          # Copy IPA to staging directory
+          - task: Bash@3
+            displayName: 'Prepare IPA Artifact'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(workingDirectory)'
+              script: |
+                echo "Current directory: $(pwd)"
+                mkdir -p $(Build.ArtifactStagingDirectory)/ios
+                
+                # Find and copy IPA
+                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                if [ -n "$IPA_PATH" ]; then
+                  cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
+                  echo "✅ IPA copied: sigook-staging-$(Build.BuildId).ipa"
+                else
+                  echo "❌ IPA not found!"
+                  echo "Searching for IPAs..."
+                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+                  exit 1
+                fi
+                
+                ls -la $(Build.ArtifactStagingDirectory)/ios/
+
+          # Publish IPA artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Staging IPA'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
+              ArtifactName: 'sigookapp-ios-staging'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Staging iOS Build Complete!"
+                echo "========================================"
+                echo "Artifact: sigookapp-ios-staging"
+                echo "IPA: sigook-staging-$(Build.BuildId).ipa"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"
+
+  # ============================================
+  # Stage 6: Build iOS IPA (Production)
+  # ============================================
+  - stage: Build_iOS_Production
+    displayName: 'Build iOS (Production)'
+    dependsOn: Validate_and_Test
+    condition: and(succeeded(), eq(variables['isMain'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'macos-latest'
+    variables:
+      - group: SigookApp-Production
+      - group: SigookApp-iOS-Signing
+    jobs:
+      - job: Build_IPA_Production
+        displayName: 'Build Production IPA'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: Bash@3
+            displayName: 'Display Build Information'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "========================================"
+                echo "iOS Production Build"
+                echo "========================================"
+                echo "Build Number: $(Build.BuildNumber)"
+                echo "Source Branch: $(Build.SourceBranch)"
+                echo "========================================"
+
+          # Install Apple Certificate
+          - task: InstallAppleCertificate@2
+            displayName: 'Install Apple Certificate'
+            inputs:
+              certSecureFile: '$(P12_FILE_NAME)'
+              certPwd: '$(P12_PASSWORD)'
+              keychain: 'temp'
+              deleteCert: true
+
+          # Install Provisioning Profile
+          - task: InstallAppleProvisioningProfile@1
+            displayName: 'Install Provisioning Profile'
+            inputs:
+              provisioningProfileLocation: 'secureFiles'
+              provProfileSecureFile: '$(PROVISIONING_PROFILE_PRODUCTION)'
+              removeProfile: true
+
+          # Install Flutter SDK
+          - task: FlutterInstall@0
+            displayName: 'Install Flutter SDK'
+            inputs:
+              mode: 'auto'
+              channel: '$(flutterVersion)'
+              version: 'latest'
+
+          # Get dependencies
+          - script: |
+              cd $(workingDirectory)
+              flutter pub get
+            displayName: 'Flutter Pub Get'
+
+          # Run code generation
+          - script: |
+              cd $(workingDirectory)
+              flutter pub run build_runner build --delete-conflicting-outputs
+            displayName: 'Run Build Runner'
+
+          # Create placeholder .env files
+          - script: |
+              cd $(workingDirectory)
+              echo "# CI environment - using --dart-define instead" > .env.staging
+              echo "# CI environment - using --dart-define instead" > .env.production
+              echo "✅ Created placeholder .env files"
+            displayName: 'Create Placeholder .env Files'
+
+          # Build iOS IPA (Production) with auto-incrementing build number
+          - script: |
+              cd $(workingDirectory)
+              echo "Building production IPA with build number: $(Build.BuildId)..."
+              flutter build ipa \
+                --flavor production \
+                -t lib/main_production.dart \
+                --release \
+                --build-number=$(Build.BuildId) \
+                --export-options-plist=ios/ExportOptions-Production.plist \
+                --dart-define=ENVIRONMENT=production \
+                "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
+                "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
+                "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
+                "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
+                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
+                "--dart-define=SCOPES=$(SCOPES)" \
+                "--dart-define=APP_NAME=$(APP_NAME)"
+              echo "✅ Production IPA built successfully"
+            displayName: 'Build Production IPA (TestFlight)'
+
+          # Copy IPA to staging directory
+          - task: Bash@3
+            displayName: 'Prepare IPA Artifact'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(workingDirectory)'
+              script: |
+                echo "Current directory: $(pwd)"
+                mkdir -p $(Build.ArtifactStagingDirectory)/ios
+                
+                # Find and copy IPA
+                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                if [ -n "$IPA_PATH" ]; then
+                  cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-production-$(Build.BuildId).ipa
+                  echo "✅ IPA copied: sigook-production-$(Build.BuildId).ipa"
+                  echo "Build Number: $(Build.BuildId)"
+                else
+                  echo "❌ IPA not found!"
+                  echo "Searching for IPAs..."
+                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+                  exit 1
+                fi
+                
+                ls -la $(Build.ArtifactStagingDirectory)/ios/
+
+          # Publish IPA artifact
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Production IPA'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
+              ArtifactName: 'sigookapp-ios-production'
+              publishLocation: 'Container'
+
+          - task: Bash@3
+            displayName: 'Build Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "========================================"
+                echo "✅ Production iOS Build Complete!"
+                echo "========================================"
+                echo "Branch: $(Build.SourceBranch)"
+                echo "Artifact: sigookapp-ios-production"
+                echo "IPA: sigook-production-$(Build.BuildId).ipa"
+                echo "Build Number: $(Build.BuildId)"
+                echo "Build ID: $(Build.BuildId)"
+                echo "========================================"
+
+  # ============================================
+  # Stage 7: Deploy to TestFlight
+  # ============================================
+  - stage: Deploy_TestFlight
+    displayName: 'Deploy to TestFlight'
+    dependsOn: Build_iOS_Production
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    pool:
+      vmImage: 'macos-latest'
+    variables:
+      - group: SigookApp-Production
+      - group: SigookApp-iOS-Signing
+    jobs:
+      - deployment: DeployTestFlight
+        displayName: 'Upload to TestFlight'
+        environment: 'TestFlight-Production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: 'sigookapp-ios-production'
+                  displayName: 'Download Production IPA'
+
+                # Install Apple Certificate (needed for validation)
+                - task: InstallAppleCertificate@2
+                  displayName: 'Install Apple Certificate'
+                  inputs:
+                    certSecureFile: '$(P12_FILE_NAME)'
+                    certPwd: '$(P12_PASSWORD)'
+                    keychain: 'temp'
+                    deleteCert: true
+
+                # Upload to TestFlight using App Store Connect API
+                - task: AppStoreRelease@1
+                  displayName: 'Upload to TestFlight'
+                  inputs:
+                    authType: 'ApiKey'
+                    apiKeyId: '$(APP_STORE_CONNECT_API_KEY_ID)'
+                    apiKeyIssuerId: '$(APP_STORE_CONNECT_ISSUER_ID)'
+                    apitoken: '$(APP_STORE_CONNECT_API_KEY_CONTENT)'
+                    releaseTrack: 'TestFlight'
+                    ipaPath: '$(Pipeline.Workspace)/sigookapp-ios-production/*.ipa'
+                    shouldSkipWaitingForProcessing: true
+                    shouldSkipSubmission: false
+                    appIdentifier: 'com.sigook.beta'
+                    teamId: '$(APPLE_TEAM_ID)'
+                    teamName: '$(APPLE_TEAM_NAME)'
+
+                - task: Bash@3
+                  displayName: 'Deployment Summary'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo ""
+                      echo "========================================"
+                      echo "✅ TestFlight Deployment Complete!"
+                      echo "========================================"
+                      echo "App ID: com.sigook.beta"
+                      echo "Build: $(Build.BuildNumber)"
+                      echo "Build Number: $(Build.BuildId)"
+                      echo "IPA: $(Pipeline.Workspace)/sigookapp-ios-production/*.ipa"
+                      echo "========================================"
+                      echo ""
+                      echo "📱 Next Steps:"
+                      echo "1. Check App Store Connect for processing"
+                      echo "2. Add external testers when build is ready"
+                      echo "3. Submit for App Store review when stable"
+                      echo "========================================"
