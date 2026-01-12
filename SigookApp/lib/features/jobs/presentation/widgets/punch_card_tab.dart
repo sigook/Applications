@@ -436,7 +436,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     }
 
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: Platform.isAndroid
+          ? AndroidSettings(accuracy: LocationAccuracy.high)
+          : AppleSettings(accuracy: LocationAccuracy.high),
     );
   }
 

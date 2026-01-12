@@ -31,7 +31,8 @@ class CrashReportingServiceImpl implements CrashReportingService {
     bool fatal = false,
     Map<String, dynamic>? information,
   }) async {
-    // TODO: Implement Firebase Crashlytics
+    // NOTE: Firebase Crashlytics integration pending
+    // To enable, uncomment and configure Firebase:
     // await FirebaseCrashlytics.instance.recordError(
     //   exception,
     //   stackTrace,
@@ -42,20 +43,20 @@ class CrashReportingServiceImpl implements CrashReportingService {
 
     // For now, log to console in debug mode
     if (kDebugMode) {
-      print('=== Crash Report ${fatal ? '(FATAL)' : ''} ===');
-      print('Exception: $exception');
-      if (reason != null) print('Reason: $reason');
-      if (stackTrace != null) print('Stack Trace:\n$stackTrace');
-      if (information != null) print('Additional Info: $information');
-      if (_customKeys.isNotEmpty) print('Custom Keys: $_customKeys');
-      if (_logs.isNotEmpty) print('Logs: ${_logs.join('\n')}');
-      print('==========================================');
+      debugPrint('=== Crash Report ${fatal ? '(FATAL)' : ''} ===');
+      debugPrint('Exception: $exception');
+      if (reason != null) debugPrint('Reason: $reason');
+      if (stackTrace != null) debugPrint('Stack Trace:\n$stackTrace');
+      if (information != null) debugPrint('Additional Info: $information');
+      if (_customKeys.isNotEmpty) debugPrint('Custom Keys: $_customKeys');
+      if (_logs.isNotEmpty) debugPrint('Logs: ${_logs.join('\n')}');
+      debugPrint('==========================================');
     }
   }
 
   @override
   Future<void> recordFlutterError(FlutterErrorDetails details) async {
-    // TODO: Implement Firebase Crashlytics
+    // NOTE: Firebase Crashlytics integration pending
     // await FirebaseCrashlytics.instance.recordFlutterError(details);
 
     await recordError(
@@ -74,11 +75,11 @@ class CrashReportingServiceImpl implements CrashReportingService {
   Future<void> setCustomKey(String key, dynamic value) async {
     _customKeys[key] = value;
 
-    // TODO: Implement Firebase Crashlytics
+    // NOTE: Firebase Crashlytics integration pending
     // await FirebaseCrashlytics.instance.setCustomKey(key, value);
 
     if (kDebugMode) {
-      print('Crashlytics Custom Key: $key = $value');
+      debugPrint('Crashlytics Custom Key: $key = $value');
     }
   }
 
@@ -86,7 +87,7 @@ class CrashReportingServiceImpl implements CrashReportingService {
   Future<void> setUserId(String userId) async {
     await setCustomKey('user_id', userId);
 
-    // TODO: Implement Firebase Crashlytics
+    // NOTE: Firebase Crashlytics integration pending
     // await FirebaseCrashlytics.instance.setUserIdentifier(userId);
   }
 
@@ -99,11 +100,11 @@ class CrashReportingServiceImpl implements CrashReportingService {
       _logs.removeAt(0);
     }
 
-    // TODO: Implement Firebase Crashlytics
+    // NOTE: Firebase Crashlytics integration pending
     // await FirebaseCrashlytics.instance.log(message);
 
     if (kDebugMode) {
-      print('Crashlytics Log: $message');
+      debugPrint('Crashlytics Log: $message');
     }
   }
 }

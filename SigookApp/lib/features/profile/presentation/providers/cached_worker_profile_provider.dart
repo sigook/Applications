@@ -1,8 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../domain/entities/worker_profile.dart';
-import '../../domain/usecases/get_worker_profile.dart';
-import 'profile_providers.dart';
 
 final cachedWorkerProfileProvider = FutureProvider.autoDispose<WorkerProfile?>((
   ref,

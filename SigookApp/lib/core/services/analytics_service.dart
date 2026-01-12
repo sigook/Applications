@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 abstract class AnalyticsService {
   Future<void> logEvent({
     required String name,
@@ -31,7 +33,8 @@ class AnalyticsServiceImpl implements AnalyticsService {
     required String name,
     Map<String, dynamic>? parameters,
   }) async {
-    // TODO: Implement Firebase Analytics
+    // NOTE: Firebase Analytics integration pending
+    // To enable, uncomment and configure Firebase:
     // await FirebaseAnalytics.instance.logEvent(
     //   name: name,
     //   parameters: parameters,
@@ -39,9 +42,9 @@ class AnalyticsServiceImpl implements AnalyticsService {
 
     // For now, just log to console in debug mode
     if (const bool.fromEnvironment('dart.vm.product') == false) {
-      print('Analytics Event: $name');
+      debugPrint('Analytics Event: $name');
       if (parameters != null) {
-        print('Parameters: $parameters');
+        debugPrint('Parameters: $parameters');
       }
     }
   }
@@ -62,10 +65,10 @@ class AnalyticsServiceImpl implements AnalyticsService {
 
   @override
   Future<void> setUserId(String? userId) async {
-    // TODO: Implement Firebase Analytics
+    // NOTE: Firebase Analytics integration pending
     // await FirebaseAnalytics.instance.setUserId(id: userId);
     if (const bool.fromEnvironment('dart.vm.product') == false) {
-      print('Analytics: Set User ID: $userId');
+      debugPrint('Analytics: Set User ID: $userId');
     }
   }
 
@@ -74,13 +77,13 @@ class AnalyticsServiceImpl implements AnalyticsService {
     required String name,
     required String value,
   }) async {
-    // TODO: Implement Firebase Analytics
+    // NOTE: Firebase Analytics integration pending
     // await FirebaseAnalytics.instance.setUserProperty(
     //   name: name,
     //   value: value,
     // );
     if (const bool.fromEnvironment('dart.vm.product') == false) {
-      print('Analytics: Set User Property: $name = $value');
+      debugPrint('Analytics: Set User Property: $name = $value');
     }
   }
 

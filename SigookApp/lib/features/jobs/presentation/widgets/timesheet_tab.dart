@@ -142,8 +142,8 @@ class TimesheetTab extends ConsumerWidget {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
             color: entry.wasApproved
-                ? Colors.green.withOpacity(0.3)
-                : Colors.grey.withOpacity(0.2),
+                ? Colors.green.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -185,8 +185,8 @@ class TimesheetTab extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: entry.wasApproved
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.orange.withOpacity(0.1),
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: entry.wasApproved ? Colors.green : Colors.orange,
@@ -238,7 +238,7 @@ class TimesheetTab extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
+                              color: Colors.green.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
@@ -286,7 +286,7 @@ class TimesheetTab extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
+                              color: Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
@@ -337,7 +337,7 @@ class TimesheetTab extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryBlue.withOpacity(0.08),
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
@@ -369,7 +369,7 @@ class TimesheetTab extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.08),
+                        color: Colors.green.withAlpha((0.08 * 255).round()),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
@@ -511,8 +511,8 @@ class TimesheetTab extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: entry.wasApproved
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.orange.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: entry.wasApproved
@@ -823,7 +823,7 @@ class TimesheetTab extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
+              color: color.withAlpha((0.08 * 255).round()),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),

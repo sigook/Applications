@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
 class AppDrawer extends ConsumerWidget {
   final String currentRoute;
