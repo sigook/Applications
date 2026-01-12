@@ -168,7 +168,6 @@ const showRecaptcha = ref(true);
 const isSubmitting = ref(false);
 
 const handleSuccess = (token: string) => {
-  console.log("Captcha verificado:", token);
   captchaToken.value = token;
   captchaError.value = false;
 };
