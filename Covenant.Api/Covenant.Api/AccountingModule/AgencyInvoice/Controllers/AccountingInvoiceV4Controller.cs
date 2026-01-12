@@ -1,9 +1,6 @@
 using Covenant.Api.AccountingModule.Shared;
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Billing.Services;
-using Covenant.Billing.Services.Impl;
-using Covenant.Billing.Utils;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
@@ -52,73 +49,6 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
         return Ok(invoice);
     }
 
-    [HttpPost("Preview")]
-    public async Task<IActionResult> Preview(
-        [FromServices] IAgencyRepository agencyRepository,
-        [FromServices] ITimeSheetRepository timeSheetRepository,
-        [FromServices] ICreateInvoiceWithoutTimeSheet createInvoiceWithoutTimeSheet,
-        [FromServices] ICreateInvoiceUsingTimeSheet createInvoiceUsingTimeSheet,
-        [FromServices] CreateInvoiceUSA createInvoice,
-        [FromBody] CreateInvoiceModel model)
-    {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        InvoicePreviewModel preview;
-        var agencyIds = new List<Guid> { User.GetAgencyId() };
-        var billingLocation = await agencyRepository.GetBillingLocation(User.GetAgencyId());
-        var timeSheet = await timeSheetRepository.GetTimeSheetForCreatingInvoice(agencyIds, model);
-        if (billingLocation?.IsUSA == true)
-        {
-            var result = await createInvoice.Preview(User.GetAgencyId(), model.CompanyProfileId, timeSheet, model);
-            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            preview = result.Value.ToInvoicePreview();
-        }
-        else
-        {
-            Invoice invoice;
-            if (timeSheet.Any())
-            {
-                var result = await createInvoiceUsingTimeSheet.Preview(User.GetAgencyId(), model.CompanyProfileId, timeSheet, model);
-                if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-                invoice = result.Value;
-            }
-            else
-            {
-                var result = await createInvoiceWithoutTimeSheet.Preview(model.CompanyProfileId, model);
-                if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-                invoice = result.Value;
-            }
-            preview = invoice.ToInvoicePreview(timeSheet);
-        }
-        return Ok(preview);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Post(
-        [FromServices] AccountingCreateInvoiceAndReportsSubcontractor andReportsSubcontractor,
-        [FromServices] IAgencyRepository agencyRepository,
-        [FromServices] ITimeSheetRepository timeSheetRepository,
-        [FromServices] CreateInvoiceUSA createInvoice,
-        [FromBody] CreateInvoiceModel model)
-    {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        Guid id;
-        var billingLocation = await agencyRepository.GetBillingLocation(User.GetAgencyId());
-        if (billingLocation?.IsUSA == true)
-        {
-            var agencyIds = new List<Guid> { User.GetAgencyId() };
-            var timeSheet = await timeSheetRepository.GetTimeSheetForCreatingInvoice(agencyIds, model);
-            var result = await createInvoice.Create(User.GetAgencyId(), model.CompanyProfileId, timeSheet, model);
-            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            id = result.Value.Id;
-        }
-        else
-        {
-            var result = await andReportsSubcontractor.Create(model, User.GetAgencyId());
-            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            id = result.Value.Id;
-        }
-        return CreatedAtRoute(new { id }, new { });
-    }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(

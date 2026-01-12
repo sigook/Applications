@@ -29,7 +29,6 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using Covenant.TimeSheetTotal.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

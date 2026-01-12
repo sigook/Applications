@@ -9,7 +9,6 @@
       <ProjectReference Include="..\Covenant.Billing.Common\Covenant.Billing.Common.csproj" />
       <ProjectReference Include="..\Covenant.Deductions\Covenant.Deductions.csproj" />
       <ProjectReference Include="..\Covenant.PayStubs\Covenant.PayStubs.csproj" />
-      <ProjectReference Include="..\Covenant.TimeSheetTotal\Covenant.TimeSheetTotal.csproj" />
     </ItemGroup>
 
 </Project>

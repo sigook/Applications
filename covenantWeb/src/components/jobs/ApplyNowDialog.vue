@@ -64,8 +64,9 @@
                 <v-form>
                   <v-row>
                     <v-col cols="12" md="6">
-                      <v-select v-model="(fields.status.value as any)" v-bind="fields.statusProps" label="Immigration Status *"
-                        :items="RESIDENCY_STATUS" :error-messages="errors.status" variant="outlined"></v-select>
+                      <v-select v-model="(fields.status.value as any)" v-bind="fields.statusProps"
+                        label="Immigration Status *" :items="RESIDENCY_STATUS" :error-messages="errors.status"
+                        variant="outlined"></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
                       <v-switch v-model="fields.hasVehicle.value" v-bind="fields.hasVehicleProps"
@@ -296,15 +297,8 @@ function handlePhoneInput(event: Event) {
     })
   }
 
-  // Limit to 12 characters max (10 digits + 1 space + 1 dash)
-  let value = target.value
-  if (value.length > 12) {
-    value = value.substring(0, 12)
-    target.value = value
-  }
-
-  phoneFormatted.value = value
-  setFieldValue('phone', value)
+  phoneFormatted.value = target.value
+  setFieldValue('phone', target.value)
 }
 
 function handleResumeChange(files: File | File[] | null) {
@@ -419,6 +413,7 @@ watch(registeredEmail, () => {
 
 /* Responsive fixes for mobile devices (iPhone 16 and similar) */
 @media (max-width: 430px) {
+
   /* Reduce stepper header font size on small screens */
   :deep(.v-stepper-header) {
     gap: 4px !important;

@@ -5,9 +5,7 @@
       v-validate="'required|max:50'" />
     <input type="text" class="control-borderer" placeholder="Address" v-model="contact.address"
       v-validate="'required|max:50'" />
-    <input type="text" class="control-borderer" placeholder="Industry" v-model="contact.industry"
-      v-validate="'required|max:50'" />
-    <input type="text" class="control-borderer" placeholder="Phone" name="phone" v-model="contact.phone"
+    <input type="tel" class="control-borderer" placeholder="Phone" name="phone" v-model="contact.phone"
       v-validate="{ required: true, phoneCustom: '' }" v-cleave="mask" />
     <input type="email" class="control-borderer" placeholder="Email" v-model="contact.email"
       v-validate="'required|max:50|email'" />

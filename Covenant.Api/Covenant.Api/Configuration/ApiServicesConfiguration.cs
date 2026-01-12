@@ -3,8 +3,6 @@ using Covenant.Api.AccountingModule.PayStubDocument.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
-using Covenant.Billing.Services;
-using Covenant.Billing.Services.Impl;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
@@ -110,15 +108,11 @@ public static class ApiServicesConfiguration
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
         services.AddScoped<IPayrollDeductionsAndContributionsCalculator, PayrollDeductionsAndContributionsCalculator>();
-        services.AddScoped<ICreateInvoiceUsingTimeSheet, CreateInvoiceUsingTimeSheet>();
-        services.AddScoped<ICreateInvoiceWithoutTimeSheet, CreateInvoiceWithoutTimeSheet>();
-        services.AddScoped<CreateInvoiceUSA>();
         services.AddScoped<IPayStubPublicHolidays, PayStubPublicHolidays>();
         services.AddScoped<ISubContractorPublicHolidays, SubContractorPublicHolidays>();
         services.AddScoped<CreatePayStubWithOutTimeSheet>();
         services.AddScoped<CreatePayStubUsingTimeSheet>();
         services.AddScoped<CreateReportSubcontractorUsingTimeSheet>();
-        services.AddScoped<AccountingCreateInvoiceAndReportsSubcontractor>();
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();
         services.AddScoped<FederalTaxTablesLoader>();
         services.AddScoped<ProvincialTaxTablesLoader>();

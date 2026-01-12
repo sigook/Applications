@@ -76,9 +76,14 @@ public class UsaInvoiceService : BaseInvoiceService
         }
 
         // 2. Get holidays for the period
-        var from = timesheets.Min(ts => ts.Date);
-        var to = timesheets.Max(ts => ts.Date);
-        var holidays = await GetHolidaysForPeriod(from, to);
+        var holidays = new List<DateTime>();
+        if (timesheets.Any())
+        {
+            var from = timesheets.Min(ts => ts.Date);
+            var to = timesheets.Max(ts => ts.Date);
+            var holidaysData = await GetHolidaysForPeriod(from, to);
+            holidays.AddRange(holidaysData);
+        }
 
         // 3. Process timesheets and build invoice items with TimeSheetTotal entities
         // EF Core will cascade insert TimeSheetTotal entities when the invoice is saved
@@ -90,8 +95,8 @@ public class UsaInvoiceService : BaseInvoiceService
             : null;
 
         // 5. Add additional items and discounts
-        var additionalItems = model.AdditionalItems.ToInvoiceUSAAdditionalItems();
-        var discounts = model.Discounts.ToInvoiceUSADiscounts();
+        var additionalItems = model.AdditionalItems.Select(s => new InvoiceUSAItem(s.Quantity, s.UnitPrice, s.Description));
+        var discounts = model.Discounts.Select(s => new InvoiceUSADiscount(s.Quantity, s.UnitPrice, s.Description));
 
         // 6. Get next invoice number
         var nextNumber = await invoiceRepository.GetNextInvoiceUSANumber();
