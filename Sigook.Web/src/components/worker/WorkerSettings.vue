@@ -32,16 +32,16 @@
       <div class="col-2">
         <b-field label="CPP" :type="errors.has('cpp') ? 'is-danger' : ''"
           :message="errors.has('cpp') ? errors.first('cpp') : ''">
-          <b-numberinput v-model="worker.cpp" name="cpp" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
+          <b-numberinput v-model="localCpp" name="cpp" :step="0.01" :controls="false" expanded
+            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate" @blur="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-2">
         <b-field label="EI" :type="errors.has('ei') ? 'is-danger' : ''"
           :message="errors.has('ei') ? errors.first('ei') : ''">
-          <b-numberinput v-model="worker.ei" name="ei" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
+          <b-numberinput v-model="localEi" name="ei" :step="0.01" :controls="false" expanded
+            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate" @blur="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
@@ -72,7 +72,9 @@ export default {
       isLoading: false,
       taxCategories: [],
       workerHolidays: [],
-      workerHolidaySelected: null
+      workerHolidaySelected: null,
+      localCpp: null,
+      localEi: null
     }
   },
   methods: {
@@ -109,6 +111,10 @@ export default {
         })
     },
     updateTaxRate() {
+      // Actualizar el worker con los valores locales, convirtiendo vacíos a null
+      this.worker.cpp = this.localCpp === '' || this.localCpp === undefined ? null : this.localCpp;
+      this.worker.ei = this.localEi === '' || this.localEi === undefined ? null : this.localEi;
+
       this.isLoading = true;
       this.$store.dispatch('agency/updateWorkerProfileTaxRate', this.worker)
         .then(() => {
@@ -149,6 +155,17 @@ export default {
   async created() {
     this.taxCategories = await this.$store.dispatch('getTaxCategories');
     this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.worker.id);
+    // Inicializar valores locales
+    this.localCpp = this.worker.cpp;
+    this.localEi = this.worker.ei;
+  },
+  watch: {
+    'worker.cpp'(newVal) {
+      this.localCpp = newVal;
+    },
+    'worker.ei'(newVal) {
+      this.localEi = newVal;
+    }
   },
   computed: {
     selectableDates() {
