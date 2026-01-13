@@ -246,7 +246,6 @@ stages:
             displayName: 'Build Staging APK'
             env:
               KEYSTORE_FILE: upload-keystore.jks
-              KEYSTORE_PASSWORD: $(KEY_PASSWORD)
               KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
 
@@ -426,7 +425,6 @@ stages:
             displayName: 'Build Production AAB (Play Store)'
             env:
               KEYSTORE_FILE: upload-keystore.jks
-              KEYSTORE_PASSWORD: $(KEY_PASSWORD)
               KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
 
