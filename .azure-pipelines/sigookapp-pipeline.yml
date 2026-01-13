@@ -141,7 +141,7 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       - group: SigookApp-Staging  # Variable group with env vars
-      - group: SigookApp-Android-Signing  # Keystore credentials
+      - group: App Configuration Staging  # Keystore credentials
     jobs:
       - job: Build_APK_Staging
         displayName: 'Build Staging APK'
@@ -165,11 +165,11 @@ stages:
             name: androidKeystore
             displayName: 'Download Android Keystore'
             inputs:
-              secureFile: 'sigook-release.keystore'
+              secureFile: 'development.keystore'
 
           # Copy keystore to android directory
           - script: |
-              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/development.keystore
               echo "✅ Keystore copied to android/app/"
             displayName: 'Setup Keystore'
 
@@ -245,9 +245,9 @@ stages:
               echo "✅ Staging APK built successfully"
             displayName: 'Build Staging APK'
             env:
-              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
-              KEY_PASSWORD: $(KEY_PASSWORD)
-              KEY_ALIAS: $(KEY_ALIAS)
+              KEYSTORE_PASSWORD: $(android-keystore-password)
+              KEY_PASSWORD: $(android-keystore-password)
+              KEY_ALIAS: sigook
 
           # Copy APK to staging directory
           - task: Bash@3
@@ -305,7 +305,7 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       - group: SigookApp-Production  # Variable group with env vars
-      - group: SigookApp-Android-Signing  # Keystore credentials
+      - group: App Configuration Staging  # Keystore credentials
     jobs:
       - job: Build_APK_Production
         displayName: 'Build Production APK'
@@ -329,11 +329,11 @@ stages:
             name: androidKeystore
             displayName: 'Download Android Keystore'
             inputs:
-              secureFile: 'sigook-release.keystore'
+              secureFile: 'development.keystore'
 
           # Copy keystore to android directory
           - script: |
-              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/development.keystore
               echo "✅ Keystore copied to android/app/"
             displayName: 'Setup Keystore'
 
@@ -413,9 +413,9 @@ stages:
               echo "✅ Production AAB built successfully"
             displayName: 'Build Production AAB (Play Store)'
             env:
-              KEYSTORE_PASSWORD: $(KEYSTORE_PASSWORD)
-              KEY_PASSWORD: $(KEY_PASSWORD)
-              KEY_ALIAS: $(KEY_ALIAS)
+              KEYSTORE_PASSWORD: $(android-keystore-password)
+              KEY_PASSWORD: $(android-keystore-password)
+              KEY_ALIAS: sigook
 
           # Copy AAB artifact to staging directory
           - task: Bash@3
@@ -544,7 +544,7 @@ stages:
       vmImage: 'macos-latest'
     variables:
       - group: SigookApp-Staging
-      - group: SigookApp-iOS-Signing
+      - group: App Configuration Staging
     jobs:
       - job: Build_IPA_Staging
         displayName: 'Build Staging IPA'
@@ -568,8 +568,8 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'IOSDistribution.p12'
-              certPwd: '$(P12_PASSWORD)'
+              certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+              certPwd: '$(apple-certificate-password)'
               keychain: 'temp'
               deleteCert: true
 
@@ -704,7 +704,7 @@ stages:
       vmImage: 'macos-latest'
     variables:
       - group: SigookApp-Production
-      - group: SigookApp-iOS-Signing
+      - group: App Configuration Staging
     jobs:
       - job: Build_IPA_Production
         displayName: 'Build Production IPA'
@@ -728,8 +728,8 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'IOSDistribution.p12'
-              certPwd: '$(P12_PASSWORD)'
+              certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+              certPwd: '$(apple-certificate-password)'
               keychain: 'temp'
               deleteCert: true
 
@@ -868,7 +868,7 @@ stages:
       vmImage: 'macos-latest'
     variables:
       - group: SigookApp-Production
-      - group: SigookApp-iOS-Signing
+      - group: App Configuration Staging
     jobs:
       - deployment: DeployTestFlight
         displayName: 'Upload to TestFlight'
@@ -885,8 +885,8 @@ stages:
                 - task: InstallAppleCertificate@2
                   displayName: 'Install Apple Certificate'
                   inputs:
-                    certSecureFile: 'IOSDistribution.p12'
-                    certPwd: '$(P12_PASSWORD)'
+                    certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+                    certPwd: '$(apple-certificate-password)'
                     keychain: 'temp'
                     deleteCert: true
 
