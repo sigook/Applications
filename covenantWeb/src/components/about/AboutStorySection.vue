@@ -125,7 +125,7 @@
 
 @media (max-width: 900px) {
   .about-story__content {
-    padding: 60px 24px;
+    padding: 10px 24px;
     grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
     gap: 24px;
   }

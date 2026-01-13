@@ -150,7 +150,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import imgProfessional from '@/assets/images/hero-talents-professional.png'
 import imgIndustrial from '@/assets/images/hero-talents-industrial.png'
 import imgDecoration from '@/assets/images/lines-decoration.png'
@@ -173,7 +174,25 @@ interface TalentContent {
   iconRight: string;
 }
 
+const route = useRoute()
 const activeTab = ref<'professional' | 'industrial'>('professional');
+
+const checkQueryParam = () => {
+  const type = route.query.type as string | undefined
+  if (type === 'professional' || type === 'industrial') {
+    activeTab.value = type
+  }
+}
+
+// Chequear al montar
+onMounted(() => {
+  checkQueryParam()
+})
+
+// Chequear cambios en la URL
+watch(() => route.query.type, () => {
+  checkQueryParam()
+})
 
 // ESTADO PARA SABER SI MOSTRAMOS BENEFICIOS
 const showBenefitsLeft = ref(false);
@@ -215,10 +234,10 @@ const getCardIcon = (fileName: string) => {
   .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
   .hero-subtitle { font-size: 2.9rem; font-weight: 400; text-transform: none; color: #59DC76; }
 
-  .switch-box { display: inline-flex; background-color: #5ce07d; border-radius: 999px; border: none; backdrop-filter: none; }
+  .switch-box { display: inline-flex; background-color: #0F2F44; border-radius: 999px; border: none; backdrop-filter: none; }
   .switch-btn { background: transparent; border: none; color: #ffffff; padding: 18px 38px; border-radius: 999px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; }
   .switch-btn:hover { color: rgba(255, 255, 255, 0.9); }
-  .switch-btn.active { background: #ffffff; color: #5ce07d; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+  .switch-btn.active { background: #ffffff; color: #0F2F44; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
 
   /* Fondo oscuro para el contenido dinámico */
   .dynamic-content-wrapper {
@@ -326,14 +345,14 @@ const getCardIcon = (fileName: string) => {
   .right-icon > * {
     background-color: #5ce07d;
     border-radius: 0;
-    padding: 120px;
+    padding: 180px 120px;
     margin: 0;
   }
 
   /* TARJETAS */
   .puzzle-card {
     flex: 1;
-    padding: 60px 60px;
+    padding: 60px 100px;
     position: relative;
     box-shadow: none;
     z-index: 5;
@@ -601,9 +620,9 @@ const getCardIcon = (fileName: string) => {
 
     /* 3. TARJETAS */
     .puzzle-card {
-      width: 90%;
+      width: 100%; /* Ocupar todo el ancho solicitado */
       margin: 0 auto;
-      padding: 80px 30px 40px; /* Padding superior para compensar el icono */
+      padding: 140px 30px 40px; /* Aumentado para que el icono no tape el título */
       text-align: center;
     }
 

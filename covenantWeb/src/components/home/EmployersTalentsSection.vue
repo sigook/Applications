@@ -441,6 +441,7 @@
     .et-talents-text {
       width: 100%;
       text-align: left;
+      align-items: flex-start; /* Forzar alineación de items flex a la izquierda */
     }
 
     /* Título más grande */
@@ -482,6 +483,19 @@
       font-size: 2rem;
       color: #59dc76;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+  }
+
+  /* Media query para Desktop para ajustar alineación exacta de la flecha superior */
+  @media (min-width: 961px) {
+    .et-employers__arrow {
+      /* Ajuste fino para alinear visualmente con la flecha de abajo */
+      transform: translateX(130px); 
+    }
+    
+    .et-employers__right {
+      /* Compensar el movimiento de la flecha para que no pise el texto */
+      padding-left: 120px; 
     }
   }
 

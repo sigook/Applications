@@ -106,12 +106,12 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
+  max-width: 580px;
   background: #ffffff;
   border-radius: 18px;
   padding: 38px 34px 34px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-  margin-top: 220px;        /* hace que la card “baje” y se monte sobre el círculo */
+  margin-top: 220px;
 }
 
 /* Responsive */
@@ -138,12 +138,12 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   }
 
   .partner-contact__title {
-    font-size: 1.4rem;
+    font-size: 2.3rem;
   }
 
   .partner-contact__card {
-    margin-top: 170px;
     padding-inline: 18px;
+    margin: 180px 20px 0 20px;
   }
 }
 </style>

@@ -41,19 +41,19 @@
         <div class="footer__col footer__nav-2">
           <div class="footer__block">
             <p class="footer__section">For Business</p>
-            <RouterLink class="footer__sub-link" to="/industries?type=professional">
+            <RouterLink class="footer__sub-link" to="/employers?type=professional">
               Professional
             </RouterLink>
-            <RouterLink class="footer__sub-link" to="/industries?type=industrial">
+            <RouterLink class="footer__sub-link" to="/employers?type=industrial">
               Industrial
             </RouterLink>
           </div>
           <div class="footer__block">
             <p class="footer__section">For Talents</p>
-            <RouterLink class="footer__sub-link" to="/open-positions?type=professional">
+            <RouterLink class="footer__sub-link" to="/talents?type=professional">
               Professional
             </RouterLink>
-            <RouterLink class="footer__sub-link" to="/open-positions?type=industrial">
+            <RouterLink class="footer__sub-link" to="/talents?type=industrial">
               Industrial
             </RouterLink>
           </div>
@@ -62,11 +62,10 @@
 
         <!-- NAV 3 -->
         <div class="footer__col footer__block footer__nav-3">
-          <RouterLink class="footer__link" to="/news">News</RouterLink>
           <RouterLink class="footer__link" to="/become-partner">
             Become a Partner
           </RouterLink>
-          <RouterLink class="footer__link" to="/">
+          <RouterLink class="footer__link" to="/#download">
             Download Our App
           </RouterLink>
         </div>
@@ -243,6 +242,18 @@ import { RouterLink } from 'vue-router'
 @media (max-width: 540px) {
   .footer__grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer__col--contact {
+    margin-left: 0;
+    padding-left: 0; /* O un pequeño padding si se requiere, pero el panel ya tiene padding */
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  /* Reducir padding del panel para dar más espacio */
+  .footer__panel {
+    padding: 40px 24px 50px;
   }
 
   .footer__nav-1, .footer__nav-2, .footer__nav-3{
