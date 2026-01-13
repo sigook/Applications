@@ -226,6 +226,17 @@ stages:
               echo "✅ Created placeholder .env files"
             displayName: 'Create Placeholder .env Files'
 
+          # Accept Android SDK licenses and clean corrupted downloads
+          - script: |
+              # Remove any corrupted SDK downloads
+              rm -rf $ANDROID_HOME/ndk/.temp 2>/dev/null || true
+              
+              # Accept all SDK licenses
+              yes | sdkmanager --licenses || true
+              
+              echo "✅ Android SDK licenses accepted"
+            displayName: 'Accept Android SDK Licenses'
+
           # Build staging APK with environment variables via --dart-define
           - script: |
               cd $(workingDirectory)
@@ -389,6 +400,17 @@ stages:
               echo "# CI environment - using --dart-define instead" > .env.production
               echo "✅ Created placeholder .env files"
             displayName: 'Create Placeholder .env Files'
+
+          # Accept Android SDK licenses and clean corrupted downloads
+          - script: |
+              # Remove any corrupted SDK downloads
+              rm -rf $ANDROID_HOME/ndk/.temp 2>/dev/null || true
+              
+              # Accept all SDK licenses
+              yes | sdkmanager --licenses || true
+              
+              echo "✅ Android SDK licenses accepted"
+            displayName: 'Accept Android SDK Licenses'
 
           # Build production AAB with auto-incrementing version code
           # Note: APK build removed - Play Store only needs AAB
