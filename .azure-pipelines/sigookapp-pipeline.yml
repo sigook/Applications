@@ -245,6 +245,7 @@ stages:
               echo "✅ Staging APK built successfully"
             displayName: 'Build Staging APK'
             env:
+              KEYSTORE_FILE: development.keystore
               KEYSTORE_PASSWORD: $(android-keystore-password)
               KEY_PASSWORD: $(android-keystore-password)
               KEY_ALIAS: sigook
@@ -304,7 +305,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     variables:
-      - group: SigookApp-Production  # Variable group with env vars
+      - group: SigookApp-Staging  # Variable group with env vars for beta
       - group: App Configuration Staging  # Keystore credentials
     jobs:
       - job: Build_APK_Production
@@ -424,6 +425,7 @@ stages:
               fi
             displayName: 'Build Production AAB (Play Store)'
             env:
+              KEYSTORE_FILE: development.keystore
               KEYSTORE_PASSWORD: $(android-keystore-password)
               KEY_PASSWORD: $(android-keystore-password)
               KEY_ALIAS: sigook
@@ -555,7 +557,7 @@ stages:
       vmImage: 'macos-latest'
     variables:
       - group: SigookApp-Staging
-      - group: App Configuration Staging
+      - group: SigookApp-iOS-Signing
     jobs:
       - job: Build_IPA_Staging
         displayName: 'Build Staging IPA'
@@ -579,7 +581,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'IOSDistribution.p12'
+              certSecureFile: '$(P12_FILE_NAME)'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -589,8 +591,21 @@ stages:
             displayName: 'Install Provisioning Profile'
             inputs:
               provisioningProfileLocation: 'secureFiles'
-              provProfileSecureFile: 'Sigook_Beta_Provision.mobileprovision'
+              provProfileSecureFile: '$(PROVISIONING_PROFILE_STAGING)'
               removeProfile: true
+
+          # Download keystore from secure files
+          - task: DownloadSecureFile@1
+            name: androidKeystore
+            displayName: 'Download Android Keystore'
+            inputs:
+              secureFile: 'development.keystore'
+
+          # Copy keystore to android directory
+          - script: |
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              echo "✅ Keystore copied to android/app/sigook-release.keystore"
+            displayName: 'Setup Keystore'
 
           # Install Flutter SDK
           - task: FlutterInstall@0
@@ -620,7 +635,7 @@ stages:
               echo "✅ Created placeholder .env files"
             displayName: 'Create Placeholder .env Files'
 
-          # Build iOS IPA (Staging)
+          # Build staging IPA
           - script: |
               cd $(workingDirectory)
               echo "Building staging IPA..."
@@ -713,8 +728,8 @@ stages:
     pool:
       vmImage: 'macos-latest'
     variables:
-      - group: SigookApp-Production
-      - group: App Configuration Staging
+      - group: SigookApp-Staging
+      - group: SigookApp-iOS-Signing
     jobs:
       - job: Build_IPA_Production
         displayName: 'Build Production IPA'
@@ -738,7 +753,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'IOSDistribution.p12'
+              certSecureFile: '$(P12_FILE_NAME)'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -748,8 +763,21 @@ stages:
             displayName: 'Install Provisioning Profile'
             inputs:
               provisioningProfileLocation: 'secureFiles'
-              provProfileSecureFile: 'Sigook_Beta_AppStore.mobileprovision'
+              provProfileSecureFile: '$(PROVISIONING_PROFILE_PRODUCTION)'
               removeProfile: true
+
+          # Download keystore from secure files
+          - task: DownloadSecureFile@1
+            name: androidKeystore
+            displayName: 'Download Android Keystore'
+            inputs:
+              secureFile: 'development.keystore'
+
+          # Copy keystore to android directory
+          - script: |
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/sigook-release.keystore
+              echo "✅ Keystore copied to android/app/sigook-release.keystore"
+            displayName: 'Setup Keystore'
 
           # Install Flutter SDK
           - task: FlutterInstall@0
@@ -876,8 +904,8 @@ stages:
     pool:
       vmImage: 'macos-latest'
     variables:
-      - group: SigookApp-Production
-      - group: App Configuration Staging
+      - group: SigookApp-Staging
+      - group: SigookApp-iOS-Signing
     jobs:
       - deployment: DeployTestFlight
         displayName: 'Upload to TestFlight'
@@ -894,7 +922,7 @@ stages:
                 - task: InstallAppleCertificate@2
                   displayName: 'Install Apple Certificate'
                   inputs:
-                    certSecureFile: 'IOSDistribution.p12'
+                    certSecureFile: '$(P12_FILE_NAME)'
                     certPwd: '$(P12_PASSWORD)'
                     keychain: 'temp'
                     deleteCert: true
