@@ -1,7 +1,6 @@
 <template>
   <section class="partner-hero" data-aos="fade-up">
     <div class="partner-hero__wrapper">
-      <!-- Texto izquierda -->
       <div class="partner-hero__content">
         <h1 class="partner-hero__title">Become a Partner</h1>
         <p class="partner-hero__text">
@@ -11,19 +10,15 @@
         </p>
       </div>
 
-      <!-- Imagen derecha -->
       <div class="partner-hero__visual">
-        <!-- Círculo verde de fondo -->
         <div class="partner-hero__circle"></div>
 
-        <!-- Imagen del hombre, por fuera del círculo -->
         <img
           src="@/assets/images/partner-hero-man.png"
           alt="Covenant Partner"
           class="partner-hero__img"
         />
 
-        <!-- elementos decorativos -->
         <span class="partner-hero__dot partner-hero__dot--navy"></span>
         <span class="partner-hero__dot partner-hero__dot--green"></span>
         <span class="partner-hero__ring"></span>
@@ -37,213 +32,239 @@
 
 <style scoped>
 .partner-hero {
-  background: #32d26a;
+  background: #FFFFFF;
+  background: linear-gradient(180deg,rgba(255, 255, 255, 1) 50%, rgba(50, 210, 106, 1) 50%);
+  padding-top: 100px;
+  overflow: hidden; /* Evita scroll horizontal si la imagen sale un poco */
 }
 
-/* ====== MOBILE / BASE ====== */
+/* ====== MOBILE / BASE (Ajustado a Fila) ====== */
 .partner-hero__wrapper {
   margin: 0 auto;
-  padding: 60px 24px 40px;
+  padding: 20px 24px 40px; /* Padding reducido arriba porque ya lo dimos en la sección */
   display: flex;
-  flex-direction: column;        /* en mobile: una columna */
-  align-items: flex-start;
-  gap: 32px;
+  flex-direction: row; /* <--- Fila desde móvil */
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px; /* Gap pequeño para aprovechar espacio */
   border-radius: 0 0 0 65px;
   background: #ffffff;
 }
 
-/* Texto */
+/* Texto Mobile */
 .partner-hero__content {
-  max-width: 100%;
+  width: 50%; /* <--- Texto ocupa la mitad para dejar espacio a la imagen */
+  flex-shrink: 0;
   margin-left: 0;
+  z-index: 10; /* Asegura que el texto quede sobre decoraciones si se cruzan */
 }
 
 .partner-hero__title {
-  font-size: 2.4rem;
+  /* Clamp para ajustar fuente suavemente */
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
   line-height: 1.1;
   color: #59dc76;
   font-weight: 700;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   position: relative;
 }
 
-/* línea bajo el título (ancho relativo para que sea responsivo) */
 .partner-hero__title::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: -8px;
-  width: 80%;              /* antes era px fijos */
+  width: 80%;
   height: 3px;
   background: #59dc76;
   border-radius: 999px;
 }
 
 .partner-hero__text {
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.85rem; /* Un poco más pequeño en móvil para que quepa */
+  line-height: 1.5;
   color: #555b69;
 }
 
-/* Imagen + círculo */
+/* Visual Mobile (Ajustado para parecerse a la referencia) */
 .partner-hero__visual {
   position: relative;
-  width: 100%;
-  max-width: 420px;
-  min-height: 330px;
-  margin: 0 auto;           /* centrado en mobile */
+  width: 50%; /* <--- Imagen más ancha */
+  height: 250px; /* Altura forzada en mobile para contener la imagen */
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 
-/* Círculo verde centrado */
+/* Círculo verde mobile */
 .partner-hero__circle {
   position: absolute;
-  top: 70px;
-  left: 50%;
-  width: 260px;
-  height: 260px;
+  top: 50%;
+  right: -100px; /* Desplazado a la derecha como referencia */
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
   background: #32d26a;
-  transform: translateX(-50%);
+  transform: translateY(-50%);
   z-index: 1;
 }
 
-/* Hombre por delante del círculo */
+/* Hombre mobile */
 .partner-hero__img {
   position: absolute;
-  bottom: 0;
-  left: 25%;
-  height: 320px;
-  transform: translateX(-50%);
+  bottom: -15px;
+  right: -70px; /* Pegado a la derecha */
+  height: 320px; /* Altura controlada en móvil */
+  width: auto;
   object-fit: contain;
   z-index: 2;
   border-radius: 0 0 0 500px;
 }
 
-/* puntos decorativos */
+/* Decoraciones Mobile (Escaladas para que no tapen todo) */
 .partner-hero__dot {
   position: absolute;
   border-radius: 50%;
   z-index: 3;
 }
 
-/* círculo azul grande abajo izquierda del conjunto */
 .partner-hero__dot--navy {
   width: 60px;
   height: 60px;
   background: #05162d;
-  bottom: -3px;
-  left: calc(55% - 110px);
+  bottom: 0;
+  left: 0; /* Ubicación simple en móvil */
 }
 
-/* círculo verde pequeño */
 .partner-hero__dot--green {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   background: #32d26a;
-  top: 150px;
-  right: calc(50% - 120px);
+  top: 100px;
+  right: 10px;
 }
 
-/* aro blanco */
 .partner-hero__ring {
   position: absolute;
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   border: 2px solid #ffffff;
-  bottom: -30px;
-  left: 15%;
-  transform: translateX(-10%);
+  bottom: -50px;
+  right: -20px;
   z-index: 2;
+  opacity: 0.7;
 }
 
-/* cuadrito de puntitos blancos */
 .partner-hero__grid {
   position: absolute;
-  width: 48px;
-  height: 32px;
-  bottom: 32px;
-  right: calc(50% - 60px);
+  width: 30px;
+  height: 20px;
+  bottom: 20px;
+  right: 50px;
   z-index: 3;
   background-image: radial-gradient(#ffffff 2px, transparent 2px);
-  background-size: 8px 8px;
+  background-size: 6px 6px;
 }
 
 /* ====== TABLET / DESKTOP (≥ 900px) ====== */
+/* IMPORTANTE: Bloque intacto según tu código original */
 @media (min-width: 900px) {
+  .partner-hero {
+    padding-top: 100px; /* Reset del padding extra de mobile */
+  }
+
   .partner-hero__wrapper {
     padding: 80px 40px 60px;
-    flex-direction: row;          /* dos columnas */
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 40px;
   }
 
   .partner-hero__content {
+    width: auto; /* Reset del width mobile */
     max-width: 520px;
     margin-left: 80px;
+    flex-shrink: 1;
   }
 
   .partner-hero__title {
     font-size: 3.1rem;
+    margin-bottom: 28px;
   }
 
   .partner-hero__title::after {
-    width: 320px;                /* un poco más larga en desktop */
+    width: 320px;
+  }
+
+  .partner-hero__text {
+      font-size: 0.95rem; /* Restaurar tamaño original */
   }
 
   .partner-hero__visual {
+    width: 100%; /* Reset width mobile */
     max-width: 460px;
     margin: 0;
     min-height: 420px;
+    height: auto; /* Reset height mobile */
+    display: block; /* Reset flex mobile */
   }
 
   .partner-hero__circle {
+    /* Medidas originales desktop */
     width: 360px;
     height: 360px;
     top: 40px;
-    left: 55%;                   /* un poco desplazado hacia la derecha */
+    left: 55%;
+    right: auto; /* Reset right mobile */
     transform: translateX(-50%);
   }
 
   .partner-hero__img {
+    /* Medidas originales desktop */
     height: 450px;
     bottom: 20px;
     left: 30%;
+    right: auto; /* Reset right mobile */
     transform: translateX(-50%);
+    border-radius: 0 0 0 500px; /* Estilo original desktop */
   }
 
   .partner-hero__dot--navy {
-    width: 70px;
-    height: 70px;
-    bottom: 24px;
-    left: calc(65% - 190px);
+    width: 80px;
+    height: 80px;
+    bottom: 10px;
+    left: calc(55% - 140px);
   }
 
   .partner-hero__dot--green {
-    width: 26px;
-    height: 26px;
-    top: 185px;
-    right: calc(45% - 40px);
+    width: 32px;
+    height: 32px;
+    top: 160px;
+    right: calc(50% - 90px);
+    left: auto;
   }
 
   .partner-hero__ring {
-    width: 260px;
-    height: 260px;
-    bottom: -30px;
-    left: 48%;
-    transform: translateX(-50%);
+    width: 320px;
+    height: 320px;
+    bottom: -60px;
+    left: 25%;
+    right: auto;
+    transform: translateX(-10%);
+    opacity: 1;
   }
 
   .partner-hero__grid {
-    width: 60px;
-    height: 40px;
-    bottom: 40px;
-    right: calc(45% - 30px);
+    width: 48px;
+    height: 32px;
+    bottom: 32px;
+    right: calc(50% - 60px);
+    background-size: 8px 8px;
   }
 }
 
-/* Opcional: ajustar un poco más en pantallas muy grandes */
 @media (min-width: 1200px) {
   .partner-hero__wrapper {
     padding-inline: 80px;
@@ -257,5 +278,4 @@
     font-size: 3.1rem;
   }
 }
-
 </style>

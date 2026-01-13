@@ -121,7 +121,7 @@
   position: relative;
   z-index: 1;
   max-width: 820px;
-  padding: 120px 8vw 80px;
+  padding: 200px 8vw 80px;
 }
 
 .about__title {
@@ -283,7 +283,7 @@
 
   .about__hero-content {
     max-width: 360px;
-    padding: 90px 20px 50px;
+    padding: 220px 20px 50px;
   }
 
   .about__title {

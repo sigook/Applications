@@ -2,8 +2,10 @@
   <section class="ind-hero" data-aos="fade-up">
     <!-- Fondo con imagen y gradiente -->
     <div class="ind-hero__bg">
-      <!-- cambia la ruta por tu imagen de fondo -->
-      <img src="@/assets/images/industries-hero.png" alt="Industries" />
+      <picture>
+        <source media="(max-width: 768px)" srcset="@/assets/images/industries-bg-movil.png" />
+        <img src="@/assets/images/industries-hero.png" alt="Industries" />
+      </picture>
       <div class="ind-hero__overlay"></div>
     </div>
 
@@ -59,7 +61,7 @@
   height: 300px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.1); /* Borde aún más sutil */
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%); /* Degradado blanco sutil */
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 100%); /* Degradado blanco sutil */
   z-index: 1; /* Detrás del texto */
   pointer-events: none;
 }
@@ -86,7 +88,7 @@
       rgba(0, 0, 0, 0.2),
       #0F2F44
     ),
-    radial-gradient(circle at 20% 0, rgba(82, 201, 131, 0.6), transparent 60%);
+    radial-gradient(circle at 10% 0, rgba(82, 201, 131, 0.1), rgba(82, 201, 131, 0.1) 100%);
 }
 
 /* Contenido centrado */
@@ -96,7 +98,7 @@
   z-index: 2;
   max-width: 720px;
   margin: 0 auto;
-  padding: 230px 24px 80px;
+  padding: 320px 24px 80px;
   text-align: center;
 }
 
@@ -126,16 +128,28 @@
 
 @media (max-width: 768px) {
   .ind-hero {
-    min-height: 380px;
+    min-height: 550px; /* Altura aumentada para mostrar más imagen */
   }
   .ind-hero::before { width: 100px; height: 100px; top: 0px; right: -50px; }
   .ind-hero::after { width: 100px; height: 100px; bottom: 0px; left: -30px; }
+  
   .ind-hero__content {
-    padding-top: 100px;
+    padding-top: 250px; /* Más espacio arriba para separar de la navbar */
     padding-bottom: 60px;
   }
+  
   .ind-hero__title {
-    font-size: 1.9rem;
+    font-size: 1.5rem; /* Reducido para que quepa en una sola línea */
+  }
+  
+  /* Ajuste de overlay para móvil: degradado con tinte verde para contraste y sólido abajo */
+  .ind-hero__overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(82, 201, 131, 0.6) 0%, /* Verde de la marca con baja opacidad para resaltar texto */
+      rgba(15, 47, 68, 0.6) 60%,
+      rgba(15, 47, 68, 1) 100%
+    );
   }
 }
 </style>
