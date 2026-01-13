@@ -33,7 +33,7 @@
         <b-field label="CPP" :type="errors.has('cpp') ? 'is-danger' : ''"
           :message="errors.has('cpp') ? errors.first('cpp') : ''">
           <b-numberinput v-model="localCpp" name="cpp" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate" @blur="updateTaxRate">
+            v-validate="'min_value:0'">
           </b-numberinput>
         </b-field>
       </div>
@@ -41,8 +41,13 @@
         <b-field label="EI" :type="errors.has('ei') ? 'is-danger' : ''"
           :message="errors.has('ei') ? errors.first('ei') : ''">
           <b-numberinput v-model="localEi" name="ei" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate" @blur="updateTaxRate">
+            v-validate="'min_value:0'">
           </b-numberinput>
+        </b-field>
+      </div>
+      <div class="col-2">
+        <b-field label=" ">
+          <b-button type="is-primary" @click="updateTaxRate" :loading="isLoading">Save</b-button>
         </b-field>
       </div>
       <span class="line-gray"></span>
