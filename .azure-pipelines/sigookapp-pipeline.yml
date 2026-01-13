@@ -926,6 +926,11 @@ stages:
                     certPwd: '$(P12_PASSWORD)'
                     keychain: 'temp'
                     deleteCert: true
+                - script: |
+                    echo "Listing code signing identities:"
+                    security find-identity -v -p codesigning
+                  displayName: 'Debug: List code signing identities'
+
 
                 # Upload to TestFlight using App Store Connect API
                 - task: AppStoreRelease@1
