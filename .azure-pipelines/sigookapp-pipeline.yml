@@ -581,7 +581,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: '$(IOSDistribution.p12)'
+              certSecureFile: IOSDistribution.p12
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -753,7 +753,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: '$(IOSDistribution.p12)'
+              certSecureFile: '$IOSDistribution.p12'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -922,7 +922,7 @@ stages:
                 - task: InstallAppleCertificate@2
                   displayName: 'Install Apple Certificate'
                   inputs:
-                    certSecureFile: '$(IOSDistribution.p12)'
+                    certSecureFile: 'IOSDistribution.p12'
                     certPwd: '$(P12_PASSWORD)'
                     keychain: 'temp'
                     deleteCert: true
