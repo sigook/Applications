@@ -568,7 +568,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+              certSecureFile: 'IOSDistribution.p12'
               certPwd: '$(apple-certificate-password)'
               keychain: 'temp'
               deleteCert: true
@@ -615,7 +615,6 @@ stages:
               echo "Building staging IPA..."
               
               if flutter build ipa \
-                --flavor staging \
                 -t lib/main_staging.dart \
                 --release \
                 --export-options-plist=ios/ExportOptions-Staging.plist \
@@ -728,7 +727,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+              certSecureFile: 'IOSDistribution.p12'
               certPwd: '$(apple-certificate-password)'
               keychain: 'temp'
               deleteCert: true
@@ -775,7 +774,6 @@ stages:
               echo "Building production IPA with build number: $(Build.BuildId)..."
               
               if flutter build ipa \
-                --flavor production \
                 -t lib/main_production.dart \
                 --release \
                 --build-number=$(Build.BuildId) \
@@ -885,7 +883,7 @@ stages:
                 - task: InstallAppleCertificate@2
                   displayName: 'Install Apple Certificate'
                   inputs:
-                    certSecureFile: 'Apple Distribution_ SIGOOK CORPORATION.p12'
+                    certSecureFile: 'IOSDistribution.p12'
                     certPwd: '$(apple-certificate-password)'
                     keychain: 'temp'
                     deleteCert: true
