@@ -397,7 +397,8 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building production AAB with version code: $(Build.BuildId)..."
-              flutter build appbundle \
+              
+              if flutter build appbundle \
                 --flavor production \
                 -t lib/main_production.dart \
                 --release \
@@ -409,8 +410,18 @@ stages:
                 "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"
-              echo "✅ Production AAB built successfully"
+                "--dart-define=APP_NAME=$(APP_NAME)"; then
+                
+                echo "✅ Production AAB built successfully"
+                echo "Verifying build output..."
+                ls -la build/app/outputs/bundle/ || echo "Warning: bundle directory not found"
+                find build/app/outputs -name "*.aab" || echo "Warning: No AAB found yet"
+              else
+                echo "❌ Flutter build appbundle failed with exit code $?"
+                echo "Checking for build artifacts..."
+                ls -la build/app/outputs/ || echo "No outputs directory"
+                exit 1
+              fi
             displayName: 'Build Production AAB (Play Store)'
             env:
               KEYSTORE_PASSWORD: $(android-keystore-password)
@@ -569,7 +580,7 @@ stages:
             displayName: 'Install Apple Certificate'
             inputs:
               certSecureFile: 'IOSDistribution.p12'
-              certPwd: '$(apple-certificate-password)'
+              certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
 
@@ -728,7 +739,7 @@ stages:
             displayName: 'Install Apple Certificate'
             inputs:
               certSecureFile: 'IOSDistribution.p12'
-              certPwd: '$(apple-certificate-password)'
+              certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
 
@@ -884,7 +895,7 @@ stages:
                   displayName: 'Install Apple Certificate'
                   inputs:
                     certSecureFile: 'IOSDistribution.p12'
-                    certPwd: '$(apple-certificate-password)'
+                    certPwd: '$(P12_PASSWORD)'
                     keychain: 'temp'
                     deleteCert: true
 
