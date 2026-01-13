@@ -639,15 +639,22 @@ stages:
                 echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/ios
                 
-                # Find and copy IPA
-                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                # Debug: Show build directory structure
+                echo "Build directory contents:"
+                ls -la build/ios/ || true
+                
+                # Find and copy IPA (Flutter build ipa creates files in build/ios/archive or build/ios/iphoneos)
+                IPA_PATH=$(find build/ios -name "*.ipa" 2>/dev/null | head -1)
                 if [ -n "$IPA_PATH" ]; then
                   cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
-                  echo "✅ IPA copied: sigook-staging-$(Build.BuildId).ipa"
+                  echo "✅ IPA copied from: $IPA_PATH"
+                  echo "✅ IPA artifact: sigook-staging-$(Build.BuildId).ipa"
                 else
-                  echo "❌ IPA not found!"
-                  echo "Searching for IPAs..."
-                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+                  echo "❌ IPA not found in build/ios/"
+                  echo "Searching entire build directory:"
+                  find build -name "*.ipa" 2>/dev/null || echo "No IPAs found anywhere"
+                  echo "Checking for .xcarchive:"
+                  find build/ios -name "*.xcarchive" 2>/dev/null || echo "No archives found"
                   exit 1
                 fi
                 
@@ -782,16 +789,23 @@ stages:
                 echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/ios
                 
-                # Find and copy IPA
-                IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+                # Debug: Show build directory structure
+                echo "Build directory contents:"
+                ls -la build/ios/ || true
+                
+                # Find and copy IPA (Flutter build ipa creates files in build/ios/archive or build/ios/iphoneos)
+                IPA_PATH=$(find build/ios -name "*.ipa" 2>/dev/null | head -1)
                 if [ -n "$IPA_PATH" ]; then
                   cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-production-$(Build.BuildId).ipa
-                  echo "✅ IPA copied: sigook-production-$(Build.BuildId).ipa"
+                  echo "✅ IPA copied from: $IPA_PATH"
+                  echo "✅ IPA artifact: sigook-production-$(Build.BuildId).ipa"
                   echo "Build Number: $(Build.BuildId)"
                 else
-                  echo "❌ IPA not found!"
-                  echo "Searching for IPAs..."
-                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+                  echo "❌ IPA not found in build/ios/"
+                  echo "Searching entire build directory:"
+                  find build -name "*.ipa" 2>/dev/null || echo "No IPAs found anywhere"
+                  echo "Checking for .xcarchive:"
+                  find build/ios -name "*.xcarchive" 2>/dev/null || echo "No archives found"
                   exit 1
                 fi
                 
