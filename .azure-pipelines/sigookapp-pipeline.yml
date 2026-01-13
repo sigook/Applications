@@ -568,7 +568,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: '$(P12_FILE_NAME)'
+              certSecureFile: 'IOSDistribution.p12'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -578,7 +578,7 @@ stages:
             displayName: 'Install Provisioning Profile'
             inputs:
               provisioningProfileLocation: 'secureFiles'
-              provProfileSecureFile: '$(PROVISIONING_PROFILE_STAGING)'
+              provProfileSecureFile: 'Sigook_Beta_Provision.mobileprovision'
               removeProfile: true
 
           # Install Flutter SDK
@@ -710,7 +710,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: '$(P12_FILE_NAME)'
+              certSecureFile: 'IOSDistribution.p12'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
@@ -720,7 +720,7 @@ stages:
             displayName: 'Install Provisioning Profile'
             inputs:
               provisioningProfileLocation: 'secureFiles'
-              provProfileSecureFile: '$(PROVISIONING_PROFILE_PRODUCTION)'
+              provProfileSecureFile: 'Sigook_Beta_AppStore.mobileprovision'
               removeProfile: true
 
           # Install Flutter SDK
@@ -849,7 +849,7 @@ stages:
                 - task: InstallAppleCertificate@2
                   displayName: 'Install Apple Certificate'
                   inputs:
-                    certSecureFile: '$(P12_FILE_NAME)'
+                    certSecureFile: 'IOSDistribution.p12'
                     certPwd: '$(P12_PASSWORD)'
                     keychain: 'temp'
                     deleteCert: true
