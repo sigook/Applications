@@ -613,7 +613,8 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building staging IPA..."
-              flutter build ipa \
+              
+              if flutter build ipa \
                 --flavor staging \
                 -t lib/main_staging.dart \
                 --release \
@@ -625,8 +626,18 @@ stages:
                 "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"
-              echo "✅ Staging IPA built successfully"
+                "--dart-define=APP_NAME=$(APP_NAME)"; then
+                
+                echo "✅ Staging IPA built successfully"
+                echo "Verifying build output..."
+                ls -la build/ios/ || echo "Warning: build/ios directory check failed"
+                find build/ios -name "*.ipa" || echo "Warning: No IPA found yet"
+              else
+                echo "❌ Flutter build ipa failed with exit code $?"
+                echo "Checking for build artifacts..."
+                ls -la build/ || echo "No build directory"
+                exit 1
+              fi
             displayName: 'Build Staging IPA'
 
           # Copy IPA to staging directory
@@ -762,7 +773,8 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building production IPA with build number: $(Build.BuildId)..."
-              flutter build ipa \
+              
+              if flutter build ipa \
                 --flavor production \
                 -t lib/main_production.dart \
                 --release \
@@ -775,8 +787,18 @@ stages:
                 "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"
-              echo "✅ Production IPA built successfully"
+                "--dart-define=APP_NAME=$(APP_NAME)"; then
+                
+                echo "✅ Production IPA built successfully"
+                echo "Verifying build output..."
+                ls -la build/ios/ || echo "Warning: build/ios directory check failed"
+                find build/ios -name "*.ipa" || echo "Warning: No IPA found yet"
+              else
+                echo "❌ Flutter build ipa failed with exit code $?"
+                echo "Checking for build artifacts..."
+                ls -la build/ || echo "No build directory"
+                exit 1
+              fi
             displayName: 'Build Production IPA (TestFlight)'
 
           # Copy IPA to staging directory
