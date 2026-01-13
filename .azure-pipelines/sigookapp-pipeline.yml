@@ -165,12 +165,12 @@ stages:
             name: androidKeystore
             displayName: 'Download Android Keystore'
             inputs:
-              secureFile: 'development.keystore'
+              secureFile: 'upload-keystore.jks'
 
           # Copy keystore to android directory
           - script: |
-              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/development.keystore
-              echo "✅ Keystore copied to android/app/"
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
+              echo "✅ Keystore copied to android/app/upload-keystore.jks"
             displayName: 'Setup Keystore'
 
           # Install Flutter SDK
@@ -245,9 +245,9 @@ stages:
               echo "✅ Staging APK built successfully"
             displayName: 'Build Staging APK'
             env:
-              KEYSTORE_FILE: development.keystore
-              KEYSTORE_PASSWORD: $(android-keystore-password)
-              KEY_PASSWORD: $(android-keystore-password)
+              KEYSTORE_FILE: upload-keystore.jks
+              KEYSTORE_PASSWORD: $(KEY_PASSWORD)
+              KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
 
           # Copy APK to staging directory
@@ -330,12 +330,12 @@ stages:
             name: androidKeystore
             displayName: 'Download Android Keystore'
             inputs:
-              secureFile: 'development.keystore'
+              secureFile: 'upload-keystore.jks'
 
           # Copy keystore to android directory
           - script: |
-              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/development.keystore
-              echo "✅ Keystore copied to android/app/"
+              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
+              echo "✅ Keystore copied to android/app/upload-keystore.jks"
             displayName: 'Setup Keystore'
 
           # Install Flutter SDK
@@ -425,9 +425,9 @@ stages:
               fi
             displayName: 'Build Production AAB (Play Store)'
             env:
-              KEYSTORE_FILE: development.keystore
-              KEYSTORE_PASSWORD: $(android-keystore-password)
-              KEY_PASSWORD: $(android-keystore-password)
+              KEYSTORE_FILE: upload-keystore.jks
+              KEYSTORE_PASSWORD: $(KEY_PASSWORD)
+              KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
 
           # Copy AAB artifact to staging directory
