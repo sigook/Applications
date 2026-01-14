@@ -249,6 +249,12 @@ stages:
               exportOptionsPlist: '$(workingDirectory)/ios/ExportOptions-Staging.plist'
               signingOption: 'manual'
               args: '-allowProvisioningUpdates'
+              provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
+
+          - script: |
+              echo "UUID: $(APPLE_PROV_PROFILE_UUID)"
+              echo "NAME: $(APPLE_PROV_PROFILE_NAME)"
+            displayName: 'Debug: Provisioning Profile Variables'
 
           # Copy IPA to staging directory
           - task: Bash@3
