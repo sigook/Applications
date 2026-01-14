@@ -234,29 +234,6 @@ stages:
               echo "✅ Flutter iOS build complete (no codesign)"
             displayName: 'Flutter Build iOS (No Codesign)'
 
-          # Archive and sign with Xcode
-          - task: Xcode@5
-            displayName: 'Archive iOS App'
-            inputs:
-              actions: 'archive'
-              configuration: 'Release'
-              sdk: 'iphoneos'
-              xcWorkspacePath: '$(workingDirectory)/ios/Runner.xcworkspace'
-              scheme: 'Runner'
-              packageApp: true
-              exportPath: '$(workingDirectory)/output'
-              exportOptions: 'plist'
-              exportOptionsPlist: '$(workingDirectory)/ios/ExportOptions-Staging.plist'
-              signingOption: 'manual'
-              args: '-allowProvisioningUpdates'
-              signingIdentity: 'Apple Distribution'
-              provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
-
-          - script: |
-              echo "UUID: $(APPLE_PROV_PROFILE_UUID)"
-              echo "NAME: $(APPLE_PROV_PROFILE_NAME)"
-            displayName: 'Debug: Provisioning Profile Variables'
-
           # Copy IPA to staging directory
           - task: Bash@3
             displayName: 'Prepare IPA Artifact'
