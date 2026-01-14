@@ -1,0 +1,88 @@
+# Fastfile for SigookApp Flutter Build Automation
+# This file contains the fastlane lanes for iOS and Android builds
+
+default_platform(:ios)
+
+# ============================================
+# iOS Lanes
+# ============================================
+platform :ios do
+  desc "Build and sign iOS app for staging (App Store distribution)"
+  lane :beta do |options|
+    # Archive the app
+    gym(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        compileBitcode: false,
+        destination: "export"
+      },
+      output_directory: "output",
+      output_name: "SigookApp.ipa",
+      clean: false,
+      skip_build_archive: false,
+      archive_path: "build/ios/Runner.xcarchive",
+      export_xcargs: "-allowProvisioningUpdates",
+      silent: false,
+      verbose: true
+    )
+    
+    UI.success("✅ iOS IPA built and signed successfully!")
+  end
+
+  desc "Run iOS tests"
+  lane :test do
+    run_tests(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      device: "iPhone 14"
+    )
+  end
+end
+
+# ============================================
+# Android Lanes
+# ============================================
+platform :android do
+  desc "Build and sign Android app bundle for staging"
+  lane :beta do |options|
+    gradle(
+      project_dir: "android",
+      task: "bundle",
+      flavor: "staging",
+      build_type: "Release",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEY_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+    
+    UI.success("✅ Android AAB built and signed successfully!")
+  end
+
+  desc "Build APK for local testing"
+  lane :apk do
+    gradle(
+      project_dir: "android",
+      task: "assemble",
+      flavor: "staging",
+      build_type: "Release"
+    )
+  end
+
+  desc "Run Android tests"
+  lane :test do
+    gradle(
+      project_dir: "android",
+      task: "test",
+      flavor: "staging",
+      build_type: "Debug"
+    )
+  end
+end
