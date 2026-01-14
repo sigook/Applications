@@ -37,8 +37,9 @@ pr:
 # Environment detection variables
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main','refs/heads/SigookApp','SigookApp')]
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isSigookApp: $[in(variables['Build.SourceBranch'], 'refs/heads/SigookApp','SigookApp')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   flutterVersion: 'stable'
 
@@ -136,7 +137,7 @@ stages:
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
     dependsOn: Validate_and_Test
-    condition: and(succeeded(), eq(variables['isDev'], true), ne(variables['isPR'], true))
+    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-latest'
     variables:
