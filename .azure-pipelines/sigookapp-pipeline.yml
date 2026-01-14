@@ -377,11 +377,15 @@ stages:
                 echo "Source Branch: $(Build.SourceBranch)"
                 echo "========================================"
 
+          - script: |
+              security delete-keychain ios_signing_temp.keychain || true
+            displayName: 'Cleanup signing keychain'
+
           # Install Apple Certificate
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'distribution.p12'
+              certSecureFile: '$(P12_FILE)'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
