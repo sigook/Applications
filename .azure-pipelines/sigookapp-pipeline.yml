@@ -249,6 +249,7 @@ stages:
               exportOptionsPlist: '$(workingDirectory)/ios/ExportOptions-Staging.plist'
               signingOption: 'manual'
               args: '-allowProvisioningUpdates'
+              signingIdentity: 'Apple Distribution'
               provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
 
           - script: |
