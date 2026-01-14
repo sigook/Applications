@@ -385,7 +385,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: '$(P12_FILE)'
+              certSecureFile: '$(P12_FILENAME)'
               certPwd: '$(P12_PASSWORD)'
               keychain: 'temp'
               deleteCert: true
