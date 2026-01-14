@@ -97,7 +97,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         '   Post Logout Redirect: ${EnvironmentConfig.postLogoutRedirectUri}',
       );
 
-      final EndSessionResponse? response = await appAuth.endSession(
+      final EndSessionResponse response = await appAuth.endSession(
         endSessionRequest,
       );
 
