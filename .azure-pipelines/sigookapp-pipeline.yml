@@ -208,15 +208,21 @@ stages:
               echo "✅ Created placeholder .env files"
             displayName: 'Create Placeholder .env Files'
 
-          # Build staging IPA
+          # Debug: Show installed signing identities
+          - script: |
+              echo "=== Code Signing Identities ==="
+              security find-identity -v -p codesigning
+              echo "==============================="
+            displayName: 'Debug: Installed Signing Identities'
+
+          # Generate Flutter build with dart-defines
           - script: |
               cd $(workingDirectory)
-              echo "Building staging IPA..."
-              
-              if flutter build ipa \
+              echo "Running Flutter build for iOS (generates Runner.xcarchive)..."
+              flutter build ios \
                 -t lib/main_staging.dart \
                 --release \
-                --export-options-plist=ios/ExportOptions-Staging.plist \
+                --no-codesign \
                 --dart-define=ENVIRONMENT=staging \
                 "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
                 "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
@@ -224,19 +230,25 @@ stages:
                 "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"; then
-                
-                echo "✅ Staging IPA built successfully"
-                echo "Verifying build output..."
-                ls -la build/ios/ || echo "Warning: build/ios directory check failed"
-                find build/ios -name "*.ipa" || echo "Warning: No IPA found yet"
-              else
-                echo "❌ Flutter build ipa failed with exit code $?"
-                echo "Checking for build artifacts..."
-                ls -la build/ || echo "No build directory"
-                exit 1
-              fi
-            displayName: 'Build Staging IPA'
+                "--dart-define=APP_NAME=$(APP_NAME)"
+              echo "✅ Flutter iOS build complete (no codesign)"
+            displayName: 'Flutter Build iOS (No Codesign)'
+
+          # Archive and sign with Xcode
+          - task: Xcode@5
+            displayName: 'Archive iOS App'
+            inputs:
+              actions: 'archive'
+              configuration: 'Release'
+              sdk: 'iphoneos'
+              xcWorkspacePath: '$(workingDirectory)/ios/Runner.xcworkspace'
+              scheme: 'Runner'
+              packageApp: true
+              exportPath: '$(workingDirectory)/output'
+              exportOptions: 'plist'
+              exportOptionsPlist: '$(workingDirectory)/ios/ExportOptions-Staging.plist'
+              signingOption: 'manual'
+              args: '-allowProvisioningUpdates'
 
           # Copy IPA to staging directory
           - task: Bash@3
@@ -248,22 +260,20 @@ stages:
                 echo "Current directory: $(pwd)"
                 mkdir -p $(Build.ArtifactStagingDirectory)/ios
                 
-                # Debug: Show build directory structure
-                echo "Build directory contents:"
-                ls -la build/ios/ || true
+                # Debug: Show output directory structure
+                echo "Output directory contents:"
+                ls -la output/ || true
                 
-                # Find and copy IPA (Flutter build ipa creates files in build/ios/archive or build/ios/iphoneos)
-                IPA_PATH=$(find build/ios -name "*.ipa" 2>/dev/null | head -1)
+                # Find and copy IPA (Xcode archive creates IPA in output directory)
+                IPA_PATH=$(find output -name "*.ipa" 2>/dev/null | head -1)
                 if [ -n "$IPA_PATH" ]; then
                   cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
                   echo "✅ IPA copied from: $IPA_PATH"
                   echo "✅ IPA artifact: sigook-staging-$(Build.BuildId).ipa"
                 else
-                  echo "❌ IPA not found in build/ios/"
-                  echo "Searching entire build directory:"
-                  find build -name "*.ipa" 2>/dev/null || echo "No IPAs found anywhere"
-                  echo "Checking for .xcarchive:"
-                  find build/ios -name "*.xcarchive" 2>/dev/null || echo "No archives found"
+                  echo "❌ IPA not found in output/"
+                  echo "Searching for IPAs:"
+                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
                   exit 1
                 fi
                 

@@ -4,7 +4,7 @@
 <dict>
     <!-- Export method: app-store, ad-hoc, enterprise, development -->
     <key>method</key>
-    <string>ad-hoc</string>
+    <string>app-store</string>
     
     <!-- Team ID from Apple Developer account -->
     <!-- TODO: Replace with your actual Team ID -->
