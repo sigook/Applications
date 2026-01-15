@@ -14,6 +14,7 @@ platform :ios do
       workspace: "ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
+      export_team_id: "NGXFWU4H7Z",
       export_options: {
         provisioningProfiles: {  
         "com.sigook.beta" => "sigookbeta.mobileprovision"  
@@ -30,6 +31,7 @@ platform :ios do
       skip_build_archive: false,
       archive_path: "build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
+      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z",
       silent: false,
       verbose: true
     )
