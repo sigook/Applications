@@ -385,7 +385,7 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'distribution.p12'
+              certSecureFile: 'sigook-distribution.p12'
               certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
               keychain: 'temp'
 
