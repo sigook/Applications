@@ -386,7 +386,7 @@ stages:
             displayName: 'Install Apple Certificate'
             inputs:
               certSecureFile: 'distribution.p12'
-              certPwd: '$(DISTRIBUTION_PASSWORD)'
+              certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
               keychain: 'temp'
 
           # Install Provisioning Profile
