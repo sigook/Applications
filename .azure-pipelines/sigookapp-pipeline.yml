@@ -519,11 +519,19 @@ stages:
               echo "✅ Flutter iOS build complete (no codesign)"
             displayName: 'Flutter Build iOS (No Codesign)'
 
+          # Pin Xcode version to ensure consistent build environment
+          - script: |
+              echo "Selecting Xcode 15.4..."
+              sudo xcode-select -s /Applications/Xcode_15.4.app
+              xcodebuild -version
+              echo "✅ Xcode 15.4 selected"
+            displayName: 'Select Xcode Version'
+
           # Archive and sign with fastlane (fastlane will handle signing configuration)
           - script: |
               cd $(workingDirectory)
               echo "Building and signing IPA with fastlane..."
-              fastlane ios beta
+              bundle exec fastlane ios beta || fastlane ios beta
               echo "✅ Fastlane build complete"
             displayName: 'Fastlane Archive & Sign'
             env:

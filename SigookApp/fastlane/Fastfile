@@ -9,15 +9,29 @@ default_platform(:ios)
 platform :ios do
   desc "Build and sign iOS app for staging (App Store distribution)"
   lane :beta do |options|
-    # Disable automatic signing and configure manual signing
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: "ios/Runner.xcodeproj",
-      team_id: "NGXFWU4H7Z",
-      code_sign_identity: "Apple Distribution",
-      bundle_identifier: "com.sigook.beta",
-      profile_name: "sigookbeta"
-    )
+    # Clear DerivedData to avoid stale signing artifacts
+    clear_derived_data
+    
+    # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
+    require 'xcodeproj'
+    project_path = 'ios/Runner.xcodeproj'
+    project = Xcodeproj::Project.open(project_path)
+    
+    project.targets.each do |target|
+      if target.name == 'Runner'
+        target.build_configurations.each do |config|
+          UI.message("Configuring #{config.name} for manual signing...")
+          config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+          config.build_settings['DEVELOPMENT_TEAM'] = 'NGXFWU4H7Z'
+          config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+          config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
+          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = 'sigookbeta'
+        end
+      end
+    end
+    
+    project.save
+    UI.success("✅ Manual signing configured for Runner target")
     
     # Archive the app
     gym(
@@ -35,7 +49,7 @@ platform :ios do
       },
       output_directory: "output",
       output_name: "SigookApp.ipa",
-      clean: false,
+      clean: true,
       skip_build_archive: false,
       archive_path: "build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
