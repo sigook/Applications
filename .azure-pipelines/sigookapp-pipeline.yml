@@ -56,14 +56,14 @@ stages:
     displayName: 'Build iOS (Staging)'
     dependsOn: []
     condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
-    pool:
-      vmImage: 'macOS-12'
     variables:
       - group: SigookApp-Staging
       - group: App Configuration Staging
     jobs:
       - job: Build_IPA_Staging
         displayName: 'Build Staging IPA'
+        pool:
+          vmImage: 'macOS-12'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
