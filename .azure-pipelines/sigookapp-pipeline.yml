@@ -519,16 +519,7 @@ stages:
               echo "✅ Flutter iOS build complete (no codesign)"
             displayName: 'Flutter Build iOS (No Codesign)'
 
-          # Disable automatic signing
-          - script: |
-              cd $(workingDirectory)/ios
-              echo "Disabling automatic signing in Xcode project..."
-              sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' Runner.xcodeproj/project.pbxproj
-              sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";/g' Runner.xcodeproj/project.pbxproj
-              echo "✅ Automatic signing disabled"
-            displayName: 'Disable Automatic Signing'
-
-          # Archive and sign with fastlane
+          # Archive and sign with fastlane (fastlane will handle signing configuration)
           - script: |
               cd $(workingDirectory)
               echo "Building and signing IPA with fastlane..."

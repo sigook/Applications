@@ -9,6 +9,16 @@ default_platform(:ios)
 platform :ios do
   desc "Build and sign iOS app for staging (App Store distribution)"
   lane :beta do |options|
+    # Disable automatic signing and configure manual signing
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/Runner.xcodeproj",
+      team_id: "NGXFWU4H7Z",
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: "com.sigook.beta",
+      profile_name: "sigookbeta"
+    )
+    
     # Archive the app
     gym(
       workspace: "ios/Runner.xcworkspace",
