@@ -23,10 +23,26 @@ platform :ios do
     # DerivedData cache disabled. Uncomment if you need fresh builds.
     # clear_derived_data
     
-    # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
-    require 'xcodeproj'
+    # Configure manual code signing
+    # Find the installed provisioning profile
+    profile_path = Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).first
 
-    # Fastlane runs from fastlane/ directory, so use ../ to go to project root
+    if profile_path.nil?
+      UI.user_error!("❌ No provisioning profile found in ~/Library/MobileDevice/Provisioning Profiles/")
+    end
+
+    # Extract UUID from the provisioning profile
+    profile_content = `security cms -D -i "#{profile_path}"`
+    profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
+    profile_name = profile_content.match(/<key>Name<\/key>\s*<string>([^<]+)<\/string>/)[1]
+
+    UI.message("📝 Found provisioning profile:")
+    UI.message("   Name: #{profile_name}")
+    UI.message("   UUID: #{profile_uuid}")
+    UI.message("   Path: #{profile_path}")
+
+    # Configure Xcode project with manual signing
+    require 'xcodeproj'
     project_path = '../ios/Runner.xcodeproj'
     project = Xcodeproj::Project.open(project_path)
 
@@ -38,8 +54,8 @@ platform :ios do
           config.build_settings['DEVELOPMENT_TEAM'] = 'NGXFWU4H7Z'
           config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
           config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
-          # Don't set PROVISIONING_PROFILE_SPECIFIER here - let gym handle it via export_options
-          config.build_settings.delete('PROVISIONING_PROFILE_SPECIFIER')
+          # Use the UUID of the provisioning profile
+          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_uuid
         end
       end
     end
