@@ -148,13 +148,13 @@ stages:
       - group: SigookApp-Staging
       - group: App Configuration Staging
     jobs:
-      - script: echo "This step is disabled"
-        displayName: Disabled step
-        condition: false
-
       - job: Build_AAB_Staging
         displayName: 'Build Staging AAB'
         steps:
+          - script: echo "This step is disabled"
+            displayName: Disabled step
+            condition: false
+
           - checkout: self
             displayName: 'Checkout Repository'
 
