@@ -2,8 +2,8 @@
 # Optimized version with corrected paths for Azure DevOps pipeline execution
 # This file contains the fastlane lanes for iOS and Android builds
 #
-# IMPORTANT: Fastlane is executed from the SigookApp/ directory (project root).
-# All paths are relative to the project root.
+# IMPORTANT: Fastlane automatically changes directory to 'fastlane/' before executing.
+# Therefore, all paths must use '../' to reference the project root (SigookApp/).
 
 default_platform(:ios)
 
@@ -20,8 +20,8 @@ platform :ios do
     # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
     require 'xcodeproj'
 
-    # Path relative to SigookApp/ (project root)
-    project_path = 'ios/Runner.xcodeproj'
+    # Fastlane runs from fastlane/ directory, so use ../ to go to project root
+    project_path = '../ios/Runner.xcodeproj'
     project = Xcodeproj::Project.open(project_path)
     
     project.targets.each do |target|
@@ -41,9 +41,9 @@ platform :ios do
     UI.success("✅ Manual signing configured for Runner target")
     
     # Archive the app
-    # All paths are relative to SigookApp/ (project root)
+    # Fastlane runs from fastlane/ directory, so use ../ to reference project root
     gym(
-      workspace: "ios/Runner.xcworkspace",
+      workspace: "../ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
@@ -55,11 +55,11 @@ platform :ios do
         destination: "export",
         teamID: "NGXFWU4H7Z"
       },
-      output_directory: "output",
+      output_directory: "../output",
       output_name: "SigookApp.ipa",
       clean: true,
       skip_build_archive: false,
-      archive_path: "build/ios/Runner.xcarchive",
+      archive_path: "../build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
       xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
       silent: false,
@@ -67,23 +67,23 @@ platform :ios do
     )
 
     UI.success("✅ iOS IPA built and signed successfully!")
-    UI.message("IPA location: output/SigookApp.ipa")
+    UI.message("IPA location: ../output/SigookApp.ipa")
   end
 
   desc "Run iOS tests"
   lane :test do
     run_tests(
-      workspace: "ios/Runner.xcworkspace",
+      workspace: "../ios/Runner.xcworkspace",
       scheme: "Runner",
       device: "iPhone 14"
     )
   end
-  
+
   desc "Clean build artifacts"
   lane :clean do
     clear_derived_data
-    # Clean from project root
-    sh("rm -rf output build ios/Pods")
+    # Fastlane runs from fastlane/ directory
+    sh("cd .. && rm -rf output build ios/Pods")
     UI.success("✅ Cleaned all build artifacts")
   end
 end
@@ -94,9 +94,9 @@ end
 platform :android do
   desc "Build and sign Android app bundle for staging"
   lane :beta do |options|
-    # Path relative to SigookApp/ (project root)
+    # Fastlane runs from fastlane/ directory, so use ../ to reference project root
     gradle(
-      project_dir: "android",
+      project_dir: "../android",
       task: "bundle",
       flavor: "staging",
       build_type: "Release",
@@ -114,9 +114,9 @@ platform :android do
 
   desc "Build APK for local testing"
   lane :apk do
-    # Path relative to SigookApp/ (project root)
+    # Fastlane runs from fastlane/ directory, so use ../ to reference project root
     gradle(
-      project_dir: "android",
+      project_dir: "../android",
       task: "assemble",
       flavor: "staging",
       build_type: "Release"
@@ -125,9 +125,9 @@ platform :android do
 
   desc "Run Android tests"
   lane :test do
-    # Path relative to SigookApp/ (project root)
+    # Fastlane runs from fastlane/ directory, so use ../ to reference project root
     gradle(
-      project_dir: "android",
+      project_dir: "../android",
       task: "test",
       flavor: "staging",
       build_type: "Debug"
@@ -136,9 +136,9 @@ platform :android do
 
   desc "Clean Android build artifacts"
   lane :clean do
-    # Path relative to SigookApp/ (project root)
+    # Fastlane runs from fastlane/ directory, so use ../ to reference project root
     gradle(
-      project_dir: "android",
+      project_dir: "../android",
       task: "clean"
     )
     UI.success("✅ Cleaned Android build artifacts")
@@ -156,9 +156,9 @@ lane :info do
   UI.message("Ruby version: #{RUBY_VERSION}")
   UI.message("Working directory: #{Dir.pwd}")
 
-  # Show the actual paths being used
-  UI.message("iOS project path: #{File.expand_path('ios/Runner.xcodeproj', Dir.pwd)}")
-  UI.message("Android project path: #{File.expand_path('android', Dir.pwd)}")
+  # Show the actual paths being used (fastlane runs from fastlane/ directory)
+  UI.message("iOS project path: #{File.expand_path('../ios/Runner.xcodeproj', Dir.pwd)}")
+  UI.message("Android project path: #{File.expand_path('../android', Dir.pwd)}")
 
   if is_ci
     UI.message("Running in CI environment")
