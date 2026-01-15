@@ -21,7 +21,7 @@ platform :ios do
         method: "app-store",
         signingStyle: "manual",
         compileBitcode: false,
-        destination: "export"
+        destination: "export",
         teamID: "NGXFWU4H7Z"
       },
       output_directory: "output",
