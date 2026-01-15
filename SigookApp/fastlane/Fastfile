@@ -15,10 +15,14 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       export_options: {
+        provisioningProfiles: {  
+        "com.sigook.beta" => "sigookbeta.mobileprovision"  
+      },
         method: "app-store",
         signingStyle: "manual",
         compileBitcode: false,
         destination: "export"
+        teamID: "NGXFWU4H7Z"
       },
       output_directory: "output",
       output_name: "SigookApp.ipa",
