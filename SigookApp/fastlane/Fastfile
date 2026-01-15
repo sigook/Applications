@@ -1,4 +1,5 @@
 # Fastfile for SigookApp Flutter Build Automation
+# Optimized version with corrected paths for Azure DevOps pipeline execution
 # This file contains the fastlane lanes for iOS and Android builds
 
 default_platform(:ios)
@@ -9,12 +10,13 @@ default_platform(:ios)
 platform :ios do
   desc "Build and sign iOS app for staging (App Store distribution)"
   lane :beta do |options|
-    # NOTA: NO uses clear_derived_data si tienes cache de DerivedData en el pipeline
+    # NOTE: clear_derived_data is commented out because the pipeline has
+    # DerivedData cache disabled. Uncomment if you need fresh builds.
     # clear_derived_data
     
-    # Disable automatic signing using xcodeproj gem
+    # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
     require 'xcodeproj'
-    project_path = './ios/Runner.xcodeproj'  # Ruta corregida
+    project_path = './ios/Runner.xcodeproj'
     project = Xcodeproj::Project.open(project_path)
     
     project.targets.each do |target|
@@ -35,7 +37,7 @@ platform :ios do
     
     # Archive the app
     gym(
-      workspace: "./ios/Runner.xcworkspace",  # Ruta corregida (sin ../)
+      workspace: "./ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
@@ -47,11 +49,11 @@ platform :ios do
         destination: "export",
         teamID: "NGXFWU4H7Z"
       },
-      output_directory: "./output",  # ✅ CORREGIDO: ahora crea en SigookApp/output
+      output_directory: "./output",
       output_name: "SigookApp.ipa",
       clean: true,
       skip_build_archive: false,
-      archive_path: "./build/ios/Runner.xcarchive",  # Ruta corregida
+      archive_path: "./build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
       xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
       silent: false,
@@ -59,6 +61,7 @@ platform :ios do
     )
     
     UI.success("✅ iOS IPA built and signed successfully!")
+    UI.message("IPA location: ./output/SigookApp.ipa")
   end
 
   desc "Run iOS tests"
@@ -69,6 +72,13 @@ platform :ios do
       device: "iPhone 14"
     )
   end
+  
+  desc "Clean build artifacts"
+  lane :clean do
+    clear_derived_data
+    sh("cd .. && rm -rf output build ios/Pods")
+    UI.success("✅ Cleaned all build artifacts")
+  end
 end
 
 # ============================================
@@ -78,7 +88,7 @@ platform :android do
   desc "Build and sign Android app bundle for staging"
   lane :beta do |options|
     gradle(
-      project_dir: "./android",  # Ruta corregida
+      project_dir: "./android",
       task: "bundle",
       flavor: "staging",
       build_type: "Release",
@@ -113,4 +123,39 @@ platform :android do
       build_type: "Debug"
     )
   end
+  
+  desc "Clean Android build artifacts"
+  lane :clean do
+    gradle(
+      project_dir: "./android",
+      task: "clean"
+    )
+    UI.success("✅ Cleaned Android build artifacts")
+  end
+end
+
+# ============================================
+# Shared Lanes
+# ============================================
+
+desc "Display environment information"
+lane :info do
+  UI.header("Environment Information")
+  UI.message("Fastlane version: #{Fastlane::VERSION}")
+  UI.message("Ruby version: #{RUBY_VERSION}")
+  UI.message("Working directory: #{Dir.pwd}")
+  
+  if is_ci
+    UI.message("Running in CI environment")
+    UI.message("CI Platform: #{ENV['CI'] || 'Unknown'}")
+  else
+    UI.message("Running locally")
+  end
+end
+
+# Error handling
+error do |lane, exception|
+  UI.error("Error in lane '#{lane}':")
+  UI.error(exception.message)
+  UI.error(exception.backtrace.join("\n")) if exception.backtrace
 end
