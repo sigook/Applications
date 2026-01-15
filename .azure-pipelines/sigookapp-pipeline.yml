@@ -55,10 +55,6 @@ stages:
       - job: Flutter_Test
         displayName: 'Flutter Analyze & Test'
         steps:
-          - script: echo "This step is disabled"
-            displayName: Disabled step
-            condition: false
-
           - checkout: self
             displayName: 'Checkout Repository'
 
@@ -151,10 +147,6 @@ stages:
       - job: Build_AAB_Staging
         displayName: 'Build Staging AAB'
         steps:
-          - script: echo "This step is disabled"
-            displayName: Disabled step
-            condition: false
-
           - checkout: self
             displayName: 'Checkout Repository'
 
