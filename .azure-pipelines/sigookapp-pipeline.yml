@@ -393,11 +393,27 @@ stages:
 
           # Install Provisioning Profile
           - task: InstallAppleProvisioningProfile@1
+            name: installProvisioningProfile
             displayName: 'Install Provisioning Profile'
             inputs:
               provisioningProfileLocation: 'secureFiles'
               provProfileSecureFile: '$(PROVISIONING_PROFILE)'
               removeProfile: true
+
+          # Debug: List installed provisioning profiles
+          - script: |
+              echo "=== Installed Provisioning Profiles ==="
+              ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+              echo ""
+              echo "=== Profile Details ==="
+              for profile in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
+                echo "Profile: $profile"
+                security cms -D -i "$profile" | grep -A 1 "Name\|UUID\|TeamIdentifier\|TeamName" || true
+                echo "---"
+              done
+              echo "==============================="
+            displayName: 'Debug: List Provisioning Profiles'
+            continueOnError: true
 
           # Install Flutter SDK
           - task: FlutterInstall@0
