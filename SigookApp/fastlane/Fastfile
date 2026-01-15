@@ -14,7 +14,7 @@ platform :ios do
     
     # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
     require 'xcodeproj'
-    project_path = 'ios/Runner.xcodeproj'
+    project_path = '../ios/Runner.xcodeproj'
     project = Xcodeproj::Project.open(project_path)
     
     project.targets.each do |target|
@@ -35,7 +35,7 @@ platform :ios do
     
     # Archive the app
     gym(
-      workspace: "ios/Runner.xcworkspace",
+      workspace: "../ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
@@ -47,11 +47,11 @@ platform :ios do
         destination: "export",
         teamID: "NGXFWU4H7Z"
       },
-      output_directory: "output",
+      output_directory: "../output",
       output_name: "SigookApp.ipa",
       clean: true,
       skip_build_archive: false,
-      archive_path: "build/ios/Runner.xcarchive",
+      archive_path: "../build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
       xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
       silent: false,

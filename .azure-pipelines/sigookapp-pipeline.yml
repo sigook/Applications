@@ -531,7 +531,7 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building and signing IPA with fastlane..."
-              bundle exec fastlane ios beta || fastlane ios beta
+              fastlane ios beta
               echo "✅ Fastlane build complete"
             displayName: 'Fastlane Archive & Sign'
             env:
