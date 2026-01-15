@@ -414,6 +414,7 @@ stages:
           # Cache CocoaPods
           - task: Cache@2
             displayName: 'Cache CocoaPods'
+            continueOnError: true
             inputs:
               key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock | $(flutterVersion)'
               restoreKeys: |
@@ -424,6 +425,7 @@ stages:
           # Cache DerivedData
           - task: Cache@2
             displayName: 'Cache Xcode DerivedData'
+            continueOnError: true
             inputs:
               key: 'deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock | $(Build.SourceVersion)'
               restoreKeys: |
