@@ -529,7 +529,7 @@ stages:
 
           # Archive and sign with fastlane (fastlane will handle signing configuration)
           - script: |
-              cd $(workingDirectory)
+              cd $(workingDirectory)/fastlane
               echo "Building and signing IPA with fastlane..."
               fastlane ios beta
               echo "✅ Fastlane build complete"
