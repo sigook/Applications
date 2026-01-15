@@ -15,10 +15,8 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
+      codesigning_identity: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
       export_options: {
-        provisioningProfiles: {  
-        "com.sigook.beta" => "sigookbeta.mobileprovision"  
-      },
         method: "app-store",
         signingStyle: "manual",
         compileBitcode: false,
@@ -31,7 +29,7 @@ platform :ios do
       skip_build_archive: false,
       archive_path: "build/ios/Runner.xcarchive",
       export_xcargs: "-allowProvisioningUpdates",
-      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z",
+      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
       silent: false,
       verbose: true
     )
