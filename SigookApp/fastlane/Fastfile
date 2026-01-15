@@ -35,7 +35,7 @@ platform :ios do
     
     # Archive the app
     gym(
-      workspace: "../ios/Runner.xcworkspace",
+      workspace: "ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
