@@ -598,3 +598,149 @@ stages:
                 echo "IPA: sigook-staging-$(Build.BuildId).ipa"
                 echo "Build ID: $(Build.BuildId)"
                 echo "========================================"
+
+  # ============================================
+  # Stage 4: Deploy iOS to TestFlight
+  # ============================================
+  - stage: Deploy_iOS_TestFlight
+    displayName: 'Deploy iOS to TestFlight'
+    dependsOn: Build_iOS_Staging
+    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'macos-14'
+    variables:
+      - group: SigookApp-Staging
+      - group: SigookApp-iOS-Signing
+    jobs:
+      - deployment: Deploy_TestFlight
+        displayName: 'Deploy to TestFlight'
+        environment: 'staging'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: 'Checkout Repository'
+
+                - task: Bash@3
+                  displayName: 'Display Deploy Information'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo "========================================"
+                      echo "Deploy iOS to TestFlight"
+                      echo "========================================"
+                      echo "Build Number: $(Build.BuildNumber)"
+                      echo "========================================"
+
+                # Download IPA artifact from build stage
+                - task: DownloadBuildArtifacts@1
+                  displayName: 'Download IPA Artifact'
+                  inputs:
+                    buildType: 'current'
+                    downloadType: 'single'
+                    artifactName: 'sigookapp-ios-staging'
+                    downloadPath: '$(System.ArtifactsDirectory)'
+
+                # Install Ruby and Fastlane
+                - script: |
+                    sudo gem install fastlane -NV
+                    echo "✅ Fastlane installed"
+                  displayName: 'Install Fastlane'
+
+                # Deploy to TestFlight
+                - script: |
+                    cd $(System.DefaultWorkingDirectory)/SigookApp
+                    IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
+                    echo "Found IPA: $IPA_PATH"
+                    fastlane ios deploy ipa:"$IPA_PATH"
+                  displayName: 'Deploy to TestFlight'
+                  env:
+                    APP_STORE_CONNECT_API_KEY_ID: $(APP_STORE_CONNECT_API_KEY_ID)
+                    APP_STORE_CONNECT_API_ISSUER_ID: $(APP_STORE_CONNECT_API_ISSUER_ID)
+                    APP_STORE_CONNECT_API_KEY_CONTENT: $(APP_STORE_CONNECT_API_KEY_CONTENT)
+                    FASTLANE_SKIP_UPDATE_CHECK: "true"
+
+                - task: Bash@3
+                  displayName: 'Deploy Summary'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo ""
+                      echo "========================================"
+                      echo "✅ TestFlight Deployment Complete!"
+                      echo "========================================"
+                      echo "Build ID: $(Build.BuildId)"
+                      echo "========================================"
+
+  # ============================================
+  # Stage 5: Deploy Android to Google Play
+  # ============================================
+  - stage: Deploy_Android_PlayStore
+    displayName: 'Deploy Android to Google Play'
+    dependsOn: Build_Android_Staging
+    condition: false  # Disabled until Android build stage is re-enabled
+    # Original condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: SigookApp-Staging
+    jobs:
+      - deployment: Deploy_PlayStore
+        displayName: 'Deploy to Google Play'
+        environment: 'staging'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: 'Checkout Repository'
+
+                - task: Bash@3
+                  displayName: 'Display Deploy Information'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo "========================================"
+                      echo "Deploy Android to Google Play"
+                      echo "========================================"
+                      echo "Build Number: $(Build.BuildNumber)"
+                      echo "========================================"
+
+                # Download AAB artifact from build stage
+                - task: DownloadBuildArtifacts@1
+                  displayName: 'Download AAB Artifact'
+                  inputs:
+                    buildType: 'current'
+                    downloadType: 'single'
+                    artifactName: 'sigookapp-android-staging'
+                    downloadPath: '$(System.ArtifactsDirectory)'
+
+                # Install Ruby and Fastlane
+                - script: |
+                    sudo gem install fastlane -NV
+                    echo "✅ Fastlane installed"
+                  displayName: 'Install Fastlane'
+
+                # Deploy to Google Play
+                - script: |
+                    cd $(System.DefaultWorkingDirectory)/SigookApp
+                    AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
+                    echo "Found AAB: $AAB_PATH"
+                    fastlane android deploy aab:"$AAB_PATH"
+                  displayName: 'Deploy to Google Play'
+                  env:
+                    GOOGLE_PLAY_JSON_KEY: $(GOOGLE_PLAY_JSON_KEY)
+                    FASTLANE_SKIP_UPDATE_CHECK: "true"
+
+                - task: Bash@3
+                  displayName: 'Deploy Summary'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo ""
+                      echo "========================================"
+                      echo "✅ Google Play Deployment Complete!"
+                      echo "========================================"
+                      echo "Build ID: $(Build.BuildId)"
+                      echo "========================================"
