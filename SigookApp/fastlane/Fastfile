@@ -9,12 +9,12 @@ default_platform(:ios)
 platform :ios do
   desc "Build and sign iOS app for staging (App Store distribution)"
   lane :beta do |options|
-    # Clear DerivedData to avoid stale signing artifacts
-    clear_derived_data
+    # NOTA: NO uses clear_derived_data si tienes cache de DerivedData en el pipeline
+    # clear_derived_data
     
-    # Disable automatic signing using xcodeproj gem (more reliable than update_code_signing_settings)
+    # Disable automatic signing using xcodeproj gem
     require 'xcodeproj'
-    project_path = '../ios/Runner.xcodeproj'
+    project_path = './ios/Runner.xcodeproj'  # Ruta corregida
     project = Xcodeproj::Project.open(project_path)
     
     project.targets.each do |target|
@@ -35,7 +35,7 @@ platform :ios do
     
     # Archive the app
     gym(
-      workspace: "ios/Runner.xcworkspace",
+      workspace: "./ios/Runner.xcworkspace",  # Ruta corregida (sin ../)
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
@@ -47,11 +47,11 @@ platform :ios do
         destination: "export",
         teamID: "NGXFWU4H7Z"
       },
-      output_directory: "../output",
+      output_directory: "./output",  # ✅ CORREGIDO: ahora crea en SigookApp/output
       output_name: "SigookApp.ipa",
       clean: true,
       skip_build_archive: false,
-      archive_path: "../build/ios/Runner.xcarchive",
+      archive_path: "./build/ios/Runner.xcarchive",  # Ruta corregida
       export_xcargs: "-allowProvisioningUpdates",
       xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
       silent: false,
@@ -64,7 +64,7 @@ platform :ios do
   desc "Run iOS tests"
   lane :test do
     run_tests(
-      workspace: "ios/Runner.xcworkspace",
+      workspace: "./ios/Runner.xcworkspace",
       scheme: "Runner",
       device: "iPhone 14"
     )
@@ -78,7 +78,7 @@ platform :android do
   desc "Build and sign Android app bundle for staging"
   lane :beta do |options|
     gradle(
-      project_dir: "android",
+      project_dir: "./android",  # Ruta corregida
       task: "bundle",
       flavor: "staging",
       build_type: "Release",
@@ -97,7 +97,7 @@ platform :android do
   desc "Build APK for local testing"
   lane :apk do
     gradle(
-      project_dir: "android",
+      project_dir: "./android",
       task: "assemble",
       flavor: "staging",
       build_type: "Release"
@@ -107,7 +107,7 @@ platform :android do
   desc "Run Android tests"
   lane :test do
     gradle(
-      project_dir: "android",
+      project_dir: "./android",
       task: "test",
       flavor: "staging",
       build_type: "Debug"
