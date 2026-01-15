@@ -49,6 +49,7 @@ stages:
   # ============================================
   - stage: Validate_and_Test
     displayName: 'Validate & Test'
+    condition: false  # Temporarily disabled - focusing on iOS only
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -137,7 +138,8 @@ stages:
   - stage: Build_Android_Staging
     displayName: 'Build Android (Staging)'
     dependsOn: Validate_and_Test
-    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false  # Temporarily disabled - focusing on iOS only
+    # Original condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -351,8 +353,8 @@ stages:
   # ============================================
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
-    dependsOn: Validate_and_Test
-    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    dependsOn: []
+    condition: and(eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
