@@ -385,11 +385,9 @@ stages:
           - task: InstallAppleCertificate@2
             displayName: 'Install Apple Certificate'
             inputs:
-              certSecureFile: 'distribution-v2.p12'
-              certPwd: '$(P12_PASSWORD)'
+              certSecureFile: 'distribution.p12'
+              certPwd: '$(DISTRIBUTION_PASSWORD)'
               keychain: 'temp'
-              deleteCert: true
-              setUpPartitionIdACLForPrivateKey: true
 
           # Install Provisioning Profile
           - task: InstallAppleProvisioningProfile@1
