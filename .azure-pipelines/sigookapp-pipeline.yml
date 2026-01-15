@@ -63,7 +63,7 @@ stages:
       - job: Build_IPA_Staging
         displayName: 'Build Staging IPA'
         pool:
-          vmImage: 'macOS-12'
+          vmImage: 'macOS-lastest'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
