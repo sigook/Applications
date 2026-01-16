@@ -49,7 +49,7 @@ stages:
   # ============================================
   - stage: Validate_and_Test
     displayName: 'Validate & Test'
-    condition: false  # Temporarily disabled - focusing on iOS only
+    condition: ne(variables['isPR'], true)  # Run on direct pushes, skip on PRs
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -138,8 +138,7 @@ stages:
   - stage: Build_Android_Staging
     displayName: 'Build Android (Staging)'
     dependsOn: Validate_and_Test
-    condition: false  # Temporarily disabled - focusing on iOS only
-    # Original condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -270,12 +269,11 @@ stages:
               testResultsFiles: '$(workingDirectory)/test-results.json'
               failTaskOnFailedTests: false
 
-          # Build AAB with fastlane
+          # Build AAB with Flutter
           - script: |
               cd $(workingDirectory)
-              echo "Building Android AAB with fastlane..."
-              
-              # Run Flutter build first to generate dart-defines
+              echo "Building Android AAB..."
+
               flutter build appbundle \
                 --flavor staging \
                 -t lib/main_staging.dart \
@@ -289,12 +287,13 @@ stages:
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
-              
+
               echo "✅ Android AAB built successfully"
               ls -la build/app/outputs/bundle/stagingRelease/
             displayName: 'Build Android AAB'
             env:
-              KEYSTORE_FILE: upload-keystore.jks
+              KEYSTORE_FILE: android/app/upload-keystore.jks
+              KEYSTORE_PASSWORD: $(KEY_PASSWORD)
               KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
 
@@ -345,8 +344,9 @@ stages:
   # ============================================
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
-    dependsOn: []
-    condition: and(eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    dependsOn: Validate_and_Test
+    condition: false  # Temporarily disabled to test Android only
+    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
@@ -590,7 +590,8 @@ stages:
   - stage: Deploy_iOS_TestFlight
     displayName: 'Deploy iOS to TestFlight'
     dependsOn: Build_iOS_Staging
-    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false  # Temporarily disabled to test Android only
+    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
@@ -660,8 +661,7 @@ stages:
   - stage: Deploy_Android_PlayStore
     displayName: 'Deploy Android to Google Play'
     dependsOn: Build_Android_Staging
-    condition: false  # Disabled until Android build stage is re-enabled
-    # Original condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
