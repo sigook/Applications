@@ -307,6 +307,21 @@ stages:
               echo "ANDROID_NDK_HOME: $(ANDROID_NDK_HOME)"
               echo "ANDROID_HOME: $ANDROID_HOME"
 
+              # Remove key.properties to force use of environment variables
+              if [ -f "android/key.properties" ]; then
+                echo "Removing android/key.properties to use pipeline environment variables"
+                rm android/key.properties
+              fi
+
+              # Debug: Print keystore signing configuration
+              echo "=== Keystore Signing Configuration ==="
+              echo "KEYSTORE_FILE: $KEYSTORE_FILE"
+              echo "KEY_ALIAS: $KEY_ALIAS"
+              echo "KEYSTORE_PASSWORD length: ${#KEYSTORE_PASSWORD} chars"
+              echo "KEY_PASSWORD length: ${#KEY_PASSWORD} chars"
+              echo "Keystore file exists at android/app/: $(ls -la android/app/upload-keystore.jks 2>/dev/null || echo 'NOT FOUND')"
+              echo "======================================"
+
               # Export NDK path for Flutter/Gradle
               export ANDROID_NDK_HOME="$(ANDROID_NDK_HOME)"
 
