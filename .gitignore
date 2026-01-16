@@ -703,3 +703,6 @@ local.properties
 !.env.template
 !appsettings.json
 !appsettings.*.json
+
+# Claude Code - AI assistant workspace files
+.claude/
