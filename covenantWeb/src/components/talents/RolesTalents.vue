@@ -1,7 +1,7 @@
 <template>
   <section class="roles-section">
     <div class="container">
-      <h2 class="roles-section__title">We look for:</h2>
+      <h2 class="roles-section__title">Roles We Recruit:</h2>
 
       <div class="roles-list">
         <div
@@ -126,7 +126,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 /* === TUS ESTILOS EXISTENTES (BASE) === */
 /* ========================================= */
 .roles-section {
-  background-color: #05162d;
+  background-color: #0F2F44;
   padding: 80px 0 120px;
   overflow: hidden;
   border-radius: 0 180px 0 0;
@@ -142,17 +142,31 @@ const roles: RoleTalent[] = rolesTalentsData;
 .role-card {
   position: relative; width: 65%; height: 240px;
   cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transición suave para todo (ancho, bordes, etc) */
   z-index: 1;
 }
 .role-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
 .role-card:hover .role-card__img { transform: scale(1.05); }
 
+/* ESTADO EXPANDIDO (DETALLE) */
+.role-card.is-detailed {
+  width: 100%; /* Ocupar todo el ancho */
+  height: 270px; /* Aumentar altura en desktop */
+  border-radius: 150px 0 150px 0; /* Solo bordes Sup-Izq e Inf-Der redondeados */
+  z-index: 10; /* Elevar sobre los demás */
+  align-self: center; /* Centrar para evitar saltos extraños desde left/right */
+}
+/* Forzar herencia de bordes en el inner y faces */
+.role-card.is-detailed .role-card__inner,
+.role-card.is-detailed .role-card__face {
+  border-radius: 150px 0 150px 0;
+}
+
 .role-card--left {
-  align-self: flex-start; border-radius: 0 150px 150px 0; text-align: left; box-shadow: 0 50px 0 #010914;
+  align-self: flex-start; border-radius: 0 150px 150px 0; text-align: left; box-shadow: 0 50px 0 #162731;
 }
 .role-card--right {
-  align-self: flex-end; border-radius: 150px 0 0 150px; text-align: right; box-shadow: 0 50px 0 #0F2F44;
+  align-self: flex-end; border-radius: 150px 0 0 150px; text-align: right; box-shadow: 0 50px 0 #184461;
 }
 
 /* Inner Wrapper */
@@ -165,15 +179,17 @@ const roles: RoleTalent[] = rolesTalentsData;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
   mask-image: radial-gradient(white, black);
   transform: translateZ(0);
+  transition: border-radius 0.5s ease;
 }
 
 /* Common Face Styles */
 .role-card__face {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease, border-radius 0.5s ease;
   overflow: hidden; /* Importante para el recorte de formas */
+  border-radius: inherit;
 }
-/* Heredar borderRadius del padre */
+/* Heredar borderRadius del padre (Ya no es necesario explícito aquí si usamos inherit, pero mantenemos por especificidad en estados normales) */
 .role-card--left .role-card__face { border-radius: 0 150px 150px 0; }
 .role-card--right .role-card__face { border-radius: 150px 0 0 150px; }
 
@@ -367,10 +383,10 @@ const roles: RoleTalent[] = rolesTalentsData;
 
   /* Sombras de color sólidas en móvil para mantener consistencia */
   .role-card--left {
-    box-shadow: 0 50px 0 #010914;
+    box-shadow: 0 50px 0 #162731;
   }
   .role-card--right {
-    box-shadow: 0 50px 0 #0F2F44;
+    box-shadow: 0 50px 0 #184461;
   }
 
   .role-card__inner {
@@ -436,11 +452,17 @@ const roles: RoleTalent[] = rolesTalentsData;
 
   .info-icon { width: 50px; height: 50px; }
 
+  /* Increase height significantly when detailed on mobile */
+  .role-card.is-detailed {
+    height: 550px !important;
+  }
+
+  /* Allow list to expand */
   .detail-list {
     grid-template-columns: 1fr;
     font-size: 0.8rem;
     gap: 4px;
-    max-height: 140px;
+    max-height: 350px; /* Increased from 140px */
     overflow-y: auto;
   }
 }

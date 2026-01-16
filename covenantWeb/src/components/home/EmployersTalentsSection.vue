@@ -490,12 +490,12 @@
   @media (min-width: 961px) {
     .et-employers__arrow {
       /* Ajuste fino para alinear visualmente con la flecha de abajo */
-      transform: translateX(130px); 
+      transform: translateX(145px); 
     }
     
     .et-employers__right {
       /* Compensar el movimiento de la flecha para que no pise el texto */
-      padding-left: 120px; 
+      padding-left: 135px; 
     }
   }
 

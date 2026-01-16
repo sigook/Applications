@@ -47,7 +47,7 @@
             Your next hire starts here
           </p>
 
-          <div class="hc-circle__form-placeholder">
+          <div class="hc-circle__form-placeholder" id="contact-form">
             <ContactForm
               title="CONTACT FORM ~ NOTIFICATION"
               subject="Contact From Covenant"
@@ -76,14 +76,14 @@
       role: 'Ontario, Canada'
     },
     {
-      text: 'They quickly understood our needs and found the right talent for our projects.',
-      author: 'HR Manager, Tech Company',
-      role: 'Toronto, Canada'
+      text: 'I recommend Covenant Group Ltd. as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding.',
+      author: 'HR Manager, manufacturer',
+      role: 'Mississauga, Ontario'
     },
     {
-      text: 'Reliable, professional and always available when we need them.',
-      author: 'Operations Director, Logistics Firm',
-      role: 'Vancouver, Canada'
+      text: 'Our organization has been working continuously with Covenant Group Ltd. since 2022...Their services are competitively priced, and billing has always been accurate and transparent.',
+      author: 'Operations Manager, 4PL Company',
+      role: 'Ottawa, Ontario'
     }
   ])
 
@@ -273,8 +273,8 @@
   /* NUEVO: El círculo principal verde */
   .hc-contact-circle {
     position: relative; /* Necesario para que el ::before se posicione respecto a este */
-    width: 820px;       /* Tamaño fijo del círculo verde */
-    height: 820px;
+    width: 920px;       /* Tamaño fijo del círculo verde */
+    height: 920px;
     border-radius: 50%;
     background: #45d86e; /* Verde brillante */
     display: flex;
@@ -337,7 +337,7 @@
     box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
     margin-top: 20px;
     width: 100%;
-    max-width: 520px;
+    max-width: 620px;
     position: relative;
     top: 40px;
   }
@@ -366,7 +366,7 @@
   @media (max-width: 768px) {
     .hc-section {
       background: url("@/assets/images/home-contact-bg-movile.png");
-      padding-bottom: 400px;
+      padding-bottom: 500px;
       background-size: 100% auto;
       background-position: top center;
       background-color: #0F2F44;
@@ -414,7 +414,7 @@
 
   @media (max-width: 480px) {
     .hc-section{
-      padding-bottom: 600px;
+      padding-bottom: 700px;
     }
 
     /* Ajuste título "What Our Clients Say" más pequeño y arriba */

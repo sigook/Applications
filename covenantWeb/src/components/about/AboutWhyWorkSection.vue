@@ -115,11 +115,13 @@
 .why-work__item--right .why-work__content {
   text-align: right;
   align-items: flex-end;
+  margin-left: 150px; /* Desplazar texto hacia el centro */
 }
 
 .why-work__item--left .why-work__content {
   text-align: left;
   align-items: flex-start;
+  margin-right: 150px; /* Desplazar texto hacia el centro */
 }
 
 .why-work__heading {
@@ -339,10 +341,12 @@
   .why-work__item--right .why-work__content {
     text-align: left;
     align-items: flex-end;
+    margin-left: 0; /* Reset desktop margin */
   }
   .why-work__item--left .why-work__content {
     text-align: left;
     align-items: flex-start;
+    margin-right: 0; /* Reset desktop margin */
   }
 
   /* Ajustes de decoraciones específicas para que no se vean mal al reducir tamaño */

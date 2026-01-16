@@ -62,15 +62,15 @@
             <!-- Texto + bullets -->
             <div class="attendance-text">
               <h4 class="attendance-title">
-                Smart Attendance<br />
-                System
+                All-in-One Staffing &<br />Workforce Platform
               </h4>
 
               <ul class="attendance-list">
-                <li>Avoid paperwork and timesheets.</li>
-                <li>Track your workers shift easily.</li>
-                <li>Get instant timesheets upon supervisor’s approval.</li>
-                <li>Review, modify, and approve the content anywhere you are.</li>
+                <li>One platform. Total workforce visibility.</li>
+                <li>Real-time attendance and supervisor-approved shifts.</li>
+                <li>Instant, accurate timesheets—no manual processing.</li>
+                <li>Mobile-first for workers, web-based for clients.</li>
+                <li>From onboarding to invoicing and payroll, fully connected</li>
               </ul>
             </div>
           </div>
@@ -417,7 +417,7 @@
   .app-section {
     padding-bottom: 0;
     overflow-x: hidden;
-    padding-top: 200px; /* Aumentar separación superior en tablets/móviles */
+    padding-top: 150px; /* Aumentar separación superior en tablets/móviles */
   }
 
   .app-top__text {
@@ -460,8 +460,10 @@
   }
 
   .app-top__phone {
-    max-height: 440px;
-    padding: 0;
+    max-height: 500px;
+    padding-right: 0;
+    margin-right: 0;
+    margin-top: 10px;
   }
 
   /* BLOQUE INFERIOR: se ve como el rectángulo verde con curva y texto */
@@ -472,7 +474,8 @@
 
   .attendance-content {
     /* Aumentamos padding superior para bajar todo el bloque (ya que quitamos el margin del icono) */
-    padding: 300px 20px 20px;
+    padding: 400px 20px 20px;
+
   }
 
   /* REORGANIZACIÓN CON GRID: Título arriba, Icono + Lista abajo */

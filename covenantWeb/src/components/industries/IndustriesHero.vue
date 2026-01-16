@@ -142,6 +142,10 @@
     font-size: 1.5rem; /* Reducido para que quepa en una sola línea */
   }
   
+  .ind-hero__subtitle{
+    max-width: 260px;
+  }
+
   /* Ajuste de overlay para móvil: degradado con tinte verde para contraste y sólido abajo */
   .ind-hero__overlay {
     background: linear-gradient(

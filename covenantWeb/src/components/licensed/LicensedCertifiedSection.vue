@@ -100,12 +100,30 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router'
+  import { useRouter, useRoute } from 'vue-router'
+  import { nextTick } from 'vue'
 
   const router = useRouter()
+  const route = useRoute()
 
-  const goToContact = () => {
-    router.push({ name: 'contact' })
+  const goToContact = async () => {
+    // Si estamos en el home, scrolleamos directo
+    if (route.path === '/') {
+       const el = document.getElementById('contact-form')
+       if (el) {
+         el.scrollIntoView({ behavior: 'smooth' })
+       }
+    } else {
+      // Si estamos en otra página, vamos al home y el router o el onMounted del home deberían manejarlo
+      // pero mandamos el hash explícitamente y intentamos scrollear tras la navegación por si acaso.
+      await router.push({ path: '/', hash: '#contact-form' })
+      
+      // Intentar asegurar el scroll si la navegación no recarga la app completa (SPA navigation)
+      nextTick(() => {
+        const el = document.getElementById('contact-form')
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      })
+    }
   }
 </script>
 
@@ -314,6 +332,15 @@
 
 /* ========= RESPONSIVE ========= */
 
+/* Ajuste para Laptops/Tablets (1024px) */
+@media (max-width: 1200px) {
+  .licensed__hero-icon {
+    left: 120%; /* Traerlo dentro de la pantalla */
+    max-width: 280px; /* Reducir tamaño */
+    top: 25%;
+  }
+}
+
 @media (max-width: 900px) {
   .licensed__hero-content {
     max-width: 420px;
@@ -335,6 +362,11 @@
 
 @media (max-width: 600px) {
   .licensed__hero { min-height: 75vh; }
+
+  /* Ajuste de fondo para enfocar edificios (correr imagen a la izquierda) */
+  .licensed__hero-bg img {
+    object-position: 70% center;
+  }
 
   .licensed__hero-content {
     max-width: 360px;

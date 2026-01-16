@@ -24,7 +24,7 @@
       <!-- Texto inferior -->
       <p class="hero__subtitle">
         Behind Every Great Canadian<br />
-        Company is Great Talent
+        Company is a Great Talent
       </p>
 
       <!-- Dots del slider -->

@@ -6,9 +6,9 @@
         <h2 class="why-title">Why Choose Us?</h2>
 
         <p class="why-text">
-          We are a licensed Talent Management Agency committed
-          to delivering skilled professionals, tailored workforce
-          solutions, and peace of mind for every partnership.
+          We are a licensed Talent Management Agency dedicated to delivering skilled professionals, 
+          customized workforce solutions, 
+          and complete peace of mind for every partnership
         </p>
       </div>
 

@@ -5,10 +5,11 @@
         v-for="industry in industries"
         :key="industry.id"
         class="ind-card"
-        :class="{ 'ind-card--flipped-active': activeId === industry.id }"
+        :class="{ 'ind-card--flipped-active': borderId === industry.id }"
       >
         <div
           class="ind-card__inner"
+          :ref="(el) => setCardRef(el, industry.id)"
           :class="{ 'ind-card__inner--flipped': activeId === industry.id }"
         >
           <!-- CARA FRONTAL -->
@@ -63,6 +64,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
+  import gsap from 'gsap'
 
   // --- ICONOS DE LAS CARDS ---
   import iconAi from '@/assets/images/industries-cards-icons/ai-it.png'
@@ -178,9 +180,55 @@
 
   // id de la card actualmente abierta
   const activeId = ref<number | null>(null)
+  // id de la card que debe mostrar el borde (solo cuando está quieta y abierta)
+  const borderId = ref<number | null>(null)
+  
+  // Guardamos refs de los elementos DOM
+  const cardRefs = new Map<number, HTMLElement>()
+  const setCardRef = (el: any, id: number) => {
+    if (el) cardRefs.set(id, el)
+  }
 
   const toggleCard = (id: number): void => {
-    activeId.value = activeId.value === id ? null : id
+    // Si cliqueamos la misma que ya está abierta -> cerrar
+    if (activeId.value === id) {
+      animateCard(id, false)
+      activeId.value = null
+    } else {
+      // Si hay otra abierta, cerrarla primero
+      if (activeId.value !== null) {
+        animateCard(activeId.value, false)
+      }
+      // Abrir la nueva
+      activeId.value = id
+      animateCard(id, true)
+    }
+  }
+
+  const animateCard = (id: number, open: boolean) => {
+    const el = cardRefs.get(id)
+    if (!el) return
+
+    gsap.to(el, {
+      rotateY: open ? 180 : 0,
+      duration: 1.75, // Animación lenta como se pidió
+      ease: 'power2.inOut',
+      onStart: () => {
+        // Al empezar, si cerramos, quitamos el borde inmediatamente
+        // Si abrimos, esperamos al final.
+        if (!open) {
+          if (borderId.value === id) borderId.value = null
+        }
+        // Aseguramos que el navegador sepa que estamos en 3D
+        gsap.set(el, { transformStyle: 'preserve-3d' })
+      },
+      onComplete: () => {
+        // Al terminar, si abrimos, mostramos el borde
+        if (open) {
+          borderId.value = id
+        }
+      }
+    })
   }
 </script>
 
@@ -193,7 +241,7 @@
 .ind-grid__inner {
   max-width: 1600px;              /* más ancho */
   margin: 0 auto;
-  padding: 0 30px;                /* menos margen lateral */
+  padding: 0 40px;                /* menos margen lateral */
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 30px;
@@ -203,8 +251,8 @@
 
 .ind-card {
   position: relative;
-  height: 550px;
-  perspective: 1200px; /* necesario para el efecto 3D */
+  height: 580px;
+  perspective: 1500px; /* Restaurado 3D */
   overflow: hidden;
 
   /* tu forma tipo flecha */
@@ -218,7 +266,7 @@
   );
 
   border-radius: 15px;
-  transition: filter 0.3s ease; /* Transición suave para el borde */
+  transition: filter 0.3s ease;
 }
 
 /* Borde blanco "sólido" usando filtros cuando está girada */
@@ -237,29 +285,29 @@
   position: relative;
   width: 100%;
   height: 100%;
-  -webkit-transform-style: preserve-3d; /* Safari fix */
+  background-color: #0F2F44; /* Fondo oscuro para evitar líneas blancas al girar */
+  /* Importante para 3D */
   transform-style: preserve-3d;
-  transition: transform 1.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-  will-change: transform; /* Performance hint */
+  /* GSAP maneja la transición de transform ahora */
 }
 
-.ind-card__inner--flipped {
-  transform: rotateY(180deg);
-}
+/* .ind-card__inner--flipped se usa para selectores descendientes */
 
 /* caras */
 .ind-card__face {
   position: absolute;
   inset: 0;
-  -webkit-backface-visibility: hidden; /* Safari imperative */
+  /* Importante: oculta la cara trasera al girar */
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0); /* Anti-aliasing / rendering fix */
+  /* El borde jagged puede arreglarse con esto */
+  transform: translateZ(1px); 
 }
 
 /* ======= FRONT ======= */
 
 .ind-card__face--front {
-  background: #fff;
+  background: #0F2F44; /* Fondo oscuro para evitar bordes blancos */
   z-index: 2; /* Logically on top initially */
 }
 
@@ -337,8 +385,12 @@
 
 /* ======= BACK ======= */
 
+/* ======= BACK (Slide Up Animation) ======= */
+
+/* ======= BACK (3D Flip) ======= */
+
 .ind-card__face--back {
-  /* Gradiente más pronunciado y visible */
+  /* Gradiente sólido */
   background: linear-gradient(
     135deg, 
     #334e60 0%, 
@@ -346,15 +398,15 @@
     #0f1f2a 100%
   );
   color: #ffffff;
-  /* Rotate 180deg AND push it slightly forward in Z to separate surfaces */
-  transform: rotateY(180deg) translateZ(1px);
+  
+  /* Posición inicial para 3D: Rotada 180deg */
+  transform: rotateY(180deg);
   position: absolute;
   inset: 0;
   height: 100%;
-
-  /* Transición de opacidad */
-  opacity: 0;
-  transition: opacity 0.6s ease;
+  z-index: 5;
+  
+  /* GSAP maneja la animación */
 }
 
 /* contenido del reverso */
@@ -411,16 +463,17 @@
 }
 
 .ind-card__back-title {
-  font-size: 2.3rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-top: 20px;     /* Separación del icono */
+  margin-bottom: 10px;  /* Separación del párrafo */
   transition-delay: 0.1s; /* Se lanza después de que empieza el giro */
 }
 
 .ind-card__back-text {
-  font-size: 0.9rem;
-  line-height: 1.8;
-  max-width: 260px;
+  font-size: 1.25rem; /* Más grande */
+  line-height: 1.5;
+  max-width: 85%;    /* Un poco más ancho relativo */
   opacity: 0; /* Base state hidden */
   transition-delay: 0.2s;
 }
@@ -439,10 +492,9 @@
 }
 
 /* cuando está girada, mostramos la cara trasera */
-.ind-card__inner--flipped .ind-card__face--back {
-  opacity: 1;
-  transition-delay: 0.2s; 
-}
+/* cuando está activa, deslizamos la cara trasera */
+/* cuando está activa, GSAP rota el inner, no necesitamos CSS transform aquí */
+/* .ind-card__inner--flipped .ind-card__face--back {} */
 
 
 /* Responsive */
