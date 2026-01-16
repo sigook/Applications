@@ -102,10 +102,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       debugPrint('✅ [LOGOUT] EndSession completed');
-      if (response != null) {
-        debugPrint('   Response state: ${response.state}');
-      }
-    } on PlatformException catch (e) {
+      debugPrint('   Response state: ${response.state}');
+        } on PlatformException catch (e) {
       debugPrint('⚠️ [LOGOUT] PlatformException during endSession: ${e.code}');
       debugPrint('   Message: ${e.message}');
       debugPrint('   Details: ${e.details}');
