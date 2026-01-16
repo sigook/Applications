@@ -337,7 +337,7 @@ stages:
               ls -la build/app/outputs/bundle/stagingRelease/
             displayName: 'Build Android AAB'
             env:
-              KEYSTORE_FILE: app/upload-keystore.jks  # Relative from android/ directory (Gradle working dir)
+              KEYSTORE_FILE: upload-keystore.jks  # Just filename, file is in android/app/ dir
               KEYSTORE_PASSWORD: $(KEY_PASSWORD)
               KEY_PASSWORD: $(KEY_PASSWORD)
               KEY_ALIAS: sigook
