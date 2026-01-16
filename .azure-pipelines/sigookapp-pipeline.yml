@@ -245,22 +245,36 @@ stages:
             displayName: 'Accept Android SDK Licenses'
             continueOnError: true
 
-          # Configure Android NDK
+          # Install and Configure Android NDK
           - script: |
-              echo "=== Configuring Android NDK ==="
-              # Set ANDROID_NDK_HOME to the latest NDK version
-              export LATEST_NDK=$(ls -d $ANDROID_HOME/ndk/* | sort -V | tail -1)
-              echo "Latest NDK: $LATEST_NDK"
-              echo "##vso[task.setvariable variable=ANDROID_NDK_HOME]$LATEST_NDK"
+              echo "=== Installing Android NDK ==="
+              # Install specific NDK version that matches Flutter's requirements
+              echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;28.2.13676358" || true
 
-              # Verify NDK structure
-              if [ -d "$LATEST_NDK/toolchains/llvm/prebuilt" ]; then
-                echo "✅ NDK toolchains found"
-                ls -la "$LATEST_NDK/toolchains/llvm/prebuilt/"
+              # Wait for installation to complete
+              sleep 5
+
+              # Set ANDROID_NDK_HOME to the installed NDK
+              NDK_PATH="$ANDROID_HOME/ndk/28.2.13676358"
+              echo "NDK Path: $NDK_PATH"
+
+              if [ -d "$NDK_PATH" ]; then
+                echo "✅ NDK installed successfully"
+                echo "##vso[task.setvariable variable=ANDROID_NDK_HOME]$NDK_PATH"
+                ls -la "$NDK_PATH/"
+
+                # Verify toolchains
+                if [ -d "$NDK_PATH/toolchains/llvm/prebuilt" ]; then
+                  echo "✅ NDK toolchains found"
+                else
+                  echo "⚠️ NDK toolchains not found at expected location"
+                fi
               else
-                echo "⚠️ NDK toolchains not found at expected location"
+                echo "⚠️ NDK installation may have failed"
+                echo "Checking available NDKs:"
+                ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
               fi
-            displayName: 'Configure Android NDK'
+            displayName: 'Install and Configure Android NDK'
 
           # Install fastlane
           - script: |
@@ -290,12 +304,19 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building Android AAB..."
-              echo "ANDROID_NDK_HOME: $ANDROID_NDK_HOME"
+              echo "ANDROID_NDK_HOME: $(ANDROID_NDK_HOME)"
+              echo "ANDROID_HOME: $ANDROID_HOME"
 
-              # Ensure NDK is set
-              if [ -z "$ANDROID_NDK_HOME" ]; then
-                export ANDROID_NDK_HOME=$(ls -d $ANDROID_HOME/ndk/* | sort -V | tail -1)
-                echo "NDK set to: $ANDROID_NDK_HOME"
+              # Export NDK path for Flutter/Gradle
+              export ANDROID_NDK_HOME="$(ANDROID_NDK_HOME)"
+
+              # Verify NDK is available
+              if [ -d "$ANDROID_NDK_HOME" ]; then
+                echo "✅ Using NDK at: $ANDROID_NDK_HOME"
+              else
+                echo "⚠️ WARNING: NDK not found at $ANDROID_NDK_HOME"
+                echo "Available NDKs:"
+                ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
               fi
 
               flutter build appbundle \
