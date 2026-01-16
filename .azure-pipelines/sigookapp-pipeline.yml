@@ -245,6 +245,23 @@ stages:
             displayName: 'Accept Android SDK Licenses'
             continueOnError: true
 
+          # Configure Android NDK
+          - script: |
+              echo "=== Configuring Android NDK ==="
+              # Set ANDROID_NDK_HOME to the latest NDK version
+              export LATEST_NDK=$(ls -d $ANDROID_HOME/ndk/* | sort -V | tail -1)
+              echo "Latest NDK: $LATEST_NDK"
+              echo "##vso[task.setvariable variable=ANDROID_NDK_HOME]$LATEST_NDK"
+
+              # Verify NDK structure
+              if [ -d "$LATEST_NDK/toolchains/llvm/prebuilt" ]; then
+                echo "✅ NDK toolchains found"
+                ls -la "$LATEST_NDK/toolchains/llvm/prebuilt/"
+              else
+                echo "⚠️ NDK toolchains not found at expected location"
+              fi
+            displayName: 'Configure Android NDK'
+
           # Install fastlane
           - script: |
               cd $(workingDirectory)
@@ -273,6 +290,13 @@ stages:
           - script: |
               cd $(workingDirectory)
               echo "Building Android AAB..."
+              echo "ANDROID_NDK_HOME: $ANDROID_NDK_HOME"
+
+              # Ensure NDK is set
+              if [ -z "$ANDROID_NDK_HOME" ]; then
+                export ANDROID_NDK_HOME=$(ls -d $ANDROID_HOME/ndk/* | sort -V | tail -1)
+                echo "NDK set to: $ANDROID_NDK_HOME"
+              fi
 
               flutter build appbundle \
                 --flavor staging \
