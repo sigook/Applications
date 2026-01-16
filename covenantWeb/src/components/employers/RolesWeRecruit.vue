@@ -130,7 +130,7 @@ const roles: Role[] = rolesData;
 .role-card--left {
   align-self: flex-start;
   border-radius: 0 150px 150px 0;
-  box-shadow: 0 50px 0 #010914;
+  box-shadow: 0 50px 0 #162731;
 }
 
 .role-card--right {
@@ -314,6 +314,12 @@ const roles: Role[] = rolesData;
 
 @media (max-width: 768px) {
 
+  .roles-section__title {
+    text-align: left;
+    margin-bottom: 40px;
+    padding-left: 40px; /* Separación del borde */
+  }
+
   .role-card {
     width: 100%;
     height: 200px;
@@ -327,7 +333,7 @@ const roles: Role[] = rolesData;
   }
 
   .role-card--left {
-    box-shadow: 0 50px 0 #010914;
+    box-shadow: 0 50px 0 #162731;
   }
 
   .role-card--right {

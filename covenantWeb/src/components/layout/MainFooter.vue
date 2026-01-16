@@ -2,7 +2,7 @@
 <template>
   <footer class="footer">
     <!-- PANEL GRIS CURVO -->
-    <div class="footer__panel">
+    <div class="footer__panel" :class="{ 'footer__panel--blue': isBlueFooter }">
       <div class="footer__grid">
         <!-- COLUMNA CONTACTO -->
         <div class="footer__col footer__col--contact">
@@ -85,7 +85,16 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+
+const route = useRoute()
+
+// Check if current page should have blue footer
+const isBlueFooter = computed(() => {
+  const blueRoutes = ['talents', 'open_positions']
+  return blueRoutes.includes(route.name as string)
+})
 </script>
 
 <style scoped>
@@ -111,6 +120,11 @@ import { RouterLink } from 'vue-router'
   margin-left: -50vw;
   margin-right: -50vw;
   width: 100vw;
+  transition: background-color 0.3s ease;
+}
+
+.footer__panel--blue {
+  background: #0F2F44 !important;
 }
 
 /* GRID PRINCIPAL */
@@ -246,7 +260,7 @@ import { RouterLink } from 'vue-router'
 
   .footer__col--contact {
     margin-left: 0;
-    padding-left: 0; /* O un pequeño padding si se requiere, pero el panel ya tiene padding */
+    padding-left: 15px; /* O un pequeño padding si se requiere, pero el panel ya tiene padding */
     text-align: left;
     align-items: flex-start;
   }

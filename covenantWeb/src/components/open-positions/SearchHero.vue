@@ -126,6 +126,8 @@ const handleSearch = () => {
 .hero-text {
   max-width: 500px;
   color: white;
+  position: relative;
+  z-index: 5;
 }
 
 .hero-title {
@@ -287,14 +289,18 @@ const handleSearch = () => {
 
 @media (max-width: 600px) {
   .hero-graphic {
-    width: 320px;
-    height: 320px;
+    width: 130vw;
+    height: 130vw;
+    max-width: none;
+    margin-top: -40vw; /* Subir el círculo detrás del texto */
+    z-index: 0;
   }
 
   /* Ajuste de la tarjeta en móvil */
   .form-card {
     width: 280px;
     padding: 20px;
+    margin-top: 40vw; /* Bajar el formulario para que se salga del círculo */
   }
 
   .hero-title {

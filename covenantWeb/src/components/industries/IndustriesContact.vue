@@ -36,10 +36,12 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 
 <style scoped>
 .ind-contact {
-  background: #e6e6e8; /* gris claro como en la captura */
+  background: #0F2F44; /* gris claro como en la captura */
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  padding-top: 150px;
+  padding-bottom: 50px;
 }
 
 /* bloque azul oscuro donde vive el círculo verde */
@@ -93,7 +95,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 }
 
 .ind-contact__title {
-  font-size: 1.9rem;
+  font-size: 2.3rem;
   font-weight: 700;
   color: black;
   margin-bottom: 4px;

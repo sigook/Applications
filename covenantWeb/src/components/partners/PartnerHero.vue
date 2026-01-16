@@ -131,7 +131,7 @@
 .partner-hero__dot--navy {
   width: 60px;
   height: 60px;
-  background: #05162d;
+  background: #102f44;
   bottom: 0;
   left: 0; /* Ubicación simple en móvil */
 }

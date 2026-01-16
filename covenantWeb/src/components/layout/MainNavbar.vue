@@ -8,7 +8,11 @@
   >
     <div class="navbar__inner">
 
-      <RouterLink to="/" class="navbar__logo-link">
+      <RouterLink
+        to="/"
+        class="navbar__logo-link"
+        :class="{ 'desktop-hidden': isHomePage }"
+      >
         <img
           :src="currentLogo"
           alt="Covenant Group"
@@ -17,7 +21,12 @@
       </RouterLink>
 
       <nav class="navbar__menu">
-        <RouterLink to="/" class="navbar__link" active-class="navbar__link--active">HOME</RouterLink>
+        <RouterLink
+          to="/"
+          class="navbar__link"
+          active-class="navbar__link--active"
+          :class="{ 'desktop-hidden': !isHomePage }"
+        >HOME</RouterLink>
         <RouterLink to="/open-positions" class="navbar__link" active-class="navbar__link--active">OPEN POSITIONS</RouterLink>
         <RouterLink to="/industries" class="navbar__link" active-class="navbar__link--active">INDUSTRIES</RouterLink>
         <RouterLink to="/about" class="navbar__link" active-class="navbar__link--active">ABOUT US</RouterLink>
@@ -70,6 +79,8 @@
 
   // Detectar si estamos en la página blanca
   const isLightPage = computed(() => route.path === '/become-partner')
+  // Detectar si estamos en el Home
+  const isHomePage = computed(() => route.path === '/')
 
   // Logo cambia según la página
   const currentLogo = computed(() => {
@@ -294,6 +305,24 @@
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
+/* ================== UTILIDADES Y LAYOUT DESKTOP ================== */
+@media (min-width: 991px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+
+  /* Centrar todo el contenido en desktop */
+  .navbar__inner {
+    justify-content: center;
+    gap: 50px; /* Separación entre Logo y Menú */
+  }
+
+  /* Reducir gap entre links (override del clamp base) */
+  .navbar__menu {
+    gap: 50px; 
+  }
+}
+
 /* ================== RESPONSIVE ================== */
 
 
@@ -322,7 +351,7 @@
 /* Ajuste para llenar espacio a partir de 1281px (evita romper layout en 1024-1280px) */
 @media (min-width: 1281px) {
   .navbar__menu {
-    gap: 5vw; 
+    gap: 50px; 
   }
 }
 
