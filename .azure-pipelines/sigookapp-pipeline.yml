@@ -508,6 +508,7 @@ stages:
                 -t lib/main_staging.dart \
                 --release \
                 --no-codesign \
+                --build-number=$(Build.BuildId) \
                 --dart-define=ENVIRONMENT=staging \
                 "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
                 "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
@@ -521,10 +522,10 @@ stages:
 
           # Pin Xcode version to ensure consistent build environment
           - script: |
-              echo "Selecting Xcode 15.4..."
-              sudo xcode-select -s /Applications/Xcode_15.4.app
+              echo "Selecting Xcode 16.1..."
+              sudo xcode-select -s /Applications/Xcode_16.1.app
               xcodebuild -version
-              echo "✅ Xcode 15.4 selected"
+              echo "✅ Xcode 16.1 selected"
             displayName: 'Select Xcode Version'
 
           # Archive and sign with fastlane (fastlane will handle signing configuration)
