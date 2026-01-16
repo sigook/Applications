@@ -426,9 +426,9 @@ stages:
             displayName: 'Cache CocoaPods'
             continueOnError: true
             inputs:
-              key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock | $(flutterVersion)'
+              key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(flutterVersion)'
               restoreKeys: |
-                pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock
+                pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
                 pods | "$(Agent.OS)"
               path: $(workingDirectory)/ios/Pods
 
@@ -437,9 +437,9 @@ stages:
             displayName: 'Cache Xcode DerivedData'
             continueOnError: true
             inputs:
-              key: 'deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock | $(Build.SourceVersion)'
+              key: 'deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(Build.SourceVersion)'
               restoreKeys: |
-                deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock
+                deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
                 deriveddata | "$(Agent.OS)"
               path: ~/Library/Developer/Xcode/DerivedData
 
