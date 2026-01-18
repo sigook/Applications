@@ -10,7 +10,7 @@
 		<Folder Include="wwwroot\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Covenant.Common" Version="2025.10.20.2" />
+		<PackageReference Include="Covenant.Common" Version="2026.1.18.1" />
 		<PackageReference Include="IdentityServer4" Version="4.1.2" />
 		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.2" />
 		<PackageReference Include="IdentityServer4.EntityFramework" Version="4.1.2" />
