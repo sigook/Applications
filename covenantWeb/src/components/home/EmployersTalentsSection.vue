@@ -5,7 +5,7 @@
       <div class="et-employers-wrapper-2">
         <div id="for-employers" class="et-employers" data-aos="fade-up">
           <div class="et-employers__left">
-            <span class="et-employers__arrow">➜</span>
+            <RouterLink to="/employers" class="et-employers__arrow">➜</RouterLink>
           </div>
 
           <div class="et-employers__right">
@@ -49,7 +49,7 @@
             </p>
           </div>
 
-          <span class="et-talents-arrow">➜</span>
+          <RouterLink to="/talents" class="et-talents-arrow">➜</RouterLink>
         </div>
       </div>
     </section>
@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 </script>
 
 <style scoped>
@@ -118,7 +119,7 @@
     height: 16rem;
     background: #59dc76;
     border-radius: 0 150px 0 0;
-    padding: 40px 0 54px; /* Sin padding lateral para usar todo el ancho */
+    padding: 95px 0 45px; /* Ajuste para bajar el contenido y centrarlo mejor */
 
     /* GRID DE 2 COLUMNAS PARA CENTRADO PERFECTO */
     display: grid;
@@ -137,6 +138,10 @@
   .et-employers__arrow {
     font-size: 4rem;
     font-weight: 400;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
   }
 
   /* Columna Derecha (Texto): Se alinea a la izquierda (al centro de la pantalla) */
@@ -271,11 +276,22 @@
     font-size: 4rem;
     font-weight: 400;
     color: #59dc76;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
   }
 
   /* ===================== RESPONSIVE ===================== */
 
   /* Tablets / pantallas medianas */
+  @media (max-width: 1200px) {
+    .et-employers {
+      height: auto; /* Permitir que crezca */
+      min-height: 18rem; /* Asegurar altura mínima */
+      padding: 60px 0 50px; /* Ajustar padding */
+    }
+  }
+
   @media (max-width: 960px) {
     .et-employers {
       height: auto;
@@ -311,6 +327,7 @@
     /* Fondo general */
     .et-section {
       background: #0F2F44;
+      background: linear-gradient(180deg,rgba(15, 47, 68, 1) 33%, rgba(89, 220, 118, 1) 34%, rgba(89, 220, 118, 1) 66%, rgba(249, 249, 249, 1) 66%);
     }
 
     /* =================================
@@ -401,7 +418,8 @@
       margin-top: 0;
       padding: 0;
       background: linear-gradient(180deg, #59dc76 40%, #ffffff 40%);
-      border-bottom-right-radius: 0;
+      border-bottom-right-radius: 150px;
+      border-top-left-radius: 130px;
     }
 
     .et-talents-banner {

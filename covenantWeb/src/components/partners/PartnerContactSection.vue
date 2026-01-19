@@ -1,5 +1,5 @@
 <template>
-  <section class="partner-contact" data-aos="fade-up">
+  <section id="partner-contact-section" class="partner-contact" data-aos="fade-up">
     <div class="partner-contact__wrapper">
       <!-- Círculos de fondo -->
       <div

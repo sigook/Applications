@@ -50,7 +50,7 @@
             {{ currentContent.introText }}
           </p>
 
-          <button class="btn-contact-outline">
+          <button class="btn-contact-outline" @click="router.push({ name: 'open_positions' })">
             OPEN POSITIONS
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -118,14 +118,14 @@
                       <p>{{ currentContent.card2Desc }}</p>
                     </div>
                     <div class="col-title-btn">
-                      <h3>{{ currentContent.card2Title }}</h3>
+                      <h3 v-html="currentContent.card2Title"></h3>
                       <button class="btn-pill white" @click="showBenefitsRight = true">Benefits &gt;&gt;</button>
                     </div>
                   </div>
 
                   <div v-else key="back" class="card-content benefits-view right-aligned">
                     <div class="benefits-header right-header">
-                      <h3>{{ currentContent.card2Title }}</h3>
+                      <h3 v-html="currentContent.card2Title"></h3>
                       <button class="btn-back-circle" @click="showBenefitsRight = false">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
                       </button>
@@ -154,12 +154,19 @@
       </div>
     </div>
 
+    <svg width="0" height="0" style="position: absolute;">
+      <defs>
+        <clipPath id="rounded-hero-clip-talents" clipPathUnits="objectBoundingBox">
+          <path d="M 0 0 L 1 0 L 1 1 L 0.55 0.76 Q 0.5 0.72 0.45 0.76 L 0 1 Z" />
+        </clipPath>
+      </defs>
+    </svg>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import imgProfessional from '@/assets/images/hero-talents-professional.png'
 import imgIndustrial from '@/assets/images/hero-talents-industrial.png'
 import imgDecoration from '@/assets/images/lines-decoration.png'
@@ -183,6 +190,7 @@ interface TalentContent {
 }
 
 const route = useRoute()
+const router = useRouter()
 const activeTab = ref<'professional' | 'industrial'>('professional');
 
 const checkQueryParam = () => {
@@ -236,8 +244,18 @@ const getCardIcon = (fileName: string) => {
   .main-section { width: 100%; position: relative; background-color: #ffffff; }
   .container { max-width: 100%; margin: 0; padding: 0; }
 
-  .hero-top { position: relative; width: 100%; height: 85vh; min-height: 650px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; z-index: 2; padding-bottom: 80px; }
-  .hero-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); transform: translateZ(0); -webkit-mask-image: -webkit-radial-gradient(white, black); border-radius: 0; }
+  .hero-top { position: relative; width: 100%; height: 90vh; min-height: 1000px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; z-index: 2; padding-bottom: 80px; }
+  .hero-bg { 
+  position: absolute; 
+  inset: 0; 
+  z-index: -1; 
+  overflow: hidden; 
+  /* Clip-Path SVG for rounded point (Talents) */
+  clip-path: url(#rounded-hero-clip-talents); 
+  transform: translateZ(0); 
+  -webkit-mask-image: -webkit-radial-gradient(white, black); 
+  border-radius: 0;
+}
   .hero-img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 0.3s ease-in-out; will-change: opacity; }
   .hero-img-layer.img-active { opacity: 1; }
   .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(168, 189, 67, 0.4) 0%, #0F2F44 95%); z-index: 1; pointer-events: none; }
@@ -355,6 +373,7 @@ const getCardIcon = (fileName: string) => {
     background-color: #0F2F44;
     border-radius: 30px 0 0 30px;
     padding: 0;
+    transform: translateY(120px); /* Subir icono verde en desktop */
   }
 
   .right-icon img {
@@ -376,6 +395,7 @@ const getCardIcon = (fileName: string) => {
     position: relative;
     box-shadow: none;
     z-index: 5;
+    min-height: 500px; /* Estabilizar altura para prevenir saltos */
   }
 
   /* --- FILA SUPERIOR (VERDE) --- */
@@ -403,7 +423,9 @@ const getCardIcon = (fileName: string) => {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Alineación Superior para evitar saltos */
+    position: relative;
+    z-index: 2;
   }
 
   /* IMPORTANTE: Evita que el botón se estire en la tarjeta verde */
@@ -426,6 +448,7 @@ const getCardIcon = (fileName: string) => {
 
   .benefits-header.right-header {
     justify-content: flex-end; /* Alinear a la derecha en tarjeta azul */
+    padding-top: 10px; /* Corrección de alineación vertical igual que en Employers */
   }
 
   /* Botón círculo de regreso */
@@ -526,6 +549,22 @@ const getCardIcon = (fileName: string) => {
     padding-right: 200px;
     padding-top: 40px; /* Subirlos un poco */
     z-index: 1000;
+    padding-bottom: 200px;
+    position: relative; /* Ensure proper positioning for pseudo-element */
+    overflow: hidden;   /* Clip the gradient to border-radius */
+  }
+
+  /* Overlay tenue verde en la parte inferior */
+  .card-blue::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, rgba(92, 224, 125, 0.15), transparent);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .left-icon {
@@ -639,6 +678,11 @@ const getCardIcon = (fileName: string) => {
 @media (max-width: 1200px) {
   .puzzle-card {
     padding: 60px 50px; /* Reducir padding lateral */
+    min-height: 430px; /* Altura aumentada para evitar saltos en 1024px */
+  }
+
+  .card-blue{
+    padding-bottom: 100px;
   }
 
   .split-layout {
@@ -663,7 +707,7 @@ const getCardIcon = (fileName: string) => {
   }
 
   .right-icon img {
-    padding: 120px; /* Reducir el padding proporcionalmente */
+    padding: 150px 120px; /* Reducir el padding proporcionalmente */
   }
 }
 
@@ -716,11 +760,11 @@ const getCardIcon = (fileName: string) => {
 
   /* Ajuste del degradado para móvil - Más porcentaje de blanco */
   .dynamic-content-wrapper.bg-professional {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 35%, rgba(15, 47, 68, 1) 35%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 33%, rgba(15, 47, 68, 1) 33%);
   }
 
   .dynamic-content-wrapper.bg-industrial {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 27%, rgba(15, 47, 68, 1) 27%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 25%, rgba(15, 47, 68, 1) 25%);
   }
 
   /* 2. ICONOS EN MÓVIL */
@@ -744,7 +788,6 @@ const getCardIcon = (fileName: string) => {
     width: 100px;
     height: 100px;
     padding: 25px;
-    border-radius: 50%;
   }
 
   /* 3. TARJETAS */
@@ -775,17 +818,19 @@ const getCardIcon = (fileName: string) => {
   .left-icon img {
     background-color: #5ce07d; /* Verde */
     position: relative;
-    top: 60px;
+    top: 80px; /* Movido hacia arriba (antes 60px) */
     padding: 0;
     margin-bottom: 5px;
+    transform: none; /* Reset transform desktop */
   }
 
   .right-icon img {
     background-color: #0F2F44; /* Azul */
     padding: 0;
     position: relative;
-    top: 60px;
+    top: 80px; /* Movido hacia arriba (antes 60px) */
     margin-bottom: 5px;
+    transform: none; /* Reset transform desktop */
   }
 
   /* 3. TARJETAS */
@@ -804,9 +849,12 @@ const getCardIcon = (fileName: string) => {
   }
 
   .card-blue {
-    margin-right: 0; /* Quitamos el margen negativo lateral */
-    padding-right: 30px; /* Quitamos el padding extra */
     text-align: center;
+  }
+
+  /* Quitar overlay verde en móvil */
+  .card-blue::after {
+    display: none;
   }
 
   /* Centrar textos y botones */
@@ -826,7 +874,7 @@ const getCardIcon = (fileName: string) => {
 
   .options-title {
     text-align: center;
-    margin-left: 0;
+    margin-left: 30px; /* Separar del borde izquierdo */
     font-size: 1.8rem;
     margin-bottom: 40px;
   }
@@ -846,6 +894,7 @@ const getCardIcon = (fileName: string) => {
   
   .col-title-btn {
     align-items: center !important;
+    gap: 10px !important; /* Reducir separación titulo-boton */
     flex: auto;
     width: 100%;
   }

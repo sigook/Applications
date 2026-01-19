@@ -26,7 +26,7 @@
 .our-numbers {
   width: 100%;
   background: #ffffff;
-  padding: 20px 0;
+  padding: 40px 0;
   box-sizing: border-box;
 }
 

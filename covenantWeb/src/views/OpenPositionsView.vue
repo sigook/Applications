@@ -30,6 +30,7 @@ const handleSearch = (filters: any) => {
 <style scoped>
 .open-positions-page {
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background: #F9F9F9;
+  background: linear-gradient(180deg,rgba(249, 249, 249, 1) 50%, rgba(15, 47, 68, 1) 50%);
 }
 </style>

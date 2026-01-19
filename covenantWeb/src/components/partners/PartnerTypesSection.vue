@@ -67,7 +67,7 @@
       </div>
 
       <div class="partner-types__cta-wrapper">
-        <button class="partner-types__cta">Start Here</button>
+        <button class="partner-types__cta" @click="scrollToContact">Start Here</button>
       </div>
     </div>
 
@@ -119,7 +119,7 @@
       </div>
 
       <div class="partner-types__cta-wrapper">
-        <button class="partner-types__cta">Start Here</button>
+        <button class="partner-types__cta" @click="scrollToContact">Start Here</button>
       </div>
     </div>
 
@@ -131,6 +131,13 @@
   import { ref } from 'vue'
 
   const activeTab = ref<'business' | 'recruiter'>('business')
+
+  const scrollToContact = () => {
+    const el = document.getElementById('partner-contact-section')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
   </script>
 
 <style scoped>
@@ -188,7 +195,7 @@
   padding: 30px 0 0 0;
   border-radius: 0 65px 65px 0;
   background: #ffffff;
-  height: auto;
+  min-height: 850px; /* Altura fija mínima para evitar saltos */
 }
 
 .partner-types__title {
@@ -381,6 +388,7 @@
   color: #4c5664;
   max-width: 380px;
   margin: 0 auto;
+  min-height: 160px; /* Altura mínima fija para evitar saltos */
 }
 
 .partner-types__cta-wrapper {

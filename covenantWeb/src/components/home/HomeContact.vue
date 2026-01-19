@@ -1,5 +1,11 @@
 <template>
   <section class="hc-section" id="contact" data-aos="fade-up">
+    <!-- BACKGROUND LAYERS FOR SMOOTH TRANSITION -->
+    <div class="hc-bg-container">
+      <div class="hc-bg-layer layer-1" :class="{ 'bg-active': currentIndex === 0 }"></div>
+      <div class="hc-bg-layer layer-2" :class="{ 'bg-active': currentIndex === 1 }"></div>
+    </div>
+
     <div class="hc-decor-quote">”</div>
 
     <div class="hc-container">
@@ -71,11 +77,6 @@
 
   const testimonials = ref<Testimonial[]>([
     {
-      text: 'Thank you so much for your assistance. Wouldn’t have done it without you!',
-      author: 'Business Owner, Flower Boutique',
-      role: 'Ontario, Canada'
-    },
-    {
       text: 'I recommend Covenant Group Ltd. as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding.',
       author: 'HR Manager, manufacturer',
       role: 'Mississauga, Ontario'
@@ -119,20 +120,59 @@
     width: 100%;
     padding: 80px 0 400px;
     color: #ffffff;
-    overflow: hidden;
+    background-color: #0F2F44; /* Base color */
+    border-radius: 0 200px 0 0;
+  }
 
-    background:
+  /* BACKGROUND CONTAINER & LAYERS */
+  .hc-bg-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    border-radius: 0 200px 0 0; 
+    overflow: hidden; 
+  }
+
+  .hc-bg-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center top;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+  }
+
+  .hc-bg-layer.bg-active {
+    opacity: 1;
+  }
+
+  /* Layer 1 Styles (Desktop) */
+  .layer-1 {
+    background-image:
       linear-gradient(
         to bottom,
-        rgba(4, 28, 44, 0.45) 0%, /* Un poco más oscuro para leer las letras blancas */
+        rgba(4, 28, 44, 0.45) 0%,
         #0F2F44 60%,
         #0F2F44 100%
       ),
       url("@/assets/images/home-contact-bg.png");
+  }
 
-    background-position: center top; /* Enfoca las caras */
-    background-size: 100% auto;
-    background-repeat: no-repeat;
+  /* Layer 2 Styles (Desktop) */
+  .layer-2 {
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(4, 28, 44, 0.45) 0%,
+        #0F2F44 60%,
+        #0F2F44 100%
+      ),
+      url("@/assets/images/home-contact-bg-2.png");
   }
 
   /* Contenedor general para alinear título y contenido */
@@ -141,6 +181,7 @@
     margin: 0 auto;
     padding: 0 40px;
     position: relative;
+    z-index: 2; /* Content above background */
   }
 
   /* ================== 3. COMILLAS GIGANTES ================== */
@@ -149,13 +190,13 @@
     top: -20px; 
     right: 80px; 
     font-family: serif; 
-    font-size: 10rem; /* Más pequeñas */
+    font-size: 10rem;
     line-height: 1;
     color: #000000; 
     opacity: 1;
     pointer-events: none;
-    z-index: 1;
-    font-weight: bold; /* Para que se vean gorditas */
+    z-index: 1000;
+    font-weight: bold;
   }
 
   /* ================== 1. TÍTULO IZQUIERDA ================== */
@@ -177,7 +218,7 @@
   .hc-title-line {
     width: 60px;
     height: 4px;
-    background-color: rgba(255, 255, 255, 0.5); /* La línea pequeña debajo */
+    background-color: rgba(255, 255, 255, 0.5);
     border-radius: 2px;
   }
 
@@ -186,7 +227,7 @@
   .hc-hero {
     width: 100%;
     display: flex;
-    justify-content: center; /* Mantiene la tarjeta centrada */
+    justify-content: center;
     margin-bottom: 80px;
     position: relative;
     z-index: 2;
@@ -194,7 +235,7 @@
 
   .hc-hero__content {
     text-align: center;
-    max-width: 600px; /* Un poco más ancho */
+    max-width: 600px;
     width: 100%;
   }
 
@@ -203,14 +244,16 @@
     padding: 0 20px;
 
     width: 100%;
-    min-height: 150px;
+    height: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 30px;
   }
 
   .hc-hero__quote {
-    font-size: 1.1rem; /* Texto un poco más grande */
+    font-size: 1.1rem;
     font-weight: 500;
     line-height: 1.6;
     margin: 0 0 20px;
@@ -234,8 +277,7 @@
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: auto;
-    background: rgba(255,255,255,0.2); /* Fondo suave para los dots */
+    background: rgba(255,255,255,0.2);
     padding: 6px 12px;
     border-radius: 20px;
   }
@@ -245,7 +287,7 @@
     height: 10px;
     border-radius: 999px;
     border: none;
-    background: #ffffff; /* Blanco inactivo */
+    background: #ffffff;
     opacity: 0.5;
     cursor: pointer;
     padding: 0;
@@ -253,9 +295,9 @@
   }
 
   .hc-hero__dot--active {
-    width: 10px; /* Mismo tamaño */
-    background: #ffffff;
-    opacity: 1; /* Blanco activo total */
+    width: 10px;
+    background: #0F2F44;
+    opacity: 1;
   }
 
   /* ================== CÍRCULO + FORM ================== */
@@ -266,24 +308,21 @@
     justify-content: center;
     padding: 0 20px;
     position: relative;
-    /* Aseguramos que esté por encima del fondo */
     z-index: 5;
   }
 
-  /* NUEVO: El círculo principal verde */
   .hc-contact-circle {
-    position: relative; /* Necesario para que el ::before se posicione respecto a este */
-    width: 920px;       /* Tamaño fijo del círculo verde */
+    position: relative;
+    width: 920px;
     height: 920px;
     border-radius: 50%;
-    background: #45d86e; /* Verde brillante */
+    background: #45d86e;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2; /* Asegura que el verde esté delante del blanco */
+    z-index: 2;
   }
 
-  /* NUEVO: El borde blanco desplazado usando pseudo-elemento */
   .hc-contact-circle::before {
     content: '';
     position: absolute;
@@ -294,11 +333,9 @@
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.6);
     transform: translateX(50px);
-
     z-index: -1;
     pointer-events: none;
   }
-
 
   .hc-circle__content {
     width: 80%;
@@ -308,13 +345,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 60px; /* Más espacio arriba */
+    padding-top: 60px;
     box-sizing: border-box;
   }
 
-  /* título dentro del círculo */
   .hc-circle__title {
-    color: #04141f; /* Texto oscuro */
+    color: #04141f;
     margin: 0 0 4px;
     font-size: 2.2rem;
     font-weight: 700;
@@ -356,7 +392,7 @@
     background: #fdfdfd;
   }
   .hc-circle__form-placeholder :deep(.contact-form__submit) {
-    background: #45d86e; /* Botón verde */
+    background: #45d86e;
     color: #fff;
     font-weight: 700;
   }
@@ -365,12 +401,28 @@
 
   @media (max-width: 768px) {
     .hc-section {
-      background: url("@/assets/images/home-contact-bg-movile.png");
       padding-bottom: 500px;
+      /* El fondo se maneja en .hc-bg-layer */
+      border-radius: 0 150px 0 0; /* Radio de borde reducido en móviles */
+    }
+
+    /* Ajustar el radio de borde del contenedor de fondo para coincidir */
+    .hc-bg-container {
+      border-radius: 0 150px 0 0;
+    }
+
+    /* Adjust layers for mobile */
+    .hc-bg-layer {
       background-size: 100% auto;
       background-position: top center;
-      background-color: #0F2F44;
-      background-repeat: no-repeat;
+    }
+    
+    .layer-1 {
+      background-image: url("@/assets/images/home-contact-bg-movile.png");
+    }
+
+    .layer-2 {
+      background-image: url("@/assets/images/home-contact-bg-movile-2.png");
     }
 
     .hc-container {
