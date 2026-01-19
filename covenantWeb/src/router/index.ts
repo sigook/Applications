@@ -62,6 +62,8 @@ const router = createRouter({
       }
     } else if (savedPosition) {
       return savedPosition
+    } else if (to.path === from.path && to.name === 'open_positions') {
+      return false
     } else {
       return { top: 0, behavior: 'smooth' }
     }
