@@ -144,6 +144,7 @@ stages:
     variables:
       - group: SigookApp-Staging
       - group: App Configuration Staging
+      - group: SigookApp-Android-Signing
     jobs:
       - job: Build_AAB_Staging
         displayName: 'Build Staging AAB'
