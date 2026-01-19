@@ -259,8 +259,7 @@ All technical requirements are met:
   - `APP_NAME`
 
 - [x] `SigookApp-Android-Signing` exists with these variables:
-  - `KEYSTORE_PASSWORD`
-  - `KEY_PASSWORD`
+  - `KEY_PASSWORD` (used for both keystore and key password)
   - `KEY_ALIAS`
 
 #### C. Environment

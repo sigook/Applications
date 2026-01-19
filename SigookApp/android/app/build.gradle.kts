@@ -36,13 +36,14 @@ android {
     signingConfigs {
         create("release") {
             // Try key.properties first (local), then environment variables (CI/CD)
+            // Note: For PKCS12 keystores, storePassword and keyPassword are the same
             storeFile = file(
                 keystoreProperties.getProperty("storeFile")
                     ?: System.getenv("KEYSTORE_FILE")
                     ?: "sigook-release.keystore"
             )
             storePassword = keystoreProperties.getProperty("storePassword")
-                ?: System.getenv("KEYSTORE_PASSWORD")
+                ?: System.getenv("KEY_PASSWORD")
                 ?: ""
             keyAlias = keystoreProperties.getProperty("keyAlias")
                 ?: System.getenv("KEY_ALIAS")

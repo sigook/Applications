@@ -52,9 +52,8 @@ Same structure as staging, but with production values:
 
 | Variable Name | Value | Secret? |
 |--------------|-------|---------|
-| `KEYSTORE_PASSWORD` | Your keystore password | **Yes** 🔒 |
-| `KEY_PASSWORD` | Your key password | **Yes** 🔒 |
-| `KEY_ALIAS` | Your key alias (e.g., `sigook-key`) | No |
+| `KEY_PASSWORD` | Your keystore/key password (same for PKCS12) | **Yes** 🔒 |
+| `KEY_ALIAS` | Your key alias (e.g., `sigook`) | No |
 
 #### Variable Group 4: `SigookApp-iOS-Signing`
 
