@@ -62,6 +62,27 @@
         </div>
       </div>
     </div>
+    <!-- CLIP PATH SVG DEFINITION (Hidden) -->
+    <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+      <defs>
+        <clipPath id="ind-card-clip" clipPathUnits="objectBoundingBox">
+         <path d="M 0 0.2
+                  L 0 0.95
+                  Q 0 1 0.05 0.985
+                  L 0.45 0.865
+                  Q 0.5 0.85 0.55 0.865
+                  L 0.95 0.985
+                  Q 1 1 1 0.95
+                  L 1 0.2
+                  Q 1 0.15 0.95 0.135
+                  L 0.55 0.015
+                  Q 0.5 0 0.45 0.015
+                  L 0.05 0.135
+                  Q 0 0.15 0 0.2
+                  Z" />
+        </clipPath>
+      </defs>
+    </svg>
   </section>
 </template>
 
@@ -212,7 +233,7 @@
 
     gsap.to(el, {
       rotateY: open ? 180 : 0,
-      duration: 1.5, 
+      duration: 0.5, 
       ease: 'sine.inOut', /* Animación más fluida y constante */
     })
   }
@@ -238,21 +259,11 @@
 .ind-card {
   position: relative;
   height: 580px;
-  perspective: 2000px; /* Perspectiva alta para evitar distorsión excesiva */
-  overflow: hidden; /* Importante visible para que el 3D no se corte raro en algunos browsers */
-  /* pero cuidado con el clip-path si se sale */
-  /* Volvemos a hidden si es necesario, pero visible ayuda al 3D */
+  perspective: 2000px; 
   overflow: hidden; 
 
-  /* tu forma tipo flecha */
-  clip-path: polygon(
-    0 15%,
-    0 100%,
-    50% 85%,
-    100% 100%,
-    100% 15%,
-    50% 0
-  );
+  /* tu forma tipo flecha suave (SVG clip) */
+  clip-path: url(#ind-card-clip); /* Referencia al SVG definido abajo */
 
   border-radius: 15px;
   transition: filter 0.3s ease;
@@ -393,10 +404,6 @@
 
 
 /* ======= BACK ======= */
-
-/* ======= BACK (Slide Up Animation) ======= */
-
-/* ======= BACK (3D Flip) ======= */
 
 .ind-card__face--back {
   /* Color sólido único solicitado */

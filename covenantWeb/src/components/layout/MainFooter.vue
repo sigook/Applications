@@ -62,7 +62,7 @@
     <!-- ZONA BLANCA CON LOGO Y COPYRIGHT -->
     <div class="footer__bottom">
       <img
-        src="@/assets/images/logo-covenant-footer.svg"
+        src="@/assets/images/logo-covenant-footer.png"
         alt="Covenant Group"
         class="footer__logo"
       />

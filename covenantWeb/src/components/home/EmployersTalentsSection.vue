@@ -448,7 +448,7 @@ import { RouterLink } from 'vue-router'
     .et-talents-content {
       position: absolute;
       inset: 0;
-      padding: 50px 24px;
+      padding: 70px 36px;
 
       display: flex;
       flex-direction: column;

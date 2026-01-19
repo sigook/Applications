@@ -371,9 +371,9 @@ const getCardIcon = (fileName: string) => {
 
   .left-icon img {
     background-color: #0F2F44;
-    border-radius: 30px 0 0 30px;
+    border-radius: 0;
     padding: 0;
-    transform: translateY(120px); /* Subir icono verde en desktop */
+    transform: translateY(210px); /* Subir icono verde en desktop */
   }
 
   .right-icon img {
@@ -386,21 +386,22 @@ const getCardIcon = (fileName: string) => {
     box-sizing: content-box;
     width: auto;
     height: auto;
+    transform: translateY(-150px);
+    box-shadow: 0 150px 0 0 #5ce07d; /* Cubrir hueco inferior sin afectar altura */
   }
 
   /* TARJETA BASE */
   .puzzle-card {
     flex: 0 1 92%; /* Reducir ancho levemente para no ocupar todo */
-    padding: 60px 100px;
+    padding: 40px 100px;
     position: relative;
     box-shadow: none;
     z-index: 5;
-    min-height: 500px; /* Estabilizar altura para prevenir saltos */
+    min-height: 400px; /* Estabilizar altura para prevenir saltos */
   }
 
   /* --- FILA SUPERIOR (VERDE) --- */
   .row-left {
-    z-index: 2;
     position: relative;
     justify-content: flex-end; /* Alinear a la derecha (al centro) */
     /* El margen negativo acerca la fila de abajo */
@@ -533,7 +534,6 @@ const getCardIcon = (fileName: string) => {
   }
   /* --- FILA INFERIOR (AZUL) --- */
   .row-right {
-    z-index: 1;
     position: relative;
     justify-content: flex-start; /* Alinear a la izquierda (al centro) */
     padding-top: 70px;
@@ -569,7 +569,7 @@ const getCardIcon = (fileName: string) => {
 
   .left-icon {
       align-items: flex-end;
-      z-index: 20; /* Asegurar que se vea sobre la tarjeta */
+      z-index: 1001; /* Asegurar que se vea sobre la tarjeta */
       border-radius: 0;
       padding: 120px;
       margin: 0;
@@ -585,7 +585,7 @@ const getCardIcon = (fileName: string) => {
   }
 
   .puzzle-card p {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     line-height: 1.6;
     margin-bottom: 30px;
     opacity: 0.95;
@@ -678,7 +678,7 @@ const getCardIcon = (fileName: string) => {
 @media (max-width: 1200px) {
   .puzzle-card {
     padding: 60px 50px; /* Reducir padding lateral */
-    min-height: 430px; /* Altura aumentada para evitar saltos en 1024px */
+    min-height: 50px; /* Altura reducida para 1024px */
   }
 
   .card-blue{
@@ -708,6 +708,8 @@ const getCardIcon = (fileName: string) => {
 
   .right-icon img {
     padding: 150px 120px; /* Reducir el padding proporcionalmente */
+    transform: translateY(-190px); /* Bajar un poco en 1024px */
+    box-shadow: 0 190px 0 0 #5ce07d; /* Ajustar fondo */
   }
 }
 
@@ -774,7 +776,7 @@ const getCardIcon = (fileName: string) => {
     z-index: 20;
     display: flex;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 0;
     transition: all 0.5s ease; /* Transición suave */
   }
 
@@ -822,6 +824,7 @@ const getCardIcon = (fileName: string) => {
     padding: 0;
     margin-bottom: 5px;
     transform: none; /* Reset transform desktop */
+    border-radius: 0; /* Removing border radius to avoid clipping */
   }
 
   .right-icon img {
@@ -831,6 +834,7 @@ const getCardIcon = (fileName: string) => {
     top: 80px; /* Movido hacia arriba (antes 60px) */
     margin-bottom: 5px;
     transform: none; /* Reset transform desktop */
+    border-radius: 0; /* Removing border radius to avoid clipping */
   }
 
   /* 3. TARJETAS */
@@ -901,6 +905,7 @@ const getCardIcon = (fileName: string) => {
   
   .col-text {
     width: 100%;
+    max-width: 320px;
     justify-content: center !important;
   }
   
