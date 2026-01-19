@@ -11,10 +11,10 @@
             Powered by Technology
           </p>
 
-          <button class="app-top__btn">
+          <a href="https://apps.apple.com/co/app/sigook/id1446736193" target="_blank" rel="noopener noreferrer" class="app-top__btn">
             <span>Download</span>
             <span class="app-top__btn-arrow">➜</span>
-          </button>
+          </a>
         </div>
 
         <!-- Teléfono derecha -->
@@ -34,18 +34,31 @@
       <!-- ================== BLOQUE INFERIOR: CURVA ================== -->
       <div class="attendance-wrapper">
         <!-- curva azul del fondo -->
-        <img
-          src="@/assets/images/blue-wave.png"
-          alt=""
-          class="attendance-wave attendance-wave--blue"
-        />
+        <!-- curva azul del fondo -->
+        <picture>
+          <source
+            media="(max-width: 500px)"
+            srcset="@/assets/images/curva-azul-movil.png"
+          />
+          <img
+            src="@/assets/images/blue-wave.png"
+            alt=""
+            class="attendance-wave attendance-wave--blue"
+          />
+        </picture>
 
         <!-- curva verde (la que ya tenías) -->
-        <img
-          src="@/assets/images/attendance-wave.png"
-          alt=""
-          class="attendance-wave attendance-wave--green"
-        />
+        <picture>
+          <source
+            media="(max-width: 500px)"
+            srcset="@/assets/images/curva-verde-movil.png"
+          />
+          <img
+            src="@/assets/images/attendance-wave.png"
+            alt=""
+            class="attendance-wave attendance-wave--green"
+          />
+        </picture>
 
         <!-- contenido encima de las curvas -->
         <div class="attendance-content">
@@ -155,6 +168,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .app-top__btn-arrow {
@@ -438,9 +452,14 @@
     font-size: 0.85rem;
   }
 
-    /* curva azul: al fondo y desplazada un poco a la derecha */
+  /* curva azul: al fondo y desplazada un poco a la derecha */
   .attendance-wave--blue {
     z-index: 0;
+    transform: translateX(0%);
+  }
+
+  /* curva verde: reseteo en tablet/desktop si fuera necesario o ajustes leves */
+  .attendance-wave--green {
     transform: translateX(0%);
   }
 
@@ -547,4 +566,33 @@
   }
 }
 
+/* Ajuste para móviles (coincide con el cambio de imagen) */
+@media (max-width: 500px) {
+  .app-top__phone {
+    max-height: 400px;
+  }
+
+  .app-top__circle {
+    width: 220px;
+    height: 220px;
+  }
+
+  .app-top__phone-wrapper {
+    min-height: 350px;
+  }
+
+  /* Ajustar posición de la curva verde en móvil */
+  .attendance-wave--green {
+    width: 130% !important;
+    left: -15% !important;
+    bottom: -62% !important; /* Subimos la imagen (original es -100%) */
+  }
+
+  /* Ajustar posición de la curva azul en móvil (detrás de la verde) */
+  .attendance-wave--blue {
+    width: 140% !important;
+    left: -20% !important;
+    bottom: -63% !important; /* Un poco más arriba/abajo para generar capas */
+  }
+}
 </style>

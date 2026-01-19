@@ -16,7 +16,7 @@
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background-color: transparent;
+  background-color: #59DC76;
   margin: 0;
   padding: 0;
 }

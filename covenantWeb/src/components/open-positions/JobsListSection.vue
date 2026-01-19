@@ -233,19 +233,20 @@ watch(showApplyDialog, (newValue) => {
 .jobs-section {
   padding: 60px 0 100px;
   background-color: #f9f9f9;
+  border-radius: 0 0 100px 100px;
 }
 
 .jobs-layout {
   display: flex;
-  gap: 30px;
+  gap: 20px; /* Reducido de 30px */
   align-items: flex-start;
 }
 
 /* === COLUMNA IZQUIERDA (LISTA) === */
 .jobs-list-col {
-  width: 35%;
+  width: 25%; /* Reducido de 35% */
   flex-shrink: 0;
-  margin: 3rem;
+  margin: 0; /* Margen eliminado para reducir espacio */
 }
 
 .list-header {
@@ -332,7 +333,7 @@ watch(showApplyDialog, (newValue) => {
 /* === COLUMNA DERECHA (DETALLE) === */
 .job-detail-col {
   flex: 1;
-  margin: 3rem;
+  margin: 0; /* Margen eliminado */
 }
 
 .detail-card {
