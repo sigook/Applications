@@ -24,7 +24,7 @@
       <div class="hero__logo-wrapper">
         <img
           class="hero__logo"
-          src="@/assets/images/logo-covenant-white.svg"
+          src="@/assets/images/logo-covenant-white.png"
           alt="Covenant Group Ltd."
         />
       </div>

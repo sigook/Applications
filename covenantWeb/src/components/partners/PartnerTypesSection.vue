@@ -477,5 +477,15 @@
   .partner-types__text {
     max-width: 75%;
   }
+
+  /* Ajuste específico para Recruiter en móvil para reducir espacios muertos */
+  .partner-types__content--recruiter .partner-types__cta-wrapper {
+    margin-top: 10px;
+  }
+  
+  .partner-types__content--recruiter .partner-types__text {
+    min-height: auto;
+    margin-bottom: 20px;
+  }
 }
 </style>

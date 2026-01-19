@@ -240,6 +240,7 @@ watch(showApplyDialog, (newValue) => {
   display: flex;
   gap: 20px; /* Reducido de 30px */
   align-items: flex-start;
+  padding: 0 60px; /* Espacio lateral en desktop */
 }
 
 /* === COLUMNA IZQUIERDA (LISTA) === */
@@ -503,6 +504,7 @@ watch(showApplyDialog, (newValue) => {
 @media (max-width: 900px) {
   .jobs-layout {
     flex-direction: column;
+    padding: 0; /* Reset en móvil */
   }
 
   .jobs-list-col {

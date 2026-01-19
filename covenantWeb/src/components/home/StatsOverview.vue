@@ -5,7 +5,7 @@
       <picture class="our-numbers__picture">
         <!-- 🔹 Imagen para móviles -->
         <source
-          srcset="@/assets/images/Section-OurNumbers.png"
+          srcset="@/assets/images/Section-OurNumbers.svg"
           media="(max-width: 768px)"
         />
         <!-- 🔹 Imagen por defecto (desktop / tablet) -->

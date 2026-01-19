@@ -118,7 +118,7 @@
   .hc-section {
     position: relative;
     width: 100%;
-    padding: 80px 0 400px;
+    padding: 80px 0 250px;
     color: #ffffff;
     background-color: #0F2F44; /* Base color */
     border-radius: 0 200px 0 0;
@@ -466,7 +466,7 @@
 
   @media (max-width: 480px) {
     .hc-section{
-      padding-bottom: 700px;
+      padding-bottom: 450px;
     }
 
     /* Ajuste título "What Our Clients Say" más pequeño y arriba */
