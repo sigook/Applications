@@ -15,7 +15,7 @@
     <!-- Key: Bundle ID, Value: Provisioning Profile Name -->
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.sigook.beta</key>
+        <key>com.sigook.app</key>
         <string>Sigook App App Store</string>
     </dict>
     

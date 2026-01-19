@@ -6,8 +6,6 @@
     <key>method</key>
     <string>app-store</string>
     
-    <!-- Team ID from Apple Developer account -->
-    <!-- TODO: Replace with your actual Team ID -->
     <key>teamID</key>
     <string>NGXFWU4H7Z</string>
     
