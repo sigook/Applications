@@ -38,7 +38,7 @@
         <article class="about__card">
           <div class="about__card-inner">
             <p class="about__card-number">+10</p>
-            <p class="about__card-label">Years of<br />Experience</p>
+            <p class="about__card-label">Years of Recruiting <br />Experience</p>
           </div>
         </article>
 
@@ -245,7 +245,7 @@
 }
 
 .about__card-label {
-  font-size: 1rem;
+  font-size: 1.3rem;
   line-height: 1.4;
   opacity: 0.9;
 }
@@ -283,7 +283,8 @@
 
   .about__hero-content {
     max-width: 360px;
-    padding: 220px 20px 50px;
+    /* Aumentado padding izquierdo (40px) para separar del borde */
+    padding: 220px 20px 50px 40px;
   }
 
   .about__title {

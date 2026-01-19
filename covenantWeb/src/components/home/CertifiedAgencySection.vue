@@ -9,9 +9,8 @@
         </h2>
 
         <p class="cert-text">
-          As a fully certified and licensed agency, we meet the highest provincial
-          standards, providing trusted recruitment services that prioritize compliance,
-          professionalism, and reliable support for both businesses and job seekers.
+          As a fully licensed agency in Ontario, we meet the province’s highest standards while delivering the same level of compliant, 
+          professional, and reliable recruitment services to businesses and job seekers across Canada.
         </p>
 
         <!-- Logos / iconos alineados al centro -->

@@ -22,7 +22,7 @@ import IndustriesContact from '@/components/industries/IndustriesContact.vue'
 <style scoped>
 .industries-page {
   min-height: 100vh;
-  background-color: #020d1e; /* mismo mood oscuro que el home */
+  background-color: #0F2F44; /* mismo mood oscuro que el home */
   margin: 0;
   padding: 0;
 }

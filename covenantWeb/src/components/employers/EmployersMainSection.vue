@@ -19,7 +19,7 @@
 
       <div class="hero-content container">
         <h1 class="hero-title">
-            <span class="hero-subtitle">• Find Talents •</span><br>
+            <span class="hero-subtitle">• Find Talents •</span>
             EMPLOYERS
         </h1>
 
@@ -62,17 +62,21 @@
           <div :key="activeTab" class="cards-layout">
 
             <div class="card-row row-left">
-              <div class="side-icon left-icon">
+              <div class="side-icon left-icon" :class="{ 'hidden-mobile': showBenefitsLeft }">
                  <img :src="currentContent.iconLeft" alt="Icon" />
               </div>
 
-              <div class="puzzle-card card-green">
+              <div class="puzzle-card card-green" :class="{ 'sharp-mobile': showBenefitsLeft }">
                 <transition name="slide-fade" mode="out-in">
 
-                  <div v-if="!showBenefitsLeft" key="front" class="card-content">
-                    <h3>{{ currentContent.card1Title }}</h3>
-                    <p>{{ currentContent.card1Desc }}</p>
-                    <button class="btn-pill white" @click="showBenefitsLeft = true">&lt;&lt; Benefits</button>
+                  <div v-if="!showBenefitsLeft" key="front" class="card-content split-layout">
+                    <div class="col-title-btn">
+                      <h3>{{ currentContent.card1Title }}</h3>
+                      <button class="btn-pill white" @click="showBenefitsLeft = true">&lt;&lt; Benefits</button>
+                    </div>
+                    <div class="col-text">
+                      <p>{{ currentContent.card1Desc }}</p>
+                    </div>
                   </div>
 
                   <div v-else key="back" class="card-content benefits-view">
@@ -98,13 +102,17 @@
             </div>
 
             <div class="card-row row-right">
-              <div class="puzzle-card card-blue">
+              <div class="puzzle-card card-blue" :class="{ 'sharp-mobile': showBenefitsRight }">
                 <transition name="slide-fade" mode="out-in">
 
-                  <div v-if="!showBenefitsRight" key="front" class="card-content text-right-content">
-                    <h3>{{ currentContent.card2Title }}</h3>
-                    <p>{{ currentContent.card2Desc }}</p>
-                    <button class="btn-pill white" @click="showBenefitsRight = true">Benefits &gt;&gt;</button>
+                  <div v-if="!showBenefitsRight" key="front" class="card-content text-right-content split-layout">
+                    <div class="col-text">
+                      <p>{{ currentContent.card2Desc }}</p>
+                    </div>
+                    <div class="col-title-btn">
+                      <h3>{{ currentContent.card2Title }}</h3>
+                      <button class="btn-pill white" @click="showBenefitsRight = true">Benefits &gt;&gt;</button>
+                    </div>
                   </div>
 
                   <div v-else key="back" class="card-content benefits-view right-aligned">
@@ -128,7 +136,7 @@
                 </transition>
               </div>
 
-              <div class="side-icon right-icon">
+              <div class="side-icon right-icon" :class="{ 'hidden-mobile': showBenefitsRight }">
                   <img :src="currentContent.iconRight" alt="Icon" />
               </div>
             </div>
@@ -249,9 +257,9 @@ const scrollToContact = () => {
   .hero-img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 0.3s ease-in-out; will-change: opacity; }
   .hero-img-layer.img-active { opacity: 1; }
   .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(168, 189, 67, 0.4) 0%, #0F2F44 95%); z-index: 1; pointer-events: none; }
-  .hero-content { position: relative; z-index: 3; }
-  .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-  .hero-subtitle { font-size: 2.9rem; font-weight: 400; text-transform: none; }
+  .hero-content { position: relative; z-index: 3; padding-top: 140px; }
+  .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.3); line-height: 1; }
+  .hero-subtitle { font-size: 2.5rem; font-weight: 300; text-transform: none; display: block; margin-bottom: -5px; letter-spacing: 1px; }
   .switch-box { display: inline-flex; background-color: #5ce07d; border-radius: 999px; border: none; backdrop-filter: none; }
   .switch-btn { background: transparent; border: none; color: #ffffff; padding: 18px 38px; border-radius: 999px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; }
   .switch-btn:hover { color: rgba(255, 255, 255, 0.9); }
@@ -318,36 +326,44 @@ const scrollToContact = () => {
   .side-icon {
     width: auto;
     position: relative;
-    z-index: 5;
+    z-index: 20;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
   .side-icon img {
-    width: 140px;
-    height: 140px;
-    padding: 30px;
+    width: 200px; /* Tamaño grande re-aplicado */
+    height: 200px;
+    padding: 40px;
     border-radius: 0;
     object-fit: contain;
     filter: none;
+    z-index: 20;
+    position: relative; /* Asegurar stacking context */
   }
 
   .left-icon img {
     background-color: #0F2F44;
     border-radius: 30px 0 0 30px;
+    padding: 0;
   }
 
   .right-icon img {
     background-color: #5ce07d; /* Verde */
     border-radius: 0;
-    padding: 180px 120px;
+    padding: 180px;
     margin: 0;
+    z-index: 2000;
+    /* FIX: Permitir que el padding sume al tamaño en lugar de restar */
+    box-sizing: content-box;
+    width: auto;
+    height: auto;
   }
 
   /* TARJETA BASE */
   .puzzle-card {
-    flex: 1;
+    flex: 0 1 92%; /* Reducir ancho levemente para no ocupar todo */
     padding: 60px 100px;
     position: relative;
     box-shadow: none;
@@ -358,6 +374,7 @@ const scrollToContact = () => {
   .row-left {
     z-index: 2;
     position: relative;
+    justify-content: flex-end; /* Alinear a la derecha (al centro) */
     /* El margen negativo acerca la fila de abajo */
     margin-bottom: -70px;
   }
@@ -368,6 +385,8 @@ const scrollToContact = () => {
     border-radius: 100px 0 0 100px;
     margin-right: 0;
     margin-left: -1px;
+    padding-top: 120px; /* Bajarlos un poco */
+    padding-bottom: 30px;
   }
 
   /* Contenedor flexible para el contenido interno */
@@ -485,6 +504,7 @@ const scrollToContact = () => {
   .row-right {
     z-index: 1;
     position: relative;
+    justify-content: flex-start; /* Alinear a la izquierda (al centro) */
     padding-top: 70px;
   }
 
@@ -496,12 +516,13 @@ const scrollToContact = () => {
     text-align: right;
     margin-right: -90px;
     padding-right: 200px;
+    padding-top: 40px; /* Subirlos un poco */
     z-index: 1000;
   }
 
   .left-icon {
       align-items: flex-end;
-      z-index: 1;
+      z-index: 20; /* Asegurar que se vea sobre la tarjeta */
       border-radius: 0;
       padding: 120px;
       margin: 0;
@@ -555,9 +576,95 @@ const scrollToContact = () => {
   /* TRANSICIONES */
   .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
   .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px); }
+  
+  /* === SPLIT LAYOUT (Nuevo) === */
+  .split-layout {
+    flex-direction: row !important; /* Forzamos fila en desktop */
+    justify-content: flex-start; /* Por defecto a la izquierda (Green) */
+    align-items: center;
+    gap: 50px; /* Separarlos un poquito (aumentado de 20px) */
+    text-align: left;
+  }
+
+  .col-title-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    flex: 0 0 auto;
+  }
+
+  /* Ajuste específico para botón en col de título */
+  .col-title-btn .btn-pill {
+    margin-top: 5px;
+  }
+
+  .col-text {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    max-width: 240px; /* Baja el ancho del texto */
+  }
+
+  /* BLUE CARD SPECIFIC */
+  .card-blue .split-layout {
+    justify-content: flex-end; /* Azul a la derecha */
+    text-align: right;
+  }
+
+  .card-blue .col-title-btn {
+    align-items: flex-end; /* Botón y título a la derecha */
+    order: 2; /* Asegurar orden visual si fuera necesario, pero el HTML manda */
+  }
+  
+  .card-blue .col-text {
+    order: 1;
+    justify-content: flex-end; /* Texto alineado a la derecha en su caja */
+  }
+
+  .card-blue .col-text p {
+     margin-left: auto; /* Empujar texto a la derecha */
+     margin-right: 0;
+  }
+
+/* Ajustes para Laptops pequeñas / Tablets (1024px) */
+@media (max-width: 1200px) {
+  .puzzle-card {
+    padding: 60px 50px; /* Reducir padding lateral */
+  }
+
+  .split-layout {
+    gap: 25px; /* Reducir separación */
+  }
+
+  .col-text {
+    max-width: 200px; /* Reducir ancho texto */
+  }
+
+  /* Ajustar iconos para 1024px */
+  .side-icon img {
+    width: 150px;
+    height: 150px;
+    padding: 30px;
+  }
+
+  /* Aumentar un poco más solo el icono de la izquierda */
+  .left-icon img {
+    width: 200px;
+    height: 200px;
+  }
+
+  .right-icon img {
+    padding: 120px; /* Reducir el padding proporcionalmente */
+  }
+}
 
 /* RESPONSIVE */
 @media (max-width: 992px) {
+  .hero-content { padding-top: 80px; }
+  .hero-title { font-size: 2.8rem; }
+  .hero-subtitle { font-size: 2rem; }
+
   .cards-layout {
     overflow: visible;
   }
@@ -582,21 +689,44 @@ const scrollToContact = () => {
     margin-bottom: 0; /* Reset del margen negativo de desktop */
   }
 
+  /* 4. AJUSTES SECCIÓN BLANCA INTRO (Replicado de Talents) */
+  .intro-icon-wrapper {
+    margin-bottom: -20px;
+    padding-top: 80px; 
+  }
+
+  .intro-text {
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Botón con más margen abajo */
+  .intro-block .btn-contact-outline {
+    margin-bottom: 60px;
+  }
+
   /* 2. ICONOS EN MÓVIL */
   .side-icon {
     width: auto;
-    /* Margen negativo para que el icono "muerda" la parte superior de la tarjeta */
     margin-bottom: -50px;
-    z-index: 20; /* Siempre encima */
+    z-index: 20;
     display: flex;
     justify-content: center;
+    border-radius: 50%;
+    transition: all 0.5s ease; /* Transición suave */
+  }
+
+  .side-icon.hidden-mobile {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
   }
 
   .side-icon img {
     width: 100px;
     height: 100px;
     padding: 25px;
-    /* En móvil se ven mejor circulares para centrar, o puedes dejarlos cuadrados con border-radius pequeño */
     border-radius: 50%;
   }
 
@@ -633,6 +763,11 @@ const scrollToContact = () => {
     /* Padding superior grande para dejar espacio al icono */
     padding: 140px 30px 40px;
     text-align: center;
+    transition: border-radius 0.5s ease;
+  }
+
+  .puzzle-card.sharp-mobile {
+    border-radius: 0 !important;
   }
 
   /* RESETEOS IMPRESCINDIBLES DE DESKTOP */
@@ -673,6 +808,37 @@ const scrollToContact = () => {
   .card-green .card-content,
   .card-blue .card-content.text-right-content {
     align-items: center;
+  }
+
+  /* Resetear split layout en móvil */
+  .split-layout {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 20px;
+  }
+  
+  .col-title-btn {
+    align-items: center !important;
+    flex: auto;
+    width: 100%;
+  }
+  
+  .col-text {
+    width: 100%;
+    justify-content: center !important;
+  }
+  
+  .card-blue .col-title-btn {
+    order: 0; /* Título primero en móvil también para azul */
+  }
+  
+  .card-blue .col-text {
+    order: 1;
+  }
+
+  .card-blue .col-text p {
+    margin: 0 auto;
+    text-align: center;
   }
 
   /* Resetear alineación derecha en móvil */

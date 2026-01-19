@@ -17,7 +17,7 @@
       "title": "Aviation",
       "image": "aviation.png",
       "icon": "plane.svg",
-      "description": "Take your aviation career to new heights. Whether you're a ground handler, technician, or logistics professional, we connect you with trusted employers.",
+      "description": "Take your aviation career to new heights. Whether you're a ground handler, technician, or logistics professional, we connect you with trusted employers who value safety, precision, and reliability.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",
@@ -45,7 +45,7 @@
       "title": "Engineering",
       "image": "engineering.png",
       "icon": "gear.svg",
-      "description": "Design, innovate, and build the future. We connect top talent in IT, civil works, oil and gas, and industrial sectors with companies leading large-scale projects.",
+      "description": "Design, innovate, and build the future. We connect top talent in IT, civil works, oil and gas, drilling, and industrial sectors with companies leading large-scale infrastructure and technology projects.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",
@@ -73,7 +73,7 @@
       "title": "Financial/Insurance",
       "image": "finance.png",
       "icon": "money.svg",
-      "description": "Grow your professional career in finance and insurance. We connect you with organizations that rely on accuracy, integrity, and expertise.",
+      "description": "Grow your professional career in finance and insurance. We connect you with organizations that rely on accuracy, integrity, and expertise—helping you contribute to financial stability and long-term success.",
       "detailList": [
         "Accounting Clerks and Bookkeepers",
         "Financial Analysts",
@@ -105,7 +105,7 @@
       "title": "Logistics, 3PL/4PL",
       "image": "logistics.png",
       "icon": "truck.svg",
-      "description": "Drive your logistics career forward. We connect you with opportunities that reward reliability, performance, and growth.",
+      "description": "Drive your logistics career forward. We connect you with opportunities that reward reliability, performance, and growth in one of the world's fastest-moving industries.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",
@@ -119,7 +119,7 @@
       "title": "Manufacturing",
       "image": "manufacturing.png",
       "icon": "factory.svg",
-      "description": "Shape the future of production. Join leading manufacturers looking for dependable, skilled professionals to ensure quality and efficiency.",
+      "description": "Shape the future of production. Join leading manufacturers looking for dependable, skilled professionals to ensure quality, efficiency, and innovation in every process.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",
@@ -133,7 +133,7 @@
       "title": "Retail",
       "image": "retail.png",
       "icon": "store.svg",
-      "description": "Turn your talent into success. Whether in customer service, merchandising, or management, we help you join retailers who value excellence.",
+      "description": "Turn your talent into success. Whether in customer service, merchandising, or management, we help you join retailers who value energy, excellence, and a great customer experience.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",
@@ -147,7 +147,7 @@
       "title": "Transportation",
       "image": "transportation.png",
       "icon": "transport.svg",
-      "description": "Move your career in the right direction. We connect professional drivers and logistics experts with reliable employers who prioritize safety.",
+      "description": "Move your career in the right direction. We connect professional drivers and logistics experts with reliable employers who prioritize safety, efficiency, and respect on the road.",
       "detailList": [
         "Specialized Technicians",
         "Operational Managers",

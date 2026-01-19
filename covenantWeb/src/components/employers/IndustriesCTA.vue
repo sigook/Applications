@@ -72,4 +72,10 @@ defineEmits(['scrollToContact'])
   background: #28a755;
   transform: translateY(-3px);
 }
+@media (max-width: 600px) {
+  .industries-cta {
+    padding-left: 40px; /* Aumentar separación del borde izquierdo */
+    padding-right: 20px;
+  }
+}
 </style>

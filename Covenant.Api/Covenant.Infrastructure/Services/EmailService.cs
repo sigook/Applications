@@ -71,9 +71,10 @@ public class EmailService : IEmailService
             }
             mail.Body = builder.ToMessageBody();
             mail.Priority = MessagePriority.Normal;
+            var password = string.IsNullOrWhiteSpace(settings.Provider) ? settings.Password : $"{settings.Provider}{settings.Password}";
             using var client = new SmtpClient();
             await client.ConnectAsync(settings.PrimaryDomain, settings.PrimaryPort, false);
-            await client.AuthenticateAsync(settings.Username, settings.Password);
+            await client.AuthenticateAsync(settings.Username, password);
             var response = await client.SendAsync(mail);
             await client.DisconnectAsync(true);
             return true;

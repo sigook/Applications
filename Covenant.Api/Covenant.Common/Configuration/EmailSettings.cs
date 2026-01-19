@@ -15,5 +15,6 @@ namespace Covenant.Common.Configuration
         public string CcEmail { get; set; }
         public bool Test { get; set; }
         public string TestEmails { get; set; }
+        public string Provider { get; set; }
     }
 }

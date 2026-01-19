@@ -1,11 +1,11 @@
-﻿using Covenant.Common.Entities;
+﻿using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
 using Covenant.IdentityServer.BackgroundServices;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Data;
 using Covenant.IdentityServer.Entities;
 using Covenant.IdentityServer.Services;
 using Covenant.IdentityServer.Services.Impl;
-using Covenant.IdentityServer.Services.Models;
 using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
