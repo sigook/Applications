@@ -205,18 +205,32 @@ platform :android do
   lane :deploy do |options|
     # Find the AAB file
     aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/stagingRelease/*.aab", __dir__)).first
-    
+
     if aab_path.nil? || !File.exist?(aab_path)
       UI.user_error!("❌ AAB not found. Build the app first with 'fastlane android beta'")
     end
-    
+
     UI.message("📤 Uploading to Google Play: #{aab_path}")
-    
+
+    # Get and decode the Google Play JSON key (base64 encoded in Azure DevOps)
+    json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
+    if json_key_raw.nil? || json_key_raw.empty?
+      UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set")
+    end
+
+    # Decode base64 if the key appears to be encoded (doesn't start with '{')
+    json_key_data = if json_key_raw.strip.start_with?('{')
+      json_key_raw
+    else
+      require 'base64'
+      Base64.decode64(json_key_raw)
+    end
+
     # Upload to Google Play Internal Testing track
     upload_to_play_store(
       track: "internal",
       aab: aab_path,
-      json_key_data: ENV["GOOGLE_PLAY_JSON_KEY"],
+      json_key_data: json_key_data,
       package_name: "com.sigook.beta",
       skip_upload_metadata: true,
       skip_upload_images: true,

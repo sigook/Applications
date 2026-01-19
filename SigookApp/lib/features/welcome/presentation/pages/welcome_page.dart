@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
-class WelcomePage extends StatefulWidget {
+class WelcomePage extends ConsumerStatefulWidget {
   const WelcomePage({super.key});
 
   @override
-  State<WelcomePage> createState() => _WelcomePageState();
+  ConsumerState<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _WelcomePageState extends State<WelcomePage>
+class _WelcomePageState extends ConsumerState<WelcomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -73,8 +75,39 @@ class _WelcomePageState extends State<WelcomePage>
     context.go(AppRoutes.registration);
   }
 
+  Future<void> _signIn() async {
+    await ref.read(authViewModelProvider.notifier).signIn();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+
+    // Listen for auth state changes and navigate on successful sign-in
+    ref.listen(authViewModelProvider, (previous, next) {
+      if (next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+
+      if (next.isAuthenticated &&
+          next.token != null &&
+          next.token!.accessToken != null &&
+          next.token!.accessToken!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sign in successful!'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+        context.go(AppRoutes.jobs);
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
@@ -165,12 +198,12 @@ class _WelcomePageState extends State<WelcomePage>
                         width: double.infinity,
                         height: 56,
                         child: OutlinedButton(
-                          onPressed: () {
-                            context.go(AppRoutes.signIn);
-                          },
+                          onPressed: authState.isLoading ? null : _signIn,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: AppTheme.primaryBlue,
+                            side: BorderSide(
+                              color: authState.isLoading
+                                  ? Colors.grey
+                                  : AppTheme.primaryBlue,
                               width: 2,
                             ),
                             foregroundColor: AppTheme.primaryBlue,
@@ -182,14 +215,25 @@ class _WelcomePageState extends State<WelcomePage>
                             backgroundColor: Colors.white,
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primaryBlue,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
                       ),
                     ],

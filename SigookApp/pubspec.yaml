@@ -106,6 +106,21 @@ dev_dependencies:
   json_serializable: ^6.11.1
   riverpod_generator: ^3.0.3
 
+  # App Icon Generation
+  flutter_launcher_icons: ^0.14.3
+
+# App Icon Configuration
+# To generate icons, run: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  # Remove alpha channel for iOS (required by Apple)
+  remove_alpha_ios: true
+  # Adaptive icon for Android (optional, uses same icon)
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
