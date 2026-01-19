@@ -835,6 +835,7 @@ const getCardIcon = (fileName: string) => {
     margin-bottom: 5px;
     transform: none; /* Reset transform desktop */
     border-radius: 0; /* Removing border radius to avoid clipping */
+    box-shadow: none; /* Quitar sombra en móvil */
   }
 
   /* 3. TARJETAS */

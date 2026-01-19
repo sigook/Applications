@@ -151,7 +151,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 /* ESTADO EXPANDIDO (DETALLE) */
 .role-card.is-detailed {
   width: 100%; /* Ocupar todo el ancho */
-  height: 400px; /* Altura ajustada */
+  height: 450px; /* Altura aumentada para escritorio */
   border-radius: 150px 0 150px 0; /* Solo bordes Sup-Izq e Inf-Der redondeados */
   z-index: 10; /* Elevar sobre los demás */
   align-self: center; /* Centrar para evitar saltos extraños desde left/right */
@@ -293,7 +293,7 @@ const roles: RoleTalent[] = rolesTalentsData;
   flex-direction: column;
   gap: 5px; 
   /* Scroll si es necesario */
-  max-height: 300px; 
+  max-height: 400px; 
   overflow-y: auto;
 }
 
@@ -457,7 +457,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 
   /* Increase height significantly when detailed on mobile */
   .role-card.is-detailed {
-    height: 450px !important; /* Altura reducida para móvil */
+    height: 600px !important; /* Altura aumentada para móvil */
   }
 
   /* Allow list to expand */
