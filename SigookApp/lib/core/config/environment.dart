@@ -1,23 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-enum Environment { staging, production }
+enum Environment { local, staging, production }
 
 /// Environment configuration that supports both:
-/// - System environment variables (Azure DevOps CI/CD)
+/// - Compile-time constants via --dart-define (Azure DevOps CI/CD)
 /// - .env files via flutter_dotenv (local development)
 ///
-/// Priority: System env vars > dotenv > fallback (empty string)
+/// Priority: dart-define > dotenv > fallback (empty string)
+///
+/// HOW IT WORKS:
+/// - Local development: .env.staging or .env.production files are loaded
+///   via flutter_dotenv. These files must be listed in pubspec.yaml assets.
+/// - CI/CD builds: Values are injected at compile time via --dart-define flags.
+///   The .env files are not needed (and not present) in CI/CD.
 class EnvironmentConfig {
   /// Get environment variable with fallback chain:
-  /// 1. System environment variables (Platform.environment)
-  /// 2. dotenv loaded values
+  /// 1. Compile-time constants (--dart-define, for CI/CD)
+  /// 2. dotenv loaded values (for local development)
   /// 3. Fallback value (default: empty string)
   static String _getEnv(String key, {String fallback = ''}) {
-    // First try system environment variables (CI/CD)
-    final systemValue = _getSystemEnv(key);
-    if (systemValue != null && systemValue.isNotEmpty) {
-      return systemValue;
+    // First try compile-time constants (CI/CD)
+    final dartDefineValue = _getSystemEnv(key);
+    if (dartDefineValue != null && dartDefineValue.isNotEmpty) {
+      return dartDefineValue;
     }
 
     // Fall back to dotenv (local development)
@@ -86,34 +92,81 @@ class EnvironmentConfig {
 
   static Environment get current {
     final envString = _getEnv('ENVIRONMENT').toLowerCase();
-    return envString == 'production'
-        ? Environment.production
-        : Environment.staging;
+    switch (envString) {
+      case 'production':
+        return Environment.production;
+      case 'local':
+        return Environment.local;
+      default:
+        return Environment.staging;
+    }
   }
 
   static String get environmentName {
-    return current == Environment.production ? 'Production' : 'Staging';
+    switch (current) {
+      case Environment.production:
+        return 'Production';
+      case Environment.local:
+        return 'Local';
+      case Environment.staging:
+        return 'Staging';
+    }
   }
 
   static bool get isProduction => current == Environment.production;
 
   static bool get isStaging => current == Environment.staging;
 
-  /// Debug helper to print current configuration source
+  static bool get isLocal => current == Environment.local;
+
+  /// Validates that all required configuration values are present.
+  /// Throws an exception if any required values are missing.
+  /// Call this during app initialization to fail fast.
+  static void validateRequiredConfig() {
+    final missing = <String>[];
+
+    if (authority.isEmpty) missing.add('AUTH_AUTHORITY');
+    if (apiBaseUrl.isEmpty) missing.add('API_BASE_URL');
+    if (clientId.isEmpty) missing.add('CLIENT_ID');
+    if (redirectUri.isEmpty) missing.add('REDIRECT_URI');
+
+    if (missing.isNotEmpty) {
+      throw Exception(
+        'Missing required environment configuration: ${missing.join(', ')}\n'
+        'Ensure you have a valid .env file or --dart-define flags set.',
+      );
+    }
+  }
+
+  /// Debug helper to print current configuration and its source
+  /// Call this after app initialization to verify config is loaded correctly
   static void printConfigSource() {
-    debugPrint('🔧 Environment Configuration:');
-    debugPrint(
-      '   ENVIRONMENT: ${_getEnv('ENVIRONMENT')} (${_getSource('ENVIRONMENT')})',
-    );
-    debugPrint(
-      '   AUTH_AUTHORITY: ${authority.isNotEmpty ? '✓ set' : '✗ missing'} (${_getSource('AUTH_AUTHORITY')})',
-    );
-    debugPrint(
-      '   API_BASE_URL: ${apiBaseUrl.isNotEmpty ? '✓ set' : '✗ missing'} (${_getSource('API_BASE_URL')})',
-    );
-    debugPrint(
-      '   CLIENT_ID: ${clientId.isNotEmpty ? '✓ set' : '✗ missing'} (${_getSource('CLIENT_ID')})',
-    );
+    debugPrint('');
+    debugPrint('╔══════════════════════════════════════════════════════════════╗');
+    debugPrint('║                 ENVIRONMENT CONFIGURATION                     ║');
+    debugPrint('╠══════════════════════════════════════════════════════════════╣');
+    debugPrint('║ Source priority: dart-define > dotenv > fallback             ║');
+    debugPrint('╠══════════════════════════════════════════════════════════════╣');
+    _printConfigLine('ENVIRONMENT', _getEnv('ENVIRONMENT'));
+    _printConfigLine('AUTH_AUTHORITY', authority);
+    _printConfigLine('API_BASE_URL', apiBaseUrl);
+    _printConfigLine('CLIENT_ID', clientId);
+    _printConfigLine('REDIRECT_URI', redirectUri);
+    _printConfigLine('POST_LOGOUT_URI', postLogoutRedirectUri);
+    _printConfigLine('SCOPES', scopes.join(','));
+    _printConfigLine('APP_NAME', appName);
+    debugPrint('╚══════════════════════════════════════════════════════════════╝');
+    debugPrint('');
+  }
+
+  static void _printConfigLine(String key, String value) {
+    final source = _getSource(key == 'POST_LOGOUT_URI' ? 'POST_LOGOUT_REDIRECT_URI' : key);
+    final status = value.isNotEmpty ? '✓' : '✗';
+    final displayValue = value.isNotEmpty
+        ? (value.length > 35 ? '${value.substring(0, 35)}...' : value)
+        : '(missing)';
+    debugPrint('║ $status $key: $displayValue');
+    debugPrint('║   └─ source: $source');
   }
 
   static String _getSource(String key) {

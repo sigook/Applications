@@ -559,10 +559,18 @@ stages:
               failTaskOnFailedTests: false
 
           # Build iOS with Flutter (no codesign)
-          # Note: iOS uses REDIRECT_URI_IOS and POST_LOGOUT_REDIRECT_URI_IOS for IdentityServer compatibility
+          # Note: iOS uses different OAuth config than Android:
+          #   - CLIENT_ID=ios (hardcoded, IdentityServer has separate iOS client)
+          #   - REDIRECT_URI uses com.all2job scheme (from REDIRECT_URI_IOS variable)
+          #   - POST_LOGOUT_REDIRECT_URI uses com.all2job scheme (from POST_LOGOUT_REDIRECT_URI_IOS variable)
           - script: |
               cd $(workingDirectory)
               echo "Running Flutter build for iOS..."
+              echo "=== iOS OAuth Configuration ==="
+              echo "CLIENT_ID: ios (hardcoded for iOS client)"
+              echo "REDIRECT_URI: $(REDIRECT_URI_IOS)"
+              echo "POST_LOGOUT_REDIRECT_URI: $(POST_LOGOUT_REDIRECT_URI_IOS)"
+              echo "==============================="
               flutter build ios \
                 -t lib/main_staging.dart \
                 --release \
@@ -571,7 +579,7 @@ stages:
                 --dart-define=ENVIRONMENT=staging \
                 "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
                 "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-                "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
+                --dart-define=CLIENT_ID=ios \
                 "--dart-define=REDIRECT_URI=$(REDIRECT_URI_IOS)" \
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI_IOS)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
@@ -642,14 +650,24 @@ stages:
                 echo "IPA: sigook-staging-$(Build.BuildId).ipa"
                 echo "Build ID: $(Build.BuildId)"
                 echo "========================================"
+                echo ""
+                echo "📥 TO DOWNLOAD THE IPA:"
+                echo "1. Go to this pipeline run in Azure DevOps"
+                echo "2. Click 'Artifacts' (or '1 artifact' link)"
+                echo "3. Click 'sigookapp-ios-staging'"
+                echo "4. Download sigook-staging-$(Build.BuildId).ipa"
+                echo "========================================"
 
   # ============================================
-  # Stage 4: Deploy iOS to TestFlight
+  # Stage 4: Deploy iOS to TestFlight (DISABLED)
   # ============================================
+  # IPA is available as a downloadable artifact from the Build_iOS_Staging stage.
+  # To download: Go to Pipeline Run > Artifacts > sigookapp-ios-staging
+  # Re-enable this stage when ready for TestFlight deployment.
   - stage: Deploy_iOS_TestFlight
     displayName: 'Deploy iOS to TestFlight'
     dependsOn: Build_iOS_Staging
-    condition: succeeded() # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false # DISABLED - IPA available as artifact for manual download
     pool:
       vmImage: 'macos-14'
     variables:

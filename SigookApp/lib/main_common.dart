@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'core/config/environment.dart';
 import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -10,6 +11,12 @@ import 'core/constants/error_messages.dart';
 Future<void> mainCommon() async {
   try {
     debugPrint('📱 Starting app initialization...');
+
+    // Print environment configuration for debugging
+    EnvironmentConfig.printConfigSource();
+
+    // Validate required configuration values
+    EnvironmentConfig.validateRequiredConfig();
 
     debugPrint('📦 Loading SharedPreferences...');
     final sharedPreferences = await SharedPreferences.getInstance();

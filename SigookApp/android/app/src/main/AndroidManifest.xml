@@ -37,21 +37,20 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- OAuth login redirect -->
+            <!-- OAuth login redirect - must match IdentityServer Android client -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="sigookcallback" android:host="oauth2redirect" android:pathPrefix="/" />
-                <data android:scheme="sigookcallback" android:host="logout" />
+                <data android:scheme="com.sigook" android:host="oauth2redirect" />
             </intent-filter>
 
-            <!-- OAuth logout redirect -->
+            <!-- OAuth logout redirect - must match IdentityServer Android client -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="sigookcallback" android:host="oauth2logout" />
+                <data android:scheme="com.sigook" android:host="oauth2logout" />
             </intent-filter>
 
         </activity>

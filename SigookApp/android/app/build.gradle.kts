@@ -62,7 +62,8 @@ android {
         versionName = flutter.versionName
         
         // Required for flutter_appauth
-        manifestPlaceholders["appAuthRedirectScheme"] = "sigookcallback"
+        // Must match IdentityServer Android client RedirectUris: com.sigook:/oauth2redirect
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.sigook"
         
         // Add multiDex support
         multiDexEnabled = true

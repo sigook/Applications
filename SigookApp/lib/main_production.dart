@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/config/env_loader.dart';
 import 'main_common.dart';
 
 /// Production environment entry point
@@ -13,23 +13,8 @@ Future<void> main() async {
 
   // Try to load production environment variables from .env file
   // This is optional - CI/CD builds use --dart-define instead
-  await _loadEnvFile('.env.production');
+  await EnvLoader.load('.env.production');
 
   // Run the common main app
   await mainCommon();
-}
-
-/// Attempt to load .env file, but don't fail if it doesn't exist
-/// In CI/CD, environment variables are injected via --dart-define
-Future<void> _loadEnvFile(String fileName) async {
-  try {
-    await dotenv.load(fileName: fileName);
-    debugPrint('✅ Loaded environment from $fileName');
-  } catch (e) {
-    // .env file not found - this is expected in CI/CD builds
-    // Environment variables will be provided via --dart-define
-    debugPrint(
-      'ℹ️ $fileName not found, using dart-define environment variables',
-    );
-  }
 }
