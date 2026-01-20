@@ -233,19 +233,21 @@ watch(showApplyDialog, (newValue) => {
 .jobs-section {
   padding: 60px 0 100px;
   background-color: #f9f9f9;
+  border-radius: 0 0 100px 100px;
 }
 
 .jobs-layout {
   display: flex;
-  gap: 30px;
+  gap: 20px; /* Reducido de 30px */
   align-items: flex-start;
+  padding: 0 60px; /* Espacio lateral en desktop */
 }
 
 /* === COLUMNA IZQUIERDA (LISTA) === */
 .jobs-list-col {
-  width: 35%;
+  width: 25%; /* Reducido de 35% */
   flex-shrink: 0;
-  margin: 3rem;
+  margin: 0; /* Margen eliminado para reducir espacio */
 }
 
 .list-header {
@@ -332,7 +334,7 @@ watch(showApplyDialog, (newValue) => {
 /* === COLUMNA DERECHA (DETALLE) === */
 .job-detail-col {
   flex: 1;
-  margin: 3rem;
+  margin: 0; /* Margen eliminado */
 }
 
 .detail-card {
@@ -502,6 +504,7 @@ watch(showApplyDialog, (newValue) => {
 @media (max-width: 900px) {
   .jobs-layout {
     flex-direction: column;
+    padding: 0; /* Reset en móvil */
   }
 
   .jobs-list-col {

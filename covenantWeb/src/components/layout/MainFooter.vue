@@ -40,24 +40,11 @@
         <!-- NAV 2 -->
         <div class="footer__col footer__nav-2">
           <div class="footer__block">
-            <p class="footer__section">For Business</p>
-            <RouterLink class="footer__sub-link" to="/employers?type=professional">
-              Professional
-            </RouterLink>
-            <RouterLink class="footer__sub-link" to="/employers?type=industrial">
-              Industrial
-            </RouterLink>
+            <RouterLink class="footer__section footer__link" to="/employers">Employers</RouterLink>
           </div>
           <div class="footer__block">
-            <p class="footer__section">For Talents</p>
-            <RouterLink class="footer__sub-link" to="/talents?type=professional">
-              Professional
-            </RouterLink>
-            <RouterLink class="footer__sub-link" to="/talents?type=industrial">
-              Industrial
-            </RouterLink>
+            <RouterLink class="footer__section footer__link" to="/talents">Talents</RouterLink>
           </div>
-
         </div>
 
         <!-- NAV 3 -->
@@ -65,9 +52,9 @@
           <RouterLink class="footer__link" to="/become-partner">
             Become a Partner
           </RouterLink>
-          <RouterLink class="footer__link" to="/#download">
+          <a class="footer__link" href="https://apps.apple.com/co/app/sigook/id1446736193" target="_blank" rel="noopener noreferrer">
             Download Our App
-          </RouterLink>
+          </a>
         </div>
       </div>
     </div>
@@ -75,11 +62,11 @@
     <!-- ZONA BLANCA CON LOGO Y COPYRIGHT -->
     <div class="footer__bottom">
       <img
-        src="@/assets/images/logo-covenant-footer.svg"
+        src="@/assets/images/logo-covenant-footer.png"
         alt="Covenant Group"
         class="footer__logo"
       />
-      <p class="footer__copy">© 2025 COVENANT GROUP LTD</p>
+      <p class="footer__copy">© 2026 COVENANT GROUP LTD</p>
     </div>
   </footer>
 </template>

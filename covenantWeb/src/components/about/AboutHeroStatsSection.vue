@@ -20,12 +20,12 @@
 
         <p class="about__text">
           Our success is built on values we live by: fairness, respect, and
-          genuine care for those we serve. At Covenant, we believe that trust
+          genuine care for those we serve. At Covenant Group, we believe that trust
           and integrity are what truly connect people — and that is where
           lasting partnerships begin.
         </p>
 
-        <button class="about__cta">
+        <button class="about__cta" @click="scrollToContact">
           Get in Touch >
         </button>
       </div>
@@ -71,6 +71,12 @@
 </template>
 
 <script setup lang="ts">
+const scrollToContact = () => {
+  const el = document.getElementById('contact-section')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <style scoped>

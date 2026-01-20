@@ -70,8 +70,8 @@
   import { RouterLink, useRoute } from 'vue-router'
 
   // --- IMPORTS DE IMAGENES ---
-  import logoWhite from '@/assets/images/logo-covenant-white.svg'
-  import logoColor from '@/assets/images/logo-covenant-footer.svg'
+  import logoWhite from '@/assets/images/logo-covenant-white.png'
+  import logoColor from '@/assets/images/logo-covenant-footer.png'
 
   const route = useRoute()
   const isScrolled = ref<boolean>(false)

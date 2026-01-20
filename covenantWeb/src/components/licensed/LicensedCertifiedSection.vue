@@ -107,20 +107,19 @@
   const route = useRoute()
 
   const goToContact = async () => {
-    // Si estamos en el home, scrolleamos directo
-    if (route.path === '/') {
-       const el = document.getElementById('contact-form')
+    // Si estamos en la página "About" (/about), scrolleamos directo
+    if (route.path === '/about') {
+       const el = document.getElementById('contact-section')
        if (el) {
          el.scrollIntoView({ behavior: 'smooth' })
        }
     } else {
-      // Si estamos en otra página, vamos al home y el router o el onMounted del home deberían manejarlo
-      // pero mandamos el hash explícitamente y intentamos scrollear tras la navegación por si acaso.
-      await router.push({ path: '/', hash: '#contact-form' })
+      // Si estamos en otra página, ir a /about con el hash correcto
+      await router.push({ path: '/about', hash: '#contact-section' })
       
-      // Intentar asegurar el scroll si la navegación no recarga la app completa (SPA navigation)
+      // Intentar asegurar el scroll si la navegación no recarga la app completa
       nextTick(() => {
-        const el = document.getElementById('contact-form')
+        const el = document.getElementById('contact-section')
         if (el) el.scrollIntoView({ behavior: 'smooth' })
       })
     }
@@ -332,12 +331,19 @@
 
 /* ========= RESPONSIVE ========= */
 
-/* Ajuste para Laptops/Tablets (1024px) */
+/* Ajuste para Laptops grandes (1440px) */
+@media (max-width: 1600px) {
+  .licensed__hero-icon {
+    left: 150%; /* Para que entre en 1440px */
+    max-width: 280px;
+    top: 25%;
+  }
+}
+
+/* Ajuste RESTAURADO para Laptops/Tablets (1200px y menos) */
 @media (max-width: 1200px) {
   .licensed__hero-icon {
-    left: 120%; /* Traerlo dentro de la pantalla */
-    max-width: 280px; /* Reducir tamaño */
-    top: 25%;
+    left: 120%; /* Posición original "antes" para pantallas más chicas */
   }
 }
 

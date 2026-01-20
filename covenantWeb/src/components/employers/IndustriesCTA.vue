@@ -5,7 +5,7 @@
       <p class="industries-cta__text">
         We proudly serve a wide range of industries, including corporate, professional, manufacturing, and logistics sectors. Our tailored recruitment solutions ensure that businesses across diverse fields find the right talent to achieve lasting success.
       </p>
-      <button class="industries-cta__btn" @click="$emit('scrollToContact')">
+      <button class="industries-cta__btn" @click="scrollToContact">
         Contact Us
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
       </button>
@@ -14,7 +14,12 @@
 </template>
 
 <script setup lang="ts">
-defineEmits(['scrollToContact'])
+const scrollToContact = () => {
+  const el = document.getElementById('contact-section')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <style scoped>

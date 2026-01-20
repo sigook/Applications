@@ -1,5 +1,5 @@
 <template>
-  <section class="contact-cta" data-aos="fade-up">
+  <section id="contact-section" class="contact-cta" data-aos="fade-up">
     <!-- CÍRCULO VERDE CON TEXTO -->
     <div class="contact-cta__circle">
       <h2 class="contact-cta__title">Get in Touch!</h2>

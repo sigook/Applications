@@ -300,6 +300,7 @@ const resetForm = () => {
   font-weight: 600;
   color: #222222;
   margin-bottom: 6px;
+  text-align: left;
 }
 
 .contact-form__input {

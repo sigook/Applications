@@ -55,7 +55,7 @@
               </div>
 
               <div class="detail-content">
-                <h4 class="detail-title">Roles our clients hire for {{ role.title }}</h4>
+                <h4 class="detail-title">Roles our clients hire for <br /> {{ role.title }}</h4>
                 <ul class="detail-list">
                   <li v-for="(item, i) in role.detailList" :key="i">{{ item }}</li>
                 </ul>
@@ -135,7 +135,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 .container { max-width: 100%; margin: 0; padding: 0; }
 .roles-section__title {
   text-align: center; color: white; margin-bottom: 60px;
-  font-size: 2.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  font-size: 2.2rem; font-weight: 300; text-transform: capitalize; letter-spacing: 1px;
 }
 .roles-list { display: flex; flex-direction: column; gap: 25px; }
 
@@ -151,7 +151,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 /* ESTADO EXPANDIDO (DETALLE) */
 .role-card.is-detailed {
   width: 100%; /* Ocupar todo el ancho */
-  height: 270px; /* Aumentar altura en desktop */
+  height: 450px; /* Altura aumentada para escritorio */
   border-radius: 150px 0 150px 0; /* Solo bordes Sup-Izq e Inf-Der redondeados */
   z-index: 10; /* Elevar sobre los demás */
   align-self: center; /* Centrar para evitar saltos extraños desde left/right */
@@ -289,9 +289,12 @@ const roles: RoleTalent[] = rolesTalentsData;
   text-align: left; /* Asegurar alineación izquierda incluso en cartas 'right' */
 
   /* Layout columnas para la lista */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px; 
+  /* Scroll si es necesario */
+  max-height: 400px; 
+  overflow-y: auto;
 }
 
 
@@ -454,7 +457,7 @@ const roles: RoleTalent[] = rolesTalentsData;
 
   /* Increase height significantly when detailed on mobile */
   .role-card.is-detailed {
-    height: 550px !important;
+    height: 600px !important; /* Altura aumentada para móvil */
   }
 
   /* Allow list to expand */
@@ -462,7 +465,7 @@ const roles: RoleTalent[] = rolesTalentsData;
     grid-template-columns: 1fr;
     font-size: 0.8rem;
     gap: 4px;
-    max-height: 350px; /* Increased from 140px */
+    max-height: 250px; /* Reducido acorde a la carta */
     overflow-y: auto;
   }
 }

@@ -5,7 +5,6 @@
         v-for="industry in industries"
         :key="industry.id"
         class="ind-card"
-        :class="{ 'ind-card--flipped-active': borderId === industry.id }"
       >
         <div
           class="ind-card__inner"
@@ -15,7 +14,11 @@
           <!-- CARA FRONTAL -->
           <div class="ind-card__face ind-card__face--front">
             <div class="ind-card__bg">
-              <img :src="industry.image" :alt="industry.label" />
+              <img
+                :src="industry.image"
+                :alt="industry.label"
+                class="ind-card__img--gray"
+              />
               <div class="ind-card__overlay"></div>
             </div>
 
@@ -59,6 +62,27 @@
         </div>
       </div>
     </div>
+    <!-- CLIP PATH SVG DEFINITION (Hidden) -->
+    <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+      <defs>
+        <clipPath id="ind-card-clip" clipPathUnits="objectBoundingBox">
+         <path d="M 0 0.2
+                  L 0 0.95
+                  Q 0 1 0.05 0.985
+                  L 0.45 0.865
+                  Q 0.5 0.85 0.55 0.865
+                  L 0.95 0.985
+                  Q 1 1 1 0.95
+                  L 1 0.2
+                  Q 1 0.15 0.95 0.135
+                  L 0.55 0.015
+                  Q 0.5 0 0.45 0.015
+                  L 0.05 0.135
+                  Q 0 0.15 0 0.2
+                  Z" />
+        </clipPath>
+      </defs>
+    </svg>
   </section>
 </template>
 
@@ -91,7 +115,7 @@
     {
       id: 1,
       label: 'Automotive',
-      image: new URL('@/assets/images/ind-automotive.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-automotive.png', import.meta.url).href,
       icon: iconAutomotive,
       description:
         'We supply skilled talent for the automotive industry—from technicians to engineers. Our candidates support manufacturing, repair, and sales across all vehicle types.',
@@ -99,7 +123,7 @@
     {
       id: 2,
       label: 'Aviation',
-      image: new URL('@/assets/images/ind-aviation.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-aviation.png', import.meta.url).href,
       icon: iconAviation,
       description:
         'We recruit aviation experts—pilots, technicians, and support staff. Our candidates help airlines and aviation firms maintain safety, compliance, and operational excellence.',
@@ -107,7 +131,7 @@
     {
       id: 3,
       label: 'Construction',
-      image: new URL('@/assets/images/ind-construction.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-construction.png', import.meta.url).href,
       icon: iconConstruction,
       description:
         'We connect skilled tradespeople and professionals with top-tier construction companies. We provide talent that drives growth and ensures quality from the ground up.',
@@ -115,7 +139,7 @@
     {
       id: 4,
       label: 'Engineering',
-      image: new URL('@/assets/images/ind-engineering.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-engineering.png', import.meta.url).href,
       icon: iconEngineering,
       description:
         'We recruit engineers across multiple disciplines. Our candidates bring innovation, precision, and technical expertise to every project, fueling infrastructure and development.',
@@ -123,7 +147,7 @@
     {
       id: 5,
       label: 'IT / AI',
-      image: new URL('@/assets/images/ind-it-ai.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-it-ai.png', import.meta.url).href,
       icon: iconAi,
       description:
         'We source top tech talent in software, data, and AI. Our candidates fuel innovation, boost performance, and deliver smart solutions in fast-evolving digital environments.',
@@ -131,7 +155,7 @@
     {
       id: 6,
       label: 'Financial',
-      image: new URL('@/assets/images/ind-financial.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-financial.png', import.meta.url).href,
       icon: iconFinancial,
       description:
         'We source skilled finance professionals in banking, accounting, and more. Our candidates bring accuracy, compliance, and insight to fast-paced financial environments.',
@@ -139,7 +163,7 @@
     {
       id: 7,
       label: 'Legal / Accounting',
-      image: new URL('@/assets/images/ind-legal.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-legal.png', import.meta.url).href,
       icon: iconLegal,
       description:
         'We recruit legal professionals, including assistants, paralegals, and lawyers. Our candidates bring organization, precision, and expertise to every legal team.',
@@ -147,7 +171,7 @@
     {
       id: 8,
       label: 'Logistics, 3PL/4PL',
-      image: new URL('@/assets/images/ind-logistics.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-logistics.png', import.meta.url).href,
       icon: iconLogistics,
       description:
         'We provide logistics and supply chain talent—from warehouse workers to dispatchers. Our candidates help streamline operations and ensure timely, accurate delivery.',
@@ -155,7 +179,7 @@
     {
       id: 9,
       label: 'Manufacturing',
-      image: new URL('@/assets/images/ind-manufacturing.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-manufacturing.png', import.meta.url).href,
       icon: iconManufacturing,
       description:
         'We support manufacturing with reliable workers—machine operators, assemblers, and supervisors. Our talent helps boost productivity, safety, and product quality.',
@@ -163,7 +187,7 @@
     {
       id: 10,
       label: 'Retail',
-      image: new URL('@/assets/images/ind-retail.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-retail.png', import.meta.url).href,
       icon: iconRetail,
       description:
         'We provide retail staff at all levels—from sales associates to managers. Our candidates deliver strong customer service and help drive daily operations and sales success.',
@@ -171,7 +195,7 @@
     {
       id: 11,
       label: 'Transportation',
-      image: new URL('@/assets/images/ind-transportation.jpg', import.meta.url).href,
+      image: new URL('@/assets/images/ind-transportation.png', import.meta.url).href,
       icon: iconTransportation,
       description:
         'We recruit drivers, coordinators, and support staff for transport operations. Our candidates keep people and goods moving safely, efficiently, and on schedule.',
@@ -180,8 +204,6 @@
 
   // id de la card actualmente abierta
   const activeId = ref<number | null>(null)
-  // id de la card que debe mostrar el borde (solo cuando está quieta y abierta)
-  const borderId = ref<number | null>(null)
   
   // Guardamos refs de los elementos DOM
   const cardRefs = new Map<number, HTMLElement>()
@@ -192,42 +214,27 @@
   const toggleCard = (id: number): void => {
     // Si cliqueamos la misma que ya está abierta -> cerrar
     if (activeId.value === id) {
-      animateCard(id, false)
+      animateFlip(id, false)
       activeId.value = null
     } else {
       // Si hay otra abierta, cerrarla primero
       if (activeId.value !== null) {
-        animateCard(activeId.value, false)
+        animateFlip(activeId.value, false)
       }
       // Abrir la nueva
       activeId.value = id
-      animateCard(id, true)
+      animateFlip(id, true)
     }
   }
 
-  const animateCard = (id: number, open: boolean) => {
+  const animateFlip = (id: number, open: boolean) => {
     const el = cardRefs.get(id)
     if (!el) return
 
     gsap.to(el, {
       rotateY: open ? 180 : 0,
-      duration: 1.75, // Animación lenta como se pidió
-      ease: 'power2.inOut',
-      onStart: () => {
-        // Al empezar, si cerramos, quitamos el borde inmediatamente
-        // Si abrimos, esperamos al final.
-        if (!open) {
-          if (borderId.value === id) borderId.value = null
-        }
-        // Aseguramos que el navegador sepa que estamos en 3D
-        gsap.set(el, { transformStyle: 'preserve-3d' })
-      },
-      onComplete: () => {
-        // Al terminar, si abrimos, mostramos el borde
-        if (open) {
-          borderId.value = id
-        }
-      }
+      duration: 0.5, 
+      ease: 'sine.inOut', /* Animación más fluida y constante */
     })
   }
 </script>
@@ -252,21 +259,17 @@
 .ind-card {
   position: relative;
   height: 580px;
-  perspective: 1500px; /* Restaurado 3D */
-  overflow: hidden;
+  perspective: 2000px; 
+  overflow: hidden; 
 
-  /* tu forma tipo flecha */
-  clip-path: polygon(
-    0 15%,
-    0 100%,
-    50% 85%,
-    100% 100%,
-    100% 15%,
-    50% 0
-  );
+  /* tu forma tipo flecha suave (SVG clip) */
+  clip-path: url(#ind-card-clip); /* Referencia al SVG definido abajo */
 
   border-radius: 15px;
   transition: filter 0.3s ease;
+  /* Fix para Safari: Evita parpadeos en bordes */
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
 }
 
 /* Borde blanco "sólido" usando filtros cuando está girada */
@@ -277,7 +280,7 @@
     drop-shadow(-1.5px 0 0 #fff) 
     drop-shadow(0 1.5px 0 #fff) 
     drop-shadow(0 -1.5px 0 #fff);
-  z-index: 10; /* Asegurar que se vea por encima de las otras */
+  z-index: 100; /* Asegurar que se vea por encima */
 }
 
 /* contenedor interno que rota */
@@ -285,41 +288,56 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: #0F2F44; /* Fondo oscuro para evitar líneas blancas al girar */
-  /* Importante para 3D */
+  background-color: #0F2F44; 
+  transition: transform 1.2s cubic-bezier(0.4, 0.0, 0.2, 1); /* Fallback CSS si GSAP falla */
   transform-style: preserve-3d;
-  /* GSAP maneja la transición de transform ahora */
+  -webkit-transform-style: preserve-3d;
 }
-
-/* .ind-card__inner--flipped se usa para selectores descendientes */
 
 /* caras */
 .ind-card__face {
   position: absolute;
   inset: 0;
-  /* Importante: oculta la cara trasera al girar */
+  width: 100%;
+  height: 100%;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* El borde jagged puede arreglarse con esto */
+  /* Fix para "white lines": Un pixel de borde transparente o background color sólido */
+  background-color: #0F2F44; 
+  /* Fix Z-fighting */
   transform: translateZ(1px); 
 }
 
 /* ======= FRONT ======= */
 
 .ind-card__face--front {
-  background: #0F2F44; /* Fondo oscuro para evitar bordes blancos */
-  z-index: 2; /* Logically on top initially */
+  background: #0F2F44; 
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+/* No ocultamos front con opacidad, el backface-visibility lo hará */
+.ind-card__inner--flipped .ind-card__face--front {
+    pointer-events: none;
+}
+.ind-card__inner--flipped .ind-card__face--back {
+    pointer-events: auto;
 }
 
 .ind-card__bg {
   position: absolute;
   inset: 0;
+  border-radius: 15px; /* asegurar border radius */
+  overflow: hidden;
 }
 
 .ind-card__bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.ind-card__img--gray {
+  filter: grayscale(100%);
 }
 
 .ind-card__overlay {
@@ -345,6 +363,8 @@
   justify-content: flex-start;
 
   text-align: center;
+  /* Fix para que el contenido no parpadee en 3D */
+  transform: translateZ(30px);
 }
 
 /* icono verde que sirve de botón (frente y dorso) */
@@ -385,28 +405,20 @@
 
 /* ======= BACK ======= */
 
-/* ======= BACK (Slide Up Animation) ======= */
-
-/* ======= BACK (3D Flip) ======= */
-
 .ind-card__face--back {
-  /* Gradiente sólido */
-  background: linear-gradient(
-    135deg, 
-    #334e60 0%, 
-    #1b3141 60%, 
-    #0f1f2a 100%
-  );
+  /* Color sólido único solicitado */
+  background: #334E60;
   color: #ffffff;
   
-  /* Posición inicial para 3D: Rotada 180deg */
+  /* Posición inicial 3D: Rotada 180deg */
   transform: rotateY(180deg);
   position: absolute;
   inset: 0;
   height: 100%;
-  z-index: 5;
-  
-  /* GSAP maneja la animación */
+  z-index: 1;
+  /* Restauramos visibilidad normal, oculta por backface */
+  opacity: 1; 
+  pointer-events: auto; 
 }
 
 /* contenido del reverso */

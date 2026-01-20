@@ -1,50 +1,126 @@
 <template>
   <section class="hero" data-aos="fade-in">
-    <!-- Fondo -->
-    <div class="hero__bg">
-      <!-- cambia la ruta de la imagen por la tuya -->
-      <img src="@/assets/images/hero-team.jpg" alt="Team high five" />
-      <div class="hero__overlay"></div>
+    <!-- Fondo Slider -->
+    <div class="hero__bg-container">
+      <transition-group name="hero-fade">
+        <div
+          v-for="(slide, index) in slides"
+          :key="index"
+          class="hero__bg"
+          v-show="currentSlide === index"
+        >
+          <picture>
+            <source media="(max-width: 768px)" :srcset="slide.mobile" />
+            <img :src="slide.desktop" alt="Hero background" />
+          </picture>
+          <div class="hero__overlay"></div>
+        </div>
+      </transition-group>
     </div>
 
     <!-- Contenido centrado -->
     <div class="hero__content">
-      <!-- Logo (puede ser un solo svg con icono+texto) -->
-      <img
-        class="hero__logo"
-        src="@/assets/images/logo-covenant-white.svg"
-        alt="Covenant Group Ltd."
-      />
+      <!-- Logo -->
+      <div class="hero__logo-wrapper">
+        <img
+          class="hero__logo"
+          src="@/assets/images/logo-covenant-white.png"
+          alt="Covenant Group Ltd."
+        />
+      </div>
 
       <!-- Botón principal -->
-      <button class="hero__cta" @click="scrollToNext">
-        Get Started
-      </button>
+      <div class="hero__cta-wrapper">
+        <button class="hero__cta" @click="scrollToNext">
+          Get Started
+        </button>
+      </div>
 
-      <!-- Texto inferior -->
-      <p class="hero__subtitle">
-        Behind Every Great Canadian<br />
-        Company is a Great Talent
-      </p>
+      <!-- Texto inferior con transición -->
+      <transition name="text-fade" mode="out-in">
+        <p class="hero__subtitle" :key="currentSlide" v-html="slides[currentSlide].text"></p>
+      </transition>
 
       <!-- Dots del slider -->
       <div class="hero__dots">
-        <span class="hero__dot hero__dot--active"></span>
-        <span class="hero__dot"></span>
-        <span class="hero__dot"></span>
+        <button
+          v-for="(slide, index) in slides"
+          :key="index"
+          class="hero__dot"
+          :class="{ 'hero__dot--active': index === currentSlide }"
+          @click="setSlide(index)"
+          :aria-label="'Go to slide ' + (index + 1)"
+        ></button>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-  const scrollToNext = () => {
-    const el = document.querySelector<HTMLElement>('#for-employers')
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
-    }
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+// Importar imágenes
+import imgDesktop1 from '@/assets/images/hero-team.jpg'
+// Asumimos que la 1 no tiene versión móvil específica, usamos la misma o una por defecto
+import imgDesktop2 from '@/assets/images/hero-home-desktop-2.jpg'
+import imgMobile2 from '@/assets/images/hero-home-movile-2.jpg'
+import imgDesktop3 from '@/assets/images/hero-home-desktop-3.jpg'
+import imgMobile3 from '@/assets/images/hero-home-movile-3.jpg'
+
+const slides = [
+  {
+    desktop: imgDesktop1,
+    mobile: imgDesktop1, // Usamos la misma si no hay especifica para la 1
+    text: 'Behind Every Great Canadian<br />Company is a Great Talent'
+  },
+  {
+    desktop: imgDesktop2,
+    mobile: imgMobile2,
+    text: 'The new experience in<br /> staffing begins here'
+  },
+  {
+    desktop: imgDesktop3,
+    mobile: imgMobile3,
+    text: 'Behind Every Great Canadian<br /> Company is a Great Talent'
   }
-  </script>
+]
+
+const currentSlide = ref(0)
+let slideInterval: ReturnType<typeof setInterval> | null = null
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % slides.length
+}
+
+const setSlide = (index: number) => {
+  currentSlide.value = index
+  resetTimer()
+}
+
+const startTimer = () => {
+  slideInterval = setInterval(nextSlide, 5000) // Cambia cada 5s
+}
+
+const resetTimer = () => {
+  if (slideInterval) clearInterval(slideInterval)
+  startTimer()
+}
+
+const scrollToNext = () => {
+  const el = document.querySelector<HTMLElement>('#for-employers')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+onMounted(() => {
+  startTimer()
+})
+
+onBeforeUnmount(() => {
+  if (slideInterval) clearInterval(slideInterval)
+})
+</script>
 
 <style scoped>
 *{
@@ -59,36 +135,31 @@
   width: 100%;
   overflow: hidden;
   color: #ffffff;
+  background-color: #0F2F44; /* Fondo azul para evitar que se vea el verde del home */
 }
 
-/* contenedor principal */
-.hero__inner {
-  position: relative;
-  z-index: 2;
+/* Contenedor de fondos absolute */
+.hero__bg-container {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 140px 7vw 80px;   /* desktop */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
+  height: 100%;
+  z-index: 0;
 }
 
-/* Imagen de fondo */
+/* Imagen de fondo individual */
 .hero__bg {
   position: absolute;
   inset: 0;
-  width: 100%;            /* 🔧 cambiado de 100vw a 100% */
+  width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
-/* 🔧 ANTES: width: 100vw; */
 .hero__bg img {
-  width: 100%;            /* 🔧 cambiado de 100vw a 100% */
+  width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 /* Capa oscura */
@@ -103,6 +174,27 @@
     linear-gradient(to bottom, rgba(0, 0, 0, 0.2), #0F2F44);
 }
 
+/* TRANSICIONES DE FONDO (Fade) */
+.hero-fade-enter-active,
+.hero-fade-leave-active {
+  transition: opacity 1s ease-in-out;
+}
+.hero-fade-enter-from,
+.hero-fade-leave-to {
+  opacity: 0;
+}
+
+/* TRANSICION DE TEXTO */
+.text-fade-enter-active,
+.text-fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.text-fade-enter-from,
+.text-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 /* Contenido centrado */
 .hero__content {
   position: relative;
@@ -111,13 +203,19 @@
   margin: 0 auto;
   padding-top: 40vh;
   text-align: center;
-  animation: hero-enter 1s ease-out;
+  /* animation: hero-enter 1s ease-out; <- Eliminado para manejarlo con transitions si se desea, o dejarlo solo al inicio */
 }
+/* ... resto de estilos iguales ... */
 
 /* Logo */
 .hero__logo {
   width: 360px; /* ajusta según tu svg */
   max-width: 80vw;
+  display: block;
+  margin: 0 auto;
+}
+
+.hero__logo-wrapper {
   margin-bottom: 40px;
 }
 
@@ -149,6 +247,7 @@
   margin-bottom: 26px;
   font-size: 0.9rem;
   line-height: 1.6;
+  min-height: 3rem; /* Para evitar saltos si cambia el largo del texto */
 }
 
 /* Dots */
@@ -167,6 +266,10 @@
   border-radius: 999px;
   background: #ffffff;
   opacity: 0.6;
+  border: none; /* Asegurar que sea botón sin borde */
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
 }
 
 .hero__dot--active {
@@ -193,25 +296,6 @@
   .hero__content {
     align-items: center;
     text-align: center;
-  }
-
-  .hero__content > :first-child {
-    display: flex;
-    flex-direction: column;  /* logo arriba, botón abajo */
-    align-items: center;     /* centrados horizontalmente */
-    gap: 16px;
-  }
-
-  /* Aseguramos que el logo no tenga desplazamientos raros */
-  .hero__content img,
-  .hero__logo {
-    margin: 0 auto;
-    display: block;
-  }
-
-  /* Y que el botón quede centrado también */
-  .hero__content button {
-    margin: 0 auto;
   }
 }
 
@@ -251,9 +335,15 @@
   align-items: center;
 }
 
+.hero__logo-wrapper {
+  margin-bottom: 90px; /* Separación clara en móvil */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .hero__logo {
   max-width: 340px;
-  margin-bottom: 90px;
 }
 
 .hero__title {
