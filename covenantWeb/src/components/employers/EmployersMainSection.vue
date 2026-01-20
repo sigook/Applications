@@ -223,7 +223,7 @@ const contentData = {
       { "title": "", "text": "Reduce hiring risks and training costs with pre-screened talent." },
       { "title": "", "text": "Seamless transition from temporary to permanent employment." }
     ],
-    card2Title: "TEMPORAL /<br>SEASONAL",
+    card2Title: "TEMPORARY /<br>SEASONAL",
     card2Desc: "Our team delivers fast, flexible staffing solutions to keep your operations running smoothly.",
     card2Benefits: [
       { "title": "", "text": "Quickly fill roles during peak demand or staff shortages." },

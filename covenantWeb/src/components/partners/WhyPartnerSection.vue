@@ -4,7 +4,7 @@
     <h2 class="why-partner__title">Why Partner With Us?</h2>
 
     <div class="why-partner__grid">
-      <article class="why-card why-card--highlight">
+      <article class="why-card">
         <div class="why-card__icon">
           <img src="@/assets/images/Independent icon.png" alt="Full Autonomy">
         </div>
@@ -94,12 +94,14 @@
   display: flex;              /* icono + contenido horizontal */
   align-items: center;
   gap: 16px;
+  transition: all 0.3s ease;
+  cursor: default; /* O pointer si son clickeables */
 }
 
-/* card verde destacada */
-.why-card--highlight {
-  background: #32d26a;
-  color: #05162d;
+.why-card:hover {
+  background-color: #32d26a;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 /* Icono a la izquierda */
