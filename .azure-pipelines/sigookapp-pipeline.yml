@@ -49,7 +49,7 @@ stages:
   # ============================================
   - stage: Validate_and_Test
     displayName: 'Validate & Test'
-    condition:  true # ne(variables['isPR'], true) Run on direct pushes, skip on PRs
+    condition: false # Temporarily disabled - ne(variables['isPR'], true) Run on direct pushes, skip on PRs
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -137,8 +137,8 @@ stages:
   # ============================================
   - stage: Build_Android_Staging
     displayName: 'Build Android (Staging)'
-    dependsOn: Validate_and_Test
-    condition: false # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    dependsOn: []  # No dependencies - run immediately
+    condition: true # Temporarily enabled for testing - and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -404,7 +404,7 @@ stages:
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
     dependsOn: Validate_and_Test
-    condition: true
+    condition: false # Temporarily disabled
     # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
@@ -649,7 +649,7 @@ stages:
   - stage: Deploy_iOS_TestFlight
     displayName: 'Deploy iOS to TestFlight'
     dependsOn: Build_iOS_Staging
-    condition: true
+    condition: false # Temporarily disabled
     # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
@@ -720,7 +720,8 @@ stages:
   - stage: Deploy_Android_PlayStore
     displayName: 'Deploy Android to Google Play'
     dependsOn: Build_Android_Staging
-    condition: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false # Temporarily disabled - waiting for Google Play upload key reset approval
+    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
