@@ -61,7 +61,10 @@
           <div v-if="selectedJob" class="detail-card">
 
             <div class="detail-header">
-              <h2 class="detail-title">{{ selectedJob.title }}</h2>
+              <h2 class="detail-title">
+                {{ selectedJob.title }}
+                <span class="detail-id">#{{ selectedJob.numberId }}</span>
+              </h2>
               <div class="detail-meta">
                 <span class="meta-item location">{{ selectedJob.location }}</span>
                 <span class="meta-item salary" v-if="selectedJob.salary !== '$0.00'">{{ selectedJob.salary }} / hr</span>
@@ -353,6 +356,14 @@ watch(showApplyDialog, (newValue) => {
   font-weight: 800;
   color: #05162d;
   margin-bottom: 10px;
+}
+
+.detail-id {
+  font-size: 1.2rem;
+  color: #888;
+  font-weight: 600;
+  margin-left: 10px;
+  vertical-align: middle;
 }
 
 .detail-meta {

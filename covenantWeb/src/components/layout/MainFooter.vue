@@ -27,6 +27,30 @@
               info@covenantgroupl.com
             </a>
           </div>
+
+          <!-- REDES SOCIALES (MOBILE DUPLICADO) -->
+          <div class="footer__block footer__networks footer__networks--mobile">
+            <p class="footer__label">Our Networks:</p>
+            <div class="footer__social-icons">
+               <a href="https://www.facebook.com/profile.php?id=100089266672818&locale=es_LA" target="_blank">
+                <img src="@/assets/images/footer-icons/Facebook.svg" alt="Facebook" title="Facebook"/>
+              </a>
+              <a href="https://www.instagram.com/covenantgroup_talent" target="_blank">
+                <img src="@/assets/images/footer-icons/Instagram.svg" alt="Instagram" title="Instagram" />
+              </a>
+              <a href="https://www.linkedin.com/company/covenantgroupl/" target="_blank">
+                <img src="@/assets/images/footer-icons/Linkedin.svg" alt="LinkedIn" title="LinkedIn" />
+              </a>
+              <a href="https://www.indeed.com/" target="_blank">
+                <img src="@/assets/images/footer-icons/indeed.svg" alt="Indeed" title="Indeed" />
+              </a>
+              <a href="https://www.ziprecruiter.com/" target="_blank">
+                <img src="@/assets/images/footer-icons/ziprecruiter.svg" alt="ZipRecruiter" title="ZipRecruiter" />
+              </a>
+            </div>
+          </div>
+
+
         </div>
 
         <!-- NAV 1 -->
@@ -35,6 +59,28 @@
           <RouterLink class="footer__link" to="/">Home</RouterLink>
           <RouterLink class="footer__link" to="/about">About Us</RouterLink>
           <RouterLink class="footer__link" to="/industries">Industries</RouterLink>
+
+          <!-- Our Networks moved here -->
+          <div class="footer__block footer__networks footer__networks--desktop" style="margin-top: 35px;">
+            <p class="footer__section">Our Networks</p>
+            <div class="footer__social-icons">
+               <a href="https://www.facebook.com/profile.php?id=100089266672818&locale=es_LA" target="_blank">
+                <img src="@/assets/images/footer-icons/Facebook.svg" alt="Facebook" title="Facebook"/>
+              </a>
+              <a href="https://www.instagram.com/covenantgroup_talent" target="_blank">
+                <img src="@/assets/images/footer-icons/Instagram.svg" alt="Instagram" title="Instagram" />
+              </a>
+              <a href="https://www.linkedin.com/company/covenantgroupl/" target="_blank">
+                <img src="@/assets/images/footer-icons/Linkedin.svg" alt="LinkedIn" title="LinkedIn" />
+              </a>
+              <a href="https://www.indeed.com/" target="_blank">
+                <img src="@/assets/images/footer-icons/indeed.svg" alt="Indeed" title="Indeed" />
+              </a>
+              <a href="https://www.ziprecruiter.com/" target="_blank">
+                <img src="@/assets/images/footer-icons/ziprecruiter.svg" alt="ZipRecruiter" title="ZipRecruiter" />
+              </a>
+            </div>
+          </div>
         </div>
 
         <!-- NAV 2 -->
@@ -216,6 +262,34 @@ const isBlueFooter = computed(() => {
   gap: 10px;
 }
 
+/* REDES SOCIALES */
+.footer__networks--mobile {
+  display: none; /* Por defecto oculto en desktop/tablet */
+}
+
+.footer__social-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 8px;
+}
+
+.footer__social-icons a {
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.footer__social-icons a:hover {
+  transform: scale(1.1);
+  text-decoration: none;
+}
+
+.footer__social-icons img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
 /* RESPONSIVE */
 @media (max-width: 1024px) {
   .footer__panel {
@@ -243,6 +317,12 @@ const isBlueFooter = computed(() => {
 @media (max-width: 540px) {
   .footer__grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Mostrar redes sociales en móvil (dentro de contact) */
+  .footer__networks--mobile {
+    display: block;
+    margin-top: 25px;
   }
 
   .footer__col--contact {
