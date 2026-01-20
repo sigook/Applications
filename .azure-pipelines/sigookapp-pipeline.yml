@@ -137,8 +137,8 @@ stages:
   # ============================================
   - stage: Build_Android_Staging
     displayName: 'Build Android (Staging)'
-    dependsOn: []  # No dependencies - run immediately
-    condition: true # Temporarily enabled for testing - and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    dependsOn: []  # No dependencies - Validate_and_Test is disabled
+    condition: true # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -403,9 +403,8 @@ stages:
   # ============================================
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
-    dependsOn: Validate_and_Test
-    condition: false # Temporarily disabled
-    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    dependsOn: []  # No dependencies - Validate_and_Test is disabled
+    condition: true # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
@@ -560,6 +559,7 @@ stages:
               failTaskOnFailedTests: false
 
           # Build iOS with Flutter (no codesign)
+          # Note: iOS uses REDIRECT_URI_IOS and POST_LOGOUT_REDIRECT_URI_IOS for IdentityServer compatibility
           - script: |
               cd $(workingDirectory)
               echo "Running Flutter build for iOS..."
@@ -572,8 +572,8 @@ stages:
                 "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
                 "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
                 "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-                "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
+                "--dart-define=REDIRECT_URI=$(REDIRECT_URI_IOS)" \
+                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI_IOS)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
               echo "✅ Flutter iOS build complete (no codesign)"
@@ -649,8 +649,7 @@ stages:
   - stage: Deploy_iOS_TestFlight
     displayName: 'Deploy iOS to TestFlight'
     dependsOn: Build_iOS_Staging
-    condition: false # Temporarily disabled
-    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: succeeded() # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
@@ -720,8 +719,7 @@ stages:
   - stage: Deploy_Android_PlayStore
     displayName: 'Deploy Android to Google Play'
     dependsOn: Build_Android_Staging
-    condition: false # Temporarily disabled - waiting for Google Play upload key reset approval
-    # Original: and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: succeeded() # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'ubuntu-latest'
     variables:
