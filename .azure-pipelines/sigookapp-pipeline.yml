@@ -404,7 +404,7 @@ stages:
   - stage: Build_iOS_Staging
     displayName: 'Build iOS (Staging)'
     dependsOn: []  # No dependencies - Validate_and_Test is disabled
-    condition: true # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false # Temporarily disabled - and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
     pool:
       vmImage: 'macos-14'
     variables:
