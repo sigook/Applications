@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
@@ -21,13 +21,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.13.2" />
-		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="6.8.1" />
-		<PackageReference Include="GeoTimeZone" Version="6.0.0" />
+		<PackageReference Include="Azure.Identity" Version="1.14.0" />
+		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="8.1.1" />
+		<PackageReference Include="GeoTimeZone" Version="6.1.0" />
 		<PackageReference Include="Microsoft.Graph" Version="5.71.0" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.29" />
-		<PackageReference Include="FirebaseAdmin" Version="2.3.0" />
-		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.13" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+		<PackageReference Include="FirebaseAdmin" Version="3.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.11" />
 	</ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
