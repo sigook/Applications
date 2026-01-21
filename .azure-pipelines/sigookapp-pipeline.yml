@@ -1,5 +1,5 @@
 # Azure Pipeline for SigookApp (Flutter Mobile Application)
-# Builds Android APK and iOS IPA for beta releases (staging environment only)
+# Currently optimized for iOS IPA build only - other stages disabled to save minutes
 
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -14,14 +14,12 @@ trigger:
     include:
       - SigookApp/**
       - .azure-pipelines/sigookapp-pipeline.yml
-      - .azure-pipelines/templates/flutter-setup.yml
     exclude:
       - SigookApp/README.md
       - SigookApp/docs/**
       - SigookApp/**/*.md
 
 # PR trigger - only validate PRs to dev (not to main)
-# PRs to main are trusted since dev is the quality gate
 pr:
   branches:
     include:
@@ -34,111 +32,31 @@ pr:
       - SigookApp/README.md
       - SigookApp/docs/**
 
-# Environment detection variables
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','main')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
-  isSigookApp: $[in(variables['Build.SourceBranch'], 'refs/heads/SigookApp','SigookApp')]
-  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   flutterVersion: 'stable'
 
 stages:
   # ============================================
-  # Stage 1: Validate and Test
+  # Stage 1: Validate and Test (DISABLED)
   # ============================================
   - stage: Validate_and_Test
     displayName: 'Validate & Test'
-    condition: false # Temporarily disabled - ne(variables['isPR'], true) Run on direct pushes, skip on PRs
+    condition: false # DISABLED to save minutes
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
       - job: Flutter_Test
         displayName: 'Flutter Analyze & Test'
         steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
-
-          - task: Bash@3
-            displayName: 'Display Build Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "========================================"
-                echo "SigookApp Pipeline - Validate & Test"
-                echo "========================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "Source Branch: $(Build.SourceBranch)"
-                echo "Build Reason: $(Build.Reason)"
-                echo "Working Directory: $(workingDirectory)"
-                echo "========================================"
-
-          # Install Flutter SDK
-          - task: FlutterInstall@0
-            displayName: 'Install Flutter SDK'
-            inputs:
-              mode: 'auto'
-              channel: '$(flutterVersion)'
-              version: 'latest'
-
-          - script: |
-              flutter --version
-              flutter doctor -v
-            displayName: 'Flutter Doctor'
-
-          # Get dependencies
-          - script: |
-              cd $(workingDirectory)
-              flutter pub get
-            displayName: 'Flutter Pub Get'
-
-          # Run code generation
-          - script: |
-              cd $(workingDirectory)
-              echo "Running build_runner..."
-              flutter pub run build_runner build --delete-conflicting-outputs
-              echo "✅ Code generation completed"
-            displayName: 'Run Build Runner'
-
-          # Analyze code
-          - script: |
-              cd $(workingDirectory)
-              echo "Running flutter analyze..."
-              flutter analyze --no-fatal-infos
-              echo "✅ Code analysis passed"
-            displayName: 'Flutter Analyze'
-
-          # Run tests
-          - script: |
-              cd $(workingDirectory)
-              echo "Running flutter test..."
-              flutter test --coverage --machine > test-results.json || true
-              echo "✅ Tests completed"
-            displayName: 'Flutter Test'
-
-          # Publish test results (if test output exists)
-          - task: Bash@3
-            displayName: 'Test Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                cd $(workingDirectory)
-                if [ -f "test-results.json" ]; then
-                  echo "Test results generated"
-                  cat test-results.json | head -100
-                else
-                  echo "No test results file found"
-                fi
-                echo ""
-                echo "✅ Validation stage completed!"
+          - script: echo "Validation stage disabled"
 
   # ============================================
-  # Stage 2: Build Android AAB (Beta)
+  # Stage 2: Build Android AAB (DISABLED)
   # ============================================
   - stage: Build_Android_Staging
     displayName: 'Build Android (Staging)'
-    dependsOn: []  # No dependencies - Validate_and_Test is disabled
-    condition: true # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false # DISABLED to save minutes - re-enable when needed
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -149,262 +67,16 @@ stages:
       - job: Build_AAB_Staging
         displayName: 'Build Staging AAB'
         steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
-
-          - task: Bash@3
-            displayName: 'Display Build Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "========================================"
-                echo "Android Staging Build"
-                echo "========================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "Source Branch: $(Build.SourceBranch)"
-                echo "========================================"
-
-          # Free up disk space
-          - script: |
-              echo "=== Disk space before cleanup ==="
-              df -h /
-              sudo rm -rf /usr/share/dotnet
-              sudo rm -rf /usr/local/lib/android/sdk/ndk
-              sudo rm -rf /opt/ghc
-              sudo rm -rf /opt/hostedtoolcache
-              echo "=== Disk space after cleanup ==="
-              df -h /
-            displayName: 'Free Disk Space'
-            continueOnError: true
-
-          # Download keystore
-          - task: DownloadSecureFile@1
-            name: androidKeystore
-            displayName: 'Download Android Keystore'
-            inputs:
-              secureFile: 'upload-keystore.jks'
-
-          - script: |
-              cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
-              echo "✅ Keystore copied"
-            displayName: 'Setup Keystore'
-
-          # Install Flutter SDK
-          - task: FlutterInstall@0
-            displayName: 'Install Flutter SDK'
-            inputs:
-              mode: 'auto'
-              channel: '$(flutterVersion)'
-              version: 'latest'
-
-          # Get dependencies
-          - script: |
-              cd $(workingDirectory)
-              flutter pub get
-            displayName: 'Flutter Pub Get'
-
-          # Cache Gradle dependencies with refined key
-          - task: Cache@2
-            displayName: 'Cache Gradle'
-            inputs:
-              key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts | $(workingDirectory)/android/gradle/wrapper/gradle-wrapper.properties'
-              restoreKeys: |
-                gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts
-                gradle | "$(Agent.OS)"
-              path: $(HOME)/.gradle/caches
-
-          # Cache Flutter pub packages with refined key
-          - task: Cache@2
-            displayName: 'Cache Flutter Packages'
-            inputs:
-              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock | $(workingDirectory)/pubspec.yaml'
-              restoreKeys: |
-                pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
-                pub | "$(Agent.OS)"
-              path: $(HOME)/.pub-cache
-
-          # Run code generation
-          - script: |
-              cd $(workingDirectory)
-              flutter pub run build_runner build --delete-conflicting-outputs
-            displayName: 'Run Build Runner'
-
-          # Clean Android local.properties
-          - script: |
-              cd $(workingDirectory)/android
-              rm -f local.properties
-              echo "✅ Cleaned local.properties"
-            displayName: 'Clean Android local.properties'
-            continueOnError: true
-
-          # Accept Android SDK licenses
-          - script: |
-              rm -rf $ANDROID_HOME/ndk/.temp 2>/dev/null || true
-              rm -rf $ANDROID_HOME/.temp 2>/dev/null || true
-              yes | sdkmanager --licenses || true
-              echo "✅ Android SDK licenses accepted"
-            displayName: 'Accept Android SDK Licenses'
-            continueOnError: true
-
-          # Install and Configure Android NDK
-          - script: |
-              echo "=== Installing Android NDK ==="
-              # Install specific NDK version that matches Flutter's requirements
-              echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;28.2.13676358" || true
-
-              # Wait for installation to complete
-              sleep 5
-
-              # Set ANDROID_NDK_HOME to the installed NDK
-              NDK_PATH="$ANDROID_HOME/ndk/28.2.13676358"
-              echo "NDK Path: $NDK_PATH"
-
-              if [ -d "$NDK_PATH" ]; then
-                echo "✅ NDK installed successfully"
-                echo "##vso[task.setvariable variable=ANDROID_NDK_HOME]$NDK_PATH"
-                ls -la "$NDK_PATH/"
-
-                # Verify toolchains
-                if [ -d "$NDK_PATH/toolchains/llvm/prebuilt" ]; then
-                  echo "✅ NDK toolchains found"
-                else
-                  echo "⚠️ NDK toolchains not found at expected location"
-                fi
-              else
-                echo "⚠️ NDK installation may have failed"
-                echo "Checking available NDKs:"
-                ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
-              fi
-            displayName: 'Install and Configure Android NDK'
-
-          # Install fastlane
-          - script: |
-              cd $(workingDirectory)
-              sudo gem install fastlane -NV
-              echo "✅ Fastlane installed"
-            displayName: 'Install Fastlane'
-
-          # Run Flutter tests
-          - script: |
-              cd $(workingDirectory)
-              flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-            displayName: 'Run Flutter Tests'
-            continueOnError: true
-
-          # Publish test results
-          - task: PublishTestResults@2
-            displayName: 'Publish Test Results'
-            condition: always()
-            continueOnError: true
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '$(workingDirectory)/test-results.json'
-              failTaskOnFailedTests: false
-
-          # Build AAB with Flutter
-          - script: |
-              cd $(workingDirectory)
-              echo "Building Android AAB..."
-              echo "ANDROID_NDK_HOME: $(ANDROID_NDK_HOME)"
-              echo "ANDROID_HOME: $ANDROID_HOME"
-
-              # Remove key.properties to force use of environment variables
-              if [ -f "android/key.properties" ]; then
-                echo "Removing android/key.properties to use pipeline environment variables"
-                rm android/key.properties
-              fi
-
-              # Debug: Print keystore signing configuration
-              echo "=== Keystore Signing Configuration ==="
-              echo "KEYSTORE_FILE: $KEYSTORE_FILE"
-              echo "KEY_ALIAS: $KEY_ALIAS"
-              echo "KEY_PASSWORD length: ${#KEY_PASSWORD} chars"
-              echo "Keystore file exists at android/app/: $(ls -la android/app/upload-keystore.jks 2>/dev/null || echo 'NOT FOUND')"
-              echo "======================================"
-
-              # Export NDK path for Flutter/Gradle
-              export ANDROID_NDK_HOME="$(ANDROID_NDK_HOME)"
-
-              # Verify NDK is available
-              if [ -d "$ANDROID_NDK_HOME" ]; then
-                echo "✅ Using NDK at: $ANDROID_NDK_HOME"
-              else
-                echo "⚠️ WARNING: NDK not found at $ANDROID_NDK_HOME"
-                echo "Available NDKs:"
-                ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
-              fi
-
-              flutter build appbundle \
-                --flavor staging \
-                -t lib/main_staging.dart \
-                --release \
-                --build-number=$(Build.BuildId) \
-                --dart-define=ENVIRONMENT=staging \
-                "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-                "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-                "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-                "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-                "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-                "--dart-define=SCOPES=$(SCOPES)" \
-                "--dart-define=APP_NAME=$(APP_NAME)"
-
-              echo "✅ Android AAB built successfully"
-              ls -la build/app/outputs/bundle/stagingRelease/
-            displayName: 'Build Android AAB'
-            env:
-              KEYSTORE_FILE: upload-keystore.jks  # Just filename, file is in android/app/ dir
-              KEY_PASSWORD: $(KEY_PASSWORD)
-              KEY_ALIAS: sigook
-
-          # Verify and copy AAB
-          - task: Bash@3
-            displayName: 'Prepare AAB Artifact'
-            inputs:
-              targetType: 'inline'
-              workingDirectory: '$(workingDirectory)'
-              script: |
-                mkdir -p $(Build.ArtifactStagingDirectory)/android
-                
-                AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
-                if [ -n "$AAB_PATH" ]; then
-                  cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-staging-$(Build.BuildId).aab
-                  echo "✅ AAB copied: sigook-staging-$(Build.BuildId).aab"
-                  ls -la $(Build.ArtifactStagingDirectory)/android/
-                else
-                  echo "❌ AAB not found!"
-                  find . -name "*.aab" 2>/dev/null || echo "No AABs found"
-                  exit 1
-                fi
-
-          # Publish AAB artifact
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Staging AAB'
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
-              ArtifactName: 'sigookapp-android-staging'
-              publishLocation: 'Container'
-
-          - task: Bash@3
-            displayName: 'Build Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "========================================"
-                echo "✅ Staging Android Build Complete!"
-                echo "========================================"
-                echo "Artifact: sigookapp-android-staging"
-                echo "AAB: sigook-staging-$(Build.BuildId).aab"
-                echo "Build ID: $(Build.BuildId)"
-                echo "========================================"
+          - script: echo "Android build stage disabled"
 
   # ============================================
-  # Stage 3: Build iOS IPA (Beta)
+  # Stage 3: Build iOS IPA (ACTIVE)
   # ============================================
+  # This is the only active stage - builds IPA and publishes as downloadable artifact
   - stage: Build_iOS_Staging
-    displayName: 'Build iOS (Staging)'
-    dependsOn: []  # No dependencies - Validate_and_Test is disabled
-    condition: false # Temporarily disabled - and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    displayName: 'Build iOS IPA'
+    dependsOn: []
+    condition: true
     pool:
       vmImage: 'macos-14'
     variables:
@@ -415,27 +87,11 @@ stages:
         displayName: 'Build Staging IPA'
         steps:
           - checkout: self
-            displayName: 'Checkout Repository'
-
-          - task: Bash@3
-            displayName: 'Display Build Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "========================================"
-                echo "iOS Staging Build"
-                echo "========================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "Source Branch: $(Build.SourceBranch)"
-                echo "========================================"
-
-          - script: |
-              security delete-keychain ios_signing_temp.keychain || true
-            displayName: 'Cleanup signing keychain'
+            displayName: 'Checkout'
 
           # Install Apple Certificate
           - task: InstallAppleCertificate@2
-            displayName: 'Install Apple Certificate'
+            displayName: 'Install Certificate'
             inputs:
               certSecureFile: 'new-distribution.p12'
               certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
@@ -450,24 +106,9 @@ stages:
               provProfileSecureFile: '$(PROVISIONING_PROFILE)'
               removeProfile: true
 
-          # Debug: List installed provisioning profiles
-          - script: |
-              echo "=== Installed Provisioning Profiles ==="
-              ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-              echo ""
-              echo "=== Profile Details ==="
-              for profile in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
-                echo "Profile: $profile"
-                security cms -D -i "$profile" | grep -A 1 "Name\|UUID\|TeamIdentifier\|TeamName" || true
-                echo "---"
-              done
-              echo "==============================="
-            displayName: 'Debug: List Provisioning Profiles'
-            continueOnError: true
-
           # Install Flutter SDK
           - task: FlutterInstall@0
-            displayName: 'Install Flutter SDK'
+            displayName: 'Install Flutter'
             inputs:
               mode: 'auto'
               channel: '$(flutterVersion)'
@@ -479,98 +120,27 @@ stages:
               flutter pub get
             displayName: 'Flutter Pub Get'
 
-          # Cache CocoaPods
-          - task: Cache@2
-            displayName: 'Cache CocoaPods'
-            continueOnError: true
-            inputs:
-              key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(flutterVersion)'
-              restoreKeys: |
-                pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
-                pods | "$(Agent.OS)"
-              path: $(workingDirectory)/ios/Pods
-
-          # Cache DerivedData
-          - task: Cache@2
-            displayName: 'Cache Xcode DerivedData'
-            continueOnError: true
-            inputs:
-              key: 'deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(Build.SourceVersion)'
-              restoreKeys: |
-                deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
-                deriveddata | "$(Agent.OS)"
-              path: ~/Library/Developer/Xcode/DerivedData
-
-          # Cache Flutter pub packages
-          - task: Cache@2
-            displayName: 'Cache Flutter Packages'
-            inputs:
-              key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock | $(workingDirectory)/pubspec.yaml'
-              restoreKeys: |
-                pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
-                pub | "$(Agent.OS)"
-              path: $(HOME)/.pub-cache
-
           # Run code generation
           - script: |
               cd $(workingDirectory)
               flutter pub run build_runner build --delete-conflicting-outputs
-            displayName: 'Run Build Runner'
+            displayName: 'Code Generation'
 
-          # Clean and install CocoaPods dependencies
+          # Install CocoaPods
           - script: |
               cd $(workingDirectory)/ios
               pod install
-              echo "✅ CocoaPods dependencies installed"
-            displayName: 'Install CocoaPods'
+            displayName: 'Pod Install'
             continueOnError: true
 
-          # Debug: Show installed signing identities
-          - script: |
-              echo "=== Code Signing Identities ==="
-              security find-identity -v -p codesigning
-              echo "==============================="
-            displayName: 'Debug: Installed Signing Identities'
-            continueOnError: true
-
-          # Install fastlane
-          - script: |
-              cd $(workingDirectory)
-              sudo gem install fastlane -NV
-              sudo gem install cocoapods -NV
-              echo "✅ Fastlane and CocoaPods installed"
+          # Install fastlane (needed for archive & sign)
+          - script: sudo gem install fastlane -NV
             displayName: 'Install Fastlane'
 
-          # Run Flutter tests
-          - script: |
-              cd $(workingDirectory)
-              flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-            displayName: 'Run Flutter Tests'
-            continueOnError: true
-
-          # Publish test results
-          - task: PublishTestResults@2
-            displayName: 'Publish Test Results'
-            condition: always()
-            continueOnError: true
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '$(workingDirectory)/test-results.json'
-              failTaskOnFailedTests: false
-
           # Build iOS with Flutter (no codesign)
-          # Note: iOS uses different OAuth config than Android:
-          #   - CLIENT_ID=ios (hardcoded, IdentityServer has separate iOS client)
-          #   - REDIRECT_URI uses com.all2job scheme (from REDIRECT_URI_IOS variable)
-          #   - POST_LOGOUT_REDIRECT_URI uses com.all2job scheme (from POST_LOGOUT_REDIRECT_URI_IOS variable)
+          # iOS OAuth config: CLIENT_ID=ios, redirect uses com.all2job scheme
           - script: |
               cd $(workingDirectory)
-              echo "Running Flutter build for iOS..."
-              echo "=== iOS OAuth Configuration ==="
-              echo "CLIENT_ID: ios (hardcoded for iOS client)"
-              echo "REDIRECT_URI: $(REDIRECT_URI_IOS)"
-              echo "POST_LOGOUT_REDIRECT_URI: $(POST_LOGOUT_REDIRECT_URI_IOS)"
-              echo "==============================="
               flutter build ios \
                 -t lib/main_staging.dart \
                 --release \
@@ -584,216 +154,80 @@ stages:
                 "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI_IOS)" \
                 "--dart-define=SCOPES=$(SCOPES)" \
                 "--dart-define=APP_NAME=$(APP_NAME)"
-              echo "✅ Flutter iOS build complete (no codesign)"
-            displayName: 'Flutter Build iOS (No Codesign)'
+            displayName: 'Flutter Build iOS'
 
-          # Pin Xcode version to ensure consistent build environment
-          - script: |
-              echo "Selecting Xcode 16.1..."
-              sudo xcode-select -s /Applications/Xcode_16.1.app
-              xcodebuild -version
-              echo "✅ Xcode 16.1 selected"
-            displayName: 'Select Xcode Version'
+          # Select Xcode version
+          - script: sudo xcode-select -s /Applications/Xcode_16.1.app
+            displayName: 'Select Xcode 16.1'
 
-          # Archive and sign with fastlane (fastlane will handle signing configuration)
+          # Archive and sign with fastlane
           - script: |
               cd $(workingDirectory)
-              echo "Building and signing IPA with fastlane..."
               fastlane ios beta
-              echo "✅ Fastlane build complete"
             displayName: 'Fastlane Archive & Sign'
             env:
               FASTLANE_SKIP_UPDATE_CHECK: "true"
               FASTLANE_HIDE_CHANGELOG: "true"
 
-          # Copy IPA to staging directory
-          - task: Bash@3
-            displayName: 'Prepare IPA Artifact'
-            inputs:
-              targetType: 'inline'
-              workingDirectory: '$(workingDirectory)'
-              script: |
-                mkdir -p $(Build.ArtifactStagingDirectory)/ios
-                
-                echo "Output directory contents:"
-                ls -la output/ || true
-                
-                IPA_PATH=$(find output -name "*.ipa" 2>/dev/null | head -1)
-                if [ -n "$IPA_PATH" ]; then
-                  cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
-                  echo "✅ IPA copied: sigook-staging-$(Build.BuildId).ipa"
-                  ls -la $(Build.ArtifactStagingDirectory)/ios/
-                else
-                  echo "❌ IPA not found!"
-                  find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
-                  exit 1
-                fi
+          # Prepare IPA artifact
+          - script: |
+              cd $(workingDirectory)
+              mkdir -p $(Build.ArtifactStagingDirectory)/ios
+              IPA_PATH=$(find output -name "*.ipa" 2>/dev/null | head -1)
+              if [ -n "$IPA_PATH" ]; then
+                cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
+                echo "✅ IPA ready: sigook-staging-$(Build.BuildId).ipa"
+              else
+                echo "❌ IPA not found!"
+                find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+                exit 1
+              fi
+            displayName: 'Prepare IPA'
 
           # Publish IPA artifact
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Staging IPA'
+            displayName: 'Publish IPA'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
               ArtifactName: 'sigookapp-ios-staging'
               publishLocation: 'Container'
 
-          - task: Bash@3
+          - script: |
+              echo ""
+              echo "========================================"
+              echo "✅ iOS IPA Build Complete!"
+              echo "========================================"
+              echo "Artifact: sigookapp-ios-staging"
+              echo "File: sigook-staging-$(Build.BuildId).ipa"
+              echo ""
+              echo "📥 DOWNLOAD: Pipeline > Artifacts > sigookapp-ios-staging"
+              echo "========================================"
             displayName: 'Build Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "========================================"
-                echo "✅ Staging iOS Build Complete!"
-                echo "========================================"
-                echo "Artifact: sigookapp-ios-staging"
-                echo "IPA: sigook-staging-$(Build.BuildId).ipa"
-                echo "Build ID: $(Build.BuildId)"
-                echo "========================================"
-                echo ""
-                echo "📥 TO DOWNLOAD THE IPA:"
-                echo "1. Go to this pipeline run in Azure DevOps"
-                echo "2. Click 'Artifacts' (or '1 artifact' link)"
-                echo "3. Click 'sigookapp-ios-staging'"
-                echo "4. Download sigook-staging-$(Build.BuildId).ipa"
-                echo "========================================"
 
   # ============================================
   # Stage 4: Deploy iOS to TestFlight (DISABLED)
   # ============================================
-  # IPA is available as a downloadable artifact from the Build_iOS_Staging stage.
-  # To download: Go to Pipeline Run > Artifacts > sigookapp-ios-staging
-  # Re-enable this stage when ready for TestFlight deployment.
   - stage: Deploy_iOS_TestFlight
-    displayName: 'Deploy iOS to TestFlight'
+    displayName: 'Deploy to TestFlight'
     dependsOn: Build_iOS_Staging
-    condition: false # DISABLED - IPA available as artifact for manual download
+    condition: false # DISABLED - download IPA from artifacts instead
     pool:
       vmImage: 'macos-14'
-    variables:
-      - group: SigookApp-Staging
-      - group: SigookApp-iOS-Signing
     jobs:
       - job: Deploy_TestFlight
-        displayName: 'Deploy to TestFlight'
         steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
-
-          - task: Bash@3
-            displayName: 'Display Deploy Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "========================================"
-                echo "Deploy iOS to TestFlight"
-                echo "========================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "========================================"
-
-          # Download IPA artifact from build stage
-          - task: DownloadBuildArtifacts@1
-            displayName: 'Download IPA Artifact'
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'sigookapp-ios-staging'
-              downloadPath: '$(System.ArtifactsDirectory)'
-
-          # Install Ruby and Fastlane
-          - script: |
-              sudo gem install fastlane -NV
-              echo "✅ Fastlane installed"
-            displayName: 'Install Fastlane'
-
-          # Deploy to TestFlight
-          - script: |
-              cd $(System.DefaultWorkingDirectory)/SigookApp
-              IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
-              echo "Found IPA: $IPA_PATH"
-              fastlane ios deploy ipa:"$IPA_PATH"
-            displayName: 'Deploy to TestFlight'
-            env:
-              APP_STORE_CONNECT_API_KEY_ID: $(APP_STORE_CONNECT_API_KEY_ID)
-              APP_STORE_CONNECT_API_ISSUER_ID: $(APP_STORE_CONNECT_API_ISSUER_ID)
-              APP_STORE_CONNECT_API_KEY_CONTENT: $(APP_STORE_CONNECT_API_KEY_CONTENT)
-              FASTLANE_SKIP_UPDATE_CHECK: "true"
-
-          - task: Bash@3
-            displayName: 'Deploy Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "========================================"
-                echo "✅ TestFlight Deployment Complete!"
-                echo "========================================"
-                echo "Build ID: $(Build.BuildId)"
-                echo "========================================"
+          - script: echo "TestFlight deployment disabled"
 
   # ============================================
-  # Stage 5: Deploy Android to Google Play
+  # Stage 5: Deploy Android to Google Play (DISABLED)
   # ============================================
   - stage: Deploy_Android_PlayStore
-    displayName: 'Deploy Android to Google Play'
+    displayName: 'Deploy to Google Play'
     dependsOn: Build_Android_Staging
-    condition: succeeded() # and(succeeded(), eq(variables['isSigookApp'], true), ne(variables['isPR'], true))
+    condition: false # DISABLED - Android build is disabled
     pool:
       vmImage: 'ubuntu-latest'
-    variables:
-      - group: SigookApp-Staging
     jobs:
       - job: Deploy_PlayStore
-        displayName: 'Deploy to Google Play'
         steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
-
-          - task: Bash@3
-            displayName: 'Display Deploy Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "========================================"
-                echo "Deploy Android to Google Play"
-                echo "========================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "========================================"
-
-          # Download AAB artifact from build stage
-          - task: DownloadBuildArtifacts@1
-            displayName: 'Download AAB Artifact'
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'sigookapp-android-staging'
-              downloadPath: '$(System.ArtifactsDirectory)'
-
-          # Install Ruby and Fastlane
-          - script: |
-              sudo gem install fastlane -NV
-              echo "✅ Fastlane installed"
-            displayName: 'Install Fastlane'
-
-          # Deploy to Google Play
-          - script: |
-              cd $(System.DefaultWorkingDirectory)/SigookApp
-              AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
-              echo "Found AAB: $AAB_PATH"
-              fastlane android deploy aab:"$AAB_PATH"
-            displayName: 'Deploy to Google Play'
-            env:
-              GOOGLE_PLAY_JSON_KEY: $(GOOGLE_PLAY_JSON_KEY)
-              FASTLANE_SKIP_UPDATE_CHECK: "true"
-
-          - task: Bash@3
-            displayName: 'Deploy Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "========================================"
-                echo "✅ Google Play Deployment Complete!"
-                echo "========================================"
-                echo "Build ID: $(Build.BuildId)"
-                echo "========================================"
+          - script: echo "Google Play deployment disabled"
