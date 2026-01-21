@@ -66,9 +66,8 @@
         &copy; {{ year }} All rights reserved. <strong>SIGOOK<label class="superscript">®</label></strong>
       </div>
       <div class="d-flex">
-        <router-link to="/landing/privacy-policy" class="p-2">Privacy Policy</router-link>
-        <router-link to="/landing/terms-and-conditions" class="p-2">Terms and Conditions</router-link>
-        <router-link to="/landing/disclaimer" class="p-2">Disclaimer</router-link>
+        <router-link to="/privacy-policy" class="p-2">Privacy Policy</router-link>
+        <router-link to="/terms-and-conditions" class="p-2">Terms and Conditions</router-link>
       </div>
     </div>
 

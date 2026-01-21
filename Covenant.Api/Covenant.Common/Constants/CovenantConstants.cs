@@ -8,13 +8,6 @@
         public const string AgencyId = "agencyId";
         public const string AgencyIds = "agencyIds";
 
-        public static class TypeUser
-        {
-            public const string Agency = "agency";
-            public const string Worker = "worker";
-            public const string Company = "company";
-        }
-
         public static class Role
         {
             public const string Company = "company";
@@ -105,18 +98,6 @@
         {
             public const int TwentyDays = 20;
             public const double LimitForWorkerWorkedHours = 44 * 4;
-        }
-
-        public static class Invoice
-        {
-            public const string RegularLabel = "Regular";
-            public const string MissingDifferentRateLabel = "Missing different rate";
-            public const string MissingOvertimeDifferentRateLabel = "Missing Overtime different rate";
-            public const string MissingLabel = "Missing";
-            public const string MissingOvertimeLabel = "Missing Overtime";
-            public const string NightShiftLabel = "Night shift";
-            public const string HolidayLabel = "Holiday";
-            public const string OvertimeLabel = "Overtime";
         }
     }
 }

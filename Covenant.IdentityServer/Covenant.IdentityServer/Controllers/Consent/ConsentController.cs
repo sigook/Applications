@@ -37,12 +37,34 @@ namespace Covenant.IdentityServer.Controllers.Consent
         [HttpGet]
         public async Task<IActionResult> Index(string returnUrl)
         {
+            _logger.LogInformation("=== CONSENT SCREEN REQUESTED ===");
+            _logger.LogInformation("ReturnUrl: {ReturnUrl}", returnUrl ?? "(null)");
+            _logger.LogInformation("User: {UserId}", User.GetSubjectId() ?? "(null)");
+
+            var request = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            if (request != null)
+            {
+                _logger.LogInformation("Consent Request Context:");
+                _logger.LogInformation("  - ClientId: {ClientId}", request.Client?.ClientId ?? "(null)");
+                _logger.LogInformation("  - ClientName: {ClientName}", request.Client?.ClientName ?? "(null)");
+                _logger.LogInformation("  - Scopes Requested: {Scopes}", request.ValidatedResources?.RawScopeValues != null ? string.Join(", ", request.ValidatedResources.RawScopeValues) : "(none)");
+                _logger.LogInformation("  - Identity Scopes: {IdentityScopes}", request.ValidatedResources?.Resources?.IdentityResources != null ? string.Join(", ", request.ValidatedResources.Resources.IdentityResources.Select(r => r.Name)) : "(none)");
+                _logger.LogInformation("  - API Scopes: {ApiScopes}", request.ValidatedResources?.ParsedScopes != null ? string.Join(", ", request.ValidatedResources.ParsedScopes.Select(s => s.RawValue)) : "(none)");
+                _logger.LogInformation("  - AllowRememberConsent: {AllowRememberConsent}", request.Client?.AllowRememberConsent ?? false);
+            }
+            else
+            {
+                _logger.LogWarning("No authorization context found for returnUrl: {ReturnUrl}", returnUrl ?? "(null)");
+            }
+
             var vm = await BuildViewModelAsync(returnUrl);
             if (vm != null)
             {
+                _logger.LogInformation("Consent screen built successfully");
                 return View("Index", vm);
             }
 
+            _logger.LogError("Failed to build consent view model - Showing error page");
             return View("Error");
         }
 
@@ -53,13 +75,22 @@ namespace Covenant.IdentityServer.Controllers.Consent
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ConsentInputModel model)
         {
+            _logger.LogInformation("=== CONSENT SUBMISSION ===");
+            _logger.LogInformation("User: {UserId}", User.GetSubjectId() ?? "(null)");
+            _logger.LogInformation("Button: {Button}", model?.Button ?? "(null)");
+            _logger.LogInformation("ReturnUrl: {ReturnUrl}", model?.ReturnUrl ?? "(null)");
+            _logger.LogInformation("RememberConsent: {RememberConsent}", model?.RememberConsent ?? false);
+            _logger.LogInformation("Scopes Consented: {Scopes}", model?.ScopesConsented != null ? string.Join(", ", model.ScopesConsented) : "(none)");
+
             var result = await ProcessConsent(model);
 
             if (result.IsRedirect)
             {
+                _logger.LogInformation("Consent processed successfully - Redirecting to: {RedirectUri}", result.RedirectUri);
                 var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
                 if (context?.IsNativeClient() == true)
                 {
+                    _logger.LogInformation("Native client detected - Using loading page");
                     // The client is native, so this change in how to
                     // return the response is for better UX for the end user.
                     return this.LoadingPage("Redirect", result.RedirectUri);
@@ -70,14 +101,17 @@ namespace Covenant.IdentityServer.Controllers.Consent
 
             if (result.HasValidationError)
             {
+                _logger.LogWarning("Consent validation error: {ValidationError}", result.ValidationError);
                 ModelState.AddModelError(string.Empty, result.ValidationError);
             }
 
             if (result.ShowView)
             {
+                _logger.LogInformation("Redisplaying consent screen");
                 return View("Index", result.ViewModel);
             }
 
+            _logger.LogError("Consent processing failed - Showing error page");
             return View("Error");
         }
 
@@ -88,15 +122,24 @@ namespace Covenant.IdentityServer.Controllers.Consent
         {
             var result = new ProcessConsentResult();
 
+            _logger.LogInformation("Processing consent decision");
+
             // validate return url is still valid
             var request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-            if (request == null) return result;
+            if (request == null)
+            {
+                _logger.LogError("No authorization context found for ReturnUrl: {ReturnUrl}", model?.ReturnUrl ?? "(null)");
+                return result;
+            }
+
+            _logger.LogInformation("Authorization context validated for ClientId: {ClientId}", request.Client.ClientId);
 
             ConsentResponse grantedConsent = null;
 
             // user clicked 'no' - send back the standard 'access_denied' response
             if (model?.Button == "no")
             {
+                _logger.LogInformation("User denied consent for ClientId: {ClientId}", request.Client.ClientId);
                 grantedConsent = new ConsentResponse { Error = AuthorizationError.AccessDenied };
 
                 // emit event
@@ -105,13 +148,18 @@ namespace Covenant.IdentityServer.Controllers.Consent
             // user clicked 'yes' - validate the data
             else if (model?.Button == "yes")
             {
+                _logger.LogInformation("User granted consent for ClientId: {ClientId}", request.Client.ClientId);
+
                 // if the user consented to some scope, build the response model
                 if (model.ScopesConsented != null && model.ScopesConsented.Any())
                 {
+                    _logger.LogInformation("Scopes consented by user: {Scopes}", string.Join(", ", model.ScopesConsented));
+
                     var scopes = model.ScopesConsented;
                     if (ConsentOptions.EnableOfflineAccess == false)
                     {
                         scopes = scopes.Where(x => x != IdentityServer4.IdentityServerConstants.StandardScopes.OfflineAccess);
+                        _logger.LogInformation("Offline access disabled - Filtered scopes: {Scopes}", string.Join(", ", scopes));
                     }
 
                     grantedConsent = new ConsentResponse
@@ -121,30 +169,38 @@ namespace Covenant.IdentityServer.Controllers.Consent
                         Description = model.Description
                     };
 
+                    _logger.LogInformation("Consent granted - RememberConsent: {RememberConsent}, Final Scopes: {Scopes}",
+                        model.RememberConsent, string.Join(", ", grantedConsent.ScopesValuesConsented));
+
                     // emit event
                     await _events.RaiseAsync(new ConsentGrantedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues, grantedConsent.ScopesValuesConsented, grantedConsent.RememberConsent));
                 }
                 else
                 {
+                    _logger.LogWarning("User granted consent but no scopes selected");
                     result.ValidationError = ConsentOptions.MustChooseOneErrorMessage;
                 }
             }
             else
             {
+                _logger.LogWarning("Invalid consent button value: {Button}", model?.Button ?? "(null)");
                 result.ValidationError = ConsentOptions.InvalidSelectionErrorMessage;
             }
 
             if (grantedConsent != null)
             {
+                _logger.LogInformation("Granting consent to IdentityServer");
                 // communicate outcome of consent back to identityserver
                 await _interaction.GrantConsentAsync(request, grantedConsent);
 
                 // indicate that's it ok to redirect back to authorization endpoint
                 result.RedirectUri = model.ReturnUrl;
                 result.Client = request.Client;
+                _logger.LogInformation("Consent processing complete - Will redirect to: {RedirectUri}", result.RedirectUri);
             }
             else
             {
+                _logger.LogInformation("Consent not granted - Rebuilding view model");
                 // we need to redisplay the consent UI
                 result.ViewModel = await BuildViewModelAsync(model.ReturnUrl, model);
             }
