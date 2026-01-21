@@ -40,7 +40,7 @@ variables:
   value: 'stable'
 stages:
 - stage: Validate_and_Test
-  displayName: 'Validate & Test'
+  displayName: 'Validate & Test (DISABLED)'
   condition: false
   pool:
     vmImage: 'ubuntu-latest'
@@ -122,9 +122,9 @@ stages:
           echo ""
           echo "✅ Validation stage completed!"
 - stage: Build_Android_Staging
-  displayName: 'Build Android (Staging)'
+  displayName: 'Build Android (Staging) (DISABLED)'
   dependsOn: []
-  condition: true
+  condition: false
   pool:
     vmImage: 'ubuntu-latest'
   variables:
@@ -373,7 +373,7 @@ stages:
 - stage: Build_iOS_Staging
   displayName: 'Build iOS (Staging)'
   dependsOn: []
-  condition: false
+  condition: true
   pool:
     vmImage: 'macos-14'
   variables:
@@ -594,10 +594,10 @@ stages:
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
 - stage: Deploy_iOS_TestFlight
-  displayName: 'Deploy iOS to TestFlight'
+  displayName: 'Deploy iOS to TestFlight (DISABLED)'
   dependsOn:
   - Build_iOS_Staging
-  condition: succeeded()
+  condition: false
   pool:
     vmImage: 'macos-14'
   variables:
@@ -659,10 +659,10 @@ stages:
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
 - stage: Deploy_Android_PlayStore
-  displayName: 'Deploy Android to Google Play'
+  displayName: 'Deploy Android to Google Play (DISABLED)'
   dependsOn:
   - Build_Android_Staging
-  condition: succeeded()
+  condition: false
   pool:
     vmImage: 'ubuntu-latest'
   variables:
