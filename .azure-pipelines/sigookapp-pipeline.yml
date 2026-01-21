@@ -492,13 +492,14 @@ stages:
           security find-identity -v -p codesigning
           echo "==============================="
     - task: CmdLine@2
-      displayName: 'Install Fastlane'
+      displayName: 'Install Fastlane and Dependencies'
       inputs:
         script: |
           cd $(workingDirectory)
-          sudo gem install fastlane -NV
-          sudo gem install cocoapods -NV
-          echo "✅ Fastlane and CocoaPods installed"
+          # Install gems via bundler for consistent versions
+          sudo gem install bundler -NV
+          bundle install
+          echo "✅ Fastlane and dependencies installed via bundler"
     - task: CmdLine@2
       displayName: 'Run Flutter Tests'
       continueOnError: true
@@ -551,7 +552,7 @@ stages:
         script: |
           cd $(workingDirectory)
           echo "Building and signing IPA with fastlane..."
-          fastlane ios beta
+          bundle exec fastlane ios beta
           echo "✅ Fastlane build complete"
     - task: Bash@3
       displayName: 'Prepare IPA Artifact'
