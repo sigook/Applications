@@ -1,4 +1,5 @@
 using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
+using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Request;
@@ -69,7 +70,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                 });
 
                 // Create independent request instance to avoid shared state issues with parallel tests
-                var independentRequest = Common.Entities.Request.Request.AgencyCreateRequest(
+                var independentRequest = Request.AgencyCreateRequest(
                     WorkerRequestControllerTest.Data.FakeAgency.Id,
                     WorkerRequestControllerTest.Data.CompanyProfile.Company.Id,
                     WorkerRequestControllerTest.Data.FakeRequest.JobLocation,
