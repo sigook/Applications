@@ -134,12 +134,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # Environment files for LOCAL DEVELOPMENT ONLY
-    # These files are in .gitignore and won't be committed
-    # CI/CD builds use --dart-define flags instead (env files not needed there)
-    - .env.local
-    - .env.staging
-    - .env.production
+    # NOTE: Environment configuration uses --dart-define flags (no .env files needed)
+    # CI/CD passes variables via --dart-define, local dev can use .env files with flutter_dotenv
     - assets/images/
     - assets/i18n/
     - assets/i18n/error_messages_en.json
