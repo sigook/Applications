@@ -58,6 +58,7 @@ namespace Covenant.Infrastructure.Context
         public DbSet<Location> Location { get; set; }
         public DbSet<Invoice> Invoice { get; set; }
         public DbSet<InvoiceUSA> InvoiceUSA { get; set; }
+        public DbSet<InvoiceUSAItem> InvoiceUSAItems { get; set; }
         public DbSet<InvoiceUSATimeSheetTotal> InvoiceUSATimeSheetTotals { get; set; }
         public DbSet<InvoiceTotal> InvoiceTotals { get; set; }
         public DbSet<CompanyProfileInvoiceRecipient> CompanyProfileInvoiceRecipient { get; set; }

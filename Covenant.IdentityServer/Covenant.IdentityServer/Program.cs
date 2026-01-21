@@ -95,6 +95,58 @@ var app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+// Log configuration on startup
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("=== IDENTITY SERVER CONFIGURATION ===");
+logger.LogInformation("IssuerUri: {IssuerUri}", issuerUri);
+logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("ShowPII: {ShowPII}", !builder.Environment.IsProduction());
+
+// Middleware to log all incoming requests with OAuth/OIDC parameters
+app.Use(async (ctx, next) =>
+{
+    var requestLogger = ctx.RequestServices.GetRequiredService<ILogger<Program>>();
+    var path = ctx.Request.Path.Value;
+    var method = ctx.Request.Method;
+
+    // Only log authentication/authorization related endpoints to avoid noise
+    if (path != null && (path.Contains("/connect/") || path.Contains("/Account/") || path.Contains("/Consent/") || path.Contains("/External/")))
+    {
+        requestLogger.LogInformation("=== INCOMING REQUEST ===");
+        requestLogger.LogInformation("Method: {Method}", method);
+        requestLogger.LogInformation("Path: {Path}", path);
+        requestLogger.LogInformation("Query String: {QueryString}", ctx.Request.QueryString.HasValue ? ctx.Request.QueryString.Value : "(none)");
+
+        // Log individual query parameters (OAuth/OIDC parameters)
+        if (ctx.Request.Query.Count > 0)
+        {
+            requestLogger.LogInformation("Query Parameters:");
+            foreach (var param in ctx.Request.Query)
+            {
+                // Don't log sensitive values like state, code, etc. - just indicate they exist
+                if (param.Key == "client_id" || param.Key == "redirect_uri" || param.Key == "response_type" || param.Key == "scope" || param.Key == "response_mode")
+                {
+                    requestLogger.LogInformation("  - {Key}: {Value}", param.Key, param.Value.ToString());
+                }
+                else if (param.Key == "returnUrl")
+                {
+                    requestLogger.LogInformation("  - {Key}: {Value}", param.Key, param.Value.ToString());
+                }
+                else
+                {
+                    requestLogger.LogInformation("  - {Key}: [present]", param.Key);
+                }
+            }
+        }
+
+        requestLogger.LogInformation("Content-Type: {ContentType}", ctx.Request.ContentType ?? "(none)");
+        requestLogger.LogInformation("User-Agent: {UserAgent}", ctx.Request.Headers["User-Agent"].ToString() ?? "(none)");
+        requestLogger.LogInformation("Referer: {Referer}", ctx.Request.Headers["Referer"].ToString() ?? "(none)");
+    }
+
+    await next();
+});
+
 app.Use((ctx, next) =>
 {
     ctx.Request.Scheme = "https";

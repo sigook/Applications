@@ -49,49 +49,6 @@ namespace Covenant.TimeSheetTotal.Services
                 regularHours, TimeSpan.Zero, nightShiftHours, accumulatedHours);
         }
 
-        public static ITimeSheetTotal Calculate(TimeSheetApprovedBillingModel p, ref TimeSpan accumulatedHours)
-        {
-            TimeSpan timeIn = p.TimeInApproved.Value.TimeOfDay;
-            TimeSpan timeOut = p.TimeOutApproved.Value.TimeOfDay;
-
-            TimeSpan totalHours = TotalHours(timeIn, timeOut, p.BreakIsPaid, p.DurationBreak);
-
-            bool applyHoliday = WhenApplyHoliday(p.IsHoliday, p.HolidayIsPaid);
-
-            if (applyHoliday) return Common.Entities.Request.TimeSheetTotal.CreateTotalForHoliday(p.TimeSheetId, totalHours, accumulatedHours);
-
-            accumulatedHours += totalHours;
-
-            TimeSpan nightShiftHours = NightShiftHours(default, default, default, timeIn, timeOut);
-
-            TimeSpan regularHours;
-            TimeSpan overtimeHours = OvertimeHours(accumulatedHours, p.OvertimeStartsAfter, totalHours);
-            TimeSpan otherRegularHours = OvertimeHours(accumulatedHours, p.MaxHoursWeek, totalHours);
-            if (overtimeHours > TimeSpan.Zero)
-            {
-                otherRegularHours = otherRegularHours.Subtract(overtimeHours);
-                if (otherRegularHours > TimeSpan.Zero)
-                {
-                    regularHours = RegularHours(totalHours, otherRegularHours.Add(overtimeHours), nightShiftHours);
-                    return Common.Entities.Request.TimeSheetTotal.CreateTotalWithOtherRegular(p.TimeSheetId, totalHours,
-                        regularHours, otherRegularHours, overtimeHours, nightShiftHours, accumulatedHours);
-                }
-                regularHours = RegularHours(totalHours, overtimeHours, nightShiftHours);
-                return Common.Entities.Request.TimeSheetTotal.CreateTotal(p.TimeSheetId, totalHours,
-                    regularHours, overtimeHours, nightShiftHours, accumulatedHours);
-            }
-            if (otherRegularHours > TimeSpan.Zero)
-            {
-                regularHours = RegularHours(totalHours, otherRegularHours, nightShiftHours);
-                return Common.Entities.Request.TimeSheetTotal.CreateTotalWithOtherRegular(p.TimeSheetId, totalHours,
-                    regularHours, otherRegularHours, TimeSpan.Zero, nightShiftHours, accumulatedHours);
-            }
-
-            regularHours = RegularHours(totalHours, overtimeHours, nightShiftHours);
-            return Common.Entities.Request.TimeSheetTotal.CreateTotal(p.TimeSheetId, totalHours,
-                regularHours, TimeSpan.Zero, nightShiftHours, accumulatedHours);
-        }
-
         public static TimeSpan TotalHours(TimeSpan timeIn, TimeSpan timeOut, bool breakIsPaid, TimeSpan durationBreak)
             => (timeOut - timeIn).Subtract(breakIsPaid ? durationBreak : TimeSpan.Zero);
 

@@ -99,42 +99,42 @@ namespace Covenant.Tests.Billing
             Assert.NotEmpty(summaryModel.Items);
             Assert.All(summaryModel.Items, s => Assert.Contains(FakeRequest.JobTitle, s.Description));
 
-            var regular = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.RegularLabel));
+            var regular = summaryModel.Items.Single(w => w.Description.EndsWith("Regular"));
             Assert.Equal(3, regular.Quantity);
             Assert.Equal(3, regular.Total);
             Assert.Equal(1, regular.UnitPrice);
 
-            var overtime = summaryModel.Items.Single(w => w.Description.EndsWith($"/ {CovenantConstants.Invoice.OvertimeLabel}"));
+            var overtime = summaryModel.Items.Single(w => w.Description.EndsWith($"/ Overtime"));
             Assert.Equal(2, overtime.Quantity);
             Assert.Equal(2, overtime.Total);
             Assert.Equal(1, overtime.UnitPrice);
 
-            var holiday = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.HolidayLabel));
+            var holiday = summaryModel.Items.Single(w => w.Description.EndsWith("Holiday"));
             Assert.Equal(3, holiday.Quantity);
             Assert.Equal(3, holiday.Total);
             Assert.Equal(1, holiday.UnitPrice);
 
-            var missing = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.MissingLabel));
+            var missing = summaryModel.Items.Single(w => w.Description.EndsWith("Missing"));
             Assert.Equal(4, missing.Quantity);
             Assert.Equal(4, missing.Total);
             Assert.Equal(1, missing.UnitPrice);
 
-            var missingOvertime = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.MissingOvertimeLabel));
+            var missingOvertime = summaryModel.Items.Single(w => w.Description.EndsWith("Missing Overtime"));
             Assert.Equal(5, missingOvertime.Quantity);
             Assert.Equal(5, missingOvertime.Total);
             Assert.Equal(1, missingOvertime.UnitPrice);
 
-            var missingDifferentRate = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.MissingDifferentRateLabel));
+            var missingDifferentRate = summaryModel.Items.Single(w => w.Description.EndsWith("Missing different rate"));
             Assert.Equal(6, missingDifferentRate.Quantity);
             Assert.Equal(6, missingDifferentRate.Total);
             Assert.Equal(1, missingDifferentRate.UnitPrice);
 
-            var missingOvertimeDifferentRate = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.MissingOvertimeDifferentRateLabel));
+            var missingOvertimeDifferentRate = summaryModel.Items.Single(w => w.Description.EndsWith("Missing Overtime different rate"));
             Assert.Equal(7, missingOvertimeDifferentRate.Quantity);
             Assert.Equal(7, missingOvertimeDifferentRate.Total);
             Assert.Equal(1, missingOvertimeDifferentRate.UnitPrice);
 
-            var nightShift = summaryModel.Items.Single(w => w.Description.EndsWith(CovenantConstants.Invoice.NightShiftLabel));
+            var nightShift = summaryModel.Items.Single(w => w.Description.EndsWith("Night shift"));
             Assert.Equal(8, nightShift.Quantity);
             Assert.Equal(8, nightShift.Total);
             Assert.Equal(1, nightShift.UnitPrice);
@@ -159,7 +159,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[0].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.RegularLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Regular",
                     Quantity = 3,
                     Total = 3,
                     UnitPrice = 1,
@@ -168,7 +168,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[1].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.OvertimeLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Overtime",
                     Quantity = 2,
                     Total = 2,
                     UnitPrice = 1,
@@ -177,7 +177,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[2].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.HolidayLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Holiday",
                     Quantity = 3,
                     Total = 3,
                     UnitPrice = 1,
@@ -186,7 +186,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[3].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.MissingLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Missing",
                     Quantity = 4,
                     Total = 4,
                     UnitPrice = 1,
@@ -195,7 +195,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[4].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.MissingOvertimeLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Missing Overtime",
                     Quantity = 5,
                     Total = 5,
                     UnitPrice = 1,
@@ -204,7 +204,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[5].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.MissingDifferentRateLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Missing different rate",
                     Quantity = 6,
                     Total = 6,
                     UnitPrice = 1,
@@ -213,7 +213,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[6].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.MissingOvertimeDifferentRateLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Missing Overtime different rate",
                     Quantity = 7,
                     Total = 7,
                     UnitPrice = 1,
@@ -222,7 +222,7 @@ namespace Covenant.Tests.Billing
                 new InvoiceTotal
                 {
                     TimeSheetTotalId = _fakeTimeSheetTotal[7].Id,
-                    Description = $"Charge for {FakeRequest.JobTitle} / {CovenantConstants.Invoice.NightShiftLabel}",
+                    Description = $"Charge for {FakeRequest.JobTitle} / Night shift",
                     Quantity = 8,
                     Total = 8,
                     UnitPrice = 1,

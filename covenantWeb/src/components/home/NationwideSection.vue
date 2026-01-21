@@ -23,10 +23,10 @@
             solutions that truly meet each client's unique needs.
           </p>
 
-          <button class="nw-btn">
+          <RouterLink to="/about" class="nw-btn">
             <span>Learn More</span>
             <span class="nw-btn__arrow">➜</span>
-          </button>
+          </RouterLink>
         </div>
       </div>
 
@@ -46,10 +46,10 @@
             seekers achieve success in a rapidly changing world.
           </p>
 
-          <button class="nw-btn">
+          <RouterLink to="/about" class="nw-btn">
             <span>Learn More</span>
             <span class="nw-btn__arrow">➜</span>
-          </button>
+          </RouterLink>
         </div>
 
         <div class="nw-col nw-col--image">
@@ -65,6 +65,7 @@
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 </script>
 
 <style scoped>
@@ -199,6 +200,7 @@
   font-size: 0.88rem;
   font-weight: 600;
   text-transform: none;
+  text-decoration: none;
 }
 
 
