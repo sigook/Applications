@@ -67,7 +67,19 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Request.Add(WorkerRequestControllerTest.Data.FakeRequest);
+
+                // Create independent request instance to avoid shared state issues with parallel tests
+                var independentRequest = Common.Entities.Request.Request.AgencyCreateRequest(
+                    WorkerRequestControllerTest.Data.FakeAgency.Id,
+                    WorkerRequestControllerTest.Data.CompanyProfile.Company.Id,
+                    WorkerRequestControllerTest.Data.FakeRequest.JobLocation,
+                    WorkerRequestControllerTest.Data.Now,
+                    WorkerRequestControllerTest.Data.FakeRate.Id
+                ).Value;
+                independentRequest.WorkerRate = 15;
+                independentRequest.UpdateJobTitle("Driver");
+
+                context.Request.Add(independentRequest);
                 context.CompanyProfile.Add(WorkerRequestControllerTest.Data.CompanyProfile);
                 context.CompanyProfileJobPositionRate.Add(WorkerRequestControllerTest.Data.FakeRate);
                 context.WorkerProfile.Add(WorkerRequestControllerTest.Data.WorkerProfile);
