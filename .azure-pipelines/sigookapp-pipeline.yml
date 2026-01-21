@@ -133,11 +133,39 @@ stages:
             displayName: 'Pod Install'
             continueOnError: true
 
-          # Install fastlane (needed for archive & sign)
-          - script: sudo gem install fastlane -NV
-            displayName: 'Install Fastlane'
+          # Select Xcode version (before any Xcode operations)
+          - script: sudo xcode-select -s /Applications/Xcode_16.1.app
+            displayName: 'Select Xcode 16.1'
 
-          # Build iOS with Flutter (no codesign)
+          # Configure manual signing in Xcode project BEFORE flutter build
+          # This prevents "Development Team" error during flutter build ios
+          - script: |
+              cd $(workingDirectory)
+
+              # Get the provisioning profile UUID from the installed profile
+              PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+              if [ -z "$PROFILE_PATH" ]; then
+                echo "❌ No provisioning profile found!"
+                exit 1
+              fi
+
+              PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | grep -A1 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+              echo "Using provisioning profile UUID: $PROFILE_UUID"
+
+              # Use sed to update the Xcode project settings for manual signing
+              PROJECT_FILE="ios/Runner.xcodeproj/project.pbxproj"
+
+              # Replace CODE_SIGN_STYLE = Automatic with Manual
+              sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' "$PROJECT_FILE"
+
+              # Add DEVELOPMENT_TEAM and PROVISIONING_PROFILE_SPECIFIER to Release config
+              # Using perl for more complex replacements
+              perl -i -pe 's/(CODE_SIGN_STYLE = Manual;)/$1\n\t\t\t\tDEVELOPMENT_TEAM = NGXFWU4H7Z;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "'"$PROFILE_UUID"'";/g' "$PROJECT_FILE"
+
+              echo "✅ Manual signing configured in Xcode project"
+            displayName: 'Configure Manual Signing'
+
+          # Build iOS with Flutter (no codesign - fastlane will sign later)
           # iOS OAuth config: CLIENT_ID=ios, redirect uses com.all2job scheme
           - script: |
               cd $(workingDirectory)
@@ -156,9 +184,9 @@ stages:
                 "--dart-define=APP_NAME=$(APP_NAME)"
             displayName: 'Flutter Build iOS'
 
-          # Select Xcode version
-          - script: sudo xcode-select -s /Applications/Xcode_16.1.app
-            displayName: 'Select Xcode 16.1'
+          # Install fastlane (needed for archive & sign)
+          - script: sudo gem install fastlane -NV
+            displayName: 'Install Fastlane'
 
           # Archive and sign with fastlane
           - script: |
