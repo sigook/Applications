@@ -189,12 +189,18 @@ public static class ApiServicesConfiguration
             accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
             fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
         }
+
+        // Use empty strings as fallback to prevent null reference exceptions
+        // The health checks will report if configuration is missing
+        var accountingConnectionSafe = accountingStorageConnection ?? string.Empty;
+        var fileConnectionSafe = fileStorageConnection ?? string.Empty;
+
         services.AddSingleton(new AzureStorageConfiguration(new[]
         {
-            new AccessKey(InvoicesContainer.ContainerName, accountingStorageConnection),
-            new AccessKey(PayStubsContainer.ContainerName, accountingStorageConnection),
-            new AccessKey(FilesContainer.ContainerName, fileStorageConnection)
-        }, new AccessKey("default", accountingStorageConnection)));
+            new AccessKey(InvoicesContainer.ContainerName, accountingConnectionSafe),
+            new AccessKey(PayStubsContainer.ContainerName, accountingConnectionSafe),
+            new AccessKey(FilesContainer.ContainerName, fileConnectionSafe)
+        }, new AccessKey("default", accountingConnectionSafe)));
         services.AddScoped<IInvoicesContainer, InvoicesContainer>();
         services.AddScoped<IPayStubsContainer, PayStubsContainer>();
         services.AddScoped<IFilesContainer, FilesContainer>();
@@ -208,49 +214,81 @@ public static class ApiServicesConfiguration
         {
             serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
         }
-        services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
-        services.AddSingleton(sp => new SigookBusClient(serviceBusConnection, sp.GetRequiredService<SigookBusAdministrationClient>(), sp.GetRequiredService<ILogger<SigookBusClient>>()));
-        services.AddSingleton<IAzureServiceBusConsumer, NewCandidateConsumer>();
-        services.AddSingleton<IAzureServiceBusConsumer, TeamsConsumer>();
-        services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
+
+        // Only register Service Bus consumers if connection string is configured
+        // The health checks will report if configuration is missing
+        if (!string.IsNullOrEmpty(serviceBusConnection))
+        {
+            services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
+            services.AddSingleton(sp => new SigookBusClient(serviceBusConnection, sp.GetRequiredService<SigookBusAdministrationClient>(), sp.GetRequiredService<ILogger<SigookBusClient>>()));
+            services.AddSingleton<IAzureServiceBusConsumer, NewCandidateConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, TeamsConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
+        }
+
         return services;
     }
 
     public static void AddCovenantHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        var healthChecksBuilder = services.AddHealthChecks()
-            .AddDbContextCheck<Infrastructure.Context.CovenantContext>("database", HealthStatus.Unhealthy, tags: new[] { "ready", "live" });
-
+        // Get all connection strings
+        var databaseConnection = configuration.GetConnectionString("DefaultConnection");
         var accountingStorageConnection = configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = configuration.GetConnectionString("FileStorageConnection");
         var serviceBusConnection = configuration.GetConnectionString("ServiceBusConnection");
 
         if (!environment.IsDevelopment())
         {
+            databaseConnection = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
             accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
             fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
             serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
         }
 
-        if (!string.IsNullOrEmpty(accountingStorageConnection))
+        var healthChecksBuilder = services.AddHealthChecks();
+
+        // Configuration validation checks - these check if configuration exists
+        healthChecksBuilder.AddTypeActivatedCheck<DatabaseConfigurationHealthCheck>(
+            "config-database",
+            HealthStatus.Unhealthy,
+            tags: new[] { "config", "ready", "live" },
+            args: new object[] { databaseConnection! });
+
+        healthChecksBuilder.AddTypeActivatedCheck<AzureStorageConfigurationHealthCheck>(
+            "config-azure-storage",
+            HealthStatus.Unhealthy,
+            tags: new[] { "config", "ready" },
+            args: new object[] { accountingStorageConnection!, fileStorageConnection! });
+
+        healthChecksBuilder.AddTypeActivatedCheck<ServiceBusConfigurationHealthCheck>(
+            "config-service-bus",
+            HealthStatus.Unhealthy,
+            tags: new[] { "config", "ready" },
+            args: new object[] { serviceBusConnection! });
+
+        // Connectivity checks - these check if services are accessible (only if configured)
+        if (!string.IsNullOrEmpty(databaseConnection))
         {
-            healthChecksBuilder.AddCheck("azure-storage-accounting",
-                new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
-                HealthStatus.Degraded, tags: new[] { "ready" });
+            healthChecksBuilder.AddDbContextCheck<Infrastructure.Context.CovenantContext>(
+                "database-connectivity",
+                HealthStatus.Unhealthy,
+                tags: new[] { "connectivity", "ready", "live" });
         }
 
-        if (!string.IsNullOrEmpty(fileStorageConnection))
-        {
-            healthChecksBuilder.AddCheck("azure-storage-files",
-                new AzureStorageHealthCheck(fileStorageConnection, "Files"),
-                HealthStatus.Degraded, tags: new[] { "ready" });
-        }
+        // Always add connectivity checks (they now handle null connection strings gracefully)
+        healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",
+            new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
+            HealthStatus.Unhealthy,
+            tags: new[] { "connectivity", "ready" });
 
-        if (!string.IsNullOrEmpty(serviceBusConnection))
-        {
-            healthChecksBuilder.AddCheck("azure-service-bus",
-                new AzureServiceBusHealthCheck(serviceBusConnection),
-                HealthStatus.Degraded, tags: new[] { "ready" });
-        }
+        healthChecksBuilder.AddCheck("azure-storage-files-connectivity",
+            new AzureStorageHealthCheck(fileStorageConnection, "Files"),
+            HealthStatus.Unhealthy,
+            tags: new[] { "connectivity", "ready" });
+
+        healthChecksBuilder.AddCheck("azure-service-bus-connectivity",
+            new AzureServiceBusHealthCheck(serviceBusConnection),
+            HealthStatus.Unhealthy,
+            tags: new[] { "connectivity", "ready" });
     }
 }
