@@ -22,7 +22,7 @@ platform :ios do
     # NOTE: clear_derived_data is commented out because the pipeline has
     # DerivedData cache disabled. Uncomment if you need fresh builds.
     # clear_derived_data
-
+    
     # Configure manual code signing
     # Find the installed provisioning profile
     profile_path = Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).first
@@ -31,7 +31,7 @@ platform :ios do
       UI.user_error!("❌ No provisioning profile found in ~/Library/MobileDevice/Provisioning Profiles/")
     end
 
-    # Extract UUID and Name from the provisioning profile
+    # Extract UUID from the provisioning profile
     profile_content = `security cms -D -i "#{profile_path}"`
     profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
     profile_name = profile_content.match(/<key>Name<\/key>\s*<string>([^<]+)<\/string>/)[1]
@@ -41,33 +41,31 @@ platform :ios do
     UI.message("   UUID: #{profile_uuid}")
     UI.message("   Path: #{profile_path}")
 
-    # Configure ONLY the Runner target in Xcode project with manual signing
-    # IMPORTANT: Do NOT modify Pods targets - they should use automatic signing
+    # Configure Xcode project with manual signing
     require 'xcodeproj'
     project_path = '../ios/Runner.xcodeproj'
     project = Xcodeproj::Project.open(project_path)
 
     project.targets.each do |target|
-      # Only configure the Runner target, skip all others (including Pods)
       if target.name == 'Runner'
         target.build_configurations.each do |config|
-          UI.message("Configuring #{config.name} for manual signing (Runner only)...")
+          UI.message("Configuring #{config.name} for manual signing...")
           config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
           config.build_settings['DEVELOPMENT_TEAM'] = 'NGXFWU4H7Z'
           config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
           config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
-          # Use the provisioning profile name (not UUID) for PROVISIONING_PROFILE_SPECIFIER
-          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_name
-          # Also set the PROVISIONING_PROFILE to UUID for older Xcode compatibility
-          config.build_settings['PROVISIONING_PROFILE'] = profile_uuid
+          # Use the UUID of the provisioning profile
+          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_uuid
         end
       end
     end
 
     project.save
-    UI.success("✅ Manual signing configured for Runner target only")
-
-    # Archive and export paths
+    UI.success("✅ Manual signing configured for Runner target")
+    
+    # Archive the app
+    # Use absolute paths for gym because it resolves relative paths from the original CWD, not from fastlane/
+    # __dir__ gives us the directory of this Fastfile (SigookApp/fastlane/)
     workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
     output_path = File.expand_path("../output", __dir__)
     archive_path = File.expand_path("../build/ios/Runner.xcarchive", __dir__)
@@ -76,17 +74,11 @@ platform :ios do
     UI.message("📁 Output: #{output_path}")
     UI.message("📁 Archive: #{archive_path}")
 
-    # Create output directory
-    FileUtils.mkdir_p(output_path)
-
-    # Use gym to archive and export
-    # Flutter build ios --no-codesign already built the .app without signing
-    # gym will archive and sign the build, then export to IPA
-    # clean: false is CRITICAL - preserves Flutter's pre-compiled code
+    # Simplified approach: Let Xcode automatically detect the provisioning profile
+    # The InstallAppleProvisioningProfile task should have installed it in the correct location
     gym(
       workspace: workspace_path,
       scheme: "Runner",
-      configuration: "Release",
       export_method: "app-store",
       export_team_id: "NGXFWU4H7Z",
       codesigning_identity: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
@@ -94,20 +86,16 @@ platform :ios do
         method: "app-store",
         teamID: "NGXFWU4H7Z",
         compileBitcode: false,
-        signingStyle: "manual",
-        signingCertificate: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
-        provisioningProfiles: {
-          "com.sigook.beta" => profile_name
-        }
+        # Removed signingStyle and provisioningProfiles to let Xcode auto-detect
       },
       output_directory: output_path,
       output_name: "SigookApp.ipa",
-      clean: false,
-      include_bitcode: false,
+      clean: true,
+      skip_build_archive: false,
       archive_path: archive_path,
-      # Only apply signing settings to the main app, not to Pods
-      # Use -quiet to reduce noise and CODE_SIGNING_ALLOWED=NO for Pods via post_install in Podfile
-      xcargs: "-quiet DEVELOPMENT_TEAM=NGXFWU4H7Z",
+      export_xcargs: "-allowProvisioningUpdates",
+      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
+      silent: false,
       verbose: true
     )
 
@@ -129,13 +117,13 @@ platform :ios do
   lane :deploy do |options|
     # Get the IPA path
     ipa_path = options[:ipa] || File.expand_path("../output/SigookApp.ipa", __dir__)
-
+    
     unless File.exist?(ipa_path)
       UI.user_error!("❌ IPA not found at #{ipa_path}")
     end
-
+    
     UI.message("📤 Uploading to TestFlight: #{ipa_path}")
-
+    
     # Upload to TestFlight using App Store Connect API
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -144,14 +132,14 @@ platform :ios do
       is_key_content_base64: true,
       in_house: false
     )
-
+    
     upload_to_testflight(
       ipa: ipa_path,
       skip_waiting_for_build_processing: true,
       skip_submission: true,
       notify_external_testers: false
     )
-
+    
     UI.success("✅ Successfully uploaded to TestFlight!")
   end
 
@@ -248,7 +236,7 @@ platform :android do
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
-
+    
     UI.success("✅ Successfully uploaded to Google Play Internal Testing!")
   end
 

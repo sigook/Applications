@@ -1,18 +1,4 @@
-# Gemfile for SigookApp Fastlane dependencies
-# Run 'bundle install' to install dependencies
-
 source "https://rubygems.org"
 
-# Fastlane - automation tool for iOS and Android
 gem "fastlane"
-
-# CocoaPods - dependency manager for iOS
 gem "cocoapods"
-
-# Xcodeproj - Ruby gem to manipulate Xcode projects
-# Required for programmatic Xcode project modifications (signing config, etc.)
-gem "xcodeproj"
-
-# Optional plugins (uncomment if needed)
-# gem "fastlane-plugin-firebase_app_distribution"  # For Firebase distribution
-# gem "fastlane-plugin-versioning"  # For version management

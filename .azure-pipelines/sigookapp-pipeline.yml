@@ -1,9 +1,4 @@
-# SigookApp Flutter CI/CD Pipeline
-# This pipeline builds iOS and Android apps for staging/production environments
-# and deploys to TestFlight and Google Play Store
-
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
-
 trigger:
   branches:
     include:
@@ -19,7 +14,6 @@ trigger:
     - SigookApp/README.md
     - SigookApp/docs/**
     - SigookApp/**/*.md
-
 pr:
   branches:
     include:
@@ -31,7 +25,6 @@ pr:
     exclude:
     - SigookApp/README.md
     - SigookApp/docs/**
-
 variables:
 - name: workingDirectory
   value: '$(System.DefaultWorkingDirectory)/SigookApp'
@@ -45,14 +38,10 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
   value: 'stable'
-
 stages:
-# ============================================
-# Stage: Validate & Test
-# ============================================
 - stage: Validate_and_Test
   displayName: 'Validate & Test'
-  condition: false  # Disabled - enable when tests are ready
+  condition: false
   pool:
     vmImage: 'ubuntu-latest'
   jobs:
@@ -63,7 +52,6 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-
     - task: Bash@3
       displayName: 'Display Build Information'
       inputs:
@@ -77,28 +65,24 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-
     - task: FlutterInstall@0
       displayName: 'Install Flutter SDK'
       inputs:
         mode: 'auto'
         channel: '$(flutterVersion)'
         version: 'latest'
-
     - task: CmdLine@2
       displayName: 'Flutter Doctor'
       inputs:
         script: |
           flutter --version
           flutter doctor -v
-
     - task: CmdLine@2
       displayName: 'Flutter Pub Get'
       inputs:
         script: |
           cd $(workingDirectory)
           flutter pub get
-
     - task: CmdLine@2
       displayName: 'Run Build Runner'
       inputs:
@@ -107,7 +91,6 @@ stages:
           echo "Running build_runner..."
           flutter pub run build_runner build --delete-conflicting-outputs
           echo "✅ Code generation completed"
-
     - task: CmdLine@2
       displayName: 'Flutter Analyze'
       inputs:
@@ -116,7 +99,6 @@ stages:
           echo "Running flutter analyze..."
           flutter analyze --no-fatal-infos
           echo "✅ Code analysis passed"
-
     - task: CmdLine@2
       displayName: 'Flutter Test'
       inputs:
@@ -125,7 +107,6 @@ stages:
           echo "Running flutter test..."
           flutter test --coverage --machine > test-results.json || true
           echo "✅ Tests completed"
-
     - task: Bash@3
       displayName: 'Test Summary'
       inputs:
@@ -140,10 +121,6 @@ stages:
           fi
           echo ""
           echo "✅ Validation stage completed!"
-
-# ============================================
-# Stage: Build Android (Staging)
-# ============================================
 - stage: Build_Android_Staging
   displayName: 'Build Android (Staging)'
   dependsOn: []
@@ -162,7 +139,6 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-
     - task: Bash@3
       displayName: 'Display Build Information'
       inputs:
@@ -174,7 +150,6 @@ stages:
           echo "Build Number: $(Build.BuildNumber)"
           echo "Source Branch: $(Build.SourceBranch)"
           echo "========================================"
-
     - task: CmdLine@2
       displayName: 'Free Disk Space'
       continueOnError: true
@@ -188,34 +163,29 @@ stages:
           sudo rm -rf /opt/hostedtoolcache
           echo "=== Disk space after cleanup ==="
           df -h /
-
     - task: DownloadSecureFile@1
       name: androidKeystore
       displayName: 'Download Android Keystore'
       inputs:
         secureFile: 'upload-keystore.jks'
-
     - task: CmdLine@2
       displayName: 'Setup Keystore'
       inputs:
         script: |
           cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
           echo "✅ Keystore copied"
-
     - task: FlutterInstall@0
       displayName: 'Install Flutter SDK'
       inputs:
         mode: 'auto'
         channel: '$(flutterVersion)'
         version: 'latest'
-
     - task: CmdLine@2
       displayName: 'Flutter Pub Get'
       inputs:
         script: |
           cd $(workingDirectory)
           flutter pub get
-
     - task: Cache@2
       displayName: 'Cache Gradle'
       inputs:
@@ -224,7 +194,6 @@ stages:
           gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts
           gradle | "$(Agent.OS)"
         path: $(HOME)/.gradle/caches
-
     - task: Cache@2
       displayName: 'Cache Flutter Packages'
       inputs:
@@ -233,14 +202,12 @@ stages:
           pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
-
     - task: CmdLine@2
       displayName: 'Run Build Runner'
       inputs:
         script: |
           cd $(workingDirectory)
           flutter pub run build_runner build --delete-conflicting-outputs
-
     - task: CmdLine@2
       displayName: 'Clean Android local.properties'
       continueOnError: true
@@ -249,7 +216,6 @@ stages:
           cd $(workingDirectory)/android
           rm -f local.properties
           echo "✅ Cleaned local.properties"
-
     - task: CmdLine@2
       displayName: 'Accept Android SDK Licenses'
       continueOnError: true
@@ -259,7 +225,6 @@ stages:
           rm -rf $ANDROID_HOME/.temp 2>/dev/null || true
           yes | sdkmanager --licenses || true
           echo "✅ Android SDK licenses accepted"
-
     - task: CmdLine@2
       displayName: 'Install and Configure Android NDK'
       inputs:
@@ -291,7 +256,6 @@ stages:
             echo "Checking available NDKs:"
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
           fi
-
     - task: CmdLine@2
       displayName: 'Install Fastlane'
       inputs:
@@ -299,7 +263,6 @@ stages:
           cd $(workingDirectory)
           sudo gem install fastlane -NV
           echo "✅ Fastlane installed"
-
     - task: CmdLine@2
       displayName: 'Run Flutter Tests'
       continueOnError: true
@@ -307,7 +270,6 @@ stages:
         script: |
           cd $(workingDirectory)
           flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-
     - task: PublishTestResults@2
       displayName: 'Publish Test Results'
       condition: always()
@@ -316,7 +278,6 @@ stages:
         testResultsFormat: 'JUnit'
         testResultsFiles: '$(workingDirectory)/test-results.json'
         failTaskOnFailedTests: false
-
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -372,7 +333,6 @@ stages:
 
           echo "✅ Android AAB built successfully"
           ls -la build/app/outputs/bundle/stagingRelease/
-
     - task: Bash@3
       displayName: 'Prepare AAB Artifact'
       inputs:
@@ -391,14 +351,12 @@ stages:
             find . -name "*.aab" 2>/dev/null || echo "No AABs found"
             exit 1
           fi
-
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Staging AAB'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
         ArtifactName: 'sigookapp-android-staging'
         publishLocation: 'Container'
-
     - task: Bash@3
       displayName: 'Build Summary'
       inputs:
@@ -412,14 +370,10 @@ stages:
           echo "AAB: sigook-staging-$(Build.BuildId).aab"
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
-
-# ============================================
-# Stage: Build iOS (Staging)
-# ============================================
 - stage: Build_iOS_Staging
   displayName: 'Build iOS (Staging)'
   dependsOn: []
-  condition: true
+  condition: false
   pool:
     vmImage: 'macos-14'
   variables:
@@ -433,7 +387,6 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-
     - task: Bash@3
       displayName: 'Display Build Information'
       inputs:
@@ -445,20 +398,17 @@ stages:
           echo "Build Number: $(Build.BuildNumber)"
           echo "Source Branch: $(Build.SourceBranch)"
           echo "========================================"
-
     - task: CmdLine@2
       displayName: 'Cleanup signing keychain'
       inputs:
         script: |
           security delete-keychain ios_signing_temp.keychain || true
-
     - task: InstallAppleCertificate@2
       displayName: 'Install Apple Certificate'
       inputs:
         certSecureFile: 'new-distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
-
     - task: InstallAppleProvisioningProfile@1
       name: installProvisioningProfile
       displayName: 'Install Provisioning Profile'
@@ -466,7 +416,6 @@ stages:
         provisioningProfileLocation: 'secureFiles'
         provProfileSecureFile: '$(PROVISIONING_PROFILE)'
         removeProfile: true
-
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
       continueOnError: true
@@ -482,21 +431,18 @@ stages:
             echo "---"
           done
           echo "==============================="
-
     - task: FlutterInstall@0
       displayName: 'Install Flutter SDK'
       inputs:
         mode: 'auto'
         channel: '$(flutterVersion)'
         version: 'latest'
-
     - task: CmdLine@2
       displayName: 'Flutter Pub Get'
       inputs:
         script: |
           cd $(workingDirectory)
           flutter pub get
-
     - task: Cache@2
       displayName: 'Cache CocoaPods'
       continueOnError: true
@@ -506,7 +452,6 @@ stages:
           pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
           pods | "$(Agent.OS)"
         path: $(workingDirectory)/ios/Pods
-
     - task: Cache@2
       displayName: 'Cache Xcode DerivedData'
       continueOnError: true
@@ -516,7 +461,6 @@ stages:
           deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
           deriveddata | "$(Agent.OS)"
         path: ~/Library/Developer/Xcode/DerivedData
-
     - task: Cache@2
       displayName: 'Cache Flutter Packages'
       inputs:
@@ -525,25 +469,20 @@ stages:
           pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
-
     - task: CmdLine@2
       displayName: 'Run Build Runner'
       inputs:
         script: |
           cd $(workingDirectory)
           flutter pub run build_runner build --delete-conflicting-outputs
-
     - task: CmdLine@2
       displayName: 'Install CocoaPods'
       continueOnError: true
       inputs:
         script: |
           cd $(workingDirectory)/ios
-          # Remove existing Pods to ensure fresh install with updated Podfile settings
-          rm -rf Pods Podfile.lock
-          pod install --repo-update
+          pod install
           echo "✅ CocoaPods dependencies installed"
-
     - task: CmdLine@2
       displayName: 'Debug: Installed Signing Identities'
       continueOnError: true
@@ -552,7 +491,6 @@ stages:
           echo "=== Code Signing Identities ==="
           security find-identity -v -p codesigning
           echo "==============================="
-
     - task: CmdLine@2
       displayName: 'Install Fastlane'
       inputs:
@@ -561,7 +499,6 @@ stages:
           sudo gem install fastlane -NV
           sudo gem install cocoapods -NV
           echo "✅ Fastlane and CocoaPods installed"
-
     - task: CmdLine@2
       displayName: 'Run Flutter Tests'
       continueOnError: true
@@ -569,7 +506,6 @@ stages:
         script: |
           cd $(workingDirectory)
           flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-
     - task: PublishTestResults@2
       displayName: 'Publish Test Results'
       condition: always()
@@ -578,7 +514,6 @@ stages:
         testResultsFormat: 'JUnit'
         testResultsFiles: '$(workingDirectory)/test-results.json'
         failTaskOnFailedTests: false
-
     - task: CmdLine@2
       displayName: 'Flutter Build iOS (No Codesign)'
       inputs:
@@ -599,7 +534,6 @@ stages:
             "--dart-define=SCOPES=$(SCOPES)" \
             "--dart-define=APP_NAME=$(APP_NAME)"
           echo "✅ Flutter iOS build complete (no codesign)"
-
     - task: CmdLine@2
       displayName: 'Select Xcode Version'
       inputs:
@@ -608,7 +542,6 @@ stages:
           sudo xcode-select -s /Applications/Xcode_16.1.app
           xcodebuild -version
           echo "✅ Xcode 16.1 selected"
-
     - task: CmdLine@2
       displayName: 'Fastlane Archive & Sign'
       env:
@@ -620,7 +553,6 @@ stages:
           echo "Building and signing IPA with fastlane..."
           fastlane ios beta
           echo "✅ Fastlane build complete"
-
     - task: Bash@3
       displayName: 'Prepare IPA Artifact'
       inputs:
@@ -642,14 +574,12 @@ stages:
             find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
             exit 1
           fi
-
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Staging IPA'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
         ArtifactName: 'sigookapp-ios-staging'
         publishLocation: 'Container'
-
     - task: Bash@3
       displayName: 'Build Summary'
       inputs:
@@ -663,10 +593,6 @@ stages:
           echo "IPA: sigook-staging-$(Build.BuildId).ipa"
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
-
-# ============================================
-# Stage: Deploy iOS to TestFlight
-# ============================================
 - stage: Deploy_iOS_TestFlight
   displayName: 'Deploy iOS to TestFlight'
   dependsOn:
@@ -685,7 +611,6 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-
     - task: Bash@3
       displayName: 'Display Deploy Information'
       inputs:
@@ -696,7 +621,6 @@ stages:
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "========================================"
-
     - task: DownloadBuildArtifacts@1
       displayName: 'Download IPA Artifact'
       inputs:
@@ -704,14 +628,12 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-ios-staging'
         downloadPath: '$(System.ArtifactsDirectory)'
-
     - task: CmdLine@2
       displayName: 'Install Fastlane'
       inputs:
         script: |
           sudo gem install fastlane -NV
           echo "✅ Fastlane installed"
-
     - task: CmdLine@2
       displayName: 'Deploy to TestFlight'
       env:
@@ -725,7 +647,6 @@ stages:
           IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
           fastlane ios deploy ipa:"$IPA_PATH"
-
     - task: Bash@3
       displayName: 'Deploy Summary'
       inputs:
@@ -737,10 +658,6 @@ stages:
           echo "========================================"
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
-
-# ============================================
-# Stage: Deploy Android to Google Play
-# ============================================
 - stage: Deploy_Android_PlayStore
   displayName: 'Deploy Android to Google Play'
   dependsOn:
@@ -758,7 +675,6 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-
     - task: Bash@3
       displayName: 'Display Deploy Information'
       inputs:
@@ -769,7 +685,6 @@ stages:
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "========================================"
-
     - task: DownloadBuildArtifacts@1
       displayName: 'Download AAB Artifact'
       inputs:
@@ -777,14 +692,12 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-android-staging'
         downloadPath: '$(System.ArtifactsDirectory)'
-
     - task: CmdLine@2
       displayName: 'Install Fastlane'
       inputs:
         script: |
           sudo gem install fastlane -NV
           echo "✅ Fastlane installed"
-
     - task: CmdLine@2
       displayName: 'Deploy to Google Play'
       env:
@@ -796,7 +709,6 @@ stages:
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
           fastlane android deploy aab:"$AAB_PATH"
-
     - task: Bash@3
       displayName: 'Deploy Summary'
       inputs:
