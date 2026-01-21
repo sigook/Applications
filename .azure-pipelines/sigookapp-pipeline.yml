@@ -516,15 +516,17 @@ stages:
         testResultsFiles: '$(workingDirectory)/test-results.json'
         failTaskOnFailedTests: false
     - task: CmdLine@2
-      displayName: 'Flutter Build iOS (No Codesign)'
+      displayName: 'Flutter Build iOS'
       inputs:
         script: |
           cd $(workingDirectory)
-          echo "Running Flutter build for iOS..."
+          echo "Running Flutter build for iOS (with codesign)..."
+
+          # Flutter build ios will compile Dart and trigger Xcode build
+          # Signing is handled by the installed certificate and provisioning profile
           flutter build ios \
             -t lib/main_staging.dart \
             --release \
-            --no-codesign \
             --build-number=$(Build.BuildId) \
             --dart-define=ENVIRONMENT=staging \
             "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
@@ -534,7 +536,12 @@ stages:
             "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
             "--dart-define=SCOPES=$(SCOPES)" \
             "--dart-define=APP_NAME=$(APP_NAME)"
-          echo "✅ Flutter iOS build complete (no codesign)"
+
+          echo "✅ Flutter iOS build complete"
+          echo "=== Build output directory contents ==="
+          find build/ios -name "*.app" -type d 2>/dev/null || echo "No .app found"
+          ls -la build/ios/iphoneos/ 2>/dev/null || echo "build/ios/iphoneos does not exist"
+          echo "========================================"
     - task: CmdLine@2
       displayName: 'Select Xcode Version'
       inputs:

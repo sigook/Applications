@@ -63,161 +63,47 @@ platform :ios do
     project.save
     UI.success("✅ Manual signing configured for Runner target")
     
-    # Use xcodebuild directly for better control over the archive/export process
-    # Flutter already built the app with --no-codesign, we just need to archive and sign
+    # Archive and export paths
     workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
     output_path = File.expand_path("../output", __dir__)
     archive_path = File.expand_path("../build/ios/Runner.xcarchive", __dir__)
-    export_options_path = File.expand_path("../ios/ExportOptions-staging.plist", __dir__)
 
     UI.message("📁 Workspace: #{workspace_path}")
     UI.message("📁 Output: #{output_path}")
     UI.message("📁 Archive: #{archive_path}")
-    UI.message("📁 ExportOptions: #{export_options_path}")
 
     # Create output directory
     FileUtils.mkdir_p(output_path)
 
-    # Update ExportOptions.plist with the correct provisioning profile name
-    require 'plist'
-    export_options_content = {
-      "method" => "app-store",
-      "teamID" => "NGXFWU4H7Z",
-      "signingStyle" => "manual",
-      "signingCertificate" => "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
-      "provisioningProfiles" => {
-        "com.sigook.beta" => profile_name
+    # Use gym to archive and export
+    # Flutter build ios (without --no-codesign) already built the .app
+    # gym will archive the existing build and export to IPA
+    # clean: false is CRITICAL - preserves Flutter's pre-compiled code
+    gym(
+      workspace: workspace_path,
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_team_id: "NGXFWU4H7Z",
+      codesigning_identity: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
+      export_options: {
+        method: "app-store",
+        teamID: "NGXFWU4H7Z",
+        compileBitcode: false,
+        signingStyle: "manual",
+        signingCertificate: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
+        provisioningProfiles: {
+          "com.sigook.beta" => profile_name
+        }
       },
-      "compileBitcode" => false,
-      "uploadSymbols" => true
-    }
-
-    temp_export_options = File.expand_path("../build/ios/ExportOptions.plist", __dir__)
-    File.write(temp_export_options, export_options_content.to_plist)
-    UI.message("📝 Created ExportOptions.plist with profile: #{profile_name}")
-
-    # Step 1: Create archive manually from Flutter's pre-built .app
-    # Flutter built the app with --no-codesign, creating build/ios/iphoneos/Runner.app
-    # We'll manually create an xcarchive structure and sign it
-    UI.header("Step 1: Creating Archive from Pre-built App")
-
-    app_path = File.expand_path("../build/ios/iphoneos/Runner.app", __dir__)
-
-    unless File.exist?(app_path)
-      UI.user_error!("❌ Pre-built app not found at #{app_path}. Run 'flutter build ios --no-codesign' first.")
-    end
-
-    UI.message("📱 Found pre-built app: #{app_path}")
-
-    # Create xcarchive structure manually
-    # Structure: Runner.xcarchive/Products/Applications/Runner.app
-    FileUtils.rm_rf(archive_path) if File.exist?(archive_path)
-    archive_apps_path = "#{archive_path}/Products/Applications"
-    FileUtils.mkdir_p(archive_apps_path)
-
-    # Copy the app to the archive
-    FileUtils.cp_r(app_path, archive_apps_path)
-    UI.message("📁 Copied app to archive structure")
-
-    # Sign the app with codesign
-    UI.header("Signing the App")
-    app_in_archive = "#{archive_apps_path}/Runner.app"
-    signing_identity = "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)"
-
-    # Extract entitlements from the provisioning profile FIRST (needed for signing)
-    entitlements_path = File.expand_path("../build/ios/entitlements.plist", __dir__)
-    sh("security cms -D -i '#{profile_path}' > /tmp/profile.plist")
-    sh("/usr/libexec/PlistBuddy -x -c 'Print :Entitlements' /tmp/profile.plist > '#{entitlements_path}'")
-    UI.message("📝 Extracted entitlements from provisioning profile")
-
-    # Sign all frameworks and dylibs inside the app
-    # This must be done before signing the main app bundle
-    frameworks_path = "#{app_in_archive}/Frameworks"
-
-    if File.exist?(frameworks_path)
-      # Sign all frameworks
-      Dir.glob("#{frameworks_path}/*.framework").each do |framework|
-        UI.message("Signing framework: #{File.basename(framework)}")
-        # Sign nested frameworks/dylibs first if they exist
-        nested_frameworks = Dir.glob("#{framework}/Frameworks/*.framework")
-        nested_frameworks.each do |nested|
-          sh("codesign --force --sign '#{signing_identity}' --timestamp '#{nested}'")
-        end
-        sh("codesign --force --sign '#{signing_identity}' --timestamp '#{framework}'")
-      end
-
-      # Sign all dylibs
-      Dir.glob("#{frameworks_path}/*.dylib").each do |dylib|
-        UI.message("Signing dylib: #{File.basename(dylib)}")
-        sh("codesign --force --sign '#{signing_identity}' --timestamp '#{dylib}'")
-      end
-    end
-
-    # Sign any app extensions (they need entitlements)
-    plugins_path = "#{app_in_archive}/PlugIns"
-    if File.exist?(plugins_path)
-      Dir.glob("#{plugins_path}/*.appex").each do |appex|
-        UI.message("Signing app extension: #{File.basename(appex)}")
-        sh("codesign --force --sign '#{signing_identity}' --entitlements '#{entitlements_path}' --timestamp '#{appex}'")
-      end
-    end
-
-    # Sign the main app bundle (must be done LAST, after all nested components)
-    UI.message("Signing main app bundle...")
-    sh("codesign --force --sign '#{signing_identity}' --entitlements '#{entitlements_path}' --timestamp '#{app_in_archive}'")
-
-    # Create Info.plist for the archive
-    app_info_plist = "#{app_in_archive}/Info.plist"
-    app_bundle_id = `/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "#{app_info_plist}"`.strip
-    app_version = `/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "#{app_info_plist}"`.strip
-    app_build = `/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "#{app_info_plist}"`.strip
-    app_name = `/usr/libexec/PlistBuddy -c "Print :CFBundleName" "#{app_info_plist}"`.strip rescue "Runner"
-
-    archive_info = {
-      "ApplicationProperties" => {
-        "ApplicationPath" => "Applications/Runner.app",
-        "Architectures" => ["arm64"],
-        "CFBundleIdentifier" => app_bundle_id,
-        "CFBundleShortVersionString" => app_version,
-        "CFBundleVersion" => app_build,
-        "SigningIdentity" => signing_identity,
-        "Team" => "NGXFWU4H7Z"
-      },
-      "ArchiveVersion" => 2,
-      "CreationDate" => Time.now,
-      "Name" => app_name,
-      "SchemeName" => "Runner"
-    }
-
-    File.write("#{archive_path}/Info.plist", archive_info.to_plist)
-    UI.success("✅ Archive created and signed successfully")
-
-    # Step 2: Export the archive to IPA
-    UI.header("Step 2: Exporting IPA")
-    export_cmd = [
-      "xcodebuild",
-      "-exportArchive",
-      "-archivePath", archive_path,
-      "-exportPath", output_path,
-      "-exportOptionsPlist", temp_export_options,
-      "-allowProvisioningUpdates"
-    ].join(" ")
-
-    UI.command(export_cmd)
-    sh(export_cmd)
-
-    # Find and rename the IPA
-    ipa_files = Dir.glob("#{output_path}/*.ipa")
-    if ipa_files.empty?
-      UI.user_error!("❌ No IPA file found in #{output_path}")
-    end
-
-    # Rename to SigookApp.ipa if needed
-    original_ipa = ipa_files.first
-    final_ipa = "#{output_path}/SigookApp.ipa"
-    if original_ipa != final_ipa
-      FileUtils.mv(original_ipa, final_ipa)
-    end
+      output_directory: output_path,
+      output_name: "SigookApp.ipa",
+      clean: false,
+      include_bitcode: false,
+      archive_path: archive_path,
+      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)' PROVISIONING_PROFILE_SPECIFIER='#{profile_uuid}'",
+      verbose: true
+    )
 
     UI.success("✅ iOS IPA built and signed successfully!")
     UI.message("IPA location: #{output_path}/SigookApp.ipa")
