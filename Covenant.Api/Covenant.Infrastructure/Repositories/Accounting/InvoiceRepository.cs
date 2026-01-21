@@ -116,9 +116,12 @@ public class InvoiceRepository : IInvoiceRepository
                                    join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
                                    select tstP).ToListAsync();
         _context.Invoice.Remove(invoice);
-        if (invoice.InvoiceTotals.Any(it => it.TimeSheetTotal != null))
+        var timesheetTotals = invoice.InvoiceTotals
+            .Where(it => it.TimeSheetTotal != null)
+            .Select(s => s.TimeSheetTotal);
+        if (timesheetTotals.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(invoice.InvoiceTotals.Select(s => s.TimeSheetTotal));
+            _context.TimeSheetTotal.RemoveRange(timesheetTotals);
         }
         _context.ReportSubcontractor.RemoveRange(reports);
         _context.TimeSheetTotalPayroll.RemoveRange(totalsPayroll);
@@ -136,9 +139,12 @@ public class InvoiceRepository : IInvoiceRepository
             return default;
         }
         _context.InvoiceUSA.Remove(invoice);
-        if (invoice.Items.Any(i => i.TimeSheetTotal != null))
+        var timesheetTotal = invoice.Items
+            .Where(i => i.TimeSheetTotal != null)
+            .Select(s => s.TimeSheetTotal);
+        if (timesheetTotal.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(invoice.Items.Select(s => s.TimeSheetTotal));
+            _context.TimeSheetTotal.RemoveRange(timesheetTotal);
         }
         return (invoice.Id, invoice.InvoiceNumber);
     }
