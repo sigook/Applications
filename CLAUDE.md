@@ -38,7 +38,7 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 
 - **SigookApp** - Flutter mobile application for worker registration and job matching
 - **Sigook.Web** - Vue.js 2 main web application for Sigook platform
-- **covenantWeb** - Vue.js 3 marketing/informational website for Covenant
+- **Covenant.Web** - Vue.js 3 marketing/informational website for Covenant
 - **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system (15+ projects)
 - **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
 
@@ -290,7 +290,7 @@ docker build --build-arg ENV=production -t sigook-web .
 - Token replacement in `public/**/*.html` and `public/**/*.json` during CI/CD for versioning
 - ESLint configured with relaxed rules (warnings for most issues)
 
-## covenantWeb (Vue.js 3 Marketing Website)
+## Covenant.Web (Vue.js 3 Marketing Website)
 
 ### Architecture
 
@@ -324,7 +324,7 @@ src/
 ### Development Commands
 
 ```bash
-cd covenantWeb
+cd Covenant.Web
 
 # Install dependencies
 npm install
@@ -384,7 +384,7 @@ The API includes VS Code debugging configurations in `Covenant.Api/.vscode/launc
 - Alternative for Cursor users: Use console logging, logger framework, or Visual Studio Community
 - See `Covenant.Api/.vscode/README.md` for details
 
-### Vue.js Applications (Sigook.Web, covenantWeb)
+### Vue.js Applications (Sigook.Web, Covenant.Web)
 - Use browser DevTools for debugging
 - Vue DevTools extension recommended for component inspection
 - `npm run serve` runs with hot-reload for rapid development
@@ -408,7 +408,7 @@ Recent development focuses on:
 
 ## Node.js Version Requirements
 
-The covenantWeb project requires:
+The Covenant.Web project requires:
 - Node.js ^20.19.0 OR >=22.12.0
 
 Use nvm or similar to manage Node versions if needed.
@@ -543,7 +543,7 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 
 - **`.azure-pipelines/sigookapp-pipeline.yml`** - Flutter app CI/CD (placeholder for future implementation)
 - **`.azure-pipelines/sigook-web-pipeline.yml`** - Sigook.Web Vue.js 2 app CI/CD (fully functional)
-- **`.azure-pipelines/covenantweb-pipeline.yml`** - CovenantWeb Vue.js 3 marketing CI/CD (fully functional)
+- **`.azure-pipelines/covenant-web-pipeline.yml`** - Covenant.Web Vue.js 3 marketing CI/CD (fully functional)
 - **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
 - **`.azure-pipelines/covenant-identityserver-pipeline.yml`** - IdentityServer CI/CD (fully functional)
 - **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
@@ -560,12 +560,12 @@ paths:
   exclude:
     - Sigook.Web/**/*.md
 
-# Example: covenantWeb pipeline only triggers on:
+# Example: Covenant.Web pipeline only triggers on:
 paths:
   include:
-    - covenantWeb/**
+    - Covenant.Web/**
   exclude:
-    - covenantWeb/**/*.md
+    - Covenant.Web/**/*.md
 
 # Example: Covenant.Api pipeline only triggers on:
 paths:
@@ -648,7 +648,7 @@ The pipelines use **reusable templates** located in `.azure-pipelines/templates/
 
 ### Pipeline Structure
 
-**CovenantWeb Pipeline (complete):**
+**Covenant.Web Pipeline (complete):**
 1. **Build and Test Job**
    - Install Node.js 20.x with node_modules caching
    - Type checking (vue-tsc)
@@ -740,9 +740,9 @@ echo "test" >> Sigook.Web/src/App.vue
 git add . && git commit -m "test: trigger sigook-web pipeline"
 git push origin dev
 
-# Test CovenantWeb pipeline only
-echo "test" >> covenantWeb/src/App.vue
-git add . && git commit -m "test: trigger covenantweb pipeline"
+# Test Covenant.Web pipeline only
+echo "test" >> Covenant.Web/src/App.vue
+git add . && git commit -m "test: trigger covenant-web pipeline"
 git push origin dev
 
 # Test SigookApp pipeline only

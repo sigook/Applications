@@ -7,7 +7,7 @@ La plataforma Covenant/Sigook está construida como un **monorepo** con múltipl
 - **Backend API** - .NET 6 (Covenant.Api)
 - **Identity Server** - .NET 6 + IdentityServer4 (Covenant.IdentityServer)
 - **Web App Principal** - Vue.js 2 (Sigook.Web)
-- **Marketing Website** - Vue.js 3 (covenantWeb)
+- **Marketing Website** - Vue.js 3 (Covenant.Web)
 - **Mobile App** - Flutter (SigookApp)
 
 ---
@@ -73,7 +73,7 @@ Deployment:      Docker (Node.js build → Nginx)
 
 ---
 
-### Marketing Website - covenantWeb (Vue.js 3)
+### Marketing Website - Covenant.Web (Vue.js 3)
 
 ```
 Framework:       Vue.js 3.5.22
