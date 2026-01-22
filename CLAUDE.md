@@ -2,6 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📚 Comprehensive Documentation
+
+**IMPORTANTE:** Para un entendimiento profundo del negocio, arquitectura, y reglas de negocio, consulta la documentación técnica completa en la carpeta **`.docs/`**:
+
+### Quick Reference
+
+- **[.docs/README.md](.docs/README.md)** - Índice maestro de toda la documentación
+- **[.docs/BUSINESS_MODEL.md](.docs/BUSINESS_MODEL.md)** - Modelo de negocio, actores, flujos principales
+- **[.docs/ARCHITECTURE.md](.docs/ARCHITECTURE.md)** - Stack tecnológico, estructura de capas, módulos
+- **[.docs/ENTITIES_RELATIONSHIPS.md](.docs/ENTITIES_RELATIONSHIPS.md)** - Modelo de datos completo con relaciones
+- **[.docs/API_ENDPOINTS.md](.docs/API_ENDPOINTS.md)** - Documentación de todos los endpoints REST
+- **[.docs/PAYROLL_RULES.md](.docs/PAYROLL_RULES.md)** - Reglas de nómina (CPP, EI, taxes canadienses)
+- **[.docs/BILLING_RULES.md](.docs/BILLING_RULES.md)** - Reglas de facturación (rates, HST/GST, markup)
+- **[.docs/TIMESHEET_RULES.md](.docs/TIMESHEET_RULES.md)** - Cálculo de horas (overtime, night shift, holiday)
+- **[.docs/WORKFLOWS.md](.docs/WORKFLOWS.md)** - Flujos completos paso a paso con código
+
+### How to Use
+
+**Cuando recibas un requerimiento:**
+1. Identifica el área (payroll, billing, timesheets, worker registration, etc.)
+2. Lee el documento relevante de `.docs/`
+3. Implementa siguiendo los patrones y reglas documentadas
+4. Actualiza la documentación si cambias reglas de negocio
+
+**Ejemplo:**
+- Requerimiento: "Modificar el cálculo de overtime en Ontario"
+- Acción: Lee `.docs/TIMESHEET_RULES.md` y `.docs/PAYROLL_RULES.md`
+- Implementa en: `Covenant.Api/Covenant.TimeSheetTotal/`
+- Actualiza documentación si cambian las reglas
+
 ## Repository Overview
 
 This is a monorepo containing the Covenant/Sigook platform applications:
