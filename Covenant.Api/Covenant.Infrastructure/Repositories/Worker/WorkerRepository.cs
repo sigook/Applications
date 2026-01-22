@@ -698,48 +698,4 @@ public class WorkerRepository : IWorkerRepository
             .FirstOrDefaultAsync(wptc => wptc.WorkerProfileId == workerProfileId);
         return category;
     }
-
-    public async Task<List<CompanyRelatedDataModel<WorkerProfileListModel>>> GetAllWorkersForCompanies(IEnumerable<Guid> companyProfileIds)
-    {
-        // Get workers that have been assigned to requests from these companies
-        var workersForCompanies = await (
-            from wr in _context.WorkerRequest
-            join r in _context.Request on wr.RequestId equals r.Id
-            join wp in _context.WorkerProfile on wr.WorkerProfileId equals wp.Id
-            join cp in _context.CompanyProfile on r.CompanyProfileId equals cp.Id
-            join w in _context.User on wp.WorkerId equals w.Id
-            where companyProfileIds.Contains(r.CompanyProfileId)
-            group new { wp, w, cp } by new { wp.Id, wp.AgencyId, r.CompanyProfileId, cp.BusinessName } into g
-            select new CompanyRelatedDataModel<WorkerProfileListModel>
-            {
-                CompanyProfileId = g.Key.CompanyProfileId,
-                CompanyName = g.Key.BusinessName,
-                Data = new WorkerProfileListModel
-                {
-                    AgencyId = g.Key.AgencyId,
-                    Id = g.Key.Id,
-                    NumberId = g.FirstOrDefault().wp.NumberId,
-                    FullName = g.FirstOrDefault().wp.FirstName + " " + g.FirstOrDefault().wp.MiddleName + " " + g.FirstOrDefault().wp.LastName + " " + g.FirstOrDefault().wp.SecondLastName,
-                    Email = g.FirstOrDefault().w.Email,
-                    MobileNumber = g.FirstOrDefault().wp.MobileNumber,
-                    Address = g.FirstOrDefault().wp.Address,
-                    Skills = g.FirstOrDefault().wp.Skills.Select(s => s.Skill.Value).ToList(),
-                    WorkerId = g.FirstOrDefault().wp.WorkerId,
-                    ApprovedToWork = g.FirstOrDefault().wp.ApprovedToWork,
-                    IsCurrentlyWorking = g.FirstOrDefault().wp.WorkersRequestProcessed.Any(wr => wr.WorkerRequestStatus == Common.Enums.WorkerRequestStatus.Working),
-                    IsSubcontractor = g.FirstOrDefault().wp.IsSubcontractor,
-                    Dnu = g.FirstOrDefault().wp.Dnu,
-                    CreatedAt = g.FirstOrDefault().wp.CreatedAt,
-                    SinNumber = g.FirstOrDefault().wp.SocialInsurance,
-                    Requests = g.FirstOrDefault().wp.WorkersRequestProcessed
-                        .Where(wr => wr.Request.CompanyProfileId == g.Key.CompanyProfileId)
-                        .Select(wr => new BaseModel<Guid> { Id = wr.RequestId })
-                        .ToList()
-                }
-            })
-            .AsNoTracking()
-            .ToListAsync();
-
-        return workersForCompanies;
-    }
 }
