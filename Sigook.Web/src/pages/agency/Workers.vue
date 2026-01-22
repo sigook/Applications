@@ -66,6 +66,13 @@
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
+          <b-table-column field="location" label="Location" searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress.native="onInputEntered"></b-input>
+            </template>
+            <template v-slot="props">{{ props.row.address }}</template>
+          </b-table-column>
           <b-table-column field="requests" label="Request ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.requestId" placeholder="Search..." icon="magnify" size="is-small"

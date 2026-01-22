@@ -443,6 +443,11 @@ public class WorkerRepository : IWorkerRepository
         }
         if (!string.IsNullOrWhiteSpace(filter.RequestId))
             predicate = predicate.And(wp => wp.Requests.Any(r => r.Value == filter.RequestId));
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            var location = filter.Location.ToLower();
+            predicate = predicate.And(wp => EF.Functions.Like(wp.Address.ToLower(), $"%{location}%"));
+        }
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(wp => wp.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && wp.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
         if (filter.Features != null && filter.Features.Any())
