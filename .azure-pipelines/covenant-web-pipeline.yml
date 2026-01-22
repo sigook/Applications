@@ -13,10 +13,10 @@ trigger:
   paths:
     include:
       - .gitignore
-      - covenantWeb/**
-      - .azure-pipelines/covenantweb-pipeline.yml
+      - Covenant.Web/**
+      - .azure-pipelines/covenant-web-pipeline.yml
     exclude:
-      - covenantWeb/**/*.md
+      - Covenant.Web/**/*.md
 
 # PR trigger - only validate PRs to dev (not to main)
 # PRs to main are trusted since dev is the quality gate
@@ -26,14 +26,14 @@ pr:
       - dev
   paths:
     include:
-      - covenantWeb/**
+      - Covenant.Web/**
 
 pool:
   vmImage: 'ubuntu-22.04'
 
 # Environment detection variables
 variables:
-  workingDirectory: '$(System.DefaultWorkingDirectory)/covenantWeb'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/Covenant.Web'
   nodeVersion: '20.x'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
