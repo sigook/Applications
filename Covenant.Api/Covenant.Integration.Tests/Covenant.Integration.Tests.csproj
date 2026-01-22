@@ -34,9 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="xunit.runner.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="AgencyModule\AgencyInvoicePaymentSupport\invoiceSupport.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
