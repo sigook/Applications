@@ -143,5 +143,31 @@ namespace Covenant.Tests.Request
             Assert.False(result);
             Assert.Equal(RequestStatus.Filled, request.Status);
         }
+
+        [Fact]
+        public void DecreaseCapacityUpdatesStatus()
+        {
+            // Start with capacity of 3, add 2 workers (InProgress)
+            var request = FakeData.FakeRequest(workersQuantity: 3);
+            request.AddWorker(Guid.NewGuid(), new DateTime(2019, 01, 01));
+            request.AddWorker(Guid.NewGuid(), new DateTime(2019, 01, 01));
+            Assert.Equal(2, request.WorkersQuantityWorking);
+            Assert.Equal(3, request.WorkersQuantity);
+            Assert.Equal(RequestStatus.InProgress, request.Status);
+
+            // Reduce capacity to 2 (should become Filled since 2/2)
+            var result = request.DecreaseWorkersQuantityByOne();
+            Assert.True(result);
+            Assert.Equal(2, request.WorkersQuantity);
+            Assert.Equal(2, request.WorkersQuantityWorking);
+            Assert.Equal(RequestStatus.Filled, request.Status);
+
+            // Increase capacity back to 3 (should become InProgress)
+            result = request.IncreaseWorkersQuantityByOne();
+            Assert.True(result);
+            Assert.Equal(3, request.WorkersQuantity);
+            Assert.Equal(2, request.WorkersQuantityWorking);
+            Assert.Equal(RequestStatus.InProgress, request.Status);
+        }
     }
 }

@@ -335,6 +335,11 @@ namespace Covenant.Common.Entities.Request
             if (WorkersQuantity <= 1 || WorkersQuantity <= WorkersQuantityWorking) return Result.Fail($"The order has to have at least {WorkersQuantity} worker");
             WorkersQuantity--;
             UpdatedAt = DateTime.Now;
+
+            // Update status if reducing capacity causes the order to become filled
+            if (WorkersQuantityWorking >= WorkersQuantity && Status == RequestStatus.InProgress)
+                Status = RequestStatus.Filled;
+
             return Result.Ok();
         }
 
