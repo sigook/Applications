@@ -25,7 +25,7 @@
             <button class="floating-menu-item" v-on:click="editContentModal = true">
               <span>Edit Requirements</span>
             </button>
-            <button class="floating-menu-item" v-on:click="modalValidation = true">
+            <button class="floating-menu-item" v-if="canCancel" v-on:click="modalValidation = true">
               <span>{{ $t("CancelRequest") }}</span>
             </button>
           </template>
@@ -186,7 +186,13 @@ export default {
   },
   computed: {
     canEdit() {
-      // Only orders in Open status can be cancelled
+      // Can edit orders that are Open, InProgress, or Filled
+      return this.request.status === this.$statusOpen ||
+             this.request.status === this.$statusInProgress ||
+             this.request.status === this.$statusFilled;
+    },
+    canCancel() {
+      // Can only cancel orders in Open status
       return this.request.status === this.$statusOpen;
     },
   },

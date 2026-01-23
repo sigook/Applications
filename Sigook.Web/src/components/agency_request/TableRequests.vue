@@ -383,7 +383,9 @@ export default {
     },
     canEdit(status) {
       return (
-        status === this.$statusRequested || status === this.$statusInProcess
+        status === this.$statusOpen ||
+        status === this.$statusInProgress ||
+        status === this.$statusFilled
       );
     },
     updateWorkers(item) {

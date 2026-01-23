@@ -141,7 +141,8 @@ export default {
         .dispatch("agency/increaseWorkersQuantityByOne", this.request.id)
         .then(() => {
           this.isLoading = false;
-          this.request.workersQuantity = this.request.workersQuantity + 1;
+          // Emit event to refresh request data from API to get updated status
+          this.$emit('refreshRequest');
         })
         .catch((error) => {
           this.isLoading = false;
@@ -154,7 +155,8 @@ export default {
         .dispatch("agency/reduceWorkersQuantityByOne", this.request.id)
         .then(() => {
           this.isLoading = false;
-          this.request.workersQuantity = this.request.workersQuantity - 1;
+          // Emit event to refresh request data from API to get updated status
+          this.$emit('refreshRequest');
         })
         .catch((error) => {
           this.isLoading = false;
