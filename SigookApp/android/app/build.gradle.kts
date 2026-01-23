@@ -62,8 +62,8 @@ android {
         versionName = flutter.versionName
         
         // Required for flutter_appauth
-        // Must match IdentityServer Android client RedirectUris: com.sigook:/oauth2redirect
-        manifestPlaceholders["appAuthRedirectScheme"] = "com.sigook"
+        // Must match IdentityServer Android client RedirectUris: sigookcallback://
+        manifestPlaceholders["appAuthRedirectScheme"] = "sigookcallback"
         
         // Add multiDex support
         multiDexEnabled = true
@@ -74,7 +74,7 @@ android {
     productFlavors {
         create("staging") {
             dimension = "environment"
-            applicationIdSuffix = ".staging"
+            // Note: No applicationIdSuffix - Google Play requires com.sigook.beta for all tracks
             versionNameSuffix = "-staging"
             resValue("string", "app_name", "Sigook (Staging)")
         }

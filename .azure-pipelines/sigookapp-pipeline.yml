@@ -1,30 +1,36 @@
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
-trigger:
-  branches:
-    include:
-    - main
-    - dev
-    - SigookApp
-  paths:
-    include:
-    - SigookApp/**
-    - .azure-pipelines/sigookapp-pipeline.yml
-    - .azure-pipelines/templates/flutter-setup.yml
-    exclude:
-    - SigookApp/README.md
-    - SigookApp/docs/**
-    - SigookApp/**/*.md
-pr:
-  branches:
-    include:
-    - dev
-  paths:
-    include:
-    - SigookApp/**
-    - .azure-pipelines/sigookapp-pipeline.yml
-    exclude:
-    - SigookApp/README.md
-    - SigookApp/docs/**
+
+# PIPELINE DISABLED - Manual builds only for now
+trigger: none
+pr: none
+
+# Original trigger configuration (commented out):
+# trigger:
+#   branches:
+#     include:
+#     - main
+#     - dev
+#     - SigookApp
+#   paths:
+#     include:
+#     - SigookApp/**
+#     - .azure-pipelines/sigookapp-pipeline.yml
+#     - .azure-pipelines/templates/flutter-setup.yml
+#     exclude:
+#     - SigookApp/README.md
+#     - SigookApp/docs/**
+#     - SigookApp/**/*.md
+# pr:
+#   branches:
+#     include:
+#     - dev
+#   paths:
+#     include:
+#     - SigookApp/**
+#     - .azure-pipelines/sigookapp-pipeline.yml
+#     exclude:
+#     - SigookApp/README.md
+#     - SigookApp/docs/**
 variables:
 - name: workingDirectory
   value: '$(System.DefaultWorkingDirectory)/SigookApp'
