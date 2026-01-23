@@ -10,55 +10,42 @@ namespace Covenant.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Step 1: Add temporary column to preserve old status
-            migrationBuilder.AddColumn<int>(
-                name: "OldStatus",
-                table: "Request",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
-            // Step 2: Copy current status to OldStatus
-            migrationBuilder.Sql(@"UPDATE ""Request"" SET ""OldStatus"" = ""Status"";");
-
-            // Step 3: Migrate data to new status values
-            // Old enum: Requested=0, InProcess=1, Cancelled=2
-            // New enum: Open=1, InProgress=2, Filled=3, Cancelled=4
+            // Step 1: Transform Status values directly
+            // Old enum: Requested, InProcess, Cancelled (stored as strings)
+            // New enum: Open, InProgress, Filled, Cancelled (stored as strings)
             migrationBuilder.Sql(@"
                 UPDATE ""Request""
                 SET ""Status"" =
                   CASE
-                    -- Requested (0) without workers → Open (1)
-                    WHEN ""OldStatus"" = 0 AND ""WorkersQuantityWorking"" = 0 THEN 1
+                    -- Requested without workers → Open
+                    WHEN ""Status"" = 'Requested' AND ""WorkersQuantityWorking"" = 0 THEN 'Open'
 
-                    -- InProcess (1) without workers → Open (1)
-                    WHEN ""OldStatus"" = 1 AND ""WorkersQuantityWorking"" = 0 THEN 1
+                    -- InProcess without workers → Open
+                    WHEN ""Status"" = 'InProcess' AND ""WorkersQuantityWorking"" = 0 THEN 'Open'
 
-                    -- InProcess (1) with workers but not full → InProgress (2)
-                    WHEN ""OldStatus"" = 1
+                    -- InProcess with workers but not full → InProgress
+                    WHEN ""Status"" = 'InProcess'
                       AND ""WorkersQuantityWorking"" > 0
-                      AND ""WorkersQuantityWorking"" < ""WorkersQuantity"" THEN 2
+                      AND ""WorkersQuantityWorking"" < ""WorkersQuantity"" THEN 'InProgress'
 
-                    -- InProcess (1) filled → Filled (3)
-                    WHEN ""OldStatus"" = 1
-                      AND ""WorkersQuantityWorking"" >= ""WorkersQuantity"" THEN 3
+                    -- InProcess filled → Filled
+                    WHEN ""Status"" = 'InProcess'
+                      AND ""WorkersQuantityWorking"" >= ""WorkersQuantity"" THEN 'Filled'
 
-                    -- Cancelled (2) → Cancelled (4)
-                    WHEN ""OldStatus"" = 2 THEN 4
+                    -- Cancelled → Cancelled (no change)
+                    WHEN ""Status"" = 'Cancelled' THEN 'Cancelled'
 
-                    -- Any other case (shouldn't exist)
+                    -- Edge case: if status was already 'Open'
+                    WHEN ""Status"" = 'Open' THEN 'Open'
+
+                    -- Any other case (shouldn't exist, keep current value)
                     ELSE ""Status""
                   END;
             ");
 
-            // Step 4: Drop IsOpen column
+            // Step 2: Drop IsOpen column
             migrationBuilder.DropColumn(
                 name: "IsOpen",
-                table: "Request");
-
-            // Step 5: Drop temporary OldStatus column
-            migrationBuilder.DropColumn(
-                name: "OldStatus",
                 table: "Request");
         }
 
