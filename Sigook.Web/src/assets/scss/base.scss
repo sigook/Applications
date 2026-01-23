@@ -1217,42 +1217,131 @@ input[type="file"] {
   opacity: 0;
 }
 
-// status
-.status-requested,
+// ========================================
+// STATUS DOTS (Small circular indicators)
+// ========================================
+.status-open,
 .status-apply,
 .status-applied {
   background-color: $accent;
+  box-shadow: 0 0 0 3px rgba(255, 153, 50, 0.2);
+  transition: all 0.3s ease;
 }
 
 .status-pending,
-.status-inprocess,
+.status-inprogress,
 .status-inqueue,
 .status-working {
   background-color: $primary;
+  box-shadow: 0 0 0 3px rgba(33, 183, 255, 0.2);
+  transition: all 0.3s ease;
+
+  // Subtle pulse animation for active states
+  animation: pulse-blue 2s infinite;
 }
 
+.status-filled,
 .status-book,
 .status-booked {
   background-color: $green;
+  box-shadow: 0 0 0 3px rgba(73, 197, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .status-cancelled,
 .status-reject,
 .status-rejected {
   background-color: $red;
-}
-
-.status-finalized {
-  background-color: $green;
+  opacity: 0.7;
+  box-shadow: none;
+  transition: all 0.3s ease;
 }
 
 .status-decline,
 .status-declined,
 .status-notworking {
   background-color: #bbbaba;
+  opacity: 0.6;
 }
 
-/* Status color
+// Pulse animation for in-progress states
+@keyframes pulse-blue {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(33, 183, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(33, 183, 255, 0.3);
+  }
+}
+
+// ========================================
+// STATUS TAGS/BADGES (Text labels with background)
+// ========================================
+
+// Base tag styling
+.tag-yellow,
+.tag-green,
+.tag-red,
+.tag-blue {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+// Open status - Yellow/Orange
+.tag-yellow {
+  background-color: rgba(255, 153, 50, 0.15);
+  color: darken($accent, 15%);
+  border: 1.5px solid rgba(255, 153, 50, 0.4);
+
+  &:hover {
+    background-color: rgba(255, 153, 50, 0.25);
+    border-color: rgba(255, 153, 50, 0.6);
+  }
+}
+
+// Filled status - Green
+.tag-green {
+  background-color: rgba(73, 197, 0, 0.15);
+  color: darken($green, 10%);
+  border: 1.5px solid rgba(73, 197, 0, 0.4);
+
+  &:hover {
+    background-color: rgba(73, 197, 0, 0.25);
+    border-color: rgba(73, 197, 0, 0.6);
+  }
+}
+
+// Cancelled status - Red
+.tag-red {
+  background-color: rgba(195, 0, 0, 0.1);
+  color: $red;
+  border: 1.5px solid rgba(195, 0, 0, 0.3);
+  opacity: 0.8;
+
+  &:hover {
+    background-color: rgba(195, 0, 0, 0.15);
+    border-color: rgba(195, 0, 0, 0.5);
+  }
+}
+
+// InProgress status - Blue
+.tag-blue {
+  background-color: rgba(33, 183, 255, 0.15);
+  color: darken($primary, 10%);
+  border: 1.5px solid rgba(33, 183, 255, 0.4);
+
+  &:hover {
+    background-color: rgba(33, 183, 255, 0.25);
+    border-color: rgba(33, 183, 255, 0.6);
+  }
+}
+
+/* Status color (for text without background)
 */
 
 .Cancelled,
@@ -1261,17 +1350,17 @@ input[type="file"] {
   color: $red;
 }
 
-.Finalized {
+.Filled {
   color: $green;
 }
 
-.Requested,
+.Open,
 .Apply,
 .applied {
   color: $accent;
 }
 
-.InProcess,
+.InProgress,
 .Book {
   color: $primary;
 }
@@ -1299,6 +1388,12 @@ input[type="file"] {
   height: 18px;
   margin: auto;
   border-radius: 50%;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+
+  &:hover {
+    transform: scale(1.15);
+  }
 }
 
 .content-flex-between {

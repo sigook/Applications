@@ -334,7 +334,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Open", new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.Equal(RequestStatus.InProcess, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
+            Assert.Equal(RequestStatus.InProgress, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
             Assert.True(await context.RequestNotes.AnyAsync(a => a.RequestId == request.Id));
         }
 

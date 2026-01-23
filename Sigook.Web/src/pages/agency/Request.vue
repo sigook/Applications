@@ -135,10 +135,8 @@ export default {
       });
     },
     canEditRequest(request) {
-      return (
-        request.status === this.$statusRequested ||
-        request.status === this.$statusInProcess
-      );
+      // Only orders in Open status can be cancelled
+      return request.status === this.$statusOpen;
     },
     getAgencyRequest() {
       this.$store.dispatch("agency/getAgencyRequest", this.$route.params.id)

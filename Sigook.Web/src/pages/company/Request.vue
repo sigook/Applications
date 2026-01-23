@@ -186,10 +186,8 @@ export default {
   },
   computed: {
     canEdit() {
-      if (this.request.status === this.$statusFinalized) {
-        return false;
-      }
-      return this.request.status !== this.$statusCancelled;
+      // Only orders in Open status can be cancelled
+      return this.request.status === this.$statusOpen;
     },
   },
 };

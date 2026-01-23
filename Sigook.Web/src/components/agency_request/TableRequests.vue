@@ -163,29 +163,24 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <b-tooltip :label="$t(props.row.status)" type="is-dark">
+            <b-tooltip :label="$t(props.row.requestStatus)" type="is-dark">
               <img
-                v-if="props.row.workersQuantityWorking >= props.row.workersQuantity && props.row.status !== $statusCancelled"
+                v-if="props.row.requestStatus === $statusFilled"
                 src="../../assets/images/check_white.png" alt="check" class="request-check" />
-              <div class="dot-status" :class="'status-' + props.row.status.toLowerCase()"></div>
+              <div class="dot-status" :class="'status-' + props.row.requestStatus.toLowerCase()"></div>
             </b-tooltip>
-            <i v-if="props.row.isOpen" class="fz-2 block">
-              <span v-if="canEdit(props.row.status)" class="tag-yellow">
-                {{ $statusOpen }}
+            <i class="fz-2 block">
+              <span v-if="props.row.requestStatus === $statusOpen" class="tag-yellow">
+                {{ $statusDisplayOpen }}
               </span>
-              <span v-else>
-                {{ $statusNotFilled }}
+              <span v-else-if="props.row.requestStatus === $statusInProgress" class="tag-blue">
+                {{ $statusDisplayInProgress }}
               </span>
-            </i>
-            <i class="fz-2 block" v-else>
-              <span v-if="props.row.status === $statusCancelled">
-                {{ $statusCancelled }}
+              <span v-else-if="props.row.requestStatus === $statusFilled" class="tag-green">
+                {{ $statusDisplayFilled }}
               </span>
-              <span v-else-if="props.row.workersQuantityWorking < props.row.workersQuantity">
-                {{ $statusNotFilled }}
-              </span>
-              <span v-else>
-                {{ $statusFilled }}
+              <span v-else-if="props.row.requestStatus === $statusCancelled" class="tag-red">
+                {{ $statusDisplayCancelled }}
               </span>
             </i>
           </template>
@@ -258,11 +253,10 @@ export default {
       currentRequest: null,
       currentIndex: null,
       statuses: [
-        { id: 0, value: this.$statusDisplayRequested },
-        { id: 1, value: this.$statusDisplayInProcess },
-        { id: 2, value: this.$statusDisplayCancelled },
-        { id: 3, value: this.$statusDisplayOpen },
-        { id: 4, value: this.$statusDisplayNoOpen }
+        { id: 1, value: this.$statusDisplayOpen },
+        { id: 2, value: this.$statusDisplayInProgress },
+        { id: 3, value: this.$statusDisplayFilled },
+        { id: 4, value: this.$statusDisplayCancelled }
       ],
       statusesSelected: [],
       lastUpdateDatesSelected: [],
