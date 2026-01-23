@@ -36,7 +36,7 @@
                 - {{ props.row.finishAt | dateMonth }}
               </span>
               <span
-                v-if="(props.row.status === $statusFinalized || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+                v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
                 - {{ props.row.finishAt | dateMonth }}
               </span>
               <i class="fz-2 block">{{ props.row.durationTerm | splitCapital }}</i>

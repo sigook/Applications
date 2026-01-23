@@ -69,7 +69,7 @@ const calendarMixin = {
     this.today = dayjs().toDate();
     if (this.status) {
       switch (this.status) {
-        case this.$statusFinalized:
+        case this.$statusFilled:
         case this.$statusCancelled:
           this.selectDate = dayjs(this.startDate).toDate();
           this.getCurrentMonth();

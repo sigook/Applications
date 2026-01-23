@@ -1223,8 +1223,8 @@ input[type="file"] {
 .status-open,
 .status-apply,
 .status-applied {
-  background-color: $accent;
-  box-shadow: 0 0 0 3px rgba(255, 153, 50, 0.2);
+  background-color: #ff9932; // Orange - more vibrant
+  box-shadow: 0 0 0 4px rgba(255, 153, 50, 0.3);
   transition: all 0.3s ease;
 }
 
@@ -1232,8 +1232,8 @@ input[type="file"] {
 .status-inprogress,
 .status-inqueue,
 .status-working {
-  background-color: $primary;
-  box-shadow: 0 0 0 3px rgba(33, 183, 255, 0.2);
+  background-color: #0da7ff; // Brighter blue
+  box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
   transition: all 0.3s ease;
 
   // Subtle pulse animation for active states
@@ -1243,17 +1243,17 @@ input[type="file"] {
 .status-filled,
 .status-book,
 .status-booked {
-  background-color: $green;
-  box-shadow: 0 0 0 3px rgba(73, 197, 0, 0.2);
+  background-color: #3eb800; // More saturated green
+  box-shadow: 0 0 0 4px rgba(62, 184, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .status-cancelled,
 .status-reject,
 .status-rejected {
-  background-color: $red;
-  opacity: 0.7;
-  box-shadow: none;
+  background-color: #e02020; // Brighter red
+  opacity: 0.8;
+  box-shadow: 0 0 0 4px rgba(224, 32, 32, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -1267,10 +1267,10 @@ input[type="file"] {
 // Pulse animation for in-progress states
 @keyframes pulse-blue {
   0%, 100% {
-    box-shadow: 0 0 0 3px rgba(33, 183, 255, 0.2);
+    box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(33, 183, 255, 0.3);
+    box-shadow: 0 0 0 6px rgba(13, 167, 255, 0.4);
   }
 }
 
@@ -1384,12 +1384,13 @@ input[type="file"] {
 
 
 .dot-status {
-  width: 18px;
-  height: 18px;
-  margin: auto;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
   border-radius: 50%;
   transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  border: 3px solid rgba(255, 255, 255, 0.8);
 
   &:hover {
     transform: scale(1.15);

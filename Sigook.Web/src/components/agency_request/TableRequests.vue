@@ -86,7 +86,7 @@
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <span
-              v-if="(props.row.status === $statusFinalized || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+              v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <agency-shift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
@@ -163,26 +163,16 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <b-tooltip :label="$t(props.row.requestStatus)" type="is-dark">
-              <img
-                v-if="props.row.requestStatus === $statusFilled"
-                src="../../assets/images/check_white.png" alt="check" class="request-check" />
-              <div class="dot-status" :class="'status-' + props.row.requestStatus.toLowerCase()"></div>
-            </b-tooltip>
-            <i class="fz-2 block">
-              <span v-if="props.row.requestStatus === $statusOpen" class="tag-yellow">
-                {{ $statusDisplayOpen }}
-              </span>
-              <span v-else-if="props.row.requestStatus === $statusInProgress" class="tag-blue">
-                {{ $statusDisplayInProgress }}
-              </span>
-              <span v-else-if="props.row.requestStatus === $statusFilled" class="tag-green">
-                {{ $statusDisplayFilled }}
-              </span>
-              <span v-else-if="props.row.requestStatus === $statusCancelled" class="tag-red">
-                {{ $statusDisplayCancelled }}
-              </span>
-            </i>
+            <div class="text-center">
+              <b-tooltip :label="$t(props.row.status)" type="is-dark">
+                <div class="status-dot-container">
+                  <img
+                    v-if="props.row.status === $statusFilled"
+                    src="../../assets/images/check_white.png" alt="check" class="request-check" />
+                  <div class="dot-status" :class="'status-' + props.row.status.toLowerCase()"></div>
+                </div>
+              </b-tooltip>
+            </div>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
