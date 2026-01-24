@@ -12,11 +12,11 @@
 
     <!-- Provisioning profiles mapping -->
     <!-- Key: Bundle ID, Value: Provisioning Profile Name -->
-    <!-- Note: The profile name is dynamically read from the installed profile in Fastlane -->
+    <!-- IMPORTANT: Run on Mac to get exact name: security cms -D -i "profile.mobileprovision" | grep -A1 "Name" -->
     <key>provisioningProfiles</key>
     <dict>
         <key>com.sigook.beta</key>
-        <string>Sigook App Staging Ad Hoc</string>
+        <string>sigook-beta</string>
     </dict>
 
     <!-- Code signing style -->
