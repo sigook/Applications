@@ -75,7 +75,7 @@
                   <b-field :type="errors.has('skills') ? 'is-danger' : ''"
                     label="Roles of Interest (you may type more than one)"
                     :message="errors.has('skills') ? errors.first('skills') : ''">
-                    <b-taginput v-model="candidate.skills" open-on-focus icon="label" :maxlength="50" ellipsis
+                    <b-taginput v-model="candidate.skills" open-on-focus icon="label" :maxlength="20" ellipsis
                       placeholder="Select or Add Skill" allow-new name="skills">
                     </b-taginput>
                   </b-field>
