@@ -1,16 +1,11 @@
 ﻿using Covenant.Common.Models.WebSite;
-using Covenant.Common.Repositories;
-using Covenant.Common.Resources;
-using Covenant.Infrastructure.Repositories;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Candidate;
 
 public class CandidateViewModelValidator : AbstractValidator<CandidateViewModel>
 {
-    public CandidateViewModelValidator(
-            IUserRepository workerRepository
-        )
+    public CandidateViewModelValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(c => c.FullName)
@@ -26,8 +21,6 @@ public class CandidateViewModelValidator : AbstractValidator<CandidateViewModel>
         RuleFor(c => c.Address)
             .MaximumLength(100);
         RuleFor(c => c.Skills)
-            .ForEach(skill =>
-        skill
-            .MaximumLength(20));
+            .ForEach(skill => skill.MaximumLength(20));
     }
 }
