@@ -466,7 +466,7 @@ stages:
       inputs:
         provisioningProfileLocation: 'secureFiles'
         # Note: provProfileSecureFile doesn't support variable expansion - must use actual filename
-        provProfileSecureFile: 'Sigook_Staging.mobileprovision'
+        provProfileSecureFile: 'sigookbeta.mobileprovision'
         removeProfile: true
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
