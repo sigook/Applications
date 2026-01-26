@@ -37,9 +37,6 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
   value: 'stable'
-# Environment-specific settings (determined by branch)
-- name: environment
-  value: $[if eq(variables['Build.SourceBranch'], 'refs/heads/main'), 'production', 'staging')]
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
