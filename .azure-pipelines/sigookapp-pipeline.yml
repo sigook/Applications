@@ -171,13 +171,14 @@ stages:
       name: androidKeystore
       displayName: 'Download Android Keystore'
       inputs:
-        secureFile: '$(KEYSTORE_FILE)'
+        # Note: secureFile doesn't support variable expansion - must use actual filename
+        secureFile: 'upload-keystore.jks'
     - task: CmdLine@2
       displayName: 'Setup Keystore'
       inputs:
         script: |
-          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/$(KEYSTORE_FILE)
-          echo "✅ Keystore copied: $(KEYSTORE_FILE)"
+          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
+          echo "✅ Keystore copied: upload-keystore.jks"
     - task: FlutterInstall@0
       displayName: 'Install Flutter SDK'
       inputs:
@@ -455,7 +456,8 @@ stages:
     - task: InstallAppleCertificate@2
       displayName: 'Install Apple Certificate'
       inputs:
-        certSecureFile: '$(P12_FILE_NAME)'
+        # Note: certSecureFile doesn't support variable expansion - must use actual filename
+        certSecureFile: 'new-distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
     - task: InstallAppleProvisioningProfile@1
@@ -463,7 +465,8 @@ stages:
       displayName: 'Install Provisioning Profile'
       inputs:
         provisioningProfileLocation: 'secureFiles'
-        provProfileSecureFile: '$(PROVISIONING_PROFILE)'
+        # Note: provProfileSecureFile doesn't support variable expansion - must use actual filename
+        provProfileSecureFile: 'Sigook_Staging.mobileprovision'
         removeProfile: true
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
