@@ -79,7 +79,7 @@ dependencies:
   retry: ^3.1.2
 
   # File Picker (Cross-platform file selection for iOS/Android/Web)
-  file_picker: ^10.3.6
+  file_picker: 10.3.7  # Pinned - version 10.3.9 has breaking API changes (FilePicker.platform removed)
   image_picker: ^1.2.1
   permission_handler: ^12.0.1
   geolocator: ^13.0.2
