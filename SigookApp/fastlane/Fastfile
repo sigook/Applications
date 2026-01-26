@@ -10,8 +10,20 @@
 #   - __dir__ = directory of this Fastfile (SigookApp/fastlane/)
 #   - "../ios/Runner.xcworkspace" relative to __dir__ = SigookApp/ios/Runner.xcworkspace
 #   - File.expand_path converts this to an absolute path that works everywhere
+#
+# AZURE DEVOPS VARIABLE GROUPS:
+# - SigookApp-Android-Signing: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
+# - SigookApp-iOS-Signing: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
+#   APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME, P12_FILE_NAME,
+#   PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
+# - SigookApp-Staging: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
+#   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES
 
 default_platform(:ios)
+
+# Get Apple Team ID from environment or use default
+APPLE_TEAM_ID = ENV["APPLE_TEAM_ID"] || "NGXFWU4H7Z"
+APPLE_TEAM_NAME = ENV["APPLE_TEAM_NAME"] || "SIGOOK CORPORATION"
 
 # ============================================
 # iOS Lanes
@@ -51,7 +63,7 @@ platform :ios do
         target.build_configurations.each do |config|
           UI.message("Configuring #{config.name} for manual signing...")
           config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-          config.build_settings['DEVELOPMENT_TEAM'] = 'NGXFWU4H7Z'
+          config.build_settings['DEVELOPMENT_TEAM'] = APPLE_TEAM_ID
           config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
           config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
           # Use the UUID of the provisioning profile
@@ -74,17 +86,21 @@ platform :ios do
     UI.message("📁 Output: #{output_path}")
     UI.message("📁 Archive: #{archive_path}")
 
+    # Build code signing identity string dynamically
+    code_sign_identity = "Apple Distribution: #{APPLE_TEAM_NAME} (#{APPLE_TEAM_ID})"
+    UI.message("📝 Using code signing identity: #{code_sign_identity}")
+
     # Simplified approach: Let Xcode automatically detect the provisioning profile
     # The InstallAppleProvisioningProfile task should have installed it in the correct location
     gym(
       workspace: workspace_path,
       scheme: "Runner",
       export_method: "app-store",
-      export_team_id: "NGXFWU4H7Z",
-      codesigning_identity: "Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)",
+      export_team_id: APPLE_TEAM_ID,
+      codesigning_identity: code_sign_identity,
       export_options: {
         method: "app-store",
-        teamID: "NGXFWU4H7Z",
+        teamID: APPLE_TEAM_ID,
         compileBitcode: false,
         # Removed signingStyle and provisioningProfiles to let Xcode auto-detect
       },
@@ -94,7 +110,7 @@ platform :ios do
       skip_build_archive: false,
       archive_path: archive_path,
       export_xcargs: "-allowProvisioningUpdates",
-      xcargs: "DEVELOPMENT_TEAM=NGXFWU4H7Z CODE_SIGN_IDENTITY='Apple Distribution: SIGOOK CORPORATION (NGXFWU4H7Z)'",
+      xcargs: "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID} CODE_SIGN_IDENTITY='#{code_sign_identity}'",
       silent: false,
       verbose: true
     )
