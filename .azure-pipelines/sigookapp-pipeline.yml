@@ -4,23 +4,21 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # ============================================
 # TRIGGER POLICY:
 # - Runs ONLY when a PR is merged to main or dev
-# - Does NOT run on direct pushes (branch policies must enforce PR-only merges)
+# - Does NOT run on direct pushes
 # - dev branch → Staging environment
 # - main branch → Production environment
+#
+# REQUIRED AZURE DEVOPS CONFIGURATION:
+# 1. Go to Project Settings → Repositories → [repo] → Policies
+# 2. For 'dev' and 'main' branches, enable:
+#    - "Build validation" with this pipeline (for PR checks)
+#    - "Require a minimum number of reviewers"
+# 3. In the pipeline settings, enable "Triggers" → "Pull request validation"
+#    and check "Build pull request from forks only after a team member approves"
 # ============================================
 
-# Triggers on pushes to main/dev (happens when PR is merged)
-trigger:
-  branches:
-    include:
-    - main
-    - dev
-  paths:
-    include:
-    - SigookApp/**
-    - .azure-pipelines/sigookapp-pipeline.yml
-    exclude:
-    - SigookApp/**/*.md
+# Disable CI trigger - pipeline runs only via PR completion
+trigger: none
 
 # PR validation - runs tests only, no deployment
 pr:
