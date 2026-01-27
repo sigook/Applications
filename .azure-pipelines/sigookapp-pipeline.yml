@@ -44,7 +44,7 @@ stages:
 # ============================================
 - stage: Validate_and_Test
   displayName: 'Validate & Test'
-  condition: true
+  condition: false  # Temporarily disabled for iOS testing
   pool:
     vmImage: 'ubuntu-latest'
   jobs:
@@ -130,7 +130,7 @@ stages:
 - stage: Build_Android_Staging
   displayName: 'Build Android (Staging)'
   dependsOn: Validate_and_Test
-  condition: and(succeeded(), eq(variables.isPR, false))
+  condition: false  # Temporarily disabled for iOS testing
   pool:
     vmImage: 'ubuntu-latest'
   variables:
@@ -416,7 +416,7 @@ stages:
 # ============================================
 - stage: Build_iOS_Staging
   displayName: 'Build iOS (Staging)'
-  dependsOn: Validate_and_Test
+  dependsOn: []  # No dependencies - run immediately
   condition: and(succeeded(), eq(variables.isPR, false))
   pool:
     vmImage: 'macos-latest'
@@ -760,7 +760,7 @@ stages:
   dependsOn:
   - Build_iOS_Staging
   # Deploy to TestFlight only on direct push to dev or main (not PRs)
-  condition: and(succeeded(), eq(variables.isPR, false))
+  condition: false  # Temporarily disabled for iOS testing
   pool:
     vmImage: 'macos-latest'
   variables:
@@ -832,7 +832,7 @@ stages:
   dependsOn:
   - Build_Android_Staging
   # Deploy to Google Play only on direct push to dev or main (not PRs)
-  condition: and(succeeded(), eq(variables.isPR, false))
+  condition: false  # Temporarily disabled for iOS testing
   pool:
     vmImage: 'ubuntu-latest'
   variables:
