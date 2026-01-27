@@ -458,7 +458,7 @@ stages:
       displayName: 'Install Apple Certificate'
       inputs:
         # Note: certSecureFile doesn't support variable expansion - must use actual filename
-        certSecureFile: 'new-distribution.p12'
+        certSecureFile: 'distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
     - task: InstallAppleProvisioningProfile@1
