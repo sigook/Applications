@@ -59,9 +59,11 @@
 		</dict>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Need access to your photo library to upload profile picture</string>
+	<string>SIGOOK needs access to your photo library to select a profile picture for your worker registration.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SIGOOK needs permission to save photos to your library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Need access to your camera to upload profile picture</string>
+	<string>SIGOOK needs access to your camera to take a profile picture for your worker registration.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to record your timesheet punch in/out</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
