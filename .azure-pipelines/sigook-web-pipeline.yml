@@ -12,6 +12,7 @@ trigger:
       - dev
   paths:
     include:
+      - .gitignore
       - Sigook.Web/**
       - .azure-pipelines/sigook-web-pipeline.yml
     exclude:
@@ -103,18 +104,6 @@ stages:
               environmentVariableName: 'buildEnvironment'
               stepName: 'SetDockerTag'
 
-          # Verify environment variable was set
-          - script: |
-              echo "Verifying variables for Docker build..."
-              echo "dockerTag = $(dockerTag)"
-              echo "buildEnvironment = $(buildEnvironment)"
-              if [ -z "$(buildEnvironment)" ]; then
-                echo "❌ ERROR: buildEnvironment is empty!"
-                exit 1
-              fi
-              echo "✅ Variables verified"
-            displayName: 'Verify Build Variables'
-
           # Replace tokens in public files (version number)
           - task: qetza.replacetokens.replacetokens-task.replacetokens@6
             displayName: 'Set Version in index.html and version.json'
@@ -130,17 +119,25 @@ stages:
               writeBOM: true
               encoding: 'auto'
 
-          # Build and Push Docker Image
+          # Build Docker Image
           - task: Docker@2
-            displayName: 'Build and Push Docker Image (ENV=$(buildEnvironment))'
+            displayName: 'Build Docker Image'
+            inputs:
+              command: 'build'
+              repository: 'sigook.azurecr.io/web'
+              dockerfile: 'Sigook.Web/Dockerfile'
+              buildContext: 'Sigook.Web'
+              tags: '$(dockerTag)'
+              arguments: '--build-arg ENV=$(buildEnvironment)'
+
+          # Push Docker Image to ACR
+          - task: Docker@2
+            displayName: 'Push Docker Image to ACR'
             inputs:
               containerRegistry: 'acrServiceConnectionSigook'
               repository: 'web'
-              command: 'buildAndPush'
-              Dockerfile: 'Sigook.Web/Dockerfile'
-              buildContext: 'Sigook.Web'
-              tags: $(dockerTag)
-              arguments: '--build-arg ENV=$(buildEnvironment)'
+              command: 'push'
+              tags: '$(dockerTag)'
 
           - task: Bash@3
             displayName: 'Docker Build Summary'

@@ -133,7 +133,7 @@
         </div>
       </div>
     </section>
-    <b-modal v-model="showApplyNowModal" @close="showApplyNowModal = false" :can-cancel="false" width="500px">
+    <b-modal v-model="showApplyNowModal" @close="showApplyNowModal = false" :can-cancel="true" width="500px">
       <apply-now :jobToApply="jobToApply" @candidateCreated="showApplyNowModal = false"></apply-now>
     </b-modal>
   </div>

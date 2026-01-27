@@ -47,7 +47,7 @@
                 <span class="fz-1">
                   (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
             </button>
-            <button class="floating-menu-item" v-if="request.canEdit" v-on:click="cancelRequestModal = true">
+            <button class="floating-menu-item" v-if="request.canCancel" v-on:click="cancelRequestModal = true">
               <span> Cancel Order</span>
             </button>
           </template>
@@ -63,7 +63,7 @@
     </section>
     <b-tabs v-model="currentTab" @input="changeTab" v-if="request">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :request="request" class="p-2 p-sm-0" />
+        <detail v-if="visitedTabs.includes('Detail')" :key="request.id + '-' + request.workersQuantity + '-' + request.status" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
       <b-tab-item label="Applicants" value="Applicants">
         <applicants v-if="visitedTabs.includes('Applicants')" :request="request" class="p-2 p-sm-0" />
@@ -135,20 +135,38 @@ export default {
       });
     },
     canEditRequest(request) {
-      return (
-        request.status === this.$statusRequested ||
-        request.status === this.$statusInProcess
-      );
+      // Can edit orders that are Open, InProgress, or Filled
+      return request.status === this.$statusOpen ||
+             request.status === this.$statusInProgress ||
+             request.status === this.$statusFilled;
+    },
+    canCancelRequest(request) {
+      // Can only cancel orders in Open status
+      return request.status === this.$statusOpen;
     },
     getAgencyRequest() {
+      console.log('📡 Loading request data from API...');
+      this.isLoading = true;
       this.$store.dispatch("agency/getAgencyRequest", this.$route.params.id)
         .then((response) => {
-          this.request = response;
-          this.$set(this.request, "canEdit", this.canEditRequest(response));
-          this.isLoading = false;
+          console.log('📥 API response received:', {
+            id: response.id,
+            workersQuantity: response.workersQuantity,
+            workersQuantityWorking: response.workersQuantityWorking,
+            status: response.status
+          });
+          // Use $set to ensure Vue detects the change
+          const updatedRequest = Object.assign({}, response, {
+            canEdit: this.canEditRequest(response),
+            canCancel: this.canCancelRequest(response)
+          });
+          this.$set(this, 'request', updatedRequest);
+          console.log('✅ Request data updated successfully');
           this.setCanSendInvitation(this.request);
+          this.isLoading = false;
         })
         .catch((error) => {
+          console.error('❌ Error loading request:', error);
           this.isLoading = false;
           this.showAlertError(error);
         });
@@ -190,8 +208,9 @@ export default {
       this.$store.dispatch("agency/agencyRequestOpen", id)
         .then(() => {
           this.isLoading = false;
-          this.request.status = this.$statusInProcess;
+          this.request.status = this.$statusOpen;
           this.request.canEdit = true;
+          this.request.canCancel = true;
         })
         .catch((error) => {
           this.isLoading = false;
@@ -199,6 +218,12 @@ export default {
         });
     },
     setCanSendInvitation(request) {
+      // Cannot send invitations to Filled orders
+      if (request.status === this.$statusFilled) {
+        this.canSendInvitation = false;
+        return;
+      }
+
       if (request && !request.invitationSentItAt) {
         this.canSendInvitation = true;
         return;
@@ -209,8 +234,15 @@ export default {
         invitationSentItAt.setDate(invitationSentItAt.getDate() + 7);
         if (invitationSentItAt <= now) {
           this.canSendInvitation = true;
+        } else {
+          this.canSendInvitation = false;
         }
       });
+    },
+    onRefreshRequest() {
+      console.log('🔄 Refresh request event received, calling getAgencyRequest()');
+      // Refresh the entire request from the API to get updated status
+      this.getAgencyRequest();
     },
     sendInvitation(id) {
       this.showAlertConfirm(this.$t("AreYouSure"), this.warningMessage).then(
@@ -248,6 +280,28 @@ export default {
       } else {
         return "";
       }
+    }
+  },
+  watch: {
+    request: {
+      handler(newVal, oldVal) {
+        if (newVal && oldVal) {
+          console.log('👁️ Request data changed:', {
+            old: {
+              workersQuantity: oldVal.workersQuantity,
+              workersQuantityWorking: oldVal.workersQuantityWorking,
+              status: oldVal.status
+            },
+            new: {
+              workersQuantity: newVal.workersQuantity,
+              workersQuantityWorking: newVal.workersQuantityWorking,
+              status: newVal.status
+            },
+            componentKey: newVal.id + '-' + newVal.workersQuantity + '-' + newVal.status
+          });
+        }
+      },
+      deep: true
     }
   }
 };

@@ -9,7 +9,6 @@ namespace Covenant.Integration.Tests
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
             return WebHost.CreateDefaultBuilder()
-                .UseWebRoot("../../../../Covenant.Api/wwwroot")
                 .CaptureStartupErrors(true)
                 .UseStartup<TStartup>();
         }
@@ -20,7 +19,6 @@ namespace Covenant.Integration.Tests
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
             return WebHost.CreateDefaultBuilder()
-                .UseWebRoot("../../../../Covenant.Api/wwwroot")
                 .UseEnvironment("Testing")
                 .Configure(app =>
                 {

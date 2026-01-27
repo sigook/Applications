@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0.400 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 COPY . .
 RUN dotnet restore Covenant.Api/Covenant.Api.csproj
 RUN dotnet publish Covenant.Api/Covenant.Api.csproj -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS="http://+:80"
 EXPOSE 80

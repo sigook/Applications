@@ -8,13 +8,12 @@ public class InvoiceUSAItem : IInvoiceLineItem
     {
     }
 
-    public InvoiceUSAItem(double quantity, decimal unitPrice, string description, Guid id = default)
+    public InvoiceUSAItem(double quantity, decimal unitPrice, string description)
     {
         Quantity = quantity < 0 ? 0 : quantity;
         UnitPrice = unitPrice < 0 ? 0 : unitPrice;
         Description = description;
         Total = ((decimal)Quantity * UnitPrice).DefaultMoneyRound();
-        if (id == default) Id = Guid.NewGuid();
     }
 
     public Guid Id { get; private set; } = Guid.NewGuid();

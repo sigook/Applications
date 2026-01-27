@@ -29,7 +29,6 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using Covenant.TimeSheetTotal.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -461,25 +460,22 @@ public class AgencyService : IAgencyService
     public async Task UpdateWorkerProfileTaxRate(Guid workerProfileId, WorkerProfileDetailModel model)
     {
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
-        if (model.Cpp.HasValue || model.Ei.HasValue)
+        if (workerProfileTaxCategory != null)
         {
-            if (workerProfileTaxCategory != null)
-            {
-                workerProfileTaxCategory.Cpp = model.Cpp;
-                workerProfileTaxCategory.Ei = model.Ei;
-            }
-            else
-            {
-                var newTaxCategory = new WorkerProfileTaxCategory
-                {
-                    WorkerProfileId = workerProfileId,
-                    Cpp = model.Cpp,
-                    Ei = model.Ei
-                };
-                await workerRepository.Create(newTaxCategory);
-            }
-            await workerRepository.SaveChangesAsync();
+            workerProfileTaxCategory.Cpp = model.Cpp;
+            workerProfileTaxCategory.Ei = model.Ei;
         }
+        else
+        {
+            var newTaxCategory = new WorkerProfileTaxCategory
+            {
+                WorkerProfileId = workerProfileId,
+                Cpp = model.Cpp,
+                Ei = model.Ei
+            };
+            await workerRepository.Create(newTaxCategory);
+        }
+        await workerRepository.SaveChangesAsync();
     }
 
     public async Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId, CompanyProfileDocumentModel model)

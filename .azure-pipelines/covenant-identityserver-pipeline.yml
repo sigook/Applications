@@ -8,6 +8,7 @@ trigger:
       - dev
   paths:
     include:
+      - .gitignore
       - Covenant.IdentityServer/**
       - .azure-pipelines/covenant-identityserver-pipeline.yml
       - .azure-pipelines/templates/**

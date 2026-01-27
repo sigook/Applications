@@ -39,21 +39,15 @@ public class GenerateAgencyRequestReportHandler : GenerateAgencyReportHandler<Ge
         sheet.Cell($"G{row}").SetValue(data.SalesRepresentative);
         sheet.Cell($"H{row}").SetValue(data.WorkerRate);
         sheet.Cell($"I{row}").SetValue($"{data.WorkersQuantityWorking} / {data.WorkersQuantity}");
-        if (data.IsOpen)
+
+        var statusText = data.RequestStatus switch
         {
-            if (data.RequestStatus == RequestStatus.Requested || data.RequestStatus == RequestStatus.InProcess)
-                sheet.Cell($"J{row}").SetValue($"Open");
-            else
-                sheet.Cell($"J{row}").SetValue($"Not Filled");
-        }
-        else
-        {
-            if (data.RequestStatus == RequestStatus.Cancelled)
-                sheet.Cell($"J{row}").SetValue($"Cancelled");
-            else if (data.WorkersQuantityWorking < data.WorkersQuantity)
-                sheet.Cell($"J{row}").SetValue($"Not Filled");
-            else
-                sheet.Cell($"J{row}").SetValue($"Filled");
-        }
+            RequestStatus.Open => "Open",
+            RequestStatus.InProgress => "In Progress",
+            RequestStatus.Filled => "Filled",
+            RequestStatus.Cancelled => "Cancelled",
+            _ => "Unknown"
+        };
+        sheet.Cell($"J{row}").SetValue(statusText);
     }
 }

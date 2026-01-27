@@ -313,7 +313,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
         [Fact]
         public async Task PutCancel()
         {
-            Request request = Data.FakeRequest;
+            Request request = Data.FakeRequestToCancel;
             var updateUrl = $"{RequestUri()}/{request.Id}";
             var model = new RequestCancellationDetailModel { OtherCancellationReason = "Contact finished" };
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{updateUrl}/Cancel", model);
@@ -334,7 +334,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Open", new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.Equal(RequestStatus.InProcess, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
+            Assert.Equal(RequestStatus.Open, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
             Assert.True(await context.RequestNotes.AnyAsync(a => a.RequestId == request.Id));
         }
 
@@ -449,7 +449,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
                 context.AgencyPersonnel.Add(Data.FakeRecruiter);
                 context.AddRange(Data.FakeCompany, Data.FakeRequest,
                     Data.FakeUpdateRequest, Data.FakeRequestIncreaseQuantity,
-                    Data.FakeRequestReduceQuantity, Data.FakeRequestFinalize,
+                    Data.FakeRequestReduceQuantity, Data.FakeRequestToCancel,
                     Data.FakeIsAsapRequest, Data.FakeRequestUpdateLocation, Data.FakeRequestToOpen,
                     Data.FakeRequestToSendInvitation, Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
                 context.SaveChanges();
@@ -495,7 +495,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
             public static readonly Request FakeUpdateRequest;
             public static readonly Request FakeRequestIncreaseQuantity;
             public static readonly Request FakeRequestReduceQuantity;
-            public static readonly Request FakeRequestFinalize;
+            public static readonly Request FakeRequestToCancel;
             public static readonly Request FakeIsAsapRequest;
             public static readonly Request FakeRequestUpdateLocation;
             public static readonly Request FakeRequestToOpen;
@@ -528,7 +528,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
                 FakeIsAsapRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id);
                 FakeRequestIncreaseQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
                 FakeRequestReduceQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
-                FakeRequestFinalize = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+                FakeRequestToCancel = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
                 FakeRequestUpdateLocation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
                 FakeRequestToOpen = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
                 FakeRequestToOpen.Cancel(FakeNow);

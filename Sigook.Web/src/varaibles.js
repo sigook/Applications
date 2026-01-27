@@ -1,22 +1,16 @@
 import Vue from 'vue';
 
-// request status
-Vue.prototype.$statusRequested = "Requested";
-Vue.prototype.$statusFinalized = "Finalized";
-Vue.prototype.$statusCancelled = "Cancelled";
-Vue.prototype.$statusInProcess = "InProcess";
-
-// request
+// Request Status (must match backend enum)
 Vue.prototype.$statusOpen = "Open";
+Vue.prototype.$statusInProgress = "InProgress";
 Vue.prototype.$statusFilled = "Filled";
-Vue.prototype.$statusNotFilled = "Not Filled";
+Vue.prototype.$statusCancelled = "Cancelled";
 
-// requestDisplay
-Vue.prototype.$statusDisplayRequested = "Requested";
-Vue.prototype.$statusDisplayCancelled = "Cancelled";
-Vue.prototype.$statusDisplayInProcess = "In Process";
+// Request Status Display Labels
 Vue.prototype.$statusDisplayOpen = "Open";
-Vue.prototype.$statusDisplayNoOpen = "No Open";
+Vue.prototype.$statusDisplayInProgress = "In Progress";
+Vue.prototype.$statusDisplayFilled = "Filled";
+Vue.prototype.$statusDisplayCancelled = "Cancelled";
 
 // worker status
 Vue.prototype.$statusNone = "None";

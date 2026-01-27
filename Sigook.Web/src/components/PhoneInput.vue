@@ -4,7 +4,7 @@
     <template #label>
       {{ model }} <span v-if="required" class="has-text-danger">*</span>
     </template>
-    <b-input type="text" title="phone" :name="model" v-validate="{ required: required, phoneCustom: '' }"
+    <b-input type="tel" title="phone" :name="model" v-validate="{ required: required, phoneCustom: '' }"
       @keyup="focusOut" @blur="focusOut" :disabled="disabled" :placeholder="placeholder" v-model="formattedPhoneValue"
       v-cleave="mask" />
   </b-field>

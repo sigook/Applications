@@ -1,7 +1,7 @@
 <template>
   <div class="container-flex">
     <section class="col-sm-12 col-md-9">
-      <request-detail :request="request" />
+      <request-detail :request="request" @refreshRequest="$emit('refreshRequest')" />
     </section>
     <aside class="col-sm-12 col-md-3">
       <notes :canEdit="request.canEdit" />

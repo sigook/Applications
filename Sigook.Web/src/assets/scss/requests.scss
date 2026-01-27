@@ -13,9 +13,14 @@
 .request-check {
   position: absolute;
   z-index: 1;
-  width: 12px;
-  left: 3px;
-  top: 3px;
+  width: 16px;
+  left: 4px;
+  top: 4px;
+}
+
+.status-dot-container {
+  position: relative;
+  display: inline-block;
 }
 
 .wrapper-request {

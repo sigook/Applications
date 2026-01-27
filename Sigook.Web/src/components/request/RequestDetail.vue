@@ -18,7 +18,7 @@
       <div class="item">
         <span class="fw-700">Start
           <span
-            v-if="((request.status === $statusFinalized || request.status === $statusCancelled) && request.durationTerm === $longTerm) || request.durationTerm === $shortTerm">
+            v-if="((request.status === $statusFilled || request.status === $statusCancelled) && request.durationTerm === $longTerm) || request.durationTerm === $shortTerm">
             / Finish</span>
         </span>
         <p>
@@ -26,7 +26,7 @@
           <span class="fz-0" v-if="request.durationTerm !== $longTerm">
             / {{ request.finishAt | dateMonth }}</span>
           <span class="fz-0"
-            v-if="(request.status === $statusFinalized || request.status === $statusCancelled) && request.durationTerm === $longTerm">
+            v-if="(request.status === $statusFilled || request.status === $statusCancelled) && request.durationTerm === $longTerm">
             / {{ request.finishAt | dateMonth }}
           </span>
         </p>
@@ -141,7 +141,8 @@ export default {
         .dispatch("agency/increaseWorkersQuantityByOne", this.request.id)
         .then(() => {
           this.isLoading = false;
-          this.request.workersQuantity = this.request.workersQuantity + 1;
+          // Emit event to refresh request data from API to get updated status
+          this.$emit('refreshRequest');
         })
         .catch((error) => {
           this.isLoading = false;
@@ -154,7 +155,8 @@ export default {
         .dispatch("agency/reduceWorkersQuantityByOne", this.request.id)
         .then(() => {
           this.isLoading = false;
-          this.request.workersQuantity = this.request.workersQuantity - 1;
+          // Emit event to refresh request data from API to get updated status
+          this.$emit('refreshRequest');
         })
         .catch((error) => {
           this.isLoading = false;

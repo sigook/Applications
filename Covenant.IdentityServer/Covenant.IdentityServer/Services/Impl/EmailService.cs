@@ -1,54 +1,53 @@
-using Covenant.IdentityServer.Services.Models;
+using Covenant.Common.Configuration;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 
-namespace Covenant.IdentityServer.Services.Impl
+namespace Covenant.IdentityServer.Services.Impl;
+
+public class EmailService : IEmailService
 {
-    public class EmailService : IEmailService
+    private readonly ILogger<EmailService> _logger;
+    private readonly EmailSettings _emailSettings;
+
+    public EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger)
     {
-        private readonly ILogger<EmailService> _logger;
-        private readonly EmailSettings _emailSettings;
+        _logger = logger;
+        _emailSettings = options.Value;
+    }
 
-        public EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger)
+    public async Task<bool> SendEmail(string email, string subject, string message)
+    {
+        try
         {
-            _logger = logger;
-            _emailSettings = options.Value;
+            var mail = new MailMessage { From = new MailAddress(_emailSettings.FromEmail, Resources.Resources.CompanyName) };
+            if (_emailSettings.Test)
+            {
+                string[] emails = _emailSettings.TestEmails.Split(",") ?? new string[0];
+                if (!emails.Any()) return false;
+                foreach (string e in emails) mail.To.Add(e);
+            }
+            else
+            {
+                string e = string.IsNullOrEmpty(email) ? _emailSettings.ToEmail : email;
+                mail.To.Add(new MailAddress(e));
+            }
+            mail.Subject = subject;
+            mail.Body = message;
+            mail.IsBodyHtml = true;
+            mail.Priority = MailPriority.Normal;
+            var password = string.IsNullOrWhiteSpace(_emailSettings.Provider) ? _emailSettings.Password : $"{_emailSettings.Provider}{_emailSettings.Password}";
+            using var smtp = new SmtpClient(_emailSettings.PrimaryDomain, _emailSettings.PrimaryPort);
+            smtp.Credentials = new NetworkCredential(_emailSettings.Username, password);
+            smtp.EnableSsl = true;
+            await smtp.SendMailAsync(mail);
+            return true;
         }
-
-        public async Task<bool> SendEmail(string email, string subject, string message)
+        catch (Exception e)
         {
-            try
-            {
-                var mail = new MailMessage { From = new MailAddress(_emailSettings.FromEmail, Resources.Resources.CompanyName) };
-                if (_emailSettings.Test)
-                {
-                    string[] emails = _emailSettings.TestEmails.Split(",") ?? new string[0];
-                    if (!emails.Any()) return false;
-                    foreach (string e in emails) mail.To.Add(e);
-                }
-                else
-                {
-                    string e = string.IsNullOrEmpty(email) ? _emailSettings.ToEmail : email;
-                    mail.To.Add(new MailAddress(e));
-                }
-                mail.Subject = subject;
-                mail.Body = message;
-                mail.IsBodyHtml = true;
-                mail.Priority = MailPriority.Normal;
-                using (var smtp = new SmtpClient(_emailSettings.PrimaryDomain, _emailSettings.PrimaryPort))
-                {
-                    smtp.Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password);
-                    smtp.EnableSsl = true;
-                    await smtp.SendMailAsync(mail);
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error sending email to: {To}", email);
-                return false;
-            }
+            _logger.LogError(e, "Error sending email to: {To}", email);
+            return false;
         }
     }
 }

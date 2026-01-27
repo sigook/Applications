@@ -32,5 +32,6 @@ namespace Covenant.Common.Models.Worker
         public string Skills { get; set; }
         public IEnumerable<WorkersProfileFeature> Features { get; set; }
         public Guid? CompanyProfileId { get; set; }
+        public string Location { get; set; }
     }
 }

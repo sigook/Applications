@@ -10,6 +10,7 @@ using Covenant.Infrastructure.Context;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using static Covenant.Common.Constants.CovenantConstants;
 
 namespace Covenant.Infrastructure.Repositories.Accounting;
 
@@ -115,9 +116,12 @@ public class InvoiceRepository : IInvoiceRepository
                                    join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
                                    select tstP).ToListAsync();
         _context.Invoice.Remove(invoice);
-        if (invoice.InvoiceTotals.Any(it => it.TimeSheetTotal != null))
+        var timesheetTotals = invoice.InvoiceTotals
+            .Where(it => it.TimeSheetTotal != null)
+            .Select(s => s.TimeSheetTotal);
+        if (timesheetTotals.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(invoice.InvoiceTotals.Select(s => s.TimeSheetTotal));
+            _context.TimeSheetTotal.RemoveRange(timesheetTotals);
         }
         _context.ReportSubcontractor.RemoveRange(reports);
         _context.TimeSheetTotalPayroll.RemoveRange(totalsPayroll);
@@ -135,9 +139,12 @@ public class InvoiceRepository : IInvoiceRepository
             return default;
         }
         _context.InvoiceUSA.Remove(invoice);
-        if (invoice.Items.Any(i => i.TimeSheetTotal != null))
+        var timesheetTotal = invoice.Items
+            .Where(i => i.TimeSheetTotal != null)
+            .Select(s => s.TimeSheetTotal);
+        if (timesheetTotal.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(invoice.Items.Select(s => s.TimeSheetTotal));
+            _context.TimeSheetTotal.RemoveRange(timesheetTotal);
         }
         return (invoice.Id, invoice.InvoiceNumber);
     }
@@ -206,7 +213,19 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoicePayroll = InvoicePayroll.Covenant
                 };
         var invoice = await q.SingleOrDefaultAsync();
-        invoice.Items = await GetInvoiceSummaryItemModels(id);
+        var items = await _context.InvoiceTotals
+            .Where(it => it.InvoiceId == id)
+            .GroupBy(it => it.Description)
+            .Select(group => new InvoiceSummaryItemModel
+            {
+                Description = group.Key,
+                Quantity = group.Sum(i => i.Quantity),
+                Total = group.Sum(i => i.Total),
+                UnitPrice = group.Sum(i => i.Quantity) > 0
+                    ? group.Sum(i => i.Total) / (decimal)group.Sum(i => i.Quantity)
+                    : 0
+            }).ToListAsync();
+        invoice.Items = items;
         return invoice;
     }
 
@@ -245,7 +264,6 @@ public class InvoiceRepository : IInvoiceRepository
                     Total = i.TotalNet,
                     TaxName = "Tax",
                     WeedEnding = i.WeekEnding.HasValue ? i.WeekEnding.Value.Date : null,
-                    Items = i.Items.Select(s => new InvoiceSummaryItemModel(s.Description, s.Quantity, s.UnitPrice, s.Total)).ToList(),
                     Discounts = i.Discounts.Select(d => new InvoiceSummaryDiscountModel
                     {
                         Quantity = d.Quantity,
@@ -257,6 +275,19 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoicePayroll = InvoicePayroll.Sigook
                 };
         var invoice = await q.SingleOrDefaultAsync();
+        var items = await _context.InvoiceUSAItems
+            .Where(i => i.InvoiceUSAId == id)
+            .GroupBy(i => i.Description)
+            .Select(group => new InvoiceSummaryItemModel
+            {
+                Description = group.Key,
+                Quantity = group.Sum(i => i.Quantity),
+                Total = group.Sum(i => i.Total),
+                UnitPrice = group.Sum(i => i.Quantity) > 0
+                    ? group.Sum(i => i.Total) / (decimal)group.Sum(i => i.Quantity)
+                    : 0
+            }).ToListAsync();
+        invoice.Items = items;
         return invoice;
     }
 
@@ -363,21 +394,5 @@ public class InvoiceRepository : IInvoiceRepository
                 break;
         }
         return query;
-    }
-
-    private async Task<List<InvoiceSummaryItemModel>> GetInvoiceSummaryItemModels(Guid invoiceId)
-    {
-        return await _context.InvoiceTotals
-            .Where(it => it.InvoiceId == invoiceId)
-            .GroupBy(it => it.Description)
-            .Select(group => new InvoiceSummaryItemModel
-            {
-                Description = group.Key,
-                Quantity = group.Sum(i => i.Quantity),
-                Total = group.Sum(i => i.Total),
-                UnitPrice = group.Sum(i => i.Quantity) > 0
-                    ? group.Sum(i => i.Total) / (decimal)group.Sum(i => i.Quantity)
-                    : 0
-            }).ToListAsync();
     }
 }

@@ -182,13 +182,48 @@ namespace Covenant.IdentityServer.Controllers.Account
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
+            _logger.LogInformation("=== LOGIN REQUEST INITIATED ===");
+            _logger.LogInformation("ReturnUrl: {ReturnUrl}", returnUrl ?? "(null)");
+
             // build a model so we know what to show on the login page
             LoginViewModel vm = await BuildLoginViewModelAsync(returnUrl);
+
+            // Log authorization context details
+            AuthorizationRequest context = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            if (context != null)
+            {
+                _logger.LogInformation("Authorization Context Found:");
+                _logger.LogInformation("  - ClientId: {ClientId}", context.Client?.ClientId ?? "(null)");
+                _logger.LogInformation("  - ClientName: {ClientName}", context.Client?.ClientName ?? "(null)");
+                _logger.LogInformation("  - RedirectUri: {RedirectUri}", context.RedirectUri ?? "(null)");
+                _logger.LogInformation("  - Scopes Requested: {Scopes}", context.ValidatedResources?.RawScopeValues != null ? string.Join(", ", context.ValidatedResources.RawScopeValues) : "(none)");
+                _logger.LogInformation("  - IdP: {IdP}", context.IdP ?? "(none)");
+                _logger.LogInformation("  - LoginHint: {LoginHint}", context.LoginHint ?? "(none)");
+                _logger.LogInformation("  - AcrValues: {AcrValues}", context.AcrValues != null ? string.Join(", ", context.AcrValues) : "(none)");
+                _logger.LogInformation("  - IsNativeClient: {IsNativeClient}", context.IsNativeClient());
+
+                // Log raw parameters if available
+                if (context.Parameters != null && context.Parameters.Count > 0)
+                {
+                    _logger.LogInformation("  - Raw Parameters:");
+                    foreach (var param in context.Parameters.AllKeys)
+                    {
+                        _logger.LogInformation("    * {Key}: {Value}", param, context.Parameters[param]);
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogWarning("No authorization context found for returnUrl: {ReturnUrl}", returnUrl ?? "(null)");
+            }
+
             if (vm.IsExternalLoginOnly)
             {
+                _logger.LogInformation("External login only - Redirecting to provider: {Provider}", vm.ExternalLoginScheme);
                 // we only have one option for logging in and it's an external provider
                 return RedirectToAction("Challenge", "External", new { provider = vm.ExternalLoginScheme, returnUrl });
             }
+
             return View(vm);
         }
 
@@ -199,14 +234,33 @@ namespace Covenant.IdentityServer.Controllers.Account
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginInputModel model, string button)
         {
+            _logger.LogInformation("=== LOGIN SUBMISSION ===");
+            _logger.LogInformation("Username (Email): {Username}", model.Username ?? "(null)");
+            _logger.LogInformation("RememberLogin: {RememberLogin}", model.RememberLogin);
+            _logger.LogInformation("Button: {Button}", button ?? "(null)");
+            _logger.LogInformation("ReturnUrl: {ReturnUrl}", model.ReturnUrl ?? "(null)");
+
             // check if we are in the context of an authorization request
             AuthorizationRequest context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+
+            if (context != null)
+            {
+                _logger.LogInformation("Authorization Context Retrieved:");
+                _logger.LogInformation("  - ClientId: {ClientId}", context.Client?.ClientId ?? "(null)");
+                _logger.LogInformation("  - RedirectUri: {RedirectUri}", context.RedirectUri ?? "(null)");
+            }
+            else
+            {
+                _logger.LogWarning("No authorization context found for ReturnUrl: {ReturnUrl}", model.ReturnUrl ?? "(null)");
+            }
+
             // the user clicked the "cancel" button
             if (button != "login")
             {
+                _logger.LogInformation("User cancelled login (button: {Button})", button);
                 if (context != null)
                 {
-                    // if the user cancels, send a result back into IdentityServer as if they 
+                    // if the user cancels, send a result back into IdentityServer as if they
                     // denied the consent (even if this client does not require consent).
                     // this will send back an access denied OIDC error response to the client.
                     await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
@@ -226,16 +280,47 @@ namespace Covenant.IdentityServer.Controllers.Account
 
             if (ModelState.IsValid)
             {
+                _logger.LogInformation("ModelState is valid - Beginning authentication");
+
                 CovenantUser existingUser = await _userManager.FindByEmailAsync(model.Username);
-                if (existingUser == null) return await ReturnError(AccountOptions.InvalidCredentialsErrorMessage);
-                if (await _context.InactiveUsers.AnyAsync(iu => iu.UserId == existingUser.Id)) return await ReturnError(AccountOptions.InactiveUser);
-                if (!(await _signInManager.CheckPasswordSignInAsync(existingUser, model.Password, false)).Succeeded) return await ReturnError(AccountOptions.InvalidCredentialsErrorMessage);
-                if (!await _userManager.IsEmailConfirmedAsync(existingUser)) return await ReturnError(AccountOptions.AccountNotConfirmedErrorMessage, false);
+                if (existingUser == null)
+                {
+                    _logger.LogWarning("Authentication failed: User not found for email: {Email}", model.Username);
+                    return await ReturnError(AccountOptions.InvalidCredentialsErrorMessage);
+                }
+
+                _logger.LogInformation("User found: UserId={UserId}, Email={Email}, EmailConfirmed={EmailConfirmed}",
+                    existingUser.Id, existingUser.Email, existingUser.EmailConfirmed);
+
+                bool isInactive = await _context.InactiveUsers.AnyAsync(iu => iu.UserId == existingUser.Id);
+                if (isInactive)
+                {
+                    _logger.LogWarning("Authentication failed: User is inactive. UserId={UserId}", existingUser.Id);
+                    return await ReturnError(AccountOptions.InactiveUser);
+                }
+
+                var passwordCheckResult = await _signInManager.CheckPasswordSignInAsync(existingUser, model.Password, false);
+                if (!passwordCheckResult.Succeeded)
+                {
+                    _logger.LogWarning("Authentication failed: Invalid password for user: {Email}. Result={Result}",
+                        model.Username, passwordCheckResult);
+                    return await ReturnError(AccountOptions.InvalidCredentialsErrorMessage);
+                }
+
+                _logger.LogInformation("Password check succeeded");
+
+                if (!await _userManager.IsEmailConfirmedAsync(existingUser))
+                {
+                    _logger.LogWarning("Authentication failed: Email not confirmed for user: {Email}", model.Username);
+                    return await ReturnError(AccountOptions.AccountNotConfirmedErrorMessage, false);
+                }
+
                 SignInResult signInResult = await _signInManager.PasswordSignInAsync(existingUser, model.Password, model.RememberLogin, false);
                 if (signInResult.Succeeded)
                 {
+                    _logger.LogInformation("Sign-in successful for user: {Email}", existingUser.Email);
                     await _events.RaiseAsync(new UserLoginSuccessEvent(existingUser.Email, existingUser.Id.ToString(), existingUser.UserName));
-                    // only set explicit expiration here if user chooses "remember me". 
+                    // only set explicit expiration here if user chooses "remember me".
                     // otherwise we rely upon expiration configured in cookie middleware.
                     AuthenticationProperties props = null;
                     if (AccountOptions.AllowRememberLogin && model.RememberLogin)
@@ -245,19 +330,26 @@ namespace Covenant.IdentityServer.Controllers.Account
                             IsPersistent = true,
                             ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
                         };
+                        _logger.LogInformation("Remember me enabled - Session will persist until {Expiration}", props.ExpiresUtc);
                     }
                     // issue authentication cookie with subject ID and username
                     var claims = await _userManager.GetClaimsAsync(existingUser);
+                    _logger.LogInformation("User has {ClaimCount} claims", claims.Count);
+
                     var isuser = new IdentityServerUser(existingUser.Id.ToString())
                     {
                         DisplayName = existingUser.Email,
                         AdditionalClaims = claims
                     };
                     await HttpContext.SignInAsync(isuser, props);
+
+                    _logger.LogInformation("Authentication cookie issued - Redirecting to: {ReturnUrl}", model.ReturnUrl ?? "home");
+
                     if (context != null)
                     {
                         if (context.IsNativeClient())
                         {
+                            _logger.LogInformation("Native client detected - Using loading page");
                             // The client is native, so this change in how to
                             // return the response is for better UX for the end user.
                             return this.LoadingPage("Redirect", model.ReturnUrl);
@@ -265,20 +357,32 @@ namespace Covenant.IdentityServer.Controllers.Account
                         // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
                         return Redirect(model.ReturnUrl);
                     }
-                    if (Url.IsLocalUrl(model.ReturnUrl)) return Redirect(model.ReturnUrl); // request for a local page                    
+                    if (Url.IsLocalUrl(model.ReturnUrl)) return Redirect(model.ReturnUrl); // request for a local page
                     else if (string.IsNullOrEmpty(model.ReturnUrl)) return Redirect("~/");
-                    else throw new Exception("invalid return URL"); // user might have clicked on a malicious link - should be logged
+                    else
+                    {
+                        _logger.LogError("Invalid return URL detected: {ReturnUrl}", model.ReturnUrl);
+                        throw new Exception("invalid return URL"); // user might have clicked on a malicious link - should be logged
+                    }
                 }
 
+                _logger.LogWarning("Sign-in failed after password validation. Result={Result}", signInResult);
                 return await ReturnError(AccountOptions.InvalidCredentialsErrorMessage);
             }
 
             // something went wrong, show form with error
+            _logger.LogWarning("ModelState is invalid. Errors: {Errors}",
+                string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             LoginViewModel vm = await BuildLoginViewModelAsync(model);
             return View(vm);
 
             async Task<IActionResult> ReturnError(string msgError, bool isAccountConfirmed = true)
             {
+                _logger.LogWarning("=== LOGIN FAILED ===");
+                _logger.LogWarning("Error Message: {ErrorMessage}", msgError);
+                _logger.LogWarning("Username: {Username}", model.Username);
+                _logger.LogWarning("IsAccountConfirmed: {IsAccountConfirmed}", isAccountConfirmed);
+
                 await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, msgError));
                 ModelState.AddModelError("", msgError);
                 LoginViewModel vm2 = await BuildLoginViewModelAsync(model);
@@ -286,6 +390,7 @@ namespace Covenant.IdentityServer.Controllers.Account
                 if (model.Username.EndsWith("@covenantgroupl.com", StringComparison.InvariantCultureIgnoreCase))
                 {
                     const string errorCovenantEmployee = "It looks like you work for Covenant Group LTD. Please login using the corporate access link.";
+                    _logger.LogInformation("Covenant employee detected - suggesting corporate login");
                     ModelState.AddModelError("Account", errorCovenantEmployee);
                 }
                 return View(vm2);

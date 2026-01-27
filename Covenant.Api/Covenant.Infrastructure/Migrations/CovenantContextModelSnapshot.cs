@@ -17,7 +17,7 @@ namespace Covenant.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.29")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -391,7 +391,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("InvoiceUSAItem");
+                    b.ToTable("InvoiceUSAItem", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
@@ -543,7 +543,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
-                    b.ToView("PayStubHistory");
+                    b.ToTable((string)null);
+
+                    b.ToView("PayStubHistory", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubItem", b =>
@@ -675,6 +677,34 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubWageDetail");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid>("ReportSubcontractorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportSubcontractorId");
+
+                    b.ToTable("ReportSubContractorOtherDeduction");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -722,34 +752,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerProfileId");
 
                     b.ToTable("ReportSubcontractor");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("ReportSubcontractorId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportSubcontractorId");
-
-                    b.ToTable("ReportSubContractorOtherDeduction");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
@@ -1981,9 +1983,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("IsAsap")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsOpen")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("JobIsOnBranchOffice")
                         .HasColumnType("boolean");
 
@@ -2327,47 +2326,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("TimeSheet");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimesheetHistory", b =>
-                {
-                    b.Property<string>("CompanyName")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<TimeSpan?>("HolidayHours")
-                        .HasColumnType("interval");
-
-                    b.Property<bool>("IsHoliday")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("JobTitle")
-                        .HasColumnType("text");
-
-                    b.Property<TimeSpan?>("MissingHours")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan?>("MissingHoursOvertime")
-                        .HasColumnType("interval");
-
-                    b.Property<int>("NumberId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan?>("OvertimeHours")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan?>("RegularHours")
-                        .HasColumnType("interval");
-
-                    b.Property<int>("RowNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
-
-                    b.ToView("TimesheetHistory");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetPhoto", b =>
                 {
                     b.Property<Guid>("TimeSheetId")
@@ -2460,6 +2418,49 @@ namespace Covenant.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("TimeSheetTotalPayroll", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.TimesheetHistory", b =>
+                {
+                    b.Property<string>("CompanyName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeSpan?>("HolidayHours")
+                        .HasColumnType("interval");
+
+                    b.Property<bool>("IsHoliday")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("MissingHours")
+                        .HasColumnType("interval");
+
+                    b.Property<TimeSpan?>("MissingHoursOvertime")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("NumberId")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeSpan?>("OvertimeHours")
+                        .HasColumnType("interval");
+
+                    b.Property<TimeSpan?>("RegularHours")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("TimesheetHistory", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -3161,7 +3162,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<long>("NextNumber")
                         .HasColumnType("bigint");
 
-                    b.ToView("view_doesnt_exitst");
+                    b.ToTable((string)null);
+
+                    b.ToView("view_doesnt_exitst", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.CppBiWeekly", b =>
@@ -3870,17 +3873,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
-                        .WithMany()
-                        .HasForeignKey("WorkerProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkerProfile");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
@@ -3890,6 +3882,17 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ReportSubcontractor");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                        .WithMany()
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>

@@ -1,4 +1,4 @@
-# Azure Pipeline for Covenant.Api (.NET 6 API)
+# Azure Pipeline for Covenant.Api (.NET 8 API)
 # Builds, tests, and deploys .NET API to Azure App Service via Docker
 
 name: CovenantApi-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
@@ -12,6 +12,7 @@ trigger:
       - dev
   paths:
     include:
+      - .gitignore
       - Covenant.Api/**
       - .azure-pipelines/covenant-api-pipeline.yml
     exclude:
@@ -34,7 +35,7 @@ pool:
 variables:
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
-  dotnetSdkVersion: '6.0.400'
+  dotnetSdkVersion: '8.0.415'
 
 stages:
   # ============================================

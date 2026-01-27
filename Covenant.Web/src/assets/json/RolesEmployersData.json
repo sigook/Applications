@@ -1,0 +1,68 @@
+[
+    {
+      "title": "Automotive",
+      "image": "automotive.png",
+      "icon": "car.svg",
+      "description": "Gain access to skilled automotive professionals who ensure quality, efficiency, and reliability, keeping your operations running smoothly at every stage."
+    },
+    {
+      "title": "Aviation",
+      "image": "aviation.png",
+      "icon": "plane.svg",
+      "description": "From maintenance and ground support to operational coordination, we connect you with the specialized talent that keeps your aviation business moving forward."
+    },
+    {
+      "title": "Construction",
+      "image": "construction.png",
+      "icon": "crane.svg",
+      "description": "We connect your company with the professionals who ensure your construction operations meet the highest standards of quality, safety, and performance."
+    },
+    {
+      "title": "Engineering",
+      "image": "engineering.png",
+      "icon": "gear.svg",
+      "description": "Hire experienced engineers with proven expertise to deliver precision, innovation, and dependable results that strengthen your projects and long-term business growth."
+    },
+    {
+      "title": "IT / AI",
+      "image": "it-ai.png",
+      "icon": "chip.svg",
+      "description": "Hire skilled developers, data scientists, and AI specialists with proven expertise to deliver intelligent solutions that accelerate digital transformation and long-term growth."
+    },
+    {
+      "title": "Financial/Insurance",
+      "image": "finance.png",
+      "icon": "money.svg",
+      "description": "We provide experienced professionals who bring accuracy, integrity, and strategic insight to financial and insurance operations, ensuring compliance, efficiency, and dependable results."
+    },
+    {
+      "title": "Legal/Accounting",
+      "image": "legal.png",
+      "icon": "doc.svg",
+      "description": "Legal and accounting excellence depends on expertise and attention to detail. We connect you with professionals who ensure your operations remain efficient, compliant, and trustworthy"
+    },
+    {
+      "title": "Logistics, 3PL/4PL",
+      "image": "logistics.png",
+      "icon": "truck.svg",
+      "description": "Depend on qualified logistics talent to optimize supply chains, improve efficiency, and ensure reliable performance across your operations and distribution network."
+    },
+    {
+      "title": "Manufacturing",
+      "image": "manufacturing.png",
+      "icon": "factory.svg",
+      "description": "We provide qualified professionals who help manufacturing operations maintain quality, efficiency, and precision—ensuring every process runs smoothly from production to delivery."
+    },
+    {
+      "title": "Retail",
+      "image": "retail.png",
+      "icon": "store.svg",
+      "description": "We connect your business with professionals who maintain smooth operations and deliver exceptional in-store and organizational results."
+    },
+    {
+      "title": "Transportation",
+      "image": "transportation.png",
+      "icon": "transport.svg",
+      "description": "We connect you with trusted professionals who ensure safe deliveries, regulatory compliance, and smooth operations from start to finish."
+    }
+]

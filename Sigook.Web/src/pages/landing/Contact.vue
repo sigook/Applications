@@ -13,7 +13,7 @@
             <div class="businesses-staff-form">
               <input type="text" class="control-borderer" placeholder="Name" v-model="contact.name"
                 v-validate="'required|max:50'" />
-              <input type="text" class="control-borderer" placeholder="Phone" name="phone" v-model="contact.phone"
+              <input type="tel" class="control-borderer" placeholder="Phone" name="phone" v-model="contact.phone"
                 v-validate="{ required: true, phoneCustom: '' }" v-cleave="mask" />
               <input type="email" class="control-borderer" placeholder="Email" v-model="contact.email"
                 v-validate="'required|max:50|email'" />
