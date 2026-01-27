@@ -797,6 +797,7 @@ stages:
   jobs:
   - job: Deploy_TestFlight
     displayName: 'Deploy to TestFlight'
+    continueOnError: true  # Don't fail pipeline if deployment fails
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
@@ -815,6 +816,7 @@ stages:
           echo "========================================"
     - task: DownloadBuildArtifacts@1
       displayName: 'Download IPA Artifact'
+      continueOnError: true
       inputs:
         buildType: 'current'
         downloadType: 'single'
@@ -822,12 +824,14 @@ stages:
         downloadPath: '$(System.ArtifactsDirectory)'
     - task: CmdLine@2
       displayName: 'Install Fastlane'
+      continueOnError: true
       inputs:
         script: |
           sudo gem install fastlane -NV
           echo "✅ Fastlane installed"
     - task: CmdLine@2
       displayName: 'Deploy to TestFlight'
+      continueOnError: true
       env:
         APP_STORE_CONNECT_API_KEY_ID: $(APP_STORE_CONNECT_API_KEY_ID)
         APP_STORE_CONNECT_API_ISSUER_ID: $(APP_STORE_CONNECT_API_ISSUER_ID)
@@ -838,17 +842,25 @@ stages:
           cd $(System.DefaultWorkingDirectory)/SigookApp
           IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
-          fastlane ios deploy ipa:"$IPA_PATH"
+          if [ -n "$IPA_PATH" ]; then
+            fastlane ios deploy ipa:"$IPA_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+          else
+            echo "⚠️ IPA not found, skipping deployment"
+            echo "##vso[task.setvariable variable=deployStatus]skipped"
+          fi
     - task: Bash@3
       displayName: 'Deploy Summary'
+      condition: always()
       inputs:
         targetType: 'inline'
         script: |
           echo ""
           echo "========================================"
-          echo "✅ TestFlight Deployment Complete!"
+          echo "TestFlight Deployment Summary"
           echo "========================================"
           echo "Build ID: $(Build.BuildId)"
+          echo "Environment: $(environment)"
+          echo "Status: $(deployStatus)"
           echo "========================================"
 # ============================================
 # Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
@@ -870,6 +882,7 @@ stages:
   jobs:
   - job: Deploy_PlayStore
     displayName: 'Deploy to Google Play'
+    continueOnError: true  # Don't fail pipeline if deployment fails
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
@@ -888,6 +901,7 @@ stages:
           echo "========================================"
     - task: DownloadBuildArtifacts@1
       displayName: 'Download AAB Artifact'
+      continueOnError: true
       inputs:
         buildType: 'current'
         downloadType: 'single'
@@ -895,12 +909,14 @@ stages:
         downloadPath: '$(System.ArtifactsDirectory)'
     - task: CmdLine@2
       displayName: 'Install Fastlane'
+      continueOnError: true
       inputs:
         script: |
           sudo gem install fastlane -NV
           echo "✅ Fastlane installed"
     - task: CmdLine@2
       displayName: 'Deploy to Google Play'
+      continueOnError: true
       env:
         GOOGLE_PLAY_JSON_KEY: $(GOOGLE_PLAY_JSON_KEY)
         FASTLANE_SKIP_UPDATE_CHECK: "true"
@@ -909,15 +925,23 @@ stages:
           cd $(System.DefaultWorkingDirectory)/SigookApp
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
-          fastlane android deploy aab:"$AAB_PATH"
+          if [ -n "$AAB_PATH" ]; then
+            fastlane android deploy aab:"$AAB_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+          else
+            echo "⚠️ AAB not found, skipping deployment"
+            echo "##vso[task.setvariable variable=deployStatus]skipped"
+          fi
     - task: Bash@3
       displayName: 'Deploy Summary'
+      condition: always()
       inputs:
         targetType: 'inline'
         script: |
           echo ""
           echo "========================================"
-          echo "✅ Google Play Deployment Complete!"
+          echo "Google Play Deployment Summary"
           echo "========================================"
           echo "Build ID: $(Build.BuildId)"
+          echo "Environment: $(environment)"
+          echo "Status: $(deployStatus)"
           echo "========================================"
