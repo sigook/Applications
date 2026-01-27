@@ -48,7 +48,10 @@ variables:
   value: 'stable'
 # Environment name for display purposes
 - name: environment
-  value: $[if(eq(variables['Build.SourceBranch'], 'refs/heads/main'), 'production', 'staging')]
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'staging'
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
