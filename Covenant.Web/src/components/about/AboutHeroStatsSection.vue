@@ -197,12 +197,18 @@ const scrollToContact = () => {
   align-items: center;
   justify-content: center;
   aspect-ratio: 1 / 1;
+  transition: all 0.38s ease;
+}
+
+.about__card:hover {
+  transform: translateY(-2px);
+  background-color: #32d26a;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
 }
 
 /* Clover shapes (igual lógica que en Licensed) */
 .about__card:nth-child(1) {
-  background-color: #32d26a;
-  border-radius: 220px 220px 0 220px; /* TL TR BR BL */
+  border-radius: 220px 220px 0 220px;
 }
 
 .about__card:nth-child(2) {
@@ -214,22 +220,7 @@ const scrollToContact = () => {
 }
 
 .about__card:nth-child(4) {
-  position: relative;
-  z-index: 1;
   border-radius: 0 220px 220px 220px;
-  overflow: visible;
-}
-
-/* Sutil contorno para la card 4 como en el diseño */
-.about__card:nth-child(4)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  right: -10px;
-  top: -10px;
-  border-radius: inherit;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transform: translate(25px, 0);
 }
 
 /* contenido interno */
@@ -242,12 +233,6 @@ const scrollToContact = () => {
   font-size: 4rem;
   font-weight: 700;
   margin-bottom: 8px;
-}
-
-/* Números verdes en la tarjeta 2 y 3 */
-.about__card:nth-child(2) .about__card-number,
-.about__card:nth-child(3) .about__card-number {
-  color: #32d26a;
 }
 
 .about__card-label {
