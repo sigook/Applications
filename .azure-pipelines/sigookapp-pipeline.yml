@@ -1,13 +1,20 @@
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 
 # PIPELINE: Full CI/CD for SigookApp Flutter Mobile Application
-# Triggers on pushes to main/dev branches when SigookApp files change
+# ============================================
+# TRIGGER POLICY:
+# - Runs ONLY when a PR is merged to main or dev
+# - Does NOT run on direct pushes (branch policies must enforce PR-only merges)
+# - dev branch → Staging environment
+# - main branch → Production environment
+# ============================================
+
+# Triggers on pushes to main/dev (happens when PR is merged)
 trigger:
   branches:
     include:
     - main
     - dev
-    - SigookApp
   paths:
     include:
     - SigookApp/**
@@ -15,14 +22,16 @@ trigger:
     exclude:
     - SigookApp/**/*.md
 
-# PR validation for dev branch only
+# PR validation - runs tests only, no deployment
 pr:
   branches:
     include:
+    - main
     - dev
   paths:
     include:
     - SigookApp/**
+    - .azure-pipelines/sigookapp-pipeline.yml
     exclude:
     - SigookApp/**/*.md
 
@@ -33,12 +42,13 @@ variables:
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isDev
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
-- name: isSigookApp
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/SigookApp')]
 - name: isPR
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
   value: 'stable'
+# Environment name for display purposes
+- name: environment
+  value: $[if(eq(variables['Build.SourceBranch'], 'refs/heads/main'), 'production', 'staging')]
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
@@ -126,20 +136,26 @@ stages:
           echo ""
           echo "✅ Validation stage completed!"
 # ============================================
-# Stage 2: Build Android AAB (runs on push to dev/main, not PRs)
+# Stage 2: Build Android AAB (runs on merged PR to dev/main only)
 # ============================================
-- stage: Build_Android_Staging
-  displayName: 'Build Android (Staging)'
+- stage: Build_Android
+  displayName: 'Build Android'
   dependsOn: Validate_and_Test
-  condition: and(succeeded(), eq(variables.isPR, false))
+  # Only run on merged PRs (push to dev or main), not during PR validation
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     vmImage: 'ubuntu-latest'
   variables:
-  - group: SigookApp-Staging
+  # Environment-specific variable group (staging for dev, production for main)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: SigookApp-Production
+  - ${{ else }}:
+    - group: SigookApp-Staging
+  # Signing credentials (same for both environments)
   - group: SigookApp-Android-Signing
   jobs:
-  - job: Build_AAB_Staging
-    displayName: 'Build Staging AAB'
+  - job: Build_AAB
+    displayName: 'Build Android AAB'
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
@@ -151,10 +167,11 @@ stages:
         targetType: 'inline'
         script: |
           echo "========================================"
-          echo "Android Staging Build"
+          echo "Android Build - $(environment)"
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "Source Branch: $(Build.SourceBranch)"
+          echo "Environment: $(environment)"
           echo "========================================"
     - task: CmdLine@2
       displayName: 'Free Disk Space'
@@ -385,8 +402,8 @@ stages:
 
           AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
           if [ -n "$AAB_PATH" ]; then
-            cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-staging-$(Build.BuildId).aab
-            echo "✅ AAB copied: sigook-staging-$(Build.BuildId).aab"
+            cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-$(environment)-$(Build.BuildId).aab
+            echo "✅ AAB copied: sigook-$(environment)-$(Build.BuildId).aab"
             ls -la $(Build.ArtifactStagingDirectory)/android/
           else
             echo "❌ AAB not found!"
@@ -397,7 +414,7 @@ stages:
       displayName: 'Publish Staging AAB'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
-        ArtifactName: 'sigookapp-android-staging'
+        ArtifactName: 'sigookapp-android-$(environment)'
         publishLocation: 'Container'
     - task: Bash@3
       displayName: 'Build Summary'
@@ -406,34 +423,38 @@ stages:
         script: |
           echo ""
           echo "========================================"
-          echo "✅ Staging Android Build Complete!"
+          echo "✅ Android Build Complete! ($(environment))"
           echo "========================================"
-          echo "Artifact: sigookapp-android-staging"
-          echo "AAB: sigook-staging-$(Build.BuildId).aab"
+          echo "Artifact: sigookapp-android-$(environment)"
+          echo "AAB: sigook-$(environment)-$(Build.BuildId).aab"
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
 # ============================================
-# Stage 3: Build iOS IPA (runs on push to dev/main, not PRs)
+# Stage 3: Build iOS IPA (runs on merged PR to dev/main only)
 # ============================================
-- stage: Build_iOS_Staging
-  displayName: 'Build iOS (Staging)'
+- stage: Build_iOS
+  displayName: 'Build iOS'
   dependsOn: Validate_and_Test
-  condition: and(succeeded(), eq(variables.isPR, false))
+  # Only run on merged PRs (push to dev or main), not during PR validation
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     vmImage: 'macos-latest'
   variables:
-  # Environment variables from SigookApp-Staging:
-  # API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
+  # Environment-specific variable group (staging for dev, production for main)
+  # Contains: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
   # GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES
-  - group: SigookApp-Staging
-  # iOS signing variables from SigookApp-iOS-Signing:
-  # APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: SigookApp-Production
+  - ${{ else }}:
+    - group: SigookApp-Staging
+  # iOS signing variables (same for both environments)
+  # Contains: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
   # APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME,
   # P12_FILE_NAME, PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
   - group: SigookApp-iOS-Signing
   jobs:
-  - job: Build_IPA_Staging
-    displayName: 'Build Staging IPA'
+  - job: Build_IPA
+    displayName: 'Build iOS IPA'
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
@@ -445,10 +466,11 @@ stages:
         targetType: 'inline'
         script: |
           echo "========================================"
-          echo "iOS Staging Build"
+          echo "iOS Build - $(environment)"
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "Source Branch: $(Build.SourceBranch)"
+          echo "Environment: $(environment)"
           echo "========================================"
     - task: CmdLine@2
       displayName: 'Cleanup signing keychain'
@@ -726,8 +748,8 @@ stages:
 
           IPA_PATH=$(find output -name "*.ipa" 2>/dev/null | head -1)
           if [ -n "$IPA_PATH" ]; then
-            cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-staging-$(Build.BuildId).ipa
-            echo "✅ IPA copied: sigook-staging-$(Build.BuildId).ipa"
+            cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-$(environment)-$(Build.BuildId).ipa
+            echo "✅ IPA copied: sigook-$(environment)-$(Build.BuildId).ipa"
             ls -la $(Build.ArtifactStagingDirectory)/ios/
           else
             echo "❌ IPA not found!"
@@ -738,7 +760,7 @@ stages:
       displayName: 'Publish Staging IPA'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
-        ArtifactName: 'sigookapp-ios-staging'
+        ArtifactName: 'sigookapp-ios-$(environment)'
         publishLocation: 'Container'
     - task: Bash@3
       displayName: 'Build Summary'
@@ -747,28 +769,30 @@ stages:
         script: |
           echo ""
           echo "========================================"
-          echo "✅ Staging iOS Build Complete!"
+          echo "✅ iOS Build Complete! ($(environment))"
           echo "========================================"
-          echo "Artifact: sigookapp-ios-staging"
-          echo "IPA: sigook-staging-$(Build.BuildId).ipa"
+          echo "Artifact: sigookapp-ios-$(environment)"
+          echo "IPA: sigook-$(environment)-$(Build.BuildId).ipa"
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
 # ============================================
-# Stage 4: Deploy iOS to TestFlight (runs on push to dev/main, not PRs)
+# Stage 4: Deploy iOS to TestFlight (runs on merged PR to dev/main only)
 # ============================================
 - stage: Deploy_iOS_TestFlight
   displayName: 'Deploy iOS to TestFlight'
   dependsOn:
-  - Build_iOS_Staging
-  # Deploy to TestFlight only on direct push to dev or main (not PRs)
-  condition: and(succeeded(), eq(variables.isPR, false))
+  - Build_iOS
+  # Deploy only on merged PRs (push to dev or main), not during PR validation
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     vmImage: 'macos-latest'
   variables:
-  - group: SigookApp-Staging
-  # iOS signing variables for TestFlight upload:
-  # APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
-  # APP_STORE_CONNECT_API_KEY_ID
+  # Environment-specific variable group
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: SigookApp-Production
+  - ${{ else }}:
+    - group: SigookApp-Staging
+  # iOS signing variables for TestFlight upload (same for both environments)
   - group: SigookApp-iOS-Signing
   jobs:
   - job: Deploy_TestFlight
@@ -784,16 +808,17 @@ stages:
         targetType: 'inline'
         script: |
           echo "========================================"
-          echo "Deploy iOS to TestFlight"
+          echo "Deploy iOS to TestFlight - $(environment)"
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
+          echo "Environment: $(environment)"
           echo "========================================"
     - task: DownloadBuildArtifacts@1
       displayName: 'Download IPA Artifact'
       inputs:
         buildType: 'current'
         downloadType: 'single'
-        artifactName: 'sigookapp-ios-staging'
+        artifactName: 'sigookapp-ios-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
     - task: CmdLine@2
       displayName: 'Install Fastlane'
@@ -826,19 +851,22 @@ stages:
           echo "Build ID: $(Build.BuildId)"
           echo "========================================"
 # ============================================
-# Stage 5: Deploy Android to Google Play (runs on push to dev/main, not PRs)
+# Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
 # ============================================
 - stage: Deploy_Android_PlayStore
   displayName: 'Deploy Android to Google Play'
   dependsOn:
-  - Build_Android_Staging
-  # Deploy to Google Play only on direct push to dev or main (not PRs)
-  condition: and(succeeded(), eq(variables.isPR, false))
+  - Build_Android
+  # Deploy only on merged PRs (push to dev or main), not during PR validation
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     vmImage: 'ubuntu-latest'
   variables:
-  # Contains GOOGLE_PLAY_JSON_KEY for Play Store upload
-  - group: SigookApp-Staging
+  # Environment-specific variable group (contains GOOGLE_PLAY_JSON_KEY)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: SigookApp-Production
+  - ${{ else }}:
+    - group: SigookApp-Staging
   jobs:
   - job: Deploy_PlayStore
     displayName: 'Deploy to Google Play'
@@ -853,16 +881,17 @@ stages:
         targetType: 'inline'
         script: |
           echo "========================================"
-          echo "Deploy Android to Google Play"
+          echo "Deploy Android to Google Play - $(environment)"
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
+          echo "Environment: $(environment)"
           echo "========================================"
     - task: DownloadBuildArtifacts@1
       displayName: 'Download AAB Artifact'
       inputs:
         buildType: 'current'
         downloadType: 'single'
-        artifactName: 'sigookapp-android-staging'
+        artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
     - task: CmdLine@2
       displayName: 'Install Fastlane'
