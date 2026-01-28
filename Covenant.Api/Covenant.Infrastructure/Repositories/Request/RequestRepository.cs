@@ -187,7 +187,7 @@ public class RequestRepository : IRequestRepository
 
     public async Task<IEnumerable<JobViewModel>> GetAvailableRequest(IEnumerable<string> countries)
     {
-        var openStatus = new RequestStatus[] { RequestStatus.Open, RequestStatus.InProgress };
+        var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = _context.Request.Include(r => r.Shift)
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Join(_context.CompanyProfile.Where(cp => cp.Active), r => r.CompanyId, cp => cp.CompanyId, (r, cp) => r)
@@ -380,7 +380,8 @@ public class RequestRepository : IRequestRepository
 
     private Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(Guid companyId, GetRequestForCompanyFilter filter)
     {
-        var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.InProgress };
+        // Companies can see Open and Filled orders (InProgress was removed 2026-01-28)
+        var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.Filled };
         Expression<Func<RequestListModel, bool>> predicate = r => r.CompanyId == companyId && statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
@@ -697,7 +698,7 @@ public class RequestRepository : IRequestRepository
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
     {
         var workerProfile = await _context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
-        var openStatus = new RequestStatus[] { RequestStatus.Open, RequestStatus.InProgress };
+        var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = Enumerable.Empty<WorkerRequestListModel>();
         var ownRequest = _context.Request.Include(wr => wr.Agency)
             .Join(_context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked), r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
@@ -934,20 +935,6 @@ public class RequestRepository : IRequestRepository
     public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => _context.RequestFinalizationDetail.SingleOrDefaultAsync(s => s.RequestId == requestId);
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
-    public async Task PutRequestInProgress()
-    {
-        if (!_context.Database.IsNpgsql()) return;
-        DateTime now = _timeService.GetCurrentDateTime();
-        var requests = await _context.Request.Where(c => c.Status == RequestStatus.Open && c.StartAt != null && now > c.StartAt).ToListAsync();
-        foreach (var request in requests)
-        {
-            Result result = request.PutInProcess();
-            if (!result) continue;
-            _context.Request.Update(request);
-            await _context.SaveChangesAsync();
-        }
-    }
 
     public Task<RequestContactPersonDetailModel> GetRequestedByDetail(Guid requestId, Guid contactPersonId) =>
         _context.RequestRequestedBy.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)

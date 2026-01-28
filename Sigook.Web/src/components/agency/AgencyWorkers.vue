@@ -310,6 +310,7 @@ export default {
       }).then(() => {
         this.isLoading = false;
         this.getWorkers();
+        this.$emit('refreshRequest');
       }).catch((error) => {
         this.isLoading = false;
         this.showAlertError(error.data);
@@ -357,6 +358,8 @@ export default {
     onWorkerBooked() {
       this.modalManageWorkers = false;
       this.getWorkers();
+      // Emit event to refresh request status (Open/Filled state may have changed)
+      this.$emit('refreshRequest');
     }
   },
 };

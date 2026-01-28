@@ -478,7 +478,7 @@ stages:
         restoreKeys: |
           deriveddata | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile
           deriveddata | "$(Agent.OS)"
-        path: ~/Library/Developer/Xcode/DerivedData
+        path: $(HOME)/Library/Developer/Xcode/DerivedData
     - task: Cache@2
       displayName: 'Cache Flutter Packages'
       inputs:

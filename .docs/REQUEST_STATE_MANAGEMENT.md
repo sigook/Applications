@@ -1,7 +1,7 @@
 # Request State Management System
 
 ## Documento de Referencia
-**Última actualización:** 2026-01-22
+**Última actualización:** 2026-01-28
 **Autor:** Documentación generada durante refactorización de estados
 
 ---
@@ -92,12 +92,14 @@ private void UpdateIsOpen()
 ```csharp
 public enum RequestStatus
 {
-    Open = 1,        // Nueva, sin workers asignados, aceptando aplicaciones
-    InProgress = 2,  // Workers asignados, aún con capacidad disponible
+    Open = 1,        // Orden activa (con o sin workers), aún con capacidad disponible
+    // InProgress = 2,  // ELIMINADO - ya no se usa
     Filled = 3,      // Todas las posiciones llenas
-    Cancelled = 4    // Cancelada (solo desde estado Open)
+    Cancelled = 4    // Cancelada (solo desde estado Open sin workers asignados)
 }
 ```
+
+**Cambio importante (2026-01-28):** El estado `InProgress` fue eliminado. Ahora todas las órdenes que no están `Filled` o `Cancelled` permanecen en estado `Open`, independientemente de si tienen trabajadores asignados.
 
 ### Eliminación de IsOpen
 
@@ -107,10 +109,19 @@ public enum RequestStatus
 
 ### Ventajas del Nuevo Sistema
 
-- **Claridad:** Un solo campo de estado, cuatro valores explícitos
-- **Simplicidad:** Lógica de transiciones centralizada en métodos de negocio
+- **Claridad:** Un solo campo de estado, tres valores explícitos (Open, Filled, Cancelled)
+- **Simplicidad:** Lógica de transiciones aún más simplificada (solo Open ↔ Filled)
 - **Mantenibilidad:** Más fácil de entender y modificar
 - **UI clara:** Frontend muestra directamente el estado sin cálculos
+- **Menos estados:** Reducción de 4 estados a 3, menos casos edge
+
+### Regla de Cancelación
+
+**Importante:** Las órdenes solo pueden cancelarse si cumplen AMBAS condiciones:
+1. Estado = `Open`
+2. Sin trabajadores asignados (`WorkersQuantityWorking == 0`)
+
+Si una orden tiene trabajadores asignados, primero deben ser removidos antes de poder cancelar.
 
 ---
 
@@ -118,15 +129,20 @@ public enum RequestStatus
 
 ### 1. Covenant.Common/Enums/RequestStatus.cs
 **Cambios:**
-- Renombrar: `Requested` → `Open`
-- Renombrar: `InProcess` → `InProgress`
-- Agregar: `Filled = 3`
-- Actualizar: `Cancelled = 4`
-- Eliminar: Valores filtro `Open` y `NoOpen` (líneas 8-9)
+- Primera refactorización (2026-01-22):
+  - Renombrar: `Requested` → `Open`
+  - Renombrar: `InProcess` → `InProgress`
+  - Agregar: `Filled = 3`
+  - Actualizar: `Cancelled = 4`
+  - Eliminar: Valores filtro `Open` y `NoOpen`
+- **Segunda refactorización (2026-01-28):**
+  - **Eliminar: `InProgress = 2`** (comentado en el código, no usado)
+  - Solo quedan 3 estados: Open (1), Filled (3), Cancelled (4)
 
 ### 2. Covenant.Common/Entities/Request/Request.cs
 **Líneas modificadas:**
 
+Primera refactorización (2026-01-22):
 | Línea | Elemento | Acción |
 |-------|----------|--------|
 | 46 | `IsOpen` property | ❌ Eliminar |
@@ -139,15 +155,36 @@ public enum RequestStatus
 | 183-195 | `Cancel()` | ✏️ Agregar validación: solo desde Open |
 | 197-215 | `Open()` (reabrir) | ✏️ Transición Cancelled→Open/InProgress |
 
+**Segunda refactorización (2026-01-28) - Eliminación de InProgress:**
+| Línea | Elemento | Acción |
+|-------|----------|--------|
+| 87 | `IsAvailableToApply` | ✏️ Cambiar a: `Status == Open` (eliminar referencia a InProgress) |
+| 127-128 | `AddWorker()` transición Open→InProgress | ❌ Eliminar transición |
+| 146-150 | `RejectWorker()` transiciones con InProgress | ✏️ Simplificar: Filled→Open directamente |
+| 155-161 | `PutInProcess()` method | ❌ Eliminar método completo |
+| 167-170 | `Cancel()` | ➕ Agregar validación: `WorkersQuantityWorking > 0` → error |
+| 186-195 | `Open()` (reabrir) | ✏️ Eliminar referencia a InProgress, lógica: Filled si llena, sino Open |
+| 327 | `IncreaseWorkersQuantityByOne()` | ✏️ Cambiar InProgress → Open |
+| 340 | `DecreaseWorkersQuantityByOne()` | ✏️ Cambiar InProgress → Open |
+
 ### 3. Covenant.Infrastructure/Repositories/Request/RequestRepository.cs
 **Líneas modificadas:**
 
+Primera refactorización (2026-01-22):
 | Línea | Elemento | Acción |
 |-------|----------|--------|
 | 87 | Select `IsOpen` | ❌ Eliminar |
 | 149-151 | Filtro por `IsOpen` | ✏️ Reemplazar por filtro de estados |
 | 204 | `.Where(r => r.IsOpen)` | ✏️ Cambiar a `.Where(r => r.Status == Open \|\| r.Status == InProgress)` |
 | 738 | `.Where(r => r.IsOpen && ...)` | ✏️ Cambiar a filtro por estados |
+
+**Segunda refactorización (2026-01-28) - Eliminación de InProgress:**
+| Línea | Elemento | Acción |
+|-------|----------|--------|
+| 190 | `openStatus` array | ✏️ Cambiar de `{Open, InProgress}` a `{Open}` |
+| 383 | `statusToVisualize` array | ✏️ Cambiar de `{Open, InProgress}` a `{Open}` |
+| 700 | `openStatus` array | ✏️ Cambiar de `{Open, InProgress}` a `{Open}` |
+| 938-950 | `PutRequestInProgress()` method | ❌ Eliminar método completo |
 
 ### 4. Covenant.Common/Models/Request/AgencyRequestListModel.cs
 **Líneas modificadas:**
@@ -183,12 +220,24 @@ else
 }
 ```
 
-**Después (8 líneas):**
+**Después de primera refactorización (8 líneas):**
 ```csharp
 var statusText = data.RequestStatus switch
 {
     RequestStatus.Open => "Open",
     RequestStatus.InProgress => "In Progress",
+    RequestStatus.Filled => "Filled",
+    RequestStatus.Cancelled => "Cancelled",
+    _ => "Unknown"
+};
+sheet.Cell($"J{row}").SetValue(statusText);
+```
+
+**Después de segunda refactorización (2026-01-28) - 7 líneas:**
+```csharp
+var statusText = data.RequestStatus switch
+{
+    RequestStatus.Open => "Open",
     RequestStatus.Filled => "Filled",
     RequestStatus.Cancelled => "Cancelled",
     _ => "Unknown"
@@ -704,6 +753,159 @@ No hay impacto significativo de performance:
 - **Tests:** `Covenant.Tests/Request/RequestTest.cs`
 - **Documentación de negocio:** `.docs/BUSINESS_MODEL.md` (líneas 179-228)
 - **Workflows:** `.docs/WORKFLOWS.md` (líneas 394-593)
+
+---
+
+## Segunda Refactorización: Eliminación del Estado InProgress (2026-01-28)
+
+### Motivación
+
+Después de la primera refactorización (2026-01-22), el sistema tenía 4 estados explícitos. El análisis de negocio determinó que el estado `InProgress` agregaba complejidad innecesaria:
+
+**Problema identificado:**
+- La distinción entre `Open` (sin workers) e `InProgress` (con workers, capacidad disponible) no aportaba valor de negocio
+- Ambos estados representan lo mismo: "orden activa aceptando aplicaciones"
+- La complejidad adicional en lógica de transiciones no justificaba la diferenciación
+
+### Cambios Implementados
+
+**Estados reducidos de 4 a 3:**
+```csharp
+// ANTES (Primera refactorización)
+Open = 1        → Sin workers, aceptando aplicaciones
+InProgress = 2  → Con workers, aún con capacidad
+Filled = 3      → Todas las posiciones llenas
+Cancelled = 4   → Cancelada
+
+// DESPUÉS (Segunda refactorización)
+Open = 1        → Orden activa con capacidad (con o sin workers)
+// InProgress = 2  → ELIMINADO
+Filled = 3      → Todas las posiciones llenas
+Cancelled = 4   → Cancelada
+```
+
+**Transiciones simplificadas:**
+```
+// ANTES
+Open → InProgress → Filled
+  ↓        ↓          ↓
+      Cancelled
+
+// DESPUÉS
+Open ↔ Filled
+  ↓
+Cancelled
+```
+
+### Nueva Regla de Negocio: Cancelación
+
+**Cambio crítico:** Las órdenes en estado `Open` solo pueden cancelarse si NO tienen trabajadores asignados.
+
+```csharp
+public Result Cancel(DateTime now)
+{
+    if (Status != RequestStatus.Open)
+        return Result.Fail("Only orders in Open status can be cancelled");
+
+    // NUEVA VALIDACIÓN
+    if (WorkersQuantityWorking > 0)
+        return Result.Fail("Cannot cancel orders with workers assigned. Please remove all workers first.");
+
+    // ... resto del código de cancelación
+}
+```
+
+**Razón:** Protege órdenes con trabajadores asignados. Si hay workers, primero deben ser removidos (rechazados) antes de cancelar la orden.
+
+### Archivos Modificados (Segunda Refactorización)
+
+| Archivo | Cambios |
+|---------|---------|
+| `20260123002058_RefactorRequestStatusStates.cs` | SQL: `InProcess` → `Open` (eliminar condición `WorkersQuantityWorking > 0`) |
+| `RequestStatus.cs` | Comentar `InProgress = 2` |
+| `Request.cs` | 8 métodos actualizados (eliminar transiciones con InProgress, agregar validación en Cancel) |
+| `RequestRepository.cs` | 3 arrays de estados actualizados + eliminar método `PutRequestInProgress()` |
+| `IRequestRepository.cs` | Eliminar declaración `PutRequestInProgress()` |
+| `GenerateAgencyRequestsReport.cs` | Eliminar caso `InProgress` del switch |
+| `RequestTest.cs` | 4 tests actualizados, 1 test renombrado |
+
+### Migración de Datos (Segunda Refactorización)
+
+**Importante:** La migración `20260123002058_RefactorRequestStatusStates.cs` fue modificada ANTES de aplicarse en producción.
+
+**SQL actualizado:**
+```sql
+WHEN "Status" = 'InProcess' AND "WorkersQuantityWorking" < "WorkersQuantity" THEN 'Open'
+```
+
+Esto significa:
+- Todas las órdenes `InProcess` (antiguas) con capacidad disponible → `Open`
+- Ya no se crea el estado `InProgress` temporal
+- Simplifica el proceso de migración
+
+### Impacto en Frontend (Sigook.Web)
+
+El frontend necesitará actualizarse para eliminar referencias a `InProgress`:
+
+**Variables (src/variables.js):**
+```javascript
+// ELIMINAR
+Vue.prototype.$statusInProgress = "InProgress";
+Vue.prototype.$statusDisplayInProgress = "In Progress";
+```
+
+**Componentes:**
+- Eliminar casos `v-else-if="status === 'InProgress'"` en templates
+- Actualizar arrays de filtros de estado (eliminar opción InProgress)
+- Simplificar lógica de badges/tags de estado
+
+### Testing
+
+**Tests actualizados:**
+- `WorkersQuantityWorking()` - Assertions cambiadas de `InProgress` a `Open`
+- `StatusTransitions()` - Validación de cancelación con workers agregada
+- `CannotCancelOrdersWithWorkers()` (renombrado) - Test expandido para validar nueva regla
+- `DecreaseCapacityUpdatesStatus()` - Assertions actualizadas
+
+**Nuevos escenarios validados:**
+```csharp
+// Escenario 1: No se puede cancelar con workers
+request.AddWorker(worker1);
+Assert.Equal(RequestStatus.Open, request.Status);
+var result = request.Cancel(now);
+Assert.False(result);  // Debe fallar
+Assert.Contains("workers assigned", result.Errors.Single().Message);
+
+// Escenario 2: Se puede cancelar sin workers
+request.RejectWorker(worker1);
+result = request.Cancel(now);
+Assert.True(result);  // Debe funcionar
+```
+
+### Ventajas de Esta Refactorización
+
+1. **Menor complejidad:** Solo 2 transiciones (Open ↔ Filled) en lugar de múltiples
+2. **Más clara:** Una orden tiene capacidad (Open) o está llena (Filled), sin estados intermedios
+3. **Mejor protección:** Órdenes con workers no pueden cancelarse accidentalmente
+4. **Menos código:** Se eliminó método `PutInProcess()` y lógica asociada
+5. **Frontend simplificado:** Menos casos a manejar en UI
+
+### Consideraciones
+
+**¿Por qué no renumerar el enum?**
+```csharp
+// NO HACEMOS ESTO:
+Open = 1
+Filled = 2  // Cambiar de 3 a 2
+Cancelled = 3  // Cambiar de 4 a 3
+
+// MANTENEMOS:
+Open = 1
+Filled = 3  // Mantener número original
+Cancelled = 4  // Mantener número original
+```
+
+**Razón:** Evitar cambios en la base de datos. Los valores ya almacenados en la columna `Status` permanecen válidos.
 
 ---
 

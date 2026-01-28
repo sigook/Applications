@@ -51,7 +51,7 @@ namespace Covenant.Infrastructure.Repositories.Request
         public async Task<bool> CanClockIn(Expression<Func<WorkerProfile, bool>> condition, DateTime now) =>
             await (from wp in _context.WorkerProfile.Where(condition)
                    join wr in _context.WorkerRequest.Where(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked && w.StartWorking <= now) on wp.WorkerId equals wr.WorkerId
-                   join r in _context.Request.Where(wR => wR.Status == RequestStatus.Open || wR.Status == RequestStatus.InProgress) on wr.RequestId equals r.Id
+                   join r in _context.Request.Where(wR => wR.Status == RequestStatus.Open) on wr.RequestId equals r.Id
                    select wr.Id).AnyAsync();
 
         public async Task<WorkerRequestInfoModel> GetWorkerRequestInfo(Guid workerId, Guid requestId, DateTime now)

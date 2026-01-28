@@ -169,7 +169,7 @@
                   <img
                     v-if="props.row.status === $statusFilled"
                     src="../../assets/images/check_white.png" alt="check" class="request-check" />
-                  <div class="dot-status" :class="'status-' + props.row.status.toLowerCase()"></div>
+                  <div class="dot-status" :class="getStatusClass(props.row)"></div>
                 </div>
               </b-tooltip>
             </div>
@@ -244,7 +244,6 @@ export default {
       currentIndex: null,
       statuses: [
         { id: 1, value: this.$statusDisplayOpen },
-        { id: 2, value: this.$statusDisplayInProgress },
         { id: 3, value: this.$statusDisplayFilled },
         { id: 4, value: this.$statusDisplayCancelled }
       ],
@@ -384,9 +383,16 @@ export default {
     canEdit(status) {
       return (
         status === this.$statusOpen ||
-        status === this.$statusInProgress ||
         status === this.$statusFilled
       );
+    },
+    getStatusClass(row) {
+      if (row.status === this.$statusOpen &&
+          row.workersQuantityWorking > 0 &&
+          row.workersQuantityWorking < row.workersQuantity) {
+        return 'status-inprogress';
+      }
+      return 'status-' + row.status.toLowerCase();
     },
     updateWorkers(item) {
       this.rows[this.currentIndex].workersQuantityWorking = item;

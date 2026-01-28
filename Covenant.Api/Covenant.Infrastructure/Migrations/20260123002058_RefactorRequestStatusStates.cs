@@ -20,16 +20,15 @@ namespace Covenant.Infrastructure.Migrations
                     -- Requested without workers → Open
                     WHEN ""Status"" = 'Requested' AND ""WorkersQuantityWorking"" = 0 THEN 'Open'
 
-                    -- InProcess without workers → Open
-                    WHEN ""Status"" = 'InProcess' AND ""WorkersQuantityWorking"" = 0 THEN 'Open'
+                    -- InProcess or InProgress without workers → Open
+                    WHEN ""Status"" IN ('InProcess', 'InProgress') AND ""WorkersQuantityWorking"" = 0 THEN 'Open'
 
-                    -- InProcess with workers but not full → InProgress
-                    WHEN ""Status"" = 'InProcess'
-                      AND ""WorkersQuantityWorking"" > 0
-                      AND ""WorkersQuantityWorking"" < ""WorkersQuantity"" THEN 'InProgress'
+                    -- InProcess or InProgress with capacity available → Open (includes orders with workers)
+                    WHEN ""Status"" IN ('InProcess', 'InProgress')
+                      AND ""WorkersQuantityWorking"" < ""WorkersQuantity"" THEN 'Open'
 
-                    -- InProcess filled → Filled
-                    WHEN ""Status"" = 'InProcess'
+                    -- InProcess or InProgress filled → Filled
+                    WHEN ""Status"" IN ('InProcess', 'InProgress')
                       AND ""WorkersQuantityWorking"" >= ""WorkersQuantity"" THEN 'Filled'
 
                     -- Cancelled → Cancelled (no change)

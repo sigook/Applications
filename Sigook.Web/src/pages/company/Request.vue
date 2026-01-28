@@ -186,9 +186,7 @@ export default {
   },
   computed: {
     canEdit() {
-      // Can edit orders that are Open, InProgress, or Filled
       return this.request.status === this.$statusOpen ||
-             this.request.status === this.$statusInProgress ||
              this.request.status === this.$statusFilled;
     },
     canCancel() {
