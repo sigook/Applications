@@ -3,8 +3,6 @@ import 'value_objects/email.dart';
 import 'value_objects/password.dart';
 import 'identification_type.dart';
 
-/// Contact information entity
-/// Represents the contact section of the registration form
 class ContactInfo extends Equatable {
   final Email email;
   final Password password;
@@ -20,17 +18,15 @@ class ContactInfo extends Equatable {
     required this.mobileNumber,
   });
 
-  /// Validates all fields
   bool get isValid {
     return email.isValid &&
         password.isValid &&
         identification.isNotEmpty &&
-        identificationType.value.isNotEmpty && // Check value instead of nullable id
+        identificationType.value.isNotEmpty &&
         mobileNumber.isNotEmpty &&
-        mobileNumber.length >= 10; // Basic phone validation
+        mobileNumber.length >= 10;
   }
 
-  /// Creates a copy with updated fields
   ContactInfo copyWith({
     Email? email,
     Password? password,

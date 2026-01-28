@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
 
-/// Profile image entity for API submission
 class ProfileImage extends Equatable {
   final String id;
   final String pathFile;
@@ -17,9 +16,7 @@ class ProfileImage extends Equatable {
     this.canDownload = true,
   });
 
-  /// Create from local file path
   factory ProfileImage.fromPath(String localPath) {
-    // Extract filename from path
     final fileName = localPath.split('/').last.split('\\').last;
 
     return ProfileImage(
@@ -31,7 +28,6 @@ class ProfileImage extends Equatable {
     );
   }
 
-  /// Convert to JSON for API
   Map<String, dynamic> toJson() {
     return {
       'id': id,

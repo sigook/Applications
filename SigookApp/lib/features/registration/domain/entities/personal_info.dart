@@ -2,8 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:sigook_app_flutter/features/registration/domain/entities/gender.dart';
 import 'value_objects/name.dart';
 
-/// Personal information entity
-/// Represents the first section of the registration form
 class PersonalInfo extends Equatable {
   final Name firstName;
   final Name lastName;
@@ -17,7 +15,6 @@ class PersonalInfo extends Equatable {
     required this.gender,
   });
 
-  /// Validates that the user is at least 18 years old
   bool get isAdult {
     final now = DateTime.now();
     final age = now.year - dateOfBirth.year;
@@ -28,7 +25,6 @@ class PersonalInfo extends Equatable {
     return age >= 18;
   }
 
-  /// Calculates age
   int get age {
     final now = DateTime.now();
     int age = now.year - dateOfBirth.year;
@@ -39,15 +35,13 @@ class PersonalInfo extends Equatable {
     return age;
   }
 
-  /// Validates all fields
   bool get isValid {
     return firstName.isValid &&
         lastName.isValid &&
         isAdult &&
-        gender.value.isNotEmpty; // Check value instead of id (id may be null)
+        gender.value.isNotEmpty;
   }
 
-  /// Creates a copy with updated fields
   PersonalInfo copyWith({
     Name? firstName,
     Name? lastName,

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Sigook App Flutter</string>
+	<string>SIGOOK Beta</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>sigook_app_flutter</string>
+	<string>SIGOOK Beta</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -54,12 +54,19 @@
 			<array>
 				<string>sigookcallback</string>
 				<string>com.sigook</string>
+				<string>com.all2job</string>
 			</array>
 		</dict>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Need access to your photo library to upload profile picture</string>
+	<string>SIGOOK needs access to your photo library to select a profile picture for your worker registration.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SIGOOK needs permission to save photos to your library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Need access to your camera to upload profile picture</string>
+	<string>SIGOOK needs access to your camera to take a profile picture for your worker registration.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to record your timesheet punch in/out</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to record your timesheet punch in/out</string>
 </dict>
 </plist>

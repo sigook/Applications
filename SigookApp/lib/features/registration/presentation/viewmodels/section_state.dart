@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'section_state.freezed.dart';
 
-/// State for individual form sections
 @freezed
 sealed class SectionState<T> with _$SectionState<T> {
   const factory SectionState.initial() = _Initial<T>;
@@ -12,7 +11,6 @@ sealed class SectionState<T> with _$SectionState<T> {
   const factory SectionState.invalid(T data, String error) = _Invalid<T>;
 }
 
-/// Overall form state
 @freezed
 sealed class RegistrationFormState with _$RegistrationFormState {
   const factory RegistrationFormState({

@@ -2,17 +2,12 @@ import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import '../../domain/entities/value_objects/phone_number.dart' as domain;
 import '../../domain/services/phone_validation_service.dart';
 
-/// Implementation of PhoneValidationService using phone_numbers_parser package
-/// Follows Single Responsibility Principle - only handles phone validation logic
-/// Follows Dependency Inversion Principle - implements domain interface
 class PhoneNumberParserValidationService implements PhoneValidationService {
-  /// Supported countries for this application
   static const List<String> supportedCountries = ['US', 'CA'];
 
   @override
   domain.PhoneNumber validate(String phoneNumber, String countryCode) {
     try {
-      // Validate country code
       if (!supportedCountries.contains(countryCode.toUpperCase())) {
         return domain.PhoneNumber.invalid(
           phoneNumber,
@@ -20,19 +15,15 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
         );
       }
 
-      // Clean the input
       final cleanNumber = phoneNumber.trim();
       if (cleanNumber.isEmpty) {
         return domain.PhoneNumber.empty();
       }
 
-      // Parse and validate using phone_numbers_parser
       try {
-        // Try to parse with country code
         final isoCode = _getIsoCode(countryCode);
         final parsed = PhoneNumber.parse(cleanNumber, callerCountry: isoCode);
-        
-        // Validate the parsed number
+
         if (!parsed.isValid(type: PhoneNumberType.mobile)) {
           return domain.PhoneNumber.invalid(
             cleanNumber,
@@ -40,9 +31,8 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
           );
         }
 
-        // Get formatted versions
-        final nationalFormat = parsed.formatNsn(); // National format
-        final internationalFormat = parsed.international; // International format
+        final nationalFormat = parsed.formatNsn();
+        final internationalFormat = parsed.international;
 
         return domain.PhoneNumber.valid(
           value: cleanNumber,
@@ -65,7 +55,10 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
   }
 
   @override
-  domain.PhoneNumber parse(String phoneNumber, {String defaultCountryCode = 'US'}) {
+  domain.PhoneNumber parse(
+    String phoneNumber, {
+    String defaultCountryCode = 'US',
+  }) {
     return validate(phoneNumber, defaultCountryCode);
   }
 
@@ -105,7 +98,6 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
     }
   }
 
-  /// Convert country code to ISO code for phone_numbers_parser
   IsoCode _getIsoCode(String countryCode) {
     switch (countryCode.toUpperCase()) {
       case 'US':
@@ -113,12 +105,10 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
       case 'CA':
         return IsoCode.CA;
       default:
-        return IsoCode.US; // Default to US
+        return IsoCode.US;
     }
   }
 
-  /// Validates a phone number asynchronously with full formatting
-  /// This is kept for compatibility but is now synchronous
   Future<domain.PhoneNumber> validateAsync(
     String phoneNumber,
     String countryCode,

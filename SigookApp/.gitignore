@@ -14,9 +14,10 @@
 .history
 
 # Environment Configuration
+# These files contain environment-specific URLs and are not committed
+.env.local
 .env.staging
 .env.production
-.env.local
 .env
 !.env.example
 

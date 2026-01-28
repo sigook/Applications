@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../../core/config/feature_flags.dart';
-import '../../data/mock/mock_jobs_data.dart';
+import '../../../../core/constants/error_messages.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../providers/jobs_providers.dart';
 import 'jobs_state.dart';
@@ -33,25 +32,14 @@ class JobsViewModel extends _$JobsViewModel {
 
     result.fold(
       (failure) {
-        if (FeatureFlags.useMockJobs) {
-          final mockJobs = MockJobsData.getMockJobs();
-          state = state.copyWith(
-            isLoading: false,
-            jobs: mockJobs,
-            currentPage: 1,
-            hasMore: false,
-            error: null,
-          );
-        } else {
-          String errorMessage = _getUserFriendlyErrorMessage(failure.message);
-          state = state.copyWith(
-            isLoading: false,
-            jobs: [],
-            currentPage: 0,
-            hasMore: false,
-            error: errorMessage,
-          );
-        }
+        String errorMessage = _getUserFriendlyErrorMessage(failure.message);
+        state = state.copyWith(
+          isLoading: false,
+          jobs: [],
+          currentPage: 0,
+          hasMore: false,
+          error: errorMessage,
+        );
       },
       (paginatedJobs) => state = state.copyWith(
         isLoading: false,
@@ -63,26 +51,8 @@ class JobsViewModel extends _$JobsViewModel {
     );
   }
 
-  /// Convert technical error messages to user-friendly ones
   String _getUserFriendlyErrorMessage(String technicalError) {
-    final lowerError = technicalError.toLowerCase();
-
-    if (lowerError.contains('network') || lowerError.contains('internet')) {
-      return 'No internet connection. Please check your network and try again.';
-    } else if (lowerError.contains('timeout')) {
-      return 'Request timed out. Please check your connection and try again.';
-    } else if (lowerError.contains('401') ||
-        lowerError.contains('unauthorized')) {
-      return 'Your session has expired. Please sign in again.';
-    } else if (lowerError.contains('403') || lowerError.contains('forbidden')) {
-      return 'You don\'t have permission to access this content.';
-    } else if (lowerError.contains('404') || lowerError.contains('not found')) {
-      return 'Job listings are currently unavailable. Please try again later.';
-    } else if (lowerError.contains('500') || lowerError.contains('server')) {
-      return 'Server error. Our team has been notified. Please try again later.';
-    } else {
-      return 'Unable to load jobs. Please try again.\n\nTechnical details: $technicalError';
-    }
+    return ErrorMessages.fromException(Exception(technicalError));
   }
 
   Future<void> loadMore() async {

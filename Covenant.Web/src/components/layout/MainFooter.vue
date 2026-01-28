@@ -50,6 +50,13 @@
             </div>
           </div>
 
+          <!-- LEGAL LINKS (MOBILE) -->
+          <div class="footer__block footer__legal--mobile">
+            <a href="#" class="footer__link">Privacy Policy</a>
+            <a href="#" class="footer__link">Terms and Conditions</a>
+            <a href="#" class="footer__link">Disclaimer</a>
+          </div>
+
 
         </div>
 
@@ -91,6 +98,7 @@
           <div class="footer__block">
             <RouterLink class="footer__section footer__link" to="/talents">Talents</RouterLink>
           </div>
+
         </div>
 
         <!-- NAV 3 -->
@@ -101,6 +109,13 @@
           <a class="footer__link" href="https://apps.apple.com/co/app/sigook/id1446736193" target="_blank" rel="noopener noreferrer">
             Download Our App
           </a>
+
+          <!-- LEGAL LINKS (DESKTOP) -->
+          <div class="footer__block footer__legal--desktop" style="margin-top: 70px;">
+             <a href="#" class="footer__link">Privacy Policy</a>
+             <a href="#" class="footer__link">Terms and Conditions</a>
+             <a href="#" class="footer__link">Disclaimer</a>
+          </div>
         </div>
       </div>
     </div>
@@ -165,8 +180,8 @@ const isBlueFooter = computed(() => {
   max-width: 100rem;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(260px, 1.8fr) repeat(4, minmax(120px, 0.7fr));
-  column-gap: 80px;
+  grid-template-columns: minmax(260px, 1.4fr) 1fr 0.6fr 1.3fr;
+  column-gap: 40px;
 }
 
 /* COLUMNA CONTACTO */
@@ -260,11 +275,41 @@ const isBlueFooter = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-items: flex-end;
+  text-align: right;
+  margin-right: 200px;
 }
 
 /* REDES SOCIALES */
 .footer__networks--mobile {
   display: none; /* Por defecto oculto en desktop/tablet */
+}
+
+/* LEGAL LINKS STYLES (Horizontal Layout) */
+.footer__legal--mobile {
+  display: none; /* Por defecto oculto */
+}
+
+.footer__legal--desktop,
+.footer__legal--mobile {
+  display: flex;
+  gap: 15px;
+  flex-wrap: nowrap; /* Para que bajen si no hay espacio */
+  align-items: center;
+}
+
+.footer__legal--desktop {
+  justify-content: flex-start; /* Alinear a la derecha en desktop */
+}
+
+/* Resetear estilos de links dentro de legal para que queden inline y sin margen inferior */
+.footer__legal--desktop .footer__link,
+.footer__legal--mobile .footer__link {
+  display: inline-block;
+  margin-bottom: 0;
+  width: auto; /* Asegurar que no tomen el 100% */
+  font-size: 0.9rem; /* Reducir un poco el tamaño */
+  white-space: nowrap;
 }
 
 .footer__social-icons {
@@ -322,6 +367,11 @@ const isBlueFooter = computed(() => {
   /* Mostrar redes sociales en móvil (dentro de contact) */
   .footer__networks--mobile {
     display: block;
+    margin-top: 25px;
+  }
+
+  .footer__legal--mobile {
+    display: flex; /* Flex para alineación horizontal */
     margin-top: 25px;
   }
 

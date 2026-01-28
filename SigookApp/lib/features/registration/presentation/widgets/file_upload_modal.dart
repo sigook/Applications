@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
@@ -99,7 +100,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -126,7 +126,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                            color: AppTheme.textDark,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -149,28 +149,24 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
               ),
             ),
 
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Identification Type Section
                     const Text(
                       'Identification Type',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    // Searchable Dropdown
                     identificationTypesAsync.when(
                       data: (identificationTypes) {
-                        // Filter based on search query
                         final filteredTypes = identificationTypes.where((type) {
                           return type.value.toLowerCase().contains(
                             _searchQuery.toLowerCase(),
@@ -179,7 +175,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
 
                         return Column(
                           children: [
-                            // Search field
                             TextField(
                               controller: _searchController,
                               decoration: InputDecoration(
@@ -212,7 +207,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Dropdown container
                             Container(
                               constraints: const BoxConstraints(maxHeight: 200),
                               decoration: BoxDecoration(
@@ -340,7 +334,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
 
                     const SizedBox(height: 24),
 
-                    // Selected Type Display
                     if (_selectedIdentificationType != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -384,13 +377,12 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Identification Number Field
                       const Text(
                         'Identification Number',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1E293B),
+                          color: AppTheme.textDark,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -415,18 +407,15 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                       const SizedBox(height: 24),
                     ],
-
-                    // File Upload Section
                     const Text(
                       'Upload File',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Selected file display
                     if (_selectedFile != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -554,7 +543,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                     color:
                                         _selectedIdentificationType != null &&
                                             _identificationNumber.isNotEmpty
-                                        ? const Color(0xFF1E293B)
+                                        ? AppTheme.textDark
                                         : Colors.grey.shade500,
                                   ),
                                 ),
@@ -577,7 +566,6 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
               ),
             ),
 
-            // Footer buttons
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(

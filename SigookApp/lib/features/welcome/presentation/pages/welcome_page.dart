@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
-class WelcomePage extends StatefulWidget {
+class WelcomePage extends ConsumerStatefulWidget {
   const WelcomePage({super.key});
 
   @override
-  State<WelcomePage> createState() => _WelcomePageState();
+  ConsumerState<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _WelcomePageState extends State<WelcomePage>
+class _WelcomePageState extends ConsumerState<WelcomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -72,10 +75,41 @@ class _WelcomePageState extends State<WelcomePage>
     context.go(AppRoutes.registration);
   }
 
+  Future<void> _signIn() async {
+    await ref.read(authViewModelProvider.notifier).signIn();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+
+    // Listen for auth state changes and navigate on successful sign-in
+    ref.listen(authViewModelProvider, (previous, next) {
+      if (next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+
+      if (next.isAuthenticated &&
+          next.token != null &&
+          next.token!.accessToken != null &&
+          next.token!.accessToken!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sign in successful!'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+        context.go(AppRoutes.jobs);
+      }
+    });
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -137,17 +171,17 @@ class _WelcomePageState extends State<WelcomePage>
                         child: ElevatedButton(
                           onPressed: _navigateToRegistration,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(
-                              0xFF1565C0,
-                            ), // Primary Blue
+                            backgroundColor: AppTheme.primaryBlue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
                             ),
                             elevation: 3,
-                            shadowColor: const Color(
-                              0xFF1565C0,
-                            ).withValues(alpha: 0.4),
+                            shadowColor: AppTheme.primaryBlue.withValues(
+                              alpha: 0.4,
+                            ),
                           ),
                           child: const Text(
                             'Sign Up',
@@ -164,29 +198,42 @@ class _WelcomePageState extends State<WelcomePage>
                         width: double.infinity,
                         height: 56,
                         child: OutlinedButton(
-                          onPressed: () {
-                            context.go(AppRoutes.signIn);
-                          },
+                          onPressed: authState.isLoading ? null : _signIn,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Color(0xFF1565C0),
+                            side: BorderSide(
+                              color: authState.isLoading
+                                  ? Colors.grey
+                                  : AppTheme.primaryBlue,
                               width: 2,
                             ),
-                            foregroundColor: const Color(0xFF1565C0),
+                            foregroundColor: AppTheme.primaryBlue,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
                             ),
                             backgroundColor: Colors.white,
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primaryBlue,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -265,9 +312,7 @@ class _WelcomePageState extends State<WelcomePage>
       height: 8,
       width: isActive ? 24 : 8,
       decoration: BoxDecoration(
-        color: isActive
-            ? const Color(0xFF1565C0) // Primary Blue for active indicator
-            : Colors.grey.shade300,
+        color: isActive ? AppTheme.primaryBlue : Colors.grey.shade300,
         borderRadius: BorderRadius.circular(4),
       ),
     );

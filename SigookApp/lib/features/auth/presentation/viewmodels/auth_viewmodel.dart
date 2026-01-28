@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/usecases/refresh_token.dart';
@@ -25,6 +26,11 @@ class AuthViewModel extends _$AuthViewModel {
 
   @override
   AuthState build() {
+    // Reset initialization flag on each build (important for hot reload)
+    _isInitialized = false;
+    debugPrint(
+      '🔑 [AUTH] AuthViewModel build() called (instance: $hashCode), starting token load',
+    );
     _loadCachedToken();
     return const AuthState();
   }
@@ -33,47 +39,41 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> _loadCachedToken() async {
     try {
+      debugPrint('🔑 [AUTH] Loading cached token from secure storage...');
       final localDataSource = ref.read(authLocalDataSourceProvider);
-      final cachedToken = await localDataSource.getCachedToken();
+      final cachedTokenModel = await localDataSource.getCachedToken();
 
       if (!ref.mounted) return;
 
-      if (cachedToken != null) {
+      if (cachedTokenModel != null) {
+        debugPrint(
+          '🔑 [AUTH] Token found in secure storage. Access token: ${cachedTokenModel.accessToken?.substring(0, 20)}...',
+        );
+        final cachedToken = cachedTokenModel.toEntity();
+
+        // Simply load the token into state
+        // Validation will be done by the backend via validateToken API
         state = state.copyWith(token: cachedToken, isAuthenticated: true);
-
-        final expirationDateTime = cachedToken.expirationDateTime;
-        final isExpired =
-            expirationDateTime != null &&
-            DateTime.now().isAfter(
-              expirationDateTime.subtract(const Duration(minutes: 5)),
-            );
-
-        if (isExpired && cachedToken.refreshToken != null) {
-          await _refreshTokenSilent();
-        }
+        debugPrint('🔑 [AUTH] Token loaded from cache and set in state');
+      } else {
+        debugPrint('🔑 [AUTH] No cached token found in secure storage');
+        state = const AuthState();
       }
     } catch (e) {
-      debugPrint('Failed to load cached token: $e');
+      debugPrint('🔑 [AUTH] Failed to load cached token: $e');
+      state = const AuthState();
     } finally {
       _isInitialized = true;
+      if (ref.mounted) {
+        debugPrint(
+          '🔑 [AUTH] _loadCachedToken completed. Token present: ${state.token != null}',
+        );
+      } else {
+        debugPrint(
+          '🔑 [AUTH] _loadCachedToken completed but ref was unmounted',
+        );
+      }
     }
-  }
-
-  Future<void> _refreshTokenSilent() async {
-    final currentToken = state.token;
-    if (currentToken?.refreshToken == null) return;
-
-    final refreshToken = ref.read(refreshTokenProvider);
-    final result = await refreshToken(
-      RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
-    );
-
-    if (!ref.mounted) return;
-
-    result.fold(
-      (failure) => debugPrint('Token refresh failed: ${failure.message}'),
-      (token) => state = state.copyWith(token: token, isAuthenticated: true),
-    );
   }
 
   Future<void> signIn() async {
@@ -91,6 +91,9 @@ class AuthViewModel extends _$AuthViewModel {
         }
       },
       (token) {
+        debugPrint(
+          '🔑 [AUTH] Sign-in successful! Token received and cached by repository',
+        );
         state = state.copyWith(
           isLoading: false,
           token: token,
@@ -142,6 +145,14 @@ class AuthViewModel extends _$AuthViewModel {
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, error: null);
 
+    // Track logout event
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(
+          name: 'user_logout',
+          parameters: {'timestamp': DateTime.now().toIso8601String()},
+        );
+
     final logout = ref.read(logoutProvider);
     final result = await logout(NoParams());
 
@@ -149,6 +160,12 @@ class AuthViewModel extends _$AuthViewModel {
 
     result.fold(
       (failure) {
+        ref
+            .read(analyticsServiceProvider)
+            .logEvent(
+              name: 'logout_failed',
+              parameters: {'error': failure.message},
+            );
         state = state.copyWith(isLoading: false, error: failure.message);
       },
       (success) {

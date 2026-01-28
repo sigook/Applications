@@ -1,0 +1,299 @@
+# Fastfile for SigookApp Flutter Build Automation
+# Optimized version with corrected paths for Azure DevOps pipeline execution
+# This file contains the fastlane lanes for iOS and Android builds
+#
+# IMPORTANT PATH HANDLING:
+# - Fastlane automatically changes directory to 'fastlane/' when executing
+# - Ruby code (Xcodeproj) respects this chdir and resolves '../' correctly
+# - Fastlane actions (gym, gradle) resolve relative paths from the ORIGINAL CWD (where fastlane was called)
+# - SOLUTION: Use File.expand_path("../path", __dir__) to convert to absolute paths
+#   - __dir__ = directory of this Fastfile (SigookApp/fastlane/)
+#   - "../ios/Runner.xcworkspace" relative to __dir__ = SigookApp/ios/Runner.xcworkspace
+#   - File.expand_path converts this to an absolute path that works everywhere
+#
+# AZURE DEVOPS VARIABLE GROUPS:
+# - SigookApp-Android-Signing: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
+# - SigookApp-iOS-Signing: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
+#   APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME, P12_FILE_NAME,
+#   PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
+# - SigookApp-Staging: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
+#   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES
+
+default_platform(:ios)
+
+# Get Apple Team ID from environment or use default
+APPLE_TEAM_ID = ENV["APPLE_TEAM_ID"] || "NGXFWU4H7Z"
+APPLE_TEAM_NAME = ENV["APPLE_TEAM_NAME"] || "SIGOOK CORPORATION"
+
+# ============================================
+# iOS Lanes
+# ============================================
+platform :ios do
+  desc "Build and sign iOS app for staging (App Store distribution)"
+  lane :beta do |options|
+    # NOTE: clear_derived_data is commented out because the pipeline has
+    # DerivedData cache disabled. Uncomment if you need fresh builds.
+    # clear_derived_data
+    
+    # Configure manual code signing
+    # Find the installed provisioning profile
+    profile_path = Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).first
+
+    if profile_path.nil?
+      UI.user_error!("❌ No provisioning profile found in ~/Library/MobileDevice/Provisioning Profiles/")
+    end
+
+    # Extract UUID from the provisioning profile
+    profile_content = `security cms -D -i "#{profile_path}"`
+    profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
+    profile_name = profile_content.match(/<key>Name<\/key>\s*<string>([^<]+)<\/string>/)[1]
+
+    UI.message("📝 Found provisioning profile:")
+    UI.message("   Name: #{profile_name}")
+    UI.message("   UUID: #{profile_uuid}")
+    UI.message("   Path: #{profile_path}")
+
+    # Configure Xcode project with manual signing
+    require 'xcodeproj'
+    project_path = '../ios/Runner.xcodeproj'
+    project = Xcodeproj::Project.open(project_path)
+
+    project.targets.each do |target|
+      if target.name == 'Runner'
+        target.build_configurations.each do |config|
+          UI.message("Configuring #{config.name} for manual signing...")
+          config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+          config.build_settings['DEVELOPMENT_TEAM'] = APPLE_TEAM_ID
+          config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+          config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
+          # Use the UUID of the provisioning profile
+          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_uuid
+        end
+      end
+    end
+
+    project.save
+    UI.success("✅ Manual signing configured for Runner target")
+    
+    # Archive the app
+    # Use absolute paths for gym because it resolves relative paths from the original CWD, not from fastlane/
+    # __dir__ gives us the directory of this Fastfile (SigookApp/fastlane/)
+    workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
+    output_path = File.expand_path("../output", __dir__)
+    archive_path = File.expand_path("../build/ios/Runner.xcarchive", __dir__)
+
+    UI.message("📁 Workspace: #{workspace_path}")
+    UI.message("📁 Output: #{output_path}")
+    UI.message("📁 Archive: #{archive_path}")
+
+    # Build code signing identity string dynamically
+    code_sign_identity = "Apple Distribution: #{APPLE_TEAM_NAME} (#{APPLE_TEAM_ID})"
+    UI.message("📝 Using code signing identity: #{code_sign_identity}")
+
+    # Simplified approach: Let Xcode automatically detect the provisioning profile
+    # The InstallAppleProvisioningProfile task should have installed it in the correct location
+    gym(
+      workspace: workspace_path,
+      scheme: "Runner",
+      export_method: "app-store",
+      export_team_id: APPLE_TEAM_ID,
+      codesigning_identity: code_sign_identity,
+      export_options: {
+        method: "app-store",
+        teamID: APPLE_TEAM_ID,
+        compileBitcode: false,
+        # Removed signingStyle and provisioningProfiles to let Xcode auto-detect
+      },
+      output_directory: output_path,
+      output_name: "SigookApp.ipa",
+      clean: true,
+      skip_build_archive: false,
+      archive_path: archive_path,
+      export_xcargs: "-allowProvisioningUpdates",
+      xcargs: "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID} CODE_SIGN_IDENTITY='#{code_sign_identity}'",
+      silent: false,
+      verbose: true
+    )
+
+    UI.success("✅ iOS IPA built and signed successfully!")
+    UI.message("IPA location: #{output_path}/SigookApp.ipa")
+  end
+
+  desc "Run iOS tests"
+  lane :test do
+    workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
+    run_tests(
+      workspace: workspace_path,
+      scheme: "Runner",
+      device: "iPhone 14"
+    )
+  end
+
+  desc "Deploy to TestFlight"
+  lane :deploy do |options|
+    # Get the IPA path
+    ipa_path = options[:ipa] || File.expand_path("../output/SigookApp.ipa", __dir__)
+    
+    unless File.exist?(ipa_path)
+      UI.user_error!("❌ IPA not found at #{ipa_path}")
+    end
+    
+    UI.message("📤 Uploading to TestFlight: #{ipa_path}")
+    
+    # Upload to TestFlight using App Store Connect API
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+    
+    upload_to_testflight(
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      notify_external_testers: false
+    )
+    
+    UI.success("✅ Successfully uploaded to TestFlight!")
+  end
+
+  desc "Clean build artifacts"
+  lane :clean do
+    clear_derived_data
+    # Fastlane runs from fastlane/ directory
+    sh("cd .. && rm -rf output build ios/Pods")
+    UI.success("✅ Cleaned all build artifacts")
+  end
+end
+
+# ============================================
+# Android Lanes
+# ============================================
+platform :android do
+  desc "Build and sign Android app bundle for staging"
+  lane :beta do |options|
+    # Use absolute path for gradle to avoid path resolution issues
+    android_path = File.expand_path("../android", __dir__)
+    gradle(
+      project_dir: android_path,
+      task: "bundle",
+      flavor: "staging",
+      build_type: "Release",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEY_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+
+    UI.success("✅ Android AAB built and signed successfully!")
+  end
+
+  desc "Build APK for local testing"
+  lane :apk do
+    # Use absolute path for gradle to avoid path resolution issues
+    android_path = File.expand_path("../android", __dir__)
+    gradle(
+      project_dir: android_path,
+      task: "assemble",
+      flavor: "staging",
+      build_type: "Release"
+    )
+  end
+
+  desc "Run Android tests"
+  lane :test do
+    # Use absolute path for gradle to avoid path resolution issues
+    android_path = File.expand_path("../android", __dir__)
+    gradle(
+      project_dir: android_path,
+      task: "test",
+      flavor: "staging",
+      build_type: "Debug"
+    )
+  end
+
+  desc "Deploy to Google Play Store (Internal Testing)"
+  lane :deploy do |options|
+    # Find the AAB file
+    aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/stagingRelease/*.aab", __dir__)).first
+
+    if aab_path.nil? || !File.exist?(aab_path)
+      UI.user_error!("❌ AAB not found. Build the app first with 'fastlane android beta'")
+    end
+
+    UI.message("📤 Uploading to Google Play: #{aab_path}")
+
+    # Get and decode the Google Play JSON key (base64 encoded in Azure DevOps)
+    json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
+    if json_key_raw.nil? || json_key_raw.empty?
+      UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set")
+    end
+
+    # Decode base64 if the key appears to be encoded (doesn't start with '{')
+    json_key_data = if json_key_raw.strip.start_with?('{')
+      json_key_raw
+    else
+      require 'base64'
+      Base64.decode64(json_key_raw)
+    end
+
+    # Upload to Google Play Internal Testing track
+    upload_to_play_store(
+      track: "internal",
+      aab: aab_path,
+      json_key_data: json_key_data,
+      package_name: "com.sigook.beta",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    UI.success("✅ Successfully uploaded to Google Play Internal Testing!")
+  end
+
+  desc "Clean Android build artifacts"
+  lane :clean do
+    # Use absolute path for gradle to avoid path resolution issues
+    android_path = File.expand_path("../android", __dir__)
+    gradle(
+      project_dir: android_path,
+      task: "clean"
+    )
+    UI.success("✅ Cleaned Android build artifacts")
+  end
+end
+
+# ============================================
+# Shared Lanes
+# ============================================
+
+desc "Display environment information"
+lane :info do
+  UI.header("Environment Information")
+  UI.message("Fastlane version: #{Fastlane::VERSION}")
+  UI.message("Ruby version: #{RUBY_VERSION}")
+  UI.message("Working directory: #{Dir.pwd}")
+
+  # Show the actual paths being used (fastlane runs from fastlane/ directory)
+  UI.message("iOS project path: #{File.expand_path('../ios/Runner.xcodeproj', Dir.pwd)}")
+  UI.message("Android project path: #{File.expand_path('../android', Dir.pwd)}")
+
+  if is_ci
+    UI.message("Running in CI environment")
+    UI.message("CI Platform: #{ENV['CI'] || 'Unknown'}")
+  else
+    UI.message("Running locally")
+  end
+end
+
+# Error handling
+error do |lane, exception|
+  UI.error("Error in lane '#{lane}':")
+  UI.error(exception.message)
+  UI.error(exception.backtrace.join("\n")) if exception.backtrace
+end

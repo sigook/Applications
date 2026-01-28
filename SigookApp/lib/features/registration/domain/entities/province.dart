@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'country.dart';
 
-/// Province/State entity for location
 class Province extends Equatable {
   final String? id;
   final String value;
