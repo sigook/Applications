@@ -192,9 +192,9 @@ stages:
     - task: Cache@2
       displayName: 'Cache Flutter Packages'
       inputs:
-        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock | $(workingDirectory)/pubspec.yaml'
+        # Fix: Only use pubspec.yaml (pubspec.lock doesn't exist until after flutter pub get)
+        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.yaml'
         restoreKeys: |
-          pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
@@ -482,9 +482,9 @@ stages:
     - task: Cache@2
       displayName: 'Cache Flutter Packages'
       inputs:
-        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock | $(workingDirectory)/pubspec.yaml'
+        # Fix: Only use pubspec.yaml (pubspec.lock doesn't exist until after flutter pub get)
+        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.yaml'
         restoreKeys: |
-          pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
