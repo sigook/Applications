@@ -7,6 +7,9 @@ import BecomePartnerView from '@/views/BecomePartnerView.vue'
 import EmployersView from '@/views/EmployersView.vue'
 import TalentsView from '@/views/TalentsView.vue'
 import OpenPositionsView from '@/views/OpenPositionsView.vue'
+import DisclaimerView from '@/views/DisclaimerView.vue'
+import PrivacyPolicyView from '@/views/PrivacyPolicyView.vue'
+import TermsConditionsView from '@/views/TermsConditionsView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -48,6 +51,21 @@ const routes: RouteRecordRaw[] = [
     path: '/open-positions',
     name: 'open_positions',
     component: OpenPositionsView,
+  },
+  {
+    path: '/disclaimer',
+    name: 'disclaimer',
+    component: DisclaimerView,
+  },
+  {
+    path: '/privacy-policy',
+    name: 'privacy_policy',
+    component: PrivacyPolicyView,
+  },
+  {
+    path: '/terms-conditions',
+    name: 'terms_conditions',
+    component: TermsConditionsView,
   },
 ]
 

@@ -52,9 +52,9 @@
 
           <!-- LEGAL LINKS (MOBILE) -->
           <div class="footer__block footer__legal--mobile">
-            <a href="#" class="footer__link">Privacy Policy</a>
-            <a href="#" class="footer__link">Terms and Conditions</a>
-            <a href="#" class="footer__link">Disclaimer</a>
+            <RouterLink to="/privacy-policy" class="footer__link">Privacy Policy</RouterLink>
+            <RouterLink to="/terms-conditions" class="footer__link">Terms and Conditions</RouterLink>
+            <RouterLink to="/disclaimer" class="footer__link">Disclaimer</RouterLink>
           </div>
 
 
@@ -112,9 +112,9 @@
 
           <!-- LEGAL LINKS (DESKTOP) -->
           <div class="footer__block footer__legal--desktop" style="margin-top: 70px;">
-             <a href="#" class="footer__link">Privacy Policy</a>
-             <a href="#" class="footer__link">Terms and Conditions</a>
-             <a href="#" class="footer__link">Disclaimer</a>
+             <RouterLink to="/privacy-policy" class="footer__link">Privacy Policy</RouterLink>
+             <RouterLink to="/terms-conditions" class="footer__link">Terms and Conditions</RouterLink>
+             <RouterLink to="/disclaimer" class="footer__link">Disclaimer</RouterLink>
           </div>
         </div>
       </div>
