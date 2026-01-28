@@ -12,9 +12,7 @@ trigger:
       - dev
   paths:
     include:
-      - .gitignore
       - SigookFunctions/**
-      - .azure-pipelines/sigookfunctions-pipeline.yml
     exclude:
       - SigookFunctions/**/*.md
 

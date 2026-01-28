@@ -12,9 +12,7 @@ trigger:
       - dev
   paths:
     include:
-      - .gitignore
       - Covenant.Web/**
-      - .azure-pipelines/covenant-web-pipeline.yml
     exclude:
       - Covenant.Web/**/*.md
 
