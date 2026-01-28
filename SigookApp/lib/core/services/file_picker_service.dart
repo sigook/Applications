@@ -1,12 +1,11 @@
 import 'dart:typed_data';
 
-/// Represents a picked file with its metadata
 class PickedFileData {
   final String name;
   final String path;
   final int size;
   final String? extension;
-  final Uint8List? bytes; // For web platform
+  final Uint8List? bytes;
 
   const PickedFileData({
     required this.name,
@@ -16,13 +15,10 @@ class PickedFileData {
     this.bytes,
   });
 
-  /// Get file size in MB
   double get sizeInMB => size / (1024 * 1024);
 
-  /// Check if file size is within limit (in MB)
   bool isWithinSizeLimit(int limitMB) => sizeInMB <= limitMB;
 
-  /// Get formatted file size
   String get formattedSize {
     if (size < 1024) {
       return '$size B';
@@ -34,10 +30,8 @@ class PickedFileData {
   }
 }
 
-/// Enum for file picker result status
 enum FilePickerStatus { success, cancelled, error }
 
-/// Result of file picking operation
 class FilePickerResult {
   final FilePickerStatus status;
   final PickedFileData? file;
@@ -65,38 +59,18 @@ class FilePickerResult {
   bool get isError => status == FilePickerStatus.error;
 }
 
-/// Service for picking files from device storage
-/// Following SOLID principles - Interface Segregation Principle
 abstract class FilePickerService {
-  /// Pick a single file from device storage
-  ///
-  /// [allowedExtensions] - List of allowed file extensions (e.g., ['pdf', 'jpg', 'png'])
-  /// [maxFileSizeMB] - Maximum file size in megabytes (default: 10MB)
-  ///
-  /// Returns [FilePickerResult] with the picked file or error/cancelled status
   Future<FilePickerResult> pickFile({
     List<String>? allowedExtensions,
     int maxFileSizeMB = 10,
   });
 
-  /// Pick multiple files from device storage
-  ///
-  /// [allowedExtensions] - List of allowed file extensions
-  /// [maxFileSizeMB] - Maximum file size per file in megabytes
-  /// [maxFiles] - Maximum number of files to pick
-  ///
-  /// Returns list of [FilePickerResult]
   Future<List<FilePickerResult>> pickMultipleFiles({
     List<String>? allowedExtensions,
     int maxFileSizeMB = 10,
     int maxFiles = 5,
   });
 
-  /// Pick an image file specifically
-  /// Optimized for image selection with camera option on mobile
-  ///
-  /// [maxFileSizeMB] - Maximum file size in megabytes
-  /// [allowCamera] - Allow camera capture on mobile devices
   Future<FilePickerResult> pickImage({
     int maxFileSizeMB = 10,
     bool allowCamera = false,

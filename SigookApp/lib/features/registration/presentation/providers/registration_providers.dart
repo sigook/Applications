@@ -10,7 +10,6 @@ import '../../domain/usecases/submit_registration.dart';
 import '../viewmodels/section_state.dart';
 import '../../data/repositories/image_picker_repository_imp.dart';
 
-// Re-export for convenience
 export '../viewmodels/registration_viewmodel.dart'
     show registrationViewModelProvider;
 
@@ -21,7 +20,6 @@ final pickProfilePhotoProvider = Provider(
   (ref) => ref.read(imagePickerProvider),
 );
 
-/// Local data source provider
 final registrationLocalDataSourceProvider =
     Provider<RegistrationLocalDataSource>((ref) {
       final sharedPreferences = ref.watch(sharedPreferencesProvider);
@@ -30,13 +28,11 @@ final registrationLocalDataSourceProvider =
       );
     });
 
-/// Remote data source provider
 final registrationRemoteDataSourceProvider =
     Provider<RegistrationRemoteDataSource>((ref) {
       return RegistrationRemoteDataSourceImpl(apiClient: ApiClient());
     });
 
-/// Repository provider
 final registrationRepositoryProvider = Provider<RegistrationRepository>((ref) {
   final localDataSource = ref.watch(registrationLocalDataSourceProvider);
   final remoteDataSource = ref.watch(registrationRemoteDataSourceProvider);
@@ -46,19 +42,14 @@ final registrationRepositoryProvider = Provider<RegistrationRepository>((ref) {
   );
 });
 
-/// Submit registration use case provider
 final submitRegistrationUseCaseProvider = Provider<SubmitRegistration>((ref) {
   final repository = ref.watch(registrationRepositoryProvider);
   return SubmitRegistration(repository);
 });
 
-/// Total number of registration steps (0: Basic Info, 1: Preferences, 2: Documents, 3: Account)
 const int _totalRegistrationSteps = 4;
-
-/// Maximum step index (last step)
 const int _maxStepIndex = _totalRegistrationSteps - 1;
 
-/// Form state provider for UI controls (current step, loading states, etc.)
 @riverpod
 class RegistrationFormStateNotifier extends _$RegistrationFormStateNotifier {
   @override

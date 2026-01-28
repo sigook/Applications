@@ -8,27 +8,21 @@ import 'province.dart';
 import 'city.dart';
 import 'value_objects/profile_photo.dart';
 
-/// Basic information entity
-/// Combines personal details, location, and mobile number
 class BasicInfo extends Equatable {
-  // Personal details
   final ProfilePhoto profilePhoto;
   final Name firstName;
   final Name lastName;
   final DateTime dateOfBirth;
   final Gender gender;
 
-  // Location
   final Country? country;
   final Province? provinceState;
   final City? city;
   final String address;
   final ZipCode zipCode;
 
-  // Contact
   final PhoneNumber mobileNumber;
 
-  // Identification (optional - can be provided via documents)
   final String? identificationType;
   final String? identificationNumber;
 
@@ -62,7 +56,6 @@ class BasicInfo extends Equatable {
     this.identificationNumber,
   });
 
-  /// Check if the user is at least 18 years old
   bool get isAdult {
     final today = DateTime.now();
     final eighteenYearsAgo = DateTime(today.year - 18, today.month, today.day);
@@ -70,7 +63,6 @@ class BasicInfo extends Equatable {
         dateOfBirth.isAtSameMomentAs(eighteenYearsAgo);
   }
 
-  /// Validates all fields
   bool get isValid {
     return firstName.isValid &&
         lastName.isValid &&
@@ -85,7 +77,6 @@ class BasicInfo extends Equatable {
         profilePhoto.hasPhoto;
   }
 
-  /// Validation error messages
   String? get countryError => country == null ? 'Country is required' : null;
   String? get provinceStateError =>
       provinceState == null ? 'Province/State is required' : null;
@@ -104,7 +95,6 @@ class BasicInfo extends Equatable {
   String? get profilePhotoError =>
       profilePhoto.path.isEmpty ? 'Profile photo is required' : null;
 
-  /// Creates a copy with updated fields
   BasicInfo copyWith({
     ProfilePhoto? profilePhoto,
     Name? firstName,
@@ -137,7 +127,6 @@ class BasicInfo extends Equatable {
     );
   }
 
-  /// Convert to JSON for debugging/logging purposes
   Map<String, dynamic> toJson() {
     return {
       'profilePhoto': profilePhoto.toJson(),

@@ -4,13 +4,10 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/welcome/presentation/pages/welcome_page.dart';
 import '../../features/registration/presentation/pages/registration_screen.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
-import '../../features/auth/presentation/pages/token_info_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/jobs/presentation/pages/job_page.dart';
-import '../../features/jobs/domain/entities/job.dart';
 import '../../features/profile/presentation/pages/user_profile_page.dart';
 
-/// Route path constants
 class AppRoutes {
   static const String splash = '/';
   static const String welcome = '/welcome';
@@ -22,7 +19,6 @@ class AppRoutes {
   static const String profile = '/profile';
 }
 
-/// Navigation observer to dismiss keyboard on route change
 class KeyboardDismissObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -35,7 +31,6 @@ class KeyboardDismissObserver extends NavigatorObserver {
   }
 }
 
-/// GoRouter configuration
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
@@ -103,17 +98,6 @@ class AppRouter {
         ),
       ),
       GoRoute(
-        path: AppRoutes.tokenInfo,
-        name: 'tokenInfo',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          child: const TokenInfoPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      ),
-      GoRoute(
         path: AppRoutes.jobs,
         name: 'jobs',
         pageBuilder: (context, state) => CustomTransitionPage(
@@ -128,10 +112,10 @@ class AppRouter {
         path: AppRoutes.jobDetails,
         name: 'jobDetails',
         pageBuilder: (context, state) {
-          final job = state.extra as Job;
+          final jobId = state.extra as String;
           return CustomTransitionPage(
             key: state.pageKey,
-            child: JobPage(job: job),
+            child: JobPage(jobId: jobId),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);

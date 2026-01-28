@@ -1,5 +1,3 @@
-// lib/features/auth/presentation/providers/auth_providers.dart
-
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod/riverpod.dart';
@@ -14,6 +12,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/sign_in.dart';
 import '../../domain/usecases/refresh_token.dart';
 import '../../domain/usecases/logout.dart';
+import '../../domain/usecases/validate_token.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 part 'auth_providers.g.dart';
@@ -86,6 +85,11 @@ RefreshToken refreshToken(Ref ref) {
 @riverpod
 Logout logout(Ref ref) {
   return Logout(ref.read(authRepositoryProvider));
+}
+
+@riverpod
+ValidateToken validateToken(Ref ref) {
+  return ValidateToken(ref.read(authRepositoryProvider));
 }
 
 // 5. authViewModelProvider is auto-generated from @riverpod in auth_viewmodel.dart

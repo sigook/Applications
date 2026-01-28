@@ -1,0 +1,45 @@
+# Reusable template for Fastlane installation with Bundler and caching
+# Usage:
+#   - template: templates/fastlane-setup.yml
+#     parameters:
+#       workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+
+parameters:
+  - name: workingDirectory
+    type: string
+    displayName: 'Working directory containing Gemfile'
+
+  - name: continueOnError
+    type: boolean
+    default: false
+    displayName: 'Whether to continue on error (useful for deploy stages)'
+
+steps:
+  # Cache Fastlane gems for faster builds
+  - task: Cache@2
+    displayName: 'Cache Fastlane Gems'
+    continueOnError: ${{ parameters.continueOnError }}
+    inputs:
+      key: 'gems | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/Gemfile'
+      restoreKeys: |
+        gems | "$(Agent.OS)"
+      path: $(HOME)/.gem
+
+  # Install Bundler and Fastlane via Gemfile
+  - script: |
+      cd ${{ parameters.workingDirectory }}
+      echo "Installing Bundler..."
+      sudo gem install bundler --no-document
+
+      echo "Configuring Bundler to use cache path..."
+      bundle config set --local path '$(HOME)/.gem'
+
+      echo "Installing gems from Gemfile..."
+      bundle install --jobs=4 --retry=3
+
+      echo "✅ Fastlane installed via Bundler"
+
+      echo "Verifying installation:"
+      bundle exec fastlane --version
+    displayName: 'Install Fastlane (via Bundler)'
+    continueOnError: ${{ parameters.continueOnError }}

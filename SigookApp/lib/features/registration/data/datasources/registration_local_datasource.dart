@@ -2,15 +2,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/registration_form_model.dart';
 
-/// Local data source for registration form data
 abstract class RegistrationLocalDataSource {
-  /// Saves registration form draft
   Future<void> saveDraft(RegistrationFormModel form);
-
-  /// Retrieves saved draft
   Future<RegistrationFormModel?> getDraft();
-
-  /// Clears saved draft
   Future<void> clearDraft();
 }
 
@@ -35,8 +29,6 @@ class RegistrationLocalDataSourceImpl implements RegistrationLocalDataSource {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return RegistrationFormModel.fromJson(json);
     } catch (e) {
-      // If draft is corrupted or incompatible (e.g., from old enum format),
-      // clear it and return null
       await clearDraft();
       return null;
     }

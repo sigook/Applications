@@ -9,7 +9,7 @@ class Job extends Equatable {
   final String? entrance;
   final String agencyFullName;
   final String? agencyLogo;
-  final String status;
+  final String? status;
   final bool isAsap;
   final bool? workerApprovedToWork;
   final double workerRate;
@@ -28,7 +28,7 @@ class Job extends Equatable {
     this.entrance,
     required this.agencyFullName,
     this.agencyLogo,
-    required this.status,
+    this.status,
     required this.isAsap,
     this.workerApprovedToWork,
     required this.workerRate,

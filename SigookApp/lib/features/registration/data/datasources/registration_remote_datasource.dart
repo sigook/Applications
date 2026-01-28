@@ -7,10 +7,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/services/file_naming_service.dart';
 import '../models/worker_registration_request.dart';
 
-/// Remote data source for registration operations
 abstract class RegistrationRemoteDataSource {
-  /// Submit worker registration to API
-  /// Endpoint: POST https://staging.api.sigook.ca/api/WorkerProfile
   Future<void> registerWorker(WorkerRegistrationRequest request);
 }
 
@@ -147,11 +144,10 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     debugPrint('║ 📋 Total form fields: ${data.fields.length}');
     debugPrint('╚════════════════════════════════════════════════');
 
-    // Retry configuration with exponential backoff
     const retryOptions = RetryOptions(
       maxAttempts: 3,
-      delayFactor: Duration(seconds: 2), // 2s, 4s, 8s
-      randomizationFactor: 0.25, // Add jitter to prevent thundering herd
+      delayFactor: Duration(seconds: 2),
+      randomizationFactor: 0.25,
       maxDelay: Duration(seconds: 10),
     );
 
@@ -160,7 +156,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         () async {
           return await apiClient.post('/WorkerProfile', data: data);
         },
-        // Only retry on network/timeout errors, not on server errors (4xx/5xx)
         retryIf: (e) {
           if (e is DioException) {
             return e.type == DioExceptionType.connectionTimeout ||
@@ -168,7 +163,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
                 e.type == DioExceptionType.sendTimeout ||
                 e.type == DioExceptionType.connectionError;
           }
-          // Retry on socket exceptions
           return e.toString().contains('SocketException');
         },
         onRetry: (e) {
@@ -179,7 +173,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Registration successful
         return;
       } else {
         throw ServerException(
@@ -202,7 +195,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
           'Cannot reach server. Please check your network connection or VPN.',
         );
       } else if (e.response != null) {
-        // Extract error message from API response
         String errorMessage = 'Registration failed';
         if (e.response!.data is Map<String, dynamic>) {
           final data = e.response!.data as Map<String, dynamic>;

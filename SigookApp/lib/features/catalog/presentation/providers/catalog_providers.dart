@@ -9,22 +9,18 @@ import '../../domain/usecases/get_catalog_data.dart';
 import '../../domain/usecases/get_provinces.dart';
 import '../../domain/usecases/get_cities.dart';
 
-/// Provider for remote data source
 final catalogRemoteDataSourceProvider = Provider<CatalogRemoteDataSource>((
   ref,
 ) {
   return CatalogRemoteDataSourceImpl(apiClient: ref.read(apiClientProvider));
 });
 
-/// Provider for catalog repository
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
   return CatalogRepositoryImpl(
     remoteDataSource: ref.read(catalogRemoteDataSourceProvider),
     networkInfo: ref.read(networkInfoProvider),
   );
 });
-
-// Use Case Providers
 
 final getAvailabilityProvider = Provider<GetAvailability>((ref) {
   return GetAvailability(ref.read(catalogRepositoryProvider));
@@ -61,8 +57,6 @@ final getProvincesProvider = Provider<GetProvinces>((ref) {
 final getCitiesProvider = Provider<GetCities>((ref) {
   return GetCities(ref.read(catalogRepositoryProvider));
 });
-
-// State Providers for catalog data
 
 final availabilityListProvider = FutureProvider<List<CatalogItem>>((ref) async {
   final useCase = ref.read(getAvailabilityProvider);
@@ -131,7 +125,6 @@ final skillsProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-/// Provinces provider - requires countryId parameter
 final provincesProvider = FutureProvider.family<List<CatalogItem>, String>((
   ref,
   countryId,
@@ -144,7 +137,6 @@ final provincesProvider = FutureProvider.family<List<CatalogItem>, String>((
   );
 });
 
-/// Cities provider - requires provinceId parameter
 final citiesProvider = FutureProvider.family<List<CatalogItem>, String>((
   ref,
   provinceId,
@@ -166,7 +158,6 @@ final daysOfWeekProvider = FutureProvider<List<CatalogItem>>((ref) async {
   );
 });
 
-/// Lifting capacities provider
 final liftingCapacitiesProvider = FutureProvider<List<CatalogItem>>((
   ref,
 ) async {

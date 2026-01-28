@@ -7,7 +7,7 @@ part 'auth_token_model.freezed.dart';
 part 'auth_token_model.g.dart';
 
 @freezed
-sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
+abstract class AuthTokenModel with _$AuthTokenModel {
   const AuthTokenModel._();
 
   const factory AuthTokenModel({
@@ -24,14 +24,12 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
       _$AuthTokenModelFromJson(json);
 
   factory AuthTokenModel.fromResponse(dynamic response) {
-    // Parse user info from id_token if available
     UserInfoModel? userInfo;
     if (response.idToken != null) {
       try {
         final decodedToken = JwtDecoder.decode(response.idToken);
         userInfo = UserInfoModel.fromIdTokenClaims(decodedToken);
       } catch (e) {
-        // If token parsing fails, continue without user info
         userInfo = null;
       }
     }
@@ -47,8 +45,19 @@ sealed class AuthTokenModel extends AuthToken with _$AuthTokenModel {
     );
   }
 
-  @override
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
       (expirationDateTime != null);
+
+  AuthToken toEntity() {
+    return AuthToken(
+      accessToken: accessToken,
+      idToken: idToken,
+      refreshToken: refreshToken,
+      expirationDateTime: expirationDateTime,
+      tokenType: tokenType,
+      scopes: scopes,
+      userInfo: userInfo?.toEntity(),
+    );
+  }
 }

@@ -17,7 +17,6 @@ sealed class AccountInfoModel with _$AccountInfoModel {
     required bool termsAccepted,
   }) = _AccountInfoModel;
 
-  /// Convert from domain entity
   factory AccountInfoModel.fromEntity(AccountInfo entity) {
     return AccountInfoModel(
       email: entity.email.value,
@@ -26,8 +25,6 @@ sealed class AccountInfoModel with _$AccountInfoModel {
       termsAccepted: entity.termsAccepted,
     );
   }
-
-  /// Convert to domain entity
   AccountInfo toEntity() {
     return AccountInfo(
       email: Email(email),
@@ -37,7 +34,6 @@ sealed class AccountInfoModel with _$AccountInfoModel {
     );
   }
 
-  /// From JSON
   factory AccountInfoModel.fromJson(Map<String, dynamic> json) =>
       _$AccountInfoModelFromJson(json);
 }

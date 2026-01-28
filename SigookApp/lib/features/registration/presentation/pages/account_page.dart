@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/account_info.dart';
 import '../../domain/entities/value_objects/email.dart';
 import '../../domain/entities/value_objects/password.dart';
@@ -33,7 +34,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
 
-    // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final form = ref.read(registrationViewModelProvider);
       if (form.accountInfo != null) {
@@ -113,7 +113,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               ),
               const SizedBox(height: 32),
 
-              // Email
               CustomTextField(
                 label: 'Email',
                 hint: 'example@email.com',
@@ -126,7 +125,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               ),
               const SizedBox(height: 24),
 
-              // Password
               CustomTextField(
                 label: 'Password',
                 hint: 'Enter a strong password',
@@ -149,7 +147,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               ),
               const SizedBox(height: 16),
 
-              // Password Requirements
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -188,7 +185,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               ),
               const SizedBox(height: 24),
 
-              // Confirm Password
               CustomTextField(
                 label: 'Confirm Password',
                 hint: 'Re-enter your password',
@@ -213,7 +209,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               ),
               const SizedBox(height: 32),
 
-              // Terms and Conditions
               Container(
                 decoration: BoxDecoration(
                   color: _termsError != null
@@ -231,7 +226,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     text: TextSpan(
                       style: const TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF1E293B),
+                        color: AppTheme.textDark,
                       ),
                       children: [
                         const TextSpan(text: 'I agree to Sigook '),

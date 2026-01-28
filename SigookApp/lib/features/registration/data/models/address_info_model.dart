@@ -36,6 +36,8 @@ sealed class AddressInfoModel with _$AddressInfoModel {
     );
   }
 
+  // Example for comment
+
   /// From JSON
   factory AddressInfoModel.fromJson(Map<String, dynamic> json) =>
       _$AddressInfoModelFromJson(json);

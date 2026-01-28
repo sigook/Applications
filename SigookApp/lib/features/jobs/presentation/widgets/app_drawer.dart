@@ -12,14 +12,12 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authViewModelProvider);
-    final userInfo = authState.token?.userInfo;
-
+    // Profile endpoint disabled - show default user display
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          _buildProfileHeader(context, 'Juan Betancur', 'juanm@sigook.com'),
+          _buildProfileHeader(context, 'User', '', null),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
@@ -75,6 +73,7 @@ class AppDrawer extends ConsumerWidget {
     BuildContext context,
     String? displayName,
     String? email,
+    String? profilePhoto,
   ) {
     return Container(
       width: double.infinity,
@@ -97,14 +96,19 @@ class AppDrawer extends ConsumerWidget {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  child: Text(
-                    _getInitials(displayName),
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
+                  backgroundImage: profilePhoto != null
+                      ? NetworkImage(profilePhoto)
+                      : null,
+                  child: profilePhoto == null
+                      ? Text(
+                          _getInitials(displayName),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        )
+                      : null,
                 ),
                 Positioned(
                   right: 0,
@@ -134,7 +138,7 @@ class AppDrawer extends ConsumerWidget {
                 color: Colors.white,
               ),
             ),
-            if (email != null) ...[
+            if (email != null && email.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 email,
@@ -258,10 +262,35 @@ class AppDrawer extends ConsumerWidget {
 
   void _navigateToProfile(BuildContext context) {
     Navigator.of(context).pop();
-    context.push(AppRoutes.profile);
+    // Profile page disabled - show coming soon message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.white),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'User profile page coming soon!',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    // Check if already logging out
+    final isLoading = ref.read(authViewModelProvider).isLoading;
+    if (isLoading) return;
+
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -284,9 +313,20 @@ class AppDrawer extends ConsumerWidget {
     );
 
     if (shouldLogout == true && context.mounted) {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+      );
+
       await ref.read(authViewModelProvider.notifier).logout();
+
       if (context.mounted) {
-        context.go(AppRoutes.signIn);
+        Navigator.of(context).pop(); // Dismiss loading dialog
+        context.go(AppRoutes.welcome);
       }
     }
   }
