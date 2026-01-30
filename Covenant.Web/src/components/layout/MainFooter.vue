@@ -286,20 +286,21 @@ const isBlueFooter = computed(() => {
 }
 
 /* LEGAL LINKS STYLES (Horizontal Layout) */
-.footer__legal--mobile {
-  display: none; /* Por defecto oculto */
-}
-
+/* LEGAL LINKS STYLES (Horizontal Layout) */
 .footer__legal--desktop,
 .footer__legal--mobile {
-  display: flex;
   gap: 15px;
   flex-wrap: nowrap; /* Para que bajen si no hay espacio */
   align-items: center;
 }
 
 .footer__legal--desktop {
+  display: flex;
   justify-content: flex-start; /* Alinear a la derecha en desktop */
+}
+
+.footer__legal--mobile {
+  display: none; /* Oculto por defecto */
 }
 
 /* Resetear estilos de links dentro de legal para que queden inline y sin margen inferior */
