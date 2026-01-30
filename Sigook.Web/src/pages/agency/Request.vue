@@ -39,14 +39,16 @@
             <button class="floating-menu-item" v-on:click="showShiftModal = true">
               <span>Edit Shift</span>
             </button>
-            <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
-              <span>Send an email invitation</span>
-            </button>
-            <button disabled v-else class="floating-menu-item" :title="warningMessage">
-              <span>Send an email invitation
-                <span class="fz-1">
-                  (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
-            </button>
+            <template v-if="request.status === $statusOpen">
+              <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
+                <span>Send an email invitation</span>
+              </button>
+              <button disabled v-else class="floating-menu-item" :title="warningMessage">
+                <span>Send an email invitation
+                  <span class="fz-1">
+                    (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
+              </button>
+            </template>
             <button class="floating-menu-item" v-if="request.canCancel" v-on:click="cancelRequestModal = true">
               <span> Cancel Order</span>
             </button>
@@ -139,8 +141,9 @@ export default {
              request.status === this.$statusFilled;
     },
     canCancelRequest(request) {
-      // Can only cancel orders in Open status
-      return request.status === this.$statusOpen;
+      // Can only cancel orders in Open status without workers
+      return request.status === this.$statusOpen &&
+             (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
     },
     getAgencyRequest() {
       console.log('📡 Loading request data from API...');
@@ -207,8 +210,8 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.request.status = this.$statusOpen;
-          this.request.canEdit = true;
-          this.request.canCancel = true;
+          this.request.canEdit = this.canEditRequest(this.request);
+          this.request.canCancel = this.canCancelRequest(this.request);
         })
         .catch((error) => {
           this.isLoading = false;

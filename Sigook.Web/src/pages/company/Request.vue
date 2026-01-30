@@ -190,8 +190,9 @@ export default {
              this.request.status === this.$statusFilled;
     },
     canCancel() {
-      // Can only cancel orders in Open status
-      return this.request.status === this.$statusOpen;
+      // Can only cancel orders in Open status without workers
+      return this.request.status === this.$statusOpen &&
+             (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
     },
   },
 };
