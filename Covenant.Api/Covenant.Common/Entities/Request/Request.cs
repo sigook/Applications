@@ -18,7 +18,6 @@ namespace Covenant.Common.Entities.Request
         private int _workersQuantityWorking;
         private int _workersQuantity = MinimumWorkersQuantity;
         private readonly List<WorkerRequest> _workers = new List<WorkerRequest>();
-        private RequestStatus _status = RequestStatus.Requested;
         private readonly List<RequestRecruiter> _recruiters = new List<RequestRecruiter>();
 
         private static readonly TimeSpan MinimumDurationBreak = TimeSpan.Zero;
@@ -43,7 +42,6 @@ namespace Covenant.Common.Entities.Request
         public int NumberId { get; set; }
         public string JobTitle { get; set; }
         public string BillingTitle { get; set; }
-        public bool IsOpen { get; set; } = true;
         public Guid? JobPositionRateId { get; set; }
         public CompanyProfileJobPositionRate JobPositionRate { get; set; }
         public string Description { get; set; }
@@ -86,59 +84,25 @@ namespace Covenant.Common.Entities.Request
         private string TheOrderCanNotBeChanged => $"The order can't be changed because is: {Status}";
         private int CountWorkersWorking => _workers.Count(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked);
         public bool CanBeUpdated => Status != RequestStatus.Cancelled;
-        public bool IsAvailableToApply => Status == RequestStatus.Requested || Status == RequestStatus.InProcess;
-        public RequestStatus Status
-        {
-            get => _status;
-            private set
-            {
-                _status = value;
-                UpdateIsOpen();
-            }
-        }
+        public bool IsAvailableToApply => Status == RequestStatus.Open;
+        public RequestStatus Status { get; private set; } = RequestStatus.Open;
         public int WorkersQuantity
         {
             get => _workersQuantity;
-            set
-            {
-                if (value < MinimumWorkersQuantity) _workersQuantity = MinimumWorkersQuantity;
-                else _workersQuantity = value;
-                UpdateIsOpen();
-            }
+            set => _workersQuantity = value < MinimumWorkersQuantity ? MinimumWorkersQuantity : value;
         }
         public int WorkersQuantityWorking
         {
             get => _workersQuantityWorking;
-            private set
-            {
-                _workersQuantityWorking = value;
-                UpdateIsOpen();
-            }
+            private set => _workersQuantityWorking = value;
         }
 
         public event EventHandler OnNewShift;
 
-        private void UpdateIsOpen()
-        {
-            switch (Status)
-            {
-                case RequestStatus.Requested:
-                case RequestStatus.InProcess:
-                    IsOpen = WorkersQuantityWorking < WorkersQuantity;
-                    break;
-                case RequestStatus.Cancelled:
-                    IsOpen = false;
-                    break;
-                default:
-                    IsOpen = false;
-                    break;
-            }
-        }
-
         public Result<Guid> AddWorker(Guid workerId, DateTime startWorking, string createdBy = null)
         {
-            if (!IsAvailableToApply) return Result.Fail<Guid>(TheOrderCanNotBeChanged);
             if (CountWorkersWorking >= WorkersQuantity) return Result.Fail<Guid>("The Order is complete");
+            if (!IsAvailableToApply) return Result.Fail<Guid>(TheOrderCanNotBeChanged);
             WorkerRequest workerRequest = _workers.SingleOrDefault(s => s.WorkerId == workerId);
             switch (workerRequest?.WorkerRequestStatus)
             {
@@ -158,31 +122,42 @@ namespace Covenant.Common.Entities.Request
 
             workerRequest.UpdateStartWorking(startWorking);
             WorkersQuantityWorking = CountWorkersWorking;
+
+            // Automatic state transitions
+            if (WorkersQuantityWorking >= WorkersQuantity)
+                Status = RequestStatus.Filled;
+
             return Result.Ok(workerRequest.Id);
         }
 
         public Result RejectWorker(Guid workerId, string detail, string rejectedBy = null)
         {
-            if (!IsAvailableToApply) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
             WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerId == workerId);
             if (workerRequest is null) return Result.Fail("Worker isn't in the order");
             if (workerRequest.IsRejected) return Result.Fail("Worker is already rejected");
             workerRequest.Reject(detail, null, rejectedBy);
             WorkersQuantityWorking = CountWorkersWorking;
-            return Result.Ok();
-        }
 
-        public Result PutInProcess()
-        {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
-            Status = RequestStatus.InProcess;
-            UpdatedAt = DateTime.Now;
+            // Automatic state transitions
+            if (Status == RequestStatus.Filled && WorkersQuantityWorking < WorkersQuantity)
+                Status = RequestStatus.Open;
+
             return Result.Ok();
         }
 
         public Result Cancel(DateTime now)
         {
             if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+
+            // Only orders in Open status can be cancelled
+            if (Status != RequestStatus.Open)
+                return Result.Fail("Only orders in Open status can be cancelled");
+
+            // Cannot cancel orders with workers assigned
+            if (WorkersQuantityWorking > 0)
+                return Result.Fail("Cannot cancel orders with workers assigned. Please remove all workers first.");
+
             foreach (WorkerRequest worker in Workers)
             {
                 Result rReject = worker.Reject("Order canceled", now);
@@ -198,11 +173,15 @@ namespace Covenant.Common.Entities.Request
         {
             switch (Status)
             {
-                case RequestStatus.Requested:
-                case RequestStatus.InProcess: return Result.Ok();
+                case RequestStatus.Open:
+                case RequestStatus.Filled:
+                    return Result.Ok();
                 case RequestStatus.Cancelled:
                     {
-                        Status = RequestStatus.InProcess;
+                        // Reopen to appropriate state based on capacity
+                        Status = WorkersQuantityWorking >= WorkersQuantity
+                            ? RequestStatus.Filled
+                            : RequestStatus.Open;
                         FinishAt = null;
                         UpdatedAt = now;
                         DurationTerm = DurationTerm.LongTerm;
@@ -331,6 +310,11 @@ namespace Covenant.Common.Entities.Request
             if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
             WorkersQuantity++;
             UpdatedAt = DateTime.Now;
+
+            // If it was filled and we increase capacity, it goes back to Open
+            if (Status == RequestStatus.Filled)
+                Status = RequestStatus.Open;
+
             return Result.Ok();
         }
 
@@ -340,6 +324,11 @@ namespace Covenant.Common.Entities.Request
             if (WorkersQuantity <= 1 || WorkersQuantity <= WorkersQuantityWorking) return Result.Fail($"The order has to have at least {WorkersQuantity} worker");
             WorkersQuantity--;
             UpdatedAt = DateTime.Now;
+
+            // Update status if reducing capacity causes the order to become filled
+            if (WorkersQuantityWorking >= WorkersQuantity && Status == RequestStatus.Open)
+                Status = RequestStatus.Filled;
+
             return Result.Ok();
         }
 

@@ -26,7 +26,6 @@ namespace Covenant.Common.Models.Request
         public string EmploymentType { get; set; }
         public int WorkersQuantity { get; set; }
         public int WorkersQuantityWorking { get; set; }
-        public bool IsOpen { get; set; }
         public bool IsAsap { get; set; }
         public decimal? WorkerRate { get; set; }
         public decimal? WorkerSalary { get; set; }

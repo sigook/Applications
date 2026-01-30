@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'city.dart';
 
-/// Location entity that combines city (with province and country) and address
 class Location extends Equatable {
   final City city;
   final String address;

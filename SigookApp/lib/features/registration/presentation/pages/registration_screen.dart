@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/loading_indicator.dart';
+import '../../../../core/widgets/error_state_widget.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../providers/registration_providers.dart';
 import 'basic_info_page.dart';
@@ -11,13 +13,11 @@ import 'preferences_page.dart';
 import 'documents_page.dart';
 import 'account_page.dart';
 
-/// Wrapper that pre-loads all catalog data before showing the registration form
 class RegistrationScreen extends ConsumerWidget {
   const RegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Pre-load all static catalog data
     final gendersAsync = ref.watch(gendersProvider);
     final identificationTypesAsync = ref.watch(identificationTypesListProvider);
     final languagesAsync = ref.watch(languagesProvider);
@@ -26,7 +26,6 @@ class RegistrationScreen extends ConsumerWidget {
     final availabilityTimeAsync = ref.watch(availabilityTimeListProvider);
     final countriesAsync = ref.watch(countriesListProvider);
 
-    // Check if any are still loading
     final isLoading =
         gendersAsync.isLoading ||
         identificationTypesAsync.isLoading ||
@@ -36,7 +35,6 @@ class RegistrationScreen extends ConsumerWidget {
         availabilityTimeAsync.isLoading ||
         countriesAsync.isLoading;
 
-    // Check if any have errors
     final hasError =
         gendersAsync.hasError ||
         identificationTypesAsync.hasError ||
@@ -47,67 +45,33 @@ class RegistrationScreen extends ConsumerWidget {
         countriesAsync.hasError;
 
     if (isLoading) {
-      return Scaffold(
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Loading registration form...',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
+      return const Scaffold(
+        body: LoadingIndicator(message: 'Loading registration form...'),
       );
     }
 
     if (hasError) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              const Text(
-                'Failed to load registration data',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Please check your connection and try again',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Invalidate all providers to retry
-                  ref.invalidate(gendersProvider);
-                  ref.invalidate(identificationTypesListProvider);
-                  ref.invalidate(languagesProvider);
-                  ref.invalidate(skillsProvider);
-                  ref.invalidate(availabilityListProvider);
-                  ref.invalidate(availabilityTimeListProvider);
-                  ref.invalidate(countriesListProvider);
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
+        body: ErrorStateWidget(
+          title: 'Failed to load registration data',
+          message: 'Please check your connection and try again',
+          onRetry: () {
+            ref.invalidate(gendersProvider);
+            ref.invalidate(identificationTypesListProvider);
+            ref.invalidate(languagesProvider);
+            ref.invalidate(skillsProvider);
+            ref.invalidate(availabilityListProvider);
+            ref.invalidate(availabilityTimeListProvider);
+            ref.invalidate(countriesListProvider);
+          },
         ),
       );
     }
 
-    // All data loaded successfully, show the form
     return const _RegistrationFormScreen();
   }
 }
 
-/// The actual registration form screen (shown only after data is loaded)
 class _RegistrationFormScreen extends ConsumerStatefulWidget {
   const _RegistrationFormScreen();
 
@@ -120,13 +84,11 @@ class _RegistrationFormScreenState
     extends ConsumerState<_RegistrationFormScreen> {
   final ScrollController _scrollController = ScrollController();
 
-  // Total number of steps (0-indexed, so last step is 3)
   static const int _lastStepIndex = 3;
 
   @override
   void initState() {
     super.initState();
-    // Scroll to top when widget is first built
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTop());
   }
 
@@ -149,7 +111,7 @@ class _RegistrationFormScreenState
     final responsive = context.responsive;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
         child: Column(
           children: [
@@ -323,7 +285,6 @@ class _RegistrationFormScreenState
                 ),
               ),
             ),
-            // Bottom sign in link
             Container(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Row(
@@ -433,7 +394,6 @@ class _RegistrationFormScreenState
         ),
       );
 
-      // Navigate to jobs page after successful registration
       context.go(AppRoutes.jobs);
     } else {
       notifier.setError(result);

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/entities/lifting_capacity.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/preferences_info.dart';
-import '../../domain/entities/language.dart';
 import '../../domain/entities/skill.dart';
 import '../../domain/entities/availability_type.dart';
 import '../../domain/entities/available_time.dart';
 import '../../domain/entities/day_of_week.dart';
+import '../../domain/entities/lifting_capacity.dart';
+import '../../domain/entities/language.dart';
 import '../providers/registration_providers.dart';
-import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../widgets/availability_type_selector.dart';
 import '../widgets/availability_time_selector.dart';
 import '../widgets/day_selector.dart';
@@ -43,7 +43,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
   void initState() {
     super.initState();
 
-    // Load existing data if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final form = ref.read(registrationViewModelProvider);
       if (form.preferencesInfo != null) {
@@ -62,11 +61,9 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
 
   void _validateAndSave() {
     setState(() {
-      // Skip validation if no availability type selected yet
-      if (_selectedAvailabilityType == null) return;
-
       final preferencesInfo = PreferencesInfo(
-        availabilityType: _selectedAvailabilityType!,
+        availabilityType:
+            _selectedAvailabilityType ?? AvailabilityType(id: '', value: ''),
         availableTimes: _selectedAvailableTimes,
         availableDays: _selectedDays,
         liftingCapacity: _selectedLiftingCapacity,
@@ -74,19 +71,16 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
         languages: _selectedLanguages,
         skills: _selectedSkills,
       );
+      _availabilityTypeError = null;
+      _availableTimesError = null;
+      _availableDaysError = null;
+      _liftingCapacityError = null;
+      _languagesError = null;
+      _skillsError = null;
 
-      _availabilityTypeError = preferencesInfo.availabilityTypeError;
-      _availableTimesError = preferencesInfo.availableTimesError;
-      _availableDaysError = preferencesInfo.availableDaysError;
-      _liftingCapacityError = preferencesInfo.liftingCapacityError;
-      _languagesError = preferencesInfo.languagesError;
-      _skillsError = preferencesInfo.skillsError;
-
-      if (preferencesInfo.isValid) {
-        ref
-            .read(registrationViewModelProvider.notifier)
-            .updatePreferencesInfo(preferencesInfo);
-      }
+      ref
+          .read(registrationViewModelProvider.notifier)
+          .updatePreferencesInfo(preferencesInfo);
     });
   }
 
@@ -122,7 +116,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 32),
 
-              // Availability Type
               AvailabilityTypeSelector(
                 selectedType: _selectedAvailabilityType,
                 onChanged: (value) {
@@ -135,7 +128,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Available Time
               AvailabilityTimeSelector(
                 selectedTimes: _selectedAvailableTimes,
                 onChanged: (times) {
@@ -148,7 +140,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Available Days
               DaySelector(
                 selectedDays: _selectedDays,
                 onChanged: (days) {
@@ -161,7 +152,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 32),
 
-              // Lifting Capacity Section
               Text(
                 'Physical Capabilities',
                 style: Theme.of(
@@ -172,11 +162,9 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               _buildLiftingCapacitySelector(),
               const SizedBox(height: 24),
 
-              // Vehicle Ownership
               _buildVehicleCheckbox(),
               const SizedBox(height: 32),
 
-              // Languages
               Text(
                 'Professional Skills',
                 style: Theme.of(
@@ -196,7 +184,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
               ),
               const SizedBox(height: 24),
 
-              // Skills
               SkillAutocompleteField(
                 selectedSkills: _selectedSkills,
                 onChanged: (skills) {
@@ -215,7 +202,6 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
   }
 
   Widget _buildLiftingCapacitySelector() {
-    // Fetch lifting capacities from catalog
     final capacitiesAsync = ref.watch(liftingCapacitiesProvider);
     final catalogCapacities = capacitiesAsync.value ?? [];
 
@@ -227,7 +213,7 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+            color: AppTheme.textDark,
           ),
         ),
         if (_liftingCapacityError != null) ...[
@@ -291,7 +277,7 @@ class _PreferencesPageState extends ConsumerState<PreferencesPage> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+            color: AppTheme.textDark,
           ),
         ),
         value: _hasVehicle,

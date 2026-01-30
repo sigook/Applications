@@ -2,15 +2,46 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📚 Comprehensive Documentation
+
+**IMPORTANTE:** Para un entendimiento profundo del negocio, arquitectura, y reglas de negocio, consulta la documentación técnica completa en la carpeta **`.docs/`**:
+
+### Quick Reference
+
+- **[.docs/README.md](.docs/README.md)** - Índice maestro de toda la documentación
+- **[.docs/BUSINESS_MODEL.md](.docs/BUSINESS_MODEL.md)** - Modelo de negocio, actores, flujos principales
+- **[.docs/ARCHITECTURE.md](.docs/ARCHITECTURE.md)** - Stack tecnológico, estructura de capas, módulos
+- **[.docs/ENTITIES_RELATIONSHIPS.md](.docs/ENTITIES_RELATIONSHIPS.md)** - Modelo de datos completo con relaciones
+- **[.docs/API_ENDPOINTS.md](.docs/API_ENDPOINTS.md)** - Documentación de todos los endpoints REST
+- **[.docs/PAYROLL_RULES.md](.docs/PAYROLL_RULES.md)** - Reglas de nómina (CPP, EI, taxes canadienses)
+- **[.docs/BILLING_RULES.md](.docs/BILLING_RULES.md)** - Reglas de facturación (rates, HST/GST, markup)
+- **[.docs/TIMESHEET_RULES.md](.docs/TIMESHEET_RULES.md)** - Cálculo de horas (overtime, night shift, holiday)
+- **[.docs/WORKFLOWS.md](.docs/WORKFLOWS.md)** - Flujos completos paso a paso con código
+
+### How to Use
+
+**Cuando recibas un requerimiento:**
+1. Identifica el área (payroll, billing, timesheets, worker registration, etc.)
+2. Lee el documento relevante de `.docs/`
+3. Implementa siguiendo los patrones y reglas documentadas
+4. Actualiza la documentación si cambias reglas de negocio
+
+**Ejemplo:**
+- Requerimiento: "Modificar el cálculo de overtime en Ontario"
+- Acción: Lee `.docs/TIMESHEET_RULES.md` y `.docs/PAYROLL_RULES.md`
+- Implementa en: `Covenant.Api/Covenant.TimeSheetTotal/`
+- Actualiza documentación si cambian las reglas
+
 ## Repository Overview
 
 This is a monorepo containing the Covenant/Sigook platform applications:
 
 - **SigookApp** - Flutter mobile application for worker registration and job matching
 - **Sigook.Web** - Vue.js 2 main web application for Sigook platform
-- **covenantWeb** - Vue.js 3 marketing/informational website for Covenant
+- **Covenant.Web** - Vue.js 3 marketing/informational website for Covenant
 - **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system (15+ projects)
 - **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
+- **SigookFunctions** - .NET 6 Azure Functions for background processing and scheduled tasks
 
 **Additional Components:**
 - **`.azure-pipelines/`** - CI/CD pipelines with path-based triggers and reusable templates
@@ -260,7 +291,7 @@ docker build --build-arg ENV=production -t sigook-web .
 - Token replacement in `public/**/*.html` and `public/**/*.json` during CI/CD for versioning
 - ESLint configured with relaxed rules (warnings for most issues)
 
-## covenantWeb (Vue.js 3 Marketing Website)
+## Covenant.Web (Vue.js 3 Marketing Website)
 
 ### Architecture
 
@@ -294,7 +325,7 @@ src/
 ### Development Commands
 
 ```bash
-cd covenantWeb
+cd Covenant.Web
 
 # Install dependencies
 npm install
@@ -354,7 +385,7 @@ The API includes VS Code debugging configurations in `Covenant.Api/.vscode/launc
 - Alternative for Cursor users: Use console logging, logger framework, or Visual Studio Community
 - See `Covenant.Api/.vscode/README.md` for details
 
-### Vue.js Applications (Sigook.Web, covenantWeb)
+### Vue.js Applications (Sigook.Web, Covenant.Web)
 - Use browser DevTools for debugging
 - Vue DevTools extension recommended for component inspection
 - `npm run serve` runs with hot-reload for rapid development
@@ -378,7 +409,7 @@ Recent development focuses on:
 
 ## Node.js Version Requirements
 
-The covenantWeb project requires:
+The Covenant.Web project requires:
 - Node.js ^20.19.0 OR >=22.12.0
 
 Use nvm or similar to manage Node versions if needed.
@@ -505,6 +536,93 @@ dotnet test **/Covenant.IdentityServer.Tests.csproj
 - Staging: `sigook-accounts-staging.azurewebsites.net`
 - Production: `sigook-accounts.azurewebsites.net`
 
+## SigookFunctions (Azure Functions .NET 6)
+
+### Architecture
+
+Azure Functions serverless application for background processing, scheduled tasks, and email notifications.
+
+**Tech Stack:**
+- .NET 6.0 with Azure Functions v4
+- SendGrid for email delivery
+- QRCoder for QR code generation
+- Timer triggers for scheduled tasks
+- HTTP triggers for on-demand operations
+
+### Project Structure
+
+```
+SigookFunctions/
+├── SigookFunctions/           # Main Azure Functions project
+│   ├── Functions/             # Azure Function implementations
+│   │   ├── QrCode.cs          # QR code generation (HTTP trigger)
+│   │   ├── ScheduleTasks.cs   # Scheduled tasks (Timer triggers)
+│   │   ├── SendEmail.cs       # Email sending (HTTP trigger)
+│   │   └── SendInvitationToApply.cs  # Job invitations (HTTP trigger)
+│   ├── Models/                # Data models
+│   ├── Options/               # Configuration options classes
+│   ├── Services/              # Business logic services
+│   │   ├── IEmailService.cs / SendGridService.cs
+│   │   ├── ISigookApi.cs / SigookApi.cs
+│   │   ├── ITokenService.cs / TokenService.cs
+│   │   └── INotificationService.cs / NotificationService.cs
+│   ├── Startup.cs             # DI configuration
+│   ├── appsettings.json       # Base configuration
+│   ├── appsettings.Development.json
+│   ├── appsettings.Staging.json
+│   └── appsettings.Production.json
+├── Tests/                     # Unit tests
+└── SigookFunctions.sln
+```
+
+### Development Commands
+
+```bash
+cd SigookFunctions
+
+# Build solution
+dotnet build SigookFunctions.sln
+
+# Run locally (requires Azure Functions Core Tools)
+cd SigookFunctions
+func start
+
+# Run tests
+dotnet test Tests/Tests.csproj
+```
+
+### Functions Overview
+
+| Function | Trigger | Description |
+|----------|---------|-------------|
+| `QrCode` | HTTP (GET/POST) | Generates QR codes |
+| `SendEmail` | HTTP (POST) | Sends emails via SendGrid |
+| `SendInvitationToApply` | HTTP (POST) | Sends job application invitations |
+| `NotificationSinExpiration` | Timer (daily weekdays) | Expiration notifications |
+| `WarnLicensesExpiration` | Timer (daily weekdays) | License expiration warnings |
+| `StartRequests` | Timer (every 20 min) | Processes pending requests |
+
+### Configuration
+
+The project uses `appsettings.{Environment}.json` files for environment-specific configuration:
+
+- **URLs and non-sensitive config** → `appsettings.{env}.json`
+- **Secrets (API keys, credentials)** → Azure Configuration (Environment Variables)
+
+**Required Azure Configuration secrets:**
+- `SendGridApiKey`
+- `ScheduleTasks_ClientId`
+- `ScheduleTasks_ClientSecret`
+- `TeamsWebhook`
+
+### Important Notes
+
+- Uses Dependency Injection with `IOptions<SigookFunctionsOptions>` pattern
+- Requires `Covenant.Common` NuGet package from Azure Artifacts
+- Deployed to Azure Function App (not containerized)
+- Staging: `sigook-functions-staging.azurewebsites.net`
+- Production: `sigook-functions.azurewebsites.net`
+
 ## Azure DevOps Pipelines
 
 The repository uses **path-based triggers** to run pipelines only when relevant files change:
@@ -513,10 +631,11 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 
 - **`.azure-pipelines/sigookapp-pipeline.yml`** - Flutter app CI/CD (placeholder for future implementation)
 - **`.azure-pipelines/sigook-web-pipeline.yml`** - Sigook.Web Vue.js 2 app CI/CD (fully functional)
-- **`.azure-pipelines/covenantweb-pipeline.yml`** - CovenantWeb Vue.js 3 marketing CI/CD (fully functional)
+- **`.azure-pipelines/covenant-web-pipeline.yml`** - Covenant.Web Vue.js 3 marketing CI/CD (fully functional)
 - **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
 - **`.azure-pipelines/covenant-identityserver-pipeline.yml`** - IdentityServer CI/CD (fully functional)
 - **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
+- **`.azure-pipelines/sigookfunctions-pipeline.yml`** - Azure Functions CI/CD (fully functional)
 
 ### Intelligent Triggering
 
@@ -530,12 +649,12 @@ paths:
   exclude:
     - Sigook.Web/**/*.md
 
-# Example: covenantWeb pipeline only triggers on:
+# Example: Covenant.Web pipeline only triggers on:
 paths:
   include:
-    - covenantWeb/**
+    - Covenant.Web/**
   exclude:
-    - covenantWeb/**/*.md
+    - Covenant.Web/**/*.md
 
 # Example: Covenant.Api pipeline only triggers on:
 paths:
@@ -618,7 +737,7 @@ The pipelines use **reusable templates** located in `.azure-pipelines/templates/
 
 ### Pipeline Structure
 
-**CovenantWeb Pipeline (complete):**
+**Covenant.Web Pipeline (complete):**
 1. **Build and Test Job**
    - Install Node.js 20.x with node_modules caching
    - Type checking (vue-tsc)
@@ -710,9 +829,9 @@ echo "test" >> Sigook.Web/src/App.vue
 git add . && git commit -m "test: trigger sigook-web pipeline"
 git push origin dev
 
-# Test CovenantWeb pipeline only
-echo "test" >> covenantWeb/src/App.vue
-git add . && git commit -m "test: trigger covenantweb pipeline"
+# Test Covenant.Web pipeline only
+echo "test" >> Covenant.Web/src/App.vue
+git add . && git commit -m "test: trigger covenant-web pipeline"
 git push origin dev
 
 # Test SigookApp pipeline only

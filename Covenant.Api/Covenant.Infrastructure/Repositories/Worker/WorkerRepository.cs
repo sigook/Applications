@@ -371,7 +371,7 @@ public class WorkerRepository : IWorkerRepository
             .Include(wp => wp.Notes)
             .AsQueryable();
         var workerRequest = _context.WorkerRequest.Include(wr => wr.Request)
-            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status == RequestStatus.InProcess);
+            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status == RequestStatus.Open);
         if (filter.SortBy == GetWorkersProfileSortBy.RequestId)
             workerRequest = workerRequest.AddOrderBy(filter, wr => wr.Request.NumberId);
         if (filter.CompanyProfileId.HasValue)

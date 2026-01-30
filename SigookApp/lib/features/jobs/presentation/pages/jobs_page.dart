@@ -70,28 +70,25 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   }
 
   List<Job> _getFilteredAndSortedJobs(List<Job> jobs) {
-    // Create a mutable copy of the list
     var filtered = List<Job>.from(jobs);
 
-    // Apply filter
     if (_currentFilter != FilterStatus.all) {
       filtered = filtered.where((job) {
         switch (_currentFilter) {
           case FilterStatus.open:
-            return job.status.toLowerCase() == 'open';
+            return job.status?.toLowerCase() == 'open';
           case FilterStatus.booked:
-            return job.status.toLowerCase() == 'booked';
+            return job.status?.toLowerCase() == 'booked';
           case FilterStatus.pending:
-            return job.status.toLowerCase() == 'pending';
+            return job.status?.toLowerCase() == 'pending';
           case FilterStatus.cancelled:
-            return job.status.toLowerCase() == 'cancelled';
+            return job.status?.toLowerCase() == 'cancelled';
           default:
             return true;
         }
       }).toList();
     }
 
-    // Apply sort
     filtered.sort((a, b) {
       switch (_currentSort) {
         case SortOption.dateNewest:

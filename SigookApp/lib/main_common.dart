@@ -2,29 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'core/config/environment.dart';
 import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/constants/error_messages.dart';
 
-/// Common main function shared by all flavors
-/// This is called after the environment-specific .env file is loaded
 Future<void> mainCommon() async {
-  // Initialize storage
-  final sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    debugPrint('📱 Starting app initialization...');
 
-  const secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+    // Print environment configuration for debugging
+    EnvironmentConfig.printConfigSource();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-        secureStorageProvider.overrideWithValue(secureStorage),
-      ],
-      child: const MyApp(),
-    ),
-  );
+    // Validate required configuration values
+    EnvironmentConfig.validateRequiredConfig();
+
+    debugPrint('📦 Loading SharedPreferences...');
+    final sharedPreferences = await SharedPreferences.getInstance();
+
+    debugPrint('🌐 Loading error messages...');
+    await ErrorMessages.load();
+
+    debugPrint('🔐 Initializing secure storage...');
+    const secureStorage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    );
+
+    debugPrint('✅ App initialization complete, running app...');
+    runApp(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          secureStorageProvider.overrideWithValue(secureStorage),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    debugPrint('❌ Error in mainCommon:');
+    debugPrint('Error: $e');
+    debugPrint('Stack trace: $stackTrace');
+    rethrow;
+  }
 }
 
 class MyApp extends ConsumerStatefulWidget {

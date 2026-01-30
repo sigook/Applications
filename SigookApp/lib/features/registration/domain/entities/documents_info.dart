@@ -1,16 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'uploaded_file.dart';
 
-/// Documents information entity
-/// Identification is required (at least one), resume is optional.
 class DocumentsInfo extends Equatable {
-  /// Primary identification document (required)
   final IdentificationDocument? identification1;
-
-  /// Secondary identification document (optional)
   final IdentificationDocument? identification2;
-
-  /// Optional resume file
   final UploadedFile? resume;
 
   const DocumentsInfo({
@@ -19,14 +12,11 @@ class DocumentsInfo extends Equatable {
     this.resume,
   });
 
-  /// Valid when at least one identification document is present
   bool get isValid => identification1 != null;
 
-  /// Check if any documents are present
   bool get hasDocuments =>
       identification1 != null || identification2 != null || resume != null;
 
-  /// Get list of all identifications for display
   List<IdentificationDocument> get identifications {
     final list = <IdentificationDocument>[];
     if (identification1 != null) list.add(identification1!);
@@ -34,7 +24,6 @@ class DocumentsInfo extends Equatable {
     return list;
   }
 
-  /// Creates a copy with updated fields
   DocumentsInfo copyWith({
     IdentificationDocument? identification1,
     IdentificationDocument? identification2,
@@ -51,7 +40,6 @@ class DocumentsInfo extends Equatable {
     );
   }
 
-  /// Convert to JSON for debugging/logging purposes
   Map<String, dynamic> toJson() {
     return {
       if (identification1 != null) 'identification1': identification1!.toJson(),

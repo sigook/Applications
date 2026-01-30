@@ -4,8 +4,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 
-/// Autocomplete dropdown for country selection
-/// Allows user to type and search from API-provided country list
 class CountryAutocompleteField extends ConsumerStatefulWidget {
   final String? selectedCountryId;
   final String? selectedCountryName;
@@ -123,130 +121,136 @@ class _CountryAutocompleteFieldState
                 _controller.text = selection.value;
                 widget.onChanged(selection);
               },
-              fieldViewBuilder: (
-                BuildContext context,
-                TextEditingController fieldTextEditingController,
-                FocusNode fieldFocusNode,
-                VoidCallback onFieldSubmitted,
-              ) {
-                return TextField(
-                  controller: fieldTextEditingController,
-                  focusNode: fieldFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Select or search country...',
-                    prefixIcon: const Icon(Icons.public),
-                    suffixIcon: fieldTextEditingController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              fieldTextEditingController.clear();
-                              widget.onChanged(null);
-                            },
-                          )
-                        : const Icon(Icons.arrow_drop_down),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryBlue,
-                        width: 2,
+              fieldViewBuilder:
+                  (
+                    BuildContext context,
+                    TextEditingController fieldTextEditingController,
+                    FocusNode fieldFocusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return TextField(
+                      controller: fieldTextEditingController,
+                      focusNode: fieldFocusNode,
+                      decoration: InputDecoration(
+                        hintText: 'Select or search country...',
+                        prefixIcon: const Icon(Icons.public),
+                        suffixIcon: fieldTextEditingController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  fieldTextEditingController.clear();
+                                  widget.onChanged(null);
+                                },
+                              )
+                            : const Icon(Icons.arrow_drop_down),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppTheme.primaryBlue,
+                            width: 2,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppTheme.errorRed,
+                            width: 2,
+                          ),
+                        ),
+                        errorText: widget.errorText,
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppTheme.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                    errorText: widget.errorText,
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                );
-              },
-              optionsViewBuilder: (
-                BuildContext context,
-                AutocompleteOnSelected<CatalogItem> onSelected,
-                Iterable<CatalogItem> options,
-              ) {
-                return Align(
-                  alignment: Alignment.topLeft,
-                  child: Material(
-                    elevation: 4.0,
-                    borderRadius: BorderRadius.circular(12),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxHeight: 300,
-                        maxWidth: 400,
-                      ),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shrinkWrap: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: options.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final CatalogItem option = options.elementAt(index);
-                          final bool isSelected =
-                              widget.selectedCountryId == option.id;
-                          return InkWell(
-                            onTap: () {
-                              onSelected(option);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              color: isSelected
-                                  ? AppTheme.primaryBlue.withValues(alpha: 0.1)
-                                  : null,
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.public,
-                                    size: 20,
-                                    color: isSelected
-                                        ? AppTheme.primaryBlue
-                                        : Colors.grey,
+                    );
+                  },
+              optionsViewBuilder:
+                  (
+                    BuildContext context,
+                    AutocompleteOnSelected<CatalogItem> onSelected,
+                    Iterable<CatalogItem> options,
+                  ) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        elevation: 4.0,
+                        borderRadius: BorderRadius.circular(12),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 300,
+                            maxWidth: 400,
+                          ),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shrinkWrap: true,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final CatalogItem option = options.elementAt(
+                                index,
+                              );
+                              final bool isSelected =
+                                  widget.selectedCountryId == option.id;
+                              return InkWell(
+                                onTap: () {
+                                  onSelected(option);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      option.value,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppTheme.primaryBlue.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : null,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.public,
+                                        size: 20,
                                         color: isSelected
                                             ? AppTheme.primaryBlue
-                                            : Colors.black87,
+                                            : Colors.grey,
                                       ),
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          option.value,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                            color: isSelected
+                                                ? AppTheme.primaryBlue
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        const Icon(
+                                          Icons.check,
+                                          size: 20,
+                                          color: AppTheme.primaryBlue,
+                                        ),
+                                    ],
                                   ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check,
-                                      size: 20,
-                                      color: AppTheme.primaryBlue,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  },
             ),
           ],
         );

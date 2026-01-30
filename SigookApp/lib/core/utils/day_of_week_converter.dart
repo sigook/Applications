@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../constants/enums.dart';
 
-/// JSON converter for DayOfWeek enum
 class DayOfWeekConverter implements JsonConverter<DayOfWeek, String> {
   const DayOfWeekConverter();
 

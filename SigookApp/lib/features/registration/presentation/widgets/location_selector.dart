@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/province.dart';
@@ -65,7 +66,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
                 code: null,
               );
               widget.onCountryChanged(country);
-              // Reset province and city when country changes
               widget.onProvinceChanged(null);
               widget.onCityChanged(null);
             } else {
@@ -79,8 +79,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           enabled: true,
         ),
         const SizedBox(height: 16),
-
-        // Province/State - searchable dropdown, enabled only when country selected
         _buildDropdown(
           label: 'Province/State',
           value: widget.selectedProvince,
@@ -94,7 +92,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
                 country: widget.selectedCountry!,
               );
               widget.onProvinceChanged(province);
-              // Reset city when province changes
               widget.onCityChanged(null);
             } else {
               widget.onProvinceChanged(null);
@@ -107,7 +104,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
         ),
         const SizedBox(height: 16),
 
-        // City - searchable dropdown, enabled only when province selected
         _buildDropdown(
           label: 'City',
           value: widget.selectedCity,
@@ -142,7 +138,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     bool isLoading = false,
     bool enabled = true,
   }) {
-    // Derive the selected display label and option labels from items
     String? selectedLabel;
     if (value != null) {
       if (value is Country) {
@@ -154,9 +149,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
       }
     }
 
-    // When disabled, show a non-interactive dropdown-style field with a hint
     if (!enabled) {
-      // More explicit dependency messages
       String dependencyLabel;
       if (label == 'Province/State') {
         dependencyLabel = 'country';
@@ -176,7 +169,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 8),
@@ -221,7 +214,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           return;
         }
 
-        // Manual search to avoid type issues with firstWhere's orElse
         dynamic selectedItem;
         for (final item in items) {
           if (item.value == selectedText) {

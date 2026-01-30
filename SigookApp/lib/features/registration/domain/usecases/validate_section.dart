@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 
-/// Parameters for section validation
 class ValidateSectionParams {
   final String sectionName;
   final dynamic sectionData;
@@ -10,12 +9,10 @@ class ValidateSectionParams {
   ValidateSectionParams({required this.sectionName, required this.sectionData});
 }
 
-/// Use case for validating individual form sections
 class ValidateSection implements UseCase<bool, ValidateSectionParams> {
   @override
   Future<Either<Failure, bool>> call(ValidateSectionParams params) async {
     try {
-      // Validate based on section type
       final isValid = _validateSection(params.sectionData);
 
       if (!isValid) {
@@ -31,7 +28,6 @@ class ValidateSection implements UseCase<bool, ValidateSectionParams> {
   }
 
   bool _validateSection(dynamic sectionData) {
-    // Check if section data has isValid method
     if (sectionData == null) return false;
 
     try {

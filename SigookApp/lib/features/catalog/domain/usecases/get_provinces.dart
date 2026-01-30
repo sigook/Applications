@@ -3,7 +3,6 @@ import '../../../../core/error/failures.dart';
 import '../entities/catalog_item.dart';
 import '../repositories/catalog_repository.dart';
 
-/// Use case for getting provinces by country ID
 class GetProvinces {
   final CatalogRepository repository;
 

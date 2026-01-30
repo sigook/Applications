@@ -1,0 +1,56 @@
+{
+  "network": {
+    "error": "No internet connection. Please check your network settings.",
+    "timeout": "Connection timeout. Please try again.",
+    "server_error": "Server error occurred. Please try again later.",
+    "unknown": "An unexpected error occurred. Please try again."
+  },
+  "authentication": {
+    "failed": "Authentication failed. Please sign in again.",
+    "token_expired": "Your session has expired. Please sign in again.",
+    "user_cancelled": "Sign in was cancelled.",
+    "invalid_credentials": "Invalid credentials. Please check and try again."
+  },
+  "validation": {
+    "required_field": "This field is required.",
+    "invalid_email": "Please enter a valid email address.",
+    "invalid_phone": "Please enter a valid phone number.",
+    "invalid_date": "Please select a valid date.",
+    "password_too_short": "Password must be at least 8 characters.",
+    "password_mismatch": "Passwords do not match."
+  },
+  "permission": {
+    "location_denied": "Location permission denied. Please enable it in settings.",
+    "camera_denied": "Camera permission denied. Please enable it in settings.",
+    "storage_denied": "Storage permission denied. Please enable it in settings."
+  },
+  "data": {
+    "not_found": "Data not found.",
+    "load_failed": "Failed to load data. Please try again.",
+    "save_failed": "Failed to save data. Please try again.",
+    "delete_failed": "Failed to delete data. Please try again."
+  },
+  "file": {
+    "pick_failed": "Failed to pick file. Please try again.",
+    "upload_failed": "Failed to upload file. Please try again.",
+    "too_large": "File is too large. Maximum size is 10MB.",
+    "invalid_type": "Invalid file type. Please select a valid file."
+  },
+  "location": {
+    "service_disabled": "Location services are disabled. Please enable them.",
+    "unavailable": "Unable to get your location. Please try again."
+  },
+  "job": {
+    "not_found": "Job not found.",
+    "application_failed": "Failed to apply for job. Please try again.",
+    "timesheet_submit_failed": "Failed to submit timesheet. Please try again."
+  },
+  "profile": {
+    "load_failed": "Failed to load profile. Please try again.",
+    "update_failed": "Failed to update profile. Please try again."
+  },
+  "registration": {
+    "failed": "Registration failed. Please try again.",
+    "data_load_failed": "Failed to load registration data. Please check your connection and try again."
+  }
+}

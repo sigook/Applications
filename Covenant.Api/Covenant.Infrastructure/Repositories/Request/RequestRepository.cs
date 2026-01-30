@@ -84,7 +84,6 @@ public class RequestRepository : IRequestRepository
                         CompanyProfileId = cp.Id,
                         Status = r.Status.ToString(),
                         RequestStatus = r.Status,
-                        IsOpen = r.IsOpen,
                         IsAsap = r.IsAsap,
                         WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
@@ -141,15 +140,7 @@ public class RequestRepository : IRequestRepository
             predicate = predicate.And(r => r.WorkerRate >= filter.RateFrom.Value && r.WorkerRate <= filter.RateTo.Value);
         if (filter.Statuses != null && filter.Statuses.Any())
         {
-            if (filter.Statuses.Any(s => s != RequestStatus.Open && s != RequestStatus.NoOpen))
-                predicate = predicate.And(r => filter.Statuses.Contains(r.RequestStatus));
-            if (filter.Statuses.Count(s => s == RequestStatus.Open || s == RequestStatus.NoOpen) < 2)
-            {
-                if (filter.Statuses.Any(s => s == RequestStatus.Open))
-                    predicate = predicate.And(r => r.IsOpen);
-                else if (filter.Statuses.Any(s => s == RequestStatus.NoOpen))
-                    predicate = predicate.And(r => !r.IsOpen);
-            }
+            predicate = predicate.And(r => filter.Statuses.Contains(r.RequestStatus));
         }
         if (!string.IsNullOrWhiteSpace(filter.Filter))
             predicate = predicate.And(r =>
@@ -196,12 +187,11 @@ public class RequestRepository : IRequestRepository
 
     public async Task<IEnumerable<JobViewModel>> GetAvailableRequest(IEnumerable<string> countries)
     {
-        var openStatus = new RequestStatus[] { RequestStatus.Requested, RequestStatus.InProcess };
+        var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = _context.Request.Include(r => r.Shift)
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Join(_context.CompanyProfile.Where(cp => cp.Active), r => r.CompanyId, cp => cp.CompanyId, (r, cp) => r)
             .Where(r => openStatus.Contains(r.Status))
-            .Where(r => r.IsOpen)
             .Where(r => countries.Contains(r.JobLocation.City.Province.Country.Code))
             .Select(r => new JobViewModel
             {
@@ -390,7 +380,8 @@ public class RequestRepository : IRequestRepository
 
     private Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(Guid companyId, GetRequestForCompanyFilter filter)
     {
-        var statusToVisualize = new RequestStatus[] { RequestStatus.Requested, RequestStatus.InProcess };
+        // Companies can see Open and Filled orders (InProgress was removed 2026-01-28)
+        var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.Filled };
         Expression<Func<RequestListModel, bool>> predicate = r => r.CompanyId == companyId && statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
@@ -707,7 +698,7 @@ public class RequestRepository : IRequestRepository
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
     {
         var workerProfile = await _context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
-        var openStatus = new RequestStatus[] { RequestStatus.Requested, RequestStatus.InProcess };
+        var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = Enumerable.Empty<WorkerRequestListModel>();
         var ownRequest = _context.Request.Include(wr => wr.Agency)
             .Join(_context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked), r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
@@ -735,7 +726,7 @@ public class RequestRepository : IRequestRepository
         {
             var requestToExclude = _context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
             var availableRequest = _context.Request.Include(r => r.Agency)
-                .Where(r => r.IsOpen && openStatus.Contains(r.Status))
+                .Where(r => openStatus.Contains(r.Status))
                 .Where(r => r.AgencyId == workerProfile.AgencyId)
                 .Where(r => !requestToExclude.Any(rte => rte.RequestId == r.Id))
                 .Where(r => !ownRequest.Any(or => or.Id == r.Id))
@@ -944,20 +935,6 @@ public class RequestRepository : IRequestRepository
     public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => _context.RequestFinalizationDetail.SingleOrDefaultAsync(s => s.RequestId == requestId);
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
-    public async Task PutRequestInProgress()
-    {
-        if (!_context.Database.IsNpgsql()) return;
-        DateTime now = _timeService.GetCurrentDateTime();
-        var requests = await _context.Request.Where(c => c.Status == RequestStatus.Requested && c.StartAt != null && now > c.StartAt).ToListAsync();
-        foreach (var request in requests)
-        {
-            Result result = request.PutInProcess();
-            if (!result) continue;
-            _context.Request.Update(request);
-            await _context.SaveChangesAsync();
-        }
-    }
 
     public Task<RequestContactPersonDetailModel> GetRequestedByDetail(Guid requestId, Guid contactPersonId) =>
         _context.RequestRequestedBy.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)

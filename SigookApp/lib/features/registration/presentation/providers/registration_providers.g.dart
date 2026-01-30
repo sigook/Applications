@@ -8,19 +8,16 @@ part of 'registration_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Form state provider for UI controls (current step, loading states, etc.)
 
 @ProviderFor(RegistrationFormStateNotifier)
 const registrationFormStateProvider = RegistrationFormStateNotifierProvider._();
 
-/// Form state provider for UI controls (current step, loading states, etc.)
 final class RegistrationFormStateNotifierProvider
     extends
         $NotifierProvider<
           RegistrationFormStateNotifier,
           RegistrationFormState
         > {
-  /// Form state provider for UI controls (current step, loading states, etc.)
   const RegistrationFormStateNotifierProvider._()
     : super(
         from: null,
@@ -50,8 +47,6 @@ final class RegistrationFormStateNotifierProvider
 
 String _$registrationFormStateNotifierHash() =>
     r'392152c872ff9e9d659c94bd345ad25b30dda160';
-
-/// Form state provider for UI controls (current step, loading states, etc.)
 
 abstract class _$RegistrationFormStateNotifier
     extends $Notifier<RegistrationFormState> {

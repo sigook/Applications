@@ -51,7 +51,6 @@ public interface IRequestRepository
     Task<RequestComission> GetRequestComission(Guid requestId);
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
     Task SaveChangesAsync();
-    Task PutRequestInProgress();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
     Task<bool> ExistsRequestByNumber(int orderId);
 }

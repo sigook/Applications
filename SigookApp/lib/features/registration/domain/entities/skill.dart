@@ -5,12 +5,9 @@ class Skill extends Equatable {
 
   const Skill({required this.skill});
 
-  // For backward compatibility
   String get value => skill;
 
-  Map<String, dynamic> toJson() => {
-    'skill': skill,
-  };
+  Map<String, dynamic> toJson() => {'skill': skill};
 
   @override
   List<Object?> get props => [skill];

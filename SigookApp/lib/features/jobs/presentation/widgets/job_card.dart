@@ -18,7 +18,7 @@ class JobCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          context.push(AppRoutes.jobDetails, extra: job);
+          context.push(AppRoutes.jobDetails, extra: job.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -28,28 +28,26 @@ class JobCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  if (job.agencyLogo != null)
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(8),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.primaryBlue.withValues(alpha: 0.1),
+                          AppTheme.tertiaryBlue.withValues(alpha: 0.1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          job.agencyLogo!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.business,
-                              color: Colors.grey.shade400,
-                            );
-                          },
-                        ),
-                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Icon(
+                      Icons.work_outline,
+                      color: AppTheme.primaryBlue,
+                      size: 28,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -90,14 +88,6 @@ class JobCard extends StatelessWidget {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          job.agencyFullName,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -121,24 +111,27 @@ class JobCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(job.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      job.status,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _getStatusColor(job.status),
+                  if (job.status != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(
+                          job.status,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        job.status!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(job.status),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -172,7 +165,7 @@ class JobCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withOpacity(0.1),
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -251,8 +244,8 @@ class JobCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase() ?? '') {
       case 'booked':
         return AppTheme.successGreen;
       case 'pending':

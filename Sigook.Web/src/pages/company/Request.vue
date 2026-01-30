@@ -25,7 +25,7 @@
             <button class="floating-menu-item" v-on:click="editContentModal = true">
               <span>Edit Requirements</span>
             </button>
-            <button class="floating-menu-item" v-on:click="modalValidation = true">
+            <button class="floating-menu-item" v-if="canCancel" v-on:click="modalValidation = true">
               <span>{{ $t("CancelRequest") }}</span>
             </button>
           </template>
@@ -186,10 +186,13 @@ export default {
   },
   computed: {
     canEdit() {
-      if (this.request.status === this.$statusFinalized) {
-        return false;
-      }
-      return this.request.status !== this.$statusCancelled;
+      return this.request.status === this.$statusOpen ||
+             this.request.status === this.$statusFilled;
+    },
+    canCancel() {
+      // Can only cancel orders in Open status without workers
+      return this.request.status === this.$statusOpen &&
+             (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
     },
   },
 };

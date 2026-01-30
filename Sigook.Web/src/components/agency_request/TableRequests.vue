@@ -86,7 +86,7 @@
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <span
-              v-if="(props.row.status === $statusFinalized || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+              v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <agency-shift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
@@ -163,31 +163,16 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <b-tooltip :label="$t(props.row.status)" type="is-dark">
-              <img
-                v-if="props.row.workersQuantityWorking >= props.row.workersQuantity && props.row.status !== $statusCancelled"
-                src="../../assets/images/check_white.png" alt="check" class="request-check" />
-              <div class="dot-status" :class="'status-' + props.row.status.toLowerCase()"></div>
-            </b-tooltip>
-            <i v-if="props.row.isOpen" class="fz-2 block">
-              <span v-if="canEdit(props.row.status)" class="tag-yellow">
-                {{ $statusOpen }}
-              </span>
-              <span v-else>
-                {{ $statusNotFilled }}
-              </span>
-            </i>
-            <i class="fz-2 block" v-else>
-              <span v-if="props.row.status === $statusCancelled">
-                {{ $statusCancelled }}
-              </span>
-              <span v-else-if="props.row.workersQuantityWorking < props.row.workersQuantity">
-                {{ $statusNotFilled }}
-              </span>
-              <span v-else>
-                {{ $statusFilled }}
-              </span>
-            </i>
+            <div class="text-center">
+              <b-tooltip :label="$t(props.row.status)" type="is-dark">
+                <div class="status-dot-container">
+                  <img
+                    v-if="props.row.status === $statusFilled"
+                    src="../../assets/images/check_white.png" alt="check" class="request-check" />
+                  <div class="dot-status" :class="getStatusClass(props.row)"></div>
+                </div>
+              </b-tooltip>
+            </div>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
@@ -258,11 +243,9 @@ export default {
       currentRequest: null,
       currentIndex: null,
       statuses: [
-        { id: 0, value: this.$statusDisplayRequested },
-        { id: 1, value: this.$statusDisplayInProcess },
-        { id: 2, value: this.$statusDisplayCancelled },
-        { id: 3, value: this.$statusDisplayOpen },
-        { id: 4, value: this.$statusDisplayNoOpen }
+        { id: 1, value: this.$statusDisplayOpen },
+        { id: 3, value: this.$statusDisplayFilled },
+        { id: 4, value: this.$statusDisplayCancelled }
       ],
       statusesSelected: [],
       lastUpdateDatesSelected: [],
@@ -399,8 +382,17 @@ export default {
     },
     canEdit(status) {
       return (
-        status === this.$statusRequested || status === this.$statusInProcess
+        status === this.$statusOpen ||
+        status === this.$statusFilled
       );
+    },
+    getStatusClass(row) {
+      if (row.status === this.$statusOpen &&
+          row.workersQuantityWorking > 0 &&
+          row.workersQuantityWorking < row.workersQuantity) {
+        return 'status-inprogress';
+      }
+      return 'status-' + row.status.toLowerCase();
     },
     updateWorkers(item) {
       this.rows[this.currentIndex].workersQuantityWorking = item;

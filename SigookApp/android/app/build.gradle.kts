@@ -1,11 +1,23 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Load keystore properties from key.properties file (local development)
+// or from environment variables (CI/CD)
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "com.example.sigook_app_flutter"
+    namespace = "com.sigook.beta"
 
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -20,14 +32,37 @@ android {
         jvmTarget = "17"   // ← string, not JavaVersion.VERSION_17
     }
 
+    // Signing configuration for release builds
+    signingConfigs {
+        create("release") {
+            // Try key.properties first (local), then environment variables (CI/CD)
+            // Note: For PKCS12 keystores, storePassword and keyPassword are the same
+            storeFile = file(
+                keystoreProperties.getProperty("storeFile")
+                    ?: System.getenv("KEYSTORE_FILE")
+                    ?: "sigook-release.keystore"
+            )
+            storePassword = keystoreProperties.getProperty("storePassword")
+                ?: System.getenv("KEY_PASSWORD")
+                ?: ""
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+                ?: System.getenv("KEY_ALIAS")
+                ?: "sigook"
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+                ?: System.getenv("KEY_PASSWORD")
+                ?: ""
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.example.sigook_app_flutter"
+        applicationId = "com.sigook.beta"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
         // Required for flutter_appauth
+        // Must match IdentityServer Android client RedirectUris: sigookcallback://
         manifestPlaceholders["appAuthRedirectScheme"] = "sigookcallback"
         
         // Add multiDex support
@@ -39,7 +74,7 @@ android {
     productFlavors {
         create("staging") {
             dimension = "environment"
-            applicationIdSuffix = ".staging"
+            // Note: No applicationIdSuffix - Google Play requires com.sigook.beta for all tracks
             versionNameSuffix = "-staging"
             resValue("string", "app_name", "Sigook (Staging)")
         }
@@ -51,8 +86,18 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Debug builds don't need signing
+            applicationIdSuffix = ".debug"
+        }
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

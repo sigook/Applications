@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthTokenModel> signIn();
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
+  Future<bool> validateToken(String accessToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -46,14 +47,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       debugPrint('⚠️ PlatformException during sign-in: ${e.code}');
       debugPrint('   Details: ${e.details}');
 
-      if (e.code == 'authorize_and_exchange_code_failed') {
-        final details = e.details as Map<String, dynamic>?;
+      // Handle user cancellation (webview closed)
+      if (e.code == 'authorize_and_exchange_code_failed' ||
+          e.code == 'CANCELED' ||
+          e.message?.toLowerCase().contains('user cancel') == true) {
+        final details = e.details is Map
+            ? Map<String, dynamic>.from(e.details as Map)
+            : null;
         final userCancelled = details?['user_did_cancel'] == true;
 
         debugPrint('   User cancelled: $userCancelled');
+        debugPrint('   Error code: ${e.code}');
 
-        if (userCancelled) {
-          debugPrint('✅ User cancelled sign-in - treating as user action');
+        if (userCancelled || e.code == 'CANCELED') {
+          debugPrint(
+            '✅ User cancelled sign-in (closed webview) - treating as user action',
+          );
           throw ServerException(message: 'User cancelled authentication');
         }
       }
@@ -71,44 +80,61 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw NetworkException('No internet connection');
     }
 
+    debugPrint('🔐 Starting logout process...');
+
     try {
-      final request = EndSessionRequest(
+      // Use AppAuth's endSession to properly logout with browser/webview
+      // This is required because IdentityServer needs cookie-based session context
+      final EndSessionRequest endSessionRequest = EndSessionRequest(
         idTokenHint: idToken,
         postLogoutRedirectUrl: EnvironmentConfig.postLogoutRedirectUri,
         issuer: EnvironmentConfig.authority,
       );
 
-      debugPrint('🔐 Starting logout session...');
-      await appAuth.endSession(request);
-      debugPrint('✅ Logout session completed successfully');
-    } on PlatformException catch (e) {
-      debugPrint('⚠️ PlatformException during logout: ${e.code}');
+      debugPrint('📤 [LOGOUT] Calling endSession with AppAuth...');
+      debugPrint('   ID Token Hint: ${idToken.substring(0, 20)}...');
+      debugPrint(
+        '   Post Logout Redirect: ${EnvironmentConfig.postLogoutRedirectUri}',
+      );
+
+      final EndSessionResponse response = await appAuth.endSession(
+        endSessionRequest,
+      );
+
+      debugPrint('✅ [LOGOUT] EndSession completed');
+      debugPrint('   Response state: ${response.state}');
+        } on PlatformException catch (e) {
+      debugPrint('⚠️ [LOGOUT] PlatformException during endSession: ${e.code}');
+      debugPrint('   Message: ${e.message}');
       debugPrint('   Details: ${e.details}');
 
-      // Handle user cancellation gracefully
+      // Check if it's the state mismatch error (code 9)
       if (e.code == 'end_session_failed') {
-        final details = e.details as Map<String, dynamic>?;
-        final userCancelled = details?['user_did_cancel'] == true;
+        final details = e.details is Map
+            ? Map<String, dynamic>.from(e.details as Map)
+            : null;
+        final errorCode = details?['code'];
 
-        debugPrint('   User cancelled: $userCancelled');
-
-        if (userCancelled) {
-          // User cancelled the logout flow - this is acceptable
+        // State mismatch (code 9) can happen but logout may still be successful
+        // This occurs when the redirect doesn't include state parameter
+        if (errorCode == 9 || errorCode == '9') {
           debugPrint(
-            '✅ User cancelled logout - treating as successful (tokens will be cleared)',
+            '   State mismatch detected - this is expected with some providers',
           );
+          debugPrint('   Logout on server side should still be successful');
+          // Don't throw - allow logout to complete locally
           return;
         }
       }
 
-      // For other platform exceptions, rethrow as server exception
-      debugPrint('❌ Rethrowing as ServerException');
-      throw ServerException(message: 'Logout failed: ${e.message}');
+      // For other errors, log but don't fail - local logout still happens
+      debugPrint('   Continuing with local logout...');
     } catch (e) {
-      debugPrint('❌ Unexpected error during logout: $e');
-      if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Logout failed: ${e.toString()}');
+      debugPrint('⚠️ [LOGOUT] Unexpected error during endSession: $e');
+      debugPrint('   Continuing with local logout...');
     }
+
+    debugPrint('✅ Logout process completed');
   }
 
   @override
@@ -131,6 +157,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Token refresh error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<bool> validateToken(String accessToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final response = await dio.get(
+        '/auth/validate',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        return false;
+      }
+      throw ServerException(message: 'Token validation error: ${e.message}');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Token validation error: ${e.toString()}');
     }
   }
 }
