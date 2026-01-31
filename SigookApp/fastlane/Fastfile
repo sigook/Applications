@@ -25,6 +25,14 @@ default_platform(:ios)
 APPLE_TEAM_ID = ENV["APPLE_TEAM_ID"] || "NGXFWU4H7Z"
 APPLE_TEAM_NAME = ENV["APPLE_TEAM_NAME"] || "SIGOOK CORPORATION"
 
+# Environment configuration
+# Staging: com.sigook.beta, app name "Sigook Beta"
+# Production: com.sigook.app, app name "Sigook"
+STAGING_BUNDLE_ID = "com.sigook.beta"
+PRODUCTION_BUNDLE_ID = "com.sigook.app"
+STAGING_APP_NAME = "Sigook Beta"
+PRODUCTION_APP_NAME = "Sigook"
+
 # ============================================
 # iOS Lanes
 # ============================================
@@ -119,6 +127,115 @@ platform :ios do
     UI.message("IPA location: #{output_path}/SigookApp.ipa")
   end
 
+  desc "Build and sign iOS app for production (App Store distribution)"
+  lane :production do |options|
+    # Update bundle identifier for production
+    update_app_identifier(
+      xcodeproj: File.expand_path("../ios/Runner.xcodeproj", __dir__),
+      plist_path: "Runner/Info.plist",
+      app_identifier: PRODUCTION_BUNDLE_ID
+    )
+
+    # Update app display name for production
+    update_info_plist(
+      xcodeproj: File.expand_path("../ios/Runner.xcodeproj", __dir__),
+      plist_path: "Runner/Info.plist",
+      block: proc do |plist|
+        plist["CFBundleDisplayName"] = PRODUCTION_APP_NAME
+        plist["CFBundleName"] = PRODUCTION_APP_NAME
+      end
+    )
+
+    UI.message("📱 Building production app: #{PRODUCTION_BUNDLE_ID} (#{PRODUCTION_APP_NAME})")
+
+    # Find the installed provisioning profile for production
+    # Look for profile matching production bundle ID
+    profile_path = nil
+    Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).each do |path|
+      content = `security cms -D -i "#{path}" 2>/dev/null`
+      if content.include?(PRODUCTION_BUNDLE_ID)
+        profile_path = path
+        break
+      end
+    end
+
+    # Fallback to first available profile if production-specific not found
+    if profile_path.nil?
+      profile_path = Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).first
+      UI.important("⚠️ Production profile not found, using fallback: #{profile_path}")
+    end
+
+    if profile_path.nil?
+      UI.user_error!("❌ No provisioning profile found")
+    end
+
+    # Extract UUID from the provisioning profile
+    profile_content = `security cms -D -i "#{profile_path}"`
+    profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
+    profile_name = profile_content.match(/<key>Name<\/key>\s*<string>([^<]+)<\/string>/)[1]
+
+    UI.message("📝 Using provisioning profile:")
+    UI.message("   Name: #{profile_name}")
+    UI.message("   UUID: #{profile_uuid}")
+
+    # Configure Xcode project with manual signing
+    require 'xcodeproj'
+    project_path = '../ios/Runner.xcodeproj'
+    project = Xcodeproj::Project.open(project_path)
+
+    project.targets.each do |target|
+      if target.name == 'Runner'
+        target.build_configurations.each do |config|
+          UI.message("Configuring #{config.name} for manual signing...")
+          config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+          config.build_settings['DEVELOPMENT_TEAM'] = APPLE_TEAM_ID
+          config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+          config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
+          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_uuid
+          config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = PRODUCTION_BUNDLE_ID
+        end
+      end
+    end
+
+    project.save
+    UI.success("✅ Manual signing configured for production")
+
+    # Build paths
+    workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
+    output_path = File.expand_path("../output", __dir__)
+    archive_path = File.expand_path("../build/ios/Runner.xcarchive", __dir__)
+
+    code_sign_identity = "Apple Distribution: #{APPLE_TEAM_NAME} (#{APPLE_TEAM_ID})"
+
+    gym(
+      workspace: workspace_path,
+      scheme: "Runner",
+      export_method: "app-store",
+      export_team_id: APPLE_TEAM_ID,
+      codesigning_identity: code_sign_identity,
+      export_options: {
+        method: "app-store",
+        teamID: APPLE_TEAM_ID,
+        compileBitcode: false,
+        provisioningProfiles: {
+          PRODUCTION_BUNDLE_ID => profile_name
+        }
+      },
+      output_directory: output_path,
+      output_name: "SigookApp.ipa",
+      clean: true,
+      skip_build_archive: false,
+      archive_path: archive_path,
+      export_xcargs: "-allowProvisioningUpdates",
+      xcargs: "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID} CODE_SIGN_IDENTITY='#{code_sign_identity}' PRODUCT_BUNDLE_IDENTIFIER=#{PRODUCTION_BUNDLE_ID}",
+      silent: false,
+      verbose: true
+    )
+
+    UI.success("✅ iOS Production IPA built successfully!")
+    UI.message("IPA location: #{output_path}/SigookApp.ipa")
+  end
+
   desc "Run iOS tests"
   lane :test do
     workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
@@ -193,6 +310,26 @@ platform :android do
     UI.success("✅ Android AAB built and signed successfully!")
   end
 
+  desc "Build and sign Android app bundle for production"
+  lane :production do |options|
+    android_path = File.expand_path("../android", __dir__)
+    gradle(
+      project_dir: android_path,
+      task: "bundle",
+      flavor: "production",
+      build_type: "Release",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEY_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+
+    UI.success("✅ Android Production AAB built and signed successfully!")
+  end
+
   desc "Build APK for local testing"
   lane :apk do
     # Use absolute path for gradle to avoid path resolution issues
@@ -219,14 +356,24 @@ platform :android do
 
   desc "Deploy to Google Play Store (Internal Testing)"
   lane :deploy do |options|
-    # Find the AAB file
-    aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/stagingRelease/*.aab", __dir__)).first
+    # Determine environment (default: staging)
+    environment = options[:environment] || "staging"
 
-    if aab_path.nil? || !File.exist?(aab_path)
-      UI.user_error!("❌ AAB not found. Build the app first with 'fastlane android beta'")
+    # Set package name and AAB path based on environment
+    if environment == "production"
+      package_name = PRODUCTION_BUNDLE_ID
+      aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/productionRelease/*.aab", __dir__)).first
+    else
+      package_name = STAGING_BUNDLE_ID
+      aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/stagingRelease/*.aab", __dir__)).first
     end
 
-    UI.message("📤 Uploading to Google Play: #{aab_path}")
+    if aab_path.nil? || !File.exist?(aab_path)
+      UI.user_error!("❌ AAB not found at expected path. Build the app first with 'fastlane android #{environment}'")
+    end
+
+    UI.message("📤 Uploading to Google Play (#{environment}): #{aab_path}")
+    UI.message("📦 Package name: #{package_name}")
 
     # Get and decode the Google Play JSON key (base64 encoded in Azure DevOps)
     json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
@@ -247,13 +394,13 @@ platform :android do
       track: "internal",
       aab: aab_path,
       json_key_data: json_key_data,
-      package_name: "com.sigook.beta",
+      package_name: package_name,
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
-    
-    UI.success("✅ Successfully uploaded to Google Play Internal Testing!")
+
+    UI.success("✅ Successfully uploaded #{environment} build to Google Play Internal Testing!")
   end
 
   desc "Clean Android build artifacts"

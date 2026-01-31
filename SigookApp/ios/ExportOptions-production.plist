@@ -13,10 +13,12 @@
     
     <!-- Provisioning profiles mapping -->
     <!-- Key: Bundle ID, Value: Provisioning Profile Name -->
+    <!-- IMPORTANT: Update the profile name after creating it in Apple Developer Portal -->
+    <!-- To get the exact name, run: security cms -D -i "sigook-production.mobileprovision" | grep -A1 "Name" -->
     <key>provisioningProfiles</key>
     <dict>
         <key>com.sigook.app</key>
-        <string>Sigook App App Store</string>
+        <string>Sigook Production Distribution</string>
     </dict>
     
     <!-- Code signing style -->

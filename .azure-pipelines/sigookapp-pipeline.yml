@@ -50,6 +50,24 @@ variables:
     value: 'production'
   ${{ else }}:
     value: 'staging'
+# Flutter build flavor (matches productFlavors in build.gradle.kts)
+- name: flavor
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'staging'
+# Flutter entry point file
+- name: entryPoint
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'lib/main_production.dart'
+  ${{ else }}:
+    value: 'lib/main_staging.dart'
+# Fastlane lane name
+- name: fastlaneLane
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'beta'
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
@@ -344,11 +362,11 @@ stages:
           fi
 
           flutter build appbundle \
-            --flavor staging \
-            -t lib/main_staging.dart \
+            --flavor $(flavor) \
+            -t $(entryPoint) \
             --release \
             --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=staging \
+            --dart-define=ENVIRONMENT=$(environment) \
             "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
             "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
             "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
@@ -357,8 +375,8 @@ stages:
             "--dart-define=SCOPES=$(SCOPES)" \
             "--dart-define=APP_NAME=$(APP_NAME)"
 
-          echo "✅ Android AAB built successfully"
-          ls -la build/app/outputs/bundle/stagingRelease/
+          echo "✅ Android AAB built successfully for $(environment)"
+          ls -la build/app/outputs/bundle/$(flavor)Release/
     - task: Bash@3
       displayName: 'Verify Android AAB Signing'
       inputs:
@@ -606,11 +624,11 @@ stages:
           echo "APPLE_TEAM_ID: $(APPLE_TEAM_ID)"
           echo "============================="
           flutter build ios \
-            -t lib/main_staging.dart \
+            -t $(entryPoint) \
             --release \
             --no-codesign \
             --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=staging \
+            --dart-define=ENVIRONMENT=$(environment) \
             "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
             "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
             "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
@@ -618,7 +636,7 @@ stages:
             "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
             "--dart-define=SCOPES=$(SCOPES)" \
             "--dart-define=APP_NAME=$(APP_NAME)"
-          echo "✅ Flutter iOS build complete (no codesign)"
+          echo "✅ Flutter iOS build complete for $(environment) (no codesign)"
     - task: CmdLine@2
       displayName: 'Select Xcode Version (Latest - 26.2)'
       inputs:
@@ -668,10 +686,12 @@ stages:
           echo "=== Fastlane Environment ==="
           echo "APPLE_TEAM_ID: $APPLE_TEAM_ID"
           echo "APPLE_TEAM_NAME: $APPLE_TEAM_NAME"
+          echo "Environment: $(environment)"
+          echo "Fastlane Lane: $(fastlaneLane)"
           echo "============================"
           echo "Building and signing IPA with fastlane..."
-          fastlane ios beta
-          echo "✅ Fastlane build complete"
+          fastlane ios $(fastlaneLane)
+          echo "✅ Fastlane build complete for $(environment)"
     - task: Bash@3
       displayName: 'Verify iOS IPA Signing'
       inputs:
@@ -926,8 +946,9 @@ stages:
           cd $(System.DefaultWorkingDirectory)/SigookApp
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
+          echo "Environment: $(environment)"
           if [ -n "$AAB_PATH" ]; then
-            fastlane android deploy aab:"$AAB_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+            fastlane android deploy aab:"$AAB_PATH" environment:$(environment) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
           else
             echo "⚠️ AAB not found, skipping deployment"
             echo "##vso[task.setvariable variable=deployStatus]skipped"

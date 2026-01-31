@@ -74,13 +74,14 @@ android {
     productFlavors {
         create("staging") {
             dimension = "environment"
-            // Note: No applicationIdSuffix - Google Play requires com.sigook.beta for all tracks
+            applicationId = "com.sigook.beta"
             versionNameSuffix = "-staging"
-            resValue("string", "app_name", "Sigook (Staging)")
+            resValue("string", "app_name", "Sigook Beta")
         }
 
         create("production") {
             dimension = "environment"
+            applicationId = "com.sigook.app"
             resValue("string", "app_name", "Sigook")
         }
     }
