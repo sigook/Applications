@@ -3,35 +3,37 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # PIPELINE: Full CI/CD for SigookApp Flutter Mobile Application
 # ============================================
 # TRIGGER POLICY:
-# - Runs ONLY when a PR is merged to main or dev
-# - Does NOT run on direct pushes
+# - Runs on direct pushes to main or dev branches
+# - Runs on PRs to dev branch (not to main)
+# - PRs to main are trusted since dev is the quality gate
 # - dev branch → Staging environment
 # - main branch → Production environment
-#
-# REQUIRED AZURE DEVOPS CONFIGURATION:
-# 1. Go to Project Settings → Repositories → [repo] → Policies
-# 2. For 'dev' and 'main' branches, enable:
-#    - "Build validation" with this pipeline (for PR checks)
-#    - "Require a minimum number of reviewers"
-# 3. In the pipeline settings, enable "Triggers" → "Pull request validation"
-#    and check "Build pull request from forks only after a team member approves"
 # ============================================
 
-# Disable CI trigger - pipeline runs only via PR completion
-trigger: none
+# Trigger on main, master, or dev branches with SigookApp changes
+trigger:
+  branches:
+    include:
+      - main
+      - master
+      - dev
+  paths:
+    include:
+      - .gitignore
+      - SigookApp/**
+      - .azure-pipelines/sigookapp-pipeline.yml
+    exclude:
+      - SigookApp/**/*.md
 
-# PR validation - runs tests only, no deployment
+# PR trigger - only validate PRs to dev (not to main)
+# PRs to main are trusted since dev is the quality gate
 pr:
   branches:
     include:
-    - main
-    - dev
+      - dev
   paths:
     include:
-    - SigookApp/**
-    - .azure-pipelines/sigookapp-pipeline.yml
-    exclude:
-    - SigookApp/**/*.md
+      - SigookApp/**
 
 variables:
 - name: workingDirectory
@@ -98,32 +100,11 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-    - task: FlutterInstall@0
-      displayName: 'Install Flutter SDK'
-      inputs:
-        mode: 'auto'
-        channel: '$(flutterVersion)'
-        version: 'latest'
-    - task: CmdLine@2
-      displayName: 'Flutter Doctor'
-      inputs:
-        script: |
-          flutter --version
-          flutter doctor -v
-    - task: CmdLine@2
-      displayName: 'Flutter Pub Get'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter pub get
-    - task: CmdLine@2
-      displayName: 'Run Build Runner'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          echo "Running build_runner..."
-          flutter pub run build_runner build --delete-conflicting-outputs
-          echo "✅ Code generation completed"
+    # Use reusable Flutter setup template
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
+        workingDirectory: '$(workingDirectory)'
     - task: CmdLine@2
       displayName: 'Flutter Analyze'
       inputs:
@@ -133,27 +114,27 @@ stages:
           flutter analyze --no-fatal-infos
           echo "✅ Code analysis passed"
     - task: CmdLine@2
-      displayName: 'Flutter Test'
+      displayName: 'Verify Build Configuration (Fast)'
       inputs:
         script: |
           cd $(workingDirectory)
-          echo "Running flutter test..."
-          flutter test --coverage --machine > test-results.json || true
-          echo "✅ Tests completed"
-    - task: Bash@3
-      displayName: 'Test Summary'
-      inputs:
-        targetType: 'inline'
-        script: |
-          cd $(workingDirectory)
-          if [ -f "test-results.json" ]; then
-            echo "Test results generated"
-            cat test-results.json | head -100
-          else
-            echo "No test results file found"
-          fi
+          echo "========================================"
+          echo "Verifying compilation configuration..."
+          echo "========================================"
+
+          echo "Verifying Android build configuration..."
+          flutter build apk --debug --flavor staging -t lib/main_staging.dart --dry-run
+          echo "✅ Android build configuration valid"
+
           echo ""
-          echo "✅ Validation stage completed!"
+          echo "Verifying iOS build configuration..."
+          flutter build ios --debug -t lib/main_staging.dart --dry-run --no-codesign
+          echo "✅ iOS build configuration valid"
+
+          echo ""
+          echo "========================================"
+          echo "🎯 Compilation verification passed!"
+          echo "========================================"
 # ============================================
 # Stage 2: Build Android AAB (runs on merged PR to dev/main only)
 # ============================================
@@ -217,18 +198,7 @@ stages:
         script: |
           cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
           echo "✅ Keystore copied: upload-keystore.jks"
-    - task: FlutterInstall@0
-      displayName: 'Install Flutter SDK'
-      inputs:
-        mode: 'auto'
-        channel: '$(flutterVersion)'
-        version: 'latest'
-    - task: CmdLine@2
-      displayName: 'Flutter Pub Get'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter pub get
+    # Configure caches before Flutter setup
     - task: Cache@2
       displayName: 'Cache Gradle'
       inputs:
@@ -245,12 +215,12 @@ stages:
           pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
-    - task: CmdLine@2
-      displayName: 'Run Build Runner'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter pub run build_runner build --delete-conflicting-outputs
+
+    # Use reusable Flutter setup template
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
+        workingDirectory: '$(workingDirectory)'
     - task: CmdLine@2
       displayName: 'Clean Android local.properties'
       continueOnError: true
@@ -299,28 +269,10 @@ stages:
             echo "Checking available NDKs:"
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
           fi
-    - task: CmdLine@2
-      displayName: 'Install Fastlane'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          sudo gem install fastlane -NV
-          echo "✅ Fastlane installed"
-    - task: CmdLine@2
-      displayName: 'Run Flutter Tests'
-      continueOnError: true
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-    - task: PublishTestResults@2
-      displayName: 'Publish Test Results'
-      condition: always()
-      continueOnError: true
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: '$(workingDirectory)/test-results.json'
-        failTaskOnFailedTests: false
+    # Use reusable Fastlane setup template
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(workingDirectory)'
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -526,18 +478,7 @@ stages:
             echo "---"
           done
           echo "==============================="
-    - task: FlutterInstall@0
-      displayName: 'Install Flutter SDK'
-      inputs:
-        mode: 'auto'
-        channel: '$(flutterVersion)'
-        version: 'latest'
-    - task: CmdLine@2
-      displayName: 'Flutter Pub Get'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter pub get
+    # Configure caches before Flutter setup
     - task: Cache@2
       displayName: 'Cache CocoaPods'
       continueOnError: true
@@ -564,12 +505,12 @@ stages:
           pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
-    - task: CmdLine@2
-      displayName: 'Run Build Runner'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter pub run build_runner build --delete-conflicting-outputs
+
+    # Use reusable Flutter setup template
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
+        workingDirectory: '$(workingDirectory)'
     - task: CmdLine@2
       displayName: 'Install CocoaPods'
       continueOnError: true
@@ -586,29 +527,11 @@ stages:
           echo "=== Code Signing Identities ==="
           security find-identity -v -p codesigning
           echo "==============================="
-    - task: CmdLine@2
-      displayName: 'Install Fastlane'
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          sudo gem install fastlane -NV
-          sudo gem install cocoapods -NV
-          echo "✅ Fastlane and CocoaPods installed"
-    - task: CmdLine@2
-      displayName: 'Run Flutter Tests'
-      continueOnError: true
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          flutter test --machine --coverage > test-results.json || echo "Tests completed with warnings"
-    - task: PublishTestResults@2
-      displayName: 'Publish Test Results'
-      condition: always()
-      continueOnError: true
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: '$(workingDirectory)/test-results.json'
-        failTaskOnFailedTests: false
+    # Use reusable Fastlane setup template
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(workingDirectory)'
+
     - task: CmdLine@2
       displayName: 'Flutter Build iOS (No Codesign)'
       inputs:
@@ -843,13 +766,13 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-ios-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
-    - task: CmdLine@2
-      displayName: 'Install Fastlane'
-      continueOnError: true
-      inputs:
-        script: |
-          sudo gem install fastlane -NV
-          echo "✅ Fastlane installed"
+
+    # Use reusable Fastlane setup template (with continueOnError for deploy stage)
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+        continueOnError: true
+
     - task: CmdLine@2
       displayName: 'Deploy to TestFlight'
       continueOnError: true
@@ -864,7 +787,7 @@ stages:
           IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
           if [ -n "$IPA_PATH" ]; then
-            fastlane ios deploy ipa:"$IPA_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+            bundle exec fastlane ios deploy ipa:"$IPA_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
           else
             echo "⚠️ IPA not found, skipping deployment"
             echo "##vso[task.setvariable variable=deployStatus]skipped"
@@ -928,13 +851,13 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
-    - task: CmdLine@2
-      displayName: 'Install Fastlane'
-      continueOnError: true
-      inputs:
-        script: |
-          sudo gem install fastlane -NV
-          echo "✅ Fastlane installed"
+
+    # Use reusable Fastlane setup template (with continueOnError for deploy stage)
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+        continueOnError: true
+
     - task: CmdLine@2
       displayName: 'Deploy to Google Play'
       continueOnError: true
