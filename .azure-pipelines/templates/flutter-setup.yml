@@ -36,6 +36,15 @@ steps:
       echo "========================================"
     displayName: 'Verify Flutter Installation'
 
+  # Create placeholder .env files for asset bundler
+  # These files are declared in pubspec.yaml for local development (flutter_dotenv)
+  # but are gitignored. The pipeline uses --dart-define for environment values instead.
+  - script: |
+      cd ${{ parameters.workingDirectory }}
+      touch .env.staging .env.production .env.local
+      echo "✅ Created placeholder .env files for asset bundler"
+    displayName: 'Create placeholder .env files'
+
   # Get Flutter dependencies
   - script: |
       cd ${{ parameters.workingDirectory }}

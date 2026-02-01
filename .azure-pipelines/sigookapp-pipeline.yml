@@ -151,8 +151,11 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # Signing credentials (same for both environments)
-  - group: SigookApp-Android-Signing
+  # Android signing credentials (environment-specific)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-Android-Signing
+  - ${{ else }}:
+    - group: SigookApp-Android-Signing
   jobs:
   - job: Build_AAB
     displayName: 'Build Android AAB'
@@ -186,18 +189,26 @@ stages:
           sudo rm -rf /opt/hostedtoolcache
           echo "=== Disk space after cleanup ==="
           df -h /
-    - task: DownloadSecureFile@1
-      name: androidKeystore
-      displayName: 'Download Android Keystore'
-      inputs:
-        # Note: secureFile doesn't support variable expansion - must use actual filename
-        secureFile: 'upload-keystore.jks'
+    # Download the appropriate keystore based on environment
+    # secureFile doesn't support variable expansion - use compile-time conditional
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - task: DownloadSecureFile@1
+        name: androidKeystore
+        displayName: 'Download Android Keystore (Production)'
+        inputs:
+          secureFile: 'sigook.jks'
+    - ${{ else }}:
+      - task: DownloadSecureFile@1
+        name: androidKeystore
+        displayName: 'Download Android Keystore (Staging)'
+        inputs:
+          secureFile: 'upload-keystore.jks'
     - task: CmdLine@2
       displayName: 'Setup Keystore'
       inputs:
         script: |
-          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
-          echo "✅ Keystore copied: upload-keystore.jks"
+          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/$(KEYSTORE_FILE)
+          echo "✅ Keystore copied: $(KEYSTORE_FILE)"
     # Configure caches before Flutter setup
     - task: Cache@2
       displayName: 'Cache Gradle'
@@ -418,11 +429,14 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables (same for both environments)
+  # iOS signing variables (environment-specific)
   # Contains: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
   # APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME,
   # P12_FILE_NAME, PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
-  - group: SigookApp-iOS-Signing
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-iOS-Signing
+  - ${{ else }}:
+    - group: SigookApp-iOS-Signing
   jobs:
   - job: Build_IPA
     displayName: 'Build iOS IPA'
@@ -455,14 +469,24 @@ stages:
         certSecureFile: 'distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
-    - task: InstallAppleProvisioningProfile@1
-      name: installProvisioningProfile
-      displayName: 'Install Provisioning Profile'
-      inputs:
-        provisioningProfileLocation: 'secureFiles'
-        # Note: provProfileSecureFile doesn't support variable expansion - must use actual filename
-        provProfileSecureFile: 'sigookbeta.mobileprovision'
-        removeProfile: true
+    # Install provisioning profile based on environment
+    # provProfileSecureFile doesn't support variable expansion - use compile-time conditional
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - task: InstallAppleProvisioningProfile@1
+        name: installProvisioningProfile
+        displayName: 'Install Provisioning Profile (Production)'
+        inputs:
+          provisioningProfileLocation: 'secureFiles'
+          provProfileSecureFile: 'sigook-production.mobileprovision'
+          removeProfile: true
+    - ${{ else }}:
+      - task: InstallAppleProvisioningProfile@1
+        name: installProvisioningProfile
+        displayName: 'Install Provisioning Profile (Staging)'
+        inputs:
+          provisioningProfileLocation: 'secureFiles'
+          provProfileSecureFile: 'sigookbeta.mobileprovision'
+          removeProfile: true
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
       continueOnError: true
@@ -736,8 +760,11 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables for TestFlight upload (same for both environments)
-  - group: SigookApp-iOS-Signing
+  # iOS signing variables for TestFlight upload (environment-specific)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-iOS-Signing
+  - ${{ else }}:
+    - group: SigookApp-iOS-Signing
   jobs:
   - job: Deploy_TestFlight
     displayName: 'Deploy to TestFlight'
