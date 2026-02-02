@@ -5,14 +5,13 @@ import 'main_common.dart';
 /// Production environment entry point
 /// Run with: flutter run --flavor production -t lib/main_production.dart
 ///
-/// Environment variables can be provided via:
-/// - .env.production file (local development)
-/// - --dart-define flags (CI/CD builds)
+/// Environment variables are loaded from .env.production file.
+/// Locally, developers maintain their own .env files.
+/// In CI/CD, the pipeline generates the .env file from variable groups.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Try to load production environment variables from .env file
-  // This is optional - CI/CD builds use --dart-define instead
+  // Load production environment variables from .env file
   await EnvLoader.load('.env.production');
 
   // Run the common main app

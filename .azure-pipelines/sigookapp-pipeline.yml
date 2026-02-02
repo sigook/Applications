@@ -284,6 +284,29 @@ stages:
     - template: templates/fastlane-setup.yml
       parameters:
         workingDirectory: '$(workingDirectory)'
+    # Generate .env file from Azure DevOps variable group values
+    # This replaces the placeholder .env created by flutter-setup.yml
+    - task: Bash@3
+      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)'
+        script: |
+          ENV_FILE=".env.$(flavor)"
+          echo "Generating $ENV_FILE from pipeline variable group..."
+          cat > "$ENV_FILE" <<EOF
+          ENVIRONMENT=$(environment)
+          AUTH_AUTHORITY=$(AUTH_AUTHORITY)
+          CLIENT_ID=$(CLIENT_ID)
+          REDIRECT_URI=$(REDIRECT_URI)
+          POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)
+          API_BASE_URL=$(API_BASE_URL)
+          SCOPES=$(SCOPES)
+          APP_NAME=$(APP_NAME)
+          EOF
+          echo "Generated $ENV_FILE:"
+          cat "$ENV_FILE"
+
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -328,15 +351,7 @@ stages:
             --flavor $(flavor) \
             -t $(entryPoint) \
             --release \
-            --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=$(environment) \
-            "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-            "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-            "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-            "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-            "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-            "--dart-define=SCOPES=$(SCOPES)" \
-            "--dart-define=APP_NAME=$(APP_NAME)"
+            --build-number=$(Build.BuildId)
 
           echo "✅ Android AAB built successfully for $(environment)"
           ls -la build/app/outputs/bundle/$(flavor)Release/
@@ -556,6 +571,28 @@ stages:
       parameters:
         workingDirectory: '$(workingDirectory)'
 
+    # Generate .env file from Azure DevOps variable group values
+    - task: Bash@3
+      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)'
+        script: |
+          ENV_FILE=".env.$(flavor)"
+          echo "Generating $ENV_FILE from pipeline variable group..."
+          cat > "$ENV_FILE" <<EOF
+          ENVIRONMENT=$(environment)
+          AUTH_AUTHORITY=$(AUTH_AUTHORITY)
+          CLIENT_ID=$(CLIENT_ID)
+          REDIRECT_URI=$(REDIRECT_URI)
+          POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)
+          API_BASE_URL=$(API_BASE_URL)
+          SCOPES=$(SCOPES)
+          APP_NAME=$(APP_NAME)
+          EOF
+          echo "Generated $ENV_FILE:"
+          cat "$ENV_FILE"
+
     - task: CmdLine@2
       displayName: 'Flutter Build iOS (No Codesign)'
       inputs:
@@ -574,15 +611,7 @@ stages:
             -t $(entryPoint) \
             --release \
             --no-codesign \
-            --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=$(environment) \
-            "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-            "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-            "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-            "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-            "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-            "--dart-define=SCOPES=$(SCOPES)" \
-            "--dart-define=APP_NAME=$(APP_NAME)"
+            --build-number=$(Build.BuildId)
           echo "✅ Flutter iOS build complete for $(environment) (no codesign)"
     - task: CmdLine@2
       displayName: 'Select Xcode Version (Latest - 26.2)'
