@@ -41,6 +41,7 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 - **Covenant.Web** - Vue.js 3 marketing/informational website for Covenant
 - **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system (15+ projects)
 - **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
+- **SigookFunctions** - .NET 6 Azure Functions for background processing and scheduled tasks
 
 **Additional Components:**
 - **`.azure-pipelines/`** - CI/CD pipelines with path-based triggers and reusable templates
@@ -535,6 +536,93 @@ dotnet test **/Covenant.IdentityServer.Tests.csproj
 - Staging: `sigook-accounts-staging.azurewebsites.net`
 - Production: `sigook-accounts.azurewebsites.net`
 
+## SigookFunctions (Azure Functions .NET 6)
+
+### Architecture
+
+Azure Functions serverless application for background processing, scheduled tasks, and email notifications.
+
+**Tech Stack:**
+- .NET 6.0 with Azure Functions v4
+- SendGrid for email delivery
+- QRCoder for QR code generation
+- Timer triggers for scheduled tasks
+- HTTP triggers for on-demand operations
+
+### Project Structure
+
+```
+SigookFunctions/
+├── SigookFunctions/           # Main Azure Functions project
+│   ├── Functions/             # Azure Function implementations
+│   │   ├── QrCode.cs          # QR code generation (HTTP trigger)
+│   │   ├── ScheduleTasks.cs   # Scheduled tasks (Timer triggers)
+│   │   ├── SendEmail.cs       # Email sending (HTTP trigger)
+│   │   └── SendInvitationToApply.cs  # Job invitations (HTTP trigger)
+│   ├── Models/                # Data models
+│   ├── Options/               # Configuration options classes
+│   ├── Services/              # Business logic services
+│   │   ├── IEmailService.cs / SendGridService.cs
+│   │   ├── ISigookApi.cs / SigookApi.cs
+│   │   ├── ITokenService.cs / TokenService.cs
+│   │   └── INotificationService.cs / NotificationService.cs
+│   ├── Startup.cs             # DI configuration
+│   ├── appsettings.json       # Base configuration
+│   ├── appsettings.Development.json
+│   ├── appsettings.Staging.json
+│   └── appsettings.Production.json
+├── Tests/                     # Unit tests
+└── SigookFunctions.sln
+```
+
+### Development Commands
+
+```bash
+cd SigookFunctions
+
+# Build solution
+dotnet build SigookFunctions.sln
+
+# Run locally (requires Azure Functions Core Tools)
+cd SigookFunctions
+func start
+
+# Run tests
+dotnet test Tests/Tests.csproj
+```
+
+### Functions Overview
+
+| Function | Trigger | Description |
+|----------|---------|-------------|
+| `QrCode` | HTTP (GET/POST) | Generates QR codes |
+| `SendEmail` | HTTP (POST) | Sends emails via SendGrid |
+| `SendInvitationToApply` | HTTP (POST) | Sends job application invitations |
+| `NotificationSinExpiration` | Timer (daily weekdays) | Expiration notifications |
+| `WarnLicensesExpiration` | Timer (daily weekdays) | License expiration warnings |
+| `StartRequests` | Timer (every 20 min) | Processes pending requests |
+
+### Configuration
+
+The project uses `appsettings.{Environment}.json` files for environment-specific configuration:
+
+- **URLs and non-sensitive config** → `appsettings.{env}.json`
+- **Secrets (API keys, credentials)** → Azure Configuration (Environment Variables)
+
+**Required Azure Configuration secrets:**
+- `SendGridApiKey`
+- `ScheduleTasks_ClientId`
+- `ScheduleTasks_ClientSecret`
+- `TeamsWebhook`
+
+### Important Notes
+
+- Uses Dependency Injection with `IOptions<SigookFunctionsOptions>` pattern
+- Requires `Covenant.Common` NuGet package from Azure Artifacts
+- Deployed to Azure Function App (not containerized)
+- Staging: `sigook-functions-staging.azurewebsites.net`
+- Production: `sigook-functions.azurewebsites.net`
+
 ## Azure DevOps Pipelines
 
 The repository uses **path-based triggers** to run pipelines only when relevant files change:
@@ -547,6 +635,7 @@ The repository uses **path-based triggers** to run pipelines only when relevant 
 - **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
 - **`.azure-pipelines/covenant-identityserver-pipeline.yml`** - IdentityServer CI/CD (fully functional)
 - **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
+- **`.azure-pipelines/sigookfunctions-pipeline.yml`** - Azure Functions CI/CD (fully functional)
 
 ### Intelligent Triggering
 

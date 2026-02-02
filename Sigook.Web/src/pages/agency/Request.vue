@@ -27,7 +27,7 @@
           {{ request.displayRecruiters | breakWord }}
         </div>
         <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top capitailized fw-700 is-inline-block" :class="request.status">
+          class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
           {{ $t(request.status) }}
         </div>
         <floating-menu class="is-inline-block" v-if="request.canEdit">
@@ -39,14 +39,16 @@
             <button class="floating-menu-item" v-on:click="showShiftModal = true">
               <span>Edit Shift</span>
             </button>
-            <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
-              <span>Send an email invitation</span>
-            </button>
-            <button disabled v-else class="floating-menu-item" :title="warningMessage">
-              <span>Send an email invitation
-                <span class="fz-1">
-                  (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
-            </button>
+            <template v-if="request.status === $statusOpen">
+              <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
+                <span>Send an email invitation</span>
+              </button>
+              <button disabled v-else class="floating-menu-item" :title="warningMessage">
+                <span>Send an email invitation
+                  <span class="fz-1">
+                    (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
+              </button>
+            </template>
             <button class="floating-menu-item" v-if="request.canCancel" v-on:click="cancelRequestModal = true">
               <span> Cancel Order</span>
             </button>
@@ -69,7 +71,7 @@
         <applicants v-if="visitedTabs.includes('Applicants')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
-        <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" />
+        <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
       <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiring">
         <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
@@ -135,14 +137,13 @@ export default {
       });
     },
     canEditRequest(request) {
-      // Can edit orders that are Open, InProgress, or Filled
       return request.status === this.$statusOpen ||
-             request.status === this.$statusInProgress ||
              request.status === this.$statusFilled;
     },
     canCancelRequest(request) {
-      // Can only cancel orders in Open status
-      return request.status === this.$statusOpen;
+      // Can only cancel orders in Open status without workers
+      return request.status === this.$statusOpen &&
+             (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
     },
     getAgencyRequest() {
       console.log('📡 Loading request data from API...');
@@ -209,8 +210,8 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.request.status = this.$statusOpen;
-          this.request.canEdit = true;
-          this.request.canCancel = true;
+          this.request.canEdit = this.canEditRequest(this.request);
+          this.request.canCancel = this.canCancelRequest(this.request);
         })
         .catch((error) => {
           this.isLoading = false;
@@ -263,6 +264,17 @@ export default {
         }
       );
     },
+    getStatusColorClass(request) {
+      // Return text color class matching TableRequests visual style
+      // Show blue color (like InProgress) for Open orders with workers but not full
+      if (request.status === this.$statusOpen &&
+          request.workersQuantityWorking > 0 &&
+          request.workersQuantityWorking < request.workersQuantity) {
+        return 'Book'; // Blue color (similar to InProgress)
+      }
+      // Return standard status color classes
+      return request.status; // Open (orange), Filled (green), Cancelled (red)
+    }
   },
   created() {
     this.getAgencyRequest();

@@ -84,7 +84,7 @@ namespace Covenant.Common.Entities.Request
         private string TheOrderCanNotBeChanged => $"The order can't be changed because is: {Status}";
         private int CountWorkersWorking => _workers.Count(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked);
         public bool CanBeUpdated => Status != RequestStatus.Cancelled;
-        public bool IsAvailableToApply => Status == RequestStatus.Open || Status == RequestStatus.InProgress;
+        public bool IsAvailableToApply => Status == RequestStatus.Open;
         public RequestStatus Status { get; private set; } = RequestStatus.Open;
         public int WorkersQuantity
         {
@@ -124,9 +124,6 @@ namespace Covenant.Common.Entities.Request
             WorkersQuantityWorking = CountWorkersWorking;
 
             // Automatic state transitions
-            if (Status == RequestStatus.Open && WorkersQuantityWorking > 0)
-                Status = RequestStatus.InProgress;
-
             if (WorkersQuantityWorking >= WorkersQuantity)
                 Status = RequestStatus.Filled;
 
@@ -144,19 +141,8 @@ namespace Covenant.Common.Entities.Request
 
             // Automatic state transitions
             if (Status == RequestStatus.Filled && WorkersQuantityWorking < WorkersQuantity)
-                Status = RequestStatus.InProgress;
-
-            if (WorkersQuantityWorking == 0 && Status == RequestStatus.InProgress)
                 Status = RequestStatus.Open;
 
-            return Result.Ok();
-        }
-
-        public Result PutInProcess()
-        {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
-            Status = RequestStatus.InProgress;
-            UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
 
@@ -167,6 +153,10 @@ namespace Covenant.Common.Entities.Request
             // Only orders in Open status can be cancelled
             if (Status != RequestStatus.Open)
                 return Result.Fail("Only orders in Open status can be cancelled");
+
+            // Cannot cancel orders with workers assigned
+            if (WorkersQuantityWorking > 0)
+                return Result.Fail("Cannot cancel orders with workers assigned. Please remove all workers first.");
 
             foreach (WorkerRequest worker in Workers)
             {
@@ -184,14 +174,13 @@ namespace Covenant.Common.Entities.Request
             switch (Status)
             {
                 case RequestStatus.Open:
-                case RequestStatus.InProgress:
                 case RequestStatus.Filled:
                     return Result.Ok();
                 case RequestStatus.Cancelled:
                     {
-                        // Reopen to appropriate state based on workers assigned
-                        Status = WorkersQuantityWorking > 0
-                            ? RequestStatus.InProgress
+                        // Reopen to appropriate state based on capacity
+                        Status = WorkersQuantityWorking >= WorkersQuantity
+                            ? RequestStatus.Filled
                             : RequestStatus.Open;
                         FinishAt = null;
                         UpdatedAt = now;
@@ -322,9 +311,9 @@ namespace Covenant.Common.Entities.Request
             WorkersQuantity++;
             UpdatedAt = DateTime.Now;
 
-            // If it was filled and we increase capacity, it goes back to InProgress
+            // If it was filled and we increase capacity, it goes back to Open
             if (Status == RequestStatus.Filled)
-                Status = RequestStatus.InProgress;
+                Status = RequestStatus.Open;
 
             return Result.Ok();
         }
@@ -337,7 +326,7 @@ namespace Covenant.Common.Entities.Request
             UpdatedAt = DateTime.Now;
 
             // Update status if reducing capacity causes the order to become filled
-            if (WorkersQuantityWorking >= WorkersQuantity && Status == RequestStatus.InProgress)
+            if (WorkersQuantityWorking >= WorkersQuantity && Status == RequestStatus.Open)
                 Status = RequestStatus.Filled;
 
             return Result.Ok();

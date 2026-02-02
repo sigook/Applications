@@ -52,9 +52,9 @@
 
           <!-- LEGAL LINKS (MOBILE) -->
           <div class="footer__block footer__legal--mobile">
-            <a href="#" class="footer__link">Privacy Policy</a>
-            <a href="#" class="footer__link">Terms and Conditions</a>
-            <a href="#" class="footer__link">Disclaimer</a>
+            <RouterLink to="/privacy-policy" class="footer__link">Privacy Policy</RouterLink>
+            <RouterLink to="/terms-conditions" class="footer__link">Terms and Conditions</RouterLink>
+            <RouterLink to="/disclaimer" class="footer__link">Disclaimer</RouterLink>
           </div>
 
 
@@ -112,9 +112,9 @@
 
           <!-- LEGAL LINKS (DESKTOP) -->
           <div class="footer__block footer__legal--desktop" style="margin-top: 70px;">
-             <a href="#" class="footer__link">Privacy Policy</a>
-             <a href="#" class="footer__link">Terms and Conditions</a>
-             <a href="#" class="footer__link">Disclaimer</a>
+             <RouterLink to="/privacy-policy" class="footer__link">Privacy Policy</RouterLink>
+             <RouterLink to="/terms-conditions" class="footer__link">Terms and Conditions</RouterLink>
+             <RouterLink to="/disclaimer" class="footer__link">Disclaimer</RouterLink>
           </div>
         </div>
       </div>
@@ -286,20 +286,21 @@ const isBlueFooter = computed(() => {
 }
 
 /* LEGAL LINKS STYLES (Horizontal Layout) */
-.footer__legal--mobile {
-  display: none; /* Por defecto oculto */
-}
-
+/* LEGAL LINKS STYLES (Horizontal Layout) */
 .footer__legal--desktop,
 .footer__legal--mobile {
-  display: flex;
   gap: 15px;
   flex-wrap: nowrap; /* Para que bajen si no hay espacio */
   align-items: center;
 }
 
 .footer__legal--desktop {
+  display: flex;
   justify-content: flex-start; /* Alinear a la derecha en desktop */
+}
+
+.footer__legal--mobile {
+  display: none; /* Oculto por defecto */
 }
 
 /* Resetear estilos de links dentro de legal para que queden inline y sin margen inferior */

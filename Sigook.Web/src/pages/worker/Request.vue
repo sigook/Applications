@@ -137,11 +137,9 @@ export default {
   },
   computed: {
     canApply() {
-      // Workers can only apply to Open or InProgress orders
       let available = false;
       switch (this.request.requestStatus) {
         case this.$statusOpen:
-        case this.$statusInProgress:
           available = true;
           break;
 

@@ -102,7 +102,7 @@
                         <template v-slot:label>
                           <span>
                             I accept the
-                            <a href="/terms" target="_blank" @click.stop>Terms and Conditions</a>
+                            <a href="/terms-conditions" target="_blank" @click.stop>Terms and Conditions</a>
                             *
                           </span>
                         </template>

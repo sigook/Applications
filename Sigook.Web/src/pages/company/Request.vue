@@ -186,14 +186,13 @@ export default {
   },
   computed: {
     canEdit() {
-      // Can edit orders that are Open, InProgress, or Filled
       return this.request.status === this.$statusOpen ||
-             this.request.status === this.$statusInProgress ||
              this.request.status === this.$statusFilled;
     },
     canCancel() {
-      // Can only cancel orders in Open status
-      return this.request.status === this.$statusOpen;
+      // Can only cancel orders in Open status without workers
+      return this.request.status === this.$statusOpen &&
+             (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
     },
   },
 };
