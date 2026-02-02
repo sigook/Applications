@@ -17,7 +17,7 @@
     <!-- To get the exact name, run: security cms -D -i "sigook-production.mobileprovision" | grep -A1 "Name" -->
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.sigook.app</key>
+        <key>com.sigook.sigook</key>
         <string>Sigook Production Distribution</string>
     </dict>
     

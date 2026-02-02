@@ -29,7 +29,7 @@ APPLE_TEAM_NAME = ENV["APPLE_TEAM_NAME"] || "SIGOOK CORPORATION"
 # Staging: com.sigook.beta, app name "Sigook Beta"
 # Production: com.sigook.app, app name "Sigook"
 STAGING_BUNDLE_ID = "com.sigook.beta"
-PRODUCTION_BUNDLE_ID = "com.sigook.app"
+PRODUCTION_BUNDLE_ID = "com.sigook.sigook"
 STAGING_APP_NAME = "Sigook Beta"
 PRODUCTION_APP_NAME = "Sigook"
 

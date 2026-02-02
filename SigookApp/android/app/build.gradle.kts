@@ -81,7 +81,7 @@ android {
 
         create("production") {
             dimension = "environment"
-            applicationId = "com.sigook.app"
+            applicationId = "com.sigook.sigook"
             resValue("string", "app_name", "Sigook")
         }
     }
