@@ -5,15 +5,14 @@ import 'main_common.dart';
 /// Staging environment entry point
 /// Run with: flutter run --flavor staging -t lib/main_staging.dart
 ///
-/// Environment variables can be provided via:
-/// - .env.staging file (local development)
-/// - --dart-define flags (CI/CD builds)
+/// Environment variables are loaded from .env.staging file.
+/// Locally, developers maintain their own .env files.
+/// In CI/CD, the pipeline generates the .env file from variable groups.
 Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Try to load staging environment variables from .env file
-    // This is optional - CI/CD builds use --dart-define instead
+    // Load staging environment variables from .env file
     await EnvLoader.load('.env.staging');
 
     // Run the common main app
