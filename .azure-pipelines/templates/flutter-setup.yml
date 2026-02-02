@@ -36,6 +36,15 @@ steps:
       echo "========================================"
     displayName: 'Verify Flutter Installation'
 
+  # Create placeholder .env files for the Flutter asset bundler
+  # These files are declared in pubspec.yaml but are gitignored.
+  # The build stages overwrite the relevant .env file with real values from variable groups.
+  - script: |
+      cd ${{ parameters.workingDirectory }}
+      touch .env.staging .env.production .env.local
+      echo "✅ Created placeholder .env files for asset bundler"
+    displayName: 'Create placeholder .env files'
+
   # Get Flutter dependencies
   - script: |
       cd ${{ parameters.workingDirectory }}

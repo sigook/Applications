@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.0.0+16
+version: 2.0.0+25
 
 environment:
   sdk: ^3.9.2
@@ -134,9 +134,14 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # NOTE: Environment configuration uses --dart-define flags (no .env files needed)
-    # CI/CD passes variables via --dart-define, local dev can use .env files with flutter_dotenv
+    # Environment files for local development (flutter_dotenv)
+    # These are optional - CI/CD builds use --dart-define instead
+    # If a file doesn't exist, EnvLoader handles it gracefully
+    - .env.staging
+    - .env.production
+    - .env.local
     - assets/images/
+    - assets/images/logo/
     - assets/i18n/
     - assets/i18n/error_messages_en.json
     - assets/i18n/error_messages_es.json

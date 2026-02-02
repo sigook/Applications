@@ -10,14 +10,15 @@ class AppTheme {
   static const Color primaryBlue = Color(0xFF1565C0); // Deep Blue
   static const Color secondaryRed = Color(0xFFE53935); // Vibrant Red
   static const Color tertiaryBlue = Color(0xFF0277BD); // Light Blue
-  static const Color surfaceGrey = Color(0xFFF5F7FA); // Subtle blue-grey
+  static const Color surfaceGrey = Color(0xFFF2F3F5); // Neutral light grey
+  static const Color cardBackground = Color(0xFFFAFAFB); // Soft off-white
   static const Color errorRed = Color(0xFFD32F2F); // Error red
   static const Color successGreen = Color(0xFF43A047); // Success green
   static const Color warningOrange = Color(0xFFF57C00); // Warning orange
   static const Color textDark = Color(0xFF212121); // Dark grey text
   static const Color textMedium = Color(0xFF757575); // Medium grey text
   static const Color textLight = Color(0xFF757575); // Light grey text
-  static const Color borderLight = Color(0xFFE0E0E0); // Light grey border
+  static const Color borderLight = Color(0xFFE8E8EA); // Neutral light border
   static const Color slate800 = Color(0xFF1E293B); // Dark grey text
 
   // Spacing Constants
@@ -211,11 +212,14 @@ class AppTheme {
 
       // Card Theme
       cardTheme: CardThemeData(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white,
-        shadowColor: primaryBlue.withValues(alpha: 0.08),
-        surfaceTintColor: primaryBlue.withValues(alpha: 0.02),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: borderLight.withValues(alpha: 0.6)),
+        ),
+        color: cardBackground,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
 
       // Chip Theme

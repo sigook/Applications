@@ -521,6 +521,7 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+**/production-credentials/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
