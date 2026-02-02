@@ -14,8 +14,8 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      - main
-      - master
+      # - main
+      # - master
       - dev
   paths:
     include:

@@ -94,7 +94,7 @@ namespace Covenant.Api.AccountingModule.InvoiceDocument.Controllers
                     InvoicePayroll = invoiceModel.InvoicePayroll,
                     Message = model.Message
                 });
-                bool wasSend = await emailService.SendEmail(new EmailParams(invoiceModel.Email, model.Subject, emailMessage)
+                bool wasSend = await emailService.SendCovenantEmail(new EmailParams(invoiceModel.Email, model.Subject, emailMessage)
                 {
                     Cc = model.Cc ?? new List<string>(),
                     EmailSettingName = invoiceModel.InvoicePayroll.EmailSettingName,

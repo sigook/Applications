@@ -47,6 +47,7 @@ public static class TestStartupExtensions
         services.AddSingleton(Mock.Of<IFilesContainer>());
         var mockEmailService = new Mock<IEmailService>();
         mockEmailService.Setup(es => es.SendEmail(It.IsAny<EmailParams>())).ReturnsAsync(true);
+        mockEmailService.Setup(es => es.SendCovenantEmail(It.IsAny<EmailParams>())).ReturnsAsync(true);
         services.AddSingleton(mockEmailService.Object);
         var mockSendGridService = new Mock<ISendGridService>();
         mockSendGridService.Setup(ss => ss.SendEmail(It.IsAny<SendGridModel>())).ReturnsAsync(Result.Ok());
