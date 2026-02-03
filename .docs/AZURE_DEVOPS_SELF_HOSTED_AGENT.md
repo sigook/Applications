@@ -145,39 +145,56 @@ ping google.com
 - `1.1.1.1`: Cloudflare DNS
 - `168.63.129.16`: Azure internal DNS (fallback)
 
-### 3. Configurar Disco de Datos (Futuro)
+### 3. Configurar Disco de Datos
 
-**Pendiente:** El disco de datos de 512GB debe montarse en `/mnt/builds` para almacenar workspaces de builds.
+**⚠️ IMPORTANTE:** Este paso es **OBLIGATORIO** antes de configurar el agente. El disco de datos de 512GB debe montarse en `/mnt/builds` para almacenar workspaces de builds.
 
 ```bash
-# Verificar disco
+# 1. Verificar disco de datos
 lsblk
-# Deberías ver /dev/sdc con 512GB
+# Deberías ver /dev/sdc con 512GB (o /dev/sdd si hay múltiples discos)
 
-# Particionar y formatear
+# 2. Particionar y formatear el disco
+# IMPORTANTE: Verifica que /dev/sdc sea el disco correcto antes de ejecutar
 sudo parted /dev/sdc --script mklabel gpt
 sudo parted /dev/sdc --script mkpart primary ext4 0% 100%
 sudo mkfs.ext4 /dev/sdc1
 
-# Obtener UUID
+# 3. Obtener UUID del disco
 sudo blkid /dev/sdc1
-# Copia el UUID
+# Ejemplo de output: /dev/sdc1: UUID="a1b2c3d4-..." TYPE="ext4"
+# Copia el UUID completo
 
-# Crear punto de montaje
+# 4. Crear punto de montaje
 sudo mkdir -p /mnt/builds
 
-# Agregar a /etc/fstab
+# 5. Configurar montaje automático en /etc/fstab
+# REEMPLAZA <tu-uuid> con el UUID obtenido en el paso 3
 echo "UUID=<tu-uuid>  /mnt/builds  ext4  defaults,nofail  0  2" | sudo tee -a /etc/fstab
 
-# Montar
+# 6. Montar el disco
 sudo mount -a
 
-# Crear estructura
+# 7. Verificar que se montó correctamente
+df -h /mnt/builds
+# Deberías ver ~512GB disponible
+
+# 8. Crear estructura de directorios para el agente
 sudo mkdir -p /mnt/builds/agent-1/_work
+
+# 9. ⚠️ CRÍTICO: Asignar permisos al usuario azureuser
 sudo chown -R azureuser:azureuser /mnt/builds
 
-# Verificar
-df -h
+# 10. Verificar permisos
+ls -la /mnt/builds
+# Debe mostrar: drwxr-xr-x ... azureuser azureuser ... agent-1
+```
+
+**Verificación final:**
+```bash
+# El usuario azureuser debe poder escribir en el directorio
+touch /mnt/builds/test.txt && rm /mnt/builds/test.txt
+# Si no hay error, los permisos están correctos
 ```
 
 ---
@@ -387,6 +404,49 @@ Failed to connect. VSS.Server.WebRequestException: Agent pool not found: 'sigook
 2. Desconfigurar agent: `./config.sh remove`
 3. Reconfigurar con nombre correcto: `./config.sh`
 
+### Problema: "Access to the path '/mnt/builds/agent-1/_work/_tool' is denied"
+
+**Error completo:**
+```
+##[error]Error reported in diagnostic logs. Please examine the log for more details.
+System.UnauthorizedAccessException: Access to the path '/mnt/builds/agent-1/_work/_tool' is denied.
+ ---> System.IO.IOException: Permission denied
+```
+
+**Causa:** El usuario `azureuser` no tiene permisos de escritura en el directorio `/mnt/builds/`.
+
+**Diagnóstico:**
+```bash
+# Verificar propietario actual del directorio
+ls -la /mnt/builds
+
+# Verificar si el disco está montado
+df -h /mnt/builds
+
+# Intentar crear un archivo de prueba
+touch /mnt/builds/test.txt
+# Si falla con "Permission denied", el problema es de permisos
+```
+
+**Solución:**
+```bash
+# 1. Asignar permisos al usuario azureuser
+sudo chown -R azureuser:azureuser /mnt/builds
+
+# 2. Verificar permisos
+ls -la /mnt/builds
+# Debe mostrar: drwxr-xr-x ... azureuser azureuser
+
+# 3. Reiniciar el servicio del agente
+cd ~/agents/agent-1
+sudo ./svc.sh restart
+
+# 4. Verificar estado
+sudo systemctl status vsts.agent.sigook.covenant-build-pool.covenant-agent-1.service
+```
+
+**Nota:** Si el directorio `/mnt/builds` no existe o el disco no está montado, sigue los pasos de [Configurar Disco de Datos](#3-configurar-disco-de-datos) primero.
+
 ---
 
 ## Mantenimiento
@@ -538,4 +598,4 @@ Script de cron para ejecutar semanalmente y limpiar cachés/builds antiguos.
 ---
 
 **Última actualización:** 2026-02-03
-**Estado:** Agent instalado y funcionando. Pendiente: instalación de dependencias y migración de pipelines.
+**Estado:** Agent instalado, disco de datos configurado, y funcionando correctamente. Pendiente: instalación de dependencias y migración de pipelines.

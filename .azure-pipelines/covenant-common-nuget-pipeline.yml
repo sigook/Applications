@@ -72,13 +72,14 @@ stages:
           - task: NuGetAuthenticate@1
             displayName: 'Authenticate to NuGet Feed'
 
-          # Push to Azure Artifacts Feed
-          - task: NuGetCommand@2
+          # Push to Azure Artifacts Feed (using dotnet CLI instead of NuGet)
+          - task: DotNetCoreCLI@2
             displayName: 'Push Package to Feed'
             inputs:
               command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+              nuGetFeedType: 'internal'
               publishVstsFeed: 'sigook/Covenant.Common'
-              allowPackageConflicts: true
 
           # Summary
           - task: Bash@3
