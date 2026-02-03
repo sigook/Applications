@@ -27,7 +27,7 @@ pr:
       - Covenant.Api/**
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 # Environment detection variables
 variables:
