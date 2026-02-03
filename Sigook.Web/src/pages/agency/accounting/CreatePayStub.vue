@@ -62,8 +62,8 @@
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
                   <b-field label="Quantity" expanded :type="errors.has('quantity' + i) ? 'is-danger' : ''"
                     :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
-                    <b-numberinput v-model="item.quantity" :min="1" :max="1000000" :step="1" :controls="false"
-                      :name="'quantity' + i" v-validate="'required|min_value:1'" @input="updateItem(item)" />
+                    <b-numberinput v-model="item.quantity" :min="1" :max="1000000" :step="0.01" :controls="false"
+                      :name="'quantity' + i" v-validate="'required|min_value:0.01'" @input="updateItem(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
