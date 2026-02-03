@@ -76,7 +76,7 @@ stages:
   displayName: 'Validate & Test'
   condition: true
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   jobs:
   - job: Flutter_Test
     displayName: 'Flutter Analyze & Test'
@@ -98,11 +98,12 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-    # Use reusable Flutter setup template
-    - template: templates/flutter-setup.yml
-      parameters:
-        flutterVersion: '$(flutterVersion)'
-        workingDirectory: '$(workingDirectory)'
+    # Verify Flutter is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Flutter installation..."
+        flutter --version
+        flutter doctor
+      displayName: 'Verify Flutter $(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Flutter Analyze'
       inputs:
@@ -142,7 +143,7 @@ stages:
   # Only run on merged PRs (push to dev or main), not during PR validation
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   variables:
   # Environment-specific variable group (staging for dev, production for main)
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -225,11 +226,12 @@ stages:
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
-    # Use reusable Flutter setup template
-    - template: templates/flutter-setup.yml
-      parameters:
-        flutterVersion: '$(flutterVersion)'
-        workingDirectory: '$(workingDirectory)'
+    # Verify Flutter is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Flutter installation..."
+        flutter --version
+        flutter doctor
+      displayName: 'Verify Flutter $(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Clean Android local.properties'
       continueOnError: true
@@ -278,12 +280,14 @@ stages:
             echo "Checking available NDKs:"
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
           fi
-    # Use reusable Fastlane setup template
-    - template: templates/fastlane-setup.yml
-      parameters:
-        workingDirectory: '$(workingDirectory)'
+    # Verify Fastlane is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Fastlane installation..."
+        ruby --version
+        bundle --version
+        fastlane --version
+      displayName: 'Verify Fastlane Installation'
     # Generate .env file from Azure DevOps variable group values
-    # This replaces the placeholder .env created by flutter-setup.yml
     - task: Bash@3
       displayName: 'Generate .env.$(flavor) from pipeline variables'
       inputs:
@@ -870,7 +874,7 @@ stages:
   # Deploy only on merged PRs (push to dev or main), not during PR validation
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   variables:
   # Environment-specific variable group (contains GOOGLE_PLAY_JSON_KEY)
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -906,11 +910,14 @@ stages:
         artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
 
-    # Use reusable Fastlane setup template (with continueOnError for deploy stage)
-    - template: templates/fastlane-setup.yml
-      parameters:
-        workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-        continueOnError: true
+    # Verify Fastlane is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Fastlane installation..."
+        ruby --version
+        bundle --version
+        fastlane --version
+      displayName: 'Verify Fastlane Installation'
+      continueOnError: true
 
     - task: CmdLine@2
       displayName: 'Deploy to Google Play'

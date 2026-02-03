@@ -26,7 +26,7 @@ pr:
       - Covenant.Api/Covenant.Common/**/*.md
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 variables:
   dotnetSdkVersion: '8.0.415'
@@ -44,10 +44,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK using template
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Build and Test using template (ensures quality before publishing)
           - template: templates/dotnet-build-test.yml
@@ -66,10 +68,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Pack Covenant.Common
           - task: DotNetCoreCLI@2
