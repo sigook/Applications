@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/get_job_details.dart';
 import '../providers/jobs_providers.dart';
@@ -112,31 +113,7 @@ class _JobPageState extends ConsumerState<JobPage> {
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        jobDetails.jobTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.fade,
-                      ),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "Details",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
+                title: const NavbarLogo(),
                 expandedHeight: 100,
                 pinned: true,
                 backgroundColor: AppTheme.primaryBlue,

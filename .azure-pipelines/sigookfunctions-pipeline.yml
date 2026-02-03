@@ -27,7 +27,7 @@ pr:
       - SigookFunctions/**
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 # Environment detection variables
 variables:
@@ -48,10 +48,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK using template
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Build and Test using template
           - template: templates/dotnet-build-test.yml
@@ -76,10 +78,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Authenticate with Azure Artifacts for Covenant.Common package
           - task: NuGetAuthenticate@1

@@ -14,8 +14,8 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include:
-      - main
-      - master
+      # - main
+      # - master
       - dev
   paths:
     include:
@@ -50,6 +50,24 @@ variables:
     value: 'production'
   ${{ else }}:
     value: 'staging'
+# Flutter build flavor (matches productFlavors in build.gradle.kts)
+- name: flavor
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'staging'
+# Flutter entry point file
+- name: entryPoint
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'lib/main_production.dart'
+  ${{ else }}:
+    value: 'lib/main_staging.dart'
+# Fastlane lane name
+- name: fastlaneLane
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'beta'
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
@@ -58,7 +76,7 @@ stages:
   displayName: 'Validate & Test'
   condition: true
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   jobs:
   - job: Flutter_Test
     displayName: 'Flutter Analyze & Test'
@@ -80,11 +98,12 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-    # Use reusable Flutter setup template
-    - template: templates/flutter-setup.yml
-      parameters:
-        flutterVersion: '$(flutterVersion)'
-        workingDirectory: '$(workingDirectory)'
+    # Verify Flutter is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Flutter installation..."
+        flutter --version
+        flutter doctor
+      displayName: 'Verify Flutter $(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Flutter Analyze'
       inputs:
@@ -124,15 +143,18 @@ stages:
   # Only run on merged PRs (push to dev or main), not during PR validation
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   variables:
   # Environment-specific variable group (staging for dev, production for main)
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # Signing credentials (same for both environments)
-  - group: SigookApp-Android-Signing
+  # Android signing credentials (environment-specific)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-Android-Signing
+  - ${{ else }}:
+    - group: SigookApp-Android-Signing
   jobs:
   - job: Build_AAB
     displayName: 'Build Android AAB'
@@ -166,18 +188,26 @@ stages:
           sudo rm -rf /opt/hostedtoolcache
           echo "=== Disk space after cleanup ==="
           df -h /
-    - task: DownloadSecureFile@1
-      name: androidKeystore
-      displayName: 'Download Android Keystore'
-      inputs:
-        # Note: secureFile doesn't support variable expansion - must use actual filename
-        secureFile: 'upload-keystore.jks'
+    # Download the appropriate keystore based on environment
+    # secureFile doesn't support variable expansion - use compile-time conditional
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - task: DownloadSecureFile@1
+        name: androidKeystore
+        displayName: 'Download Android Keystore (Production)'
+        inputs:
+          secureFile: 'sigook.jks'
+    - ${{ else }}:
+      - task: DownloadSecureFile@1
+        name: androidKeystore
+        displayName: 'Download Android Keystore (Staging)'
+        inputs:
+          secureFile: 'upload-keystore.jks'
     - task: CmdLine@2
       displayName: 'Setup Keystore'
       inputs:
         script: |
-          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/upload-keystore.jks
-          echo "✅ Keystore copied: upload-keystore.jks"
+          cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/$(KEYSTORE_FILE)
+          echo "✅ Keystore copied: $(KEYSTORE_FILE)"
     # Configure caches before Flutter setup
     - task: Cache@2
       displayName: 'Cache Gradle'
@@ -196,11 +226,12 @@ stages:
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
-    # Use reusable Flutter setup template
-    - template: templates/flutter-setup.yml
-      parameters:
-        flutterVersion: '$(flutterVersion)'
-        workingDirectory: '$(workingDirectory)'
+    # Verify Flutter is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Flutter installation..."
+        flutter --version
+        flutter doctor
+      displayName: 'Verify Flutter $(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Clean Android local.properties'
       continueOnError: true
@@ -249,10 +280,35 @@ stages:
             echo "Checking available NDKs:"
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
           fi
-    # Use reusable Fastlane setup template
-    - template: templates/fastlane-setup.yml
-      parameters:
+    # Verify Fastlane is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Fastlane installation..."
+        ruby --version
+        bundle --version
+        fastlane --version
+      displayName: 'Verify Fastlane Installation'
+    # Generate .env file from Azure DevOps variable group values
+    - task: Bash@3
+      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      inputs:
+        targetType: 'inline'
         workingDirectory: '$(workingDirectory)'
+        script: |
+          ENV_FILE=".env.$(flavor)"
+          echo "Generating $ENV_FILE from pipeline variable group..."
+          cat > "$ENV_FILE" <<EOF
+          ENVIRONMENT=$(environment)
+          AUTH_AUTHORITY=$(AUTH_AUTHORITY)
+          CLIENT_ID=$(CLIENT_ID)
+          REDIRECT_URI=$(REDIRECT_URI)
+          POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)
+          API_BASE_URL=$(API_BASE_URL)
+          SCOPES=$(SCOPES)
+          APP_NAME=$(APP_NAME)
+          EOF
+          echo "Generated $ENV_FILE:"
+          cat "$ENV_FILE"
+
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -294,21 +350,13 @@ stages:
           fi
 
           flutter build appbundle \
-            --flavor staging \
-            -t lib/main_staging.dart \
+            --flavor $(flavor) \
+            -t $(entryPoint) \
             --release \
-            --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=staging \
-            "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-            "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-            "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-            "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-            "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-            "--dart-define=SCOPES=$(SCOPES)" \
-            "--dart-define=APP_NAME=$(APP_NAME)"
+            --build-number=$(Build.BuildId)
 
-          echo "✅ Android AAB built successfully"
-          ls -la build/app/outputs/bundle/stagingRelease/
+          echo "✅ Android AAB built successfully for $(environment)"
+          ls -la build/app/outputs/bundle/$(flavor)Release/
     - task: Bash@3
       displayName: 'Verify Android AAB Signing'
       inputs:
@@ -398,11 +446,14 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables (same for both environments)
+  # iOS signing variables (environment-specific)
   # Contains: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
   # APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME,
   # P12_FILE_NAME, PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
-  - group: SigookApp-iOS-Signing
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-iOS-Signing
+  - ${{ else }}:
+    - group: SigookApp-iOS-Signing
   jobs:
   - job: Build_IPA
     displayName: 'Build iOS IPA'
@@ -435,14 +486,24 @@ stages:
         certSecureFile: 'distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
-    - task: InstallAppleProvisioningProfile@1
-      name: installProvisioningProfile
-      displayName: 'Install Provisioning Profile'
-      inputs:
-        provisioningProfileLocation: 'secureFiles'
-        # Note: provProfileSecureFile doesn't support variable expansion - must use actual filename
-        provProfileSecureFile: 'sigookbeta.mobileprovision'
-        removeProfile: true
+    # Install provisioning profile based on environment
+    # provProfileSecureFile doesn't support variable expansion - use compile-time conditional
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - task: InstallAppleProvisioningProfile@1
+        name: installProvisioningProfile
+        displayName: 'Install Provisioning Profile (Production)'
+        inputs:
+          provisioningProfileLocation: 'secureFiles'
+          provProfileSecureFile: 'sigook-production.mobileprovision'
+          removeProfile: true
+    - ${{ else }}:
+      - task: InstallAppleProvisioningProfile@1
+        name: installProvisioningProfile
+        displayName: 'Install Provisioning Profile (Staging)'
+        inputs:
+          provisioningProfileLocation: 'secureFiles'
+          provProfileSecureFile: 'sigookbeta.mobileprovision'
+          removeProfile: true
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
       continueOnError: true
@@ -512,6 +573,28 @@ stages:
       parameters:
         workingDirectory: '$(workingDirectory)'
 
+    # Generate .env file from Azure DevOps variable group values
+    - task: Bash@3
+      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)'
+        script: |
+          ENV_FILE=".env.$(flavor)"
+          echo "Generating $ENV_FILE from pipeline variable group..."
+          cat > "$ENV_FILE" <<EOF
+          ENVIRONMENT=$(environment)
+          AUTH_AUTHORITY=$(AUTH_AUTHORITY)
+          CLIENT_ID=$(CLIENT_ID)
+          REDIRECT_URI=$(REDIRECT_URI)
+          POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)
+          API_BASE_URL=$(API_BASE_URL)
+          SCOPES=$(SCOPES)
+          APP_NAME=$(APP_NAME)
+          EOF
+          echo "Generated $ENV_FILE:"
+          cat "$ENV_FILE"
+
     - task: CmdLine@2
       displayName: 'Flutter Build iOS (No Codesign)'
       inputs:
@@ -527,19 +610,11 @@ stages:
           echo "APPLE_TEAM_ID: $(APPLE_TEAM_ID)"
           echo "============================="
           flutter build ios \
-            -t lib/main_staging.dart \
+            -t $(entryPoint) \
             --release \
             --no-codesign \
-            --build-number=$(Build.BuildId) \
-            --dart-define=ENVIRONMENT=staging \
-            "--dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
-            "--dart-define=API_BASE_URL=$(API_BASE_URL)" \
-            "--dart-define=CLIENT_ID=$(CLIENT_ID)" \
-            "--dart-define=REDIRECT_URI=$(REDIRECT_URI)" \
-            "--dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
-            "--dart-define=SCOPES=$(SCOPES)" \
-            "--dart-define=APP_NAME=$(APP_NAME)"
-          echo "✅ Flutter iOS build complete (no codesign)"
+            --build-number=$(Build.BuildId)
+          echo "✅ Flutter iOS build complete for $(environment) (no codesign)"
     - task: CmdLine@2
       displayName: 'Select Xcode Version (Latest - 26.2)'
       inputs:
@@ -589,10 +664,12 @@ stages:
           echo "=== Fastlane Environment ==="
           echo "APPLE_TEAM_ID: $APPLE_TEAM_ID"
           echo "APPLE_TEAM_NAME: $APPLE_TEAM_NAME"
+          echo "Environment: $(environment)"
+          echo "Fastlane Lane: $(fastlaneLane)"
           echo "============================"
           echo "Building and signing IPA with fastlane..."
-          bundle exec fastlane ios beta
-          echo "✅ Fastlane build complete"
+          fastlane ios $(fastlaneLane)
+          echo "✅ Fastlane build complete for $(environment)"
     - task: Bash@3
       displayName: 'Verify iOS IPA Signing'
       inputs:
@@ -714,8 +791,11 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables for TestFlight upload (same for both environments)
-  - group: SigookApp-iOS-Signing
+  # iOS signing variables for TestFlight upload (environment-specific)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD-SigookApp-iOS-Signing
+  - ${{ else }}:
+    - group: SigookApp-iOS-Signing
   jobs:
   - job: Deploy_TestFlight
     displayName: 'Deploy to TestFlight'
@@ -794,7 +874,7 @@ stages:
   # Deploy only on merged PRs (push to dev or main), not during PR validation
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
-    vmImage: 'ubuntu-latest'
+    name: 'covenant-build-pool'
   variables:
   # Environment-specific variable group (contains GOOGLE_PLAY_JSON_KEY)
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -830,11 +910,14 @@ stages:
         artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
 
-    # Use reusable Fastlane setup template (with continueOnError for deploy stage)
-    - template: templates/fastlane-setup.yml
-      parameters:
-        workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
-        continueOnError: true
+    # Verify Fastlane is available (pre-installed on VM)
+    - script: |
+        echo "Verifying Fastlane installation..."
+        ruby --version
+        bundle --version
+        fastlane --version
+      displayName: 'Verify Fastlane Installation'
+      continueOnError: true
 
     - task: CmdLine@2
       displayName: 'Deploy to Google Play'
@@ -847,8 +930,9 @@ stages:
           cd $(System.DefaultWorkingDirectory)/SigookApp
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
+          echo "Environment: $(environment)"
           if [ -n "$AAB_PATH" ]; then
-            bundle exec fastlane android deploy aab:"$AAB_PATH" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+            fastlane android deploy aab:"$AAB_PATH" environment:$(environment) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
           else
             echo "⚠️ AAB not found, skipping deployment"
             echo "##vso[task.setvariable variable=deployStatus]skipped"

@@ -28,6 +28,9 @@ Bienvenido a la documentación técnica completa de la plataforma Covenant/Sigoo
 ### 🔄 Workflows Principales
 - **[WORKFLOWS.md](./WORKFLOWS.md)** - Flujos detallados paso a paso (Worker Registration, Job Matching, Payroll Processing, etc.)
 
+### 🔧 DevOps e Infraestructura
+- **[AZURE_DEVOPS_SELF_HOSTED_AGENT.md](./AZURE_DEVOPS_SELF_HOSTED_AGENT.md)** - Configuración y mantenimiento del self-hosted agent de Azure DevOps, VM setup, troubleshooting
+
 ---
 
 ## 🚀 Inicio Rápido

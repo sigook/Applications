@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/jobs_viewmodel.dart';
 import '../widgets/job_card.dart';
@@ -126,10 +127,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
           icon: const Icon(Icons.filter_list),
           onPressed: _showFilterModal,
         ),
-        title: const Text(
-          'Jobs',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
+        title: const NavbarLogo(),
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),

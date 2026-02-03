@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 import '../../../../core/widgets/profile_section_card.dart';
 import '../../../../core/widgets/profile_info_row.dart';
 import '../../../../core/widgets/loading_indicator.dart';
@@ -31,10 +32,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'My Profile',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
+        title: const NavbarLogo(),
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.close : Icons.edit),

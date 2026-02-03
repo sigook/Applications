@@ -7,6 +7,7 @@ import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/error_messages.dart';
+import 'core/widgets/navbar_logo.dart';
 
 Future<void> mainCommon() async {
   try {
@@ -63,11 +64,16 @@ class _MyAppState extends ConsumerState<MyApp> {
       routerConfig: AppRouter.router,
       theme: AppTheme.lightTheme,
       builder: (context, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
+        return Listener(
+          onPointerUp: (_) {
+            globalTapNotifier.value++;
           },
-          child: child,
+          child: GestureDetector(
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child,
+          ),
         );
       },
     );
