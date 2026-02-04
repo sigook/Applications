@@ -1,5 +1,5 @@
 # Azure Pipeline for SigookFunctions (Azure Functions .NET 8)
-# Builds, tests, and deploys Azure Functions to Azure Function App (Production only)
+# Builds and deploys Azure Functions to Azure Function App (Production only)
 
 name: SigookFunctions-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
@@ -29,13 +29,13 @@ variables:
 
 stages:
   # ============================================
-  # Stage 1: Build and Test
+  # Stage 1: Build
   # ============================================
-  - stage: Build_and_Test
-    displayName: 'Build and Test'
+  - stage: Build
+    displayName: 'Build'
     jobs:
-      - job: Build_Test_Solution
-        displayName: 'Build and Run Tests'
+      - job: Build_Solution
+        displayName: 'Build Solution'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
@@ -47,13 +47,12 @@ stages:
               dotnet --list-sdks
             displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
-          # Build and Test using template
+          # Build using template (no unit tests - project has none)
           - template: templates/dotnet-build-test.yml
             parameters:
               buildProjects: 'SigookFunctions/**/*.sln'
               buildConfiguration: 'Release'
-              runUnitTests: true
-              unitTestProjects: 'SigookFunctions/**/Tests/*.csproj'
+              runUnitTests: false
               runIntegrationTests: false
 
   # ============================================
@@ -61,7 +60,7 @@ stages:
   # ============================================
   - stage: Deploy_Production
     displayName: 'Deploy to Production'
-    dependsOn: Build_and_Test
+    dependsOn: Build
     condition: succeeded()
     jobs:
       - job: Publish_and_Deploy
