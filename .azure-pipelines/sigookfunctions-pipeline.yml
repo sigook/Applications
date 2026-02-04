@@ -1,39 +1,31 @@
 # Azure Pipeline for SigookFunctions (Azure Functions .NET 8)
-# Builds, tests, and deploys Azure Functions to Azure Function App
+# Builds, tests, and deploys Azure Functions to Azure Function App (Production only)
 
 name: SigookFunctions-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
-# Only trigger when SigookFunctions files change
+# Only trigger when merging to main/master (production deployment)
 trigger:
   branches:
     include:
       - main
       - master
-      - dev
   paths:
     include:
       - SigookFunctions/**
     exclude:
       - SigookFunctions/**/*.md
 
-# PR trigger - only validate PRs to dev (not to main)
-# PRs to main are trusted since dev is the quality gate
-pr:
-  branches:
-    include:
-      - dev
-  paths:
-    include:
-      - SigookFunctions/**
+# No PR trigger - only deploy to production on merge to main
+pr: none
 
 pool:
   name: 'covenant-build-pool'
 
-# Environment detection variables
+# Variables
 variables:
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
   dotnetSdkVersion: '8.0.415'
+  azureFunctionAppName: 'sigook-functions'
+  environment: 'Production'
 
 stages:
   # ============================================
@@ -65,15 +57,15 @@ stages:
               runIntegrationTests: false
 
   # ============================================
-  # Stage 2: Publish and Deploy
+  # Stage 2: Publish and Deploy to Production
   # ============================================
-  - stage: CI_CD
-    displayName: 'Publish and Deploy'
+  - stage: Deploy_Production
+    displayName: 'Deploy to Production'
     dependsOn: Build_and_Test
-    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    condition: succeeded()
     jobs:
       - job: Publish_and_Deploy
-        displayName: 'Publish and Deploy to Azure'
+        displayName: 'Publish and Deploy to Production'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
@@ -99,20 +91,9 @@ stages:
               arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
               zipAfterPublish: true
 
-          # Determine environment and app name
-          - script: |
-              if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
-                echo "##vso[task.setvariable variable=azureFunctionAppName]sigook-functions-staging"
-                echo "##vso[task.setvariable variable=environment]Staging"
-              else
-                echo "##vso[task.setvariable variable=azureFunctionAppName]sigook-functions"
-                echo "##vso[task.setvariable variable=environment]Production"
-              fi
-            displayName: 'Set Environment Variables'
-
-          # Deploy to Azure Function App
+          # Deploy to Azure Function App (Production)
           - task: AzureFunctionApp@2
-            displayName: 'Deploy to Azure Function App'
+            displayName: 'Deploy to Azure Function App (Production)'
             inputs:
               azureSubscription: 'SigookPipelines'
               appType: 'functionApp'
@@ -129,17 +110,13 @@ stages:
               script: |
                 echo ""
                 echo "============================================"
-                echo "Deployment Completed!"
+                echo "🚀 Deployment Completed Successfully!"
                 echo "============================================"
                 echo "Environment: $(environment)"
                 echo "Function App: $(azureFunctionAppName)"
                 echo "Version: $(Build.BuildId)"
                 echo "============================================"
                 echo ""
-                echo "URLs:"
-                if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
-                  echo "Staging: https://sigook-functions-staging.azurewebsites.net"
-                else
-                  echo "Production: https://sigook-functions.azurewebsites.net"
-                fi
+                echo "Production URL:"
+                echo "https://sigook-functions.azurewebsites.net"
                 echo ""

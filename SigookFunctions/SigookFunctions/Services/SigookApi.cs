@@ -1,31 +1,18 @@
 using IdentityModel.Client;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SigookFunctions.Models;
-using SigookFunctions.Options;
+using SigookFunctions.Utils;
 
 namespace SigookFunctions.Services
 {
     public class SigookApi : ISigookApi
     {
-        private readonly SigookFunctionsOptions _options;
-        private readonly ITokenService _tokenService;
-        private readonly HttpClient _client;
-
-        public SigookApi(IOptions<SigookFunctionsOptions> options, ITokenService tokenService)
-        {
-            _options = options.Value;
-            _tokenService = tokenService;
-            _client = new HttpClient();
-        }
-
+        private static readonly string SigookUrlWorkersAvailableToApply = Environment.GetEnvironmentVariable("SigookUrlWorkersAvailableToApply") ?? "https://staging.api.sigook.ca/api/Worker/AvailableToInvite";
+        private static readonly HttpClient Client = new HttpClient();
         public async Task<PaginatedList<WorkerContactInfoModel>> GetWorkers(int pageIndex, Guid agencyId)
         {
-            _client.SetBearerToken(await _tokenService.GetTokenAsync());
-
-            HttpResponseMessage response = await _client.GetAsync(
-                $"{_options.Urls.WorkersAvailableToApply}?PageSize=100&PageIndex={pageIndex}&AgencyId={agencyId}");
-
+            Client.SetBearerToken(await Client.GetToken());
+            HttpResponseMessage response = await Client.GetAsync($"{SigookUrlWorkersAvailableToApply}?PageSize=100&PageIndex={pageIndex}&AgencyId={agencyId}");
             string content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<PaginatedList<WorkerContactInfoModel>>(content);
         }
