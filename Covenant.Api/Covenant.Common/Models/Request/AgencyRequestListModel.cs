@@ -15,7 +15,7 @@ namespace Covenant.Common.Models.Request
         public DateTime? StartAt { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
-        public string ProvinceCode { get; set; }
+        public string ProvinceName { get; set; }
         public string PostalCode { get; set; }
         public string Entrance { get; set; }
         public string CompanyFullName { get; set; }
@@ -37,6 +37,7 @@ namespace Covenant.Common.Models.Request
         public bool PunchCardOptionEnabled { get; set; }
         public bool HasPermissionToSeeInternalOrders { get; set; }
 
-        public string Location => $"{Address} {City} {ProvinceCode} {PostalCode}";
+        public string Location => $"{Address} {City} {ProvinceName} {PostalCode}";
+        public string LocationAddress => $"{Address} {City} {PostalCode}";
     }
 }
