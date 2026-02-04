@@ -36,11 +36,6 @@ namespace SigookFunctions.Functions
             [TimerTrigger("0 0 * * 1-5")] TimerInfo timerInfo,
             ILogger logger) => await Execute(nameof(WarnLicensesExpiration), logger);
 
-        [FunctionName(nameof(StartRequests))]
-        public async Task StartRequests(
-            [TimerTrigger("0 */20 * * * *")] TimerInfo timerInfo,
-            ILogger logger) => await Execute(nameof(StartRequests), logger);
-
         private async Task Execute(string action, ILogger logger)
         {
             TeamsMessage message;

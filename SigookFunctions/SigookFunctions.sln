@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigookFunctions", "./SigookFunctions/SigookFunctions.csproj", "{8A198476-6713-4CCB-A632-97A14678785B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "./Tests/Tests.csproj", "{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SigookFunctions", "SigookFunctions\SigookFunctions.csproj", "{8A198476-6713-4CCB-A632-97A14678785B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A198476-6713-4CCB-A632-97A14678785B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -32,17 +27,11 @@ Global
 		{8A198476-6713-4CCB-A632-97A14678785B}.Release|x64.Build.0 = Release|Any CPU
 		{8A198476-6713-4CCB-A632-97A14678785B}.Release|x86.ActiveCfg = Release|Any CPU
 		{8A198476-6713-4CCB-A632-97A14678785B}.Release|x86.Build.0 = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|x64.Build.0 = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Debug|x86.Build.0 = Debug|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|x64.ActiveCfg = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|x64.Build.0 = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|x86.ActiveCfg = Release|Any CPU
-		{F42FACDB-5BC5-4CF2-ACBC-D28F617B04D7}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {82EC090C-31D9-47BD-8BBE-C70870E316EB}
 	EndGlobalSection
 EndGlobal

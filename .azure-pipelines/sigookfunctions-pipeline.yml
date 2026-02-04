@@ -1,4 +1,4 @@
-# Azure Pipeline for SigookFunctions (Azure Functions .NET 6)
+# Azure Pipeline for SigookFunctions (Azure Functions .NET 8)
 # Builds, tests, and deploys Azure Functions to Azure Function App
 
 name: SigookFunctions-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
@@ -33,7 +33,7 @@ pool:
 variables:
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
-  dotnetSdkVersion: '6.0.420'
+  dotnetSdkVersion: '8.0.415'
 
 stages:
   # ============================================
