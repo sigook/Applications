@@ -28,7 +28,6 @@ namespace Covenant.Integration.Tests.ManagerModule.ScheduleTasks
         [Theory]
         [InlineData("NotificationSinExpiration")]
         [InlineData("WarnLicensesExpiration")]
-        [InlineData("StartRequests")]
         public async Task Execute(string action)
         {
             var response = await _client.PostAsync($"{ScheduleTasksController.RouteName}/{action}", new StringContent(""));

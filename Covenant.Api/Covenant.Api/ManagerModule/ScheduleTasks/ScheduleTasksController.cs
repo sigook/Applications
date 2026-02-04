@@ -31,11 +31,5 @@ namespace Covenant.Api.ManagerModule.ScheduleTasks
             return Ok();
         }
 
-        [HttpPost("StartRequests")]
-        public async Task<IActionResult> StartRequests([FromServices] IRequestRepository service)
-        {
-            await service.PutRequestInProgress();
-            return Ok();
-        }
     }
 }

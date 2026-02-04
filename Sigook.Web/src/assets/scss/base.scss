@@ -1264,7 +1264,7 @@ input[type="file"] {
   opacity: 0.6;
 }
 
-// Pulse animation for in-progress states
+// Pulse animation for active states (pending, inqueue, working)
 @keyframes pulse-blue {
   0%, 100% {
     box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
@@ -1329,7 +1329,7 @@ input[type="file"] {
   }
 }
 
-// InProgress status - Blue
+// Blue status tag (general purpose, InProgress removed 2026-01-28)
 .tag-blue {
   background-color: rgba(33, 183, 255, 0.15);
   color: darken($primary, 10%);
@@ -1360,7 +1360,7 @@ input[type="file"] {
   color: $accent;
 }
 
-.InProgress,
+// .InProgress, // REMOVED (2026-01-28) - InProgress state eliminated
 .Book {
   color: $primary;
 }

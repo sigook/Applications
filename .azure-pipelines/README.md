@@ -12,6 +12,7 @@ Este directorio contiene los pipelines de CI/CD para las aplicaciones del monore
 ├── covenant-api-pipeline.yml              # Pipeline para .NET API (completo)
 ├── covenant-identityserver-pipeline.yml   # Pipeline para IdentityServer (completo)
 ├── covenant-common-nuget-pipeline.yml     # Pipeline para NuGet package (completo)
+├── sigookfunctions-pipeline.yml           # Pipeline para Azure Functions (completo)
 ├── templates/                             # Templates reutilizables
 │   ├── dotnet-setup.yml                   # Template: Instalar .NET SDK
 │   ├── dotnet-build-test.yml              # Template: Build y Tests
@@ -32,6 +33,7 @@ Cada pipeline **solo se ejecuta cuando hay cambios en su aplicación específica
 - **covenant-api-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/**` (excepto Covenant.Common)
 - **covenant-identityserver-pipeline.yml**: Se activa solo con cambios en `Covenant.IdentityServer/**`
 - **covenant-common-nuget-pipeline.yml**: Se activa solo con cambios en `Covenant.Api/Covenant.Common/**` (solo rama dev)
+- **sigookfunctions-pipeline.yml**: Se activa solo con cambios en `SigookFunctions/**`
 
 **Beneficios:**
 - ✅ Ahorro de tiempo de build (no ejecuta pipelines innecesarios)

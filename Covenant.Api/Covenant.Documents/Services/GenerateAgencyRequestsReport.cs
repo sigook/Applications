@@ -43,7 +43,6 @@ public class GenerateAgencyRequestReportHandler : GenerateAgencyReportHandler<Ge
         var statusText = data.RequestStatus switch
         {
             RequestStatus.Open => "Open",
-            RequestStatus.InProgress => "In Progress",
             RequestStatus.Filled => "Filled",
             RequestStatus.Cancelled => "Cancelled",
             _ => "Unknown"
