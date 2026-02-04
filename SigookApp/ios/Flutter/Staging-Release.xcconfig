@@ -1,0 +1,4 @@
+#include "Release.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER=com.sigook.beta
+APP_DISPLAY_NAME=SIGOOK Beta
