@@ -17,7 +17,7 @@
     <!-- To get the exact name, run: security cms -D -i "sigook-production.mobileprovision" | grep -A1 "Name" -->
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.sigook.sigook</key>
+        <key>com.all2job.all2job</key>
         <string>Sigook Production Distribution</string>
     </dict>
     

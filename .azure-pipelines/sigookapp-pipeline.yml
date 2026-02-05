@@ -162,11 +162,33 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
+    # ============================================
+    # Calculate App Version (Date-based)
+    # ============================================
+    # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+    # Version Code: Build.BuildId (always increasing integer)
+    # ============================================
     - task: Bash@3
-      displayName: 'Display Build Information'
+      name: CalculateVersion
+      displayName: 'Calculate App Version'
       inputs:
         targetType: 'inline'
         script: |
+          echo "========================================"
+          echo "Calculating App Version (Date-based)"
+          echo "========================================"
+
+          # Get current date components
+          YEAR=$(date +%Y)
+          MONTH=$(date +%-m)  # Month without leading zero
+          DAY=$(date +%-d)    # Day without leading zero
+
+          # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+          APP_VERSION_NAME="${YEAR}.${MONTH}.${DAY}"
+
+          # Version Code: Use Build.BuildId (always increasing integer for app stores)
+          APP_VERSION_CODE=$(Build.BuildId)
+
           echo "========================================"
           echo "Android Build - $(environment)"
           echo "========================================"
@@ -174,6 +196,14 @@ stages:
           echo "Source Branch: $(Build.SourceBranch)"
           echo "Environment: $(environment)"
           echo "========================================"
+          echo "APP VERSION INFO:"
+          echo "  Version Name: ${APP_VERSION_NAME}"
+          echo "  Version Code: ${APP_VERSION_CODE}"
+          echo "========================================"
+
+          # Export variables for subsequent steps
+          echo "##vso[task.setvariable variable=appVersionName;isOutput=true]${APP_VERSION_NAME}"
+          echo "##vso[task.setvariable variable=appVersionCode;isOutput=true]${APP_VERSION_CODE}"
     - task: CmdLine@2
       displayName: 'Free Disk Space'
       continueOnError: true
@@ -345,13 +375,22 @@ stages:
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
           fi
 
+          # Use calculated version from CalculateVersion step
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
+          echo "Building with Version Name: ${VERSION_NAME}"
+          echo "Building with Version Code: ${VERSION_CODE}"
+
           flutter build appbundle \
             --flavor $(flavor) \
             -t $(entryPoint) \
             --release \
-            --build-number=$(Build.BuildId)
+            --build-name="${VERSION_NAME}" \
+            --build-number="${VERSION_CODE}"
 
           echo "✅ Android AAB built successfully for $(environment)"
+          echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
           ls -la build/app/outputs/bundle/$(flavor)Release/
     - task: Bash@3
       displayName: 'Verify Android AAB Signing'
@@ -395,10 +434,15 @@ stages:
         script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/android
 
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
           AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
           if [ -n "$AAB_PATH" ]; then
-            cp "$AAB_PATH" $(Build.ArtifactStagingDirectory)/android/sigook-$(environment)-$(Build.BuildId).aab
-            echo "✅ AAB copied: sigook-$(environment)-$(Build.BuildId).aab"
+            # Artifact name includes version: sigook-staging-2026.2.5-12345.aab
+            ARTIFACT_NAME="sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.aab"
+            cp "$AAB_PATH" "$(Build.ArtifactStagingDirectory)/android/${ARTIFACT_NAME}"
+            echo "✅ AAB copied: ${ARTIFACT_NAME}"
             ls -la $(Build.ArtifactStagingDirectory)/android/
           else
             echo "❌ AAB not found!"
@@ -416,13 +460,17 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
           echo ""
           echo "========================================"
           echo "✅ Android Build Complete! ($(environment))"
           echo "========================================"
+          echo "Version Name: ${VERSION_NAME}"
+          echo "Version Code: ${VERSION_CODE}"
           echo "Artifact: sigookapp-android-$(environment)"
-          echo "AAB: sigook-$(environment)-$(Build.BuildId).aab"
-          echo "Build ID: $(Build.BuildId)"
+          echo "AAB: sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.aab"
           echo "========================================"
 # ============================================
 # Stage 3: Build iOS IPA (runs on merged PR to dev/main only)
@@ -458,11 +506,33 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
+    # ============================================
+    # Calculate App Version (Date-based)
+    # ============================================
+    # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+    # Version Code: Build.BuildId (always increasing integer)
+    # ============================================
     - task: Bash@3
-      displayName: 'Display Build Information'
+      name: CalculateVersion
+      displayName: 'Calculate App Version'
       inputs:
         targetType: 'inline'
         script: |
+          echo "========================================"
+          echo "Calculating App Version (Date-based)"
+          echo "========================================"
+
+          # Get current date components
+          YEAR=$(date +%Y)
+          MONTH=$(date +%-m)  # Month without leading zero
+          DAY=$(date +%-d)    # Day without leading zero
+
+          # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+          APP_VERSION_NAME="${YEAR}.${MONTH}.${DAY}"
+
+          # Version Code: Use Build.BuildId (always increasing integer for app stores)
+          APP_VERSION_CODE=$(Build.BuildId)
+
           echo "========================================"
           echo "iOS Build - $(environment)"
           echo "========================================"
@@ -470,6 +540,14 @@ stages:
           echo "Source Branch: $(Build.SourceBranch)"
           echo "Environment: $(environment)"
           echo "========================================"
+          echo "APP VERSION INFO:"
+          echo "  Version Name: ${APP_VERSION_NAME}"
+          echo "  Version Code: ${APP_VERSION_CODE}"
+          echo "========================================"
+
+          # Export variables for subsequent steps
+          echo "##vso[task.setvariable variable=appVersionName;isOutput=true]${APP_VERSION_NAME}"
+          echo "##vso[task.setvariable variable=appVersionCode;isOutput=true]${APP_VERSION_CODE}"
     - task: CmdLine@2
       displayName: 'Cleanup signing keychain'
       inputs:
@@ -605,12 +683,22 @@ stages:
           echo "APP_NAME: $(APP_NAME)"
           echo "APPLE_TEAM_ID: $(APPLE_TEAM_ID)"
           echo "============================="
+
+          # Use calculated version from CalculateVersion step
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
+          echo "Building with Version Name: ${VERSION_NAME}"
+          echo "Building with Version Code: ${VERSION_CODE}"
+
           flutter build ios \
             -t $(entryPoint) \
             --release \
             --no-codesign \
-            --build-number=$(Build.BuildId)
+            --build-name="${VERSION_NAME}" \
+            --build-number="${VERSION_CODE}"
           echo "✅ Flutter iOS build complete for $(environment) (no codesign)"
+          echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
     - task: CmdLine@2
       displayName: 'Select Xcode Version (Latest - 26.2)'
       inputs:
@@ -736,6 +824,9 @@ stages:
         targetType: 'inline'
         workingDirectory: '$(workingDirectory)'
         script: |
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
           mkdir -p $(Build.ArtifactStagingDirectory)/ios
 
           echo "Output directory contents:"
@@ -743,8 +834,10 @@ stages:
 
           IPA_PATH=$(find output -name "*.ipa" 2>/dev/null | head -1)
           if [ -n "$IPA_PATH" ]; then
-            cp "$IPA_PATH" $(Build.ArtifactStagingDirectory)/ios/sigook-$(environment)-$(Build.BuildId).ipa
-            echo "✅ IPA copied: sigook-$(environment)-$(Build.BuildId).ipa"
+            # Artifact name includes version: sigook-staging-2026.2.5-12345.ipa
+            ARTIFACT_NAME="sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.ipa"
+            cp "$IPA_PATH" "$(Build.ArtifactStagingDirectory)/ios/${ARTIFACT_NAME}"
+            echo "✅ IPA copied: ${ARTIFACT_NAME}"
             ls -la $(Build.ArtifactStagingDirectory)/ios/
           else
             echo "❌ IPA not found!"
@@ -762,13 +855,17 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          VERSION_NAME="$(CalculateVersion.appVersionName)"
+          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+
           echo ""
           echo "========================================"
           echo "✅ iOS Build Complete! ($(environment))"
           echo "========================================"
+          echo "Version Name: ${VERSION_NAME}"
+          echo "Version Code: ${VERSION_CODE}"
           echo "Artifact: sigookapp-ios-$(environment)"
-          echo "IPA: sigook-$(environment)-$(Build.BuildId).ipa"
-          echo "Build ID: $(Build.BuildId)"
+          echo "IPA: sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.ipa"
           echo "========================================"
 # ============================================
 # Stage 4: Deploy iOS to TestFlight (runs on merged PR to dev/main only)
