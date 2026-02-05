@@ -4,14 +4,15 @@
       @onDataLoading="(value) => $emit('onDataLoading', value)">
       <template v-slot:actions>
         <b-checkbox v-if="tableConfig.showMyOrdersCheckbox" v-model="serverParams.onlyMine">My Orders</b-checkbox>
-        <b-button v-if="tableConfig.showQuickActions" :disabled="checkedRows.length < 1" @click="onShowQuickActionsModal">
+        <b-button v-if="tableConfig.showQuickActions" :disabled="checkedRows.length < 1"
+          @click="onShowQuickActionsModal">
           Quick Actions
         </b-button>
       </template>
     </export>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
-      :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
-      default-sort="updatedAt" :current-page.sync="serverParams.pageIndex" :checked-rows.sync="checkedRows"
+      :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
+      focuseable default-sort="updatedAt" :current-page.sync="serverParams.pageIndex" :checked-rows.sync="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -39,11 +40,17 @@
           <template v-slot="props">
             <router-link :to="{ path: '/agency-companies/company/' + props.row.companyProfileId }">
               {{ props.row.companyFullName }}
-              <i class="fz-2 block">
-                {{ props.row.location }}
-                <i v-if="props.row.entrance"> - {{ props.row.entrance }}</i>
-              </i>
             </router-link>
+          </template>
+        </b-table-column>
+        <b-table-column field="location" label="Location" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"
+              @keypress.native="onInputEntered"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.location }}
+            <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
           </template>
         </b-table-column>
         <b-table-column field="jobTitle" label="Position" sortable searchable>
@@ -103,15 +110,18 @@
           <template v-slot="props">
             <div v-if="props.row.displayRecruiters" class="capitalize is-inline-block v-middle">
               {{ props.row.displayRecruiters | breakWord }}
-              <button v-if="tableConfig.showRecruiterModal" type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
+              <button v-if="tableConfig.showRecruiterModal" type="button"
+                class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
             </div>
             <div v-else>
               <span class="op3">Recruiter</span>
-              <button v-if="tableConfig.showRecruiterModal" type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
+              <button v-if="tableConfig.showRecruiterModal" type="button"
+                class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
             </div>
           </template>
         </b-table-column>
-        <b-table-column field="salesRepresentative" label="Sales Rep" :visible="tableConfig.showSalesRepColumn" sortable searchable>
+        <b-table-column field="salesRepresentative" label="Sales Rep" :visible="tableConfig.showSalesRepColumn" sortable
+          searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"
               @keypress.native="onInputEntered"></b-input>
@@ -166,9 +176,8 @@
             <div class="text-center">
               <b-tooltip :label="$t(props.row.status)" type="is-dark">
                 <div class="status-dot-container">
-                  <img
-                    v-if="props.row.status === $statusFilled"
-                    src="../../assets/images/check_white.png" alt="check" class="request-check" />
+                  <img v-if="props.row.status === $statusFilled" src="../../assets/images/check_white.png" alt="check"
+                    class="request-check" />
                   <div class="dot-status" :class="getStatusClass(props.row)"></div>
                 </div>
               </b-tooltip>
@@ -198,7 +207,8 @@
     </b-table>
 
     <!-- recruiters list -->
-    <b-modal v-if="tableConfig.showRecruiterModal" v-model="showRecruitersModal" @close="showRecruitersModal = false" width="500px">
+    <b-modal v-if="tableConfig.showRecruiterModal" v-model="showRecruitersModal" @close="showRecruitersModal = false"
+      width="500px">
       <personnel-list :recruiters="recruiters" :request="currentRequest" @selectUser="() => onUpdateRecruiter()"
         @removeUser="() => onUpdateRecruiter()" />
     </b-modal>
@@ -388,8 +398,8 @@ export default {
     },
     getStatusClass(row) {
       if (row.status === this.$statusOpen &&
-          row.workersQuantityWorking > 0 &&
-          row.workersQuantityWorking < row.workersQuantity) {
+        row.workersQuantityWorking > 0 &&
+        row.workersQuantityWorking < row.workersQuantity) {
         return 'status-inprogress';
       }
       return 'status-' + row.status.toLowerCase();

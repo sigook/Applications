@@ -39,9 +39,9 @@ This is a monorepo containing the Covenant/Sigook platform applications:
 - **SigookApp** - Flutter mobile application for worker registration and job matching
 - **Sigook.Web** - Vue.js 2 main web application for Sigook platform
 - **Covenant.Web** - Vue.js 3 marketing/informational website for Covenant
-- **Covenant.Api** - .NET 6 API backend for staffing/recruitment management system (15+ projects)
+- **Covenant.Api** - .NET 8 API backend for staffing/recruitment management system (15+ projects)
 - **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
-- **SigookFunctions** - .NET 6 Azure Functions for background processing and scheduled tasks
+- **SigookFunctions** - .NET 8 Azure Functions for background processing and scheduled tasks
 
 **Additional Components:**
 - **`.azure-pipelines/`** - CI/CD pipelines with path-based triggers and reusable templates
@@ -414,14 +414,14 @@ The Covenant.Web project requires:
 
 Use nvm or similar to manage Node versions if needed.
 
-## Covenant.Api (.NET 6 Backend API)
+## Covenant.Api (.NET 8 Backend API)
 
 ### Architecture
 
 The Covenant API is a comprehensive staffing/recruitment management system with modular architecture:
 
 **Tech Stack:**
-- .NET 6.0 with ASP.NET Core Web API
+- .NET 8.0 with ASP.NET Core Web API
 - PostgreSQL with Entity Framework Core
 - Azure Service Bus for messaging
 - Azure Storage for file management
@@ -536,18 +536,21 @@ dotnet test **/Covenant.IdentityServer.Tests.csproj
 - Staging: `sigook-accounts-staging.azurewebsites.net`
 - Production: `sigook-accounts.azurewebsites.net`
 
-## SigookFunctions (Azure Functions .NET 6)
+## SigookFunctions (Azure Functions .NET 8)
 
 ### Architecture
 
-Azure Functions serverless application for background processing, scheduled tasks, and email notifications.
+Azure Functions serverless application using the **Isolated Worker Model** (out-of-process) for background processing, scheduled tasks, queue processing, and email notifications.
 
 **Tech Stack:**
-- .NET 6.0 with Azure Functions v4
+- .NET 8.0 with Azure Functions v4 (Isolated Worker SDK)
+- Microsoft.Azure.Functions.Worker (out-of-process model)
 - SendGrid for email delivery
-- QRCoder for QR code generation
+- Azure Storage Queues for async job processing
+- Application Insights for monitoring and telemetry
 - Timer triggers for scheduled tasks
 - HTTP triggers for on-demand operations
+- Queue triggers for async message processing
 
 ### Project Structure
 
@@ -555,23 +558,27 @@ Azure Functions serverless application for background processing, scheduled task
 SigookFunctions/
 ├── SigookFunctions/           # Main Azure Functions project
 │   ├── Functions/             # Azure Function implementations
-│   │   ├── QrCode.cs          # QR code generation (HTTP trigger)
 │   │   ├── ScheduleTasks.cs   # Scheduled tasks (Timer triggers)
 │   │   ├── SendEmail.cs       # Email sending (HTTP trigger)
-│   │   └── SendInvitationToApply.cs  # Job invitations (HTTP trigger)
+│   │   └── SendInvitationToApply.cs  # Job invitations (Queue trigger)
 │   ├── Models/                # Data models
-│   ├── Options/               # Configuration options classes
+│   │   ├── EmailMessage.cs
+│   │   ├── EmailModel.cs
+│   │   ├── PaginatedList.cs
+│   │   ├── TeamsMessage.cs
+│   │   ├── TokenExpiryTime.cs
+│   │   └── WorkerContactInfoModel.cs
 │   ├── Services/              # Business logic services
 │   │   ├── IEmailService.cs / SendGridService.cs
-│   │   ├── ISigookApi.cs / SigookApi.cs
-│   │   ├── ITokenService.cs / TokenService.cs
-│   │   └── INotificationService.cs / NotificationService.cs
-│   ├── Startup.cs             # DI configuration
-│   ├── appsettings.json       # Base configuration
-│   ├── appsettings.Development.json
-│   ├── appsettings.Staging.json
-│   └── appsettings.Production.json
-├── Tests/                     # Unit tests
+│   │   └── ISigookApi.cs / SigookApi.cs
+│   ├── Utils/                 # Utility classes
+│   │   ├── AccessToken.cs     # OAuth token management
+│   │   └── Notifications.cs   # Teams notifications
+│   ├── Program.cs             # Minimal hosting DI configuration
+│   ├── host.json              # Azure Functions host configuration
+│   └── local.settings.json    # Local development settings
+├── nuget.config               # Azure Artifacts feed configuration
+├── global.json                # .NET SDK version (8.0.415)
 └── SigookFunctions.sln
 ```
 
@@ -583,45 +590,72 @@ cd SigookFunctions
 # Build solution
 dotnet build SigookFunctions.sln
 
-# Run locally (requires Azure Functions Core Tools)
+# Run locally (requires Azure Functions Core Tools v4)
 cd SigookFunctions
 func start
 
-# Run tests
-dotnet test Tests/Tests.csproj
+# Build in Release mode
+dotnet build SigookFunctions.sln --configuration Release
+
+# Publish for deployment
+dotnet publish SigookFunctions/SigookFunctions.csproj --configuration Release --output ./publish
 ```
 
 ### Functions Overview
 
 | Function | Trigger | Description |
 |----------|---------|-------------|
-| `QrCode` | HTTP (GET/POST) | Generates QR codes |
-| `SendEmail` | HTTP (POST) | Sends emails via SendGrid |
-| `SendInvitationToApply` | HTTP (POST) | Sends job application invitations |
-| `NotificationSinExpiration` | Timer (daily weekdays) | Expiration notifications |
-| `WarnLicensesExpiration` | Timer (daily weekdays) | License expiration warnings |
-| `StartRequests` | Timer (every 20 min) | Processes pending requests |
+| `SendEmail` | HTTP (POST) | Sends emails via SendGrid (used by Sigook API) |
+| `SendInvitationToApply` | Queue (`invitation-to-apply`) | Processes job invitation emails asynchronously |
+| `NotificationSinExpiration` | Timer (`0 0 * * 1-5`) | Daily weekday SIN expiration notifications |
+| `WarnLicensesExpiration` | Timer (`0 0 * * 1-5`) | Daily weekday license expiration warnings |
 
 ### Configuration
 
-The project uses `appsettings.{Environment}.json` files for environment-specific configuration:
+The project uses Azure Functions configuration pattern:
 
-- **URLs and non-sensitive config** → `appsettings.{env}.json`
-- **Secrets (API keys, credentials)** → Azure Configuration (Environment Variables)
+- **`host.json`** → Azure Functions runtime configuration, logging, Application Insights sampling
+- **`local.settings.json`** → Local development settings (not committed to git)
+- **Environment Variables** → All configuration in Azure (secrets and URLs)
 
-**Required Azure Configuration secrets:**
-- `SendGridApiKey`
-- `ScheduleTasks_ClientId`
-- `ScheduleTasks_ClientSecret`
-- `TeamsWebhook`
+**Required Azure Configuration:**
+- `SendGridApiKey` - SendGrid API key for email delivery
+- `ScheduleTasks_ApiUrl` - Base URL for scheduled task API calls
+- `ScheduleTasks_ClientId` - OAuth client ID for API authentication
+- `ScheduleTasks_ClientSecret` - OAuth client secret
+- `TeamsWebhook` - Microsoft Teams webhook for notifications
+- `SigookStorageAccount` - Azure Storage connection string for queue triggers
+
+### Key Patterns
+
+**Isolated Worker Model (Program.cs):**
+```csharp
+var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication()
+    .ConfigureServices(services =>
+    {
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.ConfigureFunctionsApplicationInsights();
+        services.AddSingleton<ISigookApi, SigookApi>();
+        services.AddSingleton<IEmailService, SendGridService>();
+    })
+    .Build();
+```
+
+**Dependency Injection:** Services are registered in `Program.cs` and injected via constructor injection in function classes.
+
+**Queue Processing:** `SendInvitationToApply` processes messages from Azure Storage Queue, supports pagination for bulk email sending to workers.
+
+**Teams Notifications:** Scheduled tasks send success/error notifications to Microsoft Teams via webhook.
 
 ### Important Notes
 
-- Uses Dependency Injection with `IOptions<SigookFunctionsOptions>` pattern
-- Requires `Covenant.Common` NuGet package from Azure Artifacts
+- Uses **Isolated Worker Model** (out-of-process) for better performance and dependency isolation
+- Requires `Covenant.Common` NuGet package from Azure Artifacts (configured in `nuget.config`)
+- Application Insights integrated for telemetry and monitoring
+- No unit tests currently (project focused on integration with external services)
 - Deployed to Azure Function App (not containerized)
-- Staging: `sigook-functions-staging.azurewebsites.net`
-- Production: `sigook-functions.azurewebsites.net`
+- Production only deployment: `sigook-functions.azurewebsites.net`
 
 ## Azure DevOps Pipelines
 
@@ -669,6 +703,17 @@ paths:
     - Covenant.IdentityServer/**
   exclude:
     - Covenant.IdentityServer/**/*.md
+
+# Example: SigookFunctions pipeline only triggers on main branch:
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - SigookFunctions/**
+    exclude:
+      - SigookFunctions/**/*.md
 ```
 
 **Benefits:**
@@ -725,7 +770,7 @@ The pipelines use **reusable templates** located in `.azure-pipelines/templates/
 # Install .NET SDK
 - template: templates/dotnet-setup.yml
   parameters:
-    sdkVersion: '6.0.400'
+    sdkVersion: '8.0.415'  # Use appropriate SDK version for your project
 
 # Build and test
 - template: templates/dotnet-build-test.yml
@@ -773,7 +818,7 @@ The pipelines use **reusable templates** located in `.azure-pipelines/templates/
 
 **Covenant.Api Pipeline (complete):**
 1. **Build and Test Stage** (uses templates)
-   - Install .NET SDK 6.0.400 (template: dotnet-setup.yml)
+   - Install .NET SDK 8.0.415 (template: dotnet-setup.yml)
    - Build solution (template: dotnet-build-test.yml)
    - Run unit tests
    - Run integration tests
@@ -821,6 +866,19 @@ For comprehensive pipeline documentation including setup, configuration, and tro
 - Testing and troubleshooting guides
 - Common issues and solutions
 
+**SigookFunctions Pipeline (complete):**
+1. **Build Stage**
+   - Verify .NET SDK 8.0.415
+   - Build solution using dotnet-build-test.yml template
+   - No unit tests (project has none)
+
+2. **Deploy to Production Stage** (main branch only)
+   - Authenticate with Azure Artifacts for Covenant.Common package
+   - Publish Azure Functions
+   - Deploy to Azure Function App
+   - Production only: `sigook-functions.azurewebsites.net`
+   - No staging environment (direct production deployment on merge to main)
+
 ### Quick Commands for Testing Triggers
 
 ```bash
@@ -853,6 +911,11 @@ git push origin dev
 echo "// test" >> Covenant.Api/Covenant.Common/README.md
 git add . && git commit -m "test: trigger covenant-common-nuget pipeline"
 git push origin dev
+
+# Test SigookFunctions pipeline only (triggers on push to main)
+echo "// test" >> SigookFunctions/SigookFunctions/Program.cs
+git add . && git commit -m "test: trigger sigookfunctions pipeline"
+git push origin main
 
 # No pipeline triggered (documentation only)
 echo "test" >> README.md

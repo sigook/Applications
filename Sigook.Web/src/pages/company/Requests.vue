@@ -51,7 +51,7 @@
             </template>
             <template v-slot="props">
               {{ props.row.location }}
-              <i class="fz-2 block" v-if="props.row.entrance">{{ props.row.entrance }}</i>
+              <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
             </template>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
