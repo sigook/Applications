@@ -1,6 +1,7 @@
 #!/bin/bash
-# Build Android Production AAB with automatic date-based versioning
-# Usage: ./scripts/build_android_production.sh
+# Build iOS Production with automatic date-based versioning
+# Usage: ./scripts/build_ios_production.sh
+# Note: Must be run on macOS
 
 set -e
 
@@ -18,14 +19,14 @@ VERSION_NAME="${YEAR}.${MONTH}.${DAY}${HOUR}${MINUTE}"
 VERSION_CODE=$(date +%Y%m%d%H)
 
 echo "========================================"
-echo "Building Android Production AAB"
+echo "Building iOS Production"
 echo "========================================"
 echo "Version Name: $VERSION_NAME"
 echo "Version Code: $VERSION_CODE"
 echo "========================================"
 
-# Build the AAB
-flutter build appbundle \
+# Build iOS (creates the Xcode project with correct version)
+flutter build ios \
     --flavor production \
     -t lib/main_production.dart \
     --release \
@@ -36,5 +37,6 @@ echo ""
 echo "========================================"
 echo "BUILD SUCCESSFUL!"
 echo "========================================"
-echo "AAB Location: build/app/outputs/bundle/productionRelease/app-production-release.aab"
+echo "Now open Xcode to archive and upload to App Store:"
+echo "  open ios/Runner.xcworkspace"
 echo "Version: $VERSION_NAME ($VERSION_CODE)"

@@ -3,16 +3,19 @@
 
 $ErrorActionPreference = "Stop"
 
-# Calculate date-based version
-$year = (Get-Date).Year
-$month = (Get-Date).Month
-$day = (Get-Date).Day
+# Calculate date-based version with time for unique builds
+$now = Get-Date
+$year = $now.Year
+$month = $now.Month
+$day = $now.Day
+$hour = $now.Hour
+$minute = $now.Minute
 
-# Version name: YYYY.M.D (e.g., 2026.2.6)
-$versionName = "$year.$month.$day"
+# Version name: YYYY.M.DHHMM (e.g., 2026.2.61430) - no dot before time
+$versionName = "$year.$month.$day$("{0:D2}{1:D2}" -f $hour, $minute)"
 
-# Version code: YYYYMMDD (e.g., 20260206) - always increasing
-$versionCode = "{0:D4}{1:D2}{2:D2}" -f $year, $month, $day
+# Version code: YYYYMMDDHH (e.g., 2026020614) - max 2.1B, hourly granularity
+$versionCode = "{0:D4}{1:D2}{2:D2}{3:D2}" -f $year, $month, $day, $hour
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Building Android Production AAB" -ForegroundColor Cyan
