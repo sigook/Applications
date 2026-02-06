@@ -24,7 +24,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #   - Google Play: versionCode (build-number) must always increase
 #   - App Store: CFBundleVersion (build-number) must always increase
 # =============================================================================
-version: 2026.2.5+100
+version: 2026.2.6+20260206
 
 environment:
   sdk: ^3.9.2
