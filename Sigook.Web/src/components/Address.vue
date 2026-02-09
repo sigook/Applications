@@ -188,8 +188,25 @@ export default {
         }
       })
     },
+    validateSelection() {
+      let valid = true;
+
+      if (this.province && (!this.provinceSelected || this.provinceSelected.value.toLowerCase() !== this.province.toLowerCase())) {
+        this.errors.add({ field: 'province', msg: 'Please select a province from the list' });
+        valid = false;
+      }
+
+      if (this.city && (!this.citySelected || this.citySelected.value.toLowerCase() !== this.city.toLowerCase())) {
+        this.errors.add({ field: 'city', msg: 'Please select a city from the list' });
+        valid = false;
+      }
+
+      return valid;
+    },
     async validateAddress() {
-      return await this.$validator.validateAll();
+      const fieldsValid = await this.$validator.validateAll();
+      const selectionValid = this.validateSelection();
+      return fieldsValid && selectionValid;
     },
     openProvinceSettings() {
       this.showProvinceSettingsModal = true;
@@ -200,6 +217,21 @@ export default {
         this.model.city.province.settings = settings;
       }
       this.showProvinceSettingsModal = false;
+    }
+  },
+  watch: {
+    province(newVal) {
+      if (this.provinceSelected && this.provinceSelected.value !== newVal) {
+        this.provinceSelected = null;
+        this.city = '';
+        this.citySelected = null;
+        this.cities = [];
+      }
+    },
+    city(newVal) {
+      if (this.citySelected && this.citySelected.value !== newVal) {
+        this.citySelected = null;
+      }
     }
   },
   computed: {

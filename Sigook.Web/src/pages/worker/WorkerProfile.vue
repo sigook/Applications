@@ -1,61 +1,11 @@
 <template>
   <div class="profile white-container-mobile profile-worker">
     <b-loading v-model="isLoading"></b-loading>
-    <!-- SIDE BAR MENU -->
-    <nav class="user-profile-menu">
-      <div class="contain-profile">
-        <div class="profile-selected" @click="dropdownAgency = !dropdownAgency">
-          <img :src="profileSelected.agencyLogo" alt="logo agency" />
-          <span :class="{ 'no-arrow': workerProfiles.length === 1 }">
-            {{ profileSelected.agencyFullName }}
-          </span>
-        </div>
-        <transition name="fadeHeight">
-          <div v-if="dropdownAgency && workerProfiles.length > 1" class="dropdown">
-            <div v-for="item in workerProfiles" :key="'workerprofiles' + item.agencyFullName" class="item"
-              @click="changeProfile(item)">
-              <img :src="item.agencyLogo" alt="logo agency" />
-              {{ item.agencyFullName }}
-            </div>
-          </div>
-        </transition>
-      </div>
-      <div class="only-sm button-toggle-menu-mobile" @click="toggleMenuMobile = !toggleMenuMobile">
-        {{ currentTab.name }}
-        <img src="../../assets/images/arrow-down.svg" alt="menu" :class="{ up: toggleMenuMobile }" />
-      </div>
-      <div class="toggle-menu-mobile" v-show="toggleMenuMobile">
-        <a v-for="tab in tabs" :key="'tabs' + tab.tab"
-          v-bind:class="['tab-button', { active: currentTab.name === tab.name }]">
-          <span class="fw-700 block" v-on:click="changeTab(tab)">{{ tab.name }}</span>
-          <ul>
-            <li v-for="item in tab.children" :class="{ missing: item.missing }" @click="scrollTo(tab, item.name)"
-              :key="'childrentab' + item.name">
-              {{ item.name }}
-            </li>
-          </ul>
-        </a>
-      </div>
 
-      <div class="options-profile">
-        <p @click="dropdownOptions = !dropdownOptions" :class="{ 'dropdown-open': dropdownOptions }">
-          <span>▶</span> {{ $t("Options") }}
-        </p>
-        <transition name="fade">
-          <div class="dropdown-rol" v-if="dropdownOptions">
-            <b class="fz-1">{{ $t("ChangeLanguage") }}:</b>
-            <div class="navbar-languages">
-              <span v-on:click="switchLocale('en')" :class="lang === 'en' ? 'active' : ''">EN</span>
-              <span v-on:click="switchLocale('fr')" :class="lang === 'fr' ? 'active' : ''">FR</span>
-              <span v-on:click="switchLocale('es')" :class="lang === 'es' ? 'active' : ''">ES</span>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </nav>
-
-    <div class="profile-content" v-if="workerProfile">
-      <div class="profile-top">
+    <!-- Agency Profile Selector -->
+    <div class="worker-profile-header">
+      <!-- Profile Top -->
+      <div class="profile-top" v-if="workerProfile">
         <div class="max-width-158">
           <image-detail :data="workerProfile" @updateProfile="() => updateProfile()" />
         </div>
@@ -69,17 +19,56 @@
             <b>Id:</b>{{ workerProfile.numberId }} <br />
             <b>Phone:</b>{{ workerProfile.mobileNumber }}
           </p>
-          <button class="download-qr-button mt-2" @click="getQRCode(workerProfile.workerId)">
-            <img src="../../assets/images/qr-code-orange.png" alt="Qr code icon" width="20px"
-              class="d-inline-block v-middle" />
-            <span class="d-inline-block v-middle ml-2">Qr Code</span>
-          </button>
-          <worker-qr :worker="workerProfile" :qr-image="QrImage"></worker-qr>
-          <p class="color-primary fw-400"></p>
         </div>
       </div>
-      <component v-if="workerProfile" v-bind:is="currentTabComponent" class="tab" :worker="workerProfile" />
     </div>
+
+    <!-- Buefy Tabs -->
+    <b-tabs v-model="currentTab" @input="changeTab" v-if="workerProfile">
+      <b-tab-item value="PersonalDetails">
+        <template #header>
+          <span>Personal Details</span>
+          <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
+        </template>
+        <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item value="SkillsInfo">
+        <template #header>
+          <span>Skills & Languages</span>
+          <b-icon v-if="hasSkillsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
+        </template>
+        <SkillsInfo v-if="visitedTabs.includes('SkillsInfo')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item label="Licenses & Certifications" value="LicensesInfo">
+        <LicensesInfo v-if="visitedTabs.includes('LicensesInfo')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item label="Work Experience" value="WorkExperience">
+        <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item value="AdditionalInfo">
+        <template #header>
+          <span>Additional Info</span>
+          <b-icon v-if="hasAdditionalInfoMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
+        </template>
+        <AdditionalInfo v-if="visitedTabs.includes('AdditionalInfo')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item label="Comments" value="Comments">
+        <Comments v-if="visitedTabs.includes('Comments')" :worker="workerProfile" />
+      </b-tab-item>
+
+      <b-tab-item label="Account Security" value="AccountSecurity">
+        <WorkerAccountSecurity v-if="visitedTabs.includes('AccountSecurity')" />
+      </b-tab-item>
+
+      <b-tab-item label="Notifications" value="UserNotification">
+        <UserNotification v-if="visitedTabs.includes('UserNotification')" />
+      </b-tab-item>
+    </b-tabs>
   </div>
 </template>
 
@@ -96,30 +85,21 @@ export default {
     AdditionalInfo: () => import("../../components/worker/ProfileAdditionalInfo"),
     WorkExperience: () => import("../../components/worker/ProfileExperience"),
     Comments: () => import("../../components/worker/ProfileComments"),
-    UploadImage: () => import("../../components/PreviewImage"),
-    AccountSecurity: () => import("../../components/agency/ProfileAccountInformation"),
+    WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity"),
     UserNotification: () => import("../../components/UserNotification"),
     imageDetail: () => import("../../components/worker/WorkImageDetail"),
-    WorkerQr: () => import("../../components/WorkerPunchCardPrint"),
   },
   data() {
     return {
       dropdownAgency: false,
-      currentTab: {
-        tab: "PersonalDetails",
-        name: "Personal Details",
-      },
+      currentTab: "PersonalDetails",
+      visitedTabs: ["PersonalDetails"],
       isLoading: true,
       dropdownOptions: false,
       lang: this.$validator.dictionary.locale,
-      hideEditButton: false,
-      toggleMenuMobile: true,
     };
   },
   methods: {
-    titleTab(val) {
-      return val.split(/(?=[A-Z])/).join(" ");
-    },
     changeProfile(profile) {
       this.dropdownAgency = false;
       if (profile !== this.profileSelected) {
@@ -137,21 +117,13 @@ export default {
       }
     },
     changeTab(tab) {
-      this.currentTab = tab;
-      if (this.$store.state.isMobile) this.toggleMenuMobile = false;
-    },
-    scrollTo(tab, value) {
-      if (tab === this.currentTab) {
-        let anchor = value.toLowerCase().replace(/\s/g, "");
-        let element = document.getElementById(anchor);
-        element.scrollIntoView();
-        element.classList.add("focus");
-        setTimeout(function () {
-          element.classList.remove("focus");
-        }, 1000);
+      if (!this.visitedTabs.includes(tab)) {
+        this.visitedTabs.push(tab);
       }
-
-      this.currentTab = tab;
+      this.$router.push({
+        path: "/worker-profile",
+        query: { tab: tab },
+      });
     },
     updateProfile() {
       this.isLoading = true;
@@ -167,9 +139,6 @@ export default {
     },
   },
   computed: {
-    currentTabComponent() {
-      return this.currentTab.tab;
-    },
     profileSelected() {
       return this.$store.state.worker.profileSelected;
     },
@@ -179,129 +148,36 @@ export default {
     workerProfile() {
       return this.$store.state.worker.workerProfile;
     },
-    worker() {
-      return this.$store.state.worker.workerProfile;
+    hasPersonalDetailsMissing() {
+      if (!this.workerProfile) return false;
+      return !this.workerProfile.socialInsurance
+        || !this.workerProfile.socialInsuranceFile
+        || !this.workerProfile.identificationType1File
+        || !this.workerProfile.identificationType2File
+        || !this.workerProfile.resume;
     },
-    tabs() {
-      return [
-        {
-          tab: "PersonalDetails",
-          name: "Personal Details",
-          children: [
-            {
-              name: "Basic Information",
-              missing: false,
-            },
-            {
-              name: "Contact information",
-              missing: false,
-            },
-            {
-              name: "Social Insurance",
-              missing:
-                !this.$store.state.worker.workerProfile.socialInsurance ||
-                !this.$store.state.worker.workerProfile.socialInsuranceFile,
-            },
-            {
-              name: "Documents",
-              missing:
-                !this.$store.state.worker.workerProfile
-                  .identificationType1File ||
-                !this.$store.state.worker.workerProfile.identificationType2File,
-            },
-            {
-              name: "Resume",
-              missing: !this.$store.state.worker.workerProfile.resume,
-            },
-          ],
-        },
-        {
-          tab: "SkillsInfo",
-          name: "Skills & Languages",
-          children: [
-            {
-              name: "Skills",
-              missing:
-                this.$store.state.worker.workerProfile.skills &&
-                this.$store.state.worker.workerProfile.skills.length === 0,
-            },
-            {
-              name: "Languages",
-              missing: false,
-            },
-          ],
-        },
-        {
-          tab: "LicensesInfo",
-          name: "Licenses & Certifications",
-        },
-        {
-          tab: "WorkExperience",
-          name: "Work Experience",
-        },
-        {
-          tab: "AdditionalInfo",
-          name: "Additional Info",
-          children: [
-            {
-              name: "Lift",
-              missing: false,
-            },
-            {
-              name: "Availability",
-              missing:
-                this.$store.state.worker.workerProfile.availabilities &&
-                this.$store.state.worker.workerProfile.availabilities.length ===
-                0,
-            },
-            {
-              name: "Available Time",
-              missing:
-                this.$store.state.worker.workerProfile.availabilityTimes &&
-                this.$store.state.worker.workerProfile.availabilityTimes
-                  .length === 0,
-            },
-            {
-              name: "Available days",
-              missing:
-                this.$store.state.worker.workerProfile.availabilityDays &&
-                this.$store.state.worker.workerProfile.availabilityDays
-                  .length === 0,
-            },
-            {
-              name: "Location preferences",
-              missing:
-                this.$store.state.worker.workerProfile.locationPreferences &&
-                this.$store.state.worker.workerProfile.locationPreferences
-                  .length === 0,
-            },
-            {
-              name: "Emergency information",
-              missing:
-                !this.$store.state.worker.workerProfile.contactEmergencyPhone,
-            },
-          ],
-        },
-        {
-          tab: "Comments",
-          name: "Comments",
-        },
-        {
-          tab: "AccountSecurity",
-          name: "Account Security",
-        },
-        {
-          tab: "UserNotification",
-          name: "Notifications",
-        },
-      ];
+    hasSkillsMissing() {
+      if (!this.workerProfile) return false;
+      return this.workerProfile.skills && this.workerProfile.skills.length === 0;
+    },
+    hasAdditionalInfoMissing() {
+      if (!this.workerProfile) return false;
+      const wp = this.workerProfile;
+      return (wp.availabilities && wp.availabilities.length === 0)
+        || (wp.availabilityTimes && wp.availabilityTimes.length === 0)
+        || (wp.availabilityDays && wp.availabilityDays.length === 0)
+        || (wp.locationPreferences && wp.locationPreferences.length === 0)
+        || !wp.contactEmergencyPhone;
     },
   },
   mixins: [switchLocaleMixin, confirmationAlert, qrCodeMixin],
   created() {
-    this.$store.state.isMobile
-      ? (this.toggleMenuMobile = false)
-      : (this.toggleMenuMobile = true);
+    if (this.$route.query && this.$route.query.tab) {
+      this.currentTab = this.$route.query.tab;
+      if (!this.visitedTabs.includes(this.$route.query.tab)) {
+        this.visitedTabs.push(this.$route.query.tab);
+      }
+    }
     this.$store.dispatch("worker/getProfiles")
       .then((response) => {
         this.$store.commit("worker/setProfileSelected", response[0]);
@@ -332,21 +208,6 @@ export default {
 .profile-worker {
   .profile-information .section-title {
     margin-bottom: 0;
-  }
-
-  .profile-menu {
-    a {
-      font-size: 16px;
-      height: auto;
-      margin-bottom: 10px;
-      font-weight: normal;
-
-      ul li {
-        padding-left: 5px;
-        margin: 10px 0 0;
-        font-weight: lighter;
-      }
-    }
   }
 
   section:not(.worker-comments) {
@@ -396,115 +257,19 @@ export default {
   }
 }
 
-// NEW PROFILE FOR WORKER
-.profile-worker {
-  .profile-content {
-    border-left: 0;
-  }
-}
-
-.user-profile-menu {
-  margin-left: -30px;
-  background: #fbfbfb;
-  margin-top: -30px;
-  padding: 20px;
-  margin-bottom: -30px;
-
-  a:hover {
-    text-decoration: none;
-  }
-
-  ul {
-    margin-bottom: 20px;
-    padding-left: 15px;
-
-    li {
-      margin-top: 5px;
-      border-bottom: 1px solid #dddddd;
-      padding-bottom: 5px;
-      margin-bottom: 5px;
-
-      &.missing {
-        position: relative;
-
-        &:before {
-          content: "";
-          width: 13px;
-          height: 13px;
-          background-image: url("../../assets/images/danger.png");
-          background-size: contain;
-          position: absolute;
-          left: -18px;
-          top: 4px;
-        }
-      }
-    }
-  }
+.worker-profile-header {
+  margin-bottom: 20px;
 }
 
 .contain-profile .profile-selected {
   background: transparent;
   border: 0;
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid #eee;
   padding: 0 0 15px;
   margin-bottom: 15px;
 }
 
 @media (max-width: 767px) {
-  .user-profile-menu {
-    margin: -15px -15px 20px;
-    background: #f3f3f3;
-    padding: 0;
-
-    ul {
-      display: none;
-    }
-
-    .tab-button {
-      display: block;
-      padding: 0;
-
-      span {
-        padding: 12px 0;
-        font-weight: normal;
-        display: block;
-        margin: 0;
-      }
-    }
-
-    .options-profile {
-      display: none;
-    }
-  }
-
-  .contain-profile {
-    display: none;
-  }
-
-  .button-toggle-menu-mobile {
-    font-weight: bold;
-    padding: 10px 20px;
-    box-shadow: 0 1px 5px #afafaf;
-
-    img {
-      width: 20px;
-      height: 20px;
-      display: inline-block;
-      float: right;
-      position: relative;
-      top: 2px;
-    }
-  }
-
-  .toggle-menu-mobile {
-    padding: 0 20px;
-    border-bottom: 1px solid #cfcfcf;
-  }
-
-  img.up {
-    transform: rotate(180deg);
-  }
-
   .profile-worker .button-right {
     position: relative;
     display: flex;

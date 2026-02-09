@@ -2,8 +2,8 @@
   <div class="white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
     <form class="form-md" @submit.prevent="validateForm">
-      <b-steps animated mobile-mode="compact">
-        <b-step-item step="1" label="Basic">
+      <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
+        <b-step-item step="1" label="Basic" :clickable="false">
           <h1 class="title has-text-centered">Basic Information</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -67,8 +67,14 @@
                 :defaultValue="worker.mobileNumber" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
             </div>
           </div>
+          <div class="step-navigation-buttons">
+            <span></span>
+            <b-button type="is-primary" @click="validateAndGoToStep(1)">
+              {{ $t('Next') || 'Next Step' }}
+            </b-button>
+          </div>
         </b-step-item>
-        <b-step-item step="2" label="Preferences" :visible="!isLogin">
+        <b-step-item step="2" label="Preferences" :visible="!isLogin" :clickable="false">
           <h1 class="title has-text-centered">Preferences</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -146,8 +152,16 @@
               </span>
             </div>
           </div>
+          <div class="step-navigation-buttons">
+            <b-button @click="goToPreviousStep()">
+              {{ $t('Previous') || 'Previous' }}
+            </b-button>
+            <b-button type="is-primary" @click="validateAndGoToStep(2)">
+              {{ $t('Next') || 'Next Step' }}
+            </b-button>
+          </div>
         </b-step-item>
-        <b-step-item :step="isLogin ? 2 : 3" label="Documents">
+        <b-step-item :step="isLogin ? 2 : 3" label="Documents" :clickable="false">
           <h1 class="title has-text-centered">Documents</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -518,8 +532,16 @@
               </div>
             </div>
           </div>
+          <div class="step-navigation-buttons">
+            <b-button @click="goToPreviousStep()">
+              {{ $t('Previous') || 'Previous' }}
+            </b-button>
+            <b-button type="is-primary" @click="validateAndGoToStep(3)">
+              {{ $t('Next') || 'Next Step' }}
+            </b-button>
+          </div>
         </b-step-item>
-        <b-step-item :step="isLogin ? 3 : 4" label="Account">
+        <b-step-item :step="isLogin ? 3 : 4" label="Account" :clickable="false">
           <h1 class="title has-text-centered">Account</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -572,9 +594,14 @@
               </span>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-button type="is-primary" native-type="submit">
-                {{ $t("Register") }}
-              </b-button>
+              <div class="step-navigation-buttons">
+                <b-button @click="goToPreviousStep()">
+                  {{ $t('Previous') || 'Previous' }}
+                </b-button>
+                <b-button type="is-primary" native-type="submit">
+                  {{ $t("Register") }}
+                </b-button>
+              </div>
             </div>
           </div>
         </b-step-item>
@@ -598,6 +625,7 @@ export default {
   },
   data() {
     return {
+      activeStep: 0,
       showWorkInformationTab: true,
       alphaNumericSpaces: /^[-_ a-zA-Z0-9]+$/,
       disableStartDate: null,
@@ -625,43 +653,79 @@ export default {
   },
   methods: {
     async validateForm() {
-      const mainFormValid = await this.$validator.validateAll();
-      const addressValid = await this.$refs.addressComponent.validateAddress();
-      const phoneValid = await this.$refs.phoneComponent.validatePhone();
+      const step4Fields = ['email', 'password', 'confirmPassword'];
+      if (!this.isLogin) {
+        step4Fields.push('agree terms');
+      }
+      const results = await Promise.all(step4Fields.map(f => this.$validator.validate(f)));
+      const allValid = results.every(r => r);
 
-      this.documentsError = !this.worker.identificationType1File;
-
-      if (mainFormValid && addressValid && phoneValid && !this.documentsError) {
+      if (allValid) {
         this.registerWorker();
-        return;
       } else {
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       }
+    },
+    goToPreviousStep() {
+      if (this.activeStep > 0) {
+        this.activeStep--;
+      }
+    },
+    async validateAndGoToStep(currentStep) {
+      let valid = false;
+      if (currentStep === 1) {
+        valid = await this.validateStep1();
+      } else if (currentStep === 2) {
+        valid = true;
+      } else if (currentStep === 3) {
+        valid = await this.validateStep3();
+      }
+      if (valid) {
+        this.activeStep++;
+      } else {
+        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+      }
+    },
+    async validateStep1() {
+      const step1Fields = ['name', 'lastname', 'birthday', 'gender'];
+      const results = await Promise.all(step1Fields.map(f => this.$validator.validate(f)));
+      const addressValid = await this.$refs.addressComponent.validateAddress();
+      const phoneValid = await this.$refs.phoneComponent.validatePhone();
+      return results.every(r => r) && addressValid && phoneValid;
+    },
+    async validateStep3() {
+      this.documentsError = !this.worker.identificationType1File;
+      if (this.documentsError) return false;
+
+      const fields = [];
+      if (this.worker.identificationType1File) {
+        fields.push('identificationType1', 'identificationNumber1');
+      }
+      if (this.worker.identificationType2File) {
+        fields.push('identificationType2', 'identificationNumber2');
+      }
+      this.worker.licenses.forEach((_, i) => {
+        fields.push('description' + i, 'licenseExpires' + i);
+      });
+      this.worker.certificates.forEach((_, i) => {
+        fields.push('descriptioncer' + i);
+      });
+      this.worker.otherDocuments.forEach((_, i) => {
+        fields.push('descriptionOther' + i);
+      });
+
+      const registeredFields = fields.filter(f => this.$validator.fields.find({ name: f }));
+      if (registeredFields.length === 0) return true;
+
+      const results = await Promise.all(registeredFields.map(f => this.$validator.validate(f)));
+      return results.every(r => r);
     },
     async registerWorker() {
       this.isLoading = true;
       this.worker.gender = { id: this.gender };
 
-      console.log('===== DEBUG: WORKER OBJECT =====');
-      console.log('Licenses:', JSON.stringify(this.worker.licenses, null, 2));
-      console.log('Certificates:', JSON.stringify(this.worker.certificates, null, 2));
-      console.log('Resume:', JSON.stringify(this.worker.resume, null, 2));
-      console.log('Other Docs:', JSON.stringify(this.worker.otherDocuments, null, 2));
-      console.log('================================');
-
       try {
         const formData = await this.createMultipartFormData(this.worker, this.fileObjects);
-
-        console.log('===== DEBUG: FORMDATA CONTENTS =====');
-        const dataField = formData.get('data');
-        console.log('Data field:', dataField);
-        const parsedData = JSON.parse(dataField);
-        console.log('Licenses:', parsedData.licenses);
-        console.log('Certificates:', parsedData.certificates);
-        console.log('Resume:', parsedData.resume);
-        console.log('Other Documents:', parsedData.otherDocuments);
-        console.log('====================================');
-
         const action = this.isLogin ? `agency/createWorker` : `worker/registerWorker`
 
         const id = await this.$store.dispatch(action, formData);
@@ -923,5 +987,14 @@ export default {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.step-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
 }
 </style>

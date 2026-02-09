@@ -70,6 +70,13 @@ export default {
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response));
       });
+    },
+    deactivateAccount() {
+      return new Promise((resolve, reject) => {
+        http.patch("/identity")
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
+      });
     }
   },
 };

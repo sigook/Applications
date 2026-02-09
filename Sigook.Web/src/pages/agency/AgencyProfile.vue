@@ -1,29 +1,6 @@
 <template>
   <div class="profile white-container-mobile" v-if="agency">
     <b-loading v-model="isLoading"></b-loading>
-    <nav class="profile-menu">
-      <div class="scroll">
-        <a v-for="tab in tabs" v-bind:key="tab" v-bind:class="['tab-button', { active: currentTab === tab }]"
-          v-on:click="changeTab(tab)">
-          {{ $t(titleTab(tab)) }}
-        </a>
-      </div>
-      <div class="options-profile">
-        <p @click="dropdownRolVisible = !dropdownRolVisible" :class="{ 'dropdown-open': dropdownRolVisible }">
-          <span>▶</span> {{ $t("Options") }}
-        </p>
-        <transition name="fade">
-          <div class="dropdown-rol" v-if="dropdownRolVisible">
-            <b class="fz-1">{{ $t("ChangeLanguage") }}:</b>
-            <div class="navbar-languages">
-              <span v-on:click="switchLocale('en')" :class="lang === 'en' ? 'active' : ''">EN</span>
-              <span v-on:click="switchLocale('fr')" :class="lang === 'fr' ? 'active' : ''">FR</span>
-              <span v-on:click="switchLocale('es')" :class="lang === 'es' ? 'active' : ''">ES</span>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </nav>
 
     <div class="profile-content">
       <div class="profile-top">
@@ -41,8 +18,32 @@
           </p>
         </div>
       </div>
-      <component v-bind:is="currentTabComponent" v-if="agency" class="tab" :agency-data="agency">
-      </component>
+
+      <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
+        <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data="agency" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
+          <BillingInformation v-if="visitedTabs.includes('BillingInformation')" :agency-data="agency" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data="agency" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
+          <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :agency-data="agency" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Users')" value="Users">
+          <Users v-if="visitedTabs.includes('Users')" :agency-data="agency" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('User Notification')" value="UserNotification">
+          <UserNotification v-if="visitedTabs.includes('UserNotification')" />
+        </b-tab-item>
+      </b-tabs>
     </div>
   </div>
 </template>
@@ -56,17 +57,9 @@ export default {
     return {
       isLoading: false,
       currentTab: "BusinessInformation",
+      visitedTabs: ["BusinessInformation"],
       isDisabled: true,
-      dropdownRolVisible: false,
       lang: this.$validator.dictionary.locale,
-      tabs: [
-        "BusinessInformation",
-        "BillingInformation",
-        "ContactInformation",
-        "AccountSecurity",
-        "Users",
-        "UserNotification",
-      ],
     };
   },
   components: {
@@ -79,14 +72,18 @@ export default {
     Users: () => import("../../components/agency/AgencyPersonnel"),
   },
   async created() {
+    if (this.$route.query && this.$route.query.tab) {
+      this.currentTab = this.$route.query.tab;
+      if (!this.visitedTabs.includes(this.$route.query.tab)) {
+        this.visitedTabs.push(this.$route.query.tab);
+      }
+    }
     this.isLoading = true;
     await this.$store.dispatch("agency/getAgencyProfile");
+    await this.$store.dispatch("agency/getPersonnelAgency");
     this.isLoading = false;
   },
   methods: {
-    titleTab(val) {
-      return val.split(/(?=[A-Z])/).join(" ");
-    },
     editProfile() {
       this.isDisabled = false;
     },
@@ -113,28 +110,18 @@ export default {
           this.isLoading = false;
           this.showAlertError(error);
         });
-
-      this.change = false;
     },
     changeTab(tab) {
-      this.$validator.validateAll().then((response) => {
-        if (!response) {
-          this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
-          return;
-        }
-        if (!this.change) {
-          this.currentTab = tab;
-        } else {
-          this.change = false;
-          this.currentTab = tab;
-        }
+      if (!this.visitedTabs.includes(tab)) {
+        this.visitedTabs.push(tab);
+      }
+      this.$router.push({
+        path: "/agency-profile",
+        query: { tab: tab },
       });
     },
   },
   computed: {
-    currentTabComponent() {
-      return this.currentTab;
-    },
     agency() {
       return this.$store.state.agency.agency;
     }
@@ -144,6 +131,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.profile {
+  display: block;
+
+  .profile-content {
+    width: 100%;
+    border-left: none;
+    padding: 15px 20px;
+  }
+}
+
 .profile-top {
   &>.disabled {
     pointer-events: none;
