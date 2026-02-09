@@ -172,7 +172,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: _onLogoTapped,
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Stack(
           children: [
             Center(
@@ -181,12 +184,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 children: [
                   FadeTransition(
                     opacity: _logoFadeAnimation,
-                    child: GestureDetector(
-                      onTap: _onLogoTapped,
-                      child: Image.asset(
-                        'assets/images/logo/sigook-logo.png',
-                        width: 220,
-                      ),
+                    child: Image.asset(
+                      'assets/images/logo/sigook-logo.png',
+                      width: 220,
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -207,7 +207,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Touch the logo to begin your adventure',
+                            'Touch the screen to begin',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.grey[600],
@@ -248,6 +248,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ],
         ),
+      ),
       ),
     );
   }
