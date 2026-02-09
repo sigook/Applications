@@ -117,7 +117,6 @@
             </section>
 
             <span class="line-gray" />
-            <workerCode :worker="worker"></workerCode>
 
             <span class="line-gray" id="comments" />
             <comments v-if="comments" :user-id="this.worker.workerId" :data="comments" :size-comments="this.commentSize"
@@ -190,7 +189,6 @@ export default {
     timeSheetHistory: () => import("../../components/worker/TimeSheetHistory"),
     notes: () => import("../../components/worker/Notes"),
     FloatingMenu: () => import("../../components/FloatingMenuDots"),
-    workerCode: () => import("../../components/agency/AgencyWorkerPunchCardCode"),
     otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail"),
   },
   async created() {

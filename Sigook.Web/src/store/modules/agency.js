@@ -18,6 +18,7 @@ export default {
     setAgency(state, data) {
       state.agency = {
         ...data,
+        agencies: data.agencies || (state.agency && state.agency.agencies) || [],
         usaAgency: data.locations.some((l) => l.isUSA),
         masterAgency: data.agencyType === Vue.prototype.$agencyTypeMaster
       }
