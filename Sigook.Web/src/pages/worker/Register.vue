@@ -669,6 +669,9 @@ export default {
     goToPreviousStep() {
       if (this.activeStep > 0) {
         this.activeStep--;
+        if (this.isLogin && this.activeStep === 1) {
+          this.activeStep--;
+        }
       }
     },
     async validateAndGoToStep(currentStep) {
@@ -682,6 +685,9 @@ export default {
       }
       if (valid) {
         this.activeStep++;
+        if (this.isLogin && this.activeStep === 1) {
+          this.activeStep++;
+        }
       } else {
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       }
