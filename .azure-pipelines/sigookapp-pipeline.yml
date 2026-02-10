@@ -18,6 +18,7 @@ trigger:
   branches:
     include:
       - main
+      - SigookApp
       - dev
   paths:
     include:
