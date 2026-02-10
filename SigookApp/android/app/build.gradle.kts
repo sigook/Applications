@@ -72,6 +72,11 @@ android {
     flavorDimensions.add("environment")
 
     productFlavors {
+        create("staging") {
+            dimension = "environment"
+            applicationId = "com.sigook.sigook"
+            resValue("string", "app_name", "Sigook Beta")
+        }
         create("production") {
             dimension = "environment"
             applicationId = "com.sigook.sigook"

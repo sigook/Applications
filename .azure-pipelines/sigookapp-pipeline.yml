@@ -52,9 +52,12 @@ variables:
     value: 'production'
   ${{ else }}:
     value: 'staging'
-# Flutter build flavor (always production — Beta flavor removed)
+# Flutter build flavor (matches branch: main → production, dev → staging)
 - name: flavor
-  value: 'production'
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'staging'
 # Flutter entry point file
 - name: entryPoint
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -115,7 +118,7 @@ stages:
           echo "========================================"
 
           echo "Verifying Android build configuration..."
-          flutter build apk --debug --flavor production -t lib/main_staging.dart --dry-run
+          flutter build apk --debug --flavor $(flavor) -t $(entryPoint) --dry-run
           echo "✅ Android build configuration valid"
 
           echo ""
