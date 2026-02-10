@@ -1,199 +1,20 @@
 # Fastfile for SigookApp Flutter Build Automation
-# Optimized version with corrected paths for Azure DevOps pipeline execution
-# This file contains the fastlane lanes for iOS and Android builds
+# Android-only — iOS builds are handled by Xcode Cloud
 #
 # IMPORTANT PATH HANDLING:
 # - Fastlane automatically changes directory to 'fastlane/' when executing
-# - Ruby code (Xcodeproj) respects this chdir and resolves '../' correctly
-# - Fastlane actions (gym, gradle) resolve relative paths from the ORIGINAL CWD (where fastlane was called)
+# - Fastlane actions (gradle) resolve relative paths from the ORIGINAL CWD (where fastlane was called)
 # - SOLUTION: Use File.expand_path("../path", __dir__) to convert to absolute paths
-#   - __dir__ = directory of this Fastfile (SigookApp/fastlane/)
-#   - "../ios/Runner.xcworkspace" relative to __dir__ = SigookApp/ios/Runner.xcworkspace
-#   - File.expand_path converts this to an absolute path that works everywhere
 #
 # AZURE DEVOPS VARIABLE GROUPS:
 # - PROD-SigookApp-Android-Signing: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
-# - PROD-SigookApp-iOS-Signing: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
-#   APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME, P12_FILE_NAME,
-#   PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
 # - SigookApp-Staging / SigookApp-Production: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
 #   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES
 
-default_platform(:ios)
+default_platform(:android)
 
-# Get Apple Team ID from environment or use default
-APPLE_TEAM_ID = ENV["APPLE_TEAM_ID"] || "NGXFWU4H7Z"
-APPLE_TEAM_NAME = ENV["APPLE_TEAM_NAME"] || "SIGOOK CORPORATION"
-
-# App identities (production only — Beta has been removed)
-# iOS App Store bundle ID
-IOS_BUNDLE_ID = "com.all2job.all2job"
 # Android Play Store package name
 ANDROID_PACKAGE_NAME = "com.sigook.sigook"
-# App display name
-APP_NAME = "Sigook"
-
-# ============================================
-# iOS Lanes
-# ============================================
-platform :ios do
-  desc "Build and sign iOS app for production (App Store distribution)"
-  lane :production do |options|
-    # Update bundle identifier for production
-    update_app_identifier(
-      xcodeproj: File.expand_path("../ios/Runner.xcodeproj", __dir__),
-      plist_path: "Runner/Info.plist",
-      app_identifier: IOS_BUNDLE_ID
-    )
-
-    # Update app display name
-    update_info_plist(
-      xcodeproj: File.expand_path("../ios/Runner.xcodeproj", __dir__),
-      plist_path: "Runner/Info.plist",
-      block: proc do |plist|
-        plist["CFBundleDisplayName"] = APP_NAME
-        plist["CFBundleName"] = APP_NAME
-      end
-    )
-
-    UI.message("📱 Building production app: #{IOS_BUNDLE_ID} (#{APP_NAME})")
-
-    # Find the installed provisioning profile for production
-    # Look for profile matching production bundle ID
-    profile_path = nil
-    Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).each do |path|
-      content = `security cms -D -i "#{path}" 2>/dev/null`
-      if content.include?(IOS_BUNDLE_ID)
-        profile_path = path
-        break
-      end
-    end
-
-    # Fallback to first available profile if production-specific not found
-    if profile_path.nil?
-      profile_path = Dir.glob(File.expand_path("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")).first
-      UI.important("⚠️ Production profile not found, using fallback: #{profile_path}")
-    end
-
-    if profile_path.nil?
-      UI.user_error!("❌ No provisioning profile found")
-    end
-
-    # Extract UUID from the provisioning profile
-    profile_content = `security cms -D -i "#{profile_path}"`
-    profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
-    profile_name = profile_content.match(/<key>Name<\/key>\s*<string>([^<]+)<\/string>/)[1]
-
-    UI.message("📝 Using provisioning profile:")
-    UI.message("   Name: #{profile_name}")
-    UI.message("   UUID: #{profile_uuid}")
-
-    # Configure Xcode project with manual signing
-    require 'xcodeproj'
-    project_path = '../ios/Runner.xcodeproj'
-    project = Xcodeproj::Project.open(project_path)
-
-    project.targets.each do |target|
-      if target.name == 'Runner'
-        target.build_configurations.each do |config|
-          UI.message("Configuring #{config.name} for manual signing...")
-          config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-          config.build_settings['DEVELOPMENT_TEAM'] = APPLE_TEAM_ID
-          config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
-          config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
-          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_uuid
-          config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = IOS_BUNDLE_ID
-        end
-      end
-    end
-
-    project.save
-    UI.success("✅ Manual signing configured for production")
-
-    # Build paths
-    workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
-    output_path = File.expand_path("../output", __dir__)
-    archive_path = File.expand_path("../build/ios/Runner.xcarchive", __dir__)
-
-    code_sign_identity = "Apple Distribution: #{APPLE_TEAM_NAME} (#{APPLE_TEAM_ID})"
-
-    gym(
-      workspace: workspace_path,
-      scheme: "Runner",
-      export_method: "app-store",
-      export_team_id: APPLE_TEAM_ID,
-      codesigning_identity: code_sign_identity,
-      export_options: {
-        method: "app-store",
-        teamID: APPLE_TEAM_ID,
-        compileBitcode: false,
-        provisioningProfiles: {
-          IOS_BUNDLE_ID => profile_name
-        }
-      },
-      output_directory: output_path,
-      output_name: "SigookApp.ipa",
-      clean: true,
-      skip_build_archive: false,
-      archive_path: archive_path,
-      export_xcargs: "-allowProvisioningUpdates",
-      xcargs: "DEVELOPMENT_TEAM=#{APPLE_TEAM_ID} CODE_SIGN_IDENTITY='#{code_sign_identity}' PRODUCT_BUNDLE_IDENTIFIER=#{IOS_BUNDLE_ID}",
-      silent: false,
-      verbose: true
-    )
-
-    UI.success("✅ iOS Production IPA built successfully!")
-    UI.message("IPA location: #{output_path}/SigookApp.ipa")
-  end
-
-  desc "Run iOS tests"
-  lane :test do
-    workspace_path = File.expand_path("../ios/Runner.xcworkspace", __dir__)
-    run_tests(
-      workspace: workspace_path,
-      scheme: "Runner",
-      device: "iPhone 14"
-    )
-  end
-
-  desc "Deploy to TestFlight"
-  lane :deploy do |options|
-    # Get the IPA path
-    ipa_path = options[:ipa] || File.expand_path("../output/SigookApp.ipa", __dir__)
-
-    unless File.exist?(ipa_path)
-      UI.user_error!("❌ IPA not found at #{ipa_path}")
-    end
-
-    UI.message("📤 Uploading to TestFlight: #{ipa_path}")
-
-    # Upload to TestFlight using App Store Connect API
-    app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: true,
-      in_house: false
-    )
-
-    upload_to_testflight(
-      ipa: ipa_path,
-      skip_waiting_for_build_processing: true,
-      skip_submission: true,
-      notify_external_testers: false
-    )
-
-    UI.success("✅ Successfully uploaded to TestFlight!")
-  end
-
-  desc "Clean build artifacts"
-  lane :clean do
-    clear_derived_data
-    # Fastlane runs from fastlane/ directory
-    sh("cd .. && rm -rf output build ios/Pods")
-    UI.success("✅ Cleaned all build artifacts")
-  end
-end
 
 # ============================================
 # Android Lanes
@@ -308,7 +129,6 @@ lane :info do
   UI.message("Working directory: #{Dir.pwd}")
 
   # Show the actual paths being used (fastlane runs from fastlane/ directory)
-  UI.message("iOS project path: #{File.expand_path('../ios/Runner.xcodeproj', Dir.pwd)}")
   UI.message("Android project path: #{File.expand_path('../android', Dir.pwd)}")
 
   if is_ci
