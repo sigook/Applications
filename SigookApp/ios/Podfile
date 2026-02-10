@@ -5,9 +5,9 @@ platform :ios, '13.0'
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
-  'Debug' => :debug,
-  'Profile' => :release,
-  'Release' => :release,
+  'Debug-production' => :debug,
+  'Profile-production' => :release,
+  'Release-production' => :release,
 }
 
 def flutter_root
@@ -53,6 +53,17 @@ post_install do |installer|
       config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
       config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
       config.build_settings['CODE_SIGN_IDENTITY'] = ''
+
+      # Enable permission_handler permissions for iOS
+      # Each permission used by the app must be explicitly enabled here.
+      # See: https://pub.dev/packages/permission_handler#setup
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_LOCATION=1',
+        'PERMISSION_LOCATION_ALWAYS=1',
+      ]
     end
   end
 end

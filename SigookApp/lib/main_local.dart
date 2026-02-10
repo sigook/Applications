@@ -3,7 +3,7 @@ import 'core/config/env_loader.dart';
 import 'main_common.dart';
 
 /// Local development entry point - connects to locally running services
-/// Run with: flutter run --flavor staging -t lib/main_local.dart
+/// Run with: flutter run --flavor production -t lib/main_local.dart
 ///
 /// This profile is for LOCAL DEVELOPMENT ONLY:
 /// - Connects to locally running IdentityServer (localhost)
@@ -15,7 +15,7 @@ import 'main_common.dart';
 /// 2. Run Covenant.Api locally
 /// 3. Create .env.local file with local URLs (see .env.example)
 ///
-/// Note: Uses --flavor staging for Android build variant, but loads .env.local
+/// Note: Uses --flavor production for Android build variant, but loads .env.local
 Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();

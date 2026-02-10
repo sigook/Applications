@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/core/theme/app_theme.dart';
 import 'package:sigook_app_flutter/features/registration/domain/entities/basic_info.dart';
 import 'package:sigook_app_flutter/features/registration/domain/usecases/pick_profile_photo.dart';
@@ -123,12 +125,19 @@ class ProfilePhotoPicker extends ConsumerWidget {
     final result = await picker(source);
 
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(failure.message),
-          backgroundColor: AppTheme.errorRed,
-        ),
-      ),
+      (failure) {
+        // Show permission dialog for PermissionFailure, SnackBar for others
+        if (failure is PermissionFailure) {
+          _showPermissionDeniedDialog(context, source);
+        } else if (failure is! UserCancelledFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: AppTheme.errorRed,
+            ),
+          );
+        }
+      },
       (profilePhoto) {
         final notifier = ref.read(registrationViewModelProvider.notifier);
         final currentInfo = ref.read(registrationViewModelProvider).basicInfo;
@@ -144,6 +153,146 @@ class ProfilePhotoPicker extends ConsumerWidget {
           currentInfo.copyWith(profilePhoto: profilePhoto),
         );
       },
+    );
+  }
+
+  /// Shows a dialog explaining how to grant camera/photo permissions
+  /// with a button to open the app settings.
+  void _showPermissionDeniedDialog(BuildContext context, PhotoSource source) {
+    final isCamera = source == PhotoSource.camera;
+    final permissionType = isCamera ? 'Camera' : 'Photo Library';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.no_photography_outlined,
+              color: AppTheme.errorRed,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '$permissionType Access Required',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'SIGOOK needs access to your ${isCamera ? 'camera' : 'photo library'} to ${isCamera ? 'take' : 'select'} a profile picture for your worker registration.',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade100),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'How to enable $permissionType access:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade800,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildInstructionStep('1', 'Tap "Open Settings" below'),
+                  _buildInstructionStep('2', 'Find "$permissionType" in the list'),
+                  _buildInstructionStep(
+                    '3',
+                    isCamera
+                        ? 'Toggle the switch to enable access'
+                        : 'Select "Full Access" or "Add Photos Only"',
+                  ),
+                  _buildInstructionStep('4', 'Return to SIGOOK and try again'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              openAppSettings();
+            },
+            icon: const Icon(Icons.settings, size: 18),
+            label: const Text('Open Settings'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionStep(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.blue.shade700,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue.shade900,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -6,7 +6,7 @@ import 'main_common.dart';
 /// Loads staging environment by default
 ///
 /// For flavor-specific builds, use:
-/// - flutter run --flavor staging -t lib/main_staging.dart
+/// - flutter run --flavor production -t lib/main_staging.dart
 /// - flutter run --flavor production -t lib/main_production.dart
 ///
 /// Environment variables can be provided via:

@@ -83,8 +83,10 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
       } else if (e.type == DioExceptionType.connectionError) {
         throw NetworkException('No internet connection');
       } else if (e.response != null) {
+        // Extract error message from response body
+        final errorMessage = _extractErrorMessage(e.response?.data);
         throw ServerException(
-          message: 'Server error: ${e.response?.statusCode}',
+          message: errorMessage ?? 'Server error: ${e.response?.statusCode}',
         );
       } else {
         throw NetworkException('Network error: ${e.message}');
@@ -92,6 +94,58 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
     } catch (e) {
       throw ServerException(message: 'Failed to submit timesheet: $e');
     }
+  }
+
+  /// Extracts error message from API response body.
+  /// Handles various response formats like:
+  /// - {"": ["Error message"]}
+  /// - {"error": "Error message"}
+  /// - {"message": "Error message"}
+  /// - {"errors": {"field": ["Error message"]}}
+  String? _extractErrorMessage(dynamic responseData) {
+    if (responseData == null) return null;
+
+    try {
+      if (responseData is Map<String, dynamic>) {
+        // Check for empty key with array (ASP.NET validation format)
+        if (responseData.containsKey('') && responseData[''] is List) {
+          final errors = responseData[''] as List;
+          if (errors.isNotEmpty) {
+            return errors.first.toString();
+          }
+        }
+
+        // Check for common error message keys
+        for (final key in ['error', 'message', 'Message', 'Error', 'title', 'Title']) {
+          if (responseData.containsKey(key) && responseData[key] != null) {
+            return responseData[key].toString();
+          }
+        }
+
+        // Check for errors object (ASP.NET ModelState format)
+        if (responseData.containsKey('errors') && responseData['errors'] is Map) {
+          final errors = responseData['errors'] as Map;
+          for (final value in errors.values) {
+            if (value is List && value.isNotEmpty) {
+              return value.first.toString();
+            }
+          }
+        }
+
+        // If the response has any key with an array value, try to get the first error
+        for (final value in responseData.values) {
+          if (value is List && value.isNotEmpty) {
+            return value.first.toString();
+          }
+        }
+      } else if (responseData is String) {
+        return responseData;
+      }
+    } catch (e) {
+      debugPrint('Error extracting error message: $e');
+    }
+
+    return null;
   }
 
   @override

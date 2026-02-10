@@ -4,19 +4,27 @@ description: "A new Flutter project."
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
-version: 2.0.0+25
+# =============================================================================
+# APP VERSIONING (Date-based)
+# =============================================================================
+# Version Format: YYYY.M.D+BUILD_NUMBER
+#   - build-name: Date-based version (e.g., "2026.2.5")
+#   - build-number: Auto-incrementing integer for app stores
+#
+# CI/CD Pipeline (Azure DevOps):
+#   - Automatically calculates version from build date
+#   - Uses Build.BuildId as build-number (always increasing)
+#   - Overrides this value with --build-name and --build-number flags
+#
+# Local Development:
+#   - This value is used for local builds
+#   - Update manually or use: flutter build --build-name="$(date +%Y.%-m.%-d)"
+#
+# App Store Requirements:
+#   - Google Play: versionCode (build-number) must always increase
+#   - App Store: CFBundleVersion (build-number) must always increase
+# =============================================================================
+version: 2026.2.6+20260206
 
 environment:
   sdk: ^3.9.2
@@ -88,6 +96,7 @@ dependencies:
   webview_flutter: ^4.13.0
   riverpod: ^3.0.3
   jwt_decoder: ^2.0.1
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
@@ -114,6 +123,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
   image_path: "assets/icon/app_icon.png"
   # Remove alpha channel for iOS (required by Apple)
   remove_alpha_ios: true

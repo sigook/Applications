@@ -42,6 +42,17 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
     });
     _loadClockType();
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      await Geolocator.requestPermission();
+    }
   }
 
   Future<void> _loadClockType() async {
@@ -377,14 +388,36 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
       result.fold(
         (failure) {
+          final errorMessage = failure.message.toLowerCase();
+
+          // Check for "too far from checkpoint" error
+          final isTooFarFromCheckpoint =
+              errorMessage.contains('too far') ||
+              errorMessage.contains('check point') ||
+              errorMessage.contains('checkpoint') ||
+              errorMessage.contains('get closer');
+
+          // Check for 3-minute restriction error
           final is3MinuteRestriction =
               (failure.message.contains('400') ||
-                  failure.message.toLowerCase().contains('bad request') ||
-                  failure.message.toLowerCase().contains('too soon') ||
-                  failure.message.toLowerCase().contains('wait')) &&
+                  errorMessage.contains('bad request') ||
+                  errorMessage.contains('too soon') ||
+                  errorMessage.contains('wait')) &&
               _clockType == ClockType.clockOut;
 
-          if (is3MinuteRestriction) {
+          if (isTooFarFromCheckpoint) {
+            // Track location error for monitoring
+            ref
+                .read(analyticsServiceProvider)
+                .logEvent(
+                  name: 'clock_location_error',
+                  parameters: {
+                    'job_id': widget.jobId,
+                    'error_type': 'too_far_from_checkpoint',
+                  },
+                );
+            _showTooFarFromCheckpointError();
+          } else if (is3MinuteRestriction) {
             // Track 3-minute restriction hit for monitoring
             ref
                 .read(analyticsServiceProvider)
@@ -527,6 +560,118 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showTooFarFromCheckpointError() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(
+              Icons.location_off,
+              color: AppTheme.errorRed,
+              size: 28,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Too Far From Workplace',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'You are too far from the designated checkpoint to clock in/out.',
+              style: TextStyle(fontSize: 15),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Please make sure you are:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'At or near your assigned workplace',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Within the allowed distance from the checkpoint',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'GPS is enabled with good signal',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
