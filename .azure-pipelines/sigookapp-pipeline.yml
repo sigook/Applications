@@ -291,6 +291,8 @@ stages:
           fi
     # Verify Fastlane is available (pre-installed on VM)
     - script: |
+        export GEM_HOME="/home/azureuser/gems"
+        export PATH="$GEM_HOME/bin:$PATH"
         echo "Verifying Fastlane installation..."
         ruby --version
         bundle --version
@@ -503,6 +505,8 @@ stages:
 
     # Verify Fastlane is available (pre-installed on VM)
     - script: |
+        export GEM_HOME="/home/azureuser/gems"
+        export PATH="$GEM_HOME/bin:$PATH"
         echo "Verifying Fastlane installation..."
         ruby --version
         bundle --version
@@ -522,6 +526,8 @@ stages:
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
           echo "Environment: $(environment)"
+          export GEM_HOME="/home/azureuser/gems"
+          export PATH="$GEM_HOME/bin:$PATH"
           if [ -n "$AAB_PATH" ]; then
             fastlane android deploy aab:"$AAB_PATH" environment:$(environment) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
           else
