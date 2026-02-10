@@ -27,7 +27,7 @@ pr:
       - Sigook.Web/**
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 # Environment detection variables
 variables:
@@ -48,11 +48,14 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install Node.js
-          - task: NodeTool@0
-            displayName: 'Install Node.js 16.x'
-            inputs:
-              versionSpec: '16.x'
+          # Setup Node.js via NVM (pre-installed on VM)
+          - script: |
+              export NVM_DIR="$HOME/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm use sigook-web  # Alias for Node.js 16
+              echo "Node version: $(node --version)"
+              echo "NPM version: $(npm --version)"
+            displayName: 'Setup Node.js 16 via NVM'
 
           # Cache node_modules for faster builds
           - task: Cache@2

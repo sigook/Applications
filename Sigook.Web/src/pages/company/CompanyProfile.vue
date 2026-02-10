@@ -1,30 +1,6 @@
 <template>
   <div class="profile white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
-    <nav class="profile-menu">
-      <div class="scroll">
-        <a v-for="(tab, index) in tabs" :key="'tabCompany' + index"
-          v-bind:class="['tab-button', { active: currentTab === tab }]" v-on:click="changeTab(tab)">
-          {{ $t(titleTab(tab)) }}
-        </a>
-      </div>
-
-      <div class="options-profile">
-        <p @click="dropdownOptions = !dropdownOptions" :class="{ 'dropdown-open': dropdownOptions }">
-          <span>▶</span> {{ $t("Options") }}
-        </p>
-        <transition name="fade">
-          <div class="dropdown-rol" v-if="dropdownOptions">
-            <b class="fz-1">{{ $t("ChangeLanguage") }}:</b>
-            <div class="navbar-languages">
-              <span v-on:click="switchLocale('en')" :class="lang === 'en' ? 'active' : ''">EN</span>
-              <span v-on:click="switchLocale('fr')" :class="lang === 'fr' ? 'active' : ''">FR</span>
-              <span v-on:click="switchLocale('es')" :class="lang === 'es' ? 'active' : ''">ES</span>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </nav>
 
     <div class="profile-content">
       <div class="profile-top">
@@ -38,8 +14,32 @@
           </h1>
         </div>
       </div>
-      <component v-bind:is="currentTabComponent" v-if="companyProfile" class="tab" :company-data="companyProfile">
-      </component>
+
+      <b-tabs v-model="currentTab" @input="changeTab" v-if="companyProfile">
+        <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data="companyProfile" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :company-data="companyProfile" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Location Information')" value="LocationInformation">
+          <LocationInformation v-if="visitedTabs.includes('LocationInformation')" :company-data="companyProfile" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Company Users')" value="CompanyUsers">
+          <CompanyUsers v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
+          <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :company-data="companyProfile" />
+        </b-tab-item>
+
+        <b-tab-item :label="$t('User Notification')" value="UserNotification">
+          <UserNotification v-if="visitedTabs.includes('UserNotification')" />
+        </b-tab-item>
+      </b-tabs>
     </div>
   </div>
 </template>
@@ -62,25 +62,14 @@ export default {
     return {
       isLoading: false,
       currentTab: "BusinessInformation",
-      tabs: [
-        "BusinessInformation",
-        "ContactInformation",
-        "LocationInformation",
-        "CompanyUsers",
-        "AccountSecurity",
-        "UserNotification",
-      ],
+      visitedTabs: ["BusinessInformation"],
       isDisabled: true,
       validForm: "",
       changeForm: false,
-      dropdownOptions: false,
       lang: this.$validator.dictionary.locale
     };
   },
   methods: {
-    titleTab(val) {
-      return val.split(/(?=[A-Z])/).join(" ");
-    },
     editProfile() {
       this.isDisabled = false;
     },
@@ -110,30 +99,12 @@ export default {
         });
     },
     changeTab(tab) {
-      this.$validator.validateAll().then((response) => {
-        if (!response) {
-          this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
-          return;
-        }
-        if (!this.changeForm) {
-          this.isDisabled = true;
-          this.currentTab = tab;
-        } else {
-          this.showAlertConfirm(this.$t("Warning"), this.$t("ChangesYouMadeMayNotBeSaved"))
-            .then((response) => {
-              if (response) {
-                this.changeForm = false;
-                this.currentTab = tab;
-                this.unsavedChanges = false;
-              }
-            })
-            .catch((error) => {
-              this.showAlertError(error);
-            });
-
-          this.unsavedChanges = false;
-          this.changeForm = false;
-        }
+      if (!this.visitedTabs.includes(tab)) {
+        this.visitedTabs.push(tab);
+      }
+      this.$router.push({
+        path: "/company-profile",
+        query: { tab: tab },
       });
     },
     resetForm() {
@@ -152,12 +123,15 @@ export default {
     },
   },
   created() {
+    if (this.$route.query && this.$route.query.tab) {
+      this.currentTab = this.$route.query.tab;
+      if (!this.visitedTabs.includes(this.$route.query.tab)) {
+        this.visitedTabs.push(this.$route.query.tab);
+      }
+    }
     this.getProfile();
   },
   computed: {
-    currentTabComponent() {
-      return this.currentTab;
-    },
     companyProfile() {
       return this.$store.state.company.companyProfile;
     },
@@ -165,3 +139,15 @@ export default {
   mixins: [switchLocaleMixin, confirmationAlert],
 };
 </script>
+
+<style lang="scss" scoped>
+.profile {
+  display: block;
+
+  .profile-content {
+    width: 100%;
+    border-left: none;
+    padding: 15px 20px;
+  }
+}
+</style>

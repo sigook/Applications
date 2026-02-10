@@ -20,10 +20,10 @@
           </b-table-column>
           <b-table-column field="jobTitle" label="Position" v-slot="props">
             {{ props.row.jobTitle }}
-            <i class="fz-2 block">
-              {{ props.row.location }}
-              <i v-if="props.row.entrance"> - {{ props.row.entrance }}</i>
-            </i>
+          </b-table-column>
+          <b-table-column field="location" label="Location" v-slot="props">
+            {{ props.row.location }}
+            <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
           </b-table-column>
           <b-table-column field="startAt">
             <template v-slot:header>

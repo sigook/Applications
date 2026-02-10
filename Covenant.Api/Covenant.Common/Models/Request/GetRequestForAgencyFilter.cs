@@ -19,6 +19,7 @@ namespace Covenant.Common.Models.Request
     {
         public int? NumberId { get; set; }
         public string CompanyFullName { get; set; }
+        public string Location { get; set; }
         public string JobTitle { get; set; }
         public string DisplayRecruiters { get; set; }
         public IEnumerable<RequestStatus> Statuses { get; set; }

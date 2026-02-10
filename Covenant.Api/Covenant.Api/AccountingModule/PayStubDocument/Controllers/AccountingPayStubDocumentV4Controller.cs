@@ -50,7 +50,7 @@ public class AccountingPayStubDocumentV4Controller : AccountingBaseController
                 Attachments = new[] { emailAttachment },
                 EmailSettingName = EmailSettingName.PayrollCovenant
             };
-            bool wasSend = await emailService.SendEmail(emailParams);
+            bool wasSend = await emailService.SendCovenantEmail(emailParams);
             if (wasSend) return Ok();
             return BadRequest(ModelState.AddError("Email delivery failed please try again"));
         }

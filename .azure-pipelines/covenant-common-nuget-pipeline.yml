@@ -1,32 +1,16 @@
 # Azure Pipeline for Covenant.Common NuGet Package
-# Builds, tests, and publishes NuGet package when Covenant.Common changes in dev branch
+# Manual execution only - builds, tests, and publishes NuGet package
 
 name: CovenantCommon-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
-# Only trigger on dev branch when Covenant.Common files change
-trigger:
-  branches:
-    include:
-      - dev
-  paths:
-    include:
-      - Covenant.Api/Covenant.Common/**
-    exclude:
-      - Covenant.Api/Covenant.Common/**/*.md
+# Trigger disabled - only manual execution allowed
+trigger: none
 
-# PR trigger with path filters - only validate when Covenant.Common changes
-pr:
-  branches:
-    include:
-      - dev
-  paths:
-    include:
-      - Covenant.Api/Covenant.Common/**
-    exclude:
-      - Covenant.Api/Covenant.Common/**/*.md
+# PR trigger disabled - only manual execution allowed
+pr: none
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 variables:
   dotnetSdkVersion: '8.0.415'
@@ -44,10 +28,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK using template
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Build and Test using template (ensures quality before publishing)
           - template: templates/dotnet-build-test.yml
@@ -66,10 +52,12 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Install .NET SDK
-          - template: templates/dotnet-setup.yml
-            parameters:
-              sdkVersion: $(dotnetSdkVersion)
+          # Verify .NET SDK is available (installed globally on VM)
+          - script: |
+              echo "Verifying .NET installation..."
+              dotnet --version
+              dotnet --list-sdks
+            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
 
           # Pack Covenant.Common
           - task: DotNetCoreCLI@2
@@ -84,13 +72,14 @@ stages:
           - task: NuGetAuthenticate@1
             displayName: 'Authenticate to NuGet Feed'
 
-          # Push to Azure Artifacts Feed
-          - task: NuGetCommand@2
+          # Push to Azure Artifacts Feed (using dotnet CLI instead of NuGet)
+          - task: DotNetCoreCLI@2
             displayName: 'Push Package to Feed'
             inputs:
               command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+              nuGetFeedType: 'internal'
               publishVstsFeed: 'sigook/Covenant.Common'
-              allowPackageConflicts: true
 
           # Summary
           - task: Bash@3

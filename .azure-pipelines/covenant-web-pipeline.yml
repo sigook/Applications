@@ -27,7 +27,7 @@ pr:
       - Covenant.Web/**
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  name: 'covenant-build-pool'
 
 # Environment detection variables
 variables:
@@ -94,11 +94,14 @@ stages:
             name: SetEnvironment
             displayName: 'Determine Environment'
 
-          # Install Node.js
-          - task: NodeTool@0
-            displayName: 'Install Node.js $(nodeVersion)'
-            inputs:
-              versionSpec: $(nodeVersion)
+          # Setup Node.js via NVM (pre-installed on VM)
+          - script: |
+              export NVM_DIR="$HOME/.nvm"
+              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              nvm use covenant-web  # Alias for Node.js 20
+              echo "Node version: $(node --version)"
+              echo "NPM version: $(npm --version)"
+            displayName: 'Setup Node.js 20 via NVM'
 
           # Display build information
           - task: Bash@3

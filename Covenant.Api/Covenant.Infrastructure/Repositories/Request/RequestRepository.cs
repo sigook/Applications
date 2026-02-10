@@ -77,7 +77,7 @@ public class RequestRepository : IRequestRepository
                         EmploymentType = r.EmploymentType.ToString(),
                         Address = r.JobLocation.Address,
                         City = r.JobLocation.City.Value,
-                        ProvinceCode = r.JobLocation.City.Province.Code,
+                        ProvinceName = r.JobLocation.City.Province.Value,
                         PostalCode = r.JobLocation.PostalCode,
                         Entrance = r.JobLocation.Entrance,
                         CompanyFullName = cp.BusinessName,
@@ -119,12 +119,16 @@ public class RequestRepository : IRequestRepository
         if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
         {
             var criteria = filter.CompanyFullName.ToLower();
-            predicate = predicate.And(r =>
-                r.CompanyFullName.ToLower().Contains(criteria) ||
-                r.Address.ToLower().Contains(criteria) ||
-                r.City.ToLower().Contains(criteria) ||
-                r.ProvinceCode.ToLower().Contains(criteria) ||
-                r.PostalCode.ToLower().Contains(criteria));
+            predicate = predicate.And(r => r.CompanyFullName.ToLower().Contains(criteria));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            var locationCriteria = filter.Location.ToLower();
+            predicate = predicate.And(r => 
+                r.Address.ToLower().Contains(locationCriteria) ||
+                r.City.ToLower().Contains(locationCriteria) ||
+                r.ProvinceName.ToLower().Contains(locationCriteria) ||
+                r.PostalCode.ToLower().Contains(locationCriteria));
         }
         if (!string.IsNullOrWhiteSpace(filter.JobTitle))
             predicate = predicate.And(r => r.JobTitle.ToLower().Contains(filter.JobTitle.ToLower()));
@@ -200,7 +204,7 @@ public class RequestRepository : IRequestRepository
                 Description = r.Description,
                 Requirements = r.Requirements,
                 Responsibilities = r.Responsibilities,
-                Location = r.JobLocation.City.Value + ", " + r.JobLocation.City.Province.Code,
+                Location = r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value,
                 Salary = r.WorkerRate.HasValue ? r.WorkerRate.Value.ToString("C") : r.WorkerSalary.Value.ToString("C"),
                 Title = r.JobTitle,
                 Type = Regex.Replace(r.EmploymentType.ToString(), "([A-Z])", " $1", RegexOptions.Compiled).Trim(),
@@ -233,7 +237,7 @@ public class RequestRepository : IRequestRepository
                     WorkerSalary = r.WorkerSalary,
                     DurationTerm = r.DurationTerm.ToString(),
                     DisplayRecruiters = r.DisplayRecruiters,
-                    Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Code} {r.JobLocation.PostalCode}",
+                    Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
                     Entrance = r.JobLocation.Entrance,
                     DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                     WorkerProfileId = wp.Id,
@@ -363,7 +367,7 @@ public class RequestRepository : IRequestRepository
                         CreatedAt = request.CreatedAt,
                         WorkersQuantity = request.WorkersQuantity,
                         WorkersQuantityWorking = request.WorkersQuantityWorking,
-                        Location = request.JobLocation.Address + " " + request.JobLocation.City.Value + " " + request.JobLocation.City.Province.Code + " " + request.JobLocation.PostalCode,
+                        Location = request.JobLocation.Address + " " + request.JobLocation.City.Value + " " + request.JobLocation.City.Province.Value + " " + request.JobLocation.PostalCode,
                         Entrance = request.JobLocation.Entrance,
                         CompanyFullName = agency.FullName,
                         RequestStatus = request.Status,
@@ -686,7 +690,7 @@ public class RequestRepository : IRequestRepository
              WorkerRate = r.WorkerRate,
              WorkerSalary = r.WorkerSalary,
              WorkerApprovedToWork = wp.ApprovedToWork.ToString(),
-             Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Code} {r.JobLocation.PostalCode}",
+             Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
              Entrance = r.JobLocation.Entrance,
              Status = wr.WorkerRequestStatus.ToString(),
              WorkersQuantity = r.WorkersQuantity,
@@ -714,7 +718,7 @@ public class RequestRepository : IRequestRepository
                 JobTitle = lj.lj.r.JobTitle,
                 WorkerRate = lj.lj.r.WorkerRate.HasValue ? lj.lj.r.WorkerRate : lj.lj.r.WorkerSalary,
                 WorkerSalary = lj.lj.r.WorkerSalary,
-                Location = $"{lj.lj.r.JobLocation.City.Value} {lj.lj.r.JobLocation.City.Province.Code}",
+                Location = $"{lj.lj.r.JobLocation.Address} {lj.lj.r.JobLocation.City.Value} {lj.lj.r.JobLocation.City.Province.Value} {lj.lj.r.JobLocation.PostalCode}",
                 Entrance = lj.lj.r.JobLocation.Entrance,
                 Status = lj.lj.wr.WorkerRequestStatus.ToString(),
                 WorkersQuantity = lj.lj.r.WorkersQuantity,
@@ -742,7 +746,7 @@ public class RequestRepository : IRequestRepository
                     JobTitle = lj.r.JobTitle,
                     WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
                     WorkerSalary = lj.r.WorkerSalary,
-                    Location = $"{lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Code}",
+                    Location = $"{lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Value}",
                     Entrance = lj.r.JobLocation.Entrance,
                     Status = null,
                     WorkersQuantity = lj.r.WorkersQuantity,
@@ -801,7 +805,7 @@ public class RequestRepository : IRequestRepository
                     Incentive = r.Incentive,
                     IncentiveDescription = r.IncentiveDescription,
                     DurationBreak = r.DurationBreak,
-                    Location = l.Address + " " + l.City.Value + " " + l.City.Province.Code + " " + l.PostalCode,
+                    Location = l.Address + " " + l.City.Value + " " + l.City.Province.Value + " " + l.PostalCode,
                     IsApplicant = ra != null,
                     PunchCardOptionEnabled = r.PunchCardOptionEnabled,
                     JobLocation = new LocationDetailModel
@@ -861,7 +865,7 @@ public class RequestRepository : IRequestRepository
                         AgencyLogo = afl == null ? null : $"{filesConfiguration.FilesPath}{afl.FileName}",
                         CreatedAt = r.CreatedAt,
                         JobTitle = r.JobTitle,
-                        Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Code} {r.JobLocation.PostalCode}",
+                        Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
                         Status = r.Status.ToString(),
                         WorkersQuantity = r.WorkersQuantity,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
