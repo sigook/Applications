@@ -42,6 +42,17 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
     });
     _loadClockType();
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      await Geolocator.requestPermission();
+    }
   }
 
   Future<void> _loadClockType() async {

@@ -57,7 +57,8 @@ REQUIRED_VARS=(
 echo "Validating environment variables..."
 
 for VAR in "${REQUIRED_VARS[@]}"; do
-  if [[ -z "${!VAR:-}" ]]; then
+  eval "VALUE=\${$VAR:-}"
+  if [[ -z "$VALUE" ]]; then
     echo "❌ ERROR: Missing environment variable: $VAR"
     exit 1
   fi
@@ -90,7 +91,7 @@ echo "$ENV_FILE generated successfully"
 echo "Checking Flutter installation..."
 
 if ! command -v flutter >/dev/null 2>&1; then
-  echo "Flutter not found — installing stable Flutter SDK..."
+  echo "Flutter not found – installing stable Flutter SDK..."
   git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$HOME/flutter"
   export PATH="$PATH:$HOME/flutter/bin"
 else
