@@ -50,24 +50,18 @@ variables:
     value: 'production'
   ${{ else }}:
     value: 'staging'
-# Flutter build flavor (matches productFlavors in build.gradle.kts)
+# Flutter build flavor (always production — Beta flavor removed)
 - name: flavor
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    value: 'production'
-  ${{ else }}:
-    value: 'staging'
+  value: 'production'
 # Flutter entry point file
 - name: entryPoint
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     value: 'lib/main_production.dart'
   ${{ else }}:
     value: 'lib/main_staging.dart'
-# Fastlane lane name
+# Fastlane lane name (always production — Beta lane removed)
 - name: fastlaneLane
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    value: 'production'
-  ${{ else }}:
-    value: 'beta'
+  value: 'production'
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
@@ -121,12 +115,12 @@ stages:
           echo "========================================"
 
           echo "Verifying Android build configuration..."
-          flutter build apk --debug --flavor staging -t lib/main_staging.dart --dry-run
+          flutter build apk --debug --flavor production -t lib/main_staging.dart --dry-run
           echo "✅ Android build configuration valid"
 
           echo ""
           echo "Verifying iOS build configuration..."
-          flutter build ios --debug -t lib/main_staging.dart --dry-run --no-codesign
+          flutter build ios --debug --flavor production -t lib/main_staging.dart --dry-run --no-codesign
           echo "✅ iOS build configuration valid"
 
           echo ""
@@ -149,11 +143,8 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # Android signing credentials (environment-specific)
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    - group: PROD-SigookApp-Android-Signing
-  - ${{ else }}:
-    - group: SigookApp-Android-Signing
+  # Android signing credentials (always production)
+  - group: PROD-SigookApp-Android-Signing
   jobs:
   - job: Build_AAB
     displayName: 'Build Android AAB'
@@ -217,20 +208,12 @@ stages:
           sudo rm -rf /opt/hostedtoolcache
           echo "=== Disk space after cleanup ==="
           df -h /
-    # Download the appropriate keystore based on environment
-    # secureFile doesn't support variable expansion - use compile-time conditional
-    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      - task: DownloadSecureFile@1
-        name: androidKeystore
-        displayName: 'Download Android Keystore (Production)'
-        inputs:
-          secureFile: 'sigook.jks'
-    - ${{ else }}:
-      - task: DownloadSecureFile@1
-        name: androidKeystore
-        displayName: 'Download Android Keystore (Staging)'
-        inputs:
-          secureFile: 'upload-keystore.jks'
+    # Download production keystore (always production signing)
+    - task: DownloadSecureFile@1
+      name: androidKeystore
+      displayName: 'Download Android Keystore (Production)'
+      inputs:
+        secureFile: 'sigook.jks'
     - task: CmdLine@2
       displayName: 'Setup Keystore'
       inputs:
@@ -315,12 +298,12 @@ stages:
     # Generate .env file from Azure DevOps variable group values
     # This replaces the placeholder .env created by flutter-setup.yml
     - task: Bash@3
-      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      displayName: 'Generate .env.$(environment) from pipeline variables'
       inputs:
         targetType: 'inline'
         workingDirectory: '$(workingDirectory)'
         script: |
-          ENV_FILE=".env.$(flavor)"
+          ENV_FILE=".env.$(environment)"
           echo "Generating $ENV_FILE from pipeline variable group..."
           cat > "$ENV_FILE" <<EOF
           ENVIRONMENT=$(environment)
@@ -490,14 +473,11 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables (environment-specific)
+  # iOS signing variables (always production)
   # Contains: APP_STORE_CONNECT_API_ISSUER_ID, APP_STORE_CONNECT_API_KEY_CONTENT,
   # APP_STORE_CONNECT_API_KEY_ID, APPLE_TEAM_ID, APPLE_TEAM_NAME,
   # P12_FILE_NAME, PROVISIONING_PROFILE, SIGOOK-DISTRIBUTION-PASSWORD
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    - group: PROD-SigookApp-iOS-Signing
-  - ${{ else }}:
-    - group: SigookApp-iOS-Signing
+  - group: PROD-SigookApp-iOS-Signing
   jobs:
   - job: Build_IPA
     displayName: 'Build iOS IPA'
@@ -560,24 +540,14 @@ stages:
         certSecureFile: 'distribution.p12'
         certPwd: '$(SIGOOK-DISTRIBUTION-PASSWORD)'
         keychain: 'temp'
-    # Install provisioning profile based on environment
-    # provProfileSecureFile doesn't support variable expansion - use compile-time conditional
-    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      - task: InstallAppleProvisioningProfile@1
-        name: installProvisioningProfile
-        displayName: 'Install Provisioning Profile (Production)'
-        inputs:
-          provisioningProfileLocation: 'secureFiles'
-          provProfileSecureFile: 'sigook-production.mobileprovision'
-          removeProfile: true
-    - ${{ else }}:
-      - task: InstallAppleProvisioningProfile@1
-        name: installProvisioningProfile
-        displayName: 'Install Provisioning Profile (Staging)'
-        inputs:
-          provisioningProfileLocation: 'secureFiles'
-          provProfileSecureFile: 'sigookbeta.mobileprovision'
-          removeProfile: true
+    # Install production provisioning profile (always production signing)
+    - task: InstallAppleProvisioningProfile@1
+      name: installProvisioningProfile
+      displayName: 'Install Provisioning Profile (Production)'
+      inputs:
+        provisioningProfileLocation: 'secureFiles'
+        provProfileSecureFile: 'sigook-production.mobileprovision'
+        removeProfile: true
     - task: CmdLine@2
       displayName: 'Debug: List Provisioning Profiles'
       continueOnError: true
@@ -649,12 +619,12 @@ stages:
 
     # Generate .env file from Azure DevOps variable group values
     - task: Bash@3
-      displayName: 'Generate .env.$(flavor) from pipeline variables'
+      displayName: 'Generate .env.$(environment) from pipeline variables'
       inputs:
         targetType: 'inline'
         workingDirectory: '$(workingDirectory)'
         script: |
-          ENV_FILE=".env.$(flavor)"
+          ENV_FILE=".env.$(environment)"
           echo "Generating $ENV_FILE from pipeline variable group..."
           cat > "$ENV_FILE" <<EOF
           ENVIRONMENT=$(environment)
@@ -884,11 +854,8 @@ stages:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
-  # iOS signing variables for TestFlight upload (environment-specific)
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    - group: PROD-SigookApp-iOS-Signing
-  - ${{ else }}:
-    - group: SigookApp-iOS-Signing
+  # iOS signing variables for TestFlight upload (always production)
+  - group: PROD-SigookApp-iOS-Signing
   jobs:
   - job: Deploy_TestFlight
     displayName: 'Deploy to TestFlight'

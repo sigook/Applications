@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Utility for loading environment configuration files.
-/// Used by entry points (main_staging.dart, main_production.dart).
+/// Used by entry points (main_staging.dart, main_production.dart, main_local.dart).
 ///
 /// In local development, developers maintain their own .env files.
 /// In CI/CD, the pipeline generates the .env file from Azure DevOps variable groups.

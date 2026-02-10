@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.sigook.beta"
+    namespace = "com.sigook.sigook"
 
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -55,7 +55,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sigook.beta"
+        applicationId = "com.sigook.sigook"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
@@ -72,13 +72,6 @@ android {
     flavorDimensions.add("environment")
 
     productFlavors {
-        create("staging") {
-            dimension = "environment"
-            applicationId = "com.sigook.beta"
-            versionNameSuffix = "-staging"
-            resValue("string", "app_name", "Sigook Beta")
-        }
-
         create("production") {
             dimension = "environment"
             applicationId = "com.sigook.sigook"
@@ -89,7 +82,6 @@ android {
     buildTypes {
         debug {
             // Debug builds don't need signing
-            applicationIdSuffix = ".debug"
         }
         release {
             signingConfig = signingConfigs.getByName("release")

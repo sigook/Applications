@@ -8,19 +8,7 @@
       "program": "lib/main_local.dart",
       "args": [
         "--flavor",
-        "staging",
-        "-d",
-        "emulator-5554"
-      ],
-    },
-    {
-      "name": "Staging",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main_staging.dart",
-      "args": [
-        "--flavor",
-        "staging",
+        "production",
         "-d",
         "emulator-5554"
       ],
