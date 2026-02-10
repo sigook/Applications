@@ -75,12 +75,12 @@ android {
         create("staging") {
             dimension = "environment"
             applicationId = "com.sigook.sigook"
-            resValue("string", "app_name", "Sigook Beta")
+            resValue("string", "app_name", "SIGOOK")
         }
         create("production") {
             dimension = "environment"
             applicationId = "com.sigook.sigook"
-            resValue("string", "app_name", "Sigook")
+            resValue("string", "app_name", "SIGOOK")
         }
     }
 
