@@ -296,28 +296,6 @@ stages:
         bundle --version
         fastlane --version
       displayName: 'Verify Fastlane Installation'
-    # Generate .env file from Azure DevOps variable group values
-    - task: Bash@3
-      displayName: 'Generate .env.$(environment) from pipeline variables'
-      inputs:
-        targetType: 'inline'
-        workingDirectory: '$(workingDirectory)'
-        script: |
-          ENV_FILE=".env.$(environment)"
-          echo "Generating $ENV_FILE from pipeline variable group..."
-          cat > "$ENV_FILE" <<EOF
-          ENVIRONMENT=$(environment)
-          AUTH_AUTHORITY=$(AUTH_AUTHORITY)
-          CLIENT_ID=$(CLIENT_ID)
-          REDIRECT_URI=$(REDIRECT_URI)
-          POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)
-          API_BASE_URL=$(API_BASE_URL)
-          SCOPES=$(SCOPES)
-          APP_NAME=$(APP_NAME)
-          EOF
-          echo "Generated $ENV_FILE:"
-          cat "$ENV_FILE"
-
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -370,7 +348,15 @@ stages:
             -t $(entryPoint) \
             --release \
             --build-name="${VERSION_NAME}" \
-            --build-number="${VERSION_CODE}"
+            --build-number="${VERSION_CODE}" \
+            --dart-define=ENVIRONMENT=$(environment) \
+            --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
+            --dart-define=API_BASE_URL=$(API_BASE_URL) \
+            --dart-define=CLIENT_ID=$(CLIENT_ID) \
+            --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
+            --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
+            --dart-define=SCOPES=$(SCOPES) \
+            --dart-define=APP_NAME=$(APP_NAME)
 
           echo "✅ Android AAB built successfully for $(environment)"
           echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
