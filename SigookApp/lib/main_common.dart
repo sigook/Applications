@@ -13,10 +13,8 @@ Future<void> mainCommon() async {
   try {
     debugPrint('📱 Starting app initialization...');
 
-    // Print environment configuration for debugging
     EnvironmentConfig.printConfigSource();
 
-    // Validate required configuration values
     EnvironmentConfig.validateRequiredConfig();
 
     debugPrint('📦 Loading SharedPreferences...');
