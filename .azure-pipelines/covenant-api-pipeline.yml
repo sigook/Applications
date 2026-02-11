@@ -109,6 +109,13 @@ stages:
                 echo "🏷️  Tag: $(tag)"
                 echo ""
 
+          # Cleanup after Docker build and push
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDocker: true
+              cleanDotnet: true
+              workingDirectory: 'Covenant.Api'
+
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
         dependsOn: Build_Docker_Image

@@ -1,0 +1,115 @@
+# Reusable template for cleaning up build artifacts after pipeline execution
+# Frees disk space on self-hosted agents (covenant-build-pool)
+#
+# Usage:
+#   - template: templates/cleanup.yml
+#     parameters:
+#       cleanDocker: true           # Remove dangling images and build cache
+#       cleanDotnet: true           # Remove bin/obj and NuGet temp cache
+#       cleanNodeModules: true      # Remove node_modules and build output (dist/wwwroot)
+#       workingDirectory: 'Covenant.Api'  # Root directory for cleanup
+
+parameters:
+  - name: cleanDocker
+    type: boolean
+    default: false
+    displayName: 'Clean Docker images and build cache'
+
+  - name: cleanDotnet
+    type: boolean
+    default: false
+    displayName: 'Clean .NET bin/obj and NuGet temp cache'
+
+  - name: cleanNodeModules
+    type: boolean
+    default: false
+    displayName: 'Clean node_modules and build output'
+
+  - name: workingDirectory
+    type: string
+    default: '$(System.DefaultWorkingDirectory)'
+    displayName: 'Working directory for cleanup'
+
+steps:
+  # Docker cleanup: remove dangling images and build cache
+  - ${{ if eq(parameters.cleanDocker, true) }}:
+    - script: |
+        echo "========================================"
+        echo "Docker Cleanup"
+        echo "========================================"
+        echo ""
+        echo "Disk space BEFORE cleanup:"
+        df -h / | tail -1
+
+        echo ""
+        echo "Docker disk usage BEFORE cleanup:"
+        docker system df 2>/dev/null || true
+
+        echo ""
+        echo "Removing dangling images..."
+        docker image prune -f 2>/dev/null || true
+
+        echo ""
+        echo "Removing build cache (keeping last 2GB)..."
+        docker builder prune -f --keep-storage 2GB 2>/dev/null || true
+
+        echo ""
+        echo "Removing unused volumes..."
+        docker volume prune -f 2>/dev/null || true
+
+        echo ""
+        echo "Docker disk usage AFTER cleanup:"
+        docker system df 2>/dev/null || true
+
+        echo ""
+        echo "Disk space AFTER cleanup:"
+        df -h / | tail -1
+        echo ""
+        echo "✅ Docker cleanup completed"
+      displayName: 'Cleanup: Docker images and build cache'
+      condition: always()
+
+  # .NET cleanup: remove bin/obj directories and NuGet temp cache
+  - ${{ if eq(parameters.cleanDotnet, true) }}:
+    - script: |
+        echo "========================================"
+        echo ".NET Cleanup"
+        echo "========================================"
+
+        echo "Cleaning bin/ and obj/ directories in ${{ parameters.workingDirectory }}..."
+        find ${{ parameters.workingDirectory }} -type d \( -name bin -o -name obj \) -exec rm -rf {} + 2>/dev/null || true
+
+        echo "Cleaning NuGet temp cache..."
+        dotnet nuget locals temp --clear 2>/dev/null || true
+
+        echo ""
+        echo "✅ .NET cleanup completed"
+      displayName: 'Cleanup: .NET build outputs'
+      condition: always()
+
+  # Node.js cleanup: remove node_modules and build output
+  - ${{ if eq(parameters.cleanNodeModules, true) }}:
+    - script: |
+        echo "========================================"
+        echo "Node.js Cleanup"
+        echo "========================================"
+
+        echo "Removing node_modules in ${{ parameters.workingDirectory }}..."
+        rm -rf ${{ parameters.workingDirectory }}/node_modules 2>/dev/null || true
+
+        echo "Removing build output (dist/, wwwroot/)..."
+        rm -rf ${{ parameters.workingDirectory }}/dist 2>/dev/null || true
+        rm -rf ${{ parameters.workingDirectory }}/wwwroot 2>/dev/null || true
+
+        echo ""
+        echo "✅ Node.js cleanup completed"
+      displayName: 'Cleanup: Node.js build outputs'
+      condition: always()
+
+  # General: clean artifact staging directory
+  - script: |
+      echo "Cleaning artifact staging directory..."
+      rm -rf $(Build.ArtifactStagingDirectory)/* 2>/dev/null || true
+      echo "✅ General cleanup completed"
+    displayName: 'Cleanup: Artifact staging directory'
+    condition: always()

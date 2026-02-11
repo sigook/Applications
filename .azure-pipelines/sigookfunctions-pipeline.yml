@@ -119,3 +119,9 @@ stages:
                 echo "Production URL:"
                 echo "https://sigook-functions.azurewebsites.net"
                 echo ""
+
+          # Cleanup after publish and deploy
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'SigookFunctions'

@@ -150,6 +150,13 @@ stages:
                 echo "Repository: sigook.azurecr.io/web:$(dockerTag)"
                 echo "Environment: $(buildEnvironment) | Build ID: $(Build.BuildId)"
 
+          # Cleanup after Docker build and push
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDocker: true
+              cleanNodeModules: true
+              workingDirectory: '$(workingDirectory)'
+
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
         dependsOn: Build_Docker_Image
