@@ -121,13 +121,13 @@ Covenant.Api/
 ├── Covenant.Common/                 # Entities, Interfaces (NuGet package)
 ├── Covenant.Core.BL/                # Business Logic (Services)
 ├── Covenant.Infrastructure/         # Data Access, EF Core, Repositories
-├── Covenant.Billing/                # Billing module
 ├── Covenant.PayStubs/               # Pay stubs generation
 ├── Covenant.Deductions/             # Tax calculations (CPP, EI, taxes)
 ├── Covenant.TimeSheetTotal/         # Timesheet calculations
 ├── Covenant.Documents/              # Excel/PDF generation
-├── Covenant.Notifications/          # Email, Teams, Push notifications
+├── Covenant.Subcontractor/          # Subcontractor report generation
 ├── Covenant.Tests/                  # Unit tests
+├── Covenant.Test.Utils/             # Test utilities
 └── Covenant.Integration.Tests/      # Integration tests
 ```
 
@@ -385,7 +385,7 @@ Covenant.Common/
 
 #### 5️⃣ SPECIALIZED MODULES
 
-**Covenant.Billing** - Facturación
+**Invoice/Billing Logic** - Facturación (en `Covenant.Core.BL/Services/Invoices/`)
 ```
 Responsabilidades:
 - Cálculo de invoices (rates, markup)
@@ -394,8 +394,22 @@ Responsabilidades:
 - Additional item calculations
 
 Principales:
+- BaseInvoiceService (lógica compartida Canadá/USA)
 - CanadaInvoiceService
 - UsaInvoiceService
+
+Entidades: Covenant.Common/Entities/Accounting/Invoice/
+```
+
+**Covenant.Subcontractor** - Reportes de Subcontratistas
+```
+Responsabilidades:
+- Generación de reportes de subcontratistas
+- Vinculado a creación de invoices
+
+Principales:
+- ReportSubContractorBuilder
+- CreateReportSubcontractorUsingTimeSheet
 ```
 
 **Covenant.PayStubs** - Nóminas
@@ -461,18 +475,17 @@ Principales:
 - ExcelReportGenerator
 ```
 
-**Covenant.Notifications** - Notificaciones
+**Notificaciones** (integradas en `Covenant.Infrastructure/Integrations/`)
 ```
 Responsabilidades:
 - Email (SendGrid)
 - Push notifications (Azure Notification Hub)
 - Teams webhooks
-- SMS (futuro)
 
 Principales:
-- EmailNotificationService
-- PushNotificationService
-- TeamsNotificationService
+- EmailService (Covenant.Infrastructure)
+- TeamsWebhookService (Covenant.Infrastructure)
+- PushNotificationService (Covenant.Infrastructure)
 ```
 
 ---
