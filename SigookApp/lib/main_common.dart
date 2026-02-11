@@ -11,12 +11,12 @@ import 'core/widgets/navbar_logo.dart';
 
 Future<void> mainCommon() async {
   try {
+
+    //comment for testing
     debugPrint('📱 Starting app initialization...');
 
-    // Print environment configuration for debugging
     EnvironmentConfig.printConfigSource();
 
-    // Validate required configuration values
     EnvironmentConfig.validateRequiredConfig();
 
     debugPrint('📦 Loading SharedPreferences...');
