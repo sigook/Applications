@@ -1,0 +1,267 @@
+Run command: 'cd /Volumes/workspace/repository/SigookApp/ios/ci_scripts && /bin/zsh /Volumes/workspace/repository/SigookApp/ios/ci_scripts/ci_post_clone.sh'
+
+===============================
+
+ Xcode Cloud Post-Clone Script
+
+===============================
+
+Working directory: /Volumes/workspace/repository/SigookApp/ios/ci_scripts
+
+CI Branch: SigookApp
+
+Repository path: /Volumes/workspace/repository
+
+Listing repository contents:
+
+total 104
+
+drwxrwxr-x  15 local  tc    480 Feb 11 06:08 .
+
+drwxrwxr-x@ 11 local  tc    352 Feb 11 06:08 ..
+
+drwxrwxr-x  10 local  tc    320 Feb 11 06:08 .azure-pipelines
+
+drwxrwxr-x  13 local  tc    416 Feb 11 06:08 .docs
+
+drwxrwxr-x  13 local  tc    416 Feb 11 06:08 .git
+
+drwxrwxr-x   3 local  tc     96 Feb 11 06:08 .github
+
+-rw-rw-r--   1 local  tc  10559 Feb 11 06:08 .gitignore
+
+-rw-rw-r--   1 local  tc  33762 Feb 11 06:08 CLAUDE.md
+
+drwxrwxr-x  35 local  tc   1120 Feb 11 06:08 Covenant.Api
+
+drwxrwxr-x   8 local  tc    256 Feb 11 06:08 Covenant.IdentityServer
+
+drwxrwxr-x  18 local  tc    576 Feb 11 06:08 Covenant.Web
+
+-rw-rw-r--   1 local  tc     14 Feb 11 06:08 README.md
+
+drwxrwxr-x  15 local  tc    480 Feb 11 06:08 Sigook.Web
+
+drwxrwxr-x  25 local  tc    800 Feb 11 06:08 SigookApp
+
+drwxrwxr-x   7 local  tc    224 Feb 11 06:08 SigookFunctions
+
+Using project path: /Volumes/workspace/repository/SigookApp
+
+Environment: staging
+
+Entry point: lib/main_staging.dart
+
+Validating environment variables...
+
+All environment variables are present ✅
+
+Checking Flutter installation...
+
+Flutter not found – installing stable Flutter SDK...
+
+Cloning into '/Users/local/flutter'...
+
+Updating files:  30% (4555/15104)
+
+Updating files:  31% (4683/15104)
+
+Updating files:  32% (4834/15104)
+
+Updating files:  33% (4985/15104)
+
+Updating files:  34% (5136/15104)
+
+Updating files:  35% (5287/15104)
+
+Updating files:  36% (5438/15104)
+
+Updating files:  37% (5589/15104)
+
+Updating files:  38% (5740/15104)
+
+Updating files:  39% (5891/15104)
+
+Updating files:  40% (6042/15104)
+
+Updating files:  41% (6193/15104)
+
+Updating files:  42% (6344/15104)
+
+Updating files:  43% (6495/15104)
+
+Updating files:  44% (6646/15104)
+
+Updating files:  45% (6797/15104)
+
+Updating files:  46% (6948/15104)
+
+Updating files:  47% (7099/15104)
+
+Updating files:  48% (7250/15104)
+
+Updating files:  49% (7401/15104)
+
+Updating files:  50% (7552/15104)
+
+Updating files:  50% (7609/15104)
+
+Updating files:  51% (7704/15104)
+
+Updating files:  52% (7855/15104)
+
+Updating files:  53% (8006/15104)
+
+Updating files:  54% (8157/15104)
+
+Updating files:  55% (8308/15104)
+
+Updating files:  56% (8459/15104)
+
+Updating files:  57% (8610/15104)
+
+Updating files:  58% (8761/15104)
+
+Updating files:  59% (8912/15104)
+
+Updating files:  60% (9063/15104)
+
+Updating files:  61% (9214/15104)
+
+Updating files:  62% (9365/15104)
+
+Updating files:  62% (9411/15104)
+
+Updating files:  63% (9516/15104)
+
+Updating files:  64% (9667/15104)
+
+Updating files:  65% (9818/15104)
+
+Updating files:  66% (9969/15104)
+
+Updating files:  67% (10120/15104)
+
+Updating files:  68% (10271/15104)
+
+Updating files:  69% (10422/15104)
+
+Updating files:  70% (10573/15104)
+
+Updating files:  71% (10724/15104)
+
+Updating files:  72% (10875/15104)
+
+Updating files:  73% (11026/15104)
+
+Updating files:  74% (11177/15104)
+
+Updating files:  75% (11328/15104)
+
+Updating files:  76% (11480/15104)
+
+Updating files:  77% (11631/15104)
+
+Updating files:  78% (11782/15104)
+
+Updating files:  79% (11933/15104)
+
+Updating files:  80% (12084/15104)
+
+Updating files:  81% (12235/15104)
+
+Updating files:  82% (12386/15104)
+
+Updating files:  83% (12537/15104)
+
+Updating files:  84% (12688/15104)
+
+Updating files:  85% (12839/15104)
+
+Updating files:  86% (12990/15104)
+
+Updating files:  87% (13141/15104)
+
+Updating files:  87% (13170/15104)
+
+Updating files:  88% (13292/15104)
+
+Updating files:  89% (13443/15104)
+
+Updating files:  90% (13594/15104)
+
+Updating files:  91% (13745/15104)
+
+Updating files:  92% (13896/15104)
+
+Updating files:  93% (14047/15104)
+
+Updating files:  94% (14198/15104)
+
+Updating files:  95% (14349/15104)
+
+Updating files:  96% (14500/15104)
+
+Updating files:  97% (14651/15104)
+
+Updating files:  98% (14802/15104)
+
+Updating files:  99% (14953/15104)
+
+Updating files: 100% (15104/15104)
+
+Updating files: 100% (15104/15104), done.
+
+Downloading Darwin x64 Dart SDK from Flutter engine 587c18f873b8ab57330422bce09047420d9c7f42...
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 1 seconds. 3 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 2 seconds. 2 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 4 seconds. 1 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+/Users/local/flutter/bin/internal/update_dart_sdk.sh: line 158: return: can only `return' from a function or sourced script
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 1 seconds. 3 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 2 seconds. 2 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Warning: Problem : timeout. Will retry in 4 seconds. 1 retries left.
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: storage.googleapis.com
+
+Failed to retrieve the Dart SDK from: https://storage.googleapis.com/flutter_infra_release/flutter/587c18f873b8ab57330422bce09047420d9c7f42/dart-sdk-darwin-x64.zip
+
+If you're located in China, please see this page:
+
+  https://flutter.dev/community/china
+
+Error
+Command exited with non-zero exit-code: 1
+
+Advertencia
+The ci_post_clone.sh is not executable and was run using zsh (default shell on macOS). To make sure your script runs correctly, make the file executable using `chmod +x` and add an appropriate shebang line.
