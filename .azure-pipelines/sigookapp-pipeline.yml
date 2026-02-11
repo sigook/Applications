@@ -351,14 +351,14 @@ stages:
             --release \
             --build-name="${VERSION_NAME}" \
             --build-number="${VERSION_CODE}" \
-            --dart-define=ENVIRONMENT=$(environment) \
-            --dart-define=AUTH_AUTHORITY=$(AUTH_AUTHORITY) \
-            --dart-define=API_BASE_URL=$(API_BASE_URL) \
-            --dart-define=CLIENT_ID=$(CLIENT_ID) \
-            --dart-define=REDIRECT_URI=$(REDIRECT_URI) \
-            --dart-define=POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI) \
-            --dart-define=SCOPES=$(SCOPES) \
-            --dart-define=APP_NAME=$(APP_NAME)
+            --dart-define="ENVIRONMENT=$(environment)" \
+            --dart-define="AUTH_AUTHORITY=$(AUTH_AUTHORITY)" \
+            --dart-define="API_BASE_URL=$(API_BASE_URL)" \
+            --dart-define="CLIENT_ID=$(CLIENT_ID)" \
+            --dart-define="REDIRECT_URI=$(REDIRECT_URI)" \
+            --dart-define="POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
+            --dart-define="SCOPES=$(SCOPES)" \
+            --dart-define="APP_NAME=$(APP_NAME)"
 
           echo "✅ Android AAB built successfully for $(environment)"
           echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
