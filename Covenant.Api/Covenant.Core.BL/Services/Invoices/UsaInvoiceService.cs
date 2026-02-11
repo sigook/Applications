@@ -1,4 +1,3 @@
-using Covenant.Billing.Utils;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
