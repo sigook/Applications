@@ -11,6 +11,8 @@ import 'core/widgets/navbar_logo.dart';
 
 Future<void> mainCommon() async {
   try {
+
+    //comment
     debugPrint('📱 Starting app initialization...');
 
     EnvironmentConfig.printConfigSource();
