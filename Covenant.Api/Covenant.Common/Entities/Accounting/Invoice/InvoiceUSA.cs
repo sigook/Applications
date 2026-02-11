@@ -31,6 +31,7 @@ public class InvoiceUSA
     public IEnumerable<InvoiceUSAItem> Items { get; set; } = new List<InvoiceUSAItem>();
     public IEnumerable<InvoiceUSADiscount> Discounts { get; set; } = new List<InvoiceUSADiscount>();
     public IEnumerable<InvoiceUSATimeSheetTotal> TimeSheetTotals { get; set; } = new List<InvoiceUSATimeSheetTotal>();
+    public InvoiceAdditionalDetail AdditionalDetail { get; set; }
 
     public static Result<InvoiceUSA> Create(
         long invoiceNumberId,

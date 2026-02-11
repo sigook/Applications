@@ -16,7 +16,7 @@
           </b-field>
         </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
           <b-field label="Company" :type="errors.has('company') ? 'is-danger' : ''"
             :message="errors.has('company') ? errors.first('company') : ''">
             <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus v-validate="'required'"
@@ -25,7 +25,7 @@
           </b-field>
         </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
           <b-field label="Province/State">
             <b-select v-model="invoice.provinceId" name="province" expanded placeholder="Select Province/State"
               :disabled="!enabledProvince">
@@ -33,6 +33,13 @@
                 {{ province.value }}
               </option>
             </b-select>
+          </b-field>
+        </div>
+
+        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+          <b-field label="Client's Site Address (optional)"
+            :message="'Optional: Address of the client\'s job site to appear on the invoice'">
+            <b-input v-model="invoice.clientSiteAddress" placeholder="Enter client's site address" />
           </b-field>
         </div>
 

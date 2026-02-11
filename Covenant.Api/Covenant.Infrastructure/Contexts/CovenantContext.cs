@@ -61,6 +61,7 @@ namespace Covenant.Infrastructure.Context
         public DbSet<InvoiceUSAItem> InvoiceUSAItems { get; set; }
         public DbSet<InvoiceUSATimeSheetTotal> InvoiceUSATimeSheetTotals { get; set; }
         public DbSet<InvoiceTotal> InvoiceTotals { get; set; }
+        public DbSet<InvoiceAdditionalDetail> InvoiceAdditionalDetails { get; set; }
         public DbSet<CompanyProfileInvoiceRecipient> CompanyProfileInvoiceRecipient { get; set; }
         public DbSet<SkipPayrollNumber> SkipPayrollNumbers { get; set; }
         public DbSet<NextNumberModel> NextNumber { get; set; }

@@ -12,4 +12,5 @@ public class CreateInvoiceModel
     public IEnumerable<CreateInvoiceItemModel> Discounts { get; set; } = Array.Empty<CreateInvoiceItemModel>();
     public IEnumerable<CreateInvoiceItemModel> AdditionalItems { get; set; } = Array.Empty<CreateInvoiceItemModel>();
     public bool DirectHiring { get; set; }
+    public string ClientSiteAddress { get; set; }
 }

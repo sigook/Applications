@@ -138,6 +138,16 @@ public class UsaInvoiceService : BaseInvoiceService
             invoice.BillToFax = company.FormattedFax;
         }
 
+        // 10. Add additional detail (client's site address)
+        if (!string.IsNullOrWhiteSpace(model.ClientSiteAddress))
+        {
+            invoice.AdditionalDetail = new InvoiceAdditionalDetail
+            {
+                ClientSiteAddress = model.ClientSiteAddress,
+                UsaInvoiceId = invoice.Id
+            };
+        }
+
         return Result.Ok(invoice);
     }
 
