@@ -72,9 +72,6 @@ dependencies:
   path_provider: ^2.1.1
   path: ^1.9.0
 
-  # Environment Configuration
-  flutter_dotenv: ^5.2.1
-
   # Routing
   go_router: ^17.0.0
 
@@ -146,12 +143,6 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # Environment files for local development (flutter_dotenv)
-    # These are optional - CI/CD builds use --dart-define instead
-    # If a file doesn't exist, EnvLoader handles it gracefully
-    - .env.staging
-    - .env.production
-    - .env.local
     - assets/images/
     - assets/images/logo/
     - assets/i18n/

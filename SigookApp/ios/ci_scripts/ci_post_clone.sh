@@ -67,25 +67,6 @@ done
 echo "All environment variables are present ✅"
 
 # ---------------------------------------
-# Generate .env file
-# ---------------------------------------
-ENV_FILE=".env.${ENVIRONMENT}"
-echo "Generating $ENV_FILE..."
-
-cat > "$ENV_FILE" <<EOF
-ENVIRONMENT=$ENVIRONMENT
-AUTH_AUTHORITY=$AUTH_AUTHORITY
-CLIENT_ID=$CLIENT_ID
-REDIRECT_URI=$REDIRECT_URI
-POST_LOGOUT_REDIRECT_URI=$POST_LOGOUT_REDIRECT_URI
-API_BASE_URL=$API_BASE_URL
-SCOPES=$SCOPES
-APP_NAME=$APP_NAME
-EOF
-
-echo "$ENV_FILE generated successfully"
-
-# ---------------------------------------
 # Setup Flutter
 # ---------------------------------------
 echo "Checking Flutter installation..."
@@ -125,7 +106,15 @@ flutter build ios --release \
   -t "$ENTRY_POINT" \
   --no-codesign \
   --build-name="$VERSION_NAME" \
-  --build-number="$VERSION_CODE"
+  --build-number="$VERSION_CODE" \
+  --dart-define=ENVIRONMENT="$ENVIRONMENT" \
+  --dart-define=AUTH_AUTHORITY="$AUTH_AUTHORITY" \
+  --dart-define=API_BASE_URL="$API_BASE_URL" \
+  --dart-define=CLIENT_ID="$CLIENT_ID" \
+  --dart-define=REDIRECT_URI="$REDIRECT_URI" \
+  --dart-define=POST_LOGOUT_REDIRECT_URI="$POST_LOGOUT_REDIRECT_URI" \
+  --dart-define=SCOPES="$SCOPES" \
+  --dart-define=APP_NAME="$APP_NAME"
 
 echo "================================"
 echo " Flutter iOS build completed ✅"
