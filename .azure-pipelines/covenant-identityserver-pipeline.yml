@@ -93,6 +93,13 @@ stages:
               command: 'push'
               tags: $(tag)
 
+          # Cleanup after Docker build and push
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDocker: true
+              cleanDotnet: true
+              workingDirectory: '$(workingDirectory)'
+
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
         dependsOn: Build_Docker_Image

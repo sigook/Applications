@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -18,36 +18,61 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _logoController;
   late Animation<double> _logoFadeAnimation;
+  late Animation<double> _textFadeAnimation;
 
   bool _hasNavigated = false;
+  bool _isProcessing = false;
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
 
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
     _logoFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    ));
+
+    _textFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+    ));
 
     Future.delayed(const Duration(milliseconds: 120), () {
       if (mounted) _logoController.forward();
     });
 
-    _checkAuthAndNavigate();
+    _loadAppVersion();
   }
 
-  Future<void> _checkAuthAndNavigate() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
+  Future<void> _loadAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = 'v${packageInfo.version} (${packageInfo.buildNumber})';
+      });
+    }
+  }
 
-    if (!mounted || _hasNavigated) return;
+  Future<void> _onLogoTapped() async {
+    if (_isProcessing || _hasNavigated) return;
 
-    debugPrint('🔐 [SPLASH] Starting authentication check...');
+    setState(() {
+      _isProcessing = true;
+    });
+
+    debugPrint('🔐 [SPLASH] Logo tapped, starting authentication check...');
 
     int attempts = 0;
     const maxAttempts = 50;
@@ -145,30 +170,85 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
-      if (_hasNavigated || !mounted) return;
-
-      if (next.isAuthenticated &&
-          next.token != null &&
-          next.token!.accessToken != null &&
-          next.token!.accessToken!.isNotEmpty) {
-        debugPrint(
-          '🔐 [SPLASH] Auth state changed - valid token detected, navigating to jobs',
-        );
-        _navigateToJobs();
-      }
-    });
-
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: FadeTransition(
-          opacity: _logoFadeAnimation,
-          child: Image.asset(
-            'assets/images/logo/sigook-logo.png',
-            width: 220,
-          ),
+      body: GestureDetector(
+        onTap: _onLogoTapped,
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+        child: Stack(
+          children: [
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FadeTransition(
+                    opacity: _logoFadeAnimation,
+                    child: Image.asset(
+                      'assets/images/logo/sigook-logo.png',
+                      width: 220,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  FadeTransition(
+                    opacity: _textFadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Welcome to Sigook!',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Touch the screen to begin',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (_isProcessing) ...[
+                            const SizedBox(height: 24),
+                            const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Version display at bottom
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: FadeTransition(
+                opacity: _textFadeAnimation,
+                child: Text(
+                  _appVersion,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[400],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
       ),
     );
   }

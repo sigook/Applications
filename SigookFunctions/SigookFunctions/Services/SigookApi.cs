@@ -1,18 +1,32 @@
-using IdentityModel.Client;
 using Newtonsoft.Json;
 using SigookFunctions.Models;
 using SigookFunctions.Utils;
+using System.Net.Http.Headers;
 
 namespace SigookFunctions.Services
 {
     public class SigookApi : ISigookApi
     {
-        private static readonly string SigookUrlWorkersAvailableToApply = Environment.GetEnvironmentVariable("SigookUrlWorkersAvailableToApply") ?? "https://staging.api.sigook.ca/api/Worker/AvailableToInvite";
-        private static readonly HttpClient Client = new HttpClient();
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public SigookApi(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
         public async Task<PaginatedList<WorkerContactInfoModel>> GetWorkers(int pageIndex, Guid agencyId)
         {
-            Client.SetBearerToken(await Client.GetToken());
-            HttpResponseMessage response = await Client.GetAsync($"{SigookUrlWorkersAvailableToApply}?PageSize=100&PageIndex={pageIndex}&AgencyId={agencyId}");
+            var baseUrl = Environment.GetEnvironmentVariable("SigookUrlWorkersAvailableToApply")
+                ?? "https://staging.api.sigook.ca/api/Worker/AvailableToInvite";
+
+            var client = _httpClientFactory.CreateClient("Api");
+            var token = await client.GetToken();
+
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"{baseUrl}?PageSize=100&PageIndex={pageIndex}&AgencyId={agencyId}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await client.SendAsync(request);
             string content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<PaginatedList<WorkerContactInfoModel>>(content);
         }

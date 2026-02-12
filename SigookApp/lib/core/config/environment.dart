@@ -1,49 +1,52 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 enum Environment { local, staging, production }
 
-/// Environment configuration loaded from .env files via flutter_dotenv.
+/// Environment configuration loaded via compile-time constants.
 ///
-/// .env files are loaded by EnvLoader in each entry point
-/// (main_staging.dart, main_production.dart).
-/// In CI/CD, the pipeline generates the .env file from Azure DevOps
-/// variable groups before building.
+/// Values are injected at build time using:
+/// - Local development: --dart-define-from-file=.env.staging (reads local .env file)
+/// - CI/CD (Azure DevOps): --dart-define=KEY=VALUE flags (from pipeline variable groups)
+/// - CI/CD (Xcode Cloud): --dart-define=KEY=VALUE flags (from Xcode Cloud env vars)
+///
+/// String.fromEnvironment is resolved at compile time - values are baked into the binary.
 class EnvironmentConfig {
-  /// Get environment variable from dotenv with fallback.
-  static String _getEnv(String key, {String fallback = ''}) {
-    try {
-      final value = dotenv.maybeGet(key);
-      if (value != null && value.isNotEmpty) {
-        return value;
-      }
-    } catch (e) {
-      // dotenv not initialized
-    }
-    return fallback;
-  }
+  static const String _environment =
+      String.fromEnvironment('ENVIRONMENT');
+  static const String _authAuthority =
+      String.fromEnvironment('AUTH_AUTHORITY');
+  static const String _apiBaseUrl =
+      String.fromEnvironment('API_BASE_URL');
+  static const String _clientId =
+      String.fromEnvironment('CLIENT_ID');
+  static const String _redirectUri =
+      String.fromEnvironment('REDIRECT_URI');
+  static const String _postLogoutRedirectUri =
+      String.fromEnvironment('POST_LOGOUT_REDIRECT_URI');
+  static const String _scopes =
+      String.fromEnvironment('SCOPES');
+  static const String _appName =
+      String.fromEnvironment('APP_NAME');
 
-  static String get authority => _getEnv('AUTH_AUTHORITY');
+  static String get authority => _authAuthority;
 
-  static String get apiBaseUrl => _getEnv('API_BASE_URL');
+  static String get apiBaseUrl => _apiBaseUrl;
 
-  static String get clientId => _getEnv('CLIENT_ID');
+  static String get clientId => _clientId;
 
-  static String get redirectUri => _getEnv('REDIRECT_URI');
+  static String get redirectUri => _redirectUri;
 
-  static String get postLogoutRedirectUri =>
-      _getEnv('POST_LOGOUT_REDIRECT_URI');
+  static String get postLogoutRedirectUri => _postLogoutRedirectUri;
 
   static List<String> get scopes {
-    final scopesString = _getEnv('SCOPES');
-    if (scopesString.isEmpty) return [];
-    return scopesString.split(',').map((s) => s.trim()).toList();
+    if (_scopes.isEmpty) return [];
+    return _scopes.split(',').map((s) => s.trim()).toList();
   }
 
-  static String get appName => _getEnv('APP_NAME');
+  static String get appName => _appName;
 
   static Environment get current {
-    final envString = _getEnv('ENVIRONMENT').toLowerCase();
+    final envString = _environment.toLowerCase();
     switch (envString) {
       case 'production':
         return Environment.production;
@@ -85,21 +88,21 @@ class EnvironmentConfig {
     if (missing.isNotEmpty) {
       throw Exception(
         'Missing required environment configuration: ${missing.join(', ')}\n'
-        'Ensure you have a valid .env file for the current environment.',
+        'Ensure you pass environment variables via --dart-define-from-file or --dart-define.\n'
+        'Example: flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart',
       );
     }
   }
 
   /// Debug helper to print current configuration
-  /// Call this after app initialization to verify config is loaded correctly
   static void printConfigSource() {
     debugPrint('');
-    debugPrint('╔══════════════════════════════════════════════════════════════╗');
-    debugPrint('║                 ENVIRONMENT CONFIGURATION                     ║');
-    debugPrint('╠══════════════════════════════════════════════════════════════╣');
-    debugPrint('║ Source: .env file via flutter_dotenv                         ║');
-    debugPrint('╠══════════════════════════════════════════════════════════════╣');
-    _printConfigLine('ENVIRONMENT', _getEnv('ENVIRONMENT'));
+    debugPrint('========================================================');
+    debugPrint('           ENVIRONMENT CONFIGURATION                     ');
+    debugPrint('========================================================');
+    debugPrint(' Source: compile-time constants (--dart-define)           ');
+    debugPrint('========================================================');
+    _printConfigLine('ENVIRONMENT', _environment);
     _printConfigLine('AUTH_AUTHORITY', authority);
     _printConfigLine('API_BASE_URL', apiBaseUrl);
     _printConfigLine('CLIENT_ID', clientId);
@@ -107,15 +110,15 @@ class EnvironmentConfig {
     _printConfigLine('POST_LOGOUT_URI', postLogoutRedirectUri);
     _printConfigLine('SCOPES', scopes.join(','));
     _printConfigLine('APP_NAME', appName);
-    debugPrint('╚══════════════════════════════════════════════════════════════╝');
+    debugPrint('========================================================');
     debugPrint('');
   }
 
   static void _printConfigLine(String key, String value) {
-    final status = value.isNotEmpty ? '✓' : '✗';
+    final status = value.isNotEmpty ? '[OK]' : '[MISSING]';
     final displayValue = value.isNotEmpty
         ? (value.length > 35 ? '${value.substring(0, 35)}...' : value)
         : '(missing)';
-    debugPrint('║ $status $key: $displayValue');
+    debugPrint(' $status $key: $displayValue');
   }
 }

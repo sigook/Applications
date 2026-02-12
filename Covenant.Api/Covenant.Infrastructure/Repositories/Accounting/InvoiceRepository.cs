@@ -210,7 +210,8 @@ public class InvoiceRepository : IInvoiceRepository
                     Holidays = i.Holidays.Select(h => new InvoiceSummaryHolidayModel(h.Amount, h.Hours, $"Charge for Holiday {h.Holiday:D}")).ToList(),
                     AdditionalItems = i.AdditionalItems.Select(h => new InvoiceSummaryAdditionalItemModel(h.Quantity, h.UnitPrice, h.Total, h.Description)).ToList(),
                     InvoiceColor = InvoiceColor.Covenant,
-                    InvoicePayroll = InvoicePayroll.Covenant
+                    InvoicePayroll = InvoicePayroll.Covenant,
+                    ClientSiteAddress = i.AdditionalDetail != null ? i.AdditionalDetail.ClientSiteAddress : null
                 };
         var invoice = await q.SingleOrDefaultAsync();
         var items = await _context.InvoiceTotals
@@ -272,7 +273,8 @@ public class InvoiceRepository : IInvoiceRepository
                         Description = d.Description
                     }).ToList(),
                     InvoiceColor = InvoiceColor.Sigook,
-                    InvoicePayroll = InvoicePayroll.Sigook
+                    InvoicePayroll = InvoicePayroll.Sigook,
+                    ClientSiteAddress = i.AdditionalDetail != null ? i.AdditionalDetail.ClientSiteAddress : null
                 };
         var invoice = await q.SingleOrDefaultAsync();
         var items = await _context.InvoiceUSAItems

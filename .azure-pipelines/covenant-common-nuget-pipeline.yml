@@ -101,3 +101,9 @@ stages:
                 echo ""
                 echo "To use this package, run:"
                 echo "  dotnet add package Covenant.Common --version $(Build.BuildNumber)"
+
+          # Cleanup after build and publish
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'Covenant.Api'

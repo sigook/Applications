@@ -33,7 +33,6 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Covenant.Billing\Covenant.Billing.csproj" />
 		<ProjectReference Include="..\Covenant.Deductions\Covenant.Deductions.csproj" />
 		<ProjectReference Include="..\Covenant.Documents\Covenant.Documents.csproj" />
 	</ItemGroup>

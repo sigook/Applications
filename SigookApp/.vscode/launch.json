@@ -2,22 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Local (localhost services)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main_local.dart",
-      "args": [
-        "--flavor",
-        "staging",
-        "-d",
-        "emulator-5554"
-      ],
-    },
-    {
       "name": "Staging",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_staging.dart",
+      "toolArgs": [
+        "--dart-define-from-file=.env.staging"
+      ],
       "args": [
         "--flavor",
         "staging",
@@ -30,6 +21,24 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_production.dart",
+      "toolArgs": [
+        "--dart-define-from-file=.env.production"
+      ],
+      "args": [
+        "--flavor",
+        "production",
+        "-d",
+        "emulator-5554"
+      ],
+    },
+    {
+      "name": "Local (localhost services)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_local.dart",
+      "toolArgs": [
+        "--dart-define-from-file=.env.local"
+      ],
       "args": [
         "--flavor",
         "production",

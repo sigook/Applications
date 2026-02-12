@@ -5,8 +5,9 @@
 El sistema de facturación de Covenant cobra a las empresas (Companies) por los servicios de staffing, aplicando rates, premiums, y taxes apropiados.
 
 **Ubicación del código:**
-- `Covenant.Api/Covenant.Billing/` - Lógica de facturación
+- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` - Lógica de facturación (BaseInvoiceService, CanadaInvoiceService, UsaInvoiceService)
 - `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` - Orquestación
+- `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/` - Entidades de invoice
 - `Covenant.Api/Covenant.Documents/` - Generación de PDFs
 
 ---

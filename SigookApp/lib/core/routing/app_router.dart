@@ -218,7 +218,7 @@ class AppRouter {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () => context.go(AppRoutes.splash),
+                    onPressed: () => context.go(AppRoutes.jobs),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1565C0),
                       foregroundColor: Colors.white,

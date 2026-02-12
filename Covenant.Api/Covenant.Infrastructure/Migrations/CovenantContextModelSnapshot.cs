@@ -80,7 +80,33 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Invoice", (string)null);
+                    b.ToTable("Invoice");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CanadaInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientSiteAddress")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsaInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanadaInvoiceId")
+                        .IsUnique();
+
+                    b.HasIndex("UsaInvoiceId")
+                        .IsUnique();
+
+                    b.ToTable("InvoiceAdditionalDetail", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
@@ -105,7 +131,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceAdditionalItem", (string)null);
+                    b.ToTable("InvoiceAdditionalItem");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceDiscount", b =>
@@ -133,7 +159,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceDiscount", (string)null);
+                    b.ToTable("InvoiceDiscount");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceHoliday", b =>
@@ -163,7 +189,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("InvoiceHoliday", (string)null);
+                    b.ToTable("InvoiceHoliday");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
@@ -300,7 +326,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("InvoiceNumberId")
                         .IsUnique();
 
-                    b.ToTable("InvoiceUSA", (string)null);
+                    b.ToTable("InvoiceUSA");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
@@ -328,7 +354,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceUSAId");
 
-                    b.ToTable("InvoiceUSADiscount", (string)null);
+                    b.ToTable("InvoiceUSADiscount");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
@@ -502,7 +528,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("PayStub", (string)null);
+                    b.ToTable("PayStub");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubHistory", b =>
@@ -576,7 +602,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubItem", (string)null);
+                    b.ToTable("PayStubItem");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubOtherDeduction", b =>
@@ -604,7 +630,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubOtherDeduction", (string)null);
+                    b.ToTable("PayStubOtherDeduction");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubPublicHoliday", b =>
@@ -674,7 +700,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("PayStubWageDetail", (string)null);
+                    b.ToTable("PayStubWageDetail");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
@@ -702,7 +728,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ReportSubcontractorId");
 
-                    b.ToTable("ReportSubContractorOtherDeduction", (string)null);
+                    b.ToTable("ReportSubContractorOtherDeduction");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
@@ -751,7 +777,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("ReportSubcontractor", (string)null);
+                    b.ToTable("ReportSubcontractor");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
@@ -821,7 +847,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("ReportSubcontractorWageDetail", (string)null);
+                    b.ToTable("ReportSubcontractorWageDetail");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
@@ -923,7 +949,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.ToTable("AgencyContactInformation", (string)null);
+                    b.ToTable("AgencyContactInformation");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyLocation", b =>
@@ -987,7 +1013,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WsibGroupId");
 
-                    b.ToTable("AgencyWsibGroup", (string)null);
+                    b.ToTable("AgencyWsibGroup");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Availability", b =>
@@ -1001,7 +1027,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Availability", (string)null);
+                    b.ToTable("Availability");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.AvailabilityTime", b =>
@@ -1015,7 +1041,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AvailabilityTime", (string)null);
+                    b.ToTable("AvailabilityTime");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
@@ -1162,7 +1188,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("City", (string)null);
+                    b.ToTable("City");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -1274,7 +1300,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("CompanyId", "AgencyId")
                         .IsUnique();
 
-                    b.ToTable("CompanyProfile", (string)null);
+                    b.ToTable("CompanyProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileContactPerson", b =>
@@ -1365,7 +1391,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("HolidayId");
 
-                    b.ToTable("CompanyProfileHoliday", (string)null);
+                    b.ToTable("CompanyProfileHoliday");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
@@ -1384,7 +1410,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("IndustryId");
 
-                    b.ToTable("CompanyProfileIndustry", (string)null);
+                    b.ToTable("CompanyProfileIndustry");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceNotes", b =>
@@ -1403,7 +1429,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileInvoiceNotes", (string)null);
+                    b.ToTable("CompanyProfileInvoiceNotes");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceRecipient", b =>
@@ -1425,7 +1451,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileInvoiceRecipient", (string)null);
+                    b.ToTable("CompanyProfileInvoiceRecipient");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileJobPositionRate", b =>
@@ -1487,7 +1513,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("CompanyProfileJobPositionRate", (string)null);
+                    b.ToTable("CompanyProfileJobPositionRate");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileLocation", b =>
@@ -1577,7 +1603,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Country", (string)null);
+                    b.ToTable("Country");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.CovenantFile", b =>
@@ -1594,7 +1620,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CovenantFile", (string)null);
+                    b.ToTable("CovenantFile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.CovenantNote", b =>
@@ -1626,7 +1652,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CovenantNote", (string)null);
+                    b.ToTable("CovenantNote");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Day", b =>
@@ -1640,7 +1666,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Day", (string)null);
+                    b.ToTable("Day");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Gender", b =>
@@ -1654,7 +1680,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Gender", (string)null);
+                    b.ToTable("Gender");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Holiday", b =>
@@ -1691,7 +1717,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IdentificationType", (string)null);
+                    b.ToTable("IdentificationType");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Industry", b =>
@@ -1708,7 +1734,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Industry", (string)null);
+                    b.ToTable("Industry");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.JobPosition", b =>
@@ -1730,7 +1756,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("IndustryId");
 
-                    b.ToTable("JobPosition", (string)null);
+                    b.ToTable("JobPosition");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Language", b =>
@@ -1744,7 +1770,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Language", (string)null);
+                    b.ToTable("Language");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Lift", b =>
@@ -1758,7 +1784,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lift", (string)null);
+                    b.ToTable("Lift");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Location", b =>
@@ -1792,7 +1818,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("Location", (string)null);
+                    b.ToTable("Location");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Notification.NotificationType", b =>
@@ -1814,7 +1840,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationType", (string)null);
+                    b.ToTable("NotificationType");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Notification.UserNotificationType", b =>
@@ -1845,7 +1871,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("UserId", "NotificationTypeId")
                         .IsUnique();
 
-                    b.ToTable("UserNotificationType", (string)null);
+                    b.ToTable("UserNotificationType");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
@@ -1867,7 +1893,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("Province", (string)null);
+                    b.ToTable("Province");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.ProvinceSetting", b =>
@@ -1915,7 +1941,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ValueId");
 
-                    b.ToTable("ReasonCancellationRequest", (string)null);
+                    b.ToTable("ReasonCancellationRequest");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
@@ -2047,7 +2073,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("Request", (string)null);
+                    b.ToTable("Request");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicant", b =>
@@ -2082,7 +2108,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("RequestApplicant", (string)null);
+                    b.ToTable("RequestApplicant");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
@@ -2162,7 +2188,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestFinalizationDetail", (string)null);
+                    b.ToTable("RequestFinalizationDetail");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestNote", b =>
@@ -2244,7 +2270,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestSkill", (string)null);
+                    b.ToTable("RequestSkill");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
@@ -2323,7 +2349,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerRequestId");
 
-                    b.ToTable("TimeSheet", (string)null);
+                    b.ToTable("TimeSheet");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetPhoto", b =>
@@ -2379,7 +2405,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("TimeSheetId")
                         .IsUnique();
 
-                    b.ToTable("TimeSheetTotal", (string)null);
+                    b.ToTable("TimeSheetTotal");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", b =>
@@ -2601,7 +2627,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Shift", (string)null);
+                    b.ToTable("Shift");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.StringResource", b =>
@@ -2623,7 +2649,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StringResource", (string)null);
+                    b.ToTable("StringResource");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.User", b =>
@@ -2862,7 +2888,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerId", "AgencyId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfile", (string)null);
+                    b.ToTable("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailability", b =>
@@ -2987,7 +3013,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileJobExperience", (string)null);
+                    b.ToTable("WorkerProfileJobExperience");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLanguage", b =>
@@ -3072,7 +3098,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileNote", (string)null);
+                    b.ToTable("WorkerProfileNote");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileOtherDocument", b =>
@@ -3112,7 +3138,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileSkill", (string)null);
+                    b.ToTable("WorkerProfileSkill");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileTaxCategory", b =>
@@ -3154,7 +3180,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WsibGroup", (string)null);
+                    b.ToTable("WsibGroup");
                 });
 
             modelBuilder.Entity("Covenant.Common.Models.Accounting.NextNumberModel", b =>
@@ -3187,7 +3213,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CppBiWeekly", (string)null);
+                    b.ToTable("CppBiWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.CppMonthly", b =>
@@ -3210,7 +3236,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CppMonthly", (string)null);
+                    b.ToTable("CppMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.CppSemiMonthly", b =>
@@ -3233,7 +3259,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CppSemiMonthly", (string)null);
+                    b.ToTable("CppSemiMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.CppWeekly", b =>
@@ -3256,7 +3282,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CppWeekly", (string)null);
+                    b.ToTable("CppWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxBiWeekly", b =>
@@ -3309,7 +3335,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FederalTaxBiWeekly", (string)null);
+                    b.ToTable("FederalTaxBiWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxMonthly", b =>
@@ -3362,7 +3388,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FederalTaxMonthly", (string)null);
+                    b.ToTable("FederalTaxMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxSemiMonthly", b =>
@@ -3415,7 +3441,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FederalTaxSemiMonthly", (string)null);
+                    b.ToTable("FederalTaxSemiMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxBiWeekly", b =>
@@ -3468,7 +3494,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProvincialTaxBiWeekly", (string)null);
+                    b.ToTable("ProvincialTaxBiWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxMonthly", b =>
@@ -3521,7 +3547,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProvincialTaxMonthly", (string)null);
+                    b.ToTable("ProvincialTaxMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxSemiMonthly", b =>
@@ -3574,7 +3600,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProvincialTaxSemiMonthly", (string)null);
+                    b.ToTable("ProvincialTaxSemiMonthly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxWeekly", b =>
@@ -3627,7 +3653,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProvincialTaxWeekly", (string)null);
+                    b.ToTable("ProvincialTaxWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Deductions.Entities.TaxWeekly", b =>
@@ -3680,7 +3706,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxWeekly", (string)null);
+                    b.ToTable("TaxWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
@@ -3692,6 +3718,23 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "CanadaInvoice")
+                        .WithOne("AdditionalDetail")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "CanadaInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "UsaInvoice")
+                        .WithOne("AdditionalDetail")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "UsaInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CanadaInvoice");
+
+                    b.Navigation("UsaInvoice");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
@@ -5005,6 +5048,8 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
                 {
+                    b.Navigation("AdditionalDetail");
+
                     b.Navigation("AdditionalItems");
 
                     b.Navigation("Discounts");
@@ -5016,6 +5061,8 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
                 {
+                    b.Navigation("AdditionalDetail");
+
                     b.Navigation("Discounts");
 
                     b.Navigation("Items");

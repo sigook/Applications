@@ -23,12 +23,18 @@ The solution consists of 15+ projects following domain-driven design:
 - **Covenant.Core.BL** - Business logic services and adapters
 
 ### Business Domain Projects
-- **Covenant.Billing** - Invoice creation and billing logic
 - **Covenant.PayStubs** - Payroll and pay stub generation
 - **Covenant.Deductions** - Canadian tax calculations and deductions
 - **Covenant.TimeSheetTotal** - Timesheet and overtime calculations
 - **Covenant.Documents** - Document generation and reports
-- **Covenant.Notifications** - Email and Teams notifications
+- **Covenant.Subcontractor** - Subcontractor report generation
+
+### Testing Projects
+- **Covenant.Tests** - Unit tests
+- **Covenant.Integration.Tests** - Integration tests
+- **Covenant.Test.Utils** - Shared test utilities
+
+> **Note:** Invoice/billing logic is located in `Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService). Invoice entities are in `Covenant.Common/Entities/Accounting/Invoice/`.
 
 ## Prerequisites
 

@@ -51,6 +51,12 @@
             <td style="padding: 8px; vertical-align: top"><b>Fax: </b> <br>@Model.Fax @(Model.FaxExt.GetValueOrDefault() > 0 ? string.Concat(" Ext: ", Model.FaxExt) : "")</td>
             <td style="padding: 8px; vertical-align: top"></td>
         </tr>
+        @if (!string.IsNullOrEmpty(Model.ClientSiteAddress))
+        {
+            <tr>
+                <td colspan="2" style="padding: 8px; vertical-align: top"><b>Site: </b> <br>@Model.ClientSiteAddress</td>
+            </tr>
+        }
     </table>
 
     <table style="margin: 0 0 20px; float: left; width: 100%;">

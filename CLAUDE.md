@@ -431,13 +431,17 @@ The Covenant API is a comprehensive staffing/recruitment management system with 
 
 ```
 Covenant.Api/
-├── Covenant.Api/              # Main API project
+├── Covenant.Api/              # Main API project (Controllers, Startup)
 ├── Covenant.Common/           # Shared entities, interfaces (NuGet package)
 ├── Covenant.Infrastructure/   # EF Core, repositories, integrations
-├── Covenant.Core.BL/          # Business logic services
-├── Covenant.Billing/          # Billing module
+├── Covenant.Core.BL/          # Business logic services (includes invoice/billing logic)
+├── Covenant.Deductions/       # Canadian tax calculations (CPP, EI, taxes)
+├── Covenant.Documents/        # Excel/PDF document generation
 ├── Covenant.PayStubs/         # Pay stubs generation
+├── Covenant.Subcontractor/    # Subcontractor report generation
+├── Covenant.TimeSheetTotal/   # Timesheet and overtime calculations
 ├── Covenant.Tests/            # Unit tests
+├── Covenant.Test.Utils/       # Test utilities
 └── Covenant.Integration.Tests/ # Integration tests
 ```
 

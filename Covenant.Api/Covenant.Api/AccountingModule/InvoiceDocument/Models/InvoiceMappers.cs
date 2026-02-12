@@ -67,6 +67,7 @@ namespace Covenant.Api.AccountingModule.InvoiceDocument.Models
                 TaxName = model.TaxName,
                 WeekEnding = model.WeedEnding,
                 InvoiceColor = model.InvoiceColor,
+                ClientSiteAddress = model.ClientSiteAddress,
                 Items = items.Concat(discounts).Concat(holidays).Concat(additionalItems).ToList(),
             };
         }
