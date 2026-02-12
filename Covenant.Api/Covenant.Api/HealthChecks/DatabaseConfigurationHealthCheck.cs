@@ -7,11 +7,11 @@ namespace Covenant.Api.HealthChecks;
 /// </summary>
 public class DatabaseConfigurationHealthCheck : IHealthCheck
 {
-    private readonly string? _connectionString;
+    private readonly string _connectionString;
     private readonly ILogger<DatabaseConfigurationHealthCheck> _logger;
 
     public DatabaseConfigurationHealthCheck(
-        string? connectionString,
+        string connectionString,
         ILogger<DatabaseConfigurationHealthCheck> logger)
     {
         _connectionString = connectionString;

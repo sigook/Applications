@@ -5,9 +5,9 @@ namespace Covenant.Api.HealthChecks;
 
 public class AzureServiceBusHealthCheck : IHealthCheck
 {
-    private readonly string? _connectionString;
+    private readonly string _connectionString;
 
-    public AzureServiceBusHealthCheck(string? connectionString)
+    public AzureServiceBusHealthCheck(string connectionString)
     {
         _connectionString = connectionString;
     }
