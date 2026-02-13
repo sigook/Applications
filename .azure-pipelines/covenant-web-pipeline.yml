@@ -271,7 +271,7 @@ stages:
               azureSubscription: 'SigookPipelines'
               appType: 'webAppLinux'
               appName: '$(azureAppName)'
-              package: '$(Pipeline.Workspace)/covenantweb-drop/*.zip'
+              package: '$(Pipeline.Workspace)/covenantweb-drop/covenantweb-$(environment)-$(Build.BuildId).zip'
               runtimeStack: 'NODE|20-lts'
               startUpCommand: 'npm start'
               appSettings: '-CVN_VERSION $(Build.BuildId)'
