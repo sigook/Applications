@@ -17,12 +17,20 @@
 </template>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
 import PartnerContactSection from '@/components/partners/PartnerContactSection.vue'
 import RolesWeRecruit from '@/components/employers/RolesWeRecruit.vue'
 import IndustriesCTA from '@/components/employers/IndustriesCTA.vue'
 import EmployersMainSection from '@/components/employers/EmployersMainSection.vue'
+
+useSeoMeta({
+  title: 'For Employers - Covenant Group',
+  description: 'Find qualified workers for your business. Covenant Group provides reliable temporary and permanent staffing solutions tailored to your industry needs.',
+  ogTitle: 'For Employers - Covenant Group',
+  ogDescription: 'Find qualified workers for your business. Reliable temporary and permanent staffing solutions tailored to your industry needs.',
+})
 </script>
 
 <style scoped>

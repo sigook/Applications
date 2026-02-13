@@ -61,14 +61,17 @@
             </div>
             <div v-else>
               <h6>by Sigook<label class="superscript">®</label></h6>
-              <h4><strong>{{ jobSelected.title }} - {{ jobSelected.numberId }}</strong></h4>
-              <div class="d-flex justify-content-start color-grey-light">
+              <div class="d-flex justify-content-between align-items-center">
+                <h4 class="m-0"><strong>{{ jobSelected.title }} - {{ jobSelected.numberId }}</strong></h4>
+                <button class="button-rounded bg-blue-light color-white" @click="applyNow()">APPLY NOW</button>
+              </div>
+              <div class="d-flex justify-content-start color-grey-light mt-2">
                 <h6>{{ jobSelected.location }}</h6>
                 <h6 class="ml-4">{{ jobSelected.salary }}</h6>
                 <h6 class="ml-4">{{ jobSelected.type }}</h6>
                 <h6 class="ml-4">{{ jobSelected.shift }}</h6>
               </div>
-              <br />
+              <hr />
               <h4>Description</h4>
               <article class="color-grey-dark" v-html="jobSelected.description"></article>
               <br />
@@ -77,8 +80,8 @@
               <br />
               <h4>Requirements</h4>
               <article class="color-grey-dark" v-html="jobSelected.requirements"></article>
-              <br />
-              <button class="button-rounded bg-blue-light color-white mb-2 ml-1" @click="applyNow()">APPLY NOW</button>
+              <hr />
+              <button class="button-rounded bg-blue-light color-white mb-2" @click="applyNow()">APPLY NOW</button>
             </div>
           </div>
         </div>
@@ -106,8 +109,11 @@
               <div :id="`collapse-${job.numberId}`" class="collapse" :aria-labelledby="`heading-${job.numberId}`"
                 data-parent="#accordionExample">
                 <div class="card-body">
-                  <h6>by Sigook<label class="superscript">®</label></h6>
-                  <div class="d-flex color-grey-light">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="m-0">by Sigook<label class="superscript">®</label></h6>
+                    <button class="button-rounded bg-blue-light color-white" @click="applyNow()">APPLY NOW</button>
+                  </div>
+                  <div class="d-flex color-grey-light mt-2">
                     <h6>{{ job.location }}</h6>
                     <h6>{{ job.salary }}</h6>
                     <div>
@@ -115,16 +121,15 @@
                       <h6>{{ job.shift }}</h6>
                     </div>
                   </div>
+                  <hr />
                   <h4>Description</h4>
                   <article class="color-grey-dark" v-html="job.description"></article>
                   <h4>Responsibilities</h4>
                   <article class="color-grey-dark" v-html="job.responsibilities"></article>
                   <h4>Requirements</h4>
                   <article class="color-grey-dark" v-html="job.requirements"></article>
-                  <br />
-                  <button class="button-rounded bg-blue-light color-white mb-2 ml-1" @click="applyNow()">
-                    APPLY NOW
-                  </button>
+                  <hr />
+                  <button class="button-rounded bg-blue-light color-white mb-2" @click="applyNow()">APPLY NOW</button>
                 </div>
               </div>
             </div>
@@ -148,7 +153,7 @@ export default {
       isLoading: false,
       jobs: [],
       jobSelected: null,
-      showApplyNowModal: true,
+      showApplyNowModal: false,
       jobToApply: null
     }
   },

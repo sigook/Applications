@@ -5,10 +5,10 @@ namespace Covenant.Api.HealthChecks;
 
 public class AzureStorageHealthCheck : IHealthCheck
 {
-    private readonly string? _connectionString;
+    private readonly string _connectionString;
     private readonly string _name;
 
-    public AzureStorageHealthCheck(string? connectionString, string name)
+    public AzureStorageHealthCheck(string connectionString, string name)
     {
         _connectionString = connectionString;
         _name = name;

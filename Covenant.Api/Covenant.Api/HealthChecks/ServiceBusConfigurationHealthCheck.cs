@@ -7,11 +7,11 @@ namespace Covenant.Api.HealthChecks;
 /// </summary>
 public class ServiceBusConfigurationHealthCheck : IHealthCheck
 {
-    private readonly string? _connectionString;
+    private readonly string _connectionString;
     private readonly ILogger<ServiceBusConfigurationHealthCheck> _logger;
 
     public ServiceBusConfigurationHealthCheck(
-        string? connectionString,
+        string connectionString,
         ILogger<ServiceBusConfigurationHealthCheck> logger)
     {
         _connectionString = connectionString;

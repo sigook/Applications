@@ -15,8 +15,17 @@ trigger:
     exclude:
       - SigookFunctions/**/*.md
 
-# No PR trigger - only deploy to production on merge to main
-pr: none
+# PR trigger - validate build on PRs to main
+pr:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - SigookFunctions/**
+    exclude:
+      - SigookFunctions/**/*.md
 
 pool:
   name: 'covenant-build-pool'
@@ -26,6 +35,7 @@ variables:
   dotnetSdkVersion: '8.0.415'
   azureFunctionAppName: 'sigook-functions'
   environment: 'Production'
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 stages:
   # ============================================
@@ -40,12 +50,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Build using template (no unit tests - project has none)
           - template: templates/dotnet-build-test.yml
@@ -61,7 +69,7 @@ stages:
   - stage: Deploy_Production
     displayName: 'Deploy to Production'
     dependsOn: Build
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables.isPR, true))
     jobs:
       - job: Publish_and_Deploy
         displayName: 'Publish and Deploy to Production'
@@ -69,12 +77,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Authenticate with Azure Artifacts for Covenant.Common package
           - task: NuGetAuthenticate@1

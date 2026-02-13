@@ -4,30 +4,39 @@
     <form @submit.prevent="createCandidate" class="p-3">
       <b-tabs v-model="activeTab" position="is-centered">
         <b-tab-item label="New Applicant">
-          <b-steps animated mobile-mode="compact">
-            <b-step-item step="1" label="Personal Info">
+          <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
+            <b-step-item step="1" label="Personal Info" :clickable="false">
               <div class="container-flex">
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('fullName') ? 'is-danger' : ''" label="Full Name"
+                  <b-field :type="errors.has('fullName') ? 'is-danger' : ''"
                     :message="errors.has('fullName') ? errors.first('fullName') : ''">
+                    <template #label>
+                      Full Name <span class="has-text-danger">*</span>
+                    </template>
                     <b-input v-model="candidate.fullName" name="fullName" has-counter maxLength="50"
                       v-validate="{ required: isNewApplicantTab, max: 50 }"></b-input>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
+                  <b-field :type="errors.has('email') ? 'is-danger' : ''"
                     :message="errors.has('email') ? errors.first('email') : ''">
+                    <template #label>
+                      Email <span class="has-text-danger">*</span>
+                    </template>
                     <b-input type="email" v-model="candidate.email" has-counter name="email" maxLength="50"
                       v-validate="{ email: true, required: isNewApplicantTab, max: 50 }"></b-input>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <phone-input model="Phone" :required="isNewApplicantTab" :defaultValue="candidate.phone"
+                  <phone-input ref="phoneComponent" model="Phone" :required="isNewApplicantTab" :defaultValue="candidate.phone"
                     @formattedPhone="(phone) => candidate.phone = phone"></phone-input>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('country') ? 'is-danger' : ''" label="Country"
+                  <b-field :type="errors.has('country') ? 'is-danger' : ''"
                     :message="errors.has('country') ? errors.first('country') : ''">
+                    <template #label>
+                      Country <span class="has-text-danger">*</span>
+                    </template>
                     <b-select v-model="candidate.countryId" expanded name="country"
                       v-validate="{ required: isNewApplicantTab }">
                       <option v-for="country in countries" :key="country.id" :value="country.id">{{ country.value }}
@@ -36,20 +45,30 @@
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('address') ? 'is-danger' : ''" label="City"
+                  <b-field :type="errors.has('address') ? 'is-danger' : ''"
                     :message="errors.has('address') ? errors.first('address') : ''">
+                    <template #label>
+                      City <span class="has-text-danger">*</span>
+                    </template>
                     <b-input v-model="candidate.address" name="address" maxLength="50" has-counter
                       v-validate="{ required: isNewApplicantTab, max: 50 }"></b-input>
                   </b-field>
                 </div>
               </div>
+              <div class="step-navigation-buttons">
+                <span></span>
+                <b-button type="is-primary" @click="validateAndGoToStep(1)">Next</b-button>
+              </div>
             </b-step-item>
 
-            <b-step-item step="2" label="Additional Details">
+            <b-step-item step="2" label="Additional Details" :clickable="false">
               <div class="container-flex">
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('status') ? 'is-danger' : ''" label="Immigration Status"
+                  <b-field :type="errors.has('status') ? 'is-danger' : ''"
                     :message="errors.has('status') ? errors.first('status') : ''">
+                    <template #label>
+                      Immigration Status <span class="has-text-danger">*</span>
+                    </template>
                     <b-select v-model="candidate.status" name="status" expanded
                       v-validate="{ required: isNewApplicantTab }">
                       <option value="Citizen">Citizen</option>
@@ -89,9 +108,13 @@
                   </b-field>
                 </div>
               </div>
+              <div class="step-navigation-buttons">
+                <b-button @click="goToPreviousStep()">Previous</b-button>
+                <b-button type="is-primary" @click="validateAndGoToStep(2)">Next</b-button>
+              </div>
             </b-step-item>
 
-            <b-step-item step="3" label="Review & Submit">
+            <b-step-item step="3" label="Review & Submit" :clickable="false">
               <div class="container-flex">
                 <!-- Terms and Conditions -->
                 <div class="col-12 col-padding">
@@ -130,6 +153,11 @@
                   </div>
                 </div>
               </div>
+              <div class="step-navigation-buttons">
+                <b-button @click="goToPreviousStep()">Previous</b-button>
+                <b-button type="is-primary" native-type="submit"
+                  :disabled="errors.items.length > 0 || !termnsAndConditions">Submit Application</b-button>
+              </div>
             </b-step-item>
           </b-steps>
         </b-tab-item>
@@ -146,14 +174,6 @@
         </b-tab-item>
       </b-tabs>
 
-      <div class="container-flex">
-        <div class="col-12 col-padding">
-          <b-field position="is-right">
-            <b-button type="is-primary" native-type="submit"
-              :disabled="errors.items.length > 0 || !termnsAndConditions">Save Changes</b-button>
-          </b-field>
-        </div>
-      </div>
     </form>
   </div>
 </template>
@@ -171,6 +191,7 @@ export default {
   data() {
     return {
       activeTab: 0,
+      activeStep: 0,
       isLoading: false,
       countries: [],
       skill: null,
@@ -185,6 +206,35 @@ export default {
     this.countries = await this.$store.dispatch("getCountries");
   },
   methods: {
+    goToPreviousStep() {
+      if (this.activeStep > 0) {
+        this.activeStep--;
+      }
+    },
+    async validateAndGoToStep(currentStep) {
+      let valid = false;
+      if (currentStep === 1) {
+        valid = await this.validateStep1();
+      } else if (currentStep === 2) {
+        valid = await this.validateStep2();
+      }
+      if (valid) {
+        this.activeStep++;
+      } else {
+        this.showAlertError("Please verify that the required fields are correctly filled in.");
+      }
+    },
+    async validateStep1() {
+      const step1Fields = ['fullName', 'email', 'country', 'address'];
+      const results = await Promise.all(step1Fields.map(f => this.$validator.validate(f)));
+      const phoneValid = await this.$refs.phoneComponent.validatePhone();
+      return results.every(r => r) && phoneValid;
+    },
+    async validateStep2() {
+      const step2Fields = ['status'];
+      const results = await Promise.all(step2Fields.map(f => this.$validator.validate(f)));
+      return results.every(r => r);
+    },
     async createCandidate() {
       const result = await this.$validator.validateAll();
       if (result) {
@@ -261,3 +311,14 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.step-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+</style>
