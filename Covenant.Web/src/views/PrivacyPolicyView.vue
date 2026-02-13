@@ -231,8 +231,16 @@
 </template>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
+
+useSeoMeta({
+  title: 'Privacy Policy - Covenant Group',
+  description: 'Learn how Covenant Group collects, uses, and protects your personal information. Our privacy policy outlines your rights and our data protection practices.',
+  ogTitle: 'Privacy Policy - Covenant Group',
+  ogDescription: 'How Covenant Group collects, uses, and protects your personal information.',
+})
 </script>
 
 <style scoped>

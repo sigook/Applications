@@ -18,7 +18,15 @@
 </style>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
 import LicensedCertifiedSection from '@/components/licensed/LicensedCertifiedSection.vue'
+
+useSeoMeta({
+  title: 'Licensed & Certified - Covenant Group',
+  description: 'Covenant Group is a fully licensed and certified staffing agency in Ontario, meeting the highest provincial standards for temporary help and recruitment services.',
+  ogTitle: 'Licensed & Certified - Covenant Group',
+  ogDescription: 'Fully licensed and certified staffing agency in Ontario, meeting the highest provincial standards for temporary help and recruitment.',
+})
 </script>

@@ -23,8 +23,16 @@
 </style>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
+
+useSeoMeta({
+  title: 'Covenant Group - Certified Temporary Help & Recruitment Agency',
+  description: 'Covenant Group is a certified temporary help and recruitment agency fully licensed in Ontario. We deliver top-tier staffing solutions for employers across Canada.',
+  ogTitle: 'Covenant Group - Certified Temporary Help & Recruitment Agency',
+  ogDescription: 'Certified temporary help and recruitment agency. Fully licensed in Ontario, delivering top-tier staffing solutions across Canada.',
+})
 import HeroSection from '@/components/home/HeroSection.vue'
 import EmployersTalentsSection from '@/components/home/EmployersTalentsSection.vue'
 import StatsOverview from '@/components/home/StatsOverview.vue'

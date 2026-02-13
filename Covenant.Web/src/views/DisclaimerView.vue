@@ -46,8 +46,16 @@
 </template>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
+
+useSeoMeta({
+  title: 'Disclaimer - Covenant Group',
+  description: 'Read the disclaimer for Covenant Group services, website, and applications including terms of use and liability limitations.',
+  ogTitle: 'Disclaimer - Covenant Group',
+  ogDescription: 'Disclaimer for Covenant Group services, website, and applications.',
+})
 </script>
 
 <style scoped>

@@ -194,8 +194,16 @@
 </template>
 
 <script setup lang="ts">
+import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
+
+useSeoMeta({
+  title: 'Terms & Conditions - Covenant Group',
+  description: 'Review the terms and conditions of service for Covenant Group website and staffing services. Understand your rights and obligations.',
+  ogTitle: 'Terms & Conditions - Covenant Group',
+  ogDescription: 'Terms and conditions of service for Covenant Group website and staffing services.',
+})
 </script>
 
 <style scoped>
