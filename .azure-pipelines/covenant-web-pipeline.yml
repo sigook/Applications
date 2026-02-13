@@ -121,6 +121,10 @@ stages:
                 echo "NPM: $(npm --version)"
                 echo "============================================"
 
+          # Ensure node_modules directory exists for cache task
+          - script: mkdir -p $(workingDirectory)/node_modules
+            displayName: 'Ensure node_modules directory exists'
+
           # Cache node_modules
           - task: Cache@2
             displayName: 'Cache node_modules'
@@ -129,9 +133,10 @@ stages:
               path: '$(workingDirectory)/node_modules'
               cacheHitVar: 'CacheRestored'
 
-          # Install dependencies
+          # Install dependencies (skip if cache was restored)
           - task: Npm@1
             displayName: 'npm ci'
+            condition: ne(variables['CacheRestored'], 'true')
             inputs:
               command: 'ci'
               workingDir: $(workingDirectory)
