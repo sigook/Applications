@@ -229,7 +229,7 @@ stages:
           # Cleanup after build
           - template: templates/cleanup.yml
             parameters:
-              cleanNodeModules: true
+              cleanNodeModules: false
               workingDirectory: '$(workingDirectory)'
 
       # ============================================
