@@ -1,4 +1,3 @@
-using Covenant.Billing.Utils;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
@@ -136,6 +135,16 @@ public class UsaInvoiceService : BaseInvoiceService
             invoice.BillToAddress = company.Locations.FirstOrDefault(f => f.IsBilling)?.Location?.FormattedAddress;
             invoice.BillToPhone = company.FormattedPhone;
             invoice.BillToFax = company.FormattedFax;
+        }
+
+        // 10. Add additional detail (client's site address)
+        if (!string.IsNullOrWhiteSpace(model.ClientSiteAddress))
+        {
+            invoice.AdditionalDetail = new InvoiceAdditionalDetail
+            {
+                ClientSiteAddress = model.ClientSiteAddress,
+                UsaInvoiceId = invoice.Id
+            };
         }
 
         return Result.Ok(invoice);

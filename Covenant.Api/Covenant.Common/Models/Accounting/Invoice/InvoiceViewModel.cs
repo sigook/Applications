@@ -30,4 +30,5 @@ public class InvoiceViewModel
     public Guid Id { get; set; }
     public IReadOnlyList<DescriptionTableViewModel> Items { get; set; } = new List<DescriptionTableViewModel>();
     public InvoiceColor InvoiceColor { get; set; }
+    public string ClientSiteAddress { get; set; }
 }

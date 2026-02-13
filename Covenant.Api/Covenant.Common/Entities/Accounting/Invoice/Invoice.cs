@@ -55,6 +55,7 @@ public class Invoice
     public IEnumerable<InvoiceDiscount> Discounts { get; set; } = new List<InvoiceDiscount>();
     public IEnumerable<InvoiceHoliday> Holidays { get; set; } = new List<InvoiceHoliday>();
     public IEnumerable<InvoiceAdditionalItem> AdditionalItems { get; set; } = new List<InvoiceAdditionalItem>();
+    public InvoiceAdditionalDetail AdditionalDetail { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? WeekEnding { get; set; }
 

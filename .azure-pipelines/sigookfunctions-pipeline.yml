@@ -40,12 +40,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Build using template (no unit tests - project has none)
           - template: templates/dotnet-build-test.yml
@@ -69,12 +67,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Authenticate with Azure Artifacts for Covenant.Common package
           - task: NuGetAuthenticate@1
@@ -119,3 +115,9 @@ stages:
                 echo "Production URL:"
                 echo "https://sigook-functions.azurewebsites.net"
                 echo ""
+
+          # Cleanup after publish and deploy
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'SigookFunctions'

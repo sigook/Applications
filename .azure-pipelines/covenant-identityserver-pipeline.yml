@@ -43,12 +43,10 @@ stages:
       - job: Build_Test_Solution
         displayName: 'Build and Test IdentityServer Solution'
         steps:
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Build and Test using template
           - template: templates/dotnet-build-test.yml
@@ -92,6 +90,13 @@ stages:
               repository: $(dockerRepository)
               command: 'push'
               tags: $(tag)
+
+          # Cleanup after Docker build and push
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDocker: true
+              cleanDotnet: true
+              workingDirectory: '$(workingDirectory)'
 
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'

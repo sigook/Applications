@@ -31,6 +31,7 @@ public class InvoiceSummaryModel
     public DateTime? WeedEnding { get; set; }
     public InvoiceColor InvoiceColor { get; set; }
     public InvoicePayroll InvoicePayroll { get; set; }
+    public string ClientSiteAddress { get; set; }
 
 
     public List<InvoiceSummaryDiscountModel> Discounts { get; set; } = new List<InvoiceSummaryDiscountModel>();

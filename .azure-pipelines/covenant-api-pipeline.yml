@@ -48,12 +48,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Build and Test using template
           - template: templates/dotnet-build-test.yml
@@ -108,6 +106,13 @@ stages:
                 echo "📦 Image: sigook.azurecr.io/api:$(tag)"
                 echo "🏷️  Tag: $(tag)"
                 echo ""
+
+          # Cleanup after Docker build and push
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDocker: true
+              cleanDotnet: true
+              workingDirectory: 'Covenant.Api'
 
       - job: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'

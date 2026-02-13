@@ -179,6 +179,16 @@ public class CanadaInvoiceService : BaseInvoiceService
             invoice.AddDiscounts(discounts);
         }
 
+        // 13. Add additional detail (client's site address)
+        if (!string.IsNullOrWhiteSpace(model.ClientSiteAddress))
+        {
+            invoice.AdditionalDetail = new InvoiceAdditionalDetail
+            {
+                ClientSiteAddress = model.ClientSiteAddress,
+                CanadaInvoiceId = invoice.Id
+            };
+        }
+
         return Result.Ok(invoice);
     }
 

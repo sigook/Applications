@@ -1,0 +1,38 @@
+# Reusable template for .NET SDK setup
+# Ensures .NET SDK is installed and available in the pipeline
+# Usage:
+#   - template: templates/dotnet-setup.yml
+#     parameters:
+#       sdkVersion: '8.0.415'
+
+parameters:
+  - name: sdkVersion
+    type: string
+    displayName: '.NET SDK version to install'
+
+  - name: includePreviewVersions
+    type: boolean
+    default: false
+    displayName: 'Include preview versions'
+
+steps:
+  # Install or use .NET SDK
+  - task: UseDotNet@2
+    displayName: 'Install .NET SDK ${{ parameters.sdkVersion }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ parameters.sdkVersion }}
+      includePreviewVersions: ${{ parameters.includePreviewVersions }}
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
+  # Verify installation
+  - script: |
+      echo "✅ .NET SDK installed successfully"
+      echo "Version: $(dotnet --version)"
+      echo ""
+      echo "Installed SDKs:"
+      dotnet --list-sdks
+      echo ""
+      echo "Installed Runtimes:"
+      dotnet --list-runtimes
+    displayName: 'Verify .NET SDK Installation'

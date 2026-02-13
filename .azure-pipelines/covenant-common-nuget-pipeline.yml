@@ -28,12 +28,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Build and Test using template (ensures quality before publishing)
           - template: templates/dotnet-build-test.yml
@@ -52,12 +50,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Verify .NET SDK is available (installed globally on VM)
-          - script: |
-              echo "Verifying .NET installation..."
-              dotnet --version
-              dotnet --list-sdks
-            displayName: 'Verify .NET SDK $(dotnetSdkVersion)'
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
 
           # Pack Covenant.Common
           - task: DotNetCoreCLI@2
@@ -101,3 +97,9 @@ stages:
                 echo ""
                 echo "To use this package, run:"
                 echo "  dotnet add package Covenant.Common --version $(Build.BuildNumber)"
+
+          # Cleanup after build and publish
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'Covenant.Api'

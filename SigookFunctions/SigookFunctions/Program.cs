@@ -9,6 +9,8 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+        services.AddHttpClient("Api");
+        services.AddHttpClient("Teams");
         services.AddSingleton<ISigookApi, SigookApi>();
         services.AddSingleton<IEmailService, SendGridService>();
     })

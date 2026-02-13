@@ -50,7 +50,8 @@ Bienvenido a la documentación técnica completa de la plataforma Covenant/Sigoo
 
 ### Para modificar facturación:
 1. Lee [BILLING_RULES.md](./BILLING_RULES.md) - Reglas de facturación
-2. Referencia: `Covenant.Api/Covenant.Billing/`
+2. Referencia: `Covenant.Api/Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService)
+3. Entidades: `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/`
 
 ### Para modificar timesheets:
 1. Lee [TIMESHEET_RULES.md](./TIMESHEET_RULES.md) - Reglas de cálculo de horas

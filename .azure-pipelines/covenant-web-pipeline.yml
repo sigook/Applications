@@ -221,6 +221,12 @@ stages:
                   echo "📋 PR validation completed - no artifacts created"
                 fi
 
+          # Cleanup after build
+          - template: templates/cleanup.yml
+            parameters:
+              cleanNodeModules: true
+              workingDirectory: '$(workingDirectory)'
+
       # ============================================
       # Job 2: Deploy to Azure
       # ============================================

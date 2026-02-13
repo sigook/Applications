@@ -7,13 +7,13 @@ namespace Covenant.Api.HealthChecks;
 /// </summary>
 public class AzureStorageConfigurationHealthCheck : IHealthCheck
 {
-    private readonly string? _accountingStorageConnection;
-    private readonly string? _fileStorageConnection;
+    private readonly string _accountingStorageConnection;
+    private readonly string _fileStorageConnection;
     private readonly ILogger<AzureStorageConfigurationHealthCheck> _logger;
 
     public AzureStorageConfigurationHealthCheck(
-        string? accountingStorageConnection,
-        string? fileStorageConnection,
+        string accountingStorageConnection,
+        string fileStorageConnection,
         ILogger<AzureStorageConfigurationHealthCheck> logger)
     {
         _accountingStorageConnection = accountingStorageConnection;
