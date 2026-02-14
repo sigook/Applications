@@ -19,11 +19,11 @@ public class ScheduleTasks
 
     [Function(nameof(NotificationSinExpiration))]
     public async Task NotificationSinExpiration(
-        [TimerTrigger("*/5 * * * *", RunOnStartup = true)] TimerInfo timerInfo) => await Execute(nameof(NotificationSinExpiration));
+        [TimerTrigger("0 0 0 * * 1-5", RunOnStartup = true)] TimerInfo timerInfo) => await Execute(nameof(NotificationSinExpiration));
 
     [Function(nameof(WarnLicensesExpiration))]
     public async Task WarnLicensesExpiration(
-        [TimerTrigger("*/5 * * * *", RunOnStartup = true)] TimerInfo timerInfo) => await Execute(nameof(WarnLicensesExpiration));
+        [TimerTrigger("0 0 0 * * 1-5", RunOnStartup = true)] TimerInfo timerInfo) => await Execute(nameof(WarnLicensesExpiration));
 
     private async Task Execute(string action)
     {
