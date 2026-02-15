@@ -15,17 +15,8 @@ trigger:
     exclude:
       - Sigook.Functions/**/*.md
 
-# PR trigger - validate build on PRs to main
-pr:
-  branches:
-    include:
-      - main
-      - master
-  paths:
-    include:
-      - Sigook.Functions/**
-    exclude:
-      - Sigook.Functions/**/*.md
+# No PR trigger - PRs to main come from dev (already validated)
+pr: none
 
 pool:
   name: 'covenant-build-pool'

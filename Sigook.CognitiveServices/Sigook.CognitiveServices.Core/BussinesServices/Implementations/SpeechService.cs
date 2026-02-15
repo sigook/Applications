@@ -1,4 +1,3 @@
-﻿using Microsoft.CognitiveServices.Speech;
 using Sigook.CognitiveServices.Core.BussinesServices.Interfaces;
 using Sigook.CognitiveServices.Core.Interfaces.Cloud;
 using Sigook.CognitiveServices.Core.Models.Speech;
@@ -26,7 +25,7 @@ namespace Sigook.CognitiveServices.Core.BussinesServices.Implementations
             return languages;
         }
 
-        public async Task<IEnumerable<VoiceInfo>> GetVoices(string language)
+        public async Task<IEnumerable<VoiceInfoModel>> GetVoices(string language)
         {
             var voicesList = await speechConverter.GetVoicesList();
             var selectedVoices = voicesList.Where(vl => vl.Locale == language);

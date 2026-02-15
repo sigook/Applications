@@ -1,4 +1,3 @@
-using Microsoft.CognitiveServices.Speech;
 using Sigook.CognitiveServices.Core.BussinesServices.Implementations;
 using Sigook.CognitiveServices.Core.BussinesServices.Interfaces;
 using Sigook.CognitiveServices.Core.Interfaces.Cloud;
@@ -9,15 +8,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton(opt =>
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ISpeechConverter>(sp =>
 {
-    var subscrition = builder.Configuration["SpeechConfiguration:SubscriptionKey"];
-    var region = builder.Configuration["SpeechConfiguration:Region"];
-    var config = SpeechConfig.FromSubscription(subscrition, region);
-    builder.Configuration.Bind(config);
-    return config;
+    var config = builder.Configuration;
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    return new SpeechConverter(
+        httpClientFactory.CreateClient(),
+        config["SpeechConfiguration:SubscriptionKey"],
+        config["SpeechConfiguration:Region"],
+        config["SpeechConfiguration:SpeechSynthesisLanguage"] ?? "en-US",
+        config["SpeechConfiguration:SpeechSynthesisVoiceName"] ?? "en-US-JennyNeural");
 });
-builder.Services.AddSingleton<ISpeechConverter, SpeechConverter>();
 builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddHealthChecks()
     .AddCheck<SpeechConfigurationHealthCheck>("speech-configuration");
