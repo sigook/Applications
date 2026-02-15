@@ -1,0 +1,1 @@
+# Sigook.CognitiveServices

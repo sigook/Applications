@@ -1,928 +1,134 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Business Rules & Documentation
 
-## 📚 Comprehensive Documentation
+Before implementing any feature, read the relevant document from `.docs/`:
 
-**IMPORTANTE:** Para un entendimiento profundo del negocio, arquitectura, y reglas de negocio, consulta la documentación técnica completa en la carpeta **`.docs/`**:
+| Area | Document |
+|------|----------|
+| Business model & actors | `.docs/BUSINESS_MODEL.md` |
+| Architecture & stack | `.docs/ARCHITECTURE.md` |
+| Data model & relationships | `.docs/ENTITIES_RELATIONSHIPS.md` |
+| API endpoints | `.docs/API_ENDPOINTS.md` |
+| Payroll (CPP, EI, taxes) | `.docs/PAYROLL_RULES.md` |
+| Billing (rates, HST/GST) | `.docs/BILLING_RULES.md` |
+| Timesheets (OT, night, holiday) | `.docs/TIMESHEET_RULES.md` |
+| Workflows step-by-step | `.docs/WORKFLOWS.md` |
+| Request state management | `.docs/REQUEST_STATE_MANAGEMENT.md` |
+| CI/CD pipelines | `.docs/PIPELINES.md` |
+| Full index | `.docs/README.md` |
 
-### Quick Reference
+If you change business rules, update the corresponding `.docs/` file.
 
-- **[.docs/README.md](.docs/README.md)** - Índice maestro de toda la documentación
-- **[.docs/BUSINESS_MODEL.md](.docs/BUSINESS_MODEL.md)** - Modelo de negocio, actores, flujos principales
-- **[.docs/ARCHITECTURE.md](.docs/ARCHITECTURE.md)** - Stack tecnológico, estructura de capas, módulos
-- **[.docs/ENTITIES_RELATIONSHIPS.md](.docs/ENTITIES_RELATIONSHIPS.md)** - Modelo de datos completo con relaciones
-- **[.docs/API_ENDPOINTS.md](.docs/API_ENDPOINTS.md)** - Documentación de todos los endpoints REST
-- **[.docs/PAYROLL_RULES.md](.docs/PAYROLL_RULES.md)** - Reglas de nómina (CPP, EI, taxes canadienses)
-- **[.docs/BILLING_RULES.md](.docs/BILLING_RULES.md)** - Reglas de facturación (rates, HST/GST, markup)
-- **[.docs/TIMESHEET_RULES.md](.docs/TIMESHEET_RULES.md)** - Cálculo de horas (overtime, night shift, holiday)
-- **[.docs/WORKFLOWS.md](.docs/WORKFLOWS.md)** - Flujos completos paso a paso con código
+## Monorepo Structure
 
-### How to Use
+| Project | Tech | Purpose |
+|---------|------|---------|
+| `SigookApp/` | Flutter (Dart 3.9) | Mobile app - worker registration & job matching |
+| `Sigook.Web/` | Vue.js 2, Node 16 | Main web platform |
+| `Covenant.Web/` | Vue.js 3, TypeScript, Vite | Marketing website |
+| `Covenant.Api/` | .NET 8, PostgreSQL, EF Core | Backend API (15+ projects) |
+| `Covenant.IdentityServer/` | .NET 6, IdentityServer4 | Auth server (OIDC/OAuth 2.0) |
+| `Sigook.Functions/` | .NET 8, Azure Functions v4 | Background jobs & scheduled tasks |
+| `Sigook.CognitiveServices/` | .NET 8 | AI/Cognitive services |
+| `.azure-pipelines/` | YAML | CI/CD (see `.docs/PIPELINES.md`) |
 
-**Cuando recibas un requerimiento:**
-1. Identifica el área (payroll, billing, timesheets, worker registration, etc.)
-2. Lee el documento relevante de `.docs/`
-3. Implementa siguiendo los patrones y reglas documentadas
-4. Actualiza la documentación si cambias reglas de negocio
+## Mandatory Rules
 
-**Ejemplo:**
-- Requerimiento: "Modificar el cálculo de overtime en Ontario"
-- Acción: Lee `.docs/TIMESHEET_RULES.md` y `.docs/PAYROLL_RULES.md`
-- Implementa en: `Covenant.Api/Covenant.TimeSheetTotal/`
-- Actualiza documentación si cambian las reglas
+- **All code, comments, variable names, and commits must be in English**
+- **Git workflow**: feature branches from `dev` → PR to `dev` → merge `dev` to `main` for production
+- Follow existing patterns in each project (repository pattern, DI, service layer)
+- Run tests before committing (`dotnet test` for .NET, `flutter test` for Flutter)
 
-## Repository Overview
+## Development Commands
 
-This is a monorepo containing the Covenant/Sigook platform applications:
+### Covenant.Api (.NET 8)
 
-- **SigookApp** - Flutter mobile application for worker registration and job matching
-- **Sigook.Web** - Vue.js 2 main web application for Sigook platform
-- **Covenant.Web** - Vue.js 3 marketing/informational website for Covenant
-- **Covenant.Api** - .NET 8 API backend for staffing/recruitment management system (15+ projects)
-- **Covenant.IdentityServer** - .NET 6 IdentityServer4 authentication and authorization server
-- **SigookFunctions** - .NET 8 Azure Functions for background processing and scheduled tasks
-
-**Additional Components:**
-- **`.azure-pipelines/`** - CI/CD pipelines with path-based triggers and reusable templates
-- **Individual project READMEs** - Each application has its own detailed README.md
-
-## SigookApp (Flutter Mobile Application)
-
-### Architecture
-
-The Flutter app follows **Clean Architecture** with three distinct layers:
-
-1. **Domain Layer** (`lib/features/*/domain/`)
-   - Entities: Pure business objects (e.g., `personal_info.dart`, `job.dart`)
-   - Repositories: Abstract interfaces defining contracts
-   - Use Cases: Single-responsibility business logic encapsulation
-   - Value Objects: Type-safe primitives with validation (`email.dart`, `phone_number.dart`, `password.dart`)
-
-2. **Data Layer** (`lib/features/*/data/`)
-   - Models: JSON-serializable data transfer objects (DTOs) with Freezed
-   - Datasources: Concrete implementations (local: SharedPreferences, remote: API calls)
-   - Repositories: Implementations of domain repository interfaces
-
-3. **Presentation Layer** (`lib/features/*/presentation/`)
-   - Pages: Full-screen UI components
-   - Widgets: Reusable UI components
-   - Providers: Riverpod providers for dependency injection and state management
-   - ViewModels: UI state management with Riverpod state notifiers
-
-### Key Technologies
-
-- **SDK**: Dart ^3.9.2
-- **State Management**: Riverpod (flutter_riverpod ^3.0.3, riverpod_annotation ^3.0.3)
-- **Routing**: GoRouter ^17.0.0
-- **Immutability**: Freezed ^3.2.3 with freezed_annotation ^3.1.0
-- **Functional Programming**: Dartz ^0.10.1 (Either, Option for error handling)
-- **Dependency Injection**: Providers pattern via Riverpod (also uses get_it ^9.0.5)
-- **HTTP Client**: Dio ^5.7.0 with pretty_dio_logger for debugging
-- **Authentication**: OpenID Client with flutter_appauth ^11.0.0
-- **Local Storage**: SharedPreferences ^2.2.3, FlutterSecureStorage ^9.2.2 (encrypted on Android)
-- **Utilities**: phone_numbers_parser ^9.0.16, mask_text_input_formatter ^2.9.0, table_calendar ^3.1.2
-- **File/Image Selection**: file_picker ^10.3.6, image_picker ^1.2.1 with permission_handler ^12.0.1
-
-### Environment Configuration
-
-The app uses **Build Flavors** for environment management:
-
-**Staging:**
 ```bash
-flutter run --flavor staging -t lib/main_staging.dart
-flutter build apk --flavor staging -t lib/main_staging.dart
+dotnet build Covenant.Api/Covenant.Api.sln
+dotnet run --project Covenant.Api/Covenant.Api
+dotnet watch run --project Covenant.Api/Covenant.Api
+dotnet test                                                    # All tests
+dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj  # Unit only
+dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api
 ```
 
-**Production:**
-```bash
-flutter run --flavor production -t lib/main_production.dart
-flutter build apk --flavor production -t lib/main_production.dart --release
-```
+Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging, publishes `Covenant.Common` NuGet package.
 
-Environment variables are loaded from `.env.staging` and `.env.production` using flutter_dotenv. Configuration is accessed via `lib/core/config/environment.dart` (`EnvironmentConfig` class).
-
-**Build Configuration:**
-- Android: `android/app/build.gradle.kts` - Kotlin-based Gradle config with flavors (staging/production), Java 17, Compile SDK 36, MultiDex enabled, OAuth redirect scheme: `sigookcallback`
-- iOS: `ios/Runner/Info.plist` - Photo library and camera permissions configured, URL schemes: `sigookcallback`, `com.sigook`
-
-### Code Generation
-
-The app heavily uses code generation. Run this after modifying Freezed models, Riverpod providers, or JSON serializable classes:
+### SigookApp (Flutter)
 
 ```bash
 cd SigookApp
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-For continuous generation during development:
-```bash
-flutter pub run build_runner watch --delete-conflicting-outputs
-```
-
-### Feature Organization
-
-Features are organized by domain (e.g., `features/registration/`, `features/auth/`, `features/jobs/`). Each feature follows Clean Architecture layers:
-
-```
-features/
-  registration/
-    data/
-      datasources/         # Local and remote data access
-      models/              # Freezed DTOs with JSON serialization
-      repositories/        # Repository implementations
-    domain/
-      entities/            # Business objects
-      repositories/        # Repository interfaces
-      usecases/            # Business logic units
-    presentation/
-      pages/               # Full screens
-      providers/           # Riverpod providers
-      viewmodels/          # State management
-      widgets/             # Reusable UI components
-```
-
-### Core Infrastructure
-
-- **Routing**: `lib/core/routing/app_router.dart` - GoRouter configuration with custom transitions (Fade, Slide) and KeyboardDismissObserver
-- **API Client**: `lib/core/network/api_client.dart` - Dio-based HTTP client with 30s timeout
-- **Auth Interceptor**: `lib/core/network/auth_interceptor.dart` - Automatic Bearer token injection, handles 401 responses with token refresh and retry mechanism
-- **Environment Config**: `lib/core/config/environment.dart` - Loads from `.env.staging` or `.env.production` (AUTH_AUTHORITY, API_BASE_URL, CLIENT_ID, REDIRECT_URI, SCOPES)
-- **Theme**: `lib/core/theme/app_theme.dart` - Material theme configuration
-- **Providers**: `lib/core/providers/core_providers.dart` - Global providers (SharedPreferences, SecureStorage with Android encryption, ApiClient, NetworkInfo)
-- **Error Handling**: `lib/core/error/failures.dart` - Failure types (ServerFailure, NetworkFailure, CacheFailure, ParseFailure, ValidationFailure, PermissionFailure, UserCancelledFailure)
-
-### Development Commands
-
-```bash
-# Get dependencies
 flutter pub get
-
-# Run app (staging)
 flutter run --flavor staging -t lib/main_staging.dart
-
-# Run app (production)
 flutter run --flavor production -t lib/main_production.dart
-
-# Generate code (Freezed, Riverpod, JSON)
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Run tests
+flutter pub run build_runner build --delete-conflicting-outputs  # Code gen (Freezed, Riverpod)
 flutter test
-
-# Analyze code
 flutter analyze
-
-# Format code
-flutter format lib/
 ```
 
-### Important Patterns
-
-**Error Handling**: Uses Dartz's `Either<Failure, Success>` pattern. Left side = failure, Right side = success.
-
-**Value Objects**: Domain primitives (Email, Password, PhoneNumber) contain their own validation logic and return `Either<ValueFailure, ValueObject>`.
-
-**Dependency Injection**: Providers are defined in `*_providers.dart` files and override placeholder providers from `core_providers.dart` in `main_common.dart`. Entry points (`main_staging.dart`, `main_production.dart`) load the appropriate `.env` file and call `mainCommon()`.
-
-**State Management**: Riverpod providers manage state. Use `ref.watch()` in widgets to rebuild on changes, `ref.read()` for one-time access.
-
-**Models vs Entities**: Data layer uses Freezed `models` (DTOs) with JSON serialization for API/storage. Domain layer uses pure `entities` (business objects) without serialization. Models are converted to entities when crossing the data→domain boundary.
-
-## Sigook.Web (Vue.js 2 Main Application)
-
-### Architecture
-
-The main Sigook web application built with Vue.js 2 and vue-cli-service.
-
-**Tech Stack:**
-- Vue.js 2.6.12
-- Vue CLI Service 4.5.19
-- Node.js 16
-- Vuex 3.0.1 (state management)
-- Vue Router 3.0.1
-- Axios 1.10.0 (HTTP client)
-- OIDC Client 1.5.2 (authentication)
-- Buefy 0.9.23 (UI components)
-- Docker multi-stage build (Node.js → Nginx)
-
-### Project Structure
-
-```
-Sigook.Web/
-├── src/
-│   ├── assets/         # Images, styles
-│   ├── components/     # Reusable Vue components
-│   ├── pages/          # Page-level components
-│   ├── router/         # Vue Router configuration
-│   ├── store/          # Vuex store modules
-│   ├── security/       # Authentication logic (OIDC)
-│   ├── utils/          # Utility functions
-│   ├── directives/     # Custom Vue directives
-│   ├── filters/        # Vue filters
-│   ├── lang/           # i18n translations (vue-i18n)
-│   ├── mixins/         # Vue mixins
-│   └── main.js         # Application entry point
-├── public/             # Static assets
-├── wwwroot/            # Build output directory
-├── .env.development.local
-├── .env.staging
-├── .env.production
-├── Dockerfile          # Multi-stage Docker build
-├── nginx.conf          # Nginx configuration
-└── vue.config.js       # Vue CLI configuration
-```
-
-### Environment Configuration
-
-Uses `.env` files for environment-specific configuration:
-- `.env.development.local` - Local development
-- `.env.staging` - Staging environment
-- `.env.production` - Production environment
-
-### Development Commands
+### Sigook.Web (Vue.js 2)
 
 ```bash
 cd Sigook.Web
-
-# Install dependencies
-npm ci
-
-# Dev server
-npm run serve
-
-# Build for staging
-npm run staging
-
-# Build for production
-npm run production
-
-# Lint code
-npm run lint
+npm ci && npm run serve          # Dev
+npm run staging                  # Build staging
+npm run production               # Build production
 ```
 
-### Docker Deployment
+Note: output dir is `wwwroot/` (not `dist/`).
 
-Multi-stage Dockerfile:
-1. **Build Stage** (node:16): Installs dependencies and runs `npm run staging` or `npm run production`
-2. **Production Stage** (nginx:stable-alpine): Serves static files from `wwwroot/`
-
-Build argument `ENV` determines which environment to build for:
-```bash
-docker build --build-arg ENV=staging -t sigook-web .
-docker build --build-arg ENV=production -t sigook-web .
-```
-
-### Key Features
-
-- **Authentication**: OIDC-based authentication with `oidc-client`
-- **Internationalization**: Multi-language support with `vue-i18n`
-- **State Management**: Vuex with `vuex-persistedstate` for persistence
-- **Form Validation**: `vee-validate` for form validation
-- **UI Components**: Buefy (Bulma-based Vue components)
-- **Image Handling**: Cropping and compression (`vue-croppa`, `image-compressor.js`)
-- **Maps Integration**: Google Maps via `vue2-google-maps`
-- **reCAPTCHA**: Form protection with `vue-recaptcha`
-
-### Important Notes
-
-- Output directory is `wwwroot/` (not `dist/`)
-- Uses Nginx for serving in production
-- Token replacement in `public/**/*.html` and `public/**/*.json` during CI/CD for versioning
-- ESLint configured with relaxed rules (warnings for most issues)
-
-## Covenant.Web (Vue.js 3 Marketing Website)
-
-### Architecture
-
-Standard Vue 3 + TypeScript + Vite application with component-based architecture.
-
-**Tech Stack:**
-- Vue 3.5.22
-- TypeScript 5.9.3
-- Vue Router 4.6.3
-- Pinia 3.0.3 (state management)
-- Vite 7.1.11
-
-### Project Structure
-
-```
-src/
-  assets/          # Images, CSS, static assets
-  components/      # Vue components organized by page/feature
-    about/
-    employers/
-    home/
-    industries/
-    layout/        # Shared layout components (Navbar, Footer, ContactForm)
-    licensed/
-    partners/
-  router/          # Vue Router configuration
-  stores/          # Pinia stores
-  views/           # Page-level components
-```
-
-### Development Commands
+### Covenant.Web (Vue.js 3) - Requires Node ^20.19.0 or >=22.12.0
 
 ```bash
 cd Covenant.Web
-
-# Install dependencies
-npm install
-
-# Dev server
-npm run dev
-
-# Type checking
-npm run type-check
-
-# Build for staging
-npm run build:staging
-
-# Build for production
-npm run build:production
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
+npm install && npm run dev       # Dev
+npm run build:staging            # Build staging
+npm run build:production         # Build production
+npm run type-check               # TypeScript check
 ```
 
-### Routes
-
-Configuration: `src/router/index.ts`
-
-- `/` - Home page
-- `/licensed-certified` - Licensed & Certified information
-- `/about` - About Us
-- `/industries` - Industries served
-- `/become-partner` - Partner signup
-- `/employers` - Employers landing page
-- `/talents` - Talents/Workers landing page
-- `/open-positions` - Open positions listing
-
-### Important Notes
-
-- Path alias `@` maps to `src/` directory (configured in `vite.config.ts`)
-- Components are organized by feature/page for maintainability
-- Layout components (MainNavbar, MainFooter, ContactForm) are shared across views
-
-## Debugging
-
-### SigookApp (Flutter)
-The Flutter app includes VS Code debugging configurations in `.vscode/launch.json`:
-- Press `F5` in VS Code to debug
-- Available configurations: Development (Staging), Staging Environment, Production Environment
-- Each configuration automatically loads the appropriate `.env` file
-- See `SigookApp/.vscode/README.md` for details
-
-### Covenant.Api (.NET)
-The API includes VS Code debugging configurations in `Covenant.Api/.vscode/launch.json`:
-- **F5** or **Run > Start Debugging** in VS Code (official Microsoft version only)
-- Configurations: Launch Covenant API, Launch (Simple), Attach to dotnet process
-- **Note:** .NET debugging only works in official Microsoft VS Code, not in Cursor or other forks
-- Alternative for Cursor users: Use console logging, logger framework, or Visual Studio Community
-- See `Covenant.Api/.vscode/README.md` for details
-
-### Vue.js Applications (Sigook.Web, Covenant.Web)
-- Use browser DevTools for debugging
-- Vue DevTools extension recommended for component inspection
-- `npm run serve` runs with hot-reload for rapid development
-
-## Git Workflow
-
-**Main branch**: `main`
-**Development branch**: `dev`
-
-**Branching Strategy:**
-- Create feature branches from `dev`
-- Submit PRs to `dev` for review and testing
-- Merge `dev` to `main` for production releases
-- `main` should require PR approval and branch protection
-
-Recent development focuses on:
-- Worker registration form completion
-- Splash screen finalization
-- Job display and search functionality
-- Responsive design improvements
-
-## Node.js Version Requirements
-
-The Covenant.Web project requires:
-- Node.js ^20.19.0 OR >=22.12.0
-
-Use nvm or similar to manage Node versions if needed.
-
-## Covenant.Api (.NET 8 Backend API)
-
-### Architecture
-
-The Covenant API is a comprehensive staffing/recruitment management system with modular architecture:
-
-**Tech Stack:**
-- .NET 8.0 with ASP.NET Core Web API
-- PostgreSQL with Entity Framework Core
-- Azure Service Bus for messaging
-- Azure Storage for file management
-- Docker containerization
-
-### Project Structure
-
-```
-Covenant.Api/
-├── Covenant.Api/              # Main API project (Controllers, Startup)
-├── Covenant.Common/           # Shared entities, interfaces (NuGet package)
-├── Covenant.Infrastructure/   # EF Core, repositories, integrations
-├── Covenant.Core.BL/          # Business logic services (includes invoice/billing logic)
-├── Covenant.Deductions/       # Canadian tax calculations (CPP, EI, taxes)
-├── Covenant.Documents/        # Excel/PDF document generation
-├── Covenant.PayStubs/         # Pay stubs generation
-├── Covenant.Subcontractor/    # Subcontractor report generation
-├── Covenant.TimeSheetTotal/   # Timesheet and overtime calculations
-├── Covenant.Tests/            # Unit tests
-├── Covenant.Test.Utils/       # Test utilities
-└── Covenant.Integration.Tests/ # Integration tests
-```
-
-### Development Commands
+### Covenant.IdentityServer (.NET 6)
 
 ```bash
-cd Covenant.Api
-
-# Build solution
-dotnet build Covenant.Api.sln
-
-# Run API
-dotnet run --project Covenant.Api
-
-# Run with watch mode (auto-restart)
-dotnet watch run --project Covenant.Api
-
-# Run tests
-dotnet test **/Covenant.Tests.csproj        # Unit tests
-dotnet test **/Covenant.Integration.Tests.csproj  # Integration tests
-dotnet test                                  # All tests
-
-# Database migrations (when changing entity models)
-dotnet ef migrations add MigrationName --project Covenant.Infrastructure --startup-project Covenant.Api
+dotnet build Covenant.IdentityServer/Covenant.IdentityServer.sln
+dotnet run --project Covenant.IdentityServer/Covenant.IdentityServer
+dotnet test Covenant.IdentityServer/Covenant.IdentityServer.Tests
 ```
 
-### Key Features
+Requires `PatSigookPackages` env var for Azure Artifacts NuGet restore.
 
-- **Multi-module Architecture**: Agency, Company, Worker, Accounting modules
-- **Canadian Payroll**: Complex tax calculations (CPP, EI, federal/provincial)
-- **Document Generation**: Excel reports, PDF invoices/pay stubs
-- **Background Processing**: Azure Service Bus for async operations
-- **Multi-language**: English/Spanish localization
-
-### Important Notes
-
-- Uses shared cloud PostgreSQL database (no local setup needed)
-- All code must be in **English** (American market)
-- Publishes NuGet package: `Covenant.Common`
-- Deployed as Docker container to Azure App Service
-
-## Covenant.IdentityServer (.NET 6 IdentityServer4)
-
-### Architecture
-
-The Covenant IdentityServer is a centralized authentication and authorization server based on IdentityServer4, providing OpenID Connect and OAuth 2.0 protocols for the Covenant/Sigook platform.
-
-**Tech Stack:**
-- .NET 6.0 with ASP.NET Core
-- IdentityServer4 for authentication/authorization
-- Docker containerization
-- Azure Artifacts for private NuGet packages
-
-### Project Structure
-
-```
-Covenant.IdentityServer/
-├── Covenant.IdentityServer/       # Main IdentityServer project
-├── Covenant.IdentityServer.Tests/ # Unit tests
-├── Dockerfile                     # Multi-stage Docker build
-├── global.json                    # .NET SDK version (6.0.400)
-└── Covenant.IdentityServer.sln    # Solution file
-```
-
-### Development Commands
+### Sigook.Functions (.NET 8 Azure Functions)
 
 ```bash
-cd Covenant.IdentityServer
-
-# Build solution
-dotnet build Covenant.IdentityServer.sln
-
-# Run IdentityServer
-dotnet run --project Covenant.IdentityServer/Covenant.IdentityServer.csproj
-
-# Run with watch mode (auto-restart)
-dotnet watch run --project Covenant.IdentityServer/Covenant.IdentityServer.csproj
-
-# Run tests
-dotnet test **/Covenant.IdentityServer.Tests.csproj
+dotnet build Sigook.Functions/Sigook.Functions.sln
+cd Sigook.Functions/Sigook.Functions && func start   # Local run (requires Azure Functions Core Tools v4)
 ```
 
-### Key Features
+Functions: `SendEmail` (HTTP), `SendInvitationToApply` (Queue), `NotificationSinExpiration` (Timer), `WarnLicensesExpiration` (Timer).
 
-- **OpenID Connect & OAuth 2.0**: Standards-based authentication and authorization
-- **Centralized Authentication**: Single sign-on (SSO) for all platform applications
-- **Azure Artifacts Integration**: Consumes Covenant.Common NuGet package from private feed
-- **Docker Deployment**: Multi-stage build for optimized container size
+## Architecture Quick Reference
 
-### Important Notes
+### Covenant.Api
+- **Modules**: Agency, Company, Worker, Accounting (each with controller hierarchy)
+- **Projects**: `Covenant.Common` (shared entities/interfaces), `Covenant.Infrastructure` (EF Core/repos), `Covenant.Core.BL` (business logic), `Covenant.Deductions` (tax calc), `Covenant.Documents` (Excel/PDF), `Covenant.PayStubs`, `Covenant.TimeSheetTotal`, `Covenant.Subcontractor`
+- **Patterns**: Repository + DI, CQRS with MediatR, Azure Service Bus consumers, AutoMapper, FluentValidation
+- **Config**: `ConnectionStrings__DefaultConnection` (PostgreSQL), Azure Storage, Azure Service Bus, SendGrid, Teams webhooks
 
-- Requires `PatSigookPackages` environment variable for NuGet restore (Azure Artifacts PAT)
-- Uses custom nuget.config to authenticate with Azure Artifacts feed
-- Health check endpoint available at `/health`
-- Deployed as Docker container to Azure App Service
-- Staging: `sigook-accounts-staging.azurewebsites.net`
-- Production: `sigook-accounts.azurewebsites.net`
+### SigookApp
+- **Clean Architecture**: Domain (entities, use cases, value objects) → Data (Freezed models/DTOs, datasources, repos) → Presentation (pages, widgets, Riverpod providers/viewmodels)
+- **Key libs**: Riverpod (state), GoRouter (routing), Freezed (immutability), Dartz (`Either<Failure, Success>` error handling), Dio (HTTP), flutter_appauth (OIDC)
+- **Features**: organized by domain in `lib/features/` (registration, auth, jobs)
+- **Env**: `.env.staging` / `.env.production` via flutter_dotenv, build flavors in `android/app/build.gradle.kts`
 
-## SigookFunctions (Azure Functions .NET 8)
+### Sigook.Web
+- **Stack**: Vue 2.6 + Vuex + Vue Router + Buefy + Axios + OIDC Client
+- **Auth**: OIDC-based (`src/security/`), i18n via `vue-i18n` (`src/lang/`)
 
-### Architecture
+### Covenant.Web
+- **Stack**: Vue 3.5 + TypeScript + Pinia + Vue Router + Vite
+- **Alias**: `@` maps to `src/` (configured in `vite.config.ts`)
 
-Azure Functions serverless application using the **Isolated Worker Model** (out-of-process) for background processing, scheduled tasks, queue processing, and email notifications.
+## CI/CD
 
-**Tech Stack:**
-- .NET 8.0 with Azure Functions v4 (Isolated Worker SDK)
-- Microsoft.Azure.Functions.Worker (out-of-process model)
-- SendGrid for email delivery
-- Azure Storage Queues for async job processing
-- Application Insights for monitoring and telemetry
-- Timer triggers for scheduled tasks
-- HTTP triggers for on-demand operations
-- Queue triggers for async message processing
-
-### Project Structure
-
-```
-SigookFunctions/
-├── SigookFunctions/           # Main Azure Functions project
-│   ├── Functions/             # Azure Function implementations
-│   │   ├── ScheduleTasks.cs   # Scheduled tasks (Timer triggers)
-│   │   ├── SendEmail.cs       # Email sending (HTTP trigger)
-│   │   └── SendInvitationToApply.cs  # Job invitations (Queue trigger)
-│   ├── Models/                # Data models
-│   │   ├── EmailMessage.cs
-│   │   ├── EmailModel.cs
-│   │   ├── PaginatedList.cs
-│   │   ├── TeamsMessage.cs
-│   │   ├── TokenExpiryTime.cs
-│   │   └── WorkerContactInfoModel.cs
-│   ├── Services/              # Business logic services
-│   │   ├── IEmailService.cs / SendGridService.cs
-│   │   └── ISigookApi.cs / SigookApi.cs
-│   ├── Utils/                 # Utility classes
-│   │   ├── AccessToken.cs     # OAuth token management
-│   │   └── Notifications.cs   # Teams notifications
-│   ├── Program.cs             # Minimal hosting DI configuration
-│   ├── host.json              # Azure Functions host configuration
-│   └── local.settings.json    # Local development settings
-├── nuget.config               # Azure Artifacts feed configuration
-├── global.json                # .NET SDK version (8.0.415)
-└── SigookFunctions.sln
-```
-
-### Development Commands
-
-```bash
-cd SigookFunctions
-
-# Build solution
-dotnet build SigookFunctions.sln
-
-# Run locally (requires Azure Functions Core Tools v4)
-cd SigookFunctions
-func start
-
-# Build in Release mode
-dotnet build SigookFunctions.sln --configuration Release
-
-# Publish for deployment
-dotnet publish SigookFunctions/SigookFunctions.csproj --configuration Release --output ./publish
-```
-
-### Functions Overview
-
-| Function | Trigger | Description |
-|----------|---------|-------------|
-| `SendEmail` | HTTP (POST) | Sends emails via SendGrid (used by Sigook API) |
-| `SendInvitationToApply` | Queue (`invitation-to-apply`) | Processes job invitation emails asynchronously |
-| `NotificationSinExpiration` | Timer (`0 0 * * 1-5`) | Daily weekday SIN expiration notifications |
-| `WarnLicensesExpiration` | Timer (`0 0 * * 1-5`) | Daily weekday license expiration warnings |
-
-### Configuration
-
-The project uses Azure Functions configuration pattern:
-
-- **`host.json`** → Azure Functions runtime configuration, logging, Application Insights sampling
-- **`local.settings.json`** → Local development settings (not committed to git)
-- **Environment Variables** → All configuration in Azure (secrets and URLs)
-
-**Required Azure Configuration:**
-- `SendGridApiKey` - SendGrid API key for email delivery
-- `ScheduleTasks_ApiUrl` - Base URL for scheduled task API calls
-- `ScheduleTasks_ClientId` - OAuth client ID for API authentication
-- `ScheduleTasks_ClientSecret` - OAuth client secret
-- `TeamsWebhook` - Microsoft Teams webhook for notifications
-- `SigookStorageAccount` - Azure Storage connection string for queue triggers
-
-### Key Patterns
-
-**Isolated Worker Model (Program.cs):**
-```csharp
-var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
-    .ConfigureServices(services =>
-    {
-        services.AddApplicationInsightsTelemetryWorkerService();
-        services.ConfigureFunctionsApplicationInsights();
-        services.AddSingleton<ISigookApi, SigookApi>();
-        services.AddSingleton<IEmailService, SendGridService>();
-    })
-    .Build();
-```
-
-**Dependency Injection:** Services are registered in `Program.cs` and injected via constructor injection in function classes.
-
-**Queue Processing:** `SendInvitationToApply` processes messages from Azure Storage Queue, supports pagination for bulk email sending to workers.
-
-**Teams Notifications:** Scheduled tasks send success/error notifications to Microsoft Teams via webhook.
-
-### Important Notes
-
-- Uses **Isolated Worker Model** (out-of-process) for better performance and dependency isolation
-- Requires `Covenant.Common` NuGet package from Azure Artifacts (configured in `nuget.config`)
-- Application Insights integrated for telemetry and monitoring
-- No unit tests currently (project focused on integration with external services)
-- Deployed to Azure Function App (not containerized)
-- Production only deployment: `sigook-functions.azurewebsites.net`
-
-## Azure DevOps Pipelines
-
-The repository uses **path-based triggers** to run pipelines only when relevant files change:
-
-### Pipeline Files
-
-- **`.azure-pipelines/sigookapp-pipeline.yml`** - Flutter app CI/CD (placeholder for future implementation)
-- **`.azure-pipelines/sigook-web-pipeline.yml`** - Sigook.Web Vue.js 2 app CI/CD (fully functional)
-- **`.azure-pipelines/covenant-web-pipeline.yml`** - Covenant.Web Vue.js 3 marketing CI/CD (fully functional)
-- **`.azure-pipelines/covenant-api-pipeline.yml`** - .NET API CI/CD (fully functional)
-- **`.azure-pipelines/covenant-identityserver-pipeline.yml`** - IdentityServer CI/CD (fully functional)
-- **`.azure-pipelines/covenant-common-nuget-pipeline.yml`** - NuGet package CI/CD (fully functional)
-- **`.azure-pipelines/sigookfunctions-pipeline.yml`** - Azure Functions CI/CD (fully functional)
-
-### Intelligent Triggering
-
-Each pipeline only executes when its application's files are modified:
-
-```yaml
-# Example: Sigook.Web pipeline only triggers on:
-paths:
-  include:
-    - Sigook.Web/**
-  exclude:
-    - Sigook.Web/**/*.md
-
-# Example: Covenant.Web pipeline only triggers on:
-paths:
-  include:
-    - Covenant.Web/**
-  exclude:
-    - Covenant.Web/**/*.md
-
-# Example: Covenant.Api pipeline only triggers on:
-paths:
-  include:
-    - Covenant.Api/**
-  exclude:
-    - Covenant.Api/**/*.md
-
-# Example: Covenant.IdentityServer pipeline only triggers on:
-paths:
-  include:
-    - Covenant.IdentityServer/**
-  exclude:
-    - Covenant.IdentityServer/**/*.md
-
-# Example: SigookFunctions pipeline only triggers on main branch:
-trigger:
-  branches:
-    include:
-      - main
-  paths:
-    include:
-      - SigookFunctions/**
-    exclude:
-      - SigookFunctions/**/*.md
-```
-
-**Benefits:**
-- Saves build time (no unnecessary pipeline runs)
-- Saves Azure DevOps minutes
-- Faster CI/CD feedback
-- Independent deployments per application
-
-### Environment Detection
-
-Pipelines automatically detect the environment based on the branch:
-
-| Branch | Environment | Action |
-|--------|-------------|--------|
-| `main` | Production | Build production, deploy with approval |
-| `dev` | Staging | Build staging, auto-deploy |
-
-No duplicate stages - one pipeline handles both environments using conditional variables.
-
-### PR Validation Strategy
-
-The pipelines implement an **optimized validation strategy** to avoid test duplication:
-
-**✅ Pull Requests to `dev`:**
-- Pipeline runs with full validation (build, tests, linting)
-- Ensures nothing broken reaches dev
-- Primary quality gate for the project
-
-**❌ Pull Requests to `main`:**
-- Pipeline does NOT run
-- Relies on dev branch having already validated the code
-- Avoids unnecessary test duplication
-- Saves Azure DevOps minutes
-
-**🔒 Direct Push to `dev` or `main`:**
-- Pipeline runs with full flow (build, test, deploy)
-- `dev` → Deploy to Staging
-- `main` → Deploy to Production
-
-**Requirement:** Branch protection on `main` should be configured to require PRs and approvals.
-
-### Pipeline Templates
-
-The pipelines use **reusable templates** located in `.azure-pipelines/templates/` to avoid code duplication:
-
-**Available Templates:**
-- **`dotnet-setup.yml`** - Installs .NET SDK with specified version
-- **`dotnet-build-test.yml`** - Builds solution and runs unit/integration tests with Azure Artifacts authentication
-- **`calculate-docker-tag.yml`** - Calculates Docker tags and environment based on branch (staging for dev, production for main)
-- **`calculate-azure-appname.yml`** - Determines Azure App Service name based on environment
-
-**Template Usage Example:**
-```yaml
-# Install .NET SDK
-- template: templates/dotnet-setup.yml
-  parameters:
-    sdkVersion: '8.0.415'  # Use appropriate SDK version for your project
-
-# Build and test
-- template: templates/dotnet-build-test.yml
-  parameters:
-    buildProjects: '**/*.sln'
-    runUnitTests: true
-    runIntegrationTests: true
-```
-
-### Pipeline Structure
-
-**Covenant.Web Pipeline (complete):**
-1. **Build and Test Job**
-   - Install Node.js 20.x with node_modules caching
-   - Type checking (vue-tsc)
-   - Linting (ESLint)
-   - Build for appropriate environment (staging or production)
-   - Verify dist/index.html exists
-   - Archive and publish artifacts (only on direct push, not PR)
-
-2. **Deploy to Azure Job** (runs after build on non-PR pushes)
-   - Downloads build artifacts
-   - Deploys to Azure App Service (Linux)
-   - Staging: `covenantgroup-staging.azurewebsites.net`
-   - Production: `covenantgroup.azurewebsites.net`
-   - Runtime: Node.js 20 LTS with `npm start` (serves static files via `serve` package)
-
-**Sigook.Web Pipeline (complete):**
-1. **Build and Validate Stage**
-   - Install Node.js 16.x with node_modules caching
-   - Linting (ESLint)
-   - Build validation
-
-2. **Build Docker and Deploy Stage**
-   - Replace tokens (version in index.html and version.json)
-   - Build Docker image multi-stage (Node.js → Nginx)
-   - Push to Azure Container Registry
-   - Deploy to Azure App Service Container
-   - Staging: `sigook-web-staging.azurewebsites.net`
-   - Production: `sigook.azurewebsites.net`
-
-**SigookApp Pipeline (placeholder):**
-- Basic project structure validation
-- TODO comments for future Flutter build implementation
-
-**Covenant.Api Pipeline (complete):**
-1. **Build and Test Stage** (uses templates)
-   - Install .NET SDK 8.0.415 (template: dotnet-setup.yml)
-   - Build solution (template: dotnet-build-test.yml)
-   - Run unit tests
-   - Run integration tests
-   - Publish test results
-
-2. **Build Docker and Deploy Stage**
-   - Calculate Docker tag using template (latest_staging or latest_production)
-   - Calculate Azure App Service name using template
-   - Build Docker image
-   - Push to Azure Container Registry
-   - Deploy to Azure App Service
-   - Staging: `sigook-api-staging.azurewebsites.net`
-   - Production: `sigook-api.azurewebsites.net`
-
-**Covenant.IdentityServer Pipeline (complete):**
-1. **Build and Test Stage** (uses templates)
-   - Install .NET SDK 6.0.400 (template: dotnet-setup.yml)
-   - Build solution (template: dotnet-build-test.yml)
-   - Run unit tests
-   - Only runs on PRs or push to dev
-
-2. **Build Docker and Deploy Stage**
-   - Calculate Docker tag using template (latest_staging or latest_production)
-   - Calculate Azure App Service name using template
-   - Build Docker image with PAT for Azure Artifacts (required for Covenant.Common NuGet package)
-   - Push to Azure Container Registry
-   - Deploy to Azure App Service Container
-   - Staging: `sigook-accounts-staging.azurewebsites.net`
-   - Production: `sigook-accounts.azurewebsites.net`
-
-**Covenant.Common NuGet Pipeline (complete):**
-1. **Build, Test, and Publish Stage** (dev only, uses templates)
-   - Quality Gate: Build + Unit Tests
-   - Pack and Publish to Azure Artifacts (sigook/Covenant.Common)
-   - Only triggers on changes to Covenant.Api/Covenant.Common/**
-
-### Detailed Pipeline Documentation
-
-For comprehensive pipeline documentation including setup, configuration, and troubleshooting, see **`.azure-pipelines/README.md`**. This includes:
-- Step-by-step setup instructions for Azure DevOps
-- Environment and approval configuration
-- Variables and secrets management
-- Template usage and parameters
-- Deployment configuration details
-- Testing and troubleshooting guides
-- Common issues and solutions
-
-**SigookFunctions Pipeline (complete):**
-1. **Build Stage**
-   - Verify .NET SDK 8.0.415
-   - Build solution using dotnet-build-test.yml template
-   - No unit tests (project has none)
-
-2. **Deploy to Production Stage** (main branch only)
-   - Authenticate with Azure Artifacts for Covenant.Common package
-   - Publish Azure Functions
-   - Deploy to Azure Function App
-   - Production only: `sigook-functions.azurewebsites.net`
-   - No staging environment (direct production deployment on merge to main)
-
-### Quick Commands for Testing Triggers
-
-```bash
-# Test Sigook.Web pipeline only
-echo "test" >> Sigook.Web/src/App.vue
-git add . && git commit -m "test: trigger sigook-web pipeline"
-git push origin dev
-
-# Test Covenant.Web pipeline only
-echo "test" >> Covenant.Web/src/App.vue
-git add . && git commit -m "test: trigger covenant-web pipeline"
-git push origin dev
-
-# Test SigookApp pipeline only
-echo "test" >> SigookApp/lib/main.dart
-git add . && git commit -m "test: trigger sigookapp pipeline"
-git push origin dev
-
-# Test Covenant.Api pipeline only
-echo "// test" >> Covenant.Api/Covenant.Api/Program.cs
-git add . && git commit -m "test: trigger covenant-api pipeline"
-git push origin dev
-
-# Test Covenant.IdentityServer pipeline only
-echo "// test" >> Covenant.IdentityServer/Covenant.IdentityServer/Program.cs
-git add . && git commit -m "test: trigger covenant-identityserver pipeline"
-git push origin dev
-
-# Test Covenant.Common NuGet pipeline only
-echo "// test" >> Covenant.Api/Covenant.Common/README.md
-git add . && git commit -m "test: trigger covenant-common-nuget pipeline"
-git push origin dev
-
-# Test SigookFunctions pipeline only (triggers on push to main)
-echo "// test" >> SigookFunctions/SigookFunctions/Program.cs
-git add . && git commit -m "test: trigger sigookfunctions pipeline"
-git push origin main
-
-# No pipeline triggered (documentation only)
-echo "test" >> README.md
-git add . && git commit -m "docs: update readme"
-git push origin dev
-```
+Pipelines use path-based triggers (each app deploys independently). Branch `dev` → Staging, `main` → Production. PRs to `dev` run full validation; PRs to `main` skip validation (already tested on dev). See `.docs/PIPELINES.md` for full details.

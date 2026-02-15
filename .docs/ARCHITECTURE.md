@@ -4,22 +4,25 @@
 
 La plataforma Covenant/Sigook está construida como un **monorepo** con múltiples aplicaciones especializadas:
 
-- **Backend API** - .NET 6 (Covenant.Api)
+- **Backend API** - .NET 8 (Covenant.Api)
 - **Identity Server** - .NET 6 + IdentityServer4 (Covenant.IdentityServer)
 - **Web App Principal** - Vue.js 2 (Sigook.Web)
 - **Marketing Website** - Vue.js 3 (Covenant.Web)
 - **Mobile App** - Flutter (SigookApp)
+- **Azure Functions** - .NET 8 (Sigook.Functions)
+- **Cognitive Services** - .NET 8 (Sigook.CognitiveServices)
 
 ---
 
 ## 🏗️ Stack Tecnológico
 
-### Backend - Covenant.Api (.NET 6)
+### Backend - Covenant.Api (.NET 8)
 
 ```
-Framework:       ASP.NET Core 6.0 Web API
+Framework:       ASP.NET Core 8.0 Web API
+SDK:             .NET 8.0.415
 Database:        PostgreSQL (cloud-hosted)
-ORM:             Entity Framework Core 6
+ORM:             Entity Framework Core 8.0.11
 Patterns:        Repository, Service Layer, CQRS (MediatR)
 Architecture:    Domain-Driven Design, Clean Architecture
 ```
@@ -31,12 +34,15 @@ Architecture:    Domain-Driven Design, Clean Architecture
 - Azure App Service - Hosting
 
 **NuGet Packages principales:**
-- Npgsql.EntityFrameworkCore.PostgreSQL
-- MediatR
-- AutoMapper
-- FluentValidation
+- Npgsql.EntityFrameworkCore.PostgreSQL 8.0.10
+- MediatR 12.4.1
+- AutoMapper 12.0.1
+- FluentValidation 11.10.0
 - Serilog
-- Swashbuckle (Swagger)
+- Swashbuckle (Swagger) 7.2.0
+- Azure.Messaging.ServiceBus 7.18.2
+- Azure.Storage.Blobs 12.24.0
+- ClosedXML 0.104.2
 
 ---
 
@@ -44,7 +50,9 @@ Architecture:    Domain-Driven Design, Clean Architecture
 
 ```
 Framework:       ASP.NET Core 6.0
-Auth:            IdentityServer4
+SDK:             .NET 6.0.400
+Auth:            IdentityServer4 4.1.2
+ORM:             Entity Framework Core 6.0.13
 Protocols:       OpenID Connect, OAuth 2.0
 ```
 
@@ -81,6 +89,8 @@ Build Tool:      Vite 7.1.11
 Language:        TypeScript 5.9.3
 State:           Pinia 3.0.3
 Router:          Vue Router 4.6.3
+UI Framework:    Vuetify 3.7.0
+Validation:      VeeValidate 4.15.1 + Yup 1.7.1
 Node Version:    ^20.19.0 OR >=22.12.0
 ```
 
@@ -108,6 +118,50 @@ Code Gen:        build_runner, freezed, json_serializable
 **Build Flavors:**
 - `staging` - Staging environment
 - `production` - Production environment
+
+---
+
+### Azure Functions - Sigook.Functions (.NET 8)
+
+```
+Framework:       .NET 8.0
+SDK:             .NET 8.0.415
+Runtime:         Azure Functions v4 (Isolated Worker)
+Worker SDK:      Microsoft.Azure.Functions.Worker 1.23.0
+```
+
+**Functions:**
+- `SendEmail` - HTTP trigger, send emails via SendGrid
+- `SendInvitationToApply` - Queue trigger (Azure Storage Queue), send job invitations
+- `NotificationSinExpiration` - Timer trigger, notify SIN document expiration
+- `WarnLicensesExpiration` - Timer trigger, warn about license expirations
+
+**Key Dependencies:**
+- Covenant.Common NuGet package
+- SendGrid 9.29.3
+- IdentityModel 7.0.0
+- Application Insights 2.22.0
+
+---
+
+### Cognitive Services - Sigook.CognitiveServices (.NET 8)
+
+```
+Framework:       .NET 8.0
+SDK:             .NET 8.0.415
+Architecture:    Clean Architecture (3 layers)
+```
+
+**Projects:**
+```
+Sigook.CognitiveServices/
+├── Sigook.CognitiveServices.Core/           # Domain logic
+├── Sigook.CognitiveServices.Infraestructure/ # Infrastructure layer
+└── Sigook.CognitiveServices.UI/             # ASP.NET Core Web UI
+```
+
+**Key Dependencies:**
+- Microsoft.CognitiveServices.Speech 1.24.1
 
 ---
 
@@ -379,7 +433,7 @@ Covenant.Common/
 
 **Publicación:**
 - Se publica como NuGet package: `Covenant.Common`
-- Consumido por: Covenant.Api, Covenant.IdentityServer
+- Consumido por: Covenant.Api, Covenant.IdentityServer, Sigook.Functions
 
 ---
 
@@ -747,7 +801,7 @@ Ver: `.azure-pipelines/README.md` para detalles completos
 ## 📊 Database Schema
 
 **Proveedor:** PostgreSQL (cloud-hosted)
-**ORM:** Entity Framework Core 6
+**ORM:** Entity Framework Core 8.0.11
 
 **Migrations:**
 ```bash
@@ -793,6 +847,27 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter test                         # Run tests
 ```
 
+### Azure Functions
+```bash
+dotnet build Sigook.Functions/Sigook.Functions.sln
+cd Sigook.Functions/Sigook.Functions && func start   # Local run (requires Azure Functions Core Tools v4)
+```
+
+### Cognitive Services
+```bash
+dotnet build Sigook.CognitiveServices/Sigook.CognitiveServices.sln
+dotnet run --project Sigook.CognitiveServices/Sigook.CognitiveServices.UI
+```
+
+### Marketing Website (Vue 3)
+```bash
+cd Covenant.Web
+npm install && npm run dev           # Dev server
+npm run build:staging                # Build staging
+npm run build:production             # Build production
+npm run type-check                   # TypeScript check
+```
+
 ---
 
 ## 📈 Scalability Considerations
@@ -801,10 +876,11 @@ flutter test                         # Run tests
 - Monolith API (todos los módulos en un proyecto)
 - Single PostgreSQL database
 - Azure App Service (horizontal scaling)
+- Azure Functions para background jobs (Sigook.Functions)
+- Azure Cognitive Services para AI (Sigook.CognitiveServices)
 
 **Future Improvements:**
 - Microservices (Accounting, Payroll como servicios separados)
 - CQRS con Event Sourcing
 - Read replicas para reportes
 - Redis para caching
-- Azure Functions para background jobs
