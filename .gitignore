@@ -410,7 +410,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -455,8 +454,9 @@ public
 # Vue.js Specific
 # ============================================
 
-# Build outputs
-dist/
+# Build outputs (Vue.js projects only)
+Sigook.Web/dist/
+Covenant.Web/dist/
 
 # Environment files - allowing .local files to be versioned for developer reference
 # Each developer can modify their local .env.development.local as needed
