@@ -29,7 +29,7 @@ Bienvenido a la documentación técnica completa de la plataforma Covenant/Sigoo
 - **[WORKFLOWS.md](./WORKFLOWS.md)** - Flujos detallados paso a paso (Worker Registration, Job Matching, Payroll Processing, etc.)
 
 ### 🔧 DevOps e Infraestructura
-- **[AZURE_DEVOPS_SELF_HOSTED_AGENT.md](./AZURE_DEVOPS_SELF_HOSTED_AGENT.md)** - Configuración y mantenimiento del self-hosted agent de Azure DevOps, VM setup, troubleshooting
+- **[PIPELINES.md](./PIPELINES.md)** - CI/CD pipelines de Azure DevOps, triggers, templates, deployment URLs, secrets
 
 ---
 
@@ -92,5 +92,5 @@ Estos documentos son la fuente de verdad. Actualízalos cuando cambies reglas de
 ## 📞 Contacto y Recursos
 
 - **Repositorio principal:** Ver README.md en la raíz
-- **CI/CD:** Ver `.azure-pipelines/README.md`
+- **CI/CD:** Ver [PIPELINES.md](./PIPELINES.md)
 - **CLAUDE.md:** Instrucciones para Claude Code

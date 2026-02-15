@@ -1,0 +1,127 @@
+# Azure Pipeline for Sigook.CognitiveServices (.NET 8 ASP.NET Core Web App)
+# Builds and deploys ASP.NET Core app to Azure App Service (Production only)
+
+name: CognitiveServices-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+
+# Only trigger when merging to main/master (production deployment)
+trigger:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - Sigook.CognitiveServices/**
+    exclude:
+      - Sigook.CognitiveServices/**/*.md
+
+# PR trigger - validate build on PRs to main
+pr:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - Sigook.CognitiveServices/**
+    exclude:
+      - Sigook.CognitiveServices/**/*.md
+
+pool:
+  name: 'covenant-build-pool'
+
+# Variables
+variables:
+  dotnetSdkVersion: '8.0.415'
+  azureAppServiceName: 'sigook-cognitive-services'
+  environment: 'Production'
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+stages:
+  # ============================================
+  # Stage 1: Build
+  # ============================================
+  - stage: Build
+    displayName: 'Build'
+    jobs:
+      - job: Build_Solution
+        displayName: 'Build Solution'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Build using template (no unit tests - project has none)
+          - template: templates/dotnet-build-test.yml
+            parameters:
+              buildProjects: 'Sigook.CognitiveServices/**/*.sln'
+              buildConfiguration: 'Release'
+              runUnitTests: false
+              runIntegrationTests: false
+
+  # ============================================
+  # Stage 2: Publish and Deploy to Production
+  # ============================================
+  - stage: Deploy_Production
+    displayName: 'Deploy to Production'
+    dependsOn: Build
+    condition: and(succeeded(), ne(variables.isPR, true))
+    jobs:
+      - job: Publish_and_Deploy
+        displayName: 'Publish and Deploy to Production'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          # Install .NET SDK using template
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          # Publish ASP.NET Core Web App
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish Web App'
+            inputs:
+              command: 'publish'
+              publishWebProjects: false
+              projects: 'Sigook.CognitiveServices/Sigook.CognitiveServices.UI/Sigook.CognitiveServices.UI.csproj'
+              arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish'
+              zipAfterPublish: true
+
+          # Deploy to Azure App Service (Production)
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Azure App Service (Production)'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              appType: 'webAppLinux'
+              appName: $(azureAppServiceName)
+              package: '$(Build.ArtifactStagingDirectory)/publish/*.zip'
+
+          # Deployment Summary
+          - task: Bash@3
+            displayName: 'Deployment Summary'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo ""
+                echo "============================================"
+                echo "Deployment Completed Successfully!"
+                echo "============================================"
+                echo "Environment: $(environment)"
+                echo "App Service: $(azureAppServiceName)"
+                echo "Version: $(Build.BuildId)"
+                echo "============================================"
+                echo ""
+                echo "Production URL:"
+                echo "https://sigook-cognitive-services.azurewebsites.net"
+                echo ""
+
+          # Cleanup after publish and deploy
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'Sigook.CognitiveServices'
