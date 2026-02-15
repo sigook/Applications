@@ -50,6 +50,7 @@ namespace Sigook.CognitiveServices.Infraestructure.Cloud
                 $"https://{region}.tts.speech.microsoft.com/cognitiveservices/v1");
             request.Headers.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
             request.Headers.Add("X-Microsoft-OutputFormat", "audio-24khz-160kbitrate-mono-mp3");
+            request.Headers.Add("User-Agent", "SigookCognitiveServices");
             request.Content = new StringContent(ssml, Encoding.UTF8, "application/ssml+xml");
 
             var response = await httpClient.SendAsync(request);
