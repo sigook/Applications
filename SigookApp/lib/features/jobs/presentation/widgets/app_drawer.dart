@@ -39,13 +39,6 @@ class AppDrawer extends ConsumerWidget {
                 ),
                 _buildMenuItem(
                   context: context,
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: 'Payroll',
-                  route: '/payroll',
-                  isSelected: currentRoute == '/payroll',
-                ),
-                _buildMenuItem(
-                  context: context,
                   icon: Icons.info_outline,
                   title: 'About',
                   route: '/about',

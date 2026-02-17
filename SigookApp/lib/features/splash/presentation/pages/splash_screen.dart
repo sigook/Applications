@@ -54,6 +54,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     _loadAppVersion();
+
+    // Auto-navigate after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) _onLogoTapped();
+    });
   }
 
   Future<void> _loadAppVersion() async {
@@ -172,10 +177,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: GestureDetector(
-        onTap: _onLogoTapped,
-        behavior: HitTestBehavior.opaque,
-        child: SafeArea(
+      body: SafeArea(
         child: Stack(
           children: [
             Center(
@@ -202,15 +204,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).primaryColor,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Touch the screen to begin',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -248,7 +241,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ],
         ),
-      ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../../../core/utils/responsive.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../core/widgets/error_state_widget.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../providers/registration_providers.dart';
 import 'basic_info_page.dart';
@@ -296,7 +297,7 @@ class _RegistrationFormScreenState
                   ),
                   TextButton(
                     onPressed: () {
-                      context.go(AppRoutes.signIn);
+                      ref.read(authViewModelProvider.notifier).signIn();
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,

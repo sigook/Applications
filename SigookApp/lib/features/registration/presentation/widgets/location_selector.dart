@@ -58,6 +58,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           label: 'Country',
           value: widget.selectedCountry,
           items: countries,
+          isRequired: true,
           onChanged: (catalogItem) {
             if (catalogItem != null) {
               final country = Country(
@@ -83,6 +84,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           label: 'Province/State',
           value: widget.selectedProvince,
           items: provinces,
+          isRequired: true,
           onChanged: (catalogItem) {
             if (catalogItem != null && widget.selectedCountry != null) {
               final province = Province(
@@ -108,6 +110,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
           label: 'City',
           value: widget.selectedCity,
           items: cities,
+          isRequired: true,
           onChanged: (catalogItem) {
             if (catalogItem != null && widget.selectedProvince != null) {
               final city = City(
@@ -137,6 +140,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
     String? errorText,
     bool isLoading = false,
     bool enabled = true,
+    bool isRequired = false,
   }) {
     String? selectedLabel;
     if (value != null) {
@@ -164,13 +168,22 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
-            ),
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textDark,
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           TextField(
@@ -208,6 +221,7 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
       hint: 'Select or search $label...',
       selectedValue: selectedLabel,
       options: optionLabels,
+      isRequired: isRequired,
       onChanged: (selectedText) {
         if (selectedText == null) {
           onChanged(null);
