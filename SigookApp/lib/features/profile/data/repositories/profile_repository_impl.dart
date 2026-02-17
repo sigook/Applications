@@ -16,15 +16,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
   });
 
   @override
-  Future<Either<Failure, WorkerProfile>> getWorkerProfile(
-    String profileId,
-  ) async {
+  Future<Either<Failure, WorkerProfile>> getWorkerBasicInfo() async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
 
     try {
-      final profileModel = await remoteDataSource.getWorkerProfile(profileId);
+      final workerId = await remoteDataSource.getWorkerId();
+      final profileModel = await remoteDataSource.getWorkerFullProfile(workerId);
       return Right(profileModel.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));

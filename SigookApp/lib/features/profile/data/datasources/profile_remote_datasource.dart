@@ -4,7 +4,8 @@ import '../../../../core/network/api_client.dart';
 import '../models/worker_profile_model.dart';
 
 abstract class ProfileRemoteDataSource {
-  Future<WorkerProfileModel> getWorkerProfile(String profileId);
+  Future<String> getWorkerId();
+  Future<WorkerProfileModel> getWorkerFullProfile(String workerId);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -13,9 +14,49 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   ProfileRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<WorkerProfileModel> getWorkerProfile(String profileId) async {
+  Future<String> getWorkerId() async {
     try {
-      final response = await apiClient.dio.get('/WorkerProfile/$profileId');
+      final response = await apiClient.dio.get('/WorkerProfile');
+
+      if (response.statusCode == 200) {
+        final list = response.data as List<dynamic>;
+        if (list.isEmpty) {
+          throw ServerException(message: 'No worker profile found');
+        }
+        final item = WorkerProfileListItemModel.fromJson(
+          list[0] as Map<String, dynamic>,
+        );
+        return item.id;
+      } else {
+        throw ServerException(
+          message: 'Failed to load worker profiles: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to load worker profiles: $e');
+    }
+  }
+
+  @override
+  Future<WorkerProfileModel> getWorkerFullProfile(String workerId) async {
+    try {
+      final response = await apiClient.dio.get(
+        '/WorkerProfile/$workerId',
+      );
 
       if (response.statusCode == 200) {
         return WorkerProfileModel.fromJson(
@@ -40,6 +81,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         throw NetworkException('Network error: ${e.message}');
       }
     } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to load worker profile: $e');
     }
   }

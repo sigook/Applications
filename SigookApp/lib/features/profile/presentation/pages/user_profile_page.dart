@@ -9,6 +9,7 @@ import '../../../../core/widgets/profile_info_row.dart';
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../core/widgets/error_state_widget.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../domain/entities/worker_profile.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import '../widgets/profile_header.dart';
 
@@ -55,18 +56,19 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
               ProfileHeader(
                 name: profile?.fullName ?? 'User',
                 email: profile?.email ?? '',
+                photoUrl: profile?.profilePhotoUrl,
                 isEditing: _isEditing,
               ),
               const SizedBox(height: 16),
               _buildPersonalInfoSection(profile),
               const SizedBox(height: 12),
-              _buildContactSection(),
+              _buildContactSection(profile),
               const SizedBox(height: 12),
-              _buildLocationSection(),
+              _buildLocationSection(profile),
               const SizedBox(height: 12),
-              _buildPreferencesSection(),
+              _buildPreferencesSection(profile),
               const SizedBox(height: 12),
-              _buildDocumentsSection(),
+              _buildDocumentsSection(profile),
               const SizedBox(height: 12),
               _buildCommentsSection(),
               const SizedBox(height: 24),
@@ -85,7 +87,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildPersonalInfoSection(profile) {
+  Widget _buildPersonalInfoSection(WorkerProfile? profile) {
     return ProfileSectionCard(
       title: 'Personal Information',
       icon: Icons.person_outline,
@@ -97,29 +99,56 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           icon: Icons.badge_outlined,
           isEditing: _isEditing,
         ),
+        if (profile?.middleName != null && profile!.middleName!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Middle Name',
+            value: profile.middleName!,
+            icon: Icons.badge_outlined,
+            isEditing: _isEditing,
+          ),
         ProfileInfoRow(
           label: 'Last Name',
           value: profile?.lastName ?? 'N/A',
           icon: Icons.badge_outlined,
           isEditing: _isEditing,
         ),
+        if (profile?.secondLastName != null && profile!.secondLastName!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Second Last Name',
+            value: profile.secondLastName!,
+            icon: Icons.badge_outlined,
+            isEditing: _isEditing,
+          ),
         ProfileInfoRow(
           label: 'Date of Birth',
-          value: 'January 15, 1990',
+          value: profile?.formattedBirthDay ?? 'N/A',
           icon: Icons.cake_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Gender',
-          value: 'Male',
+          value: profile?.gender ?? 'N/A',
           icon: Icons.wc_outlined,
           isEditing: _isEditing,
         ),
+        ProfileInfoRow(
+          label: 'Approved to Work',
+          value: profile?.approvedToWork == true ? 'Yes' : 'No',
+          icon: Icons.verified_outlined,
+          isEditing: _isEditing,
+        ),
+        if (profile?.punchCardId != null && profile!.punchCardId!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Punch Card ID',
+            value: profile.punchCardId!,
+            icon: Icons.credit_card_outlined,
+            isEditing: _isEditing,
+          ),
       ],
     );
   }
 
-  Widget _buildContactSection() {
+  Widget _buildContactSection(WorkerProfile? profile) {
     return ProfileSectionCard(
       title: 'Contact Information',
       icon: Icons.contact_phone_outlined,
@@ -127,21 +156,42 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       children: [
         ProfileInfoRow(
           label: 'Mobile Number',
-          value: '+1 (555) 123-4567',
+          value: profile?.mobileNumber ?? 'N/A',
           icon: Icons.phone_outlined,
           isEditing: _isEditing,
         ),
+        if (profile?.phone != null && profile!.phone!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Phone',
+            value: profile.phone!,
+            icon: Icons.phone_outlined,
+            isEditing: _isEditing,
+          ),
         ProfileInfoRow(
           label: 'Email',
-          value: 'juanm@sigook.com',
+          value: profile?.email ?? 'N/A',
           icon: Icons.email_outlined,
           isEditing: _isEditing,
         ),
+        if (profile?.contactEmergencyName != null && profile!.contactEmergencyName!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Emergency Contact',
+            value: '${profile.contactEmergencyName} ${profile.contactEmergencyLastName ?? ''}'.trim(),
+            icon: Icons.emergency_outlined,
+            isEditing: _isEditing,
+          ),
+        if (profile?.contactEmergencyPhone != null && profile!.contactEmergencyPhone!.isNotEmpty)
+          ProfileInfoRow(
+            label: 'Emergency Phone',
+            value: profile.contactEmergencyPhone!,
+            icon: Icons.phone_callback_outlined,
+            isEditing: _isEditing,
+          ),
       ],
     );
   }
 
-  Widget _buildLocationSection() {
+  Widget _buildLocationSection(WorkerProfile? profile) {
     return ProfileSectionCard(
       title: 'Location Details',
       icon: Icons.location_on_outlined,
@@ -149,31 +199,31 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       children: [
         ProfileInfoRow(
           label: 'Country',
-          value: 'United States',
+          value: profile?.country ?? 'N/A',
           icon: Icons.flag_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'State/Province',
-          value: 'California',
+          value: profile?.province ?? 'N/A',
           icon: Icons.map_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'City',
-          value: 'Los Angeles',
+          value: profile?.city ?? 'N/A',
           icon: Icons.location_city_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Address',
-          value: '123 Main Street, Apt 4B',
+          value: profile?.address ?? 'N/A',
           icon: Icons.home_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
-          label: 'Zip Code',
-          value: '90001',
+          label: 'Postal Code',
+          value: profile?.postalCode ?? 'N/A',
           icon: Icons.markunread_mailbox_outlined,
           isEditing: _isEditing,
         ),
@@ -181,7 +231,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildPreferencesSection() {
+  Widget _buildPreferencesSection(WorkerProfile? profile) {
     return ProfileSectionCard(
       title: 'Work Preferences',
       icon: Icons.work_outline,
@@ -189,43 +239,53 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       children: [
         ProfileInfoRow(
           label: 'Availability',
-          value: 'Full-time',
+          value: profile != null && profile.availabilities.isNotEmpty
+              ? profile.availabilities.join(', ')
+              : 'N/A',
           icon: Icons.schedule_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Available Days',
-          value: 'Mon, Tue, Wed, Thu, Fri',
+          value: profile != null && profile.availabilityDays.isNotEmpty
+              ? profile.availabilityDays.join(', ')
+              : 'N/A',
           icon: Icons.calendar_today_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Preferred Time',
-          value: 'Morning, Afternoon',
+          value: profile != null && profile.availabilityTimes.isNotEmpty
+              ? profile.availabilityTimes.join(', ')
+              : 'N/A',
           icon: Icons.access_time_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Lifting Capacity',
-          value: 'Up to 50 lbs',
+          value: profile?.liftCapacity ?? 'N/A',
           icon: Icons.fitness_center_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Has Vehicle',
-          value: 'Yes',
+          value: profile?.hasVehicle == true ? 'Yes' : 'No',
           icon: Icons.directions_car_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Languages',
-          value: 'English, Spanish',
+          value: profile != null && profile.languages.isNotEmpty
+              ? profile.languages.join(', ')
+              : 'N/A',
           icon: Icons.language_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
           label: 'Skills',
-          value: 'Customer Service, Warehouse, Forklift',
+          value: profile != null && profile.skills.isNotEmpty
+              ? profile.skills.join(', ')
+              : 'N/A',
           icon: Icons.stars_outlined,
           isEditing: _isEditing,
         ),
@@ -233,28 +293,42 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildDocumentsSection() {
+  Widget _buildDocumentsSection(WorkerProfile? profile) {
     return ProfileSectionCard(
       title: 'Documents & Account',
       icon: Icons.description_outlined,
       iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
       children: [
         ProfileInfoRow(
-          label: 'ID Type',
-          value: 'Driver\'s License',
-          icon: Icons.credit_card_outlined,
+          label: 'Social Insurance',
+          value: profile?.maskedSocialInsurance ?? 'N/A',
+          icon: Icons.security_outlined,
+          isEditing: _isEditing,
+        ),
+        if (profile?.identificationType1 != null)
+          ProfileInfoRow(
+            label: profile!.identificationType1!,
+            value: profile.maskedIdNumber1,
+            icon: Icons.credit_card_outlined,
+            isEditing: _isEditing,
+          ),
+        if (profile?.identificationType2 != null)
+          ProfileInfoRow(
+            label: profile!.identificationType2!,
+            value: profile.maskedIdNumber2,
+            icon: Icons.credit_card_outlined,
+            isEditing: _isEditing,
+          ),
+        ProfileInfoRow(
+          label: 'Resume',
+          value: profile?.hasResume == true ? 'On file' : 'Not provided',
+          icon: Icons.description_outlined,
           isEditing: _isEditing,
         ),
         ProfileInfoRow(
-          label: 'ID Number',
-          value: '****6789',
+          label: 'Worker ID',
+          value: profile?.numberId?.toString() ?? 'N/A',
           icon: Icons.numbers_outlined,
-          isEditing: _isEditing,
-        ),
-        ProfileInfoRow(
-          label: 'Username',
-          value: 'juan_betancur',
-          icon: Icons.account_circle_outlined,
           isEditing: _isEditing,
         ),
       ],
@@ -341,7 +415,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
                 border: Border.all(color: Colors.grey.shade200),
               ),
               child: Text(
-                'Available for flexible work schedules. Prefer morning shifts but can accommodate afternoon and evening shifts as needed.',
+                'No additional comments.',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade700,

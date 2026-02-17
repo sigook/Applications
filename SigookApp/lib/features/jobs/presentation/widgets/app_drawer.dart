@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
 class AppDrawer extends ConsumerWidget {
   final String currentRoute;
@@ -12,12 +13,19 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Profile endpoint disabled - show default user display
+    final profileAsync = ref.watch(cachedWorkerProfileProvider);
+    final profile = profileAsync.value;
+
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          _buildProfileHeader(context, 'User', '', null),
+          _buildProfileHeader(
+            context,
+            profile?.fullName ?? 'User',
+            '',
+            profile?.profilePhotoUrl,
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
