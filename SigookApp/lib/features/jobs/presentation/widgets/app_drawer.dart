@@ -255,28 +255,7 @@ class AppDrawer extends ConsumerWidget {
 
   void _navigateToProfile(BuildContext context) {
     Navigator.of(context).pop();
-    // Profile page disabled - show coming soon message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'User profile page coming soon!',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppTheme.primaryBlue,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    context.go(AppRoutes.profile);
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {

@@ -32,6 +32,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go(AppRoutes.jobs),
+        ),
         title: const NavbarLogo(),
         actions: [
           IconButton(

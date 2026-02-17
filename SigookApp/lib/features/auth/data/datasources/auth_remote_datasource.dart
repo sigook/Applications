@@ -12,6 +12,7 @@ abstract class AuthRemoteDataSource {
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
   Future<bool> validateToken(String accessToken);
+  Future<String> getUserRole(String accessToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -157,6 +158,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Token refresh error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> getUserRole(String accessToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final userInfoUrl = '${EnvironmentConfig.authority}/connect/userinfo';
+      debugPrint('🔐 [AUTH] Fetching user role from $userInfoUrl');
+
+      final response = await dio.get(
+        userInfoUrl,
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final role = data['role'] as String? ?? '';
+      debugPrint('🔐 [AUTH] User role: $role');
+      return role;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch user info: ${e.message}',
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to fetch user info: $e');
     }
   }
 

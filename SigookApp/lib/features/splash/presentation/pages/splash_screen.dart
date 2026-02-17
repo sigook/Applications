@@ -135,14 +135,40 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         debugPrint('🔐 [SPLASH] Redirecting to welcome for re-authentication');
         _navigateToWelcome();
       },
-      (isValid) {
+      (isValid) async {
         if (isValid) {
-          debugPrint('🔐 [SPLASH] Token is valid! Navigating to jobs');
-          _navigateToJobs();
+          debugPrint('🔐 [SPLASH] Token is valid! Checking user role...');
+          await _checkRoleAndNavigate(token.accessToken!);
         } else {
           debugPrint(
             '🔐 [SPLASH] Token validation returned false, redirecting to welcome',
           );
+          _navigateToWelcome();
+        }
+      },
+    );
+  }
+
+  Future<void> _checkRoleAndNavigate(String accessToken) async {
+    final authRepo = ref.read(authRepositoryProvider);
+    final roleResult = await authRepo.getUserRole(accessToken);
+
+    if (!mounted || _hasNavigated) return;
+
+    roleResult.fold(
+      (failure) {
+        debugPrint('🔐 [SPLASH] Failed to fetch user role: ${failure.message}');
+        // Allow access if role check fails (graceful degradation)
+        _navigateToJobs();
+      },
+      (role) {
+        if (role.toLowerCase() == 'worker') {
+          debugPrint('🔐 [SPLASH] User role is worker - access granted');
+          _navigateToJobs();
+        } else {
+          debugPrint('🔐 [SPLASH] User role is "$role" - access denied');
+          // Logout and redirect to welcome
+          ref.read(authViewModelProvider.notifier).logout();
           _navigateToWelcome();
         }
       },
