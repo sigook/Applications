@@ -123,21 +123,9 @@ export default {
     getCommentsWorker(context, { workerId, size, pageIndex }) {
       return new Promise((resolve, reject) => {
         http
-          .get(
-            "/api/worker/" +
-            workerId +
-            "/comment?PageSize=" +
-            size +
-            "&PageIndex=" +
-            pageIndex
-          )
-          .then((response) => {
-            context.commit("setWokerComments", response.data);
-            resolve(response.data);
-          })
-          .catch((error) => {
-            reject(error.response);
-          });
+          .get(`/api/worker/${workerId}/comment?PageSize=${size}&PageIndex=${pageIndex}`)
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
       });
     },
     getProfiles(context) {

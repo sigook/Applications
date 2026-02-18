@@ -16,7 +16,8 @@ export default {
     return {
       isLoading: true,
       commentSize: 10,
-      commentPageIndex: 1
+      commentPageIndex: 1,
+      comments: []
     }
   },
   components: {
@@ -38,13 +39,7 @@ export default {
   },
   created() {
     this.updateComments();
-  },
-  computed: {
-    comments() {
-      return this.$store.state.worker.workerComments;
-    }
   }
-
 }
 
 </script>

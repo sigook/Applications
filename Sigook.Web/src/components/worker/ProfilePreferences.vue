@@ -22,6 +22,13 @@
                     id="emergencyinformation"
                     :class="{'missing': !worker.contactEmergencyPhone}"
                     :worker="worker" @updateProfile="() => updateProfile()" />
+            <skills
+                    id="skills"
+                    :class="{'missing': worker.skills.length === 0}"
+                    :worker="worker" @updateProfile="() => updateProfile()" />
+            <section id="languages">
+                <languages :worker="worker" @updateProfile="() => updateProfile()" />
+            </section>
         </div>
     </div>
 </template>
@@ -35,6 +42,8 @@ export default {
         toastMixin
     ],
     components: {
+        skills: () => import("../../components/worker/WorkSkillsDetail"),
+        languages: () => import("../../components/worker/WorkLanguagesDetail"),
         lift: () => import("../../components/worker/WorkLiftDetail"),
         availability: () => import("../../components/worker/WorkAvailabilitiesDetail"),
         availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail"),
