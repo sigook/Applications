@@ -11,10 +11,17 @@ class WorkerProfile extends Equatable {
   final String? birthDay;
   final String? gender;
   final String? socialInsurance;
+  final bool socialInsuranceExpire;
+  final String? dueDate;
+  final String? socialInsuranceFileName;
   final String? identificationNumber1;
   final String? identificationNumber2;
   final String? identificationType1;
   final String? identificationType2;
+  final String? identificationType1FileName;
+  final String? identificationType2FileName;
+  final bool havePoliceCheckBackground;
+  final String? policeCheckBackgroundFileName;
   final String? mobileNumber;
   final String? phone;
   final String? email;
@@ -48,10 +55,17 @@ class WorkerProfile extends Equatable {
     this.birthDay,
     this.gender,
     this.socialInsurance,
+    this.socialInsuranceExpire = false,
+    this.dueDate,
+    this.socialInsuranceFileName,
     this.identificationNumber1,
     this.identificationNumber2,
     this.identificationType1,
     this.identificationType2,
+    this.identificationType1FileName,
+    this.identificationType2FileName,
+    this.havePoliceCheckBackground = false,
+    this.policeCheckBackgroundFileName,
     this.mobileNumber,
     this.phone,
     this.email,
@@ -114,12 +128,29 @@ class WorkerProfile extends Equatable {
     }
   }
 
+  String get formattedDueDate {
+    if (dueDate == null || dueDate!.isEmpty) return 'N/A';
+    try {
+      final date = DateTime.parse(dueDate!);
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+      return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    } catch (_) {
+      return dueDate!;
+    }
+  }
+
   @override
   List<Object?> get props => [
     id, numberId, profilePhotoUrl, firstName, middleName, lastName,
     secondLastName, birthDay, gender, socialInsurance,
+    socialInsuranceExpire, dueDate, socialInsuranceFileName,
     identificationNumber1, identificationNumber2,
     identificationType1, identificationType2,
+    identificationType1FileName, identificationType2FileName,
+    havePoliceCheckBackground, policeCheckBackgroundFileName,
     mobileNumber, phone, email, address, city, province, country,
     postalCode, hasVehicle, availabilities, availabilityTimes,
     availabilityDays, liftCapacity, languages, skills, hasResume,

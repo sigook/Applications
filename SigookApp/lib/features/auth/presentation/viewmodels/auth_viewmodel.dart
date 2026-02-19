@@ -82,6 +82,9 @@ class AuthViewModel extends _$AuthViewModel {
     final signIn = ref.read(signInProvider);
     final result = await signIn(NoParams());
 
+    // Guard: provider may have been disposed while OAuth browser was open
+    if (!ref.mounted) return;
+
     await result.fold(
       (failure) async {
         if (failure.message.contains('User cancelled')) {
@@ -99,6 +102,8 @@ class AuthViewModel extends _$AuthViewModel {
         if (token.accessToken != null && token.accessToken!.isNotEmpty) {
           final authRepo = ref.read(authRepositoryProvider);
           final roleResult = await authRepo.getUserRole(token.accessToken!);
+
+          if (!ref.mounted) return;
 
           await roleResult.fold(
             (failure) async {
@@ -124,9 +129,10 @@ class AuthViewModel extends _$AuthViewModel {
                 debugPrint(
                   '🔑 [AUTH] User role is "$role" - access denied, logging out',
                 );
-                // Logout the unauthorized user
                 final logoutUseCase = ref.read(logoutProvider);
                 await logoutUseCase(NoParams());
+
+                if (!ref.mounted) return;
 
                 state = state.copyWith(
                   isLoading: false,

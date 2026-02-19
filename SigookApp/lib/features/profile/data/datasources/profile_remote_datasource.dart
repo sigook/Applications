@@ -6,6 +6,22 @@ import '../models/worker_profile_model.dart';
 abstract class ProfileRemoteDataSource {
   Future<String> getWorkerId();
   Future<WorkerProfileModel> getWorkerFullProfile(String workerId);
+  Future<void> updateWorkerBasicInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  );
+  Future<void> updateWorkerContactInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  );
+  Future<void> updateWorkerSinInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  );
+  Future<void> updateWorkerDocuments(
+    String workerId,
+    WorkerProfileModel profile,
+  );
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -83,6 +99,146 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to load worker profile: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerBasicInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/BasicInformation',
+        data: profile.toJson(),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update worker profile: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update worker profile: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerContactInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/ContactInformation',
+        data: profile.toJson(),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update contact info: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update contact info: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerSinInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/SinInformation',
+        data: profile.toJson(),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update SIN info: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update SIN info: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerDocuments(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Documents',
+        data: profile.toJson(),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update documents: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update documents: $e');
     }
   }
 }

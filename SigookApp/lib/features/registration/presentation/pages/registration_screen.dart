@@ -109,9 +109,30 @@ class _RegistrationFormScreenState
   Widget build(BuildContext context) {
     final formState = ref.watch(registrationFormStateProvider);
     final form = ref.watch(registrationViewModelProvider);
+    final authState = ref.watch(authViewModelProvider);
     final responsive = context.responsive;
 
-    return Scaffold(
+    // Navigate to jobs when sign-in succeeds from the "Already have an account?" button
+    ref.listen(authViewModelProvider, (previous, next) {
+      if (next.isAuthenticated &&
+          next.token != null &&
+          next.token!.accessToken != null &&
+          next.token!.accessToken!.isNotEmpty) {
+        context.go(AppRoutes.jobs);
+      }
+      if (next.error != null && previous?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    });
+
+    return Stack(
+      children: [
+        Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
       body: SafeArea(
         child: Column(
@@ -319,6 +340,12 @@ class _RegistrationFormScreenState
           ],
         ),
       ),
+        ),
+        if (authState.isLoading)
+          const Positioned.fill(
+            child: LoadingOverlay(message: 'Signing in...'),
+          ),
+      ],
     );
   }
 
