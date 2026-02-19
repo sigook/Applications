@@ -3,11 +3,11 @@
     <div class="detail-worker-profile">
       <span class="width-30">{{ $t("WorkerAvailableDays") }}</span>
       <span class="width-70 items">
-        <span class="inline fw-200 bg-gray" :key="'days' + item.value" v-for="item in worker.availabilityDays">
-          {{ item.value }} </span>
+        <b-taglist>
+          <b-tag v-for="item in worker.availabilityDays" :key="'days' + item.value" type="is-info is-light" size="is-medium" rounded>{{ item.value }}</b-tag>
+        </b-taglist>
       </span>
-      <button class="actions btn-icon-sm btn-icon-edit button-top-m8" type="button"
-        @click="modalAvailability = true">Edit</button>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalAvailability = true"></b-button>
     </div>
     <b-modal v-model="modalAvailability" width="520px">
       <availability-days-edit :data="worker" @closeModal="() => closeModalEdit()" />

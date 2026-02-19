@@ -58,7 +58,6 @@
 <script>
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 import confirmationAlert from "../../mixins/confirmationAlert";
-import qrCodeMixin from "../../mixins/qrCodeMixin";
 
 export default {
   components: {
@@ -137,7 +136,7 @@ export default {
         || !this.workerProfile.resume;
     },
   },
-  mixins: [switchLocaleMixin, confirmationAlert, qrCodeMixin],
+  mixins: [switchLocaleMixin, confirmationAlert],
   created() {
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
@@ -194,6 +193,7 @@ export default {
 
   .profile-information .section-title {
     margin-bottom: 0;
+    color: inherit;
   }
 
   section:not(.worker-comments) {
@@ -209,14 +209,6 @@ export default {
     margin-top: 15px;
   }
 
-  .worker-documents>div.worker-skills.margin-top-15,
-  .worker-skills>div {
-    margin: 0;
-  }
-
-  .worker-skills>div span {
-    margin-top: 16px;
-  }
 
   section.missing {
     box-shadow: 1px 2px 4px #ffabab;

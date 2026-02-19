@@ -57,7 +57,7 @@
 
 <script>
 export default {
-  props: ['workerId'],
+  props: ['workerId', 'data'],
   data() {
     return {
       isLoading: false,
@@ -76,7 +76,7 @@ export default {
     validateAll() {
       this.$validator.validateAll().then(async (isValid) => {
         if (isValid) {
-          this.createWorkerWorkExperience();
+          this.data ? this.editWorkerWorkExperience() : this.createWorkerWorkExperience();
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
@@ -93,12 +93,32 @@ export default {
           this.isLoading = false;
           this.showAlertError(error);
         })
+    },
+    editWorkerWorkExperience() {
+      this.isLoading = true;
+      this.$store.dispatch("worker/editWorkerWorkExperience", { profileId: this.workerId, id: this.data.id, model: this.workExperience })
+        .then(() => {
+          this.isLoading = false;
+          this.$emit("updateExperience");
+        })
+        .catch(error => {
+          this.isLoading = false;
+          this.showAlertError(error);
+        })
+    },
+    updateData() {
+      this.workExperience = Object.assign({}, this.data);
+      this.workExperience.startDate = new Date(this.data.startDate);
+      this.workExperience.endDate = this.data.endDate ? new Date(this.data.endDate) : null;
     }
   },
   created() {
     this.$store.dispatch('getCurrentDate').then(response => {
       this.disableStartDate = response;
-    })
+    });
+    if (this.data) {
+      this.updateData();
+    }
   },
 }
 </script>

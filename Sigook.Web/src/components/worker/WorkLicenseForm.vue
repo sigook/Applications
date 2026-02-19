@@ -1,65 +1,71 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="form-section form-100">
-      <div class="form-100">
-        <div class="fz-1 fw-400">
-          {{ $t("File") }}
-          <span class="sign-required"></span>
-          <div class="input-file-edited input-block" v-if="licenseModal.license && licenseModal.license.fileName">
-            <span>
-              {{ licenseModal.license.fileName | filename }}
-            </span>
-            <button v-if="licenseModal.license" @click="deleteWorkerLicenses()" class="button cross-button"
-              type="button" />
+    <div class="container-flex">
+      <div class="col-12">
+        <b-field>
+          <template #label>
+            {{ $t("File") }} <span class="has-text-danger">*</span>
+          </template>
+          <div v-if="licenseModal.license && licenseModal.license.fileName" class="selected-file-display">
+            <b-icon icon="certificate" size="is-small"></b-icon>
+            <span class="selected-file-name">{{ licenseModal.license.fileName | filename }}</span>
+            <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearLicenseFile()"></b-button>
           </div>
-          <upload-file v-else class="input-block inline-100"
-            @fileSelected="(file) => (licenseModal.license = { fileName: file })" :format="'document'" :name="'License_'"
-            :required="true" @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
-        </div>
+          <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedLicenseFile }">
+            <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
+              @input="handleLicenseFileSelected" class="file-label" rounded>
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : $t('AddFile') }}</span>
+              </span>
+            </b-upload>
+          </b-field>
+        </b-field>
       </div>
-      <div class="form-50 sm-form-100">
-        <label class="fz-1 fw-400 sign-required">{{ $t("Description") }}
-        </label>
-        <input type="text" class="input-border input-block" v-model="licenseModal.license.description"
-          name="license description" v-validate="'required|max:15'"
-          :class="{ 'is-danger': errors.has('license description') }" />
-        <span v-show="errors.has('license description')" class="help is-danger no-margin">
-          {{ errors.first("license description") }}
-        </span>
+      <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
+        <b-field :type="errors.has('license description') ? 'is-danger' : ''"
+          :message="errors.has('license description') ? errors.first('license description') : ''">
+          <template #label>
+            {{ $t("Description") }} <span class="has-text-danger">*</span>
+          </template>
+          <b-input type="text" v-model="licenseModal.license.description" name="license description"
+            v-validate="'required|max:100'" />
+        </b-field>
       </div>
-      <div class="form-50 sm-form-100">
-        <label class="fz-1 fw-400">Number</label>
-        <input type="text" class="input-border input-block" v-model="licenseModal.number" />
+      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+        <b-field label="Number">
+          <b-input type="text" v-model="licenseModal.number" />
+        </b-field>
       </div>
-      <div class="form-50 sm-form-100">
-        <label class="fz-1 fw-400">Issued</label>
-        <b-datepicker class="input-block" v-model="licenseModal.issued" :focused-date="todayDate" :max-date="todayDate"
-          position="is-top-left">
-        </b-datepicker>
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field label="Issued">
+          <b-datepicker v-model="licenseModal.issued" :focused-date="todayDate" :max-date="todayDate"
+            position="is-top-left" />
+        </b-field>
       </div>
-      <div class="form-50 sm-form-100">
-        <label class="fz-1 fw-400 sign-required">Expires</label>
-        <b-datepicker class="input-block" v-model="licenseModal.expires" :focused-date="todayDate" :min-date="todayDate"
-          position="is-top-left" v-validate="'required'" :name="'licenseExpires'"
-          :class="{ 'is-danger': errors.has('licenseExpires') }">
-        </b-datepicker>
-        <span v-show="errors.has('licenseExpires')" class="help is-danger no-margin">
-          {{ errors.first("licenseExpires") }}
-        </span>
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field :type="errors.has('licenseExpires') ? 'is-danger' : ''"
+          :message="errors.has('licenseExpires') ? errors.first('licenseExpires') : ''">
+          <template #label>
+            Expires <span class="has-text-danger">*</span>
+          </template>
+          <b-datepicker v-model="licenseModal.expires" :focused-date="todayDate" :min-date="todayDate"
+            position="is-top-left" name="licenseExpires" v-validate="'required'" />
+        </b-field>
+      </div>
+      <div class="col-12 mt-5">
+        <b-button type="is-primary" @click="validateAll()">
+          {{ $t("Save") }}
+        </b-button>
       </div>
     </div>
-    <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase" @click="validateAll()"
-      type="button">
-      {{ $t("Save") }}
-    </button>
   </div>
 </template>
 
 <script>
 import toastMixin from "../../mixins/toastMixin";
-import updateMixin from "../../mixins/uploadFiles";
-import pubSub from "@/mixins/pubSub";
+import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
   props: ["data"],
@@ -67,6 +73,10 @@ export default {
     return {
       todayDate: null,
       isLoading: false,
+      selectedLicenseFile: null,
+      fileObjects: {
+        license: null
+      },
       licenseModal: {
         license: {
           fileName: "",
@@ -79,41 +89,51 @@ export default {
       licenses: [],
     };
   },
-  mixins: [toastMixin, pubSub, updateMixin],
+  mixins: [toastMixin, multipartUploadMixin],
   methods: {
+    handleLicenseFileSelected(file) {
+      if (!file) return;
+      if (file.size / 1024 > 15500) {
+        this.showAlertError('File exceeds 15MB limit');
+        this.selectedLicenseFile = null;
+        return;
+      }
+      this.fileObjects.license = file;
+      const generatedName = this.generateFileName('License', file.name);
+      this.licenseModal.license = { fileName: generatedName, description: this.licenseModal.license.description || '' };
+      this.selectedLicenseFile = null;
+    },
+    clearLicenseFile() {
+      this.fileObjects.license = null;
+      this.licenseModal.license = { fileName: '', description: '' };
+    },
     validateAll() {
       this.$validator.validateAll().then((isValid) => {
         if (isValid) {
-          this.createWorkerLicenses();
+          this.saveLicenses();
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createWorkerLicenses() {
+    async saveLicenses() {
       this.isLoading = true;
-      this.licenses.push(this.licenseModal);
-      this.$store
-        .dispatch("worker/createWorkerLicenses", {
-          profileId: this.data.id,
-          model: this.licenses,
-        })
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("closeModal", true);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    deleteWorkerLicenses() {
-      this.deleteFile(this.licenseModal.license.fileName)
-        .then(() => this.licenseModal.license.fileName = null)
+      try {
+        const allLicenses = [...this.licenses, this.licenseModal];
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(allLicenses));
+        if (this.fileObjects.license) {
+          const fn = this.licenseModal.license.fileName;
+          formData.append(fn, this.fileObjects.license, fn);
+        }
+        await this.$store.dispatch('worker/createWorkerLicenses', { profileId: this.data.id, formData });
+        this.$emit('closeModal', true);
+      } catch (error) {
+        this.showAlertError(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
-  },
-  components: {
-    UploadFile: () => import("../../components/UploadFiles"),
   },
   created() {
     if (this.data != null) {
@@ -127,3 +147,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.selected-file-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.selected-file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

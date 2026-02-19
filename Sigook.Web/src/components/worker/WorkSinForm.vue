@@ -13,16 +13,20 @@
       </div>
       <div class="col-12">
         <b-field :label="$t('WorkerSocialInsuranceFile')">
-          <div class="input-file-edited input-block" v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName">
-            <span>
-              {{ sin.socialInsuranceFile.fileName | filename }}
-            </span>
-            <button v-if="sin.socialInsuranceFile" @click="deleteWorkerSin()" class="button cross-button"
-              type="button" />
+          <div v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName" class="selected-file-display">
+            <b-icon icon="file-document" size="is-small"></b-icon>
+            <span class="selected-file-name">{{ sin.socialInsuranceFile.fileName | filename }}</span>
+            <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearSinFile()"></b-button>
           </div>
-          <upload-file v-if="!sin.socialInsuranceFile || sin.socialInsuranceFile.fileName === ''"
-            class="mtop5 inline-100" @fileSelected="file => updateSocialInsurance(file)" :format="'document'"
-            :name="'SIN-SSN_'" :required="false" />
+          <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedSinFile }">
+            <b-upload v-model="selectedSinFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
+              @input="handleSinFileSelected" class="file-label" rounded>
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : $t('AddFile') }}</span>
+              </span>
+            </b-upload>
+          </b-field>
         </b-field>
       </div>
       <div class="col-12">
@@ -49,14 +53,19 @@
 </template>
 
 <script>
-import updateMixin from "../../mixins/uploadFiles";
+import toastMixin from "../../mixins/toastMixin";
+import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
   props: ['data'],
-  mixins: [updateMixin],
+  mixins: [toastMixin, multipartUploadMixin],
   data() {
     return {
       isLoading: false,
+      selectedSinFile: null,
+      fileObjects: {
+        sinFile: null
+      },
       sin: {
         socialInsurance: "",
         socialInsuranceExpire: false,
@@ -66,22 +75,24 @@ export default {
           description: ""
         }
       }
-    }
-  },
-  components: {
-    socialInsuranceEdit: () => import("./WorkSinForm"),
-    UploadFile: () => import("../UploadFiles")
+    };
   },
   methods: {
-    updateSocialInsurance(file) {
-      if (this.sin.socialInsuranceFile) {
-        this.sin.socialInsuranceFile.fileName = file
-      } else {
-        this.sin.socialInsuranceFile = {
-          fileName: file,
-          description: ""
-        }
+    handleSinFileSelected(file) {
+      if (!file) return;
+      if (file.size / 1024 > 15500) {
+        this.showAlertError('File exceeds 15MB limit');
+        this.selectedSinFile = null;
+        return;
       }
+      this.fileObjects.sinFile = file;
+      const generatedName = this.generateFileName('SIN-SSN', file.name);
+      this.sin.socialInsuranceFile = { fileName: generatedName, description: '' };
+      this.selectedSinFile = null;
+    },
+    clearSinFile() {
+      this.fileObjects.sinFile = null;
+      this.sin.socialInsuranceFile = { fileName: '', description: '' };
     },
     validateAll() {
       this.$validator.validateAll().then((isValid) => {
@@ -92,28 +103,47 @@ export default {
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       });
     },
-    createWorkerSin() {
+    async createWorkerSin() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerSin', { profileId: this.data.id, model: this.sin })
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    deleteWorkerSin() {
-      this.deleteFile(this.sin.socialInsuranceFile.fileName)
-        .then(() => this.sin.socialInsuranceFile = null);
+      try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(this.sin));
+        if (this.fileObjects.sinFile) {
+          const fn = this.sin.socialInsuranceFile.fileName;
+          formData.append(fn, this.fileObjects.sinFile, fn);
+        }
+        await this.$store.dispatch('worker/createWorkerSin', { profileId: this.data.id, formData });
+        this.$emit('closeModal', true);
+      } catch (error) {
+        this.showAlertError(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
   },
   created() {
     if (this.data.socialInsurance !== null && this.data.socialInsurance !== "") {
-      this.sin = Object.assign({}, this.data);
+      this.sin = { ...this.data };
       this.sin.dueDate = this.data.dueDate ? new Date(this.sin.dueDate) : null;
     }
   }
-}
+};
 </script>
+
+<style scoped>
+.selected-file-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.selected-file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

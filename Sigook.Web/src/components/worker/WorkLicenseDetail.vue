@@ -3,9 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="button-right">
       <h3 class="fw-700 fz-0">{{ $t("WorkerLicenses") }}</h3>
-      <button type="button" class="outline-btn md-btn orange-button btn-radius" @click="modalLicense = true">
-        Add License +
-      </button>
+      <b-button type="is-primary" icon-right="plus" @click="modalLicense = true">
+        Add License
+      </b-button>
     </div>
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in worker.licenses"

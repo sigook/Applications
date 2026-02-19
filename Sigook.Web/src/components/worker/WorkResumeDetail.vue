@@ -2,7 +2,8 @@
     <section>
         <div class="button-right">
             <h3 class="section-title">{{ $t('Resume') }}</h3>
-            <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="modal = true">Edit</button>
+            <b-button type="is-info" outlined rounded icon-right="pencil"
+              @click="modal = true"></b-button>
         </div>
         <div class="worker-documents">
             <div v-if="worker.resume">

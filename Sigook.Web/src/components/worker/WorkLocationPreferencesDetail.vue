@@ -3,11 +3,11 @@
     <div class="detail-worker-profile">
       <span class="width-30">{{ $t("WorkerLocationPreferences") }}</span>
       <span class="width-70 items">
-        <span class="inline fw-200 bg-gray" :key="'locationpref' + item.value"
-          v-for="item in worker.locationPreferences"> {{ item.value }} </span>
+        <b-taglist>
+          <b-tag v-for="item in worker.locationPreferences" :key="'locationpref' + item.value" type="is-info is-light" size="is-medium" rounded>{{ item.value }}</b-tag>
+        </b-taglist>
       </span>
-      <button class="actions btn-icon-sm btn-icon-edit button-top-m8" type="button"
-        @click="modalLocation = true">Edit</button>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalLocation = true"></b-button>
     </div>
     <b-modal v-model="modalLocation" width="500px" max-height="80vh">
       <location-preferences-edit :data="worker" @closeModal="() => closeModalEdit()" />

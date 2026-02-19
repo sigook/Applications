@@ -2,12 +2,12 @@
   <div class="white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
     <!-- If is not approved to work -->
-    <div class="alert-warning" v-if="!currentUser.approvedToWork">
+    <b-message type="is-warning" v-if="!currentUser.approvedToWork" :closable="false">
       You are not approved to work
-    </div>
-    <div class="alert-warning" v-if="hasMissingDocuments">
-      <b>Your Profile is Incomplete</b> <br />
-      <span class="fz-1">Please update the following information to be able to work with us.</span>
+    </b-message>
+    <b-message type="is-warning" v-if="hasMissingDocuments" :closable="false">
+      <p><b>Your Profile is Incomplete</b></p>
+      <p class="fz-1">Please update the following information to be able to work with us.</p>
       <ul class="normal-list fz-1">
         <li v-if="!currentUser.hasSocialInsurance || !currentUser.hasSocialInsuranceFile">
           Social Insurance
@@ -20,12 +20,10 @@
         </li>
         <li v-if="!currentUser.hasResume">Resume</li>
       </ul>
-      <router-link to="/worker-profile">
-        <button class="sm-btn outline-btn mtop-5 yellow-button">
-          UPDATE DOCUMENTS
-        </button>
-      </router-link>
-    </div>
+      <b-button tag="router-link" to="/worker-profile" type="is-danger" class="mtop-5">
+        UPDATE DOCUMENTS
+      </b-button>
+    </b-message>
     <h2 class="fz1 pt-3">Jobs</h2>
     <div>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
@@ -35,13 +33,9 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="agencyLogo" width="50" v-slot="props">
-            <img v-if="props.row.agencyLogo" :src="props.row.agencyLogo" alt="profile image" class="img-30" />
-            <default-image v-else :name="props.row.agencyFullName" class="img-30"></default-image>
-            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
-          </b-table-column>
           <b-table-column field="numberId" label="Order ID" v-slot="props">
             {{ props.row.numberId }}
+            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
           </b-table-column>
           <b-table-column field="jobTitle" label="Position" v-slot="props">
             {{ props.row.jobTitle }}
@@ -68,7 +62,7 @@
             </template>
           </b-table-column>
           <b-table-column field="workerRate" label="Rate / Salary" v-slot="props">
-            {{ (props.row.workerRate || props.row.workerSalary) | currency }}
+            {{ props.row.workerRate | currency }}
           </b-table-column>
           <b-table-column field="workersQuantity" label="Spots" v-slot="props">
             {{ props.row.workersQuantity }}

@@ -2,8 +2,7 @@
   <section>
     <div class="button-right">
       <h3 class="section-title">{{ $t("WorkerEmergencyInformation") }}</h3>
-      <button class="actions btn-icon-sm btn-icon-edit" type="button"
-        @click="modalEmergencyInformation = true">Edit</button>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalEmergencyInformation = true"></b-button>
     </div>
     <div class="worker-documents">
       <div>

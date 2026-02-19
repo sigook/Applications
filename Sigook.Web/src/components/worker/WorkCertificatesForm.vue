@@ -1,53 +1,60 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="form-section form-100">
-      <div class="form-100">
-        <div class="fz-1 fw-400">
-          {{ $t("File") }}
-          <span class="sign-required"></span>
-          <div class="input-file-edited input-block" v-if="certificate && certificate.fileName">
-            <span>
-              {{ certificate.fileName | filename }}
-            </span>
-            <button v-if="certificate" @click="deleteWorkerCertificates()" class="button cross-button" type="button" />
+    <div class="container-flex">
+      <div class="col-12">
+        <b-field>
+          <template #label>
+            {{ $t("File") }} <span class="has-text-danger">*</span>
+          </template>
+          <div v-if="certificate && certificate.fileName" class="selected-file-display">
+            <b-icon icon="certificate" size="is-small"></b-icon>
+            <span class="selected-file-name">{{ certificate.fileName | filename }}</span>
+            <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearCertFile()"></b-button>
           </div>
-          <upload-file v-else class="input-block inline-100"
-            @fileSelected="(file) => (this.certificate = { fileName: file })" :format="'document'" :name="'Certificate_'"
-            :required="true" @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
-        </div>
+          <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedCertFile }">
+            <b-upload v-model="selectedCertFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
+              @input="handleCertFileSelected" class="file-label" rounded>
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">{{ selectedCertFile ? selectedCertFile.name : $t('AddFile') }}</span>
+              </span>
+            </b-upload>
+          </b-field>
+        </b-field>
       </div>
-      <div class="form-100">
-        <label class="fz-1 fw-400 sign-required">
-          {{ $t("Description") }}
-        </label>
-        <input type="text" class="input-border input-block" v-model="certificate.description"
-          name="certificate description" v-validate="'required|max:20'"
-          :class="{ 'is-danger': errors.has('certificate description') }" />
-
-        <span v-show="errors.has('certificate description')" class="help is-danger no-margin">
-          {{ errors.first("certificate description") }}
-        </span>
+      <div class="col-12">
+        <b-field :type="errors.has('certificate description') ? 'is-danger' : ''"
+          :message="errors.has('certificate description') ? errors.first('certificate description') : ''">
+          <template #label>
+            {{ $t("Description") }} <span class="has-text-danger">*</span>
+          </template>
+          <b-input type="text" v-model="certificate.description" name="certificate description"
+            v-validate="'required|max:20'" />
+        </b-field>
+      </div>
+      <div class="col-12 mt-5">
+        <b-button type="is-primary" @click="validateAll()">
+          {{ $t("Save") }}
+        </b-button>
       </div>
     </div>
-    <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase" @click="validateAll()"
-      type="button">
-      {{ $t("Save") }}
-    </button>
   </div>
 </template>
 
 <script>
 import toastMixin from "../../mixins/toastMixin";
-import pubSub from "@/mixins/pubSub";
-import updateMixin from "../../mixins/uploadFiles";
+import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
   props: ["data"],
   data() {
     return {
-      todayDate: null,
       isLoading: false,
+      selectedCertFile: null,
+      fileObjects: {
+        certificate: null
+      },
       certificate: {
         fileName: "",
         description: "",
@@ -55,41 +62,51 @@ export default {
       certificates: [],
     };
   },
-  mixins: [toastMixin, pubSub, updateMixin],
+  mixins: [toastMixin, multipartUploadMixin],
   methods: {
+    handleCertFileSelected(file) {
+      if (!file) return;
+      if (file.size / 1024 > 15500) {
+        this.showAlertError('File exceeds 15MB limit');
+        this.selectedCertFile = null;
+        return;
+      }
+      this.fileObjects.certificate = file;
+      const generatedName = this.generateFileName('Certificate', file.name);
+      this.certificate = { fileName: generatedName, description: this.certificate.description || '' };
+      this.selectedCertFile = null;
+    },
+    clearCertFile() {
+      this.fileObjects.certificate = null;
+      this.certificate = { fileName: '', description: '' };
+    },
     validateAll() {
       this.$validator.validateAll().then((isValid) => {
         if (isValid) {
-          this.createWorkerCertificates();
+          this.saveCertificates();
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createWorkerCertificates() {
+    async saveCertificates() {
       this.isLoading = true;
-      this.certificates.push(this.certificate);
-      this.$store
-        .dispatch("worker/createWorkerCertificates", {
-          profileId: this.data.id,
-          model: this.certificates,
-        })
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("closeModal", true);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    deleteWorkerCertificates() {
-      this.deleteFile(this.certificate.fileName)
-        .then(() => this.certificate.fileName = null)
+      try {
+        const allCertificates = [...this.certificates, this.certificate];
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(allCertificates));
+        if (this.fileObjects.certificate) {
+          const fn = this.certificate.fileName;
+          formData.append(fn, this.fileObjects.certificate, fn);
+        }
+        await this.$store.dispatch('worker/createWorkerCertificates', { profileId: this.data.id, formData });
+        this.$emit('closeModal', true);
+      } catch (error) {
+        this.showAlertError(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
-  },
-  components: {
-    UploadFile: () => import("../../components/UploadFiles"),
   },
   created() {
     if (this.data != null) {
@@ -97,10 +114,24 @@ export default {
         this.certificates.push(this.data.certificates[i]);
       }
     }
-
-    this.$store.dispatch("getCurrentDate").then((response) => {
-      this.todayDate = response;
-    });
   },
 };
 </script>
+
+<style scoped>
+.selected-file-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.selected-file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
