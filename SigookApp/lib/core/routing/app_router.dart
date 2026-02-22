@@ -10,6 +10,7 @@ import '../../features/profile/presentation/pages/user_profile_page.dart';
 import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_policy_page.dart';
 import '../../features/legal/presentation/pages/terms_page.dart';
+import '../../features/history/presentation/pages/history_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String jobs = '/jobs';
   static const String jobDetails = '/jobs/details';
   static const String profile = '/profile';
+  static const String history = '/history';
   static const String about = '/about';
   static const String privacyPolicy = '/privacy-policy';
   static const String terms = '/terms';
@@ -146,6 +148,17 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const UserProfilePage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.history,
+        name: 'history',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const HistoryPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
