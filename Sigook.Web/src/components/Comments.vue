@@ -113,7 +113,6 @@ export default {
         });
     },
     changePage(page) {
-      //this.currentPage = page;
       this.$emit('changePage', page);
     }
   }

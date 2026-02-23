@@ -1,7 +1,9 @@
 ﻿using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
@@ -191,6 +193,103 @@ namespace Covenant.Core.BL.Services
                 await documentService.DeleteFile(oldProfileImageId.Value);
             }
             return Result.Ok();
+        }
+
+        public async Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType)
+        {
+            var form = httpContextAccessor.HttpContext.Request.Form;
+            var entity = await workerRepository.GetProfile(p => p.Id == profileId);
+            if (entity is null) return Result.Fail("Worker not found");
+
+            entity.OnNewDocumentAdded += async (_, file) => await workerRepository.Create(file);
+
+            var handlerResult = documentType switch
+            {
+                WorkerDocumentType.Identification  => await HandleIdentification(entity, form, profileId),
+                WorkerDocumentType.Licenses        => HandleLicenses(entity, form),
+                WorkerDocumentType.Certificates    => HandleCertificates(entity, form),
+                WorkerDocumentType.Resume          => HandleResume(entity, form),
+                WorkerDocumentType.OtherDocument   => HandleOtherDocument(entity, form),
+                WorkerDocumentType.SocialInsurance => HandleSocialInsurance(entity, form),
+                _ => throw new ArgumentOutOfRangeException(nameof(documentType))
+            };
+
+            if (!handlerResult) return Result.Fail(handlerResult.Errors);
+
+            await UploadFormFiles(form.Files, handlerResult.Value);
+            await workerRepository.UpdateProfile(entity);
+            await workerRepository.SaveChangesAsync();
+            return Result.Ok();
+        }
+
+        private async Task UploadFormFiles(IFormFileCollection files, IEnumerable<string> fileNames)
+        {
+            foreach (var fileName in fileNames.Where(f => !string.IsNullOrEmpty(f)))
+            {
+                var file = files[fileName];
+                if (file != null)
+                    await filesContainer.UploadAsync(file.OpenReadStream(), fileName);
+            }
+        }
+
+        private async Task<Result<IEnumerable<string>>> HandleIdentification(WorkerProfile entity, IFormCollection form, Guid profileId)
+        {
+            var model = JsonConvert.DeserializeObject<DocumentsInformationModel>(form["data"]);
+            foreach (var number in new[] { model?.IdentificationNumber1, model?.IdentificationNumber2 })
+            {
+                if (!string.IsNullOrEmpty(number) && await workerRepository.InfoIsAlreadyTaken(x => x.Id != profileId && (x.IdentificationNumber1 == number || x.IdentificationNumber2 == number)))
+                    return Result.Fail<IEnumerable<string>>(string.Format(ApiResources.IdentificationNumberAlreadyTaken, number));
+            }
+            var result = entity.PatchDocuments(model);
+            if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+            return Result.Ok<IEnumerable<string>>(new[]
+            {
+                model.IdentificationType1File?.FileName,
+                model.IdentificationType2File?.FileName
+            });
+        }
+
+        private static Result<IEnumerable<string>> HandleLicenses(WorkerProfile entity, IFormCollection form)
+        {
+            var model = JsonConvert.DeserializeObject<List<WorkerProfileLicenseModel>>(form["data"]);
+            var result = entity.PatchLicenses(model);
+            if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+            return Result.Ok<IEnumerable<string>>(model.Select(l => l.License?.FileName));
+        }
+
+        private static Result<IEnumerable<string>> HandleCertificates(WorkerProfile entity, IFormCollection form)
+        {
+            var model = JsonConvert.DeserializeObject<List<CovenantFileModel>>(form["data"]);
+            var result = entity.PatchCertificates(model);
+            if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+            return Result.Ok<IEnumerable<string>>(model.Select(c => c.FileName));
+        }
+
+        private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
+        {
+            var model = JsonConvert.DeserializeObject<CovenantFileModel>(form["data"]);
+            var result = entity.PatchResume(model);
+            if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+            return Result.Ok<IEnumerable<string>>(new[] { model?.FileName });
+        }
+
+        private static Result<IEnumerable<string>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
+        {
+            var model = JsonConvert.DeserializeObject<CovenantFileModel>(form["data"]);
+            var fileResult = CovenantFile.Create(model);
+            if (!fileResult) return Result.Fail<IEnumerable<string>>(fileResult.Errors);
+            var docResult = WorkerProfileOtherDocument.Create(entity.Id, fileResult.Value);
+            if (!docResult) return Result.Fail<IEnumerable<string>>(docResult.Errors);
+            entity.OtherDocuments.Add(docResult.Value);
+            return Result.Ok<IEnumerable<string>>(new[] { model?.FileName });
+        }
+
+        private static Result<IEnumerable<string>> HandleSocialInsurance(WorkerProfile entity, IFormCollection form)
+        {
+            var model = JsonConvert.DeserializeObject<SinInformationModel>(form["data"]);
+            var result = entity.PatchSinInformation(model);
+            if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+            return Result.Ok<IEnumerable<string>>(new[] { model.SocialInsuranceFile?.FileName });
         }
 
         private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)

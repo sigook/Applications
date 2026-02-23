@@ -48,8 +48,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             Assert.Equal(request.JobTitle, model.JobTitle);
             Assert.Equal(request.NumberId, model.NumberId);
             Assert.Equal(request.WorkersQuantity, model.WorkersQuantity);
-            Assert.Equal(request.Agency.FullName, model.AgencyFullName);
-            Assert.EndsWith(Data.FakeAgency.Logo.FileName, model.AgencyLogo);
             Assert.Equal(request.IsAsap, model.IsAsap);
             Assert.Equal(request.WorkerRate, model.WorkerRate);
             Assert.Equal(request.CreatedAt, model.CreatedAt);

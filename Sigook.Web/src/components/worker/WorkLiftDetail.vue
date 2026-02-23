@@ -3,10 +3,9 @@
     <div class="detail-worker-profile">
       <span class="width-30">{{ $t("WorkerYouCanLift") }}</span>
       <span class="width-70">
-        <span class="inline fw-200" v-if="worker.lift"> {{ worker.lift.value }} </span>
+        <b-tag v-if="worker.lift" type="is-info is-light" size="is-medium" rounded>{{ worker.lift.value }}</b-tag>
       </span>
-      <button class="actions btn-icon-sm btn-icon-edit button-top-m8" type="button"
-        @click="modalLift = true">Edit</button>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalLift = true"></b-button>
     </div>
     <b-modal v-model="modalLift" width="500px">
       <lift-edit :data="worker" @closeModal="() => closeModalEdit()" />

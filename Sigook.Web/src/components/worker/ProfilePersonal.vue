@@ -10,11 +10,19 @@
         :worker="worker" @updateProfile="() => updateProfile()" />
       <resume id="resume" :class="{ 'missing': !worker.resume }" :worker="worker"
         @updateProfile="() => updateProfile()" />
+      <licenses v-if="worker && worker.licenses" id="licenses" :class="{ 'missing': worker.licenses.length === 0 }" :worker="worker"
+        @updateProfile="() => updateProfile()" />
+      <certificates v-if="worker && worker.certificates" id="certificates" :class="{ 'missing': worker.certificates.length === 0 }" :worker="worker"
+        @updateProfile="() => updateProfile()" />
+      <other-documents v-if="worker && worker.otherDocuments" id="otherdocuments" :class="{ 'missing': worker.otherDocuments.length === 0 }" :worker="worker"
+        :justWhmis="true" />
     </div>
   </div>
 </template>
 
 <script>
+import worker from "../../store/modules/worker";
+
 export default {
   props: ['worker'],
   inject: ['$validator'],
@@ -28,7 +36,10 @@ export default {
     socialInsurance: () => import("./WorkSinDetail"),
     documents: () => import("./WorkDocumentsDetail"),
     contactInformation: () => import('./WorkContactInformationDetail'),
-    resume: () => import('./WorkResumeDetail')
+    resume: () => import('./WorkResumeDetail'),
+    licenses: () => import('./WorkLicenseDetail'),
+    certificates: () => import('./WorkCertificatesDetail'),
+    otherDocuments: () => import('./WorkerOtherDocumentsDetail')
   },
   methods: {
     updateProfile() {

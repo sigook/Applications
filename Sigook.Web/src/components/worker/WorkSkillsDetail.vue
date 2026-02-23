@@ -1,21 +1,18 @@
 <template>
-  <section class="hover-transform">
-    <div class="button-right">
-      <h3 class="section-title">{{ $t("WorkerSkills") }}</h3>
-      <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="modalSkills = true">Edit</button>
-    </div>
-    <div class="worker-documents">
-      <div class="worker-skills margin-top-15">
-        <div>
-          <span class="icon-star fw-200" v-for="(item, index) in worker.skills"
-            v-bind:key="'skills' + index">{{ item.skill }}</span>
-        </div>
-      </div>
+  <div class="hover-transform">
+    <div class="detail-worker-profile">
+      <span class="width-30">{{ $t("WorkerSkills") }}</span>
+      <span class="width-70 items">
+        <b-taglist>
+          <b-tag v-for="(item, index) in worker.skills" :key="'skills' + index" type="is-info is-light" size="is-medium" rounded>{{ item.skill }}</b-tag>
+        </b-taglist>
+      </span>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalSkills = true"></b-button>
     </div>
     <b-modal v-model="modalSkills" width="500px">
       <skills-edit :data="worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
-  </section>
+  </div>
 </template>
 
 <script>

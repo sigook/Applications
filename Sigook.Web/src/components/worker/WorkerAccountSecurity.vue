@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="worker-account-security">
     <b-loading v-model="isLoading"></b-loading>
 
     <!-- Change Email Section -->
@@ -21,6 +21,24 @@
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-button type="is-primary" @click="changeEmail">Save</b-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notifications Section -->
+    <section v-if="notifications">
+      <h3 class="section-title">Notifications</h3>
+      <div v-for="item in notifications" :key="'notification' + item.id">
+        <h4 class="notification-title">{{ item.title }}</h4>
+        <div class="container-flex">
+          <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
+            <span>{{ item.description }}</span>
+          </div>
+          <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+            <b-switch v-model="item.emailNotification" @input="updateUserNotification(item)">
+              {{ item.emailNotification ? $t('Yes') : $t('No') }}
+            </b-switch>
+          </div>
         </div>
       </div>
     </section>
@@ -50,7 +68,8 @@ export default {
     return {
       userEmail: null,
       confirmNewEmail: '',
-      isLoading: true
+      isLoading: true,
+      notifications: null
     }
   },
   methods: {
@@ -83,6 +102,26 @@ export default {
         }
       });
     },
+    getUserNotification() {
+      this.$store.dispatch('agency/getUserNotification')
+        .then(response => {
+          this.notifications = response;
+        })
+        .catch(error => {
+          this.showAlertError(error);
+        })
+    },
+    updateUserNotification(item) {
+      this.isLoading = true;
+      this.$store.dispatch('agency/updateUserNotification', item)
+        .then(() => {
+          this.isLoading = false;
+        })
+        .catch(error => {
+          this.showAlertError(error);
+          this.isLoading = false;
+        })
+    },
     deactivateAccount() {
       this.isLoading = true;
       this.$store.dispatch('deactivateAccount')
@@ -108,30 +147,39 @@ export default {
       .catch(error => {
         this.showAlertError(error);
         this.isLoading = false;
-      })
+      });
+    this.getUserNotification();
   }
 }
 </script>
 
-<style scoped>
-.account-deactivation {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #ddd;
-}
+<style lang="scss">
+.worker-account-security {
+  .account-deactivation {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+  }
 
-.deactivation-description {
-  color: #666;
-  margin-bottom: 15px;
-}
+  .deactivation-description {
+    color: #666;
+    margin-bottom: 15px;
+  }
 
-.deactivation-consequences {
-  margin-bottom: 20px;
-  padding-left: 20px;
-}
+  .deactivation-consequences {
+    margin-bottom: 20px;
+    padding-left: 20px;
 
-.deactivation-consequences li {
-  color: #666;
-  margin-bottom: 8px;
+    li {
+      color: #666;
+      margin-bottom: 8px;
+    }
+  }
+
+  .notification-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin: 15px 0 5px;
+  }
 }
 </style>

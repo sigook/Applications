@@ -1,21 +1,23 @@
 <template>
   <form>
     <b-loading v-model="isLoading"></b-loading>
-    <section>
-      <div class="button-right">
-        <h3 class="fw-700 fz-0 color-accent">{{ $t('WorkerWorkExperience') }}</h3>
-        <button type="button" class="outline-btn md-btn orange-button btn-radius"
-          @click="modalWorkExperience = true">Add experience +</button>
-      </div>
-      <div class="profile-information profile-experience" v-for="(item, index) in worker.jobExperiences"
-        :key="'workExp' + index">
-        <work-experience-detail :item="item" :workerId="worker.id" @getWorker="() => updateExperience()" />
-      </div>
+    <div class="tab-actions">
+      <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
+        {{ $t("AddExperience") }}
+      </b-button>
+    </div>
+    <div>
+      <work-experience-detail
+        v-for="(item, index) in worker.jobExperiences"
+        :key="'workExp' + index"
+        :item="item"
+        :workerId="worker.id"
+        @getWorker="() => updateExperience()" />
 
       <b-modal v-model="modalWorkExperience" width="800px">
         <work-experience :workerId="worker.id" @updateExperience="() => updateExperience()" />
       </b-modal>
-    </section>
+    </div>
 
   </form>
 </template>
@@ -70,3 +72,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.tab-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+</style>

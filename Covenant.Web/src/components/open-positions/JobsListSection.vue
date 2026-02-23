@@ -154,7 +154,7 @@ const selectedJob = ref<Job | null>(null)
 const jobToApply = ref<Job | null>(null)
 
 // Estado para el dialog y snackbar
-const showApplyDialog = ref(true) // Auto-open on page load
+const showApplyDialog = ref(false)
 const successSnackbar = ref(false)
 
 // Función para seleccionar trabajo

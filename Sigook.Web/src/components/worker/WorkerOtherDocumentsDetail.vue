@@ -7,9 +7,9 @@
         <i class="fz-2" v-if="justWhmis">Complete the training following both links below and uplaod your
           certificates</i>
       </div>
-      <button type="button" class="outline-btn md-btn orange-button btn-radius" @click="modalDocuments = true">
-        Add Document +
-      </button>
+      <b-button type="is-primary" icon-right="plus" @click="modalDocuments = true">
+        Add Document
+      </b-button>
     </div>
     <div v-if="justWhmis">
       <p v-if="!worker.location.isUSA">

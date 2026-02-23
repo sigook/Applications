@@ -1,5 +1,6 @@
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
@@ -64,8 +65,13 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 
         [HttpPost]
         [Route("Certificates")]
-        public async Task<IActionResult> CreateCertificates(Guid profileId, [FromBody] List<CovenantFileModel> model) =>
-            await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchCertificates(model)));
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateCertificates(Guid profileId)
+        {
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Certificates);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
+        }
 
         [HttpDelete]
         [Route("Certificates/{certificateId}")]
@@ -95,8 +101,13 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 
         [HttpPost]
         [Route("Licenses")]
-        public async Task<IActionResult> CreateLicenses(Guid profileId, [FromBody] List<WorkerProfileLicenseModel> model) =>
-            await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchLicenses(model)));
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateLicenses(Guid profileId)
+        {
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Licenses);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
+        }
 
         [HttpDelete]
         [Route("Licenses/{licenseId}")]
@@ -131,12 +142,13 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 
         [HttpPost]
         [Route("SinInformation")]
-        public async Task<IActionResult> SinInformation(Guid profileId, [FromBody] SinInformationModel model) =>
-            await CommonFunctionUpdate(model, profileId, async entity =>
-            {
-                entity.OnNewDocumentAdded += async (sender, args) => await _workerRepository.Create(args);
-                return await Task.FromResult(entity.PatchSinInformation(model));
-            });
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> SinInformation(Guid profileId)
+        {
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.SocialInsurance);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
+        }
 
         [HttpPost]
         [Route("Skills")]
@@ -145,41 +157,31 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 
         [HttpPost]
         [Route("Documents")]
-        public async Task<IActionResult> Documents(Guid profileId, [FromBody] DocumentsInformationModel model)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Documents(Guid profileId)
         {
-            return await CommonFunctionUpdate(model, profileId, async entity =>
-            {
-                foreach (string number in new[] { model?.IdentificationNumber1, model?.IdentificationNumber2 })
-                {
-                    if (!string.IsNullOrEmpty(number) && await _workerRepository.InfoIsAlreadyTaken(x => x.Id != profileId && (x.IdentificationNumber1 == number || x.IdentificationNumber2 == number)))
-                        return Result.Fail(string.Format(ApiResources.IdentificationNumberAlreadyTaken, number));
-                }
-                entity.OnNewDocumentAdded += async (sender, args) => await _workerRepository.Create(args);
-                return entity.PatchDocuments(model);
-            });
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Identification);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
         }
 
         [HttpPost]
         [Route("Resume")]
-        public async Task<IActionResult> Resume(Guid profileId, [FromBody] CovenantFileModel model) =>
-            await CommonFunctionUpdate(model, profileId, entity =>
-            {
-                entity.OnNewDocumentAdded += async (sender, args) => await _workerRepository.Create(args);
-                return Task.FromResult(entity.PatchResume(model));
-            });
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Resume(Guid profileId)
+        {
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Resume);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
+        }
 
         [HttpPost]
         [Route("OtherDocument")]
-        public async Task<IActionResult> CreateOtherDocument(Guid profileId, [FromBody] CovenantFileModel model)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateOtherDocument(Guid profileId)
         {
-            var rDoc = CovenantFile.Create(model);
-            if (!rDoc) return BadRequest();
-            var entity = await _workerRepository.GetProfile(p => p.Id == profileId);
-            if (entity is null) return BadRequest();
-            var result = Covenant.Common.Entities.Worker.WorkerProfileOtherDocument.Create(entity.Id, rDoc.Value);
-            if (!result) return BadRequest();
-            await _workerRepository.Create(result.Value);
-            await _workerRepository.SaveChangesAsync();
+            var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.OtherDocument);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
             return Ok();
         }
 

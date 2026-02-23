@@ -119,11 +119,6 @@ export default {
         icon: "history",
         label: "MenuHistory",
       },
-      {
-        to: "/worker-payroll",
-        icon: "cash-multiple",
-        label: "MenuPayRoll",
-      },
     ];
   },
   getDefaultHomePageUrlBaseOnRoles(userRoles) {

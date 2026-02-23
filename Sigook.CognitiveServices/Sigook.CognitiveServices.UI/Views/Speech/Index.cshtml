@@ -1,0 +1,39 @@
+﻿@model SpeechViewModel
+@{
+    ViewData["Title"] = "Speech";
+}
+
+<section class="text-center container">
+    <h2>Text to Speech</h2>
+    <form asp-action="Index" asp-controller="Speech" method="post" class="border mt-4 p-3" id="convertForm">
+        <div>
+            <div>
+                <input placeholder="Audio Name" class="input-group" id="audioName" />
+                <textarea placeholder="Insert the text to convert" class="mt-3 input-group" rows="7" asp-for="Text"></textarea>
+                <div class="d-flex justify-content-around mt-3">
+                    <select class="flex-fill" asp-for="Language">
+                        @foreach (string language in Model.Languages)
+                        {
+                            <option value="@language" data-url-voice="@Url.Action($"{language}/Voices", "Home")">@language</option>
+                        }
+                    </select>
+                    <div class="px-3"></div>
+                    <select class="flex-fill" id="voicesSelect" asp-for="Voice"></select>
+                </div>
+            </div>
+            <div class="mt-5 p-x5 d-flex justify-content-center">
+                <button type="submit" class="rounded py-2 px-3 mx-2" id="textToSpeechButton">Build 🛠</button>
+                <button type="button" class="rounded py-2 px-3 mx-2" id="playButton">Play ▶️</button>
+                <button type="button" class="rounded py-2 px-3 mx-2" id="stopButton">Stop ⏹</button>
+                <button type="button" class="rounded py-2 px-3 mx-2" id="saveButton">Save 💾</button>
+            </div>
+        </div>
+    </form>
+</section>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/speech.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => new Speech());
+    </script>
+}
