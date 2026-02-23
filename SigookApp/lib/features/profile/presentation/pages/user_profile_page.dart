@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/file_picker_provider.dart';
+import '../../../../core/services/file_picker_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navbar_logo.dart';
@@ -31,6 +33,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
   bool _deleteId1File = false;
   bool _deleteId2File = false;
   bool _deletePoliceCheck = false;
+
+  // Pending document replacements (locally picked files, not yet uploaded)
+  PickedFileData? _replaceSinFile;
+  PickedFileData? _replaceId1File;
+  PickedFileData? _replaceId2File;
+  PickedFileData? _replacePoliceCheckFile;
 
   // Text controllers for editable fields
   final _firstNameController = TextEditingController();
@@ -95,6 +103,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       _deleteId1File = false;
       _deleteId2File = false;
       _deletePoliceCheck = false;
+      _replaceSinFile = null;
+      _replaceId1File = null;
+      _replaceId2File = null;
+      _replacePoliceCheckFile = null;
     });
   }
 
@@ -105,6 +117,33 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       _deleteId1File = false;
       _deleteId2File = false;
       _deletePoliceCheck = false;
+      _replaceSinFile = null;
+      _replaceId1File = null;
+      _replaceId2File = null;
+      _replacePoliceCheckFile = null;
+    });
+  }
+
+  Future<void> _pickFileFor(String docType) async {
+    final result = await ref.read(filePickerServiceProvider).pickFile(
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
+    if (!result.isSuccess || result.file == null) return;
+    setState(() {
+      switch (docType) {
+        case 'sinFile':
+          _replaceSinFile = result.file;
+          _deleteSinFile = false;
+        case 'id1File':
+          _replaceId1File = result.file;
+          _deleteId1File = false;
+        case 'id2File':
+          _replaceId2File = result.file;
+          _deleteId2File = false;
+        case 'policeCheckFile':
+          _replacePoliceCheckFile = result.file;
+          _deletePoliceCheck = false;
+      }
     });
   }
 
@@ -114,6 +153,15 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     });
 
     final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
+
+    final newFilePaths = <String, String>{
+      if (_replaceSinFile != null) 'sinFile': _replaceSinFile!.path,
+      if (_replaceId1File != null) 'id1File': _replaceId1File!.path,
+      if (_replaceId2File != null) 'id2File': _replaceId2File!.path,
+      if (_replacePoliceCheckFile != null)
+        'policeCheckFile': _replacePoliceCheckFile!.path,
+    };
+
     final result = await updateUseCase(
       UpdateWorkerProfileParams(
         editedFields: {
@@ -137,6 +185,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           if (_deleteId2File) '_deleteId2File': 'true',
           if (_deletePoliceCheck) '_deletePoliceCheck': 'true',
         },
+        newFilePaths: newFilePaths.isNotEmpty ? newFilePaths : null,
       ),
     );
 
@@ -159,6 +208,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       (_) {
         setState(() {
           _isEditing = false;
+          _replaceSinFile = null;
+          _replaceId1File = null;
+          _replaceId2File = null;
+          _replacePoliceCheckFile = null;
         });
         // Refresh profile data from server
         ref.invalidate(cachedWorkerProfileProvider);
@@ -451,16 +504,91 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     required String label,
     required String? fileName,
     required bool isMarkedForDeletion,
+    required PickedFileData? pendingFile,
     required VoidCallback onDelete,
     required VoidCallback onUndo,
+    required String docType,
+    required VoidCallback onClearPick,
   }) {
     final hasFile = fileName != null && fileName.isNotEmpty;
+    final hasPending = pendingFile != null;
 
     if (!_isEditing) {
       return ProfileInfoRow(
         label: label,
         value: hasFile ? fileName : 'Not uploaded',
         icon: Icons.attach_file_outlined,
+      );
+    }
+
+    // Determine display name and style
+    final String displayName;
+    final TextStyle nameStyle;
+    final String? statusText;
+
+    if (hasPending) {
+      displayName = pendingFile.name;
+      nameStyle = const TextStyle(fontSize: 14, color: AppTheme.primaryBlue);
+      statusText = hasFile ? 'Will replace on save' : 'Will upload on save';
+    } else if (isMarkedForDeletion) {
+      displayName = fileName!;
+      nameStyle = const TextStyle(
+        fontSize: 14,
+        color: AppTheme.errorRed,
+        decoration: TextDecoration.lineThrough,
+      );
+      statusText = 'Will be removed on save';
+    } else {
+      displayName = hasFile ? fileName : 'Not uploaded';
+      nameStyle = TextStyle(
+        fontSize: 14,
+        color: hasFile ? AppTheme.textDark : Colors.grey,
+      );
+      statusText = null;
+    }
+
+    // Determine action buttons
+    Widget actions;
+    if (hasPending || isMarkedForDeletion) {
+      actions = TextButton.icon(
+        onPressed: hasPending ? onClearPick : onUndo,
+        icon: const Icon(Icons.undo, size: 16),
+        label: const Text('Undo'),
+        style: TextButton.styleFrom(
+          foregroundColor: AppTheme.primaryBlue,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
+      );
+    } else if (hasFile) {
+      actions = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline, size: 20),
+            color: AppTheme.errorRed,
+            tooltip: 'Remove',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          ),
+          IconButton(
+            onPressed: () => _pickFileFor(docType),
+            icon: const Icon(Icons.swap_horiz, size: 20),
+            color: AppTheme.primaryBlue,
+            tooltip: 'Replace',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          ),
+        ],
+      );
+    } else {
+      actions = IconButton(
+        onPressed: () => _pickFileFor(docType),
+        icon: const Icon(Icons.upload_file, size: 20),
+        color: AppTheme.primaryBlue,
+        tooltip: 'Upload',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       );
     }
 
@@ -483,50 +611,21 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  hasFile ? fileName : 'Not uploaded',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isMarkedForDeletion
-                        ? AppTheme.errorRed
-                        : hasFile
-                            ? AppTheme.textDark
-                            : Colors.grey,
-                    decoration: isMarkedForDeletion
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                ),
-                if (isMarkedForDeletion)
-                  const Text(
-                    'Will be removed on save',
-                    style: TextStyle(fontSize: 11, color: AppTheme.errorRed),
+                Text(displayName, style: nameStyle),
+                if (statusText != null)
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: hasPending
+                          ? AppTheme.primaryBlue
+                          : AppTheme.errorRed,
+                    ),
                   ),
               ],
             ),
           ),
-          if (hasFile)
-            isMarkedForDeletion
-                ? TextButton.icon(
-                    onPressed: onUndo,
-                    icon: const Icon(Icons.undo, size: 16),
-                    label: const Text('Undo'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.primaryBlue,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                  )
-                : IconButton(
-                    onPressed: onDelete,
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    color: AppTheme.errorRed,
-                    tooltip: 'Remove document',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
+          actions,
         ],
       ),
     );
@@ -560,8 +659,14 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           label: 'SIN Document',
           fileName: profile?.socialInsuranceFileName,
           isMarkedForDeletion: _deleteSinFile,
-          onDelete: () => setState(() => _deleteSinFile = true),
+          pendingFile: _replaceSinFile,
+          docType: 'sinFile',
+          onDelete: () => setState(() {
+            _deleteSinFile = true;
+            _replaceSinFile = null;
+          }),
           onUndo: () => setState(() => _deleteSinFile = false),
+          onClearPick: () => setState(() => _replaceSinFile = null),
         ),
         if (profile?.identificationType1 != null)
           ProfileInfoRow(
@@ -575,8 +680,14 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           label: 'ID 1 Document',
           fileName: profile?.identificationType1FileName,
           isMarkedForDeletion: _deleteId1File,
-          onDelete: () => setState(() => _deleteId1File = true),
+          pendingFile: _replaceId1File,
+          docType: 'id1File',
+          onDelete: () => setState(() {
+            _deleteId1File = true;
+            _replaceId1File = null;
+          }),
           onUndo: () => setState(() => _deleteId1File = false),
+          onClearPick: () => setState(() => _replaceId1File = null),
         ),
         if (profile?.identificationType2 != null)
           ProfileInfoRow(
@@ -590,15 +701,27 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           label: 'ID 2 Document',
           fileName: profile?.identificationType2FileName,
           isMarkedForDeletion: _deleteId2File,
-          onDelete: () => setState(() => _deleteId2File = true),
+          pendingFile: _replaceId2File,
+          docType: 'id2File',
+          onDelete: () => setState(() {
+            _deleteId2File = true;
+            _replaceId2File = null;
+          }),
           onUndo: () => setState(() => _deleteId2File = false),
+          onClearPick: () => setState(() => _replaceId2File = null),
         ),
         _buildDocumentFileRow(
           label: 'Police Check Document',
           fileName: profile?.policeCheckBackgroundFileName,
           isMarkedForDeletion: _deletePoliceCheck,
-          onDelete: () => setState(() => _deletePoliceCheck = true),
+          pendingFile: _replacePoliceCheckFile,
+          docType: 'policeCheckFile',
+          onDelete: () => setState(() {
+            _deletePoliceCheck = true;
+            _replacePoliceCheckFile = null;
+          }),
           onUndo: () => setState(() => _deletePoliceCheck = false),
+          onClearPick: () => setState(() => _replacePoliceCheckFile = null),
         ),
         ProfileInfoRow(
           label: 'Resume',

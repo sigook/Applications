@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
@@ -16,12 +17,14 @@ abstract class ProfileRemoteDataSource {
   );
   Future<void> updateWorkerSinInfo(
     String workerId,
-    WorkerProfileModel profile,
-  );
+    WorkerProfileModel profile, {
+    String? sinFilePath,
+  });
   Future<void> updateWorkerDocuments(
     String workerId,
-    WorkerProfileModel profile,
-  );
+    WorkerProfileModel profile, {
+    Map<String, String>? newFilePaths,
+  });
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -172,15 +175,48 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     }
   }
 
+  static String _basenameOf(String path) =>
+      path.split(RegExp(r'[/\\]')).last;
+
   @override
   Future<void> updateWorkerSinInfo(
     String workerId,
-    WorkerProfileModel profile,
-  ) async {
+    WorkerProfileModel profile, {
+    String? sinFilePath,
+  }) async {
     try {
+      // Determine effective filename: newly picked file takes precedence over existing
+      final String? fileName = sinFilePath != null
+          ? _basenameOf(sinFilePath)
+          : profile.socialInsuranceFile?.fileName;
+
+      final sinData = <String, dynamic>{
+        'socialInsurance': profile.socialInsurance,
+        'socialInsuranceExpire': profile.socialInsuranceExpire,
+      };
+      if (profile.dueDate != null) {
+        sinData['dueDate'] = profile.dueDate;
+      }
+      if (fileName != null) {
+        sinData['socialInsuranceFile'] = {
+          'fileName': fileName,
+          'description': profile.socialInsuranceFile?.description ?? '',
+        };
+      }
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(sinData)));
+
+      if (sinFilePath != null && fileName != null) {
+        formData.files.add(MapEntry(
+          fileName,
+          await MultipartFile.fromFile(sinFilePath, filename: fileName),
+        ));
+      }
+
       final response = await apiClient.dio.post(
         '/WorkerProfile/$workerId/SinInformation',
-        data: profile.toJson(),
+        data: formData,
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -210,12 +246,88 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<void> updateWorkerDocuments(
     String workerId,
-    WorkerProfileModel profile,
-  ) async {
+    WorkerProfileModel profile, {
+    Map<String, String>? newFilePaths,
+  }) async {
     try {
+      // For each document field, use the new file name (from picked local path)
+      // if provided; otherwise fall back to the existing name from the profile.
+      final id1FileName = newFilePaths?['id1File'] != null
+          ? _basenameOf(newFilePaths!['id1File']!)
+          : profile.identificationType1File?.fileName;
+      final id2FileName = newFilePaths?['id2File'] != null
+          ? _basenameOf(newFilePaths!['id2File']!)
+          : profile.identificationType2File?.fileName;
+      final policeCheckFileName = newFilePaths?['policeCheckFile'] != null
+          ? _basenameOf(newFilePaths!['policeCheckFile']!)
+          : profile.policeCheckBackGround?.fileName;
+      final resumeFileName = newFilePaths?['resumeFile'] != null
+          ? _basenameOf(newFilePaths!['resumeFile']!)
+          : profile.resume?.fileName;
+
+      final documentsData = <String, dynamic>{
+        'havePoliceCheckBackground': profile.havePoliceCheckBackground,
+      };
+
+      if (profile.identificationNumber1 != null) {
+        documentsData['identificationNumber1'] = profile.identificationNumber1;
+      }
+      if (profile.identificationType1?.id != null) {
+        documentsData['identificationType1'] = {
+          'id': profile.identificationType1!.id,
+        };
+      }
+      if (id1FileName != null) {
+        documentsData['identificationType1File'] = {
+          'fileName': id1FileName,
+          'description': profile.identificationType1File?.description ?? '',
+        };
+      }
+      if (profile.identificationNumber2 != null) {
+        documentsData['identificationNumber2'] = profile.identificationNumber2;
+      }
+      if (profile.identificationType2?.id != null) {
+        documentsData['identificationType2'] = {
+          'id': profile.identificationType2!.id,
+        };
+      }
+      if (id2FileName != null) {
+        documentsData['identificationType2File'] = {
+          'fileName': id2FileName,
+          'description': profile.identificationType2File?.description ?? '',
+        };
+      }
+      if (policeCheckFileName != null) {
+        documentsData['policeCheckBackGround'] = {
+          'fileName': policeCheckFileName,
+        };
+      }
+      if (resumeFileName != null) {
+        documentsData['resume'] = {'fileName': resumeFileName};
+      }
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(documentsData)));
+
+      // Attach any newly picked files as multipart parts.
+      // The part name must match the fileName value in the JSON data field.
+      Future<void> attachFile(String? path, String? name) async {
+        if (path != null && name != null) {
+          formData.files.add(MapEntry(
+            name,
+            await MultipartFile.fromFile(path, filename: name),
+          ));
+        }
+      }
+
+      await attachFile(newFilePaths?['id1File'], id1FileName);
+      await attachFile(newFilePaths?['id2File'], id2FileName);
+      await attachFile(newFilePaths?['policeCheckFile'], policeCheckFileName);
+      await attachFile(newFilePaths?['resumeFile'], resumeFileName);
+
       final response = await apiClient.dio.post(
         '/WorkerProfile/$workerId/Documents',
-        data: profile.toJson(),
+        data: formData,
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {

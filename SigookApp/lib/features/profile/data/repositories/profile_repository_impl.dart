@@ -36,8 +36,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, void>> updateWorkerBasicInfo(
-    Map<String, String> editedFields,
-  ) async {
+    Map<String, String> editedFields, {
+    Map<String, String>? newFilePaths,
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -95,8 +96,23 @@ class ProfileRepositoryImpl implements ProfileRepository {
       await Future.wait([
         remoteDataSource.updateWorkerBasicInfo(workerId, updatedModel),
         remoteDataSource.updateWorkerContactInfo(workerId, updatedModel),
-        remoteDataSource.updateWorkerSinInfo(workerId, updatedModel),
-        remoteDataSource.updateWorkerDocuments(workerId, updatedModel),
+        remoteDataSource.updateWorkerSinInfo(
+          workerId,
+          updatedModel,
+          sinFilePath: newFilePaths?['sinFile'],
+        ),
+        remoteDataSource.updateWorkerDocuments(
+          workerId,
+          updatedModel,
+          newFilePaths: {
+            if (newFilePaths?['id1File'] != null)
+              'id1File': newFilePaths!['id1File']!,
+            if (newFilePaths?['id2File'] != null)
+              'id2File': newFilePaths!['id2File']!,
+            if (newFilePaths?['policeCheckFile'] != null)
+              'policeCheckFile': newFilePaths!['policeCheckFile']!,
+          },
+        ),
       ]);
       return Right(null);
     } on ServerException catch (e) {

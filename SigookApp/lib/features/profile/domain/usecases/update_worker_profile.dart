@@ -10,12 +10,19 @@ class UpdateWorkerProfile implements UseCase<void, UpdateWorkerProfileParams> {
 
   @override
   Future<Either<Failure, void>> call(UpdateWorkerProfileParams params) async {
-    return await repository.updateWorkerBasicInfo(params.editedFields);
+    return await repository.updateWorkerBasicInfo(
+      params.editedFields,
+      newFilePaths: params.newFilePaths,
+    );
   }
 }
 
 class UpdateWorkerProfileParams {
   final Map<String, String> editedFields;
+  final Map<String, String>? newFilePaths;
 
-  UpdateWorkerProfileParams({required this.editedFields});
+  UpdateWorkerProfileParams({
+    required this.editedFields,
+    this.newFilePaths,
+  });
 }
