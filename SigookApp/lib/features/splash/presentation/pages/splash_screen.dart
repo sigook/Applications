@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/domain/usecases/validate_token.dart';
@@ -18,6 +19,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _logoController;
   late Animation<double> _logoFadeAnimation;
+  late Animation<double> _logoScaleAnimation;
   late Animation<double> _textFadeAnimation;
 
   bool _hasNavigated = false;
@@ -47,6 +49,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     ).animate(CurvedAnimation(
       parent: _logoController,
       curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+    ));
+
+    _logoScaleAnimation = Tween<double>(
+      begin: 0.80,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _logoController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
     ));
 
     Future.delayed(const Duration(milliseconds: 120), () {
@@ -201,72 +211,295 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FadeTransition(
-                    opacity: _logoFadeAnimation,
-                    child: Image.asset(
-                      'assets/images/logo/sigook-logo.png',
-                      width: 220,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Column(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── Full blue background
+          Container(color: AppTheme.primaryBlue),
+
+          // ── Background decorative circles — spread across the whole screen
+
+          // Top-right: large blue ring (partially off-screen)
+          Positioned(
+            top: -50,
+            right: -60,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: _RingCircle(
+                diameter: 210,
+                color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
+                strokeWidth: 20,
+              ),
+            ),
+          ),
+          // Top-left: medium red filled circle
+          Positioned(
+            top: 50,
+            left: -28,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: Container(
+                width: 95,
+                height: 95,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.22),
+                ),
+              ),
+            ),
+          ),
+          // Top-right area: small blue filled circle
+          Positioned(
+            top: 90,
+            right: 28,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF90CAF9).withValues(alpha: 0.28),
+                ),
+              ),
+            ),
+          ),
+          // Mid-left: tiny red circle
+          Positioned(
+            top: size.height * 0.46,
+            left: 18,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.30),
+                ),
+              ),
+            ),
+          ),
+          // Mid-right: small blue ring
+          Positioned(
+            top: size.height * 0.52,
+            right: -18,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: _RingCircle(
+                diameter: 80,
+                color: const Color(0xFF90CAF9).withValues(alpha: 0.20),
+                strokeWidth: 10,
+              ),
+            ),
+          ),
+          // Bottom-left: red ring + blue ring
+          Positioned(
+            bottom: -55,
+            left: -65,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: _RingCircle(
+                diameter: 190,
+                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
+                strokeWidth: 24,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -85,
+            left: -95,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: _RingCircle(
+                diameter: 250,
+                color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
+                strokeWidth: 18,
+              ),
+            ),
+          ),
+          // Bottom-right: small red filled circle
+          Positioned(
+            bottom: 85,
+            right: 28,
+            child: FadeTransition(
+              opacity: _logoFadeAnimation,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.28),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Main content
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Spacer(flex: 3),
+
+                // Logo: scale-in + fade-in entrance
+                FadeTransition(
+                  opacity: _logoFadeAnimation,
+                  child: ScaleTransition(
+                    scale: _logoScaleAnimation,
+                    child: SizedBox(
+                      width: 260,
+                      height: 200,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
                         children: [
-                          Text(
-                            'Welcome to Sigook!',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
+                          Positioned(
+                            top: 8,
+                            left: 12,
+                            child: Container(
+                              width: 62,
+                              height: 62,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
+                              ),
                             ),
-                            textAlign: TextAlign.center,
                           ),
-                          if (_isProcessing) ...[
-                            const SizedBox(height: 24),
-                            const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                          Positioned(
+                            bottom: 10,
+                            right: 14,
+                            child: Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
+                              ),
                             ),
-                          ],
+                          ),
+                          Positioned(
+                            top: 18,
+                            right: 8,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 18,
+                            left: 18,
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
+                              ),
+                            ),
+                          ),
+                          Image.asset(
+                            'assets/images/logo/sigook_logo.png',
+                            width: 215,
+                            color: Colors.white,
+                            colorBlendMode: BlendMode.srcIn,
+                          ),
                         ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            // Version display at bottom
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: FadeTransition(
-                opacity: _textFadeAnimation,
-                child: Text(
-                  _appVersion,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[400],
-                  ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
+
+                const SizedBox(height: 10),
+
+                // Tagline
+                FadeTransition(
+                  opacity: _textFadeAnimation,
+                  child: const Text(
+                    'Find Work That Fits Your Life',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.3,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const Spacer(flex: 4),
+
+                // Loading indicator (only while checking auth)
+                FadeTransition(
+                  opacity: _textFadeAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _isProcessing
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white54,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(height: 22),
+                  ),
+                ),
+
+                // Version
+                FadeTransition(
+                  opacity: _textFadeAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      _appVersion,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.40),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RingCircle extends StatelessWidget {
+  final double diameter;
+  final Color color;
+  final double strokeWidth;
+
+  const _RingCircle({
+    required this.diameter,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: strokeWidth),
       ),
     );
   }
