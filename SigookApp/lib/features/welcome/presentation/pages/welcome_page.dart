@@ -241,20 +241,22 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             ),
           ),
 
-          // ── Gradient fade — blends the hero panels into the blue section below
+          // ── Gradient fade — blends the hero image into the blue section below
           Positioned(
-            top: size.height * 0.30,
+            top: size.height * 0.18,
             left: 0,
             right: 0,
-            height: size.height * 0.16,
+            height: size.height * 0.28,
             child: IgnorePointer(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
+                    stops: const [0.0, 0.55, 1.0],
                     colors: [
                       AppTheme.primaryBlue.withValues(alpha: 0.0),
+                      AppTheme.primaryBlue.withValues(alpha: 0.55),
                       AppTheme.primaryBlue,
                     ],
                   ),
@@ -270,6 +272,42 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             right: 0,
             bottom: 0,
             child: Container(color: AppTheme.primaryBlue),
+          ),
+
+          // ── Boundary accent circles — straddle the image / content transition
+          Positioned(
+            top: size.height * 0.32,
+            right: -20,
+            child: IgnorePointer(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Container(
+                  width: 92,
+                  height: 92,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF90CAF9).withValues(alpha: 0.32),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: size.height * 0.38,
+            left: 22,
+            child: IgnorePointer(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Container(
+                  width: 66,
+                  height: 66,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.38),
+                  ),
+                ),
+              ),
+            ),
           ),
 
           // ── Decorative ring circles — bottom left (slide in from bottom-left)
@@ -373,52 +411,52 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                         clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
-                          // Upper-left — soft blue filled circle
+                          // Upper-left — soft blue filled circle (pushed further out)
                           Positioned(
-                            top: 8,
-                            left: 12,
+                            top: -22,
+                            left: -28,
                             child: Container(
-                              width: 62,
-                              height: 62,
+                              width: 68,
+                              height: 68,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
                               ),
                             ),
                           ),
-                          // Lower-right — soft red filled circle
+                          // Lower-right — soft red filled circle (pushed further out)
                           Positioned(
-                            bottom: 10,
-                            right: 14,
+                            bottom: -16,
+                            right: -22,
                             child: Container(
-                              width: 52,
-                              height: 52,
+                              width: 58,
+                              height: 58,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
                               ),
                             ),
                           ),
-                          // Upper-right — small blue circle
+                          // Upper-right — small blue circle (pushed further out)
                           Positioned(
-                            top: 18,
-                            right: 8,
+                            top: -10,
+                            right: -26,
                             child: Container(
-                              width: 32,
-                              height: 32,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
                               ),
                             ),
                           ),
-                          // Lower-left — small red circle
+                          // Lower-left — small red circle (pushed further out)
                           Positioned(
-                            bottom: 18,
-                            left: 18,
+                            bottom: -12,
+                            left: -24,
                             child: Container(
-                              width: 26,
-                              height: 26,
+                              width: 30,
+                              height: 30,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
