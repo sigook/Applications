@@ -903,7 +903,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
             width: double.infinity,
             height: 56,
             child: OutlinedButton(
-              onPressed: () => _showDeleteAccountDialog(),
+              onPressed: null,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.errorRed,
                 side: const BorderSide(color: AppTheme.errorRed, width: 2),
@@ -973,40 +973,4 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     }
   }
 
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: AppTheme.errorRed),
-            SizedBox(width: 8),
-            Text('Delete Account'),
-          ],
-        ),
-        content: const Text(
-          'This action cannot be undone. All your data will be permanently deleted. Are you sure you want to delete your account?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account deletion feature coming soon!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorRed),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
 }

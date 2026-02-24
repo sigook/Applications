@@ -2,21 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/navbar_logo.dart';
+import '../../../jobs/presentation/widgets/app_drawer.dart';
 
-class AboutPage extends StatelessWidget {
+class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
+
+  @override
+  State<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends State<AboutPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppTheme.surfaceGrey,
+      endDrawer: const AppDrawer(currentRoute: AppRoutes.about),
       appBar: AppBar(
-        title: const Text('About'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppTheme.textDark,
-        iconTheme: const IconThemeData(color: AppTheme.textDark),
+        backgroundColor: AppTheme.primaryBlue,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -27,6 +36,13 @@ class AboutPage extends StatelessWidget {
             }
           },
         ),
+        title: const NavbarLogo(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

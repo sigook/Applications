@@ -20,6 +20,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   late Animation<double> _logoScale;
   late Animation<double> _buttonsFade;
   late Animation<Offset> _buttonsSlide;
+  late Animation<Offset> _panelsSlide;
+  late Animation<Offset> _ringsSlide;
+  late Animation<Offset> _legalSlide;
 
   String _appVersion = '';
 
@@ -60,6 +63,39 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.4, 0.8, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Panels slide in from slightly above
+    _panelsSlide = Tween<Offset>(
+      begin: const Offset(0, -40),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Ring circles slide in from the bottom-left corner
+    _ringsSlide = Tween<Offset>(
+      begin: const Offset(-70, 70),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.15, 0.75, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Legal pill button slides in from the right
+    _legalSlide = Tween<Offset>(
+      begin: const Offset(60, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -188,49 +224,56 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             height: size.height * 0.44,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: Row(
-                children: [
-                  // Left panel — dark blue
-                  Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+              child: AnimatedBuilder(
+                animation: _panelsSlide,
+                builder: (context, child) => Transform.translate(
+                  offset: _panelsSlide.value,
+                  child: child!,
+                ),
+                child: Row(
+                  children: [
+                    // Left panel — dark blue
+                    Expanded(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+                          ),
                         ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.engineering_outlined,
-                          size: 90,
-                          color: Colors.white12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // White vertical divider
-                  Container(width: 2, color: Colors.white),
-                  // Right panel — medium blue
-                  Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                          colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.people_alt_outlined,
-                          size: 90,
-                          color: Colors.white12,
+                        child: const Center(
+                          child: Icon(
+                            Icons.engineering_outlined,
+                            size: 90,
+                            color: Colors.white12,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    // White vertical divider
+                    Container(width: 2, color: Colors.white),
+                    // Right panel — medium blue
+                    Expanded(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.people_alt_outlined,
+                            size: 90,
+                            color: Colors.white12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -266,16 +309,23 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             child: Container(color: AppTheme.primaryBlue),
           ),
 
-          // ── Decorative ring circles — bottom left (inner: soft red, outer: soft blue)
+          // ── Decorative ring circles — bottom left (slide in from bottom-left)
           Positioned(
             bottom: -55,
             left: -65,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: _RingCircle(
-                diameter: 190,
-                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40), // Red[200]
-                strokeWidth: 24,
+              child: AnimatedBuilder(
+                animation: _ringsSlide,
+                builder: (context, child) => Transform.translate(
+                  offset: _ringsSlide.value,
+                  child: child!,
+                ),
+                child: _RingCircle(
+                  diameter: 190,
+                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
+                  strokeWidth: 24,
+                ),
               ),
             ),
           ),
@@ -284,41 +334,55 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             left: -95,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: _RingCircle(
-                diameter: 250,
-                color: const Color(0xFF90CAF9).withValues(alpha: 0.22), // Blue[300]
-                strokeWidth: 18,
+              child: AnimatedBuilder(
+                animation: _ringsSlide,
+                builder: (context, child) => Transform.translate(
+                  offset: _ringsSlide.value,
+                  child: child!,
+                ),
+                child: _RingCircle(
+                  diameter: 250,
+                  color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
+                  strokeWidth: 18,
+                ),
               ),
             ),
           ),
 
-          // ── Legal pill button — bottom right
+          // ── Legal pill button — slides in from the right
           Positioned(
             bottom: 32,
             right: 20,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: OutlinedButton.icon(
-                onPressed: _showLegalModal,
-                icon: const Icon(Icons.shield_outlined, size: 14),
-                label: const Text('Legal'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.65),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.30),
-                    width: 1.0,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  shape: const StadiumBorder(),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.3,
+              child: AnimatedBuilder(
+                animation: _legalSlide,
+                builder: (context, child) => Transform.translate(
+                  offset: _legalSlide.value,
+                  child: child!,
+                ),
+                child: OutlinedButton.icon(
+                  onPressed: _showLegalModal,
+                  icon: const Icon(Icons.shield_outlined, size: 14),
+                  label: const Text('Legal'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white.withValues(alpha: 0.65),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.30),
+                      width: 1.0,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    shape: const StadiumBorder(),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ),
@@ -333,97 +397,102 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                 // Push content down to the boundary between the two sections
                 SizedBox(height: size.height * 0.36),
 
-                // Logo + tagline
+                // Logo — Hero sits outside ScaleTransition so its landing
+                // position is stable and the flight path is clean.
                 FadeTransition(
                   opacity: _fadeAnimation,
-                  child: ScaleTransition(
-                    scale: _logoScale,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Logo with scattered decorative circles in the background
-                        SizedBox(
-                          width: 260,
-                          height: 200,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              // Upper-left — soft blue filled circle
-                              Positioned(
-                                top: 8,
-                                left: 12,
-                                child: Container(
-                                  width: 62,
-                                  height: 62,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
-                                  ),
-                                ),
+                  child: Hero(
+                    tag: 'sigook_logo',
+                    child: SizedBox(
+                      width: 260,
+                      height: 200,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          // Upper-left — soft blue filled circle
+                          Positioned(
+                            top: 8,
+                            left: 12,
+                            child: Container(
+                              width: 62,
+                              height: 62,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
                               ),
-                              // Lower-right — soft red filled circle
-                              Positioned(
-                                bottom: 10,
-                                right: 14,
-                                child: Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
-                                  ),
-                                ),
-                              ),
-                              // Upper-right — small blue circle
-                              Positioned(
-                                top: 18,
-                                right: 8,
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
-                                  ),
-                                ),
-                              ),
-                              // Lower-left — small red circle
-                              Positioned(
-                                bottom: 18,
-                                left: 18,
-                                child: Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                                  ),
-                                ),
-                              ),
-                              // White logo centred
-                              Image.asset(
-                                'assets/images/logo/sigook_logo.png',
-                                width: 215,
-                                color: Colors.white,
-                                colorBlendMode: BlendMode.srcIn,
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Find Work That Fits Your Life',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontStyle: FontStyle.italic,
+                          // Lower-right — soft red filled circle
+                          Positioned(
+                            bottom: 10,
+                            right: 14,
+                            child: Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
+                              ),
+                            ),
+                          ),
+                          // Upper-right — small blue circle
+                          Positioned(
+                            top: 18,
+                            right: 8,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
+                              ),
+                            ),
+                          ),
+                          // Lower-left — small red circle
+                          Positioned(
+                            bottom: 18,
+                            left: 18,
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
+                              ),
+                            ),
+                          ),
+                          // White logo centred
+                          Image.asset(
+                            'assets/images/logo/sigook_logo.png',
+                            width: 215,
                             color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.3,
+                            colorBlendMode: BlendMode.srcIn,
                           ),
-                          textAlign: TextAlign.center,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Tagline — scale-in entrance independent of the Hero
+                ScaleTransition(
+                  scale: _logoScale,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text(
+                        'Find Work That Fits Your Life',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.3,
                         ),
-                      ],
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
