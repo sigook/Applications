@@ -11,7 +11,7 @@ namespace Covenant.Common.Entities.Accounting.PayStub
         public const string RegularHoursLabel = "Regular hours";
         public const string OtherRegularHoursLabel = "Other Regular hours";
         public const string OvertimeHoursLabel = "Overtime hours";
-        public const string HolidayPremiumPayHoursLabel = "Holiday premium pay hours";
+        public const string HolidayPremiumPayHoursLabel = "Statutory worked holiday pay";
         public const string NightShiftHoursLabel = "Night Shift hours";
         public const string MissingHoursLabel = "Missing hours";
         public const string MissingOvertimeHoursLabel = "Missing overtime hours";
