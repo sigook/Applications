@@ -216,7 +216,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Top hero section — two gradient panels separated by a white line
+          // ── Top hero section — full-width welcome image
           Positioned(
             top: 0,
             left: 0,
@@ -230,49 +230,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   offset: _panelsSlide.value,
                   child: child!,
                 ),
-                child: Row(
-                  children: [
-                    // Left panel — dark blue
-                    Expanded(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.engineering_outlined,
-                            size: 90,
-                            color: Colors.white12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // White vertical divider
-                    Container(width: 2, color: Colors.white),
-                    // Right panel — medium blue
-                    Expanded(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topRight,
-                            end: Alignment.bottomLeft,
-                            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.people_alt_outlined,
-                            size: 90,
-                            color: Colors.white12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Image.asset(
+                  'assets/images/welcome-screen/welcome-page.png',
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
                 ),
               ),
             ),
