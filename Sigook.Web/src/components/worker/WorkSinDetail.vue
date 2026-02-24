@@ -2,7 +2,8 @@
   <section>
     <div class="button-right">
       <h3 class="section-title">{{ $t("SocialInsurance") }}</h3>
-      <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="modalSocialInsurance = true">Edit</button>
+      <b-button type="is-info" outlined rounded icon-right="pencil"
+        @click="modalSocialInsurance = true"></b-button>
     </div>
     <div class="worker-documents">
 
@@ -10,7 +11,7 @@
         <span>{{ $t("WorkerSocialInsuranceNumber") }}</span>
         <span>
           <p class="fw-200 margin-0">
-            <button @click="showSin = !showSin" class="button-view"></button>
+            <b-button size="is-small" type="is-ghost" :icon-right="showSin ? 'eye-off' : 'eye'" @click="showSin = !showSin"></b-button>
             <i v-if="showSin">{{ worker.socialInsurance }}</i>
             <i v-else>{{ worker.socialInsurance | sin }}</i> |
             <i>{{ $t("WorkerDueDate") }}: </i>

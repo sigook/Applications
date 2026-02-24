@@ -136,33 +136,6 @@
 }
 
 
-.worker-skills {
-  &.margin-top-15 {
-    margin-top: 15px;
-  }
-  & > div {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    span {
-      // flex-basis: 25%;
-      margin-bottom: 15px;
-      min-width: calc(25% - 15px);
-      width: auto !important;
-      margin-right: 15px;
-    }
-
-  }
-  .col-2 {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    span {
-      flex-basis: 50%;
-    }
-  }
-}
-
 
 .worker-experience {
   ul {
@@ -179,15 +152,9 @@
           font-weight: 300;
         }
       }
-      .actions {
-        opacity: 0;
-      }
       &:hover {
         box-shadow: 0 0 5px #e2dfe2;
         border-radius: 5px;
-        .actions {
-          opacity: 1;
-        }
       }
     }
   }
@@ -453,45 +420,6 @@
             margin: 10px 0 0;
           }
         }
-      }
-    }
-  }
-
-  .worker-skills {
-    .scroll,
-    .col-2 {
-      display: block;
-    }
-    & > div span {
-      // flex-basis: 50%;
-      box-shadow: 2px 2px 7px #dadada;
-      border: 1px solid #dadada;
-      border-radius: 5px;
-      padding: 10px;
-      width: 40%;
-      margin-right: 10px;
-      display: inline-block;
-      font-size: 14px;
-      white-space: normal;
-      vertical-align: top;
-      min-height: 58px;
-      word-wrap: break-word;
-    }
-
-    .icon-pdf {
-      a {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        width: 100%;
-        display: inline-block;
-        margin: 10px 0 0;
-      }
-      &:before {
-        display: block;
-        position: static;
-        width: 40px;
-        height: 40px;
-        margin-bottom: 10px;
       }
     }
   }

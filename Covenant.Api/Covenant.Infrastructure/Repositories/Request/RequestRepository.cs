@@ -702,29 +702,26 @@ public class RequestRepository : IRequestRepository
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
     {
         var workerProfile = await _context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
+        var workerRequests = _context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
         var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = Enumerable.Empty<WorkerRequestListModel>();
         var ownRequest = _context.Request.Include(wr => wr.Agency)
-            .Join(_context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked), r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
-            .GroupJoin(_context.CovenantFile, lj => lj.r.Agency.LogoId, cf => cf.Id, (lj, cf) => new { lj, cf })
-            .SelectMany(lj => lj.cf.DefaultIfEmpty(), (lj, cf) => new WorkerRequestListModel
+            .Join(workerRequests, r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
+            .Select(lj => new WorkerRequestListModel
             {
-                Id = lj.lj.r.Id,
-                NumberId = lj.lj.r.NumberId,
-                IsAsap = lj.lj.r.IsAsap,
-                AgencyFullName = lj.lj.r.Agency.FullName,
-                AgencyLogo = cf == null ? null : $"{filesConfiguration.FilesPath}{cf.FileName}",
-                CreatedAt = lj.lj.r.CreatedAt,
-                JobTitle = lj.lj.r.JobTitle,
-                WorkerRate = lj.lj.r.WorkerRate.HasValue ? lj.lj.r.WorkerRate : lj.lj.r.WorkerSalary,
-                WorkerSalary = lj.lj.r.WorkerSalary,
-                Location = $"{lj.lj.r.JobLocation.Address} {lj.lj.r.JobLocation.City.Value} {lj.lj.r.JobLocation.City.Province.Value} {lj.lj.r.JobLocation.PostalCode}",
-                Entrance = lj.lj.r.JobLocation.Entrance,
-                Status = lj.lj.wr.WorkerRequestStatus.ToString(),
-                WorkersQuantity = lj.lj.r.WorkersQuantity,
-                StartAt = lj.lj.r.StartAt,
-                FinishAt = lj.lj.r.FinishAt,
-                DurationTerm = lj.lj.r.DurationTerm.ToString()
+                Id = lj.r.Id,
+                NumberId = lj.r.NumberId,
+                IsAsap = lj.r.IsAsap,
+                CreatedAt = lj.r.CreatedAt,
+                JobTitle = lj.r.JobTitle,
+                WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
+                Location = $"{lj.r.JobLocation.Address} {lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Value} {lj.r.JobLocation.PostalCode}",
+                Entrance = lj.r.JobLocation.Entrance,
+                Status = lj.wr.WorkerRequestStatus.ToString(),
+                WorkersQuantity = lj.r.WorkersQuantity,
+                StartAt = lj.r.StartAt,
+                FinishAt = lj.r.FinishAt,
+                DurationTerm = lj.r.DurationTerm.ToString()
             }).AsEnumerable();
         if (!ownRequest.Any())
         {
@@ -734,25 +731,21 @@ public class RequestRepository : IRequestRepository
                 .Where(r => r.AgencyId == workerProfile.AgencyId)
                 .Where(r => !requestToExclude.Any(rte => rte.RequestId == r.Id))
                 .Where(r => !ownRequest.Any(or => or.Id == r.Id))
-                .GroupJoin(_context.CovenantFile, r => r.Agency.LogoId, cf => cf.Id, (r, cf) => new { r, cf })
-                .SelectMany(lj => lj.cf.DefaultIfEmpty(), (lj, cf) => new WorkerRequestListModel
+                .Select(r => new WorkerRequestListModel
                 {
-                    Id = lj.r.Id,
-                    NumberId = lj.r.NumberId,
-                    IsAsap = lj.r.IsAsap,
-                    AgencyFullName = lj.r.Agency.FullName,
-                    AgencyLogo = cf == null ? null : $"{filesConfiguration.FilesPath}{cf.FileName}",
-                    CreatedAt = lj.r.CreatedAt,
-                    JobTitle = lj.r.JobTitle,
-                    WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
-                    WorkerSalary = lj.r.WorkerSalary,
-                    Location = $"{lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Value}",
-                    Entrance = lj.r.JobLocation.Entrance,
+                    Id = r.Id,
+                    NumberId = r.NumberId,
+                    IsAsap = r.IsAsap,
+                    CreatedAt = r.CreatedAt,
+                    JobTitle = r.JobTitle,
+                    WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
+                    Location = $"{r.JobLocation.City.Value} {r.JobLocation.City.Province.Value}",
+                    Entrance = r.JobLocation.Entrance,
                     Status = null,
-                    WorkersQuantity = lj.r.WorkersQuantity,
-                    StartAt = lj.r.StartAt,
-                    FinishAt = lj.r.FinishAt,
-                    DurationTerm = lj.r.DurationTerm.ToString()
+                    WorkersQuantity = r.WorkersQuantity,
+                    StartAt = r.StartAt,
+                    FinishAt = r.FinishAt,
+                    DurationTerm = r.DurationTerm.ToString()
                 }).AsEnumerable();
             requests = availableRequest.Union(ownRequest);
         }

@@ -1,52 +1,29 @@
 <template>
-    <div>
+    <div class="experience-item">
         <div class="button-right">
             <h4>{{item.company}}  | <span class="fw-200"> {{item.supervisor}} </span>
             </h4>
             <div class="actions text-right">
-                <b-tooltip label="Edit"
-                           type="is-dark"
-                           position="is-top">
-                    <button class="btn-icon-sm btn-icon-edit"
-                            type="button"
-                            @click="modalEdit = true">{{ $t("Edit")}}</button>
-                </b-tooltip>
-
-                <b-tooltip label="Delete"
-                           type="is-dark"
-                           position="is-top">
-                    <button class="btn-icon-sm btn-icon-delete"
-                            type="button"
-                            @click="confirmDelete()">{{ $t("Delete")}}</button>
-                </b-tooltip>
+                <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
+                    @click="modalEdit = true"></b-button>
+                <b-button type="is-danger" outlined rounded icon-right="delete"
+                    @click="confirmDelete()"></b-button>
             </div>
         </div>
 
-        <div>
-            <p class="margin-0">
+        <div class="experience-body">
+            <p class="margin-0 date-range">
                 <span>{{toDateMMYYYY(item.startDate)}} -
                     <span v-if="item.isCurrentJobPosition">{{$t('Present')}}</span>
                     <span v-else>{{toDateMMYYYY(item.endDate)}}</span>
                 </span>
             </p>
-            <p class="margin-0">{{item.duties}}</p>
+            <p class="margin-0 duties-text">{{item.duties}}</p>
         </div>
 
-        <!-- custom modal -->
-        <transition name="modal">
-            <div v-if="modalEdit" class="vue-modal">
-                <div class="modal-mask">
-                    <div class="modal-wrapper">
-                        <div class="modal-container  modal-light overflow-initial">
-                            <span class="fz1 fw-700">Work Experience</span>
-                            <button type="button" @click="modalEdit = false" class="cross-icon">{{ $t('Close') }}</button>
-                            <work-experience-edit :workerId="workerId" :data="item" @updateExperience="() => updateExperience()"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        <!-- end custom modal -->
+        <b-modal v-model="modalEdit" width="800px">
+            <work-experience-form :workerId="workerId" :data="item" @updateExperience="updateExperience" />
+        </b-modal>
 
     </div>
 </template>
@@ -89,7 +66,63 @@ export default {
         }
     },
     components: {
-        workExperienceEdit: () => import("../../components/worker/WorkExperienceEdit")
+        workExperienceForm: () => import("./WorkExperienceForm")
     }
 }
 </script>
+
+<style scoped>
+.experience-item {
+  display: block !important;
+  border: 1px solid #e8e8e8;
+  border-left: 4px solid #ff9932;
+  border-radius: 6px;
+  padding: 14px 16px 12px;
+  margin-bottom: 14px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease, border-left-color 0.2s ease;
+}
+
+.experience-item:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  border-left-color: #e07a10;
+}
+
+.experience-item h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #363636;
+}
+
+.experience-item h4 .fw-200 {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #777;
+}
+
+.experience-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.date-range {
+  display: inline-block;
+  background: #f5f5f5;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.82rem;
+  color: #666;
+  margin-bottom: 8px;
+  width: auto !important;
+}
+
+.duties-text {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  width: 100% !important;
+}
+</style>

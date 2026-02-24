@@ -1,89 +1,128 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="form-section form-100">
-      <div class="form-100">
-        <div class="fz-1 fw-400">
-          {{ $t("File") }}
-          <span class="sign-required"></span>
-          <div class="input-file-edited input-block" v-if="otherDocument.fileName">
-            <span>{{ otherDocument.fileName | filename }}</span>
-            <button v-if="otherDocument.fileName" @click="deleteWorkerOtherDocuments()" class="button cross-button"
-              type="button" />
+    <div class="container-flex">
+      <div class="col-12">
+        <b-field>
+          <template #label>
+            {{ $t("File") }} <span class="has-text-danger">*</span>
+          </template>
+          <div v-if="otherDocument && otherDocument.fileName" class="selected-file-display">
+            <b-icon icon="file-document" size="is-small"></b-icon>
+            <span class="selected-file-name">{{ otherDocument.fileName | filename }}</span>
+            <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearDocFile()"></b-button>
           </div>
-          <upload-file v-else class="input-block inline-100" @fileSelected="(file) => otherDocument.fileName = file"
-            :format="'document'" :name="'OtherDoc_'" :required="true" @onUpload="() => subscribe('file')"
-            @finishUpload="() => unsubscribe()" />
-        </div>
+          <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedDocFile }">
+            <b-upload v-model="selectedDocFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
+              @input="handleDocFileSelected" class="file-label" rounded>
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">{{ selectedDocFile ? selectedDocFile.name : $t('AddFile') }}</span>
+              </span>
+            </b-upload>
+          </b-field>
+        </b-field>
       </div>
-      <div class="form-100">
-        <label class="fz-1 fw-400 sign-required">
-          {{ $t("Description") }}
-        </label>
-        <input type="text" class="input-border input-block" v-model="otherDocument.description" name="Description"
-          v-validate="'required|max:20'" :class="{ 'is-danger': errors.has('Description') }" />
-        <span v-show="errors.has('Description')" class="help is-danger no-margin">
-          {{ errors.first("Description") }}
-        </span>
+      <div class="col-12">
+        <b-field :type="errors.has('Description') ? 'is-danger' : ''"
+          :message="errors.has('Description') ? errors.first('Description') : ''">
+          <template #label>
+            {{ $t("Description") }} <span class="has-text-danger">*</span>
+          </template>
+          <b-input type="text" v-model="otherDocument.description" name="Description"
+            v-validate="'required|max:20'" />
+        </b-field>
+      </div>
+      <div class="col-12 mt-5">
+        <b-button type="is-primary" @click="validateAll()">
+          {{ $t("Save") }}
+        </b-button>
       </div>
     </div>
-    <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase" @click="validateAll()"
-      type="button">
-      {{ $t("Save") }}
-    </button>
   </div>
 </template>
 
 <script>
 import toastMixin from "../../mixins/toastMixin";
-import pubSub from "@/mixins/pubSub";
-import updateMixin from "../../mixins/uploadFiles";
+import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
   props: ["data"],
   data() {
     return {
-      todayDate: null,
       isLoading: false,
+      selectedDocFile: null,
+      fileObjects: {
+        otherDocument: null
+      },
       otherDocument: {
         fileName: "",
         description: "",
       },
     };
   },
-  mixins: [toastMixin, pubSub, updateMixin],
+  mixins: [toastMixin, multipartUploadMixin],
   methods: {
+    handleDocFileSelected(file) {
+      if (!file) return;
+      if (file.size / 1024 > 15500) {
+        this.showAlertError('File exceeds 15MB limit');
+        this.selectedDocFile = null;
+        return;
+      }
+      this.fileObjects.otherDocument = file;
+      const generatedName = this.generateFileName('OtherDoc', file.name);
+      this.otherDocument = { fileName: generatedName, description: this.otherDocument.description || '' };
+      this.selectedDocFile = null;
+    },
+    clearDocFile() {
+      this.fileObjects.otherDocument = null;
+      this.otherDocument = { fileName: '', description: '' };
+    },
     validateAll() {
       this.$validator.validateAll().then((isValid) => {
         if (isValid) {
-          this.createWorkerOtherDocuments();
+          this.saveOtherDocument();
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createWorkerOtherDocuments() {
+    async saveOtherDocument() {
       this.isLoading = true;
-      this.$store.dispatch("worker/createWorkerOtherDocuments", {
-          profileId: this.data.id,
-          model: this.otherDocument,
-        })
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("closeAndUpdate", true);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    deleteWorkerOtherDocuments() {
-      this.deleteFile(this.otherDocument.fileName)
-        .then(() => this.otherDocument.fileName = null)
+      try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(this.otherDocument));
+        if (this.fileObjects.otherDocument) {
+          const fn = this.otherDocument.fileName;
+          formData.append(fn, this.fileObjects.otherDocument, fn);
+        }
+        await this.$store.dispatch('worker/createWorkerOtherDocuments', { profileId: this.data.id, formData });
+        this.$emit('closeAndUpdate', true);
+      } catch (error) {
+        this.showAlertError(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
-  },
-  components: {
-    UploadFile: () => import("../../components/UploadFiles"),
   },
 };
 </script>
+
+<style scoped>
+.selected-file-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.selected-file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

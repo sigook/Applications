@@ -123,21 +123,9 @@ export default {
     getCommentsWorker(context, { workerId, size, pageIndex }) {
       return new Promise((resolve, reject) => {
         http
-          .get(
-            "/api/worker/" +
-            workerId +
-            "/comment?PageSize=" +
-            size +
-            "&PageIndex=" +
-            pageIndex
-          )
-          .then((response) => {
-            context.commit("setWokerComments", response.data);
-            resolve(response.data);
-          })
-          .catch((error) => {
-            reject(error.response);
-          });
+          .get(`/api/worker/${workerId}/comment?PageSize=${size}&PageIndex=${pageIndex}`)
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
       });
     },
     getProfiles(context) {
@@ -260,10 +248,12 @@ export default {
           });
       });
     },
-    createWorkerSin(context, { profileId, model }) {
+    createWorkerSin(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
         http
-          .post("/api/WorkerProfile/" + profileId + "/SinInformation", model)
+          .post(`/api/WorkerProfile/${profileId}/SinInformation`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
           .then((response) => {
             resolve(response.data);
           })
@@ -299,17 +289,21 @@ export default {
           });
       });
     },
-    createWorkerDocuments(context, { profileId, model }) {
+    createWorkerDocuments(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
-        http.post("/api/WorkerProfile/" + profileId + "/Documents", model)
+        http.post(`/api/WorkerProfile/${profileId}/Documents`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response));
       });
     },
-    createWorkerResume(context, { profileId, model }) {
+    createWorkerResume(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
         http
-          .post("/api/WorkerProfile/" + profileId + "/Resume", model)
+          .post(`/api/WorkerProfile/${profileId}/Resume`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
           .then((response) => {
             resolve(response.data);
           })
@@ -392,9 +386,11 @@ export default {
           .catch((error) => reject(error.response));
       });
     },
-    createWorkerLicenses(context, { profileId, model }) {
+    createWorkerLicenses(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
-        http.post("/api/WorkerProfile/" + profileId + "/Licenses", model)
+        http.post(`/api/WorkerProfile/${profileId}/Licenses`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response));
       });
@@ -406,10 +402,12 @@ export default {
           .catch((error) => reject(error.response));
       })
     },
-    createWorkerCertificates(context, { profileId, model }) {
+    createWorkerCertificates(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
         http
-          .post("/api/WorkerProfile/" + profileId + "/Certificates", model)
+          .post(`/api/WorkerProfile/${profileId}/Certificates`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
           .then((response) => {
             resolve(response.data);
           })
@@ -425,10 +423,12 @@ export default {
           .catch((error) => reject(error.response));
       })
     },
-    createWorkerOtherDocuments(context, { profileId, model }) {
+    createWorkerOtherDocuments(context, { profileId, formData }) {
       return new Promise((resolve, reject) => {
         http
-          .post(`/api/WorkerProfile/${profileId}/OtherDocument`, model)
+          .post(`/api/WorkerProfile/${profileId}/OtherDocument`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
           .then((response) => {
             resolve(response.data);
           })

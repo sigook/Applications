@@ -2,9 +2,8 @@
   <section>
     <div class="button-right">
       <h3 class="section-title">{{ $t("WorkerDocuments") }}</h3>
-      <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="modalDocuments = true">
-        Edit
-      </button>
+      <b-button type="is-info" outlined rounded icon-right="pencil"
+        @click="modalDocuments = true"></b-button>
     </div>
     <div class="worker-documents">
       <div v-if="worker.identificationType1File && worker.identificationType1">

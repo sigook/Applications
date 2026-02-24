@@ -2,29 +2,31 @@
   <div class="profile white-container-mobile profile-worker">
     <b-loading v-model="isLoading"></b-loading>
 
-    <!-- Agency Profile Selector -->
-    <div class="worker-profile-header">
+    <div class="profile-content">
       <!-- Profile Top -->
       <div class="profile-top" v-if="workerProfile">
-        <div class="max-width-158">
+        <div>
           <image-detail :data="workerProfile" @updateProfile="() => updateProfile()" />
         </div>
         <div>
-          <h1 class="capitalize fz1">
+          <h1 class="capitalize">
             {{ workerProfile.firstName | lowercase }}
             {{ workerProfile.middleName | lowercase }}
             {{ workerProfile.lastName | lowercase }}
           </h1>
-          <p v-if="workerProfile.location" class="fz-1">
-            <b>Id:</b>{{ workerProfile.numberId }} <br />
-            <b>Phone:</b>{{ workerProfile.mobileNumber }}
+          <p v-if="workerProfile.numberId">
+            <b-icon icon="card-account-details-outline" size="is-small" />
+            {{ workerProfile.numberId }}
+          </p>
+          <p v-if="workerProfile.mobileNumber">
+            <b-icon icon="phone" size="is-small" />
+            {{ workerProfile.mobileNumber }}
           </p>
         </div>
       </div>
-    </div>
 
-    <!-- Buefy Tabs -->
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="workerProfile">
+      <!-- Buefy Tabs -->
+      <b-tabs v-model="currentTab" @input="changeTab" v-if="workerProfile">
       <b-tab-item value="PersonalDetails">
         <template #header>
           <span>Personal Details</span>
@@ -33,60 +35,37 @@
         <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" />
       </b-tab-item>
 
-      <b-tab-item value="SkillsInfo">
-        <template #header>
-          <span>Skills & Languages</span>
-          <b-icon v-if="hasSkillsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
-        </template>
-        <SkillsInfo v-if="visitedTabs.includes('SkillsInfo')" :worker="workerProfile" />
-      </b-tab-item>
-
-      <b-tab-item label="Licenses & Certifications" value="LicensesInfo">
-        <LicensesInfo v-if="visitedTabs.includes('LicensesInfo')" :worker="workerProfile" />
-      </b-tab-item>
-
       <b-tab-item label="Work Experience" value="WorkExperience">
         <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" />
       </b-tab-item>
 
-      <b-tab-item value="AdditionalInfo">
-        <template #header>
-          <span>Additional Info</span>
-          <b-icon v-if="hasAdditionalInfoMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
-        </template>
-        <AdditionalInfo v-if="visitedTabs.includes('AdditionalInfo')" :worker="workerProfile" />
+      <b-tab-item label="Preferences" value="Preferences">
+        <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" />
       </b-tab-item>
 
       <b-tab-item label="Comments" value="Comments">
         <Comments v-if="visitedTabs.includes('Comments')" :worker="workerProfile" />
       </b-tab-item>
 
-      <b-tab-item label="Account Security" value="AccountSecurity">
+      <b-tab-item label="Account" value="AccountSecurity">
         <WorkerAccountSecurity v-if="visitedTabs.includes('AccountSecurity')" />
       </b-tab-item>
-
-      <b-tab-item label="Notifications" value="UserNotification">
-        <UserNotification v-if="visitedTabs.includes('UserNotification')" />
-      </b-tab-item>
     </b-tabs>
+    </div>
   </div>
 </template>
 
 <script>
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 import confirmationAlert from "../../mixins/confirmationAlert";
-import qrCodeMixin from "../../mixins/qrCodeMixin";
 
 export default {
   components: {
     PersonalDetails: () => import("../../components/worker/ProfilePersonal"),
-    SkillsInfo: () => import("../../components/worker/ProfileSkills"),
-    LicensesInfo: () => import("../../components/worker/ProfileLicenses"),
-    AdditionalInfo: () => import("../../components/worker/ProfileAdditionalInfo"),
+    Preferences: () => import("../../components/worker/ProfilePreferences"),
     WorkExperience: () => import("../../components/worker/ProfileExperience"),
     Comments: () => import("../../components/worker/ProfileComments"),
     WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity"),
-    UserNotification: () => import("../../components/UserNotification"),
     imageDetail: () => import("../../components/worker/WorkImageDetail"),
   },
   data() {
@@ -156,21 +135,8 @@ export default {
         || !this.workerProfile.identificationType2File
         || !this.workerProfile.resume;
     },
-    hasSkillsMissing() {
-      if (!this.workerProfile) return false;
-      return this.workerProfile.skills && this.workerProfile.skills.length === 0;
-    },
-    hasAdditionalInfoMissing() {
-      if (!this.workerProfile) return false;
-      const wp = this.workerProfile;
-      return (wp.availabilities && wp.availabilities.length === 0)
-        || (wp.availabilityTimes && wp.availabilityTimes.length === 0)
-        || (wp.availabilityDays && wp.availabilityDays.length === 0)
-        || (wp.locationPreferences && wp.locationPreferences.length === 0)
-        || !wp.contactEmergencyPhone;
-    },
   },
-  mixins: [switchLocaleMixin, confirmationAlert, qrCodeMixin],
+  mixins: [switchLocaleMixin, confirmationAlert],
   created() {
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
@@ -206,8 +172,28 @@ export default {
 }
 
 .profile-worker {
+  display: block;
+
+  .profile-content {
+    width: 100%;
+    border-left: none;
+    padding: 15px 20px;
+  }
+
+  .profile-top {
+    .worker-profile-image {
+      max-width: 158px;
+
+      img {
+        max-width: 100%;
+        border-radius: 5px;
+      }
+    }
+  }
+
   .profile-information .section-title {
     margin-bottom: 0;
+    color: inherit;
   }
 
   section:not(.worker-comments) {
@@ -223,14 +209,6 @@ export default {
     margin-top: 15px;
   }
 
-  .worker-documents>div.worker-skills.margin-top-15,
-  .worker-skills>div {
-    margin: 0;
-  }
-
-  .worker-skills>div span {
-    margin-top: 16px;
-  }
 
   section.missing {
     box-shadow: 1px 2px 4px #ffabab;
@@ -255,10 +233,6 @@ export default {
       }
     }
   }
-}
-
-.worker-profile-header {
-  margin-bottom: 20px;
 }
 
 .contain-profile .profile-selected {

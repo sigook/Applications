@@ -4,9 +4,9 @@
 
     <div class="button-right">
       <h3 class="fw-700 fz-0">{{ $t('WorkerCertificates') }}</h3>
-      <button type="button" class="outline-btn md-btn orange-button btn-radius" @click="modalCertificate = true">
-        Add Certificate +
-      </button>
+      <b-button type="is-primary" icon-right="plus" @click="modalCertificate = true">
+        Add Certificate
+      </b-button>
     </div>
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in worker.certificates"
