@@ -1,5 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/account_info.dart';
 import '../../domain/entities/value_objects/email.dart';
@@ -237,6 +240,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                             fontWeight: FontWeight.w600,
                             decoration: TextDecoration.underline,
                           ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () => context.push(AppRoutes.terms),
                         ),
                         const TextSpan(text: ' & '),
                         TextSpan(
@@ -246,6 +251,9 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                             fontWeight: FontWeight.w600,
                             decoration: TextDecoration.underline,
                           ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap =
+                                () => context.push(AppRoutes.privacyPolicy),
                         ),
                       ],
                     ),
