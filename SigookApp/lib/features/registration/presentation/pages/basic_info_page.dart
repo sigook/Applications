@@ -281,6 +281,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 hint: 'Enter your first name',
                 controller: _firstNameController,
                 errorText: _firstNameError,
+                isRequired: true,
                 onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('firstName');
@@ -292,6 +293,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 hint: 'Enter your last name',
                 controller: _lastNameController,
                 errorText: _lastNameError,
+                isRequired: true,
                 onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('lastName');
@@ -302,11 +304,19 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Date of Birth',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Date of Birth',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Text(
+                        ' *',
+                        style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   InkWell(
@@ -367,6 +377,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 hint: 'Enter your street address',
                 controller: _addressController,
                 errorText: _addressError,
+                isRequired: true,
                 maxLines: 2,
                 onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
@@ -379,6 +390,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 hint: 'Enter your ZIP code',
                 controller: _zipCodeController,
                 errorText: _zipCodeError,
+                isRequired: true,
                 keyboardType: TextInputType.text,
                 onChanged: (value) {},
                 onFocusChanged: (hasFocus) {
@@ -391,6 +403,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 initialValue: _mobileNumber.value,
                 countryCode: _selectedCountry?.code ?? 'US',
                 errorText: _mobileNumberError,
+                isRequired: true,
                 onChanged: (value) {
                   final countryCode = _selectedCountry?.code ?? 'US';
                   final validated = _phoneService.validate(value, countryCode);

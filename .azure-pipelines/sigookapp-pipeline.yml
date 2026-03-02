@@ -154,8 +154,8 @@ stages:
     # ============================================
     # Calculate App Version (Date-based)
     # ============================================
-    # Version Name: YYYY.M.D format (e.g., "2026.2.5")
-    # Version Code: Build.BuildId (always increasing integer)
+    # Version Name: YYYY.M.D format (e.g., "2026.2.12")
+    # Version Code: YYYYMMDDHH format (e.g., "2026021214") - always increasing, max ~2.1B
     # ============================================
     - task: Bash@3
       name: CalculateVersion
@@ -172,11 +172,11 @@ stages:
           MONTH=$(date +%-m)  # Month without leading zero
           DAY=$(date +%-d)    # Day without leading zero
 
-          # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+          # Version Name: YYYY.M.D format (e.g., "2026.2.12")
           APP_VERSION_NAME="${YEAR}.${MONTH}.${DAY}"
 
-          # Version Code: Use Build.BuildId (always increasing integer for app stores)
-          APP_VERSION_CODE=$(Build.BuildId)
+          # Version Code: YYYYMMDDHH format (e.g., "2026021214") - date-based, always increasing
+          APP_VERSION_CODE=$(date +%Y%m%d%H)
 
           echo "========================================"
           echo "Android Build - $(environment)"
