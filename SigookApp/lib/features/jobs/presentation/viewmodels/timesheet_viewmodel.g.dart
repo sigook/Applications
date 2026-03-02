@@ -59,7 +59,7 @@ final class TimesheetViewModelProvider
 }
 
 String _$timesheetViewModelHash() =>
-    r'f34766cec4fde11138e9ee6fa42233c7bace101b';
+    r'7a4e4611753363e4cdff37e7fd9cfd18a7b6548d';
 
 final class TimesheetViewModelFamily extends $Family
     with

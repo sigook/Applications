@@ -10,6 +10,7 @@ class PhoneNumberField extends StatefulWidget {
   final Function(bool)? onFocusChanged;
   final String? label;
   final String? hint;
+  final bool isRequired;
 
   const PhoneNumberField({
     super.key,
@@ -20,6 +21,7 @@ class PhoneNumberField extends StatefulWidget {
     this.onFocusChanged,
     this.label,
     this.hint,
+    this.isRequired = false,
   });
 
   @override
@@ -106,13 +108,22 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
-            ),
+          Row(
+            children: [
+              Text(
+                widget.label!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textDark,
+                ),
+              ),
+              if (widget.isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
 class AppDrawer extends ConsumerWidget {
   final String currentRoute;
@@ -12,12 +13,19 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Profile endpoint disabled - show default user display
+    final profileAsync = ref.watch(cachedWorkerProfileProvider);
+    final profile = profileAsync.value;
+
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
-          _buildProfileHeader(context, 'User', '', null),
+          _buildProfileHeader(
+            context,
+            profile?.fullName ?? 'User',
+            '',
+            profile?.profilePhotoUrl,
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: ListView(
@@ -36,13 +44,6 @@ class AppDrawer extends ConsumerWidget {
                   title: 'History',
                   route: '/history',
                   isSelected: currentRoute == '/history',
-                ),
-                _buildMenuItem(
-                  context: context,
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: 'Payroll',
-                  route: '/payroll',
-                  isSelected: currentRoute == '/payroll',
                 ),
                 _buildMenuItem(
                   context: context,
@@ -262,28 +263,7 @@ class AppDrawer extends ConsumerWidget {
 
   void _navigateToProfile(BuildContext context) {
     Navigator.of(context).pop();
-    // Profile page disabled - show coming soon message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'User profile page coming soon!',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppTheme.primaryBlue,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    context.go(AppRoutes.profile);
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {

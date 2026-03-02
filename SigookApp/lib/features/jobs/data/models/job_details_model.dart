@@ -64,9 +64,9 @@ class JobDetailsModel extends JobDetails {
       jobPosition: json['jobPosition'] as String?,
       holidayIsPaid: json['holidayIsPaid'] as bool? ?? false,
       breakIsPaid: json['breakIsPaid'] as bool? ?? false,
-      incentive: json['incentive'] as String?,
-      incentiveDescription: json['incentiveDescription'] as String?,
-      durationBreak: json['durationBreak'] as String?,
+      incentive: json['incentive']?.toString(),
+      incentiveDescription: json['incentiveDescription']?.toString(),
+      durationBreak: json['durationBreak']?.toString(),
       requestStatus: json['requestStatus'] as String?,
     );
   }

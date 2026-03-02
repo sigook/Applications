@@ -3,21 +3,19 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # PIPELINE: SigookApp Android CI/CD (iOS builds handled by Xcode Cloud)
 # ============================================
 # TRIGGER POLICY:
-# - Runs on direct pushes to main or dev branches
+# - Runs on direct pushes to dev branch (Staging)
 # - Runs on PRs to dev branch (not to main)
-# - PRs to main are trusted since dev is the quality gate
-# - dev branch → Staging environment
-# - main branch → Production environment
+# - Production (main) deployments are triggered manually
 #
 # NOTE: iOS builds and TestFlight deployment are handled by Xcode Cloud.
 # This pipeline only handles Android builds and Google Play deployment.
 # ============================================
 
-# Trigger on main, master, or dev branches with SigookApp changes
+# Trigger on dev branch with SigookApp changes
+# Production (main) deployments are triggered manually
 trigger:
   branches:
     include:
-      - main
       - dev
   paths:
     include:
@@ -154,8 +152,8 @@ stages:
     # ============================================
     # Calculate App Version (Date-based)
     # ============================================
-    # Version Name: YYYY.M.D format (e.g., "2026.2.5")
-    # Version Code: Build.BuildId (always increasing integer)
+    # Version Name: YYYY.M.D format (e.g., "2026.2.12")
+    # Version Code: YYYYMMDDHH format (e.g., "2026021214") - always increasing, max ~2.1B
     # ============================================
     - task: Bash@3
       name: CalculateVersion
@@ -172,11 +170,11 @@ stages:
           MONTH=$(date +%-m)  # Month without leading zero
           DAY=$(date +%-d)    # Day without leading zero
 
-          # Version Name: YYYY.M.D format (e.g., "2026.2.5")
+          # Version Name: YYYY.M.D format (e.g., "2026.2.12")
           APP_VERSION_NAME="${YEAR}.${MONTH}.${DAY}"
 
-          # Version Code: Use Build.BuildId (always increasing integer for app stores)
-          APP_VERSION_CODE=$(Build.BuildId)
+          # Version Code: YYYYMMDDHH format (e.g., "2026021214") - date-based, always increasing
+          APP_VERSION_CODE=$(date +%Y%m%d%H)
 
           echo "========================================"
           echo "Android Build - $(environment)"

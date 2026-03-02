@@ -145,6 +145,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/logo/
+    - assets/images/welcome-screen/
     - assets/i18n/
     - assets/i18n/error_messages_en.json
     - assets/i18n/error_messages_es.json

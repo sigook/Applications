@@ -82,24 +82,77 @@ class AuthViewModel extends _$AuthViewModel {
     final signIn = ref.read(signInProvider);
     final result = await signIn(NoParams());
 
-    result.fold(
-      (failure) {
+    // Guard: provider may have been disposed while OAuth browser was open
+    if (!ref.mounted) return;
+
+    await result.fold(
+      (failure) async {
         if (failure.message.contains('User cancelled')) {
           state = state.copyWith(isLoading: false, error: null);
         } else {
           state = state.copyWith(isLoading: false, error: failure.message);
         }
       },
-      (token) {
+      (token) async {
         debugPrint(
-          '🔑 [AUTH] Sign-in successful! Token received and cached by repository',
+          '🔑 [AUTH] Sign-in successful! Token received, checking user role...',
         );
-        state = state.copyWith(
-          isLoading: false,
-          token: token,
-          isAuthenticated: true,
-          error: null,
-        );
+
+        // Check user role via /connect/userinfo
+        if (token.accessToken != null && token.accessToken!.isNotEmpty) {
+          final authRepo = ref.read(authRepositoryProvider);
+          final roleResult = await authRepo.getUserRole(token.accessToken!);
+
+          if (!ref.mounted) return;
+
+          await roleResult.fold(
+            (failure) async {
+              debugPrint('🔑 [AUTH] Failed to fetch user role: ${failure.message}');
+              // Allow login even if role check fails (graceful degradation)
+              state = state.copyWith(
+                isLoading: false,
+                token: token,
+                isAuthenticated: true,
+                error: null,
+              );
+            },
+            (role) async {
+              if (role.toLowerCase() == 'worker') {
+                debugPrint('🔑 [AUTH] User role is worker - access granted');
+                state = state.copyWith(
+                  isLoading: false,
+                  token: token,
+                  isAuthenticated: true,
+                  error: null,
+                );
+              } else {
+                debugPrint(
+                  '🔑 [AUTH] User role is "$role" - access denied, logging out',
+                );
+                final logoutUseCase = ref.read(logoutProvider);
+                await logoutUseCase(NoParams());
+
+                if (!ref.mounted) return;
+
+                state = state.copyWith(
+                  isLoading: false,
+                  token: null,
+                  isAuthenticated: false,
+                  error:
+                      'This app is only available for workers. '
+                      'Your account does not have the required permissions.',
+                );
+              }
+            },
+          );
+        } else {
+          state = state.copyWith(
+            isLoading: false,
+            token: token,
+            isAuthenticated: true,
+            error: null,
+          );
+        }
       },
     );
   }

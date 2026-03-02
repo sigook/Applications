@@ -41,9 +41,25 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return PaginatedJobsModel.fromJson(
+        final data = Map<String, dynamic>.from(
           response.data as Map<String, dynamic>,
         );
+        // The API returns workerApprovedToWork as a string ("True"/"False").
+        // The generated JobModel expects bool?, so convert before parsing.
+        final rawItems = (data['items'] as List<dynamic>? ?? []);
+        final items = rawItems.map((item) {
+          final map = Map<String, dynamic>.from(item as Map);
+          // API returns workerApprovedToWork as a string ("True"/"False")
+          if (map['workerApprovedToWork'] is String) {
+            map['workerApprovedToWork'] =
+                (map['workerApprovedToWork'] as String).toLowerCase() == 'true';
+          }
+          // API can return null for required String fields — provide defaults
+          map['jobTitle'] ??= '';
+          map['agencyFullName'] ??= '';
+          return map;
+        }).toList();
+        return PaginatedJobsModel.fromJson({...data, 'items': items});
       } else {
         throw ServerException(
           message: 'Failed to load jobs: ${response.statusCode}',
@@ -73,7 +89,19 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
       final response = await apiClient.dio.get('/WorkerRequest/$jobId');
 
       if (response.statusCode == 200) {
-        return JobDetailsModel.fromJson(response.data as Map<String, dynamic>);
+        final map = Map<String, dynamic>.from(
+          response.data as Map<String, dynamic>,
+        );
+        // API returns workerApprovedToWork as a string ("True"/"False")
+        if (map['workerApprovedToWork'] is String) {
+          map['workerApprovedToWork'] =
+              (map['workerApprovedToWork'] as String).toLowerCase() == 'true';
+        }
+        // API can return null for required String fields — provide defaults
+        map['jobTitle'] ??= '';
+        map['agencyFullName'] ??= '';
+        map['status'] ??= '';
+        return JobDetailsModel.fromJson(map);
       } else {
         throw ServerException(
           message: 'Failed to load job details: ${response.statusCode}',

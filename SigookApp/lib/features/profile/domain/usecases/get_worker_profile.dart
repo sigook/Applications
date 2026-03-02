@@ -4,22 +4,13 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/worker_profile.dart';
 import '../repositories/profile_repository.dart';
 
-class GetWorkerProfile
-    implements UseCase<WorkerProfile, GetWorkerProfileParams> {
+class GetWorkerProfile implements UseCase<WorkerProfile, NoParams> {
   final ProfileRepository repository;
 
   GetWorkerProfile(this.repository);
 
   @override
-  Future<Either<Failure, WorkerProfile>> call(
-    GetWorkerProfileParams params,
-  ) async {
-    return await repository.getWorkerProfile(params.profileId);
+  Future<Either<Failure, WorkerProfile>> call(NoParams params) async {
+    return await repository.getWorkerBasicInfo();
   }
-}
-
-class GetWorkerProfileParams {
-  final String profileId;
-
-  GetWorkerProfileParams({required this.profileId});
 }

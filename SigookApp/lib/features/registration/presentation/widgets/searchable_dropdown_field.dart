@@ -10,6 +10,7 @@ class SearchableDropdownField extends StatefulWidget {
   final String? errorText;
   final IconData icon;
   final bool isLoading;
+  final bool isRequired;
 
   const SearchableDropdownField({
     super.key,
@@ -21,6 +22,7 @@ class SearchableDropdownField extends StatefulWidget {
     this.errorText,
     this.icon = Icons.arrow_drop_down_circle,
     this.isLoading = false,
+    this.isRequired = false,
   });
 
   @override
@@ -57,9 +59,18 @@ class _SearchableDropdownFieldState extends State<SearchableDropdownField> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.label,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          Row(
+            children: [
+              Text(
+                widget.label,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              if (widget.isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
           const Center(

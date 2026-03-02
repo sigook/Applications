@@ -12,6 +12,7 @@ abstract class AuthRemoteDataSource {
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
   Future<bool> validateToken(String accessToken);
+  Future<String> getUserRole(String accessToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -76,65 +77,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout(String idToken) async {
-    if (!(await networkInfo.isConnected)) {
-      throw NetworkException('No internet connection');
-    }
-
-    debugPrint('🔐 Starting logout process...');
-
-    try {
-      // Use AppAuth's endSession to properly logout with browser/webview
-      // This is required because IdentityServer needs cookie-based session context
-      final EndSessionRequest endSessionRequest = EndSessionRequest(
-        idTokenHint: idToken,
-        postLogoutRedirectUrl: EnvironmentConfig.postLogoutRedirectUri,
-        issuer: EnvironmentConfig.authority,
-      );
-
-      debugPrint('📤 [LOGOUT] Calling endSession with AppAuth...');
-      debugPrint('   ID Token Hint: ${idToken.substring(0, 20)}...');
-      debugPrint(
-        '   Post Logout Redirect: ${EnvironmentConfig.postLogoutRedirectUri}',
-      );
-
-      final EndSessionResponse response = await appAuth.endSession(
-        endSessionRequest,
-      );
-
-      debugPrint('✅ [LOGOUT] EndSession completed');
-      debugPrint('   Response state: ${response.state}');
-        } on PlatformException catch (e) {
-      debugPrint('⚠️ [LOGOUT] PlatformException during endSession: ${e.code}');
-      debugPrint('   Message: ${e.message}');
-      debugPrint('   Details: ${e.details}');
-
-      // Check if it's the state mismatch error (code 9)
-      if (e.code == 'end_session_failed') {
-        final details = e.details is Map
-            ? Map<String, dynamic>.from(e.details as Map)
-            : null;
-        final errorCode = details?['code'];
-
-        // State mismatch (code 9) can happen but logout may still be successful
-        // This occurs when the redirect doesn't include state parameter
-        if (errorCode == 9 || errorCode == '9') {
-          debugPrint(
-            '   State mismatch detected - this is expected with some providers',
-          );
-          debugPrint('   Logout on server side should still be successful');
-          // Don't throw - allow logout to complete locally
-          return;
-        }
-      }
-
-      // For other errors, log but don't fail - local logout still happens
-      debugPrint('   Continuing with local logout...');
-    } catch (e) {
-      debugPrint('⚠️ [LOGOUT] Unexpected error during endSession: $e');
-      debugPrint('   Continuing with local logout...');
-    }
-
-    debugPrint('✅ Logout process completed');
+    // Skip browser-based endSession: the IdentityServer's registered
+    // PostLogoutRedirectUri (com.sigook:/oauth2logout) does not match the
+    // env POST_LOGOUT_REDIRECT_URI, so the server ignores the redirect
+    // parameter and lands on the Sigook web home page instead of returning
+    // to the app. For a standalone mobile app, clearing local tokens is
+    // sufficient — the user will need to re-authenticate on next login.
+    debugPrint('✅ [LOGOUT] Local logout — tokens will be cleared by repository');
   }
 
   @override
@@ -157,6 +106,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Token refresh error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> getUserRole(String accessToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      final userInfoUrl = '${EnvironmentConfig.authority}/connect/userinfo';
+      debugPrint('🔐 [AUTH] Fetching user role from $userInfoUrl');
+
+      final response = await dio.get(
+        userInfoUrl,
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final role = data['role'] as String? ?? '';
+      debugPrint('🔐 [AUTH] User role: $role');
+      return role;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to fetch user info: ${e.message}',
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to fetch user info: $e');
     }
   }
 

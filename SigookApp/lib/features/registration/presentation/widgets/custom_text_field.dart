@@ -12,6 +12,7 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<bool>? onFocusChanged;
   final bool enabled;
   final Widget? suffixIcon;
+  final bool isRequired;
 
   const CustomTextField({
     super.key,
@@ -26,6 +27,7 @@ class CustomTextField extends StatelessWidget {
     this.onFocusChanged,
     this.enabled = true,
     this.suffixIcon,
+    this.isRequired = false,
   });
 
   @override
@@ -33,11 +35,20 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        Row(
+          children: [
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         Focus(
