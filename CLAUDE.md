@@ -12,6 +12,7 @@ Before implementing any feature, read the relevant document from `.docs/`:
 | API endpoints | `.docs/API_ENDPOINTS.md` |
 | Payroll (CPP, EI, taxes) | `.docs/PAYROLL_RULES.md` |
 | Billing (rates, HST/GST) | `.docs/BILLING_RULES.md` |
+| Pay stub generation flow | `.docs/PAYSTUB_GENERATION.md` |
 | Timesheets (OT, night, holiday) | `.docs/TIMESHEET_RULES.md` |
 | Workflows step-by-step | `.docs/WORKFLOWS.md` |
 | Request state management | `.docs/REQUEST_STATE_MANAGEMENT.md` |
@@ -131,4 +132,4 @@ Functions: `SendEmail` (HTTP), `SendInvitationToApply` (Queue), `NotificationSin
 
 ## CI/CD
 
-Pipelines use path-based triggers (each app deploys independently). Branch `dev` → Staging, `main` → Production. PRs to `dev` run full validation; PRs to `main` skip validation (already tested on dev). See `.docs/PIPELINES.md` for full details.
+Pipelines use path-based triggers (each app deploys independently). Branch `dev` → Staging (auto-deploy), `main` → Production (manual trigger only). PRs to `dev` run full validation; PRs to `main` skip validation (already tested on dev). See `.docs/PIPELINES.md` for full details.

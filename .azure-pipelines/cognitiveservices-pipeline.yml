@@ -3,17 +3,8 @@
 
 name: CognitiveServices-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
-# Only trigger when merging to main/master (production deployment)
-trigger:
-  branches:
-    include:
-      - main
-      - master
-  paths:
-    include:
-      - Sigook.CognitiveServices/**
-    exclude:
-      - Sigook.CognitiveServices/**/*.md
+# Trigger disabled - production deployments are triggered manually
+trigger: none
 
 # PR trigger - validate build on PRs to main
 pr:

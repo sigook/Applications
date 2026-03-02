@@ -11,13 +11,14 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | Branch | Environment | Deploy |
 |--------|-------------|--------|
 | `dev` | Staging | Auto-deploy after build+test |
-| `main` | Production | Auto-deploy after build+test |
+| `main` | Production | Manual trigger only (run from Azure DevOps) |
 
 ### PR Validation Strategy
 
 - **PRs to `dev`**: Full validation (build, test, lint). Primary quality gate.
 - **PRs to `main`**: Pipeline does NOT run (already validated on dev). Exception: Sigook.Functions and CognitiveServices validate PRs to `main` since they have no staging.
-- **Direct push to `dev`/`main`**: Full flow (build, test, deploy).
+- **Direct push to `dev`**: Full flow (build, test, deploy).
+- **Direct push to `main`**: No automatic trigger. Production deployments must be run manually from Azure DevOps.
 
 ### Shared Azure Resources
 
@@ -156,7 +157,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Build naming:** `Sigook.Functions-YYYY.M.D.r`
 
-**Trigger:** Only `main` branch (production-only deployment).
+**Trigger:** Manual only (production-only deployment).
 
 **Stage 1 - Build:**
 - .NET SDK 8.0.415
@@ -172,7 +173,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Build naming:** `CognitiveServices-YYYY.M.D.r`
 
-**Trigger:** Only `main` branch (production-only deployment).
+**Trigger:** Manual only (production-only deployment).
 
 **Stage 1 - Build:**
 - .NET SDK 8.0.415
@@ -327,7 +328,7 @@ variables:
 ### Pipeline not triggering
 - Verify the change is in the correct path (e.g., `Covenant.Api/**`)
 - Check that the file is not excluded (e.g., `*.md` files are excluded)
-- For Sigook.Functions and CognitiveServices, only `main` branch triggers deployment
+- Sigook.Functions and CognitiveServices are manual-only (no automatic triggers)
 
 ### NuGet restore fails
 - Ensure `NuGetAuthenticate@1` runs before `dotnet build`

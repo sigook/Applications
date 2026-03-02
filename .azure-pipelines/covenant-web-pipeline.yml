@@ -3,12 +3,11 @@
 
 name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
 
-# Trigger on main, master, or dev branches with covenantWeb changes
+# Trigger on dev branch with covenantWeb changes
+# Production (main) deployments are triggered manually
 trigger:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:

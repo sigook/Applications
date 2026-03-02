@@ -3,12 +3,11 @@
 
 name: CovenantApi-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
-# Only trigger when Covenant.Api files change
+# Only trigger when Covenant.Api files change on dev
+# Production (main) deployments are triggered manually
 trigger:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:
