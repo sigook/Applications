@@ -1,10 +1,9 @@
 name: CovenantIdentityServer-$(Date:yyyyMMdd)$(Rev:.r)
 
+# Production (main) deployments are triggered manually
 trigger:
   branches:
     include:
-      - main
-      - master
       - dev
   paths:
     include:
