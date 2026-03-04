@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/worker_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
+import '../../domain/usecases/update_worker_profile.dart';
 import '../datasources/profile_remote_datasource.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -37,6 +38,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, void>> updateWorkerBasicInfo(
     Map<String, String> editedFields, {
+    required ProfileSection section,
     Map<String, String>? newFilePaths,
   }) async {
     if (!await networkInfo.isConnected) {
@@ -92,28 +94,34 @@ class ProfileRepositoryImpl implements ProfileRepository {
         ),
       );
 
-      // Send to all four endpoints in parallel
-      await Future.wait([
-        remoteDataSource.updateWorkerBasicInfo(workerId, updatedModel),
-        remoteDataSource.updateWorkerContactInfo(workerId, updatedModel),
-        remoteDataSource.updateWorkerSinInfo(
-          workerId,
-          updatedModel,
-          sinFilePath: newFilePaths?['sinFile'],
-        ),
-        remoteDataSource.updateWorkerDocuments(
-          workerId,
-          updatedModel,
-          newFilePaths: {
-            if (newFilePaths?['id1File'] != null)
-              'id1File': newFilePaths!['id1File']!,
-            if (newFilePaths?['id2File'] != null)
-              'id2File': newFilePaths!['id2File']!,
-            if (newFilePaths?['policeCheckFile'] != null)
-              'policeCheckFile': newFilePaths!['policeCheckFile']!,
-          },
-        ),
-      ]);
+      switch (section) {
+        case ProfileSection.personal:
+          await remoteDataSource.updateWorkerBasicInfo(workerId, updatedModel);
+        case ProfileSection.contact:
+          await remoteDataSource.updateWorkerContactInfo(
+              workerId, updatedModel);
+        case ProfileSection.documents:
+          await Future.wait([
+            remoteDataSource.updateWorkerSinInfo(
+              workerId,
+              updatedModel,
+              sinFilePath: newFilePaths?['sinFile'],
+            ),
+            remoteDataSource.updateWorkerDocuments(
+              workerId,
+              updatedModel,
+              newFilePaths: {
+                if (newFilePaths?['id1File'] != null)
+                  'id1File': newFilePaths!['id1File']!,
+                if (newFilePaths?['id2File'] != null)
+                  'id2File': newFilePaths!['id2File']!,
+                if (newFilePaths?['policeCheckFile'] != null)
+                  'policeCheckFile': newFilePaths!['policeCheckFile']!,
+              },
+            ),
+          ]);
+      }
+
       return Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));

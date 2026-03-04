@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$JobModel {
 
- String get id; String get jobTitle; int get numberId; int get workersQuantity; String? get location; String? get entrance; String get agencyFullName; String? get agencyLogo; String? get status; bool get isAsap; bool? get workerApprovedToWork; double get workerRate; double? get workerSalary; DateTime get createdAt; DateTime? get finishAt; DateTime get startAt; String? get durationTerm;
+ String get id; String get jobTitle; int get numberId; int get workersQuantity; String? get location; String? get entrance; String? get agencyFullName; String? get agencyLogo; String? get status; bool get isAsap; bool? get workerApprovedToWork; double get workerRate; double? get workerSalary; DateTime get createdAt; DateTime? get finishAt; DateTime get startAt; String? get durationTerm;
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $JobModelCopyWith<$Res>  {
   factory $JobModelCopyWith(JobModel value, $Res Function(JobModel) _then) = _$JobModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
+ String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
 });
 
 
@@ -65,7 +65,7 @@ class _$JobModelCopyWithImpl<$Res>
 
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = null,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = freezed,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,jobTitle: null == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
@@ -73,8 +73,8 @@ as String,numberId: null == numberId ? _self.numberId : numberId // ignore: cast
 as int,workersQuantity: null == workersQuantity ? _self.workersQuantity : workersQuantity // ignore: cast_nullable_to_non_nullable
 as int,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,entrance: freezed == entrance ? _self.entrance : entrance // ignore: cast_nullable_to_non_nullable
-as String?,agencyFullName: null == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
-as String,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
+as String?,agencyFullName: freezed == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
+as String?,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,isAsap: null == isAsap ? _self.isAsap : isAsap // ignore: cast_nullable_to_non_nullable
 as bool,workerApprovedToWork: freezed == workerApprovedToWork ? _self.workerApprovedToWork : workerApprovedToWork // ignore: cast_nullable_to_non_nullable
@@ -169,7 +169,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JobModel() when $default != null:
 return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
@@ -190,7 +190,7 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)  $default,) {final _that = this;
 switch (_that) {
 case _JobModel():
 return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
@@ -210,7 +210,7 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,) {final _that = this;
 switch (_that) {
 case _JobModel() when $default != null:
 return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
@@ -225,7 +225,7 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 @JsonSerializable()
 
 class _JobModel extends JobModel {
-  const _JobModel({required this.id, required this.jobTitle, required this.numberId, required this.workersQuantity, this.location, this.entrance, required this.agencyFullName, this.agencyLogo, this.status, required this.isAsap, this.workerApprovedToWork, required this.workerRate, this.workerSalary, required this.createdAt, this.finishAt, required this.startAt, this.durationTerm}): super._();
+  const _JobModel({required this.id, required this.jobTitle, required this.numberId, required this.workersQuantity, this.location, this.entrance, this.agencyFullName, this.agencyLogo, this.status, required this.isAsap, this.workerApprovedToWork, required this.workerRate, this.workerSalary, required this.createdAt, this.finishAt, required this.startAt, this.durationTerm}): super._();
   factory _JobModel.fromJson(Map<String, dynamic> json) => _$JobModelFromJson(json);
 
 @override final  String id;
@@ -234,7 +234,7 @@ class _JobModel extends JobModel {
 @override final  int workersQuantity;
 @override final  String? location;
 @override final  String? entrance;
-@override final  String agencyFullName;
+@override final  String? agencyFullName;
 @override final  String? agencyLogo;
 @override final  String? status;
 @override final  bool isAsap;
@@ -279,7 +279,7 @@ abstract mixin class _$JobModelCopyWith<$Res> implements $JobModelCopyWith<$Res>
   factory _$JobModelCopyWith(_JobModel value, $Res Function(_JobModel) _then) = __$JobModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
+ String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
 });
 
 
@@ -296,7 +296,7 @@ class __$JobModelCopyWithImpl<$Res>
 
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = null,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = freezed,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
   return _then(_JobModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,jobTitle: null == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
@@ -304,8 +304,8 @@ as String,numberId: null == numberId ? _self.numberId : numberId // ignore: cast
 as int,workersQuantity: null == workersQuantity ? _self.workersQuantity : workersQuantity // ignore: cast_nullable_to_non_nullable
 as int,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,entrance: freezed == entrance ? _self.entrance : entrance // ignore: cast_nullable_to_non_nullable
-as String?,agencyFullName: null == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
-as String,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
+as String?,agencyFullName: freezed == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
+as String?,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,isAsap: null == isAsap ? _self.isAsap : isAsap // ignore: cast_nullable_to_non_nullable
 as bool,workerApprovedToWork: freezed == workerApprovedToWork ? _self.workerApprovedToWork : workerApprovedToWork // ignore: cast_nullable_to_non_nullable

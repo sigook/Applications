@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
@@ -267,9 +268,7 @@ class AppDrawer extends ConsumerWidget {
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
-    // Check if already logging out
-    final isLoading = ref.read(authViewModelProvider).isLoading;
-    if (isLoading) return;
+    if (ref.read(authViewModelProvider).isLoading) return;
 
     final shouldLogout = await showDialog<bool>(
       context: context,
@@ -292,22 +291,27 @@ class AppDrawer extends ConsumerWidget {
       ),
     );
 
-    if (shouldLogout == true && context.mounted) {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
-        ),
-      );
+    if (shouldLogout != true || !context.mounted) return;
 
-      await ref.read(authViewModelProvider.notifier).logout();
+    // Capture everything before any async operations that may unmount the drawer.
+    final navigator = Navigator.of(context);
+    final router = GoRouter.of(context);
+    final idToken = ref.read(authViewModelProvider).token?.idToken;
+    final notifier = ref.read(authViewModelProvider.notifier);
 
-      if (context.mounted) {
-        Navigator.of(context).pop(); // Dismiss loading dialog
-        context.go(AppRoutes.welcome);
-      }
-    }
+    navigator.pop(); // Close the drawer
+
+    // Server-side logout first: WebView calls the identity server end-session
+    // endpoint so the server clears the session before we wipe the local token.
+    await navigator.push(
+      MaterialPageRoute<bool>(
+        builder: (_) => LogoutWebviewPage(idToken: idToken),
+      ),
+    );
+
+    // Clear local token after server session has been cleared.
+    await notifier.logout();
+
+    router.go(AppRoutes.welcome);
   }
 }
