@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navbar_logo.dart';
+import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/jobs_viewmodel.dart';
 import '../widgets/job_card.dart';
@@ -39,6 +41,20 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignOut() async {
+    final idToken = ref.read(authViewModelProvider).token?.idToken;
+    if (mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<bool>(
+          builder: (_) => LogoutWebviewPage(idToken: idToken),
+        ),
+      );
+    }
+    if (!mounted) return;
+    await ref.read(authViewModelProvider.notifier).logout();
+    if (mounted) context.go(AppRoutes.welcome);
   }
 
   void _onScroll() {
@@ -215,9 +231,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                     ),
                     const SizedBox(height: 16),
                     TextButton.icon(
-                      onPressed: () {
-                        ref.read(authViewModelProvider.notifier).logout();
-                      },
+                      onPressed: _handleSignOut,
                       icon: Icon(
                         Icons.logout,
                         size: 18,

@@ -15,7 +15,7 @@ abstract class JobModel with _$JobModel {
     required int workersQuantity,
     String? location,
     String? entrance,
-    required String agencyFullName,
+    String? agencyFullName,
     String? agencyLogo,
     String? status,
     required bool isAsap,

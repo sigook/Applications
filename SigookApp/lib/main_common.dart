@@ -11,8 +11,6 @@ import 'core/widgets/navbar_logo.dart';
 
 Future<void> mainCommon() async {
   try {
-
-    //comment for testing
     debugPrint('📱 Starting app initialization...');
 
     EnvironmentConfig.printConfigSource();
@@ -44,7 +42,48 @@ Future<void> mainCommon() async {
     debugPrint('❌ Error in mainCommon:');
     debugPrint('Error: $e');
     debugPrint('Stack trace: $stackTrace');
-    rethrow;
+    runApp(_InitErrorApp(error: e.toString()));
+  }
+}
+
+class _InitErrorApp extends StatelessWidget {
+  final String error;
+  const _InitErrorApp({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: const Color(0xFF1565C0),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 64),
+                const SizedBox(height: 24),
+                const Text(
+                  'Initialization Failed',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  error,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

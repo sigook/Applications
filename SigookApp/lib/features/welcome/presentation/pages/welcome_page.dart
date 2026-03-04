@@ -14,8 +14,9 @@ class WelcomePage extends ConsumerStatefulWidget {
 }
 
 class _WelcomePageState extends ConsumerState<WelcomePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
+  late AnimationController _exitController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _logoScale;
   late Animation<double> _buttonsFade;
@@ -24,6 +25,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   late Animation<Offset> _ringsSlide;
   late Animation<Offset> _legalSlide;
 
+  bool _isNavigating = false;
   String _appVersion = '';
 
   @override
@@ -32,6 +34,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _exitController = AnimationController(
+      duration: const Duration(milliseconds: 380),
       vsync: this,
     );
 
@@ -115,11 +122,34 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   @override
   void dispose() {
     _controller.dispose();
+    _exitController.dispose();
     super.dispose();
   }
 
+  Widget _withExit(Widget child, Offset exitOffset) {
+    return AnimatedBuilder(
+      animation: _exitController,
+      builder: (context, inner) => Opacity(
+        opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
+        child: Transform.translate(
+          offset: exitOffset * _exitController.value,
+          child: inner!,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Future<void> _navigateWithExit(String route) async {
+    if (_isNavigating || !mounted) return;
+    _isNavigating = true;
+    _exitController.forward();
+    await Future.delayed(const Duration(milliseconds: 280));
+    if (mounted) context.go(route);
+  }
+
   void _navigateToRegistration() {
-    context.go(AppRoutes.registration);
+    _navigateWithExit(AppRoutes.registration);
   }
 
   Future<void> _signIn() async {
@@ -164,8 +194,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // TODO: navigate to Privacy Policy URL
                 Navigator.pop(context);
+                context.push(AppRoutes.privacyPolicy);
               },
             ),
             ListTile(
@@ -173,8 +203,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
               title: const Text('Terms & Conditions'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // TODO: navigate to Terms & Conditions URL
                 Navigator.pop(context);
+                context.push(AppRoutes.terms);
               },
             ),
           ],
@@ -208,7 +238,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             backgroundColor: AppTheme.successGreen,
           ),
         );
-        context.go(AppRoutes.jobs);
+        _navigateWithExit(AppRoutes.jobs);
       }
     });
 
@@ -279,16 +309,19 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             top: size.height * 0.32,
             right: -20,
             child: IgnorePointer(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: 92,
-                  height: 92,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF90CAF9).withValues(alpha: 0.32),
+              child: _withExit(
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Container(
+                    width: 92,
+                    height: 92,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF90CAF9).withValues(alpha: 0.32),
+                    ),
                   ),
                 ),
+                const Offset(120, -80),
               ),
             ),
           ),
@@ -296,16 +329,19 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             top: size.height * 0.38,
             left: 22,
             child: IgnorePointer(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: 66,
-                  height: 66,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.38),
+              child: _withExit(
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Container(
+                    width: 66,
+                    height: 66,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFEF9A9A).withValues(alpha: 0.38),
+                    ),
                   ),
                 ),
+                const Offset(-100, 60),
               ),
             ),
           ),
@@ -314,39 +350,45 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
           Positioned(
             bottom: -55,
             left: -65,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: AnimatedBuilder(
-                animation: _ringsSlide,
-                builder: (context, child) => Transform.translate(
-                  offset: _ringsSlide.value,
-                  child: child!,
-                ),
-                child: _RingCircle(
-                  diameter: 190,
-                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                  strokeWidth: 24,
+            child: _withExit(
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: AnimatedBuilder(
+                  animation: _ringsSlide,
+                  builder: (context, child) => Transform.translate(
+                    offset: _ringsSlide.value,
+                    child: child!,
+                  ),
+                  child: _RingCircle(
+                    diameter: 190,
+                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
+                    strokeWidth: 24,
+                  ),
                 ),
               ),
+              const Offset(-180, 120),
             ),
           ),
           Positioned(
             bottom: -85,
             left: -95,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: AnimatedBuilder(
-                animation: _ringsSlide,
-                builder: (context, child) => Transform.translate(
-                  offset: _ringsSlide.value,
-                  child: child!,
-                ),
-                child: _RingCircle(
-                  diameter: 250,
-                  color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
-                  strokeWidth: 18,
+            child: _withExit(
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: AnimatedBuilder(
+                  animation: _ringsSlide,
+                  builder: (context, child) => Transform.translate(
+                    offset: _ringsSlide.value,
+                    child: child!,
+                  ),
+                  child: _RingCircle(
+                    diameter: 250,
+                    color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
+                    strokeWidth: 18,
+                  ),
                 ),
               ),
+              const Offset(-220, 160),
             ),
           ),
 
