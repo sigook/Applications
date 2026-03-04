@@ -3,9 +3,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/worker_profile.dart';
 import 'profile_providers.dart';
 
-final cachedWorkerProfileProvider = FutureProvider.autoDispose<WorkerProfile?>((
-  ref,
-) async {
+final cachedWorkerProfileProvider = FutureProvider<WorkerProfile?>((ref) async {
   final useCase = ref.watch(getWorkerProfileUseCaseProvider);
   final result = await useCase(NoParams());
 

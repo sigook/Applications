@@ -8,6 +8,8 @@ import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/error_messages.dart';
 import 'core/widgets/navbar_logo.dart';
+import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'features/profile/presentation/providers/cached_worker_profile_provider.dart';
 
 Future<void> mainCommon() async {
   try {
@@ -97,6 +99,17 @@ class MyApp extends ConsumerStatefulWidget {
 class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (previous?.isAuthenticated != true && next.isAuthenticated) {
+        // Pre-fetch profile as soon as the user is authenticated so it is
+        // already in memory when the drawer (or any other consumer) opens.
+        ref.read(cachedWorkerProfileProvider.future).ignore();
+      } else if (previous?.isAuthenticated == true && !next.isAuthenticated) {
+        // Clear the cached profile on logout so the next user starts fresh.
+        ref.invalidate(cachedWorkerProfileProvider);
+      }
+    });
+
     return MaterialApp.router(
       title: 'Sigook',
       debugShowCheckedModeBanner: false,

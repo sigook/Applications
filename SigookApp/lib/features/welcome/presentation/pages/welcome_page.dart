@@ -228,7 +228,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
         );
       }
 
-      if (next.isAuthenticated &&
+      if (previous?.isAuthenticated != true &&
+          next.isAuthenticated &&
           next.token != null &&
           next.token!.accessToken != null &&
           next.token!.accessToken!.isNotEmpty) {
