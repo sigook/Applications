@@ -18,6 +18,7 @@ Bienvenido a la documentación técnica completa de la plataforma Covenant/Sigoo
 
 ### 💰 Reglas de Payroll
 - **[PAYROLL_RULES.md](./PAYROLL_RULES.md)** - Cálculos de nómina, deducciones (CPP, EI), impuestos federales y provinciales (Canadá)
+- **[PAYSTUB_GENERATION.md](./PAYSTUB_GENERATION.md)** - Flujo paso a paso de generación de pay stubs (`GeneratePayStubForWorker`)
 
 ### 📄 Reglas de Facturación
 - **[BILLING_RULES.md](./BILLING_RULES.md)** - Generación de invoices, HST/GST, rates, markup calculations
