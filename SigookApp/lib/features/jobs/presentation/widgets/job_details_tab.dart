@@ -62,7 +62,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             bottom: 16,
             left: 16,
             right: 16,
-            child: jobDetails.status == 'rejected' ? _buildActionButton(context) : Container(),
+            child: _buildActionButton(context),
           ),
       ],
     );
