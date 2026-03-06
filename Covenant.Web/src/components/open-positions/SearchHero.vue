@@ -148,7 +148,7 @@ const handleSearch = () => {
   align-items: center;
   justify-content: center;
   margin-right: 40px; /* Para dar espacio a los círculos salientes por la derecha */
-  margin-top: 100px; /* Separarlo del navbar y pegarlo más al borde inferior */
+  margin-top: 60px; /* Separarlo del navbar y pegarlo más al borde inferior */
 }
 
 /* Anillo Blanco Decorativo */
