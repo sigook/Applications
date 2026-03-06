@@ -251,6 +251,19 @@ const isBlueFooter = computed(() => {
   margin-bottom: 4px;
 }
 
+.footer__nav-1 {
+  margin-top: 60px;
+}
+
+@media (min-width: 769px) {
+  .footer__nav-2 {
+    margin-top: 56px;
+  }
+  .footer__nav-3.footer__block {
+    margin-top: 72px;
+  }
+}
+
 /* ZONA BLANCA INFERIOR */
 .footer__bottom {
   padding: 40px 20px 32px;
