@@ -261,6 +261,12 @@ const handleSearch = () => {
 }
 
 /* === RESPONSIVE === */
+@media (max-width: 1440px) {
+  .search-hero {
+    min-height: 40vh; /* Se reduce la altura de la sección para 1440px como se solicitó */
+  }
+}
+
 @media (max-width: 1024px) {
   .hero-inner {
     flex-direction: column;
