@@ -10,10 +10,9 @@
       <div class="hero-graphic" data-aos="zoom-in">
 
         <div class="decorative-ring"></div>
+        <div class="green-circle"></div>
 
-        <div class="green-circle">
-
-          <div class="form-card">
+        <div class="form-card">
             <div class="form-header">
               <h3>Open Positions</h3>
               <p>Filter by title, location, and type</p>
@@ -46,7 +45,6 @@
               </button>
 
             </form>
-          </div>
         </div>
       </div>
 
@@ -102,13 +100,13 @@ const handleSearch = () => {
 .search-hero {
   background-color: #0F2F44;
   width: 100%;
-  min-height: 85vh;
+  min-height: 60vh;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom-left-radius: 250px;
-  padding: 120px 0 100px;
+  border-bottom-left-radius: 120px;
+  padding: 80px 0 60px;
   overflow: hidden;
 }
 
@@ -117,28 +115,28 @@ const handleSearch = () => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1200px;
-  padding: 0 20px;
-  gap: 40px;
+  max-width: 1160px; /* Ensanchado para separar los elementos */
+  padding: 0 120px 0 20px; /* Más padding a la derecha para compensar y mantener el form en el mismo lugar */
+  gap: 32px;
 }
 
 /* === TEXTO IZQUIERDO === */
 .hero-text {
-  max-width: 500px;
+  max-width: 400px;
   color: white;
   position: relative;
   z-index: 5;
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   line-height: 1.1;
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
+  font-size: 1rem;
   opacity: 0.9;
   font-weight: 300;
 }
@@ -149,85 +147,84 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 700px;
-  height: 700px;
+  margin-right: 40px; /* Para dar espacio a los círculos salientes por la derecha */
+  margin-top: 100px; /* Separarlo del navbar y pegarlo más al borde inferior */
 }
 
 /* Anillo Blanco Decorativo */
 .decorative-ring {
   position: absolute;
-  width: 110%;
-  height: 110%;
-  border: 2px solid #ffffff;
+  width: 280px;
+  height: 280px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 50%;
-  z-index: 2;
-  top: -5%;
-  left: 7%;
+  z-index: 10;
+  top: 0%;
+  right: -50px;
   pointer-events: none; /* Para que no bloquee clicks */
 }
 
 /* Círculo Verde */
 .green-circle {
+  position: absolute;
   background-color: #5ce07d;
-  width: 100%;
-  height: 100%;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  z-index: 2;
+  top: -30px;
+  right: -50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 /* === TARJETA DEL FORMULARIO === */
 .form-card {
   background: white;
-  border-radius: 12px;
-  padding: 30px;
-  width: 380px; /* Aumenté un poco el ancho para que respire mejor */
+  border-radius: 10px;
+  padding: 24px;
+  width: 304px; /* Aumenté un poco el ancho para que respire mejor */
   max-width: 100%; /* Seguridad para pantallas pequeñas */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   text-align: center;
   position: relative;
   z-index: 10;
 }
 
 .form-header h3 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #171717;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   margin-top: 0;
 }
 .form-header p {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #888;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 /* Estilos de inputs */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   text-align: left;
   width: 100%; /* Asegura que el grupo ocupe el espacio disponible */
 }
 
 .form-group label {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #171717;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group select {
   width: 100%; /* Ocupa el 100% del padre */
-  padding: 10px 15px;
+  padding: 8px 12px;
   border: 1px solid #eee;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
   background: #fafafa;
   outline: none;
   transition: border-color 0.3s;
@@ -248,11 +245,12 @@ const handleSearch = () => {
   background-color: #5ce07d;
   color: #05162d;
   border: none;
-  padding: 12px;
+  padding: 10px;
   font-weight: 700;
   border-radius: 999px; /* Pill shape */
+  font-size: 0.9rem;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 8px;
   transition: transform 0.2s, background-color 0.2s;
   box-sizing: border-box;
 }
@@ -267,32 +265,29 @@ const handleSearch = () => {
   .hero-inner {
     flex-direction: column;
     text-align: center;
+    padding: 0 20px;
   }
 
   .search-hero {
     min-height: auto;
-    padding-bottom: 80px;
-    border-bottom-left-radius: 100px;
+    padding-bottom: 64px;
+    border-bottom-left-radius: 80px;
   }
 
   .hero-graphic {
-    width: 450px;
-    height: 450px;
     margin-top: 40px;
+    margin-right: 0;
   }
 
   .decorative-ring {
-    top: -5%; left: -5%;
-    width: 110%; height: 110%;
+    top: -20px;
+    right: -40px;
   }
 }
 
 @media (max-width: 600px) {
   .hero-graphic {
-    width: 130vw;
-    height: 130vw;
-    max-width: none;
-    margin-top: -40vw; /* Subir el círculo detrás del texto */
+    margin-top: 30px;
     z-index: 0;
   }
 
@@ -300,20 +295,27 @@ const handleSearch = () => {
   .form-card {
     width: 280px;
     padding: 20px;
-    margin-top: 40vw; /* Bajar el formulario para que se salga del círculo */
+    margin-top: 0;
   }
 
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .decorative-ring {
     display: none;
   }
 
+  .green-circle {
+    width: 200px;
+    height: 200px;
+    top: -20px;
+    right: -20px;
+  }
+
   .search-hero {
-    border-bottom-left-radius: 50px;
-    padding-top: 100px;
+    border-bottom-left-radius: 40px;
+    padding-top: 80px;
   }
 }
 </style>

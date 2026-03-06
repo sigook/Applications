@@ -5,7 +5,7 @@
 
       <div class="why-work__item why-work__item--right">
         <div class="why-work__content">
-          <h3 class="why-work__heading">Working where you are — for you</h3>
+          <h3 class="why-work__heading">Working where you are for you</h3>
           <p class="why-work__text">
             With clients located across multiple regions, you’ll have the chance
             to find roles that match your skills and interests — and to build

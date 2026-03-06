@@ -17,7 +17,7 @@
         <div class="cert-logos">
           <div class="cert-logo">
             <img
-              src="@/assets/images/logo-proudly-canadian.png"
+              src="@/assets/images/logo-canada-hd.png"
               alt="Proudly Canadian"
               class="cert-logo__img"
             />

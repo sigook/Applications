@@ -83,7 +83,7 @@
                       <button class="btn-pill white" @click="showBenefitsLeft = true">&lt;&lt; Benefits</button>
                     </div>
                     <div class="col-text">
-                      <p>{{ currentContent.card1Desc }}</p>
+                      <p v-html="currentContent.card1Desc"></p>
                     </div>
                   </div>
 
@@ -115,7 +115,7 @@
 
                   <div v-if="!showBenefitsRight" key="front" class="card-content text-right-content split-layout">
                     <div class="col-text">
-                      <p>{{ currentContent.card2Desc }}</p>
+                      <p v-html="currentContent.card2Desc"></p>
                     </div>
                     <div class="col-title-btn">
                       <h3 v-html="currentContent.card2Title"></h3>
@@ -284,7 +284,7 @@ const getCardIcon = (fileName: string) => {
   }
 
   .dynamic-content-wrapper.bg-industrial {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 22%, rgba(15, 47, 68, 1) 22%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 20%, rgba(15, 47, 68, 1) 20%);
   }
 
   .intro-icon-circle { background: #32d26a; width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); border: 4px solid #32d26a; overflow: hidden; }
@@ -650,7 +650,7 @@ const getCardIcon = (fileName: string) => {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
-    max-width: 240px; /* Baja el ancho del texto */
+    max-width: 300px; /* Baja el ancho del texto */
   }
 
   /* BLUE CARD SPECIFIC */

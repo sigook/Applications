@@ -364,12 +364,13 @@ const scrollToContact = () => {
     background-color: #0F2F44;
     border-radius: 0;
     padding: 0;
-    transform: translateY(210px); /* Subir icono verde en desktop - Ajustado más abajo */
+    transform: translateY(240px); /* Subir icono verde en desktop - Ajustado más abajo */
   }
+
 
   .right-icon img {
     background-color: #5ce07d; /* Verde */
-    border-radius: 0;
+    border-radius: 200px 0 0 0 ;
     padding: 180px;
     margin: 0;
     z-index: 2000;
@@ -377,9 +378,10 @@ const scrollToContact = () => {
     box-sizing: content-box;
     width: auto;
     height: auto;
-    transform: translateY(-280px); /* Subir icono derecho */
+    transform: translateY(-220px); /* Subir icono derecho */
     box-shadow: 0 300px 0 0 #5ce07d; /* Cubrir hueco inferior sin afectar altura */
   }
+
 
   /* TARJETA BASE */
   .puzzle-card {
