@@ -13,7 +13,7 @@ _JobModel _$JobModelFromJson(Map<String, dynamic> json) => _JobModel(
   workersQuantity: (json['workersQuantity'] as num).toInt(),
   location: json['location'] as String?,
   entrance: json['entrance'] as String?,
-  agencyFullName: json['agencyFullName'] as String,
+  agencyFullName: json['agencyFullName'] as String?,
   agencyLogo: json['agencyLogo'] as String?,
   status: json['status'] as String?,
   isAsap: json['isAsap'] as bool,

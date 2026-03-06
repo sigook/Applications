@@ -6,6 +6,7 @@ class ProfileSectionCard extends StatelessWidget {
   final IconData icon;
   final List<Color> iconGradient;
   final List<Widget> children;
+  final Widget? trailing;
 
   const ProfileSectionCard({
     super.key,
@@ -13,6 +14,7 @@ class ProfileSectionCard extends StatelessWidget {
     required this.icon,
     required this.iconGradient,
     required this.children,
+    this.trailing,
   });
 
   @override
@@ -45,14 +47,17 @@ class ProfileSectionCard extends StatelessWidget {
                 child: Icon(icon, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                  ),
                 ),
               ),
+              if (trailing != null) trailing!,
             ],
           ),
           const SizedBox(height: 16),

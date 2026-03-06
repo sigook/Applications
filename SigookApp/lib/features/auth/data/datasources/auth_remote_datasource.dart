@@ -38,6 +38,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         EnvironmentConfig.redirectUri,
         issuer: EnvironmentConfig.authority,
         scopes: EnvironmentConfig.scopes,
+        // Always require credential entry. flutter_appauth uses Chrome Custom
+        // Tabs (Chrome cookie store) while LogoutWebviewPage uses the Android
+        // WebView (a separate cookie store), so Chrome may still hold a valid
+        // SSO session after logout. This prompt forces re-authentication.
+        promptValues: ['login'],
       );
 
       final AuthorizationTokenResponse result = await appAuth

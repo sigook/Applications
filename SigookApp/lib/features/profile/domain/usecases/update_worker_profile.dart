@@ -3,6 +3,8 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/profile_repository.dart';
 
+enum ProfileSection { personal, contact, documents }
+
 class UpdateWorkerProfile implements UseCase<void, UpdateWorkerProfileParams> {
   final ProfileRepository repository;
 
@@ -12,6 +14,7 @@ class UpdateWorkerProfile implements UseCase<void, UpdateWorkerProfileParams> {
   Future<Either<Failure, void>> call(UpdateWorkerProfileParams params) async {
     return await repository.updateWorkerBasicInfo(
       params.editedFields,
+      section: params.section,
       newFilePaths: params.newFilePaths,
     );
   }
@@ -19,10 +22,12 @@ class UpdateWorkerProfile implements UseCase<void, UpdateWorkerProfileParams> {
 
 class UpdateWorkerProfileParams {
   final Map<String, String> editedFields;
+  final ProfileSection section;
   final Map<String, String>? newFilePaths;
 
   UpdateWorkerProfileParams({
     required this.editedFields,
+    required this.section,
     this.newFilePaths,
   });
 }

@@ -20,7 +20,7 @@ sealed class AuthState with _$AuthState {
   }) = _AuthState;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AuthViewModel extends _$AuthViewModel {
   bool _isInitialized = false;
 

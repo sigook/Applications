@@ -20,7 +20,7 @@ final class AuthViewModelProvider
         argument: null,
         retry: null,
         name: r'authViewModelProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class AuthViewModelProvider
   }
 }
 
-String _$authViewModelHash() => r'47001f2dedfae37f4e57dc42a2923401f44dfee8';
+String _$authViewModelHash() => r'e74b1eda201a4c32ce1e5c9494837221ead6edcf';
 
 abstract class _$AuthViewModel extends $Notifier<AuthState> {
   AuthState build();

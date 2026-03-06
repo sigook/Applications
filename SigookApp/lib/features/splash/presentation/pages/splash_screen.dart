@@ -6,7 +6,6 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../auth/domain/usecases/validate_token.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -126,44 +125,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       return;
     }
 
-    final expirationDateTime = token.expirationDateTime;
-    final isExpired =
-        expirationDateTime != null &&
-        DateTime.now().isAfter(expirationDateTime);
-
-    if (isExpired) {
-      debugPrint('🔐 [SPLASH] Token is expired, validating with backend...');
-    } else {
-      debugPrint(
-        '🔐 [SPLASH] Token not expired locally, validating with backend...',
-      );
-    }
-
-    final validateTokenUseCase = ref.read(validateTokenProvider);
-    final validationResult = await validateTokenUseCase(
-      ValidateTokenParams(accessToken: token.accessToken!),
-    );
-
-    if (!mounted || _hasNavigated) return;
-
-    validationResult.fold(
-      (failure) {
-        debugPrint('🔐 [SPLASH] Token validation failed: ${failure.message}');
-        debugPrint('🔐 [SPLASH] Redirecting to welcome for re-authentication');
-        _navigateToWelcome();
-      },
-      (isValid) async {
-        if (isValid) {
-          debugPrint('🔐 [SPLASH] Token is valid! Checking user role...');
-          await _checkRoleAndNavigate(token.accessToken!);
-        } else {
-          debugPrint(
-            '🔐 [SPLASH] Token validation returned false, redirecting to welcome',
-          );
-          _navigateToWelcome();
-        }
-      },
-    );
+    debugPrint('🔐 [SPLASH] Token found, checking user role...');
+    await _checkRoleAndNavigate(token.accessToken!);
   }
 
   Future<void> _checkRoleAndNavigate(String accessToken) async {

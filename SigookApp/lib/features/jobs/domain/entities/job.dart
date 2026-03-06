@@ -7,7 +7,7 @@ class Job extends Equatable {
   final int workersQuantity;
   final String? location;
   final String? entrance;
-  final String agencyFullName;
+  final String? agencyFullName;
   final String? agencyLogo;
   final String? status;
   final bool isAsap;
@@ -26,7 +26,7 @@ class Job extends Equatable {
     required this.workersQuantity,
     this.location,
     this.entrance,
-    required this.agencyFullName,
+    this.agencyFullName,
     this.agencyLogo,
     this.status,
     required this.isAsap,
