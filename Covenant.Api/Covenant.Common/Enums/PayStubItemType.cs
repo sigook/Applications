@@ -6,11 +6,12 @@
         Overtime,
         Missing,
         MissingOvertime,
-        HolidayPremiumPay,
+        StatutoryWorkedHoliday,
         NightShift,
         Other,
         OtherRegular,
         Vacations,
-        Reimbursement
+        Reimbursement,
+        StatutoryHoliday
     }
 }

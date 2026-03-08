@@ -21,7 +21,8 @@ using Covenant.Core.BL.Consumers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Invoices;
-using Covenant.Deductions.Repositories;
+using Covenant.Core.BL.Services.Shared;
+using Covenant.Common.Repositories;
 using Covenant.Deductions.Services;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
@@ -101,6 +102,9 @@ public static class ApiServicesConfiguration
         services.AddScoped<AgencyIdFilter>();
         services.AddScoped<CaptchaFilter>();
 
+        // Shared calculation services
+        services.AddScoped<ITimesheetCalculatorService, TimesheetCalculatorService>();
+
         // Invoice services with Strategy pattern
         services.AddScoped<UsaInvoiceService>();
         services.AddScoped<CanadaInvoiceService>();
@@ -110,7 +114,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<IPayrollDeductionsAndContributionsCalculator, PayrollDeductionsAndContributionsCalculator>();
         services.AddScoped<IPayStubPublicHolidays, PayStubPublicHolidays>();
         services.AddScoped<ISubContractorPublicHolidays, SubContractorPublicHolidays>();
-        services.AddScoped<CreatePayStubWithOutTimeSheet>();
         services.AddScoped<CreatePayStubUsingTimeSheet>();
         services.AddScoped<CreateReportSubcontractorUsingTimeSheet>();
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();

@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Utils.Extensions;
@@ -27,19 +27,18 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         Total = "F",
         GrossPayment = "G",
         Vacations = "H",
-        PublicHoliday = "I",
-        TotalEarnings = "J",
-        Cpp = "K",
-        Ei = "L",
-        FederalTax = "M",
-        ProvincialTax = "N",
-        OtherDeductions = "O",
-        TotalDeductions = "P",
-        TotalPaid = "Q",
-        WeekEnding = "R",
-        PaymentDate = "S",
-        Companies = "T",
-        Email = "U";
+        TotalEarnings = "I",
+        Cpp = "J",
+        Ei = "K",
+        FederalTax = "L",
+        ProvincialTax = "M",
+        OtherDeductions = "N",
+        TotalDeductions = "O",
+        TotalPaid = "P",
+        WeekEnding = "Q",
+        PaymentDate = "R",
+        Companies = "S",
+        Email = "T";
 
     private const int HeadRow = 2;
 
@@ -54,7 +53,6 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         Total,
         GrossPayment,
         Vacations,
-        PublicHoliday,
         TotalEarnings,
         Cpp,
         Ei,
@@ -100,7 +98,6 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
             worksheet.Cell($"{Email}{startIndex}").SetValue(payStub.Email);
             worksheet.Cell($"{GrossPayment}{startIndex}").SetValue(payStub.GrossPayment).SetMoneyType();
             worksheet.Cell($"{Vacations}{startIndex}").SetValue(payStub.Vacations).SetMoneyType();
-            worksheet.Cell($"{PublicHoliday}{startIndex}").SetValue(payStub.PublicHoliday).SetMoneyType();
             worksheet.Cell($"{TotalEarnings}{startIndex}").SetValue(payStub.TotalEarnings).SetMoneyType();
             worksheet.Cell($"{Cpp}{startIndex}").SetValue(payStub.Cpp).SetMoneyType();
             worksheet.Cell($"{Ei}{startIndex}").SetValue(payStub.Ei).SetMoneyType();
@@ -142,7 +139,6 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         worksheet.Cell($"{Total}{HeadRow}").SetValue("TOTAL");
         worksheet.Cell($"{GrossPayment}{HeadRow}").SetValue("GROSS");
         worksheet.Cell($"{Vacations}{HeadRow}").SetValue("VACATIONS");
-        worksheet.Cell($"{PublicHoliday}{HeadRow}").SetValue("PUBLIC HOLIDAY");
         worksheet.Cell($"{TotalEarnings}{HeadRow}").SetValue("TOTAL EARNINGS");
         worksheet.Cell($"{Cpp}{HeadRow}").SetValue("CPP");
         worksheet.Cell($"{Ei}{HeadRow}").SetValue("EI");
@@ -167,7 +163,6 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         worksheet.Column(Total).Width = 9;
         worksheet.Column(GrossPayment).Width = 9;
         worksheet.Column(Vacations).Width = 9;
-        worksheet.Column(PublicHoliday).Width = 12;
         worksheet.Column(TotalEarnings).Width = 13;
         worksheet.Column(Cpp).Width = 9;
         worksheet.Column(Ei).Width = 9;
@@ -184,18 +179,17 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
     private void SetTotals(IXLWorksheet worksheet, int startIndex)
     {
         var values = new[]
-        { 
-            GrossPayment, 
-            Vacations, 
-            PublicHoliday, 
-            TotalEarnings, 
-            Cpp, 
-            Ei, 
-            FederalTax, 
-            ProvincialTax, 
-            OtherDeductions, 
-            TotalDeductions, 
-            TotalPaid 
+        {
+            GrossPayment,
+            Vacations,
+            TotalEarnings,
+            Cpp,
+            Ei,
+            FederalTax,
+            ProvincialTax,
+            OtherDeductions,
+            TotalDeductions,
+            TotalPaid
         };
 
         foreach (var value in values)

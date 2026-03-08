@@ -44,9 +44,6 @@
             </tbody>
           </table>
         </b-table-column>
-        <b-table-column field="publicHolidays" label="Public Holidays" v-slot="props">
-          {{ props.row.publicHolidays | currency }}
-        </b-table-column>
         <b-table-column field="vacations" label="Vacations" v-slot="props">
           {{ props.row.vacations | currency }}
         </b-table-column>
@@ -62,7 +59,6 @@
             <template v-slot:content>
               <div><strong>Qty: </strong>{{ rowDetail.quantity }}</div>
               <div><strong>Total: </strong>{{ rowDetail.total | currency }}</div>
-              <div><strong>Public Holidays: </strong>{{ rowDetail.publicHolidays | currency }}</div>
               <div><strong>Vacations: </strong> {{ rowDetail.vacations | currency }}</div>
               <div><strong>Total Earnings: </strong>{{ rowDetail.totalEarnings | currency }}</div>
               <div><strong>Total Paid: </strong>{{ rowDetail.totalPaid | currency }}</div>

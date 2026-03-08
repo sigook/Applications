@@ -12,6 +12,8 @@ namespace Covenant.HtmlTemplates.Views.Billing.Payroll
         public string AgencyLocation { get; set; }
         public string AgencyPhone { get; set; }
         public string WorkerFullName { get; set; }
+        public string MaskedSin { get; set; }
+        public int EmployeeId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string AgencyFullName { get; set; }

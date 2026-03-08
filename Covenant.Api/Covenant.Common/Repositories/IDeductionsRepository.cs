@@ -1,9 +1,9 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
-using Covenant.Deductions.Entities;
-using Covenant.Deductions.Models;
+using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Models.Deductions;
 
-namespace Covenant.Deductions.Repositories
+namespace Covenant.Common.Repositories
 {
     public interface IDeductionsRepository
     {

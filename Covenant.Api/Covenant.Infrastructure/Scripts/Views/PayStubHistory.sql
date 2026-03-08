@@ -8,7 +8,6 @@ SELECT
     "WeekEnding",
     "TotalEarnings",
     "Vacations",
-    "PublicHolidayPay",
     "TotalPaid",
     "DateWorkBegins",
     "DateWorkEnd"

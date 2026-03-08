@@ -7,7 +7,6 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public string Email { get; set; }
         public decimal GrossPayment { get; set; }
         public decimal Vacations { get; set; }
-        public decimal PublicHoliday { get; set; }
         public decimal TotalEarnings { get; set; }
         public decimal Cpp { get; set; }
         public decimal Ei { get; set; }

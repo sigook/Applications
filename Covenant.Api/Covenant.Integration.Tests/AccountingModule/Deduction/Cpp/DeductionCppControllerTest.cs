@@ -1,9 +1,10 @@
 using Covenant.Api.AccountingModule.Deduction;
 using Covenant.Api.AccountingModule.Deduction.Cpp;
+using Covenant.Common.Entities.Deductions;
 using Covenant.Common.Models;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Deductions.Models;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Models.Deductions;
+using Covenant.Common.Repositories;
 using Covenant.Deductions.Services;
 using Covenant.Infrastructure.Context;
 using Covenant.Infrastructure.Deductions;
@@ -108,10 +109,10 @@ namespace Covenant.Integration.Tests.AccountingModule.Deduction.Cpp
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.CppWeekly.Add(new Deductions.Entities.CppWeekly(1, 1, 1, Year));
-                context.CppBiWeekly.Add(new Deductions.Entities.CppBiWeekly(2, 2, 2, Year));
-                context.CppSemiMonthly.Add(new Deductions.Entities.CppSemiMonthly(3, 3, 3, Year));
-                context.CppMonthly.Add(new Deductions.Entities.CppMonthly(4, 4, 4, Year));
+                context.CppWeekly.Add(new CppWeekly(1, 1, 1, Year));
+                context.CppBiWeekly.Add(new CppBiWeekly(2, 2, 2, Year));
+                context.CppSemiMonthly.Add(new CppSemiMonthly(3, 3, 3, Year));
+                context.CppMonthly.Add(new CppMonthly(4, 4, 4, Year));
                 context.SaveChanges();
             }
         }

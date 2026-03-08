@@ -29,12 +29,23 @@
         </div>
         <div style="margin: 15px 0 0">
             <div style="margin-bottom: 3px;">
-                <b> Worker Full Name: </b><span style="font-weight: 200;">@Model.WorkerFullName</span>
+                <b> Employee Full Name: </b><span style="font-weight: 200;">@Model.WorkerFullName</span>
             </div>
 
             <div style="margin-bottom: 3px;">
-                <b> Type of work: </b><span style="font-weight: 200;">@Model.TypeOfJob</span>
+                <b> Position: </b><span style="font-weight: 200;">@Model.TypeOfJob</span>
             </div>
+
+            <div style="margin-bottom: 3px;">
+                <b> Employee ID: </b><span style="font-weight: 200;">@Model.EmployeeId</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.MaskedSin))
+            {
+                <div style="margin-bottom: 3px;">
+                    <b> SIN: </b><span style="font-weight: 200;">@Model.MaskedSin</span>
+                </div>
+            }
 
             <div style="margin-bottom: 3px;">
                 <b> Dates of work: </b><span style="font-weight: 200;">@Model.StartDate.ToString("D",CultureInfo.InvariantCulture) - @Model.EndDate.ToString("D",CultureInfo.InvariantCulture)</span>

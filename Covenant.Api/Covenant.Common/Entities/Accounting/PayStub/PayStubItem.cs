@@ -11,7 +11,8 @@ namespace Covenant.Common.Entities.Accounting.PayStub
         public const string RegularHoursLabel = "Regular hours";
         public const string OtherRegularHoursLabel = "Other Regular hours";
         public const string OvertimeHoursLabel = "Overtime hours";
-        public const string HolidayPremiumPayHoursLabel = "Statutory worked holiday pay";
+        public const string StatutoryWorkedHolidayLabel = "Statutory worked holiday pay";
+        public const string StatutoryHolidayLabel = "Statutory holiday";
         public const string NightShiftHoursLabel = "Night Shift hours";
         public const string MissingHoursLabel = "Missing hours";
         public const string MissingOvertimeHoursLabel = "Missing overtime hours";
@@ -58,8 +59,16 @@ namespace Covenant.Common.Entities.Accounting.PayStub
         public static Result<PayStubItem> CreateOvertime(double quantity, decimal unitPrice) =>
             CreateItem(OvertimeHoursLabel, quantity, unitPrice, PayStubItemType.Overtime);
 
+        public static Result<PayStubItem> CreateStatutoryWorkedHoliday(double quantity, decimal unitPrice) =>
+            CreateItem(StatutoryWorkedHolidayLabel, quantity, unitPrice, PayStubItemType.StatutoryWorkedHoliday);
+
         public static Result<PayStubItem> CreateHolidayPremiumPay(double quantity, decimal unitPrice) =>
-            CreateItem(HolidayPremiumPayHoursLabel, quantity, unitPrice, PayStubItemType.HolidayPremiumPay);
+            CreateStatutoryWorkedHoliday(quantity, unitPrice);
+
+        public static Result<PayStubItem> CreateStatutoryHoliday(decimal total) =>
+            total <= 0
+            ? Result.Fail<PayStubItem>("Statutory holiday must be greater than zero")
+            : Result.Ok(new PayStubItem(StatutoryHolidayLabel, 1, total, PayStubItemType.StatutoryHoliday));
 
         public static Result<PayStubItem> CreateNightShift(double quantity, decimal unitPrice) =>
             CreateItem(NightShiftHoursLabel, quantity, unitPrice, PayStubItemType.NightShift);

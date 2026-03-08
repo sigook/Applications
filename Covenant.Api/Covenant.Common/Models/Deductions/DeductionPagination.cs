@@ -1,6 +1,6 @@
 using Covenant.Common.Models;
 
-namespace Covenant.Deductions.Models
+namespace Covenant.Common.Models.Deductions
 {
     public class DeductionPagination : Pagination
     {

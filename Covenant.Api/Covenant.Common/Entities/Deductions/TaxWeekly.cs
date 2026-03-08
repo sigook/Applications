@@ -1,6 +1,6 @@
 using System;
 
-namespace Covenant.Deductions.Entities
+namespace Covenant.Common.Entities.Deductions
 {
     public class TaxWeekly : IFederalTax
     {

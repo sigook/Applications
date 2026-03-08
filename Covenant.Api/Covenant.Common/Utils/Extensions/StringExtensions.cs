@@ -41,5 +41,12 @@ namespace Covenant.Common.Utils.Extensions
             int length = value?.Length ?? 0;
             return length >= min && length <= max;
         }
+
+        public static string MaskSIN(this string sin)
+        {
+            if (string.IsNullOrEmpty(sin)) return string.Empty;
+            var lastFour = sin.Length <= 4 ? sin : sin.Substring(sin.Length - 4);
+            return "******" + lastFour;
+        }
     }
 }

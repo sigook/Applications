@@ -1,4 +1,5 @@
 using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Utils.Extensions;
 using Covenant.HtmlTemplates.Views.Billing.Payroll;
 
 namespace Covenant.Api.Shared.PayrollDocument.Models
@@ -17,6 +18,8 @@ namespace Covenant.Api.Shared.PayrollDocument.Models
                 AgencyFullName = model.AgencyFullName,
                 AgencyLogoFileName = model.AgencyLogoFileName,
                 WorkerFullName = model.WorkerFullName,
+                MaskedSin = model.SinNumber.MaskSIN(),
+                EmployeeId = model.EmployeeId,
                 WorkerEmail = model.WorkerEmail,
                 TypeOfJob = model.TypeOfJob,
                 StartDate = model.StartDate,
@@ -57,7 +60,6 @@ namespace Covenant.Api.Shared.PayrollDocument.Models
                     new PayrollTable2Item("Gross Payment (+)", model.Gross.ToString("C")),
                     new PayrollTable2Item("Vacations (+)", model.Vacations.ToString("C"))
                 };
-                if (model.Holiday > 0) result.Add(new PayrollTable2Item("Holidays (+)", model.Holiday.ToString("C")));
                 result.Add(new PayrollTable2Item("Total Earnings (+)", model.Earnings.ToString("C")));
                 return result;
             }

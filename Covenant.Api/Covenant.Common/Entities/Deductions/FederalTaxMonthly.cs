@@ -1,11 +1,11 @@
 using System;
 
-namespace Covenant.Deductions.Entities
+namespace Covenant.Common.Entities.Deductions
 {
-	public class ProvincialTaxSemiMonthly : IProvincialTax
+	public class FederalTaxMonthly : IFederalTax
 	{
-		private ProvincialTaxSemiMonthly(){}
-		public ProvincialTaxSemiMonthly(decimal @from, 
+		private FederalTaxMonthly(){}
+		public FederalTaxMonthly(decimal @from, 
 			decimal to,
 			decimal? cc0, 
 			decimal? cc1,
@@ -38,7 +38,7 @@ namespace Covenant.Deductions.Entities
 			Id = id ?? Guid.NewGuid();
 		}
 
-		public ProvincialTaxSemiMonthly(ITax tax)
+		public FederalTaxMonthly(ITax tax)
 		{
 			if (tax is null) throw new ArgumentNullException(nameof(tax));
 			From = tax.From;

@@ -1782,7 +1782,7 @@ export default {
     generatePayStubs(context, workerIds) {
       return new Promise((resolve, reject) => {
         http
-          .post(`/api/agency/accounting/PayStubs/Generate`, workerIds)
+          .post(`/api/agency/accounting/PayStubs/generate-v2`, workerIds)
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response));
       });

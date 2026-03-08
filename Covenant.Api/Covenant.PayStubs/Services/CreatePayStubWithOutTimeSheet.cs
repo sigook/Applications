@@ -9,6 +9,7 @@ using Covenant.PayStubs.Utils;
 
 namespace Covenant.PayStubs.Services
 {
+    [Obsolete("Use IPayStubService.CreateManualPayStub instead")]
     public class CreatePayStubWithOutTimeSheet
     {
         private readonly Rates _rates;

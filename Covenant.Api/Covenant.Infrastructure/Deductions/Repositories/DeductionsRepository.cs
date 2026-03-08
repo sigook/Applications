@@ -1,7 +1,7 @@
 using Covenant.Common.Models;
-using Covenant.Deductions.Entities;
-using Covenant.Deductions.Models;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Models.Deductions;
+using Covenant.Common.Repositories;
 using Covenant.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Covenant.Common.Utils.Extensions;

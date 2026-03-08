@@ -1,15 +1,10 @@
 using Covenant.Api.AccountingModule.Shared;
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Repositories.Request;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using Covenant.PayStubs.Models;
-using Covenant.PayStubs.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AccountingModule.PayStub.Controllers;
@@ -23,24 +18,25 @@ public class AccountingPayStubV4Controller : AccountingBaseController
     private readonly IPayStubRepository _payStubRepository;
     private readonly IAgencyRepository _agencyRepository;
     private readonly IAccountingService accountingService;
+    private readonly IPayStubService payStubService;
 
     public AccountingPayStubV4Controller(
         IPayStubRepository payStubRepository,
         IAgencyRepository agencyRepository,
-        IAccountingService accountingService)
+        IAccountingService accountingService,
+        IPayStubService payStubService)
     {
         _payStubRepository = payStubRepository;
         _agencyRepository = agencyRepository;
         this.accountingService = accountingService;
+        this.payStubService = payStubService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(
-        [FromServices] CreatePayStubWithOutTimeSheet service,
-        [FromBody] CreatePayStubModel model)
+    public async Task<IActionResult> Post([FromBody] CreatePayStubModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = await service.Create(model);
+        var result = await payStubService.CreateManualPayStub(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         var id = result.Value.Id;
         return CreatedAtAction(nameof(GetById), new { id = id }, new { });

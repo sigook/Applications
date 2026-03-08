@@ -80,8 +80,8 @@ namespace Covenant.Tests.Billing.PayStubTest
                 holiday, default)};
             List<Result<PayStubItem>> sub = totals.ToPayStubItems();
             Assert.Single(sub);
-            PayStubItem item = sub.Single(r => r.Value.Type == PayStubItemType.HolidayPremiumPay).Value;
-            Assert.Equal(PayStubItem.HolidayPremiumPayHoursLabel, item.Description);
+            PayStubItem item = sub.Single(r => r.Value.Type == PayStubItemType.StatutoryWorkedHoliday).Value;
+            Assert.Equal(PayStubItem.StatutoryWorkedHolidayLabel, item.Description);
             Assert.Equal(holiday.TotalHours, item.Quantity);
             Assert.Equal(workerRate, item.UnitPrice);
             Assert.Equal((decimal)holiday.TotalHours, item.Total);

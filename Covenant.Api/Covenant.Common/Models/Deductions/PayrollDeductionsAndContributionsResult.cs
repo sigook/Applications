@@ -1,4 +1,4 @@
-namespace Covenant.Deductions.Models
+namespace Covenant.Common.Models.Deductions
 {
 	public readonly struct PayrollDeductionsAndContributionsResult
 	{

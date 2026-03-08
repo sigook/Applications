@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
-using Covenant.Deductions.Entities;
+using Covenant.Common.Entities.Deductions;
 using Microsoft.Extensions.Logging;
 
 namespace Covenant.Infrastructure.Deductions

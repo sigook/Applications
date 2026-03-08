@@ -1,7 +1,7 @@
-﻿using Covenant.Deductions.Entities;
+﻿using Covenant.Common.Entities.Deductions;
 using System;
 
-namespace Covenant.Deductions.Models
+namespace Covenant.Common.Models.Deductions
 {
     public class CppModel : ICpp
     {

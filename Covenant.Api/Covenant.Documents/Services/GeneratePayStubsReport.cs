@@ -19,7 +19,7 @@ public class GeneratePayStubsReport : IRequest<ResultGenerateDocument<byte[]>>
     {
         "N° Pay Stub",
         "Created At",
-        "Worker Full Name",
+        "Employee Full Name",
         "Total Paid"
     };
 }

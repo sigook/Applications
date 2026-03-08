@@ -1,5 +1,5 @@
 using Covenant.Common.Entities.Worker;
-using Covenant.Deductions.Models;
+using Covenant.Common.Models.Deductions;
 
 namespace Covenant.Deductions.Services;
 

@@ -13,18 +13,17 @@ namespace Covenant.Common.Models.Worker
         public decimal? TotalEarnings { get; set; }
         public decimal? TotalPaid { get; set; }
         public decimal? Vacations { get; set; }
-        public decimal? PublicHolidays { get; set; }
         public double? RegularHours { get; set; }
         public double? OvertimeHours { get; set; }
         public double? MissingHours { get; set; }
         public double? MissingOvertimeHours { get; set; }
-        public double? HolidayPremiumPayHours { get; set; }
+        public double? StatutoryWorkedHolidayHours { get; set; }
 
         public double TotalHours =>
             RegularHours.GetValueOrDefault() +
             OvertimeHours.GetValueOrDefault() +
             MissingHours.GetValueOrDefault() +
             MissingOvertimeHours.GetValueOrDefault() +
-            HolidayPremiumPayHours.GetValueOrDefault();
+            StatutoryWorkedHolidayHours.GetValueOrDefault();
     }
 }

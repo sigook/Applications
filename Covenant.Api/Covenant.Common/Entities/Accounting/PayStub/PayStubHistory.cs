@@ -10,7 +10,6 @@ public class PayStubHistory
     public DateTime WeekEnding { get; set; }
     public decimal TotalEarnings { get; set; }
     public decimal Vacations { get; set; }
-    public decimal PublicHolidayPay { get; set; }
     public decimal TotalPaid { get; set; }
     public DateTime DateWorkBegins { get; set; }
     public DateTime DateWorkEnd { get; set; }
