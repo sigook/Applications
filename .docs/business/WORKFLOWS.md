@@ -790,7 +790,7 @@ await _pushNotificationService.SendAsync(
 
 **Actor:** System (automatic after approval)
 
-**See:** `.docs/TIMESHEET_RULES.md` for detailed calculation logic
+**See:** `.docs/business/TIMESHEET_RULES.md` for detailed calculation logic
 
 **Summary:**
 ```csharp
@@ -815,7 +815,7 @@ await _timeSheetTotalRepository.AddAsync(total);
 ### Overview
 Agency generates pay stubs for period → System calculates deductions → PDF generated → Worker receives.
 
-**See:** `.docs/PAYROLL_RULES.md` for detailed payroll calculations
+**See:** `.docs/business/PAYROLL_RULES.md` for detailed payroll calculations
 
 ---
 
@@ -1019,7 +1019,7 @@ await _pushNotificationService.SendAsync(
 ### Overview
 Agency generates invoice for company for period → System calculates totals with markup → PDF generated → Company receives.
 
-**See:** `.docs/BILLING_RULES.md` for detailed billing calculations
+**See:** `.docs/business/BILLING_RULES.md` for detailed billing calculations
 
 ---
 

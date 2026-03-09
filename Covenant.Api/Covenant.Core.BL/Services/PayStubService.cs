@@ -661,7 +661,8 @@ public class PayStubService : IPayStubService
 
     private void Accumulate(Dictionary<decimal, double> dict, decimal rate, double hours)
     {
-        if (!dict.ContainsKey(rate)) dict[rate] = 0;
+        if (!dict.ContainsKey(rate)) 
+            dict[rate] = 0;
         dict[rate] += hours;
     }
 

@@ -1,38 +1,36 @@
 # CLAUDE.md
 
+## What is Covenant/Sigook?
+
+Covenant/Sigook is a **staffing and recruitment platform** built for the Canadian market. It connects temporary staffing agencies with companies that need workers, managing the full lifecycle: worker recruitment, job matching, time tracking, payroll (with Canadian tax deductions — CPP, EI, Federal/Provincial taxes), invoicing, and compliance.
+
+**Core actors**: Agencies (intermediaries), Companies (clients needing staff), Workers (job seekers via mobile app), and Candidates (pre-registration prospects managed by agencies).
+
+**Business flow**: Agency registers Company with job positions and rates → Worker registers via Flutter app → Agency approves Worker → Company/Agency creates a Request (job order) → Worker applies or gets assigned → Worker clocks in/out daily → Agency approves timesheets → System calculates pay stubs with deductions → System generates invoices for Company with markup.
+
+**Revenue model**: Agencies profit from the markup between AgencyRate (billed to Company) and WorkerRate (paid to Worker).
+
 ## Business Rules & Documentation
 
 Before implementing any feature, read the relevant document from `.docs/`:
 
 | Area | Document |
 |------|----------|
-| Business model & actors | `.docs/BUSINESS_MODEL.md` |
-| Architecture & stack | `.docs/ARCHITECTURE.md` |
-| Data model & relationships | `.docs/ENTITIES_RELATIONSHIPS.md` |
-| API endpoints | `.docs/API_ENDPOINTS.md` |
-| Payroll (CPP, EI, taxes) | `.docs/PAYROLL_RULES.md` |
-| Billing (rates, HST/GST) | `.docs/BILLING_RULES.md` |
-| Pay stub generation flow | `.docs/PAYSTUB_GENERATION.md` |
-| Timesheets (OT, night, holiday) | `.docs/TIMESHEET_RULES.md` |
-| Workflows step-by-step | `.docs/WORKFLOWS.md` |
-| Request state management | `.docs/REQUEST_STATE_MANAGEMENT.md` |
-| CI/CD pipelines | `.docs/PIPELINES.md` |
+| Business model & actors | `.docs/business/BUSINESS_MODEL.md` |
+| Billing (rates, HST/GST) | `.docs/business/BILLING_RULES.md` |
+| Payroll (CPP, EI, taxes) | `.docs/business/PAYROLL_RULES.md` |
+| Pay stub generation flow | `.docs/business/PAYSTUB_GENERATION.md` |
+| Timesheets (OT, night, holiday) | `.docs/business/TIMESHEET_RULES.md` |
+| Workflows step-by-step | `.docs/business/WORKFLOWS.md` |
+| Request state management | `.docs/business/REQUEST_STATE_MANAGEMENT.md` |
+| Architecture & stack | `.docs/technical/ARCHITECTURE.md` |
+| API endpoints | `.docs/technical/API_ENDPOINTS.md` |
+| Data model & relationships | `.docs/technical/ENTITIES_RELATIONSHIPS.md` |
+| Development commands | `.docs/technical/DEVELOPMENT_COMMANDS.md` |
+| CI/CD pipelines | `.docs/technical/PIPELINES.md` |
 | Full index | `.docs/README.md` |
 
 If you change business rules, update the corresponding `.docs/` file.
-
-## Monorepo Structure
-
-| Project | Tech | Purpose |
-|---------|------|---------|
-| `SigookApp/` | Flutter (Dart 3.9) | Mobile app - worker registration & job matching |
-| `Sigook.Web/` | Vue.js 2, Node 16 | Main web platform |
-| `Covenant.Web/` | Vue.js 3, TypeScript, Vite | Marketing website |
-| `Covenant.Api/` | .NET 8, PostgreSQL, EF Core | Backend API (15+ projects) |
-| `Covenant.IdentityServer/` | .NET 6, IdentityServer4 | Auth server (OIDC/OAuth 2.0) |
-| `Sigook.Functions/` | .NET 8, Azure Functions v4 | Background jobs & scheduled tasks |
-| `Sigook.CognitiveServices/` | .NET 8 | AI/Cognitive services |
-| `.azure-pipelines/` | YAML | CI/CD (see `.docs/PIPELINES.md`) |
 
 ## Mandatory Rules
 
@@ -41,95 +39,97 @@ If you change business rules, update the corresponding `.docs/` file.
 - Follow existing patterns in each project (repository pattern, DI, service layer)
 - Run tests before committing (`dotnet test` for .NET, `flutter test` for Flutter)
 
-## Development Commands
+## Code Navigation
 
 ### Covenant.Api (.NET 8)
 
-```bash
-dotnet build Covenant.Api/Covenant.Api.sln
-dotnet run --project Covenant.Api/Covenant.Api
-dotnet watch run --project Covenant.Api/Covenant.Api
-dotnet test                                                    # All tests
-dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj  # Unit only
-dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api
 ```
-
-Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging, publishes `Covenant.Common` NuGet package.
+Controllers:     Covenant.Api/Covenant.Api/Controllers/Sigook/          (root: Catalog, File, Location)
+                 Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/   (Agency, AgencyLocation)
+                 Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Accounting/ (Invoices, PayStubs, Reports)
+Module controllers: Covenant.Api/Covenant.Api/{Module}Module/           (AccountingModule, AgencyModule, CompanyModule, WorkerModule, ManagerModule)
+Services:        Covenant.Api/Covenant.Core.BL/Services/                (PayStubService, RequestService, WorkerService, etc.)
+                 Covenant.Api/Covenant.Core.BL/Services/Invoices/       (CanadaInvoiceService, UsaInvoiceService)
+Entities:        Covenant.Api/Covenant.Common/Entities/{Domain}/        (Accounting/, Agency/, Company/, Request/, Worker/, Candidate/)
+Models/DTOs:     Covenant.Api/Covenant.Common/Models/{Domain}/          (mirrors Entities structure)
+Repo interfaces: Covenant.Api/Covenant.Common/Repositories/{Domain}/
+Repo impls:      Covenant.Api/Covenant.Infrastructure/Repositories/{Domain}/
+EF configs:      Covenant.Api/Covenant.Infrastructure/Configurations/{Domain}/
+Migrations:      Covenant.Api/Covenant.Infrastructure/Migrations/
+DI registration: Covenant.Api/Covenant.Api/Configuration/ApiServicesConfiguration.cs
+Tests:           Covenant.Api/Covenant.Tests/
+```
 
 ### SigookApp (Flutter)
 
-```bash
-cd SigookApp
-flutter pub get
-flutter run --flavor staging -t lib/main_staging.dart
-flutter run --flavor production -t lib/main_production.dart
-flutter pub run build_runner build --delete-conflicting-outputs  # Code gen (Freezed, Riverpod)
-flutter test
-flutter analyze
+```
+Features:        SigookApp/lib/features/{feature}/                      (auth, registration, jobs, profile, history, catalog)
+  Each feature:    domain/ (entities, repositories, usecases)
+                   data/ (models, datasources, repositories impl)
+                   presentation/ (pages, widgets, viewmodels, providers)
+Core:            SigookApp/lib/core/                                    (config, network, routing, theme, providers, error, widgets)
 ```
 
-### Sigook.Web (Vue.js 2)
+### Sigook.Web (Vue 2)
 
-```bash
-cd Sigook.Web
-npm ci && npm run serve          # Dev
-npm run staging                  # Build staging
-npm run production               # Build production
+```
+Components:      Sigook.Web/src/components/{domain}/
+Pages:           Sigook.Web/src/pages/
+Store:           Sigook.Web/src/store/modules/
+Auth:            Sigook.Web/src/security/
+i18n:            Sigook.Web/src/lang/
 ```
 
-Note: output dir is `wwwroot/` (not `dist/`).
+### Covenant.Web (Vue 3)
 
-### Covenant.Web (Vue.js 3) - Requires Node ^20.19.0 or >=22.12.0
-
-```bash
-cd Covenant.Web
-npm install && npm run dev       # Dev
-npm run build:staging            # Build staging
-npm run build:production         # Build production
-npm run type-check               # TypeScript check
+```
+Components:      Covenant.Web/src/components/{feature}/
+Views:           Covenant.Web/src/views/
+Stores:          Covenant.Web/src/stores/
+Composables:     Covenant.Web/src/composables/
+Services:        Covenant.Web/src/services/
 ```
 
-### Covenant.IdentityServer (.NET 6)
-
-```bash
-dotnet build Covenant.IdentityServer/Covenant.IdentityServer.sln
-dotnet run --project Covenant.IdentityServer/Covenant.IdentityServer
-dotnet test Covenant.IdentityServer/Covenant.IdentityServer.Tests
-```
-
-Requires `PatSigookPackages` env var for Azure Artifacts NuGet restore.
-
-### Sigook.Functions (.NET 8 Azure Functions)
-
-```bash
-dotnet build Sigook.Functions/Sigook.Functions.sln
-cd Sigook.Functions/Sigook.Functions && func start   # Local run (requires Azure Functions Core Tools v4)
-```
-
-Functions: `SendEmail` (HTTP), `SendInvitationToApply` (Queue), `NotificationSinExpiration` (Timer), `WarnLicensesExpiration` (Timer).
-
-## Architecture Quick Reference
+## Naming Conventions
 
 ### Covenant.Api
-- **Modules**: Agency, Company, Worker, Accounting (each with controller hierarchy)
-- **Projects**: `Covenant.Common` (shared entities/interfaces), `Covenant.Infrastructure` (EF Core/repos), `Covenant.Core.BL` (business logic), `Covenant.Deductions` (tax calc), `Covenant.Documents` (Excel/PDF), `Covenant.PayStubs`, `Covenant.TimeSheetTotal`, `Covenant.Subcontractor`
-- **Patterns**: Repository + DI, CQRS with MediatR, Azure Service Bus consumers, AutoMapper, FluentValidation
-- **Config**: `ConnectionStrings__DefaultConnection` (PostgreSQL), Azure Storage, Azure Service Bus, SendGrid, Teams webhooks
 
-### SigookApp
-- **Clean Architecture**: Domain (entities, use cases, value objects) → Data (Freezed models/DTOs, datasources, repos) → Presentation (pages, widgets, Riverpod providers/viewmodels)
-- **Key libs**: Riverpod (state), GoRouter (routing), Freezed (immutability), Dartz (`Either<Failure, Success>` error handling), Dio (HTTP), flutter_appauth (OIDC)
-- **Features**: organized by domain in `lib/features/` (registration, auth, jobs)
-- **Env**: `.env.staging` / `.env.production` via flutter_dotenv, build flavors in `android/app/build.gradle.kts`
+| Type | Pattern | Example |
+|------|---------|---------|
+| Entity | `{Name}.cs` | `PayStub.cs`, `Invoice.cs` |
+| Child entity | `{Parent}{Child}.cs` | `PayStubItem.cs`, `InvoiceDiscount.cs` |
+| Service interface | `I{Name}Service.cs` | `IPayStubService.cs` |
+| Service impl | `{Name}Service.cs` | `PayStubService.cs` |
+| Repository interface | `I{Name}Repository.cs` | `IPayStubRepository.cs` |
+| Repository impl | `{Name}Repository.cs` | `PayStubRepository.cs` |
+| EF configuration | `{Entity}Configuration.cs` | `PayStubHistoryConfiguration.cs` |
+| Create model | `Create{Name}Model.cs` | `CreatePayStubModel.cs` |
+| Detail model | `{Name}DetailModel.cs` | `PayStubDetailModel.cs` |
+| List model | `{Name}ListModel.cs` | `InvoiceListModel.cs` |
+| Filter model | `Get{Name}Filter.cs` | `GetPayStubsFilter.cs` |
+| Versioned controller | `{Module}{Resource}V{N}Controller.cs` | `AccountingPayStubV4Controller.cs` |
 
-### Sigook.Web
-- **Stack**: Vue 2.6 + Vuex + Vue Router + Buefy + Axios + OIDC Client
-- **Auth**: OIDC-based (`src/security/`), i18n via `vue-i18n` (`src/lang/`)
+All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`.
 
-### Covenant.Web
-- **Stack**: Vue 3.5 + TypeScript + Pinia + Vue Router + Vite
-- **Alias**: `@` maps to `src/` (configured in `vite.config.ts`)
+### SigookApp (Flutter)
 
-## CI/CD
+| Type | Pattern | Example |
+|------|---------|---------|
+| Model (Freezed) | `{name}_model.dart` | `job_model.dart` |
+| Entity | `{name}.dart` | `job.dart`, `timesheet_entry.dart` |
+| Provider | `{name}_provider.dart` | `core_providers.dart` |
+| ViewModel | `{name}_viewmodel.dart` | `registration_viewmodel.dart` |
 
-Pipelines use path-based triggers (each app deploys independently). Branch `dev` → Staging (auto-deploy), `main` → Production (manual trigger only). PRs to `dev` run full validation; PRs to `main` skip validation (already tested on dev). See `.docs/PIPELINES.md` for full details.
+### Sigook.Web / Covenant.Web (Vue)
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Component | `PascalCase.vue` | `ProfileForm.vue`, `HeroSection.vue` |
+| Store (Vuex/Pinia) | `camelCase.js/.ts` | `workers.js`, `jobs.ts` |
+
+## User Preferences
+
+- Respond always in Spanish
+- Do not auto-commit; only commit when explicitly asked
+- Show the plan before executing large changes (3+ files)
+- When working on payroll or billing, always run `dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj` before presenting the result

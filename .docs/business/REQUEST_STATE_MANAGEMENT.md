@@ -751,8 +751,8 @@ No hay impacto significativo de performance:
 
 - **Código fuente:** `Covenant.Api/Covenant.Common/Entities/Request/Request.cs`
 - **Tests:** `Covenant.Tests/Request/RequestTest.cs`
-- **Documentación de negocio:** `.docs/BUSINESS_MODEL.md` (líneas 179-228)
-- **Workflows:** `.docs/WORKFLOWS.md` (líneas 394-593)
+- **Documentación de negocio:** `.docs/business/BUSINESS_MODEL.md` (líneas 179-228)
+- **Workflows:** `.docs/business/WORKFLOWS.md` (líneas 394-593)
 
 ---
 
