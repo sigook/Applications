@@ -176,7 +176,7 @@ class TermsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const LegalPage(
       title: 'Terms & Conditions',
-      lastUpdated: 'Current version',
+      lastUpdated: 'February 01, 2026',
       sections: _sections,
     );
   }
