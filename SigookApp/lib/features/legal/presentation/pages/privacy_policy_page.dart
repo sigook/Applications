@@ -168,7 +168,7 @@ class PrivacyPolicyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const LegalPage(
       title: 'Privacy Policy',
-      lastUpdated: 'November 28, 2022',
+      lastUpdated: 'February 01, 2026',
       sections: _sections,
     );
   }
