@@ -39,93 +39,17 @@ If you change business rules, update the corresponding `.docs/` file.
 - Follow existing patterns in each project (repository pattern, DI, service layer)
 - Run tests before committing (`dotnet test` for .NET, `flutter test` for Flutter)
 
-## Code Navigation
+## Monorepo Structure
 
-### Covenant.Api (.NET 8)
-
-```
-Controllers:     Covenant.Api/Covenant.Api/Controllers/Sigook/          (root: Catalog, File, Location)
-                 Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/   (Agency, AgencyLocation)
-                 Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Accounting/ (Invoices, PayStubs, Reports)
-Module controllers: Covenant.Api/Covenant.Api/{Module}Module/           (AccountingModule, AgencyModule, CompanyModule, WorkerModule, ManagerModule)
-Services:        Covenant.Api/Covenant.Core.BL/Services/                (PayStubService, RequestService, WorkerService, etc.)
-                 Covenant.Api/Covenant.Core.BL/Services/Invoices/       (CanadaInvoiceService, UsaInvoiceService)
-Entities:        Covenant.Api/Covenant.Common/Entities/{Domain}/        (Accounting/, Agency/, Company/, Request/, Worker/, Candidate/)
-Models/DTOs:     Covenant.Api/Covenant.Common/Models/{Domain}/          (mirrors Entities structure)
-Repo interfaces: Covenant.Api/Covenant.Common/Repositories/{Domain}/
-Repo impls:      Covenant.Api/Covenant.Infrastructure/Repositories/{Domain}/
-EF configs:      Covenant.Api/Covenant.Infrastructure/Configurations/{Domain}/
-Migrations:      Covenant.Api/Covenant.Infrastructure/Migrations/
-DI registration: Covenant.Api/Covenant.Api/Configuration/ApiServicesConfiguration.cs
-Tests:           Covenant.Api/Covenant.Tests/
-```
-
-### SigookApp (Flutter)
-
-```
-Features:        SigookApp/lib/features/{feature}/                      (auth, registration, jobs, profile, history, catalog)
-  Each feature:    domain/ (entities, repositories, usecases)
-                   data/ (models, datasources, repositories impl)
-                   presentation/ (pages, widgets, viewmodels, providers)
-Core:            SigookApp/lib/core/                                    (config, network, routing, theme, providers, error, widgets)
-```
-
-### Sigook.Web (Vue 2)
-
-```
-Components:      Sigook.Web/src/components/{domain}/
-Pages:           Sigook.Web/src/pages/
-Store:           Sigook.Web/src/store/modules/
-Auth:            Sigook.Web/src/security/
-i18n:            Sigook.Web/src/lang/
-```
-
-### Covenant.Web (Vue 3)
-
-```
-Components:      Covenant.Web/src/components/{feature}/
-Views:           Covenant.Web/src/views/
-Stores:          Covenant.Web/src/stores/
-Composables:     Covenant.Web/src/composables/
-Services:        Covenant.Web/src/services/
-```
-
-## Naming Conventions
-
-### Covenant.Api
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Entity | `{Name}.cs` | `PayStub.cs`, `Invoice.cs` |
-| Child entity | `{Parent}{Child}.cs` | `PayStubItem.cs`, `InvoiceDiscount.cs` |
-| Service interface | `I{Name}Service.cs` | `IPayStubService.cs` |
-| Service impl | `{Name}Service.cs` | `PayStubService.cs` |
-| Repository interface | `I{Name}Repository.cs` | `IPayStubRepository.cs` |
-| Repository impl | `{Name}Repository.cs` | `PayStubRepository.cs` |
-| EF configuration | `{Entity}Configuration.cs` | `PayStubHistoryConfiguration.cs` |
-| Create model | `Create{Name}Model.cs` | `CreatePayStubModel.cs` |
-| Detail model | `{Name}DetailModel.cs` | `PayStubDetailModel.cs` |
-| List model | `{Name}ListModel.cs` | `InvoiceListModel.cs` |
-| Filter model | `Get{Name}Filter.cs` | `GetPayStubsFilter.cs` |
-| Versioned controller | `{Module}{Resource}V{N}Controller.cs` | `AccountingPayStubV4Controller.cs` |
-
-All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`.
-
-### SigookApp (Flutter)
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Model (Freezed) | `{name}_model.dart` | `job_model.dart` |
-| Entity | `{name}.dart` | `job.dart`, `timesheet_entry.dart` |
-| Provider | `{name}_provider.dart` | `core_providers.dart` |
-| ViewModel | `{name}_viewmodel.dart` | `registration_viewmodel.dart` |
-
-### Sigook.Web / Covenant.Web (Vue)
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Component | `PascalCase.vue` | `ProfileForm.vue`, `HeroSection.vue` |
-| Store (Vuex/Pinia) | `camelCase.js/.ts` | `workers.js`, `jobs.ts` |
+| Application | Stack | Description |
+|-------------|-------|-------------|
+| `Covenant.Api/` | .NET 8 | Backend API — see `Covenant.Api/CLAUDE.md` |
+| `SigookApp/` | Flutter | Worker mobile app — see `SigookApp/CLAUDE.md` |
+| `Sigook.Web/` | Vue 2 | Agency web portal (legacy) — see `Sigook.Web/CLAUDE.md` |
+| `Covenant.Web/` | Vue 3 | Agency web portal (new) — see `Covenant.Web/CLAUDE.md` |
+| `Covenant.IdentityServer/` | .NET 6 | Authentication server (IdentityServer4) — see `Covenant.IdentityServer/CLAUDE.md` |
+| `Sigook.CognitiveServices/` | .NET | AI/ML services (Azure Cognitive) — see `Sigook.CognitiveServices/CLAUDE.md` |
+| `Sigook.Functions/` | Azure Functions (.NET 8) | Background jobs — see `Sigook.Functions/CLAUDE.md` |
 
 ## User Preferences
 
