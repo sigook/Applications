@@ -8,7 +8,6 @@ namespace Covenant.Common.Models.Worker
         public DateTime WeekEnding { get; set; }
         public decimal TotalEarnings { get; set; }
         public decimal Vacations { get; set; }
-        public decimal PublicHolidays { get; set; }
         public decimal TotalPaid { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }

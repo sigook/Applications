@@ -42,7 +42,7 @@ namespace Covenant.Common.Entities.Worker
         public Guid? GenderId { get; private set; }
         public bool HasVehicle { get; private set; }
         public string SocialInsurance { get; set; }
-        public string MaskedSocialInsurance => MaskSINNumber(SocialInsurance);
+        public string MaskedSocialInsurance => SocialInsurance.MaskSIN();
         public bool SocialInsuranceExpire { get; private set; }
         public DateTime? DueDate { get; private set; }
         public Guid? SocialInsuranceFileId { get; private set; }
@@ -637,11 +637,6 @@ namespace Covenant.Common.Entities.Worker
             $" {LastName}" +
             (string.IsNullOrWhiteSpace(SecondLastName) ? string.Empty : $" {SecondLastName}");
 
-        public static string MaskSINNumber(string sin)
-        {
-            if (string.IsNullOrEmpty(sin)) return sin;
-            return sin.Length <= 6 ? $"{sin}-XXX" : $"{sin.Substring(0, 6)}-XXX";
-        }
 
         private static void IfIsNotInRemove<T>(ICollection<T> list, Func<T, bool> filter)
         {

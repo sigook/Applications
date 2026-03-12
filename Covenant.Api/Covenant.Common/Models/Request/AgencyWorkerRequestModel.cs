@@ -1,5 +1,5 @@
-﻿using Covenant.Common.Entities.Worker;
-using Covenant.Common.Enums;
+﻿using Covenant.Common.Enums;
+using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Common.Models.Request
 {
@@ -24,7 +24,7 @@ namespace Covenant.Common.Models.Request
         public Guid WorkerProfileId { get; set; }
         public string SocialInsurance
         {
-            get => WorkerProfile.MaskSINNumber(_socialInsurance);
+            get => _socialInsurance.MaskSIN();
             set => _socialInsurance = value;
         }
         public DateTime? DueDate { get; set; }

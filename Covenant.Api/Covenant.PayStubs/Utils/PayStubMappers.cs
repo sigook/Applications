@@ -4,7 +4,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Utils.Extensions;
-using Covenant.PayStubs.Models;
+using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.TimeSheetTotal.Models;
 
 namespace Covenant.PayStubs.Utils
@@ -62,9 +62,9 @@ namespace Covenant.PayStubs.Utils
                 list.Add(missingOvertime.Value);
             }
 
-            if (model.HolidayPremiumPayHours > 0)
+            if (model.StatutoryWorkedHolidayPayHours > 0)
             {
-                var holiday = PayStubItem.CreateHolidayPremiumPay(model.HolidayPremiumPayHours, model.UnitPriceHolidayPremiumPayHours);
+                var holiday = PayStubItem.CreateStatutoryWorkedHoliday(model.StatutoryWorkedHolidayPayHours, model.UnitPriceStatutoryWorkedHolidayPayHours);
                 if (!holiday) return Result.Fail<List<PayStubItem>>(holiday.Errors);
                 list.Add(holiday.Value);
             }

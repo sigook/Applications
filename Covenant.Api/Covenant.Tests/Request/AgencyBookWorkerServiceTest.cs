@@ -1,4 +1,3 @@
-using Covenant.Api.Validators.Company;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -16,7 +15,6 @@ using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq.Expressions;
@@ -34,7 +32,6 @@ namespace Covenant.Tests.Request
         private readonly Mock<IWorkerRequestRepository> _workerRequestRepository;
         private readonly Mock<IRequestRepository> requestRepository;
         private readonly AgencyService _sut;
-        private readonly IValidator<CompanyProfileDetailModel> companyProfileValidator;
 
         public AgencyBookWorkerServiceTest()
         {

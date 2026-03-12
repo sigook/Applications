@@ -15,9 +15,10 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public string WorkerFullName { get; set; }
         public string WorkerEmail { get; set; }
         public string TypeOfJob { get; set; }
+        public string SinNumber { get; set; }
+        public int EmployeeId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public decimal Holiday { get; set; }
         public decimal Vacations { get; set; }
         public decimal Earnings { get; set; }
         public decimal DeductionCpp { get; set; }
@@ -37,5 +38,7 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public List<PayStubDetailItemModel> Taxes { get; set; } = new List<PayStubDetailItemModel>();
         public TaxCategory FederalCategory { get; set; }
         public TaxCategory ProvincialCategory { get; set; }
+        public Guid WorkerProfileId { get; set; }
+        public PayStubYtdModel Ytd { get; set; }
     }
 }

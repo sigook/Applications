@@ -13,11 +13,20 @@ export default {
     };
   },
   methods: {
-    getErrorMessage(errorMessage) {
+    async getErrorMessage(errorMessage) {
       if (
         typeof errorMessage === "object" &&
         (errorMessage.data !== null && errorMessage.data !== undefined)
       ) {
+        if (errorMessage.data instanceof Blob) {
+          errorMessage = await errorMessage.data.text();
+          try {
+            const parsed = JSON.parse(errorMessage);
+            return Object.values(parsed).flat().join(', ');
+          } catch {
+            return errorMessage;
+          }
+        }
         errorMessage = errorMessage.data;
       }
       if (typeof errorMessage === "object") {
@@ -36,8 +45,8 @@ export default {
       }
       return errorMessage;
     },
-    showAlertError(errorMessage) {
-      errorMessage = this.getErrorMessage(errorMessage);
+    async showAlertError(errorMessage) {
+      errorMessage = await this.getErrorMessage(errorMessage);
       if (errorMessage == null || errorMessage === "") return;
       this.createInstance({
         type: "error",

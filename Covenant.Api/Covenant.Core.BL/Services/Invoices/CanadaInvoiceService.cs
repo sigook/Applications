@@ -12,6 +12,7 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
@@ -27,8 +28,9 @@ public class CanadaInvoiceService : BaseInvoiceService
         ITimeService timeService,
         Rates rates,
         ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits)
-        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits)
+        TimeLimits timeLimits,
+        ITimesheetCalculatorService calculatorService)
+        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService)
     {
     }
 
@@ -155,7 +157,14 @@ public class CanadaInvoiceService : BaseInvoiceService
         );
 
         invoice.Email = model.Email;
-        invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+        if (model.DirectHiring)
+        {
+            invoice.WeekEnding = null;
+        }
+        else
+        {
+            invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+        }
         invoice.CreatedAt = model.InvoiceDate ?? timeService.GetCurrentDateTime();
 
         // 9. Add invoice totals

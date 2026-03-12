@@ -566,7 +566,6 @@ public class WorkerRepository : IWorkerRepository
                 WeekEnding = ps.WeekEnding,
                 TotalEarnings = ps.TotalEarnings,
                 Vacations = ps.Vacations,
-                PublicHolidays = ps.PublicHolidayPay,
                 TotalPaid = ps.TotalPaid,
                 Start = ps.DateWorkBegins,
                 End = ps.DateWorkEnd
@@ -604,7 +603,6 @@ public class WorkerRepository : IWorkerRepository
             .ToListAsync();
         var result = new PayStubHistoryAccumulated
         {
-            PublicHolidays = payStubs.Sum(ps => ps.PublicHolidayPay),
             Vacations = payStubs.Sum(ps => ps.Vacations),
             TotalEarnings = payStubs.Sum(ps => ps.TotalEarnings),
             TotalPaid = payStubs.Sum(ps => ps.TotalPaid)

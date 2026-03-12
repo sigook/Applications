@@ -1,97 +1,54 @@
-# Covenant/Sigook Platform - Documentación Técnica
+# Covenant/Sigook Platform - Documentation Index
 
-Bienvenido a la documentación técnica completa de la plataforma Covenant/Sigook.
+## Business
 
-## 📚 Índice de Documentación
+| Document | Description |
+|----------|-------------|
+| [BUSINESS_MODEL.md](./business/BUSINESS_MODEL.md) | Business model, actors, value proposition, and system flow |
+| [BILLING_RULES.md](./business/BILLING_RULES.md) | Invoice generation, HST/GST, rates, markup calculations |
+| [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) | Payroll calculations, deductions (CPP, EI), federal and provincial taxes |
+| [PAYSTUB_GENERATION.md](./business/PAYSTUB_GENERATION.md) | Step-by-step pay stub generation flow (`GeneratePayStubForWorker`) |
+| [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) | Hours calculations (regular, overtime, night shift, holiday), validations |
+| [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
+| [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |
 
-### 🎯 Negocio y Modelo de Dominio
-- **[BUSINESS_MODEL.md](./BUSINESS_MODEL.md)** - Modelo de negocio, actores principales, value proposition, y flujo general del sistema
+## Technical
 
-### 🏗️ Arquitectura y Estructura
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Stack tecnológico, estructura de capas, módulos principales, y organización de proyectos
-
-### 📊 Modelo de Datos
-- **[ENTITIES_RELATIONSHIPS.md](./ENTITIES_RELATIONSHIPS.md)** - Entidades principales, relaciones, y diagramas del modelo de datos
-
-### 🔌 APIs y Endpoints
-- **[API_ENDPOINTS.md](./API_ENDPOINTS.md)** - Documentación completa de endpoints por módulo (Agency, Company, Worker, Accounting)
-
-### 💰 Reglas de Payroll
-- **[PAYROLL_RULES.md](./PAYROLL_RULES.md)** - Cálculos de nómina, deducciones (CPP, EI), impuestos federales y provinciales (Canadá)
-- **[PAYSTUB_GENERATION.md](./PAYSTUB_GENERATION.md)** - Flujo paso a paso de generación de pay stubs (`GeneratePayStubForWorker`)
-
-### 📄 Reglas de Facturación
-- **[BILLING_RULES.md](./BILLING_RULES.md)** - Generación de invoices, HST/GST, rates, markup calculations
-
-### ⏱️ Reglas de Timesheets
-- **[TIMESHEET_RULES.md](./TIMESHEET_RULES.md)** - Cálculos de horas (regular, overtime, night shift, holiday), validaciones
-
-### 🔄 Workflows Principales
-- **[WORKFLOWS.md](./WORKFLOWS.md)** - Flujos detallados paso a paso (Worker Registration, Job Matching, Payroll Processing, etc.)
-
-### 🔧 DevOps e Infraestructura
-- **[PIPELINES.md](./PIPELINES.md)** - CI/CD pipelines de Azure DevOps, triggers, templates, deployment URLs, secrets
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](./technical/ARCHITECTURE.md) | Tech stack, layers, modules, and project organization |
+| [API_ENDPOINTS.md](./technical/API_ENDPOINTS.md) | Complete endpoint documentation by module (Agency, Company, Worker, Accounting) |
+| [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
+| [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
+| [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
 
 ---
 
-## 🚀 Inicio Rápido
+## Quick Start
 
-### Para entender el negocio:
-1. Lee [BUSINESS_MODEL.md](./BUSINESS_MODEL.md) - Comprende qué problema resuelve la plataforma
-2. Lee [WORKFLOWS.md](./WORKFLOWS.md) - Entiende los flujos principales
+**Understand the business:**
+1. [BUSINESS_MODEL.md](./business/BUSINESS_MODEL.md) — what problem the platform solves
+2. [WORKFLOWS.md](./business/WORKFLOWS.md) — main flows
 
-### Para desarrollo backend:
-1. Lee [ARCHITECTURE.md](./ARCHITECTURE.md) - Estructura de capas y módulos
-2. Lee [ENTITIES_RELATIONSHIPS.md](./ENTITIES_RELATIONSHIPS.md) - Modelo de datos
-3. Lee [API_ENDPOINTS.md](./API_ENDPOINTS.md) - Endpoints disponibles
+**Backend development:**
+1. [ARCHITECTURE.md](./technical/ARCHITECTURE.md) — layers and modules
+2. [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) — data model
+3. [API_ENDPOINTS.md](./technical/API_ENDPOINTS.md) — available endpoints
 
-### Para modificar payroll:
-1. Lee [PAYROLL_RULES.md](./PAYROLL_RULES.md) - Reglas de cálculo de nómina
-2. Referencia: `Covenant.Api/Covenant.PayStubs/` y `Covenant.Api/Covenant.Deductions/`
+**Modify payroll:**
+1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules
+2. Code: `Covenant.Api/Covenant.PayStubs/` and `Covenant.Api/Covenant.Deductions/`
 
-### Para modificar facturación:
-1. Lee [BILLING_RULES.md](./BILLING_RULES.md) - Reglas de facturación
-2. Referencia: `Covenant.Api/Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService)
-3. Entidades: `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/`
+**Modify billing:**
+1. [BILLING_RULES.md](./business/BILLING_RULES.md) — billing rules
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService)
 
-### Para modificar timesheets:
-1. Lee [TIMESHEET_RULES.md](./TIMESHEET_RULES.md) - Reglas de cálculo de horas
-2. Referencia: `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
-
----
-
-## 📝 Cómo usar esta documentación
-
-### Como desarrollador nuevo:
-Lee los documentos en orden: BUSINESS_MODEL → ARCHITECTURE → ENTITIES_RELATIONSHIPS → el resto según tu área
-
-### Como Claude Code (IA):
-Cuando recibas un requerimiento:
-1. Identifica el área (payroll, billing, timesheets, API, etc)
-2. Lee el documento relevante de `.docs/`
-3. Referencia el código correspondiente
-4. Implementa siguiendo los patrones existentes
-
-### Como arquitecto/lead:
-Estos documentos son la fuente de verdad. Actualízalos cuando cambies reglas de negocio o arquitectura.
+**Modify timesheets:**
+1. [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) — hours calculation rules
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
 
 ---
 
-## 🔄 Mantenimiento
+## Maintenance
 
-**Importante:** Mantén esta documentación actualizada cuando:
-- Cambies reglas de negocio (payroll, billing, validation rules)
-- Agregues nuevos módulos o servicios
-- Modifiques la arquitectura
-- Agregues nuevos endpoints
-- Cambies el modelo de datos
-
-**Formato:** Todos los archivos usan Markdown para fácil lectura en GitHub/Azure DevOps
-
----
-
-## 📞 Contacto y Recursos
-
-- **Repositorio principal:** Ver README.md en la raíz
-- **CI/CD:** Ver [PIPELINES.md](./PIPELINES.md)
-- **CLAUDE.md:** Instrucciones para Claude Code
+Keep this documentation updated when you change business rules, add modules/services, modify the architecture, add endpoints, or change the data model.

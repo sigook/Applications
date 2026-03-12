@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using Covenant.Deductions.Entities;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace Covenant.Infrastructure.Deductions

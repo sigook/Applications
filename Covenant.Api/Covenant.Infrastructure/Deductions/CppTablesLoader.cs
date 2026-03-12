@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
-using Covenant.Deductions.Entities;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Repositories;
 using Covenant.Deductions.Services;
 using Microsoft.Extensions.Logging;
 

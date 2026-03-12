@@ -1782,7 +1782,7 @@ export default {
     generatePayStubs(context, workerIds) {
       return new Promise((resolve, reject) => {
         http
-          .post(`/api/agency/accounting/PayStubs/Generate`, workerIds)
+          .post(`/api/agency/accounting/PayStubs/generate-v2`, workerIds)
           .then((response) => resolve(response.data))
           .catch((error) => reject(error.response));
       });
@@ -1835,6 +1835,17 @@ export default {
       return new Promise((resolve, reject) => {
         http
           .get(`/api/agency/accounting/reports/t4`, {
+            params: { ...filter },
+            responseType: "blob",
+          })
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
+      });
+    },
+    getCraPayrollReport(context, filter) {
+      return new Promise((resolve, reject) => {
+        http
+          .get(`/api/agency/accounting/reports/cra-payroll`, {
             params: { ...filter },
             responseType: "blob",
           })

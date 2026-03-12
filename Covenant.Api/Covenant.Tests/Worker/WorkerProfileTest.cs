@@ -1,6 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Entities.Worker;
+using Covenant.Common.Utils.Extensions;
 using Moq;
 using Xunit;
 
@@ -9,19 +10,19 @@ namespace Covenant.Tests.Worker
     public class WorkerProfileTest
     {
         [Theory]
-        [InlineData((string)null, (string)null)]
+        [InlineData((string)null, "")]
         [InlineData("", "")]
-        [InlineData("1", "1-XXX")]
-        [InlineData("12", "12-XXX")]
-        [InlineData("123", "123-XXX")]
-        [InlineData("1234", "1234-XXX")]
-        [InlineData("12345", "12345-XXX")]
-        [InlineData("123456", "123456-XXX")]
-        [InlineData("1234567", "123456-XXX")]
-        [InlineData("12345678", "123456-XXX")]
+        [InlineData("1", "******1")]
+        [InlineData("12", "******12")]
+        [InlineData("123", "******123")]
+        [InlineData("1234", "******1234")]
+        [InlineData("12345", "******2345")]
+        [InlineData("123456", "******3456")]
+        [InlineData("1234567", "******4567")]
+        [InlineData("123456789", "******6789")]
         public void MaskSINNumber(string sin, string expected)
         {
-            string masked = WorkerProfile.MaskSINNumber(sin);
+            string masked = sin.MaskSIN();
             Assert.Equal(expected, masked);
         }
 

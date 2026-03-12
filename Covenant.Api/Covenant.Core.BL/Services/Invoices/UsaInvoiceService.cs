@@ -10,6 +10,7 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
@@ -25,8 +26,9 @@ public class UsaInvoiceService : BaseInvoiceService
         ITimeService timeService,
         Rates rates,
         ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits)
-        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits)
+        TimeLimits timeLimits,
+        ITimesheetCalculatorService calculatorService)
+        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService)
     {
     }
 
@@ -115,7 +117,14 @@ public class UsaInvoiceService : BaseInvoiceService
         var invoice = invoiceResult.Value;
 
         // 8. Set week ending date
-        invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+        if (model.DirectHiring)
+        {
+            invoice.WeekEnding = null;
+        }
+        else
+        {
+            invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+        }
         invoice.BillToEmail = model.Email;
 
         // 9. Set billing addresses

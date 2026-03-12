@@ -18,5 +18,6 @@ public interface IPayStubRepository
     Task<List<WeeklyPayStubModel>> GetWeeklyPayrollDetailByPaymentDate(DateTime paymentDate);
     Task<IReadOnlyList<string>> Delete(IEnumerable<Guid> payStubsId);
     Task<IEnumerable<PayStubT4Model>> GetPayStubsByDates(DateTime startDate, DateTime endDate);
+    Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, int year);
     Task SaveChangesAsync();
 }

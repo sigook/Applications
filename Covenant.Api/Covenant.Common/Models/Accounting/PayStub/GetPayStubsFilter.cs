@@ -4,7 +4,8 @@ public enum GetPayStubsFilterSortBy : byte
 {
     PayStubNumber,
     CreatedAt,
-    WorkerFullName
+    WorkerFullName,
+    NumberId
 }
 
 public class GetPayStubsFilter : Pagination
@@ -13,6 +14,7 @@ public class GetPayStubsFilter : Pagination
     public DateTime? CreatedAtFrom { get; set; }
     public DateTime? CreatedAtTo { get; set; }
     public string WorkerFullName { get; set; }
+    public long? NumberId { get; set; }
 
     public GetPayStubsFilterSortBy? SortBy { get; set; }
 }

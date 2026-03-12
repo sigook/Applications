@@ -13,6 +13,7 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Invoices;
@@ -29,6 +30,7 @@ public abstract class BaseInvoiceService
     protected readonly Rates rates;
     protected readonly ISubcontractorRepository subcontractorRepository;
     protected readonly TimeLimits timeLimits;
+    protected readonly ITimesheetCalculatorService calculatorService;
 
     protected BaseInvoiceService(
         ITimeSheetRepository timeSheetRepository,
@@ -40,7 +42,8 @@ public abstract class BaseInvoiceService
         ITimeService timeService,
         Rates rates,
         ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits)
+        TimeLimits timeLimits,
+        ITimesheetCalculatorService calculatorService)
     {
         this.timeSheetRepository = timeSheetRepository;
         this.invoiceRepository = invoiceRepository;
@@ -52,143 +55,12 @@ public abstract class BaseInvoiceService
         this.rates = rates;
         this.subcontractorRepository = subcontractorRepository;
         this.timeLimits = timeLimits;
+        this.calculatorService = calculatorService;
     }
 
     // Abstract methods to be implemented by country-specific services
     public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
     public abstract Task<Result<Guid>> CreateAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
-
-    #region Hour Calculations (Replaces TimeSheetTotal logic)
-
-    /// <summary>
-    /// Calculates hours breakdown for a single timesheet item
-    /// This replaces TimeSheetTotalCalculator.Calculate() logic
-    /// </summary>
-    protected TimeSheetHoursBreakdown CalculateHoursForItem(
-        ITimeSheetHoursCalculable item,
-        ref TimeSpan accumulatedRegularHours,
-        bool isHoliday)
-    {
-        var breakdown = new TimeSheetHoursBreakdown();
-
-        // Calculate total hours: TimeOut - TimeIn - Break
-        TimeSpan itemTotalHours = TimeSpan.Zero;
-        if (item.TimeOutApproved.HasValue && item.TimeInApproved.HasValue)
-        {
-            itemTotalHours = item.TimeOutApproved.Value - item.TimeInApproved.Value - item.DurationBreak;
-        }
-
-        // If it's a holiday, all hours go to holiday hours
-        if (isHoliday)
-        {
-            breakdown.HolidayHours = itemTotalHours;
-            breakdown.RegularHours = TimeSpan.Zero;
-            breakdown.OvertimeHours = TimeSpan.Zero;
-            breakdown.OtherRegularHours = TimeSpan.Zero;
-            return breakdown;
-        }
-
-        // Calculate overtime based on accumulated weekly hours
-        var maxWeeklyHours = item.OvertimeStartsAfter;
-        accumulatedRegularHours += itemTotalHours;
-
-        if (accumulatedRegularHours > maxWeeklyHours)
-        {
-            // Some hours are overtime
-            var overtimeThisItem = accumulatedRegularHours - maxWeeklyHours;
-            if (overtimeThisItem > itemTotalHours)
-            {
-                // All hours for this item are overtime
-                breakdown.OvertimeHours = itemTotalHours;
-                breakdown.RegularHours = TimeSpan.Zero;
-            }
-            else
-            {
-                // Part overtime, part regular
-                breakdown.OvertimeHours = overtimeThisItem;
-                breakdown.RegularHours = itemTotalHours - overtimeThisItem;
-            }
-        }
-        else
-        {
-            // All hours are regular
-            breakdown.RegularHours = itemTotalHours;
-            breakdown.OvertimeHours = TimeSpan.Zero;
-        }
-
-        // OtherRegularHours (if needed)
-        breakdown.OtherRegularHours = TimeSpan.Zero;
-
-        return breakdown;
-    }
-
-    #endregion
-
-    #region Amount Calculations (Replaces InvoiceFormulas logic)
-
-    /// <summary>
-    /// Calculates amount for regular hours
-    /// Replaces: InvoiceFormulas.Regular(rate, hours)
-    /// Formula: rate × hours
-    /// </summary>
-    protected decimal CalculateRegularAmount(decimal rate, double hours)
-    {
-        // Formula: rate × hours
-        return decimal.Multiply(rate, (decimal)hours);
-    }
-
-    /// <summary>
-    /// Calculates amount for overtime hours
-    /// Replaces: InvoiceFormulas.Overtime(rate, overtimeRate, hours)
-    /// Formula: rate × overtime multiplier × hours
-    /// </summary>
-    protected decimal CalculateOvertimeAmount(decimal rate, decimal overtimeMultiplier, double hours)
-    {
-        // Formula: rate × overtime multiplier × hours
-        // Example: $20/hr × 1.5 × 8 hours = $240
-        return decimal.Multiply(decimal.Multiply(rate, overtimeMultiplier), (decimal)hours);
-    }
-
-    /// <summary>
-    /// Calculates amount for holiday hours
-    /// Replaces: InvoiceFormulas.Holiday(rate, holidayRate, hours)
-    /// Formula: rate × holiday multiplier × hours
-    /// </summary>
-    protected decimal CalculateHolidayAmount(decimal rate, decimal holidayMultiplier, double hours)
-    {
-        // Formula: rate × holiday multiplier × hours
-        // Example: $20/hr × 2.0 × 8 hours = $320
-        return decimal.Multiply(decimal.Multiply(rate, holidayMultiplier), (decimal)hours);
-    }
-
-    /// <summary>
-    /// Calculates amount for missing hours
-    /// Replaces: InvoiceFormulas.Missing(rate, hours)
-    /// Formula: rate × hours
-    /// </summary>
-    protected decimal CalculateMissingAmount(decimal rate, double hours)
-    {
-        // Formula: rate × hours
-        return decimal.Multiply(rate, (decimal)hours);
-    }
-
-    /// <summary>
-    /// Calculates total gross amount
-    /// Replaces: InvoiceFormulas.TotalGross(...)
-    /// Formula: sum of all components
-    /// </summary>
-    protected decimal CalculateTotalGross(
-        decimal regular,
-        decimal missing,
-        decimal missingOvertime,
-        decimal holiday,
-        decimal overtime)
-    {
-        // Sum all components
-        return regular.Add(missing).Add(missingOvertime).Add(holiday).Add(overtime);
-    }
-
-    #endregion
 
     #region Helper Methods
 
@@ -201,49 +73,30 @@ public abstract class BaseInvoiceService
     }
 
     /// <summary>
-    /// Creates a TimeSheetTotal entity for a timesheet based on hours breakdown
-    /// Replicates logic from TimeSheetTotalCalculator.Calculate()
+    /// Calculates hours breakdown for a single timesheet item.
+    /// Delegates to ITimesheetCalculatorService with breakIsPaid=false, holidayIsPaid=true
+    /// (invoices always subtract break and always pay holidays).
     /// </summary>
-    protected TimeSheetTotalEntity CreateTimeSheetTotalEntity(
-        Guid timeSheetId,
-        TimeSheetHoursBreakdown hoursBreakdown,
-        TimeSpan accumulatedHours)
+    protected TimeSheetHoursBreakdown CalculateHoursForItem(
+        ITimeSheetHoursCalculable item,
+        ref TimeSpan accumulatedRegularHours,
+        bool isHoliday)
     {
-        // If holiday hours exist, create holiday total
-        if (hoursBreakdown.HolidayHours > TimeSpan.Zero)
+        if (!item.TimeOutApproved.HasValue || !item.TimeInApproved.HasValue)
         {
-            return TimeSheetTotalEntity.CreateTotalForHoliday(
-                timeSheetId,
-                hoursBreakdown.HolidayHours,
-                accumulatedHours);
+            return new TimeSheetHoursBreakdown();
         }
 
-        // Calculate total hours
-        var totalHours = hoursBreakdown.RegularHours
-            + hoursBreakdown.OtherRegularHours
-            + hoursBreakdown.OvertimeHours;
-
-        // If other regular hours exist, use CreateTotalWithOtherRegular
-        if (hoursBreakdown.OtherRegularHours > TimeSpan.Zero)
-        {
-            return TimeSheetTotalEntity.CreateTotalWithOtherRegular(
-                timeSheetId,
-                totalHours,
-                hoursBreakdown.RegularHours,
-                hoursBreakdown.OtherRegularHours,
-                hoursBreakdown.OvertimeHours,
-                TimeSpan.Zero, // nightShiftHours (not used in new system)
-                accumulatedHours);
-        }
-
-        // Otherwise use standard CreateTotal
-        return TimeSheetTotalEntity.CreateTotal(
-            timeSheetId,
-            totalHours,
-            hoursBreakdown.RegularHours,
-            hoursBreakdown.OvertimeHours,
-            TimeSpan.Zero, // nightShiftHours (not used in new system)
-            accumulatedHours);
+        return calculatorService.CalculateHoursBreakdown(
+            item.TimeInApproved.Value,
+            item.TimeOutApproved.Value,
+            item.DurationBreak,
+            breakIsPaid: false,
+            isHoliday: isHoliday,
+            holidayIsPaid: true,
+            ref accumulatedRegularHours,
+            item.OvertimeStartsAfter,
+            timeLimits.MaxHoursWeek);
     }
 
     /// <summary>
@@ -293,7 +146,7 @@ public abstract class BaseInvoiceService
                 var hoursBreakdown = CalculateHoursForItem(timesheet, ref accumulatedRegularHours, isHoliday);
 
                 // Create TimeSheetTotal entity for this timesheet
-                var timeSheetTotal = CreateTimeSheetTotalEntity(
+                var timeSheetTotal = calculatorService.CreateTimeSheetTotalEntity(
                     timesheet.TimeSheetId,
                     hoursBreakdown,
                     accumulatedRegularHours);
@@ -305,7 +158,7 @@ public abstract class BaseInvoiceService
                 var regularHours = hoursBreakdown.RegularHours.TotalHours + hoursBreakdown.OtherRegularHours.TotalHours;
                 if (regularHours > 0)
                 {
-                    var regularAmount = CalculateRegularAmount(agencyRate, regularHours);
+                    var regularAmount = calculatorService.CalculateRegularAmount(agencyRate, regularHours);
                     var item = new T
                     {
                         Quantity = regularHours,
@@ -325,7 +178,7 @@ public abstract class BaseInvoiceService
                 if (overtimeHours > 0)
                 {
                     var overtimeRate = agencyRate * rates.OverTime;
-                    var overtimeAmount = CalculateOvertimeAmount(agencyRate, rates.OverTime, overtimeHours);
+                    var overtimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, overtimeHours);
                     var item = new T
                     {
                         Quantity = overtimeHours,
@@ -345,7 +198,7 @@ public abstract class BaseInvoiceService
                 if (holidayHours > 0)
                 {
                     var holidayRate = agencyRate * rates.Holiday;
-                    var holidayAmount = CalculateHolidayAmount(agencyRate, rates.Holiday, holidayHours);
+                    var holidayAmount = calculatorService.CalculateHolidayAmount(agencyRate, rates.Holiday, holidayHours);
                     var item = new T
                     {
                         Quantity = holidayHours,
@@ -463,12 +316,12 @@ public abstract class BaseInvoiceService
                 var overtimeHours = hoursBreakdown.OvertimeHours.TotalHours;
                 var holidayHours = hoursBreakdown.HolidayHours.TotalHours;
 
-                var regularAmount = CalculateRegularAmount(workerRate, regularHours);
-                var overtimeAmount = CalculateOvertimeAmount(workerRate, rates.OverTime, overtimeHours);
-                var holidayAmount = CalculateHolidayAmount(workerRate, rates.Holiday, holidayHours);
+                var regularAmount = calculatorService.CalculateRegularAmount(workerRate, regularHours);
+                var overtimeAmount = calculatorService.CalculateOvertimeAmount(workerRate, rates.OverTime, overtimeHours);
+                var holidayAmount = calculatorService.CalculateHolidayAmount(workerRate, rates.Holiday, holidayHours);
 
                 // Create TimeSheetTotalPayroll for this timesheet
-                var timeSheetTotal = CreateTimeSheetTotalPayrollEntity(
+                var timeSheetTotal = calculatorService.CreateTimeSheetTotalPayrollEntity(
                     timesheet.TimeSheetId,
                     hoursBreakdown,
                     accumulatedRegularHours);
@@ -523,53 +376,6 @@ public abstract class BaseInvoiceService
         }
 
         await subcontractorRepository.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Creates a TimeSheetTotalPayroll entity for payroll/subcontractor reports
-    /// Similar to CreateTimeSheetTotalEntity but returns TimeSheetTotalPayroll
-    /// </summary>
-    private TimeSheetTotalPayroll CreateTimeSheetTotalPayrollEntity(
-        Guid timeSheetId,
-        TimeSheetHoursBreakdown hoursBreakdown,
-        TimeSpan accumulatedHours)
-    {
-        // If holiday hours exist, create holiday total
-        if (hoursBreakdown.HolidayHours > TimeSpan.Zero)
-        {
-            return new TimeSheetTotalPayroll(
-                TimeSheetTotalEntity.CreateTotalForHoliday(
-                    timeSheetId,
-                    hoursBreakdown.HolidayHours,
-                    accumulatedHours));
-        }
-
-        // Calculate total hours
-        var totalHours = hoursBreakdown.RegularHours
-            + hoursBreakdown.OtherRegularHours
-            + hoursBreakdown.OvertimeHours;
-
-        // If other regular hours exist, use CreateTotalWithOtherRegular
-        if (hoursBreakdown.OtherRegularHours > TimeSpan.Zero)
-        {
-            return TimeSheetTotalPayroll.CreateTotalWithOtherRegular(
-                timeSheetId,
-                totalHours,
-                hoursBreakdown.RegularHours,
-                hoursBreakdown.OtherRegularHours,
-                hoursBreakdown.OvertimeHours,
-                TimeSpan.Zero, // nightShiftHours (not used in new system)
-                accumulatedHours);
-        }
-
-        // Otherwise use standard CreateTotal
-        return TimeSheetTotalPayroll.CreateTotal(
-            timeSheetId,
-            totalHours,
-            hoursBreakdown.RegularHours,
-            hoursBreakdown.OvertimeHours,
-            TimeSpan.Zero, // nightShiftHours (not used in new system)
-            accumulatedHours);
     }
 
     #endregion
