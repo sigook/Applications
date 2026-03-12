@@ -8,6 +8,7 @@ namespace Covenant.Core.BL.Interfaces;
 public interface IPayStubService
 {
     Task<Result<ResultGenerateDocument<byte[]>>> GenerateT4(DateTime from, DateTime to);
+    Task<Result<ResultGenerateDocument<byte[]>>> GenerateCraPayroll(DateTime from, DateTime to);
     Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds);
     Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model);
 }

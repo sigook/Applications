@@ -22,7 +22,7 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
         }
 
         [Fact]
-        public async void Should_Get_ExcelFile_Of_Workers()
+        public async Task Should_Get_ExcelFile_Of_Workers()
         {
             var response = await client.GetAsync($"api/WorkersReportDocument/057d28b0-7d09-4e8e-aca4-a22a97943770/Document");
             response.EnsureSuccessStatusCode();

@@ -47,12 +47,28 @@ public class PayStubService : IPayStubService
     public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateT4(DateTime from, DateTime to)
     {
         var result = await payStubRepository.GetPayStubsByDates(from, to);
+        if (!result.Any())
+            return Result.Fail<ResultGenerateDocument<byte[]>>("No data available for the selected dates");
+
         using var stream = new MemoryStream();
         using var workbook = new XLWorkbook();
         GetDetail(result, workbook);
         GetReport(result, workbook);
         workbook.SaveAs(stream);
         return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"T4_Resume_{DateTime.Now.Year}.xlsx", string.Empty));
+    }
+
+    public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateCraPayroll(DateTime from, DateTime to)
+    {
+        var result = await payStubRepository.GetPayStubsByDates(from, to);
+        if (!result.Any())
+            return Result.Fail<ResultGenerateDocument<byte[]>>("No data available for the selected dates");
+
+        using var stream = new MemoryStream();
+        using var workbook = new XLWorkbook();
+        GetReport(result, workbook, ["Address", "SIN #", "Total Earnings", "Total Tax", "Total"]);
+        workbook.SaveAs(stream);
+        return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"CRA_Payroll_{DateTime.Now.Year}.xlsx", string.Empty));
     }
 
     public async Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model)
@@ -442,50 +458,40 @@ public class PayStubService : IPayStubService
         return Result.Ok();
     }
 
-    private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
+    private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook, HashSet<string> excludeColumns = null)
     {
         var sheet = workbook.Worksheets.Add("Report");
-        var headerNames = new string[]
+        var allColumns = new (string Header, Action<IXLCell, PayStubT4Model, int> WriteCell)[]
         {
-            "No.",
-            "Name",
-            "Address",
-            "SIN #",
-            "Total Earnings",
-            "CPP Employer",
-            "EI Employeer",
-            "Other Deductions",
-            "CPP Employee",
-            "EI Employee",
-            "Fed Tax",
-            "Prov Tax",
-            "Total Tax",
-            "Net Pay",
-            "Total"
+            ("No.", (cell, _, idx) => cell.SetValue(idx + 1)),
+            ("Name", (cell, d, _) => cell.SetValue(d.WorkerFullName.Trim())),
+            ("Address", (cell, d, _) => cell.SetValue(d.Location)),
+            ("SIN #", (cell, d, _) => cell.SetValue(d.Sin)),
+            ("Total Earnings", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.TotalEarnings)).SetMoneyType()),
+            ("CPP Employer", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employer.Cpp)).SetMoneyType()),
+            ("EI Employeer", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employer.EI)).SetMoneyType()),
+            ("Other Deductions", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employer.OtherDeductions)).SetMoneyType()),
+            ("CPP Employee", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employee.Cpp)).SetMoneyType()),
+            ("EI Employee", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employee.EI)).SetMoneyType()),
+            ("Fed Tax", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employee.FederalTax)).SetMoneyType()),
+            ("Prov Tax", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employee.ProvincialTax)).SetMoneyType()),
+            ("Total Tax", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employee.FederalTax + i.Employee.ProvincialTax)).SetMoneyType()),
+            ("Net Pay", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.TotalEarnings - i.Employee.Cpp - i.Employee.EI - i.Employee.FederalTax - i.Employee.ProvincialTax)).SetMoneyType()),
+            ("Total", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employer.Cpp + i.Employer.EI + i.Employee.Cpp + i.Employee.EI + i.Employee.FederalTax + i.Employee.ProvincialTax)).SetMoneyType()),
         };
-        sheet.SetupHeaders(headerNames);
+        var columns = excludeColumns is null
+            ? allColumns
+            : [.. allColumns.Where(c => !excludeColumns.Contains(c.Header))];
+
+        sheet.SetupHeaders([.. columns.Select(c => c.Header)]);
         var startAt = 2;
         for (int i = 0; i < result.Count(); i++)
         {
             var data = result.ElementAt(i);
-            var totalTax = data.Items.Sum(i => i.Employee.FederalTax + i.Employee.ProvincialTax);
-            var netPay = data.Items.Sum(i => i.TotalEarnings - i.Employee.Cpp - i.Employee.EI - i.Employee.FederalTax - i.Employee.ProvincialTax);
-            var total = data.Items.Sum(i => i.Employer.Cpp + i.Employer.EI + i.Employee.Cpp + i.Employee.EI + i.Employee.FederalTax + i.Employee.ProvincialTax);
-            sheet.Cell($"A{startAt}").SetValue(i + 1);
-            sheet.Cell($"B{startAt}").SetValue(data.WorkerFullName.Trim());
-            sheet.Cell($"C{startAt}").SetValue(data.Location);
-            sheet.Cell($"D{startAt}").SetValue(data.Sin);
-            sheet.Cell($"E{startAt}").SetValue(data.Items.Sum(i => i.TotalEarnings)).SetMoneyType();
-            sheet.Cell($"F{startAt}").SetValue(data.Items.Sum(i => i.Employer.Cpp)).SetMoneyType();
-            sheet.Cell($"G{startAt}").SetValue(data.Items.Sum(i => i.Employer.EI)).SetMoneyType();
-            sheet.Cell($"H{startAt}").SetValue(data.Items.Sum(i => i.Employer.OtherDeductions)).SetMoneyType();
-            sheet.Cell($"I{startAt}").SetValue(data.Items.Sum(i => i.Employee.Cpp)).SetMoneyType();
-            sheet.Cell($"J{startAt}").SetValue(data.Items.Sum(i => i.Employee.EI)).SetMoneyType();
-            sheet.Cell($"K{startAt}").SetValue(data.Items.Sum(i => i.Employee.FederalTax)).SetMoneyType();
-            sheet.Cell($"L{startAt}").SetValue(data.Items.Sum(i => i.Employee.ProvincialTax)).SetMoneyType();
-            sheet.Cell($"M{startAt}").SetValue(totalTax).SetMoneyType();
-            sheet.Cell($"N{startAt}").SetValue(netPay).SetMoneyType();
-            sheet.Cell($"O{startAt}").SetValue(total).SetMoneyType();
+            for (int col = 0; col < columns.Length; col++)
+            {
+                columns[col].WriteCell(sheet.Cell($"{(char)('A' + col)}{startAt}"), data, i);
+            }
             startAt++;
         }
     }

@@ -8,7 +8,6 @@ namespace Covenant.Tests.Billing.Holidays
         [Fact]
         public void Create()
         {
-            const int vacations = 10;
             const int regularWage = 10;
             var sub = new RegularWageWorker
             {

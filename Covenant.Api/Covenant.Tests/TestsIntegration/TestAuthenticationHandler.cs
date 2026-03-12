@@ -21,7 +21,7 @@ namespace Covenant.Tests.TestsIntegration
         public static readonly FakeUser UserCovenantWorker = new FakeUser("A97742DF-A348-4E01-8484-7D07CDCDA6F4", "covenant_worker@gmail.com");
 
         public TestAuthenticationHandler(IOptionsMonitor<TestAuthenticationOptions> options, ILoggerFactory logger,
-            UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+            UrlEncoder encoder) : base(options, logger, encoder)
         {
         }
 

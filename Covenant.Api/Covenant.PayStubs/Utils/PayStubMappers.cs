@@ -4,7 +4,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Utils.Extensions;
-using Covenant.PayStubs.Models;
+using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.TimeSheetTotal.Models;
 
 namespace Covenant.PayStubs.Utils

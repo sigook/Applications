@@ -10,7 +10,10 @@
       <b-tab-item value="2" label="T4" :visible="!isUsaAgency">
         <t4-report></t4-report>
       </b-tab-item>
-      <b-tab-item value="3" label="Hours Worked">
+      <b-tab-item value="3" label="CRA Payroll" :visible="!isUsaAgency">
+        <cra-payroll-report></cra-payroll-report>
+      </b-tab-item>
+      <b-tab-item value="4" label="Hours Worked">
         <hours-worked-report></hours-worked-report>
       </b-tab-item>
     </b-tabs>
@@ -27,11 +30,12 @@ export default {
     SubcontractorsReport: () => import("@/components/agency_accounting/SubcontractorsReport"),
     HoursWorkedReport: () => import("@/components/agency_accounting/HoursWorkedReport"),
     T4Report: () => import("@/components/agency_accounting/T4"),
+    CraPayrollReport: () => import("@/components/agency_accounting/CRAPayroll"),
     PaymentReport: () => import("@/components/agency_accounting/PaymentReport")
   },
   created() {
     if (this.isUsaAgency) {
-      this.tab = '3';
+      this.tab = '4';
     } else {
       this.tab = this.$route.query.tab || '0';
     }

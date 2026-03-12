@@ -1842,6 +1842,17 @@ export default {
           .catch((error) => reject(error.response));
       });
     },
+    getCraPayrollReport(context, filter) {
+      return new Promise((resolve, reject) => {
+        http
+          .get(`/api/agency/accounting/reports/cra-payroll`, {
+            params: { ...filter },
+            responseType: "blob",
+          })
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
+      });
+    },
     getPaymentReport(context, filter) {
       return new Promise((resolve, reject) => {
         http
