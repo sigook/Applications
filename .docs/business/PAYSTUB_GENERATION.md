@@ -4,7 +4,7 @@ How `PayStubService.GeneratePayStubForWorker` builds a pay stub from approved ti
 
 ## Entry Point
 
-`PayStubService.GeneratePayStubs(agencyIds)` fetches all workers with approved timesheets, then calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one.
+`PayStubService.Generate(agencyIds, workerIds)` iterates over each worker and calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one. A `SemaphoreSlim` ensures only one generation runs at a time.
 
 **Key file:** `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs`
 
@@ -17,7 +17,7 @@ How `PayStubService.GeneratePayStubForWorker` builds a pay stub from approved ti
 
 ### Step 2: Get Next PayStub Number
 - Sequential number from `payStubRepository.GetNextPayStubNumbers(1)`
-- Used for the payroll number identifier
+- Used for the payroll number identifier (format: `PS-0000-YY`)
 
 ### Step 3: Process Timesheets (the main loop)
 
@@ -36,12 +36,16 @@ Week groups (ordered by week number)
 1. **Calculate hours breakdown** via `calculatorService.CalculateHoursBreakdown(...)`:
    - Regular hours, Other regular hours, Overtime hours, Holiday hours
    - Uses `ref accumulatedHours` to track weekly overtime threshold
+   - Uses `overtimeStartsAfter` from the first timesheet and `timeLimits.MaxHoursWeek`
 
 2. **Calculate wage amounts** for each hour type:
    - `regularAmount = workerRate * regularHours`
+   - `otherRegularAmount = workerRate * otherRegularHours`
    - `overtimeAmount = workerRate * overtimeMultiplier * overtimeHours`
    - `holidayAmount = workerRate * holidayMultiplier * holidayHours`
    - `missingAmount = missingRate * missingHours`
+   - `missingOvertimeAmount = missingRate * overtimeMultiplier * missingOvertimeHours`
+   - `missingRate` defaults to `workerRate` if not set or <= 0
    - All amounts rounded via `DefaultMoneyRound()`
 
 3. **Create TimeSheetTotalPayroll entity** via `calculatorService.CreateTimeSheetTotalPayrollEntity(...)`:
@@ -50,13 +54,20 @@ Week groups (ordered by week number)
 
 4. **Accumulate hours by rate** into dictionaries (for PayStubItem creation later):
    - `regularByRate[workerRate] += regularHours`
-   - `overtimeByRate[overtimeRate] += overtimeHours`
-   - `holidayByRate[holidayRate] += holidayHours`
+   - `otherRegularByRate[workerRate] += otherRegularHours`
+   - `overtimeByRate[overtimeMultiplier * workerRate] += overtimeHours`
+   - `workedHolidayByRate[holidayMultiplier * workerRate] += holidayHours`
    - `missingByRate[missingRate] += missingHours`
+   - `missingOvertimeByRate[overtimeMultiplier * missingRate] += missingOvertimeHours`
    - Only accumulates if the corresponding amount > 0
    - Hours are grouped by rate so workers with multiple rates get separate line items
 
-5. **Create PayStubWageDetail** linked to the TimeSheetTotalPayroll:
+5. **Accumulate extras** (also inside the main loop, per day):
+   - **Bonuses** — grouped by description into `bonusGroups` dictionary
+   - **Reimbursements** — grouped by description into `reimbursementGroups` dictionary
+   - **Other deductions** — one `PayStubOtherDeduction` per timesheet entry with `DeductionsOthers > 0`
+
+6. **Create PayStubWageDetail** linked to the TimeSheetTotalPayroll:
    - One per day/timesheet — preserves per-day traceability
    - Used downstream for queries that navigate PayStub → WageDetail → TimeSheetTotal → TimeSheet → WorkerRequest
 
@@ -68,72 +79,64 @@ For each week, looks up statutory holidays and calculates holiday pay based on t
 
 Converts the accumulated dictionaries into `PayStubItem` entities. Each dictionary entry (rate → total hours) becomes one line item on the pay stub:
 
-| Type | Rate Key | Example |
-|------|----------|---------|
-| Regular | `workerRate` | "Regular hours: 40h @ $20" |
-| OtherRegular | `workerRate` | "Other Regular hours: 5h @ $20" |
-| Overtime | `overtimeMultiplier * workerRate` | "Overtime hours: 8h @ $30" |
-| HolidayPremiumPay | `holidayMultiplier * workerRate` | "Statutory worked holiday pay: 8h @ $40" |
-| Missing | `missingRate` | "Missing hours: 2h @ $18" |
-| MissingOvertime | `overtimeMultiplier * missingRate` | "Missing overtime hours: 1h @ $27" |
+| Type | Source | Rate Key | Example |
+|------|--------|----------|---------|
+| Regular | `regularByRate` | `workerRate` | "Regular Hours: 40h @ $20" |
+| OtherRegular | `otherRegularByRate` | `workerRate` | "Other Regular Hours: 5h @ $20" |
+| Overtime | `overtimeByRate` | `overtimeMultiplier * workerRate` | "Overtime Hours: 8h @ $30" |
+| StatutoryWorkedHoliday | `workedHolidayByRate` | `holidayMultiplier * workerRate` | "Statutory Worked Holiday Pay: 8h @ $40" |
+| Missing | `missingByRate` | `missingRate` | "Missing Hours: 2h @ $18" |
+| MissingOvertime | `missingOvertimeByRate` | `overtimeMultiplier * missingRate` | "Missing Overtime Hours: 1h @ $27" |
+| StatutoryHoliday | `publicHolidays` | total amount (qty=1) | "Statutory Holiday: $150" |
+| BonusOthers | `bonusGroups` | total amount (qty=1) | "Bonus: $100" |
+| Reimbursement | `reimbursementGroups` | total amount (qty=1) | "Reimbursement: $50" |
 
-### Step 5: Process Extras
+Zero-total items are filtered out after creation.
 
-From the raw timesheets (not the loop), consolidates:
-- **Bonuses** — grouped by description, added to `payStubItems`
-- **Reimbursements** — grouped by description, kept in separate `reimbursementItems` list (excluded from gross, added to net)
-- **Other deductions** — one `PayStubOtherDeduction` per timesheet entry
-
-Zero-total items are filtered out.
-
-### Step 6: Calculate Totals
+### Step 5: Calculate Totals
 
 ```
-grossPayment   = sum of all payStubItems totals
+grossPayment   = sum of payStubItems totals WHERE type != Reimbursement
 vacations      = grossPayment * vacationRate
-publicHolidayPay = sum of public holiday amounts
-totalEarnings  = grossPayment + vacations + publicHolidayPay
+totalEarnings  = grossPayment + vacations
 ```
 
-### Step 7: Calculate Deductions
+Public holiday pay is included in `grossPayment` because `StatutoryHoliday` items are regular `PayStubItem`s (not excluded from the sum).
 
-Determines the **payment period** based on the number of weeks spanned:
-- 1 week → Weekly tables
-- 2 weeks → Bi-weekly tables
-- 3 weeks → Semi-monthly tables
-- 4+ weeks → Monthly tables
+### Step 6: Calculate Deductions
 
-Looks up from deduction tables:
+Determines the **payment period** from the work date range (adjusted to week boundaries: Sunday–Saturday). The number of weeks is passed to `calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, year, workerProfileId)` which internally handles:
 - **CPP** (Canada Pension Plan) — can be overridden by worker's tax category
-- **EI** (Employment Insurance) — `totalEarnings * eiRate`, can be overridden
-- **Federal Tax** — looked up by earnings + tax category (Cc1 default)
-- **Provincial Tax** — looked up by earnings + tax category (Cc1 default)
+- **EI** (Employment Insurance) — can be overridden
+- **Federal Tax** — looked up by earnings + tax category
+- **Provincial Tax** — looked up by earnings + tax category
 
 ```
 totalDeductions = CPP + EI + federalTax + provincialTax + otherDeductions
 ```
 
-### Step 8: Calculate Net Pay
+### Step 7: Calculate Net Pay
 
 ```
-totalPaid = totalEarnings - totalDeductions + reimbursements
+reimbursementTotal = sum of payStubItems WHERE type == Reimbursement
+totalPaid = totalEarnings - totalDeductions + reimbursementTotal
 ```
 
 Reimbursements are added back because they are not taxable income.
 
-### Step 9: Build PayStub Entity
+### Step 8: Build PayStub Entity
 
 Creates the `PayStub` entity and attaches:
-- `PayStubItem`s (line items + reimbursements)
+- `PayStubItem`s (all line items including reimbursements)
 - `PayStubWageDetail`s (per-day traceability to timesheets)
 - `PayStubPublicHoliday`s
 - `PayStubOtherDeduction`s
 
-Payment date is calculated differently for external vs. internal workers.
+Payment date: if wage details exist → `GetPaymentDateForExternalWorkers()`, otherwise → `GetPaymentDateForInternalWorkers()`.
 
-### Step 10: Save
+### Step 9: Save
 
-Persists to database via `payStubRepository.Create(payStub)`.
+Persists to database via `payStubRepository.Create(payStub)` and `SaveChangesAsync()`.
 
 ## Key Entities and Their Purpose
 
@@ -146,16 +149,16 @@ Persists to database via `payStubRepository.Create(payStub)`.
 | `PayStubPublicHoliday` | One per statutory holiday | Holiday pay calculated from regular wages |
 | `PayStubOtherDeduction` | One per timesheet with deductions | Additional deductions from timesheets |
 
-## Key Services and Repositories
+## Key Dependencies of PayStubService
 
 | Dependency | Purpose |
 |------------|---------|
-| `ITimesheetCalculatorService` | Hours breakdown, amount calculations, TimeSheetTotal creation |
+| `ITimesheetCalculatorService` | Hours breakdown, amount calculations, TimeSheetTotal creation, deductions calculation |
 | `ITimeSheetRepository` | Fetch approved timesheets |
 | `IPayStubRepository` | PayStub CRUD, next number, regular wages lookup |
-| `IDeductionsRepository` | CPP, EI, Federal/Provincial tax table lookups |
 | `ICatalogRepository` | Public holidays lookup |
-| `IWorkerRepository` | Worker tax category |
+| `Rates` (config) | Overtime multiplier, holiday multiplier, vacation rate |
+| `TimeLimits` (config) | Max weekly hours for overtime threshold |
 
 ## Data Flow Diagram
 
@@ -171,6 +174,7 @@ Approved Timesheets
 │  ├─ Calculate amounts per type      │
 │  ├─ CreateTimeSheetTotalPayroll()   │
 │  ├─ Accumulate hours by rate ───────┼──► Dictionaries (rate → hours)
+│  ├─ Accumulate extras ──────────────┼──► bonusGroups, reimbursementGroups, otherDeductions
 │  └─ Create PayStubWageDetail ───────┼──► allWageDetails (per-day trace)
 │                                     │
 │  For each week:                     │
@@ -178,16 +182,13 @@ Approved Timesheets
 └─────────────────────────────────────┘
        │
        ▼
-Dictionaries ──► PayStubItems (consolidated line items)
+Dictionaries + extras ──► PayStubItems (consolidated line items)
        │
        ▼
-Process extras (bonus, reimbursements, deductions)
+Calculate: gross (excl. reimbursements) → vacations → totalEarnings
        │
        ▼
-Calculate: gross → vacations → totalEarnings
-       │
-       ▼
-Lookup deductions: CPP, EI, Federal Tax, Provincial Tax
+calculatorService.CalculateDeductions(totalEarnings, weeks, year, worker)
        │
        ▼
 Net pay = totalEarnings - totalDeductions + reimbursements

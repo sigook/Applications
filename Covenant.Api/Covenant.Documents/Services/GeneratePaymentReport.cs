@@ -21,24 +21,25 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
     private const string
         PayStubNumber = "A",
         FullName = "B",
-        Description = "C",
-        Quantity = "D",
-        UnitPrice = "E",
-        Total = "F",
-        GrossPayment = "G",
-        Vacations = "H",
-        TotalEarnings = "I",
-        Cpp = "J",
-        Ei = "K",
-        FederalTax = "L",
-        ProvincialTax = "M",
-        OtherDeductions = "N",
-        TotalDeductions = "O",
-        TotalPaid = "P",
-        WeekEnding = "Q",
-        PaymentDate = "R",
-        Companies = "S",
-        Email = "T";
+        NumberId = "C",
+        Description = "D",
+        Quantity = "E",
+        UnitPrice = "F",
+        Total = "G",
+        GrossPayment = "H",
+        Vacations = "I",
+        TotalEarnings = "J",
+        Cpp = "K",
+        Ei = "L",
+        FederalTax = "M",
+        ProvincialTax = "N",
+        OtherDeductions = "O",
+        TotalDeductions = "P",
+        TotalPaid = "Q",
+        WeekEnding = "R",
+        PaymentDate = "S",
+        Companies = "T",
+        Email = "U";
 
     private const int HeadRow = 2;
 
@@ -46,6 +47,7 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
     {
         PayStubNumber,
         FullName,
+        NumberId,
         Email,
         Description,
         Quantity,
@@ -95,6 +97,7 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
 
             worksheet.Cell($"{PayStubNumber}{startIndex}").SetValue(payStub.PayStubNumber);
             worksheet.Cell($"{FullName}{startIndex}").SetValue(payStub.FullName);
+            worksheet.Cell($"{NumberId}{startIndex}").SetValue(payStub.NumberId);
             worksheet.Cell($"{Email}{startIndex}").SetValue(payStub.Email);
             worksheet.Cell($"{GrossPayment}{startIndex}").SetValue(payStub.GrossPayment).SetMoneyType();
             worksheet.Cell($"{Vacations}{startIndex}").SetValue(payStub.Vacations).SetMoneyType();
@@ -133,6 +136,7 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         worksheet.Row(HeadRow).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
         worksheet.Cell($"{PayStubNumber}{HeadRow}").SetValue("PAY STUB #");
         worksheet.Cell($"{FullName}{HeadRow}").SetValue("FULL NAME");
+        worksheet.Cell($"{NumberId}{HeadRow}").SetValue("NUMBER ID");
         worksheet.Cell($"{Description}{HeadRow}").SetValue("DESCRIPTION");
         worksheet.Cell($"{Quantity}{HeadRow}").SetValue("QUANTITY");
         worksheet.Cell($"{UnitPrice}{HeadRow}").SetValue("UNIT PRICE");
@@ -157,6 +161,7 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
     {
         worksheet.Column(PayStubNumber).Width = 9;
         worksheet.Column(FullName).Width = 25;
+        worksheet.Column(NumberId).Width = 12;
         worksheet.Column(Description).Width = 12;
         worksheet.Column(Quantity).Width = 9;
         worksheet.Column(UnitPrice).Width = 9;

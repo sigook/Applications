@@ -38,5 +38,7 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public List<PayStubDetailItemModel> Taxes { get; set; } = new List<PayStubDetailItemModel>();
         public TaxCategory FederalCategory { get; set; }
         public TaxCategory ProvincialCategory { get; set; }
+        public Guid WorkerProfileId { get; set; }
+        public PayStubYtdModel Ytd { get; set; }
     }
 }

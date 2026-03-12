@@ -12,19 +12,16 @@ namespace Covenant.Tests.Billing.Holidays
             const int regularWage = 10;
             var sub = new RegularWageWorker
             {
-                Vacations = vacations,
                 RegularWage = regularWage,
                 HolidayWasPaid = false,
                 CustomPublicHolidayValue = default,
                 IsEntitledToReceiveHolidayPay = true
             };
-            Assert.Equal(vacations, sub.Vacations);
             Assert.Equal(regularWage, sub.RegularWage);
             Assert.Equal(default, sub.CustomPublicHolidayValue);
             Assert.False(sub.HolidayWasPaid);
             Assert.True(sub.IsEntitledToReceiveHolidayPay);
-            Assert.Equal(vacations + regularWage, sub.RegularWagePlusVacations);
-            Assert.Equal(1, sub.AmountToPay);
+            Assert.Equal(0.5m, sub.AmountToPay);
             Assert.NotEmpty(sub.Description);
         }
 

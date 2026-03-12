@@ -20,6 +20,7 @@ public class GeneratePayStubsReport : IRequest<ResultGenerateDocument<byte[]>>
         "N° Pay Stub",
         "Created At",
         "Employee Full Name",
+        "Number ID",
         "Total Paid"
     };
 }
@@ -49,6 +50,7 @@ public class GeneratePayStubsReportHandler : IRequestHandler<GeneratePayStubsRep
         sheet.Cell($"A{row}").SetValue(data.PayStubNumber);
         sheet.Cell($"B{row}").SetValue(data.CreatedAt.ToString("yyyy-MM-dd"));
         sheet.Cell($"C{row}").SetValue(data.WorkerFullName);
-        sheet.Cell($"D{row}").SetValue(data.TotalPaid).SetMoneyType();
+        sheet.Cell($"D{row}").SetValue(data.NumberId);
+        sheet.Cell($"E{row}").SetValue(data.TotalPaid).SetMoneyType();
     }
 }

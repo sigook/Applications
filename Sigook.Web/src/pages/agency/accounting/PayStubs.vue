@@ -56,6 +56,16 @@
               {{ props.row.workerFullName }}
             </template>
           </b-table-column>
+          <b-table-column field="numberId" label="Number ID" sortable searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress.native="onInputEntered">
+              </b-input>
+            </template>
+            <template v-slot="props">
+              {{ props.row.numberId }}
+            </template>
+          </b-table-column>
           <b-table-column field="totalPaid" label="Total Paid">
             <template v-slot="props">
               {{ props.row.totalPaid | currency }}
@@ -146,8 +156,11 @@ export default {
         case 'workerFullName':
           this.serverParams.sortBy = 2;
           break;
-        case 'totalPaid':
+        case 'numberId':
           this.serverParams.sortBy = 3;
+          break;
+        case 'totalPaid':
+          this.serverParams.sortBy = 4;
           break;
       }
       this.serverParams.isDescending = order !== 'asc';

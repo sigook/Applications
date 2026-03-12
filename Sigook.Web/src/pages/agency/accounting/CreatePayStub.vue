@@ -147,7 +147,7 @@ export default {
       { value: 'Overtime Hours' },
       { value: 'Missing Hours' },
       { value: 'Missing Overtime Hours' },
-      { value: 'Holiday Premium Pay Hours' }
+      { value: 'Statutory Worked Holiday Pay Hours' }
     ];
     return {
       isLoading: false,
@@ -234,7 +234,7 @@ export default {
         const overtimeHours = this.items.find(i => i.description === 'Overtime Hours');
         const missingHours = this.items.find(i => i.description === 'Missing Hours');
         const missingOvertimeHours = this.items.find(i => i.description === 'Missing Overtime Hours');
-        const holidayPremiumPayHours = this.items.find(i => i.description === 'Holiday Premium Pay Hours');
+        const statutoryWorkedHolidayPayHours = this.items.find(i => i.description === 'Statutory Worked Holiday Pay Hours');
         if (regularHours) {
           this.payStub.regularHours = regularHours.quantity;
           this.payStub.unitPriceRegularHours = regularHours.unitPrice;
@@ -251,9 +251,9 @@ export default {
           this.payStub.missingOvertimeHours = missingOvertimeHours.quantity;
           this.payStub.unitPriceMissingOvertimeHours = missingOvertimeHours.unitPrice;
         }
-        if (holidayPremiumPayHours) {
-          this.payStub.holidayPremiumPayHours = holidayPremiumPayHours.quantity;
-          this.payStub.unitPriceHolidayPremiumPayHours = holidayPremiumPayHours.unitPrice;
+        if (statutoryWorkedHolidayPayHours) {
+          this.payStub.statutoryWorkedHolidayPayHours = statutoryWorkedHolidayPayHours.quantity;
+          this.payStub.unitPriceStatutoryWorkedHolidayPayHours = statutoryWorkedHolidayPayHours.unitPrice;
         }
         if (this.discount) {
           this.payStub.otherDeductions = this.discount.amount;

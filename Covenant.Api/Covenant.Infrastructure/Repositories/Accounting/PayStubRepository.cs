@@ -94,8 +94,31 @@ public class PayStubRepository : IPayStubRepository
                         Description = d.Description
                     }).ToList(),
                     FederalCategory = wp.WorkerProfileTaxCategory != null && wp.WorkerProfileTaxCategory.FederalCategory.HasValue ? wp.WorkerProfileTaxCategory.FederalCategory.Value : TaxCategory.Cc1,
-                    ProvincialCategory = wp.WorkerProfileTaxCategory != null && wp.WorkerProfileTaxCategory.ProvincialCategory.HasValue ? wp.WorkerProfileTaxCategory.ProvincialCategory.Value : TaxCategory.Cc1
+                    ProvincialCategory = wp.WorkerProfileTaxCategory != null && wp.WorkerProfileTaxCategory.ProvincialCategory.HasValue ? wp.WorkerProfileTaxCategory.ProvincialCategory.Value : TaxCategory.Cc1,
+                    WorkerProfileId = ps.WorkerProfileId
                 }).SingleOrDefaultAsync();
+    }
+
+    public async Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, int year)
+    {
+        var result = await _context.PayStub
+            .Where(ps => ps.WorkerProfileId == workerProfileId && ps.DateWorkEnd.Year == year)
+            .GroupBy(ps => ps.WorkerProfileId)
+            .Select(g => new PayStubYtdModel
+            {
+                Gross = g.Sum(ps => ps.GrossPayment),
+                Vacations = g.Sum(ps => ps.Vacations),
+                Earnings = g.Sum(ps => ps.TotalEarnings),
+                Cpp = g.Sum(ps => ps.Cpp),
+                Ei = g.Sum(ps => ps.Ei),
+                FederalTax = g.Sum(ps => ps.FederalTax),
+                ProvincialTax = g.Sum(ps => ps.ProvincialTax),
+                TotalDeductions = g.Sum(ps => ps.TotalDeductions),
+                TotalPaid = g.Sum(ps => ps.TotalPaid)
+            })
+            .SingleOrDefaultAsync();
+
+        return result ?? new PayStubYtdModel();
     }
 
     public async Task<RegularWageWorker> GetWorkerRegularWages(ParamsToGetRegularWages p)
@@ -106,12 +129,10 @@ public class PayStubRepository : IPayStubRepository
                         select new
                         {
                             RegularWage = tmp1.Sum(ps => ps.RegularWage),
-                            Vacations = tmp1.Sum(ps => ps.Vacations)
                         };
         var result = queryable.Select(w => new RegularWageWorker
         {
             RegularWage = w.RegularWage,
-            Vacations = w.Vacations,
             HolidayWasPaid = (from ps2 in _context.PayStub.Where(s => s.WorkerProfileId == p.ProfileId)
                               join psh in _context.PayStubPublicHolidays.Where(h => h.Holiday == p.Holiday) on ps2.Id equals psh.PayStubId
                               select psh.Holiday).Any(),
@@ -170,6 +191,7 @@ public class PayStubRepository : IPayStubRepository
                     PayStubNumber = ps.PayStubNumber,
                     Email = wpu.Email,
                     FullName = wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
+                    NumberId = wp.NumberId,
                     GrossPayment = ps.GrossPayment,
                     Vacations = ps.Vacations,
                     TotalEarnings = ps.TotalEarnings,
@@ -290,7 +312,7 @@ public class PayStubRepository : IPayStubRepository
                     select new PayStubListModel
                     {
                         Id = ps.Id,
-                        NumberId = ps.NumberId,
+                        NumberId = ps.WorkerProfile.NumberId,
                         PayStubNumberId = ps.PayStubNumberId,
                         PayStubNumber = ps.PayStubNumber,
                         WorkerFullName =
@@ -320,6 +342,8 @@ public class PayStubRepository : IPayStubRepository
             var fullName = filter.WorkerFullName.ToLower();
             predicate = predicate.And(p => EF.Functions.Like(p.WorkerFullName.ToLower(), $"%{fullName}%"));
         }
+        if (filter.NumberId.HasValue)
+            predicate = predicate.And(p => p.NumberId == filter.NumberId.Value);
         return predicate;
     }
 
@@ -335,6 +359,9 @@ public class PayStubRepository : IPayStubRepository
                 break;
             case GetPayStubsFilterSortBy.WorkerFullName:
                 query = query.AddOrderBy(filter, p => p.WorkerFullName);
+                break;
+            case GetPayStubsFilterSortBy.NumberId:
+                query = query.AddOrderBy(filter, p => p.NumberId);
                 break;
         }
         return query;

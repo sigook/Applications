@@ -4,7 +4,7 @@ namespace Covenant.Common.Entities.Accounting.PayStub;
 
 public class PayStub
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public Guid WorkerProfileId { get; set; }
     public long NumberId { get; set; }
     public WorkerProfile WorkerProfile { get; set; }

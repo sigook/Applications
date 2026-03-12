@@ -112,8 +112,36 @@
         </tbody>
     </table>
     <div>
+        @if (Model.YtdItems.Any())
+        {
+            <table style="margin-top: 16px; display: inline-table; width: 48%; vertical-align: top; float: left;">
+                <col width="50%">
+                <col width="50%">
+                <thead style="color: #fff; font-weight: bold;">
+                    <tr>
+                        <th colspan="2" style="background: #93B571; padding: 8px; text-align: center; border-radius: 14px 14px 0 0;">Year To Date</th>
+                    </tr>
+                </thead>
+                <tbody style="background: #EDF4E1">
+                    @{
+                        int lengthYtd = Model.YtdItems.Count();
+                    }
+                    @for (var i = 0; i < lengthYtd; i++)
+                    {
+                        <tr style="@( i + 1 == lengthYtd ? "background-color: #D6E8C4;" : "" )">
+                            <td style="padding: 8px; @(i + 1 == lengthYtd ? "border-radius: 0 0 0 14px;" : "")">
+                                <strong>@Model.YtdItems.ElementAt(i).Label</strong>
+                            </td>
+                            <td style="padding: 8px; text-align: right; @(i + 1 == lengthYtd ? "border-radius: 0 0 14px 0;" : "")">
+                                @Model.YtdItems.ElementAt(i).Value
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
 
-        <table style="margin-top: 16px; display: inline-table; width: 50%; vertical-align: bottom;float: right">
+        <table style="margin-top: 16px; display: inline-table; width: @(Model.YtdItems.Any() ? "48%" : "50%"); vertical-align: top; float: right">
             <col width="50%">
             <col width="50%">
             <tbody style="background: #CFE2AA">

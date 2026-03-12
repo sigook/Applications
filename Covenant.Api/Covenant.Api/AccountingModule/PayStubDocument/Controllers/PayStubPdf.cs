@@ -42,6 +42,7 @@ namespace Covenant.Api.AccountingModule.PayStubDocument.Controllers
 
             var model = await _repository.GetPayStubDetail(payStubId);
             if (model is null) return new NotFoundResult();
+            model.Ytd = await _repository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
             pdfPath = await UploadPdf(model);
             return string.IsNullOrEmpty(pdfPath) ? new BadRequestResult() : await func(pdfPath, fileName);
         }
@@ -53,6 +54,7 @@ namespace Covenant.Api.AccountingModule.PayStubDocument.Controllers
 
             var model = await _repository.GetPayStubDetail(payStubId);
             if (model is null) return new NotFoundResult();
+            model.Ytd = await _repository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
 
             if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadPdf(model);
 

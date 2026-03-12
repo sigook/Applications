@@ -30,47 +30,47 @@ public static class DateExtensions
 
     public static DateTime GetWeekEndingCurrentWeek(this DateTime date)
     {
-        switch (date.DayOfWeek)
+        return date.DayOfWeek switch
         {
-            case DayOfWeek.Sunday: return date.AddDays(6);
-            case DayOfWeek.Monday: return date.AddDays(5);
-            case DayOfWeek.Tuesday: return date.AddDays(4);
-            case DayOfWeek.Wednesday: return date.AddDays(3);
-            case DayOfWeek.Thursday: return date.AddDays(2);
-            case DayOfWeek.Friday: return date.AddDays(1);
-            case DayOfWeek.Saturday: return date.AddDays(0);
-            default: throw new ArgumentOutOfRangeException();
-        }
+            DayOfWeek.Sunday => date.AddDays(6),
+            DayOfWeek.Monday => date.AddDays(5),
+            DayOfWeek.Tuesday => date.AddDays(4),
+            DayOfWeek.Wednesday => date.AddDays(3),
+            DayOfWeek.Thursday => date.AddDays(2),
+            DayOfWeek.Friday => date.AddDays(1),
+            DayOfWeek.Saturday => date.AddDays(0),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
     }
 
     public static DateTime GetPaymentDateForExternalWorkers(this DateTime date)
     {
-        switch (date.DayOfWeek)
+        return date.DayOfWeek switch
         {
-            case DayOfWeek.Sunday: return date.AddDays(12);
-            case DayOfWeek.Monday: return date.AddDays(11);
-            case DayOfWeek.Tuesday: return date.AddDays(10);
-            case DayOfWeek.Wednesday: return date.AddDays(9);
-            case DayOfWeek.Thursday: return date.AddDays(8);
-            case DayOfWeek.Friday: return date.AddDays(7);
-            case DayOfWeek.Saturday: return date.AddDays(6);
-            default: throw new ArgumentOutOfRangeException();
-        }
+            DayOfWeek.Sunday => date.AddDays(12),
+            DayOfWeek.Monday => date.AddDays(11),
+            DayOfWeek.Tuesday => date.AddDays(10),
+            DayOfWeek.Wednesday => date.AddDays(9),
+            DayOfWeek.Thursday => date.AddDays(8),
+            DayOfWeek.Friday => date.AddDays(7),
+            DayOfWeek.Saturday => date.AddDays(6),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
     }
 
     public static DateTime GetPaymentDateForInternalWorkers(this DateTime date)
     {
-        switch (date.DayOfWeek)
+        return date.DayOfWeek switch
         {
-            case DayOfWeek.Sunday: return date.AddDays(5);
-            case DayOfWeek.Monday: return date.AddDays(4);
-            case DayOfWeek.Tuesday: return date.AddDays(3);
-            case DayOfWeek.Wednesday: return date.AddDays(2);
-            case DayOfWeek.Thursday: return date.AddDays(1);
-            case DayOfWeek.Friday: return date.AddDays(0);
-            case DayOfWeek.Saturday: return date.AddDays(-1);
-            default: throw new ArgumentOutOfRangeException();
-        }
+            DayOfWeek.Sunday => date.AddDays(5),
+            DayOfWeek.Monday => date.AddDays(4),
+            DayOfWeek.Tuesday => date.AddDays(3),
+            DayOfWeek.Wednesday => date.AddDays(2),
+            DayOfWeek.Thursday => date.AddDays(1),
+            DayOfWeek.Friday => date.AddDays(0),
+            DayOfWeek.Saturday => date.AddDays(-1),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
     }
 
     public static IEnumerable<DateTime> GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay(this DateTime holiday)
@@ -78,7 +78,7 @@ public static class DateExtensions
         DateTime oneDayAfterTheHoliday = holiday.AddDays(1);
         TimeSpan oneDay = TimeSpan.FromDays(1);
         DateTime oneDayBeforeTheHoliday = holiday.Subtract(oneDay);
-        return new[] { holiday, oneDayAfterTheHoliday, oneDayBeforeTheHoliday };
+        return [holiday, oneDayAfterTheHoliday, oneDayBeforeTheHoliday];
     }
 
     public static DateTime GetStart(this DateTime end)
@@ -92,16 +92,16 @@ public static class DateExtensions
 
     public static DateTime GetEnd(this DateTime holiday)
     {
-        switch (holiday.DayOfWeek)
+        return holiday.DayOfWeek switch
         {
-            case DayOfWeek.Monday: return holiday.Subtract(TimeSpan.FromDays(2));
-            case DayOfWeek.Tuesday: return holiday.Subtract(TimeSpan.FromDays(3));
-            case DayOfWeek.Wednesday: return holiday.Subtract(TimeSpan.FromDays(4));
-            case DayOfWeek.Thursday: return holiday.Subtract(TimeSpan.FromDays(5));
-            case DayOfWeek.Friday: return holiday.Subtract(TimeSpan.FromDays(6));
-            case DayOfWeek.Saturday: return holiday.Subtract(TimeSpan.FromDays(7));
-            case DayOfWeek.Sunday: return holiday.Subtract(TimeSpan.FromDays(8));
-            default: throw new ArgumentOutOfRangeException();
-        }
+            DayOfWeek.Monday => holiday.Subtract(TimeSpan.FromDays(2)),
+            DayOfWeek.Tuesday => holiday.Subtract(TimeSpan.FromDays(3)),
+            DayOfWeek.Wednesday => holiday.Subtract(TimeSpan.FromDays(4)),
+            DayOfWeek.Thursday => holiday.Subtract(TimeSpan.FromDays(5)),
+            DayOfWeek.Friday => holiday.Subtract(TimeSpan.FromDays(6)),
+            DayOfWeek.Saturday => holiday.Subtract(TimeSpan.FromDays(7)),
+            DayOfWeek.Sunday => holiday.Subtract(TimeSpan.FromDays(8)),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
     }
 }

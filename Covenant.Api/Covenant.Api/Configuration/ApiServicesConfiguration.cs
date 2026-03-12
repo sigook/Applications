@@ -22,7 +22,6 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Invoices;
 using Covenant.Core.BL.Services.Shared;
-using Covenant.Common.Repositories;
 using Covenant.Deductions.Services;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;

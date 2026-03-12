@@ -25,6 +25,7 @@ public class PayStubService : IPayStubService
     private readonly ICatalogRepository catalogRepository;
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
+
     private static readonly SemaphoreSlim SemaphoreSlim = new(1, 1);
 
     public PayStubService(
@@ -52,6 +53,393 @@ public class PayStubService : IPayStubService
         GetReport(result, workbook);
         workbook.SaveAs(stream);
         return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"T4_Resume_{DateTime.Now.Year}.xlsx", string.Empty));
+    }
+
+    public async Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model)
+    {
+        // Step 1: Resolve pay stub number
+        if (model.PayStubNumber <= 0)
+        {
+            var numbers = await payStubRepository.GetNextPayStubNumbers(1);
+            model.PayStubNumber = numbers.First().NextNumber;
+        }
+        else
+        {
+            if (await payStubRepository.IsPayStubNumberTaken(model.PayStubNumber))
+                return Result.Fail<PayStub>("Pay stub number is taken");
+        }
+
+        // Step 2: Create PayStubItems from model
+        var payStubItems = new List<PayStubItem>();
+        var itemErrors = new List<ResultError>();
+
+        if (model.RegularHours > 0)
+            AddItem(PayStubItem.CreateRegular(model.RegularHours, model.UnitPriceRegularHours), payStubItems, itemErrors);
+        if (model.OvertimeHours > 0)
+            AddItem(PayStubItem.CreateOvertime(model.OvertimeHours, model.UnitPriceOvertimeHours), payStubItems, itemErrors);
+        if (model.MissingHours > 0)
+            AddItem(PayStubItem.CreateMissing(model.MissingHours, model.UnitPriceMissingHours), payStubItems, itemErrors);
+        if (model.MissingOvertimeHours > 0)
+            AddItem(PayStubItem.CreateMissingOvertime(model.MissingOvertimeHours, model.UnitPriceMissingOvertimeHours), payStubItems, itemErrors);
+        if (model.StatutoryWorkedHolidayPayHours > 0)
+            AddItem(PayStubItem.CreateStatutoryWorkedHoliday(model.StatutoryWorkedHolidayPayHours, model.UnitPriceStatutoryWorkedHolidayPayHours), payStubItems, itemErrors);
+        if (model.Other > 0)
+            AddItem(PayStubItem.CreateBonusOthersItem(model.Other, model.UnitPriceOther, model.BonusOthersDescription), payStubItems, itemErrors);
+        if (model.Other2 > 0)
+            AddItem(PayStubItem.CreateBonusOthersItem(model.Other2, model.UnitPriceOther2, model.BonusOthersDescription2), payStubItems, itemErrors);
+        if (model.Other3 > 0)
+            AddItem(PayStubItem.CreateBonusOthersItem(model.Other3, model.UnitPriceOther3, model.BonusOthersDescription3), payStubItems, itemErrors);
+
+        if (itemErrors.Any()) return Result.Fail<PayStub>(itemErrors);
+
+        // Step 3: Create holidays
+        var publicHolidays = new List<PayStubPublicHoliday>();
+        foreach (var h in model.Holidays)
+        {
+            var rHoliday = PayStubPublicHoliday.Create(h.Holiday, h.Amount, "This amount was added manually");
+            if (!rHoliday) return Result.Fail<PayStub>(rHoliday.Errors);
+            publicHolidays.Add(rHoliday.Value);
+        }
+
+        // Step 4: Create other deductions
+        var otherDeductions = model.OtherDeductions > 0
+            ? new[] { PayStubOtherDeduction.CreateDefaultDeduction(model.OtherDeductions, model.OtherDeductionsDescription) }
+            : [];
+
+        // Step 5: Adjust dates to week boundaries (Sunday-Saturday)
+        var dateWorkBegins = model.WorkBegins.AddDays(-(int)model.WorkBegins.DayOfWeek);
+        var dateWorkEnd = model.WorkEnd.AddDays(6 - (int)model.WorkEnd.DayOfWeek);
+
+        // Step 6: Filter and validate items
+        payStubItems = [.. payStubItems.Where(i => i.Total > 0)];
+        if (payStubItems.Count == 0)
+            return Result.Fail<PayStub>("There is not enough information to generate pay stub");
+        if (dateWorkBegins > dateWorkEnd)
+            return Result.Fail<PayStub>("Dates of work: start must be before end");
+
+        // Step 7: Calculate earnings
+        var grossForVacations = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
+        var vacations = model.PayVacations
+            ? calculatorService.CalculateVacationsAmount(grossForVacations, rates.Vacations)
+            : decimal.Zero;
+        var publicHolidayPay = publicHolidays.Sum(h => h.Amount).DefaultMoneyRound();
+
+        if (publicHolidayPay > 0)
+        {
+            var rHolidayItem = PayStubItem.CreateStatutoryHoliday(publicHolidayPay);
+            if (rHolidayItem) payStubItems.Add(rHolidayItem.Value);
+        }
+
+        var grossPayment = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
+        var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
+
+        // Step 8: Calculate deductions
+        var numberOfWeeks = dateWorkBegins.GetNumberOfWeeksIn(dateWorkEnd);
+        var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, model.WorkerProfileId);
+        var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
+        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
+
+        // Step 9: Calculate net pay
+        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound();
+
+        // Step 10: Build PayStub entity
+        var regularWage = payStubItems
+            .Where(i => i.Type == PayStubItemType.Regular)
+            .Sum(i => i.Total)
+            .DefaultMoneyRound();
+
+        var payStub = new PayStub
+        {
+            Id = Guid.NewGuid(),
+            WorkerProfileId = model.WorkerProfileId,
+            PayStubNumber = GeneratePayStubNumber(model.PayStubNumber, DateTime.Now),
+            PayStubNumberId = model.PayStubNumber,
+            TypeOfWork = model.TypeOfWork,
+            DateWorkBegins = dateWorkBegins,
+            DateWorkEnd = dateWorkEnd,
+            PaymentDate = dateWorkEnd.GetPaymentDateForInternalWorkers(),
+            RegularWage = regularWage,
+            GrossPayment = grossPayment,
+            Vacations = vacations,
+            TotalEarnings = totalEarnings,
+            Cpp = deductions.Cpp,
+            Ei = deductions.Ei,
+            FederalTax = deductions.FederalTax ?? 0,
+            ProvincialTax = deductions.ProvincialTax ?? 0,
+            TotalDeductions = totalDeductions,
+            TotalPaid = totalPaid,
+            CreatedAt = DateTime.Now,
+            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
+        };
+
+        payStub.AddItems(payStubItems);
+        payStub.AddHolidays(publicHolidays);
+        payStub.AddOtherDeductionsDetail(otherDeductions);
+
+        // Step 11: Save
+        await payStubRepository.Create(payStub);
+        await payStubRepository.SaveChangesAsync();
+
+        return Result.Ok(payStub);
+    }
+
+    public async Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds)
+    {
+        await SemaphoreSlim.WaitAsync();
+        try
+        {
+            foreach (var workerId in workerIds)
+            {
+                var result = await GeneratePayStubForWorker(agencyIds, workerId);
+                if (!result) return result;
+            }
+        }
+        finally
+        {
+            SemaphoreSlim.Release();
+        }
+
+        return Result.Ok();
+    }
+
+    private async Task<Result> GeneratePayStubForWorker(IEnumerable<Guid> agencyIds, Guid workerId)
+    {
+        // Step 1: Get approved timesheets for this worker
+        var timesheets = await timeSheetRepository.GetTimeSheetForCreatingPayStubs(agencyIds, workerId);
+        if (timesheets.Count == 0) return Result.Ok();
+
+        // Step 2: Get next paystub number
+        var nextNumbers = await payStubRepository.GetNextPayStubNumbers(1);
+        var payStubNumber = nextNumbers.First().NextNumber;
+
+        var workerProfileId = timesheets.First().WorkerProfileId;
+        var typeOfWork = timesheets.First().TypeOfWork;
+        var overtimeStartsAfter = timesheets.First().OvertimeStartsAfter;
+
+        // Step 3: Process timesheets by week and request to calculate hours and wages
+        var allWageDetails = new List<PayStubWageDetail>();
+        var publicHolidays = new List<PayStubPublicHoliday>();
+
+        // Dictionaries to accumulate hours by rate for each item type
+        var regularByRate = new Dictionary<decimal, double>();
+        var otherRegularByRate = new Dictionary<decimal, double>();
+        var overtimeByRate = new Dictionary<decimal, double>();
+        var workedHolidayByRate = new Dictionary<decimal, double>();
+        var missingByRate = new Dictionary<decimal, double>();
+        var missingOvertimeByRate = new Dictionary<decimal, double>();
+
+        // Dictionaries to accumulate extras by description
+        var bonusGroups = new Dictionary<string, decimal>();
+        var reimbursementGroups = new Dictionary<string, decimal>();
+        var otherDeductions = new List<PayStubOtherDeduction>();
+
+        var weekGroups = timesheets.GroupBy(t => t.Week).OrderBy(g => g.Key);
+        foreach (var week in weekGroups)
+        {
+            // Step 3.1: Group by RequestId for overtime accumulation per request
+            var requestGroups = week.GroupBy(t => t.RequestId);
+            foreach (var request in requestGroups)
+            {
+                // Step 3.2: Process each day in order
+                var accumulatedHours = TimeSpan.Zero;
+                foreach (var ts in request.OrderBy(t => t.Date))
+                {
+                    if (!ts.TimeInApproved.HasValue || !ts.TimeOutApproved.HasValue) continue;
+
+                    // Calculate hours breakdown
+                    var hoursBreakdown = calculatorService.CalculateHoursBreakdown(
+                        ts.TimeInApproved.Value,
+                        ts.TimeOutApproved.Value,
+                        ts.DurationBreak,
+                        ts.BreakIsPaid,
+                        ts.IsHoliday,
+                        ts.HolidayIsPaid,
+                        ref accumulatedHours,
+                        overtimeStartsAfter,
+                        timeLimits.MaxHoursWeek);
+
+                    // Calculate amounts for each hour type
+                    var workerRate = ts.WorkerRate;
+                    var missingRateWorker = ts.MissingRateWorker <= decimal.Zero ? workerRate : ts.MissingRateWorker;
+
+                    var regularAmount = calculatorService.CalculateRegularAmount(workerRate, hoursBreakdown.RegularHours.TotalHours).DefaultMoneyRound();
+                    var otherRegularAmount = calculatorService.CalculateRegularAmount(workerRate, hoursBreakdown.OtherRegularHours.TotalHours).DefaultMoneyRound();
+                    var overtimeAmount = calculatorService.CalculateOvertimeAmount(workerRate, rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours).DefaultMoneyRound();
+                    var holidayAmount = calculatorService.CalculateHolidayAmount(workerRate, rates.Holiday, hoursBreakdown.HolidayHours.TotalHours).DefaultMoneyRound();
+                    var missingAmount = calculatorService.CalculateMissingAmount(missingRateWorker, ts.MissingHours.TotalHours).DefaultMoneyRound();
+                    var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(missingRateWorker, rates.OverTime, ts.MissingHoursOvertime.TotalHours).DefaultMoneyRound();
+
+                    // Create TimeSheetTotalPayroll entity
+                    var timeSheetTotal = calculatorService.CreateTimeSheetTotalPayrollEntity(
+                        ts.TimeSheetId, hoursBreakdown, accumulatedHours);
+
+                    // Accumulate hours by rate for PayStubItem creation
+                    if (regularAmount > 0)
+                        Accumulate(regularByRate, workerRate, hoursBreakdown.RegularHours.TotalHours);
+                    if (otherRegularAmount > 0)
+                        Accumulate(otherRegularByRate, workerRate, hoursBreakdown.OtherRegularHours.TotalHours);
+                    if (overtimeAmount > 0)
+                        Accumulate(overtimeByRate, rates.OverTime * workerRate, hoursBreakdown.OvertimeHours.TotalHours);
+                    if (holidayAmount > 0)
+                        Accumulate(workedHolidayByRate, rates.Holiday * workerRate, hoursBreakdown.HolidayHours.TotalHours);
+                    if (missingAmount > 0)
+                        Accumulate(missingByRate, missingRateWorker, ts.MissingHours.TotalHours);
+                    if (missingOvertimeAmount > 0)
+                        Accumulate(missingOvertimeByRate, rates.OverTime * missingRateWorker, ts.MissingHoursOvertime.TotalHours);
+
+                    // Accumulate extras (bonus, reimbursements, deductions)
+                    if (ts.BonusOrOthers > 0)
+                    {
+                        var key = ts.BonusOrOthersDescription ?? "Bonus";
+                        if (!bonusGroups.ContainsKey(key)) bonusGroups[key] = 0;
+                        bonusGroups[key] += ts.BonusOrOthers;
+                    }
+                    if (ts.Reimbursements > 0)
+                    {
+                        var key = ts.ReimbursementsDescription ?? "Reimbursement";
+                        if (!reimbursementGroups.ContainsKey(key)) reimbursementGroups[key] = 0;
+                        reimbursementGroups[key] += ts.Reimbursements;
+                    }
+                    if (ts.DeductionsOthers > 0)
+                    {
+                        otherDeductions.Add(PayStubOtherDeduction.CreateDefaultDeduction(ts.DeductionsOthers, ts.DeductionsOthersDescription));
+                    }
+
+                    // Create wage detail linked to TimeSheetTotalPayroll
+                    allWageDetails.Add(new PayStubWageDetail(
+                        workerRate: workerRate,
+                        regular: regularAmount,
+                        otherRegular: otherRegularAmount,
+                        missing: missingAmount,
+                        missingOvertime: missingOvertimeAmount,
+                        nightShift: 0,
+                        holiday: holidayAmount,
+                        overtime: overtimeAmount,
+                        timeSheetTotalId: timeSheetTotal.Id)
+                    {
+                        TimeSheetTotal = timeSheetTotal
+                    });
+                }
+            }
+
+            // Step 3.3: Get public holidays for this week
+            var firstDateInWeek = week.First().Date;
+            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(firstDateInWeek);
+            if (holidaysInWeek != null && holidaysInWeek.Any())
+            {
+                foreach (var holiday in holidaysInWeek)
+                {
+                    var wages = await payStubRepository.GetWorkerRegularWages(
+                        new ParamsToGetRegularWages(workerProfileId, holiday));
+                    if (wages == null) continue;
+                    var amount = wages.AmountToPay;
+                    if (amount <= 0) continue;
+
+                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, wages.Description);
+                    if (rHoliday) publicHolidays.Add(rHoliday.Value);
+                }
+            }
+        }
+
+        // Step 4: Create PayStubItems from accumulated hours by rate
+        var payStubItems = new List<PayStubItem>();
+        var itemErrors = new List<ResultError>();
+
+        foreach (var entry in regularByRate)
+            AddItem(PayStubItem.CreateRegular(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in otherRegularByRate)
+            AddItem(PayStubItem.CreateOtherRegular(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in overtimeByRate)
+            AddItem(PayStubItem.CreateOvertime(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in workedHolidayByRate)
+            AddItem(PayStubItem.CreateStatutoryWorkedHoliday(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in missingByRate)
+            AddItem(PayStubItem.CreateMissing(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in missingOvertimeByRate)
+            AddItem(PayStubItem.CreateMissingOvertime(entry.Value, entry.Key), payStubItems, itemErrors);
+        foreach (var entry in publicHolidays)
+            AddItem(PayStubItem.CreateStatutoryHoliday(entry.Amount), payStubItems, itemErrors);
+        foreach (var bonus in bonusGroups)
+            AddItem(PayStubItem.CreateBonusOthersItem(bonus.Value, bonus.Key), payStubItems, itemErrors);
+        foreach (var reimbursement in reimbursementGroups)
+            AddItem(PayStubItem.CreateReimbursements(reimbursement.Value, reimbursement.Key), payStubItems, itemErrors);
+
+        if (itemErrors.Count != 0) return Result.Fail(itemErrors);
+
+        payStubItems = [.. payStubItems.Where(i => i.Total > 0)];
+
+        if (payStubItems.Count == 0)
+            return Result.Fail("There is not enough information to generate pay stub");
+
+        // Step 6: Calculate totals
+        var grossPayment = payStubItems
+            .Where(p => p.Type != PayStubItemType.Reimbursement)
+            .Sum(i => i.Total)
+            .DefaultMoneyRound();
+        var vacations = calculatorService.CalculateVacationsAmount(grossPayment, rates.Vacations);
+        var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
+
+        // Step 7: Calculate deductions
+        var minDate = timesheets.Min(m => m.Date);
+        var maxDate = timesheets.Max(m => m.Date);
+        var dateWorkBegins = minDate.AddDays(-(int)minDate.DayOfWeek);
+        var dateWorkEnd = maxDate.AddDays(6 - (int)maxDate.DayOfWeek);
+        var numberOfWeeks = dateWorkBegins.GetNumberOfWeeksIn(dateWorkEnd);
+
+        var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, workerProfileId);
+        var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
+        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
+
+        // Step 8: Calculate net pay
+        var reimbursementTotal = payStubItems
+            .Where(p => p.Type == PayStubItemType.Reimbursement)
+            .Sum(r => r.Total)
+            .DefaultMoneyRound();
+        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).Add(reimbursementTotal).DefaultMoneyRound();
+
+        // Step 9: Build PayStub entity
+        var paymentDate = allWageDetails.Count != 0
+            ? dateWorkEnd.GetPaymentDateForExternalWorkers()
+            : dateWorkEnd.GetPaymentDateForInternalWorkers();
+
+        var regularWage = payStubItems
+            .Where(i => i.Type == PayStubItemType.Regular)
+            .Sum(i => i.Total)
+            .DefaultMoneyRound();
+
+        var payStub = new PayStub
+        {
+            WorkerProfileId = workerProfileId,
+            PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            PayStubNumberId = payStubNumber,
+            TypeOfWork = typeOfWork,
+            DateWorkBegins = dateWorkBegins,
+            DateWorkEnd = dateWorkEnd,
+            PaymentDate = paymentDate,
+            RegularWage = regularWage,
+            GrossPayment = grossPayment,
+            Vacations = vacations,
+            TotalEarnings = totalEarnings,
+            Cpp = deductions.Cpp,
+            Ei = deductions.Ei,
+            FederalTax = deductions.FederalTax ?? 0,
+            ProvincialTax = deductions.ProvincialTax ?? 0,
+            TotalDeductions = totalDeductions,
+            TotalPaid = totalPaid,
+            CreatedAt = DateTime.Now,
+            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
+        };
+
+        payStub.AddItems(payStubItems);
+        payStub.AddWageDetails(allWageDetails);
+        payStub.AddHolidays(publicHolidays);
+        payStub.AddOtherDeductionsDetail(otherDeductions);
+
+        // Step 10: Save
+        await payStubRepository.Create(payStub);
+        await payStubRepository.SaveChangesAsync();
+
+        return Result.Ok();
     }
 
     private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
@@ -252,411 +640,6 @@ public class PayStubService : IPayStubService
         row++;
         sheet.Cell($"L{row}").SetFormulaA1($"SUM(F{row - 1}:L{row - 1})").SetMoneyType().Config(tableFooter);
         row++;
-    }
-
-    public async Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds)
-    {
-        await SemaphoreSlim.WaitAsync();
-        try
-        {
-            foreach (var workerId in workerIds)
-            {
-                var result = await GeneratePayStubForWorker(agencyIds, workerId);
-                if (!result) return result;
-            }
-        }
-        finally
-        {
-            SemaphoreSlim.Release();
-        }
-
-        return Result.Ok();
-    }
-
-    private async Task<Result> GeneratePayStubForWorker(IEnumerable<Guid> agencyIds, Guid workerId)
-    {
-        // Step 1: Get approved timesheets for this worker
-        var timesheets = await timeSheetRepository.GetTimeSheetForCreatingPayStubs(agencyIds, workerId);
-        if (!timesheets.Any()) return Result.Ok();
-
-        // Step 2: Get next paystub number
-        var nextNumbers = await payStubRepository.GetNextPayStubNumbers(1);
-        var payStubNumber = nextNumbers.First().NextNumber;
-
-        var workerProfileId = timesheets.First().WorkerProfileId;
-        var typeOfWork = timesheets.First().TypeOfWork;
-        var overtimeStartsAfter = timesheets.First().OvertimeStartsAfter;
-
-        // Step 3: Process timesheets by week and request to calculate hours and wages
-        var allWageDetails = new List<PayStubWageDetail>();
-        var publicHolidays = new List<PayStubPublicHoliday>();
-
-        // Dictionaries to accumulate hours by rate for each item type
-        var regularByRate = new Dictionary<decimal, double>();
-        var otherRegularByRate = new Dictionary<decimal, double>();
-        var overtimeByRate = new Dictionary<decimal, double>();
-        var holidayByRate = new Dictionary<decimal, double>();
-        var missingByRate = new Dictionary<decimal, double>();
-        var missingOvertimeByRate = new Dictionary<decimal, double>();
-
-        var weekGroups = timesheets.GroupBy(t => t.Week).OrderBy(g => g.Key);
-        foreach (var week in weekGroups)
-        {
-            // Step 3.1: Group by RequestId for overtime accumulation per request
-            var requestGroups = week.GroupBy(t => t.RequestId);
-            foreach (var request in requestGroups)
-            {
-                // Step 3.2: Process each day in order
-                var accumulatedHours = TimeSpan.Zero;
-                foreach (var ts in request.OrderBy(t => t.Date))
-                {
-                    if (!ts.TimeInApproved.HasValue || !ts.TimeOutApproved.HasValue) continue;
-
-                    // Calculate hours breakdown
-                    var hoursBreakdown = calculatorService.CalculateHoursBreakdown(
-                        ts.TimeInApproved.Value,
-                        ts.TimeOutApproved.Value,
-                        ts.DurationBreak,
-                        ts.BreakIsPaid,
-                        ts.IsHoliday,
-                        ts.HolidayIsPaid,
-                        ref accumulatedHours,
-                        overtimeStartsAfter,
-                        timeLimits.MaxHoursWeek);
-
-                    // Calculate amounts for each hour type
-                    var workerRate = ts.WorkerRate;
-                    var missingRateWorker = ts.MissingRateWorker <= decimal.Zero ? workerRate : ts.MissingRateWorker;
-
-                    var regularAmount = calculatorService.CalculateRegularAmount(workerRate, hoursBreakdown.RegularHours.TotalHours).DefaultMoneyRound();
-                    var otherRegularAmount = calculatorService.CalculateRegularAmount(workerRate, hoursBreakdown.OtherRegularHours.TotalHours).DefaultMoneyRound();
-                    var overtimeAmount = calculatorService.CalculateOvertimeAmount(workerRate, rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours).DefaultMoneyRound();
-                    var holidayAmount = calculatorService.CalculateHolidayAmount(workerRate, rates.Holiday, hoursBreakdown.HolidayHours.TotalHours).DefaultMoneyRound();
-                    var missingAmount = calculatorService.CalculateMissingAmount(missingRateWorker, ts.MissingHours.TotalHours).DefaultMoneyRound();
-                    var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(missingRateWorker, rates.OverTime, ts.MissingHoursOvertime.TotalHours).DefaultMoneyRound();
-
-                    // Create TimeSheetTotalPayroll entity
-                    var timeSheetTotal = calculatorService.CreateTimeSheetTotalPayrollEntity(
-                        ts.TimeSheetId, hoursBreakdown, accumulatedHours);
-
-                    // Accumulate hours by rate for PayStubItem creation
-                    if (regularAmount > 0)
-                        Accumulate(regularByRate, workerRate, hoursBreakdown.RegularHours.TotalHours);
-                    if (otherRegularAmount > 0)
-                        Accumulate(otherRegularByRate, workerRate, hoursBreakdown.OtherRegularHours.TotalHours);
-                    if (overtimeAmount > 0)
-                        Accumulate(overtimeByRate, rates.OverTime * workerRate, hoursBreakdown.OvertimeHours.TotalHours);
-                    if (holidayAmount > 0)
-                        Accumulate(holidayByRate, rates.Holiday * workerRate, hoursBreakdown.HolidayHours.TotalHours);
-                    if (missingAmount > 0)
-                        Accumulate(missingByRate, missingRateWorker, ts.MissingHours.TotalHours);
-                    if (missingOvertimeAmount > 0)
-                        Accumulate(missingOvertimeByRate, rates.OverTime * missingRateWorker, ts.MissingHoursOvertime.TotalHours);
-
-                    // Create wage detail linked to TimeSheetTotalPayroll
-                    allWageDetails.Add(new PayStubWageDetail(
-                        workerRate: workerRate,
-                        regular: regularAmount,
-                        otherRegular: otherRegularAmount,
-                        missing: missingAmount,
-                        missingOvertime: missingOvertimeAmount,
-                        nightShift: 0,
-                        holiday: holidayAmount,
-                        overtime: overtimeAmount,
-                        timeSheetTotalId: timeSheetTotal.Id)
-                    {
-                        TimeSheetTotal = timeSheetTotal
-                    });
-                }
-            }
-
-            // Step 3.3: Get public holidays for this week
-            var firstDateInWeek = week.First().Date;
-            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(firstDateInWeek);
-            if (holidaysInWeek != null && holidaysInWeek.Any())
-            {
-                foreach (var holiday in holidaysInWeek)
-                {
-                    var wages = await payStubRepository.GetWorkerRegularWages(
-                        new ParamsToGetRegularWages(workerProfileId, holiday));
-                    if (wages == null) continue;
-                    var amount = wages.AmountToPay;
-                    if (amount <= 0) continue;
-
-                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, wages.Description);
-                    if (rHoliday) publicHolidays.Add(rHoliday.Value);
-                }
-            }
-        }
-
-        // Step 4: Create PayStubItems from accumulated hours by rate
-        var payStubItems = new List<PayStubItem>();
-        var itemErrors = new List<ResultError>();
-
-        foreach (var entry in regularByRate)
-            AddItem(PayStubItem.CreateRegular(entry.Value, entry.Key), payStubItems, itemErrors);
-        foreach (var entry in otherRegularByRate)
-            AddItem(PayStubItem.CreateOtherRegular(entry.Value, entry.Key), payStubItems, itemErrors);
-        foreach (var entry in overtimeByRate)
-            AddItem(PayStubItem.CreateOvertime(entry.Value, entry.Key), payStubItems, itemErrors);
-        foreach (var entry in holidayByRate)
-            AddItem(PayStubItem.CreateStatutoryWorkedHoliday(entry.Value, entry.Key), payStubItems, itemErrors);
-        foreach (var entry in missingByRate)
-            AddItem(PayStubItem.CreateMissing(entry.Value, entry.Key), payStubItems, itemErrors);
-        foreach (var entry in missingOvertimeByRate)
-            AddItem(PayStubItem.CreateMissingOvertime(entry.Value, entry.Key), payStubItems, itemErrors);
-
-        if (itemErrors.Any()) return Result.Fail(itemErrors);
-
-        // Step 5: Process extras from timesheets (bonus, reimbursements, deductions)
-        var reimbursementItems = new List<PayStubItem>();
-        var otherDeductions = new List<PayStubOtherDeduction>();
-
-        // Bonus/Other earnings - group by description to consolidate
-        var bonusGroups = new Dictionary<string, decimal>();
-        var reimbursementGroups = new Dictionary<string, decimal>();
-        foreach (var ts in timesheets)
-        {
-            if (ts.BonusOrOthers > 0)
-            {
-                var key = ts.BonusOrOthersDescription ?? "Bonus";
-                if (!bonusGroups.ContainsKey(key)) bonusGroups[key] = ts.BonusOrOthers;
-                bonusGroups[key] += ts.BonusOrOthers;
-            }
-            if (ts.Reimbursements > 0)
-            {
-                var key = ts.ReimbursementsDescription ?? "Reimbursement";
-                if (!reimbursementGroups.ContainsKey(key)) reimbursementGroups[key] = ts.Reimbursements;
-                reimbursementGroups[key] += ts.Reimbursements;
-            }
-            // Other deductions
-            if (ts.DeductionsOthers > 0)
-            {
-                otherDeductions.Add(PayStubOtherDeduction.CreateDefaultDeduction(ts.DeductionsOthers, ts.DeductionsOthersDescription));
-            }
-        }
-        foreach (var bonus in bonusGroups)
-        {
-            var rBonus = PayStubItem.CreateBonusOthersItem(bonus.Value, bonus.Key);
-            if (rBonus) payStubItems.Add(rBonus.Value);
-        }
-
-        // Reimbursements - group by description to consolidate
-        foreach (var reimbursement in reimbursementGroups)
-        {
-            var rReimb = PayStubItem.CreateReimbursements(reimbursement.Value, reimbursement.Key);
-            if (rReimb) reimbursementItems.Add(rReimb.Value);
-        }
-
-        // Filter items with zero total
-        payStubItems = [.. payStubItems.Where(i => i.Total > 0)];
-        reimbursementItems = [.. reimbursementItems.Where(r => r.Total > 0)];
-
-        if (payStubItems.Count == 0)
-            return Result.Fail("There is not enough information to generate pay stub");
-
-        // Step 6: Calculate totals
-        var grossForVacations = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
-        var vacations = calculatorService.CalculateVacationsAmount(grossForVacations, rates.Vacations);
-        var publicHolidayPay = publicHolidays.Sum(h => h.Amount).DefaultMoneyRound();
-
-        // Add statutory holiday as a PayStubItem (previously shown separately in summary)
-        if (publicHolidayPay > 0)
-        {
-            var rHolidayItem = PayStubItem.CreateStatutoryHoliday(publicHolidayPay);
-            if (rHolidayItem) payStubItems.Add(rHolidayItem.Value);
-        }
-
-        var grossPayment = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
-        var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
-
-        // Step 7: Calculate deductions
-        var minDate = timesheets.Min(m => m.Date);
-        var maxDate = timesheets.Max(m => m.Date);
-        var dateWorkBegins = minDate.AddDays(-(int)minDate.DayOfWeek);
-        var dateWorkEnd = maxDate.AddDays(6 - (int)maxDate.DayOfWeek);
-        var numberOfWeeks = dateWorkBegins.GetNumberOfWeeksIn(dateWorkEnd);
-
-        var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, workerProfileId);
-        var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
-        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
-
-        // Step 8: Calculate net pay
-        var reimbursementTotal = reimbursementItems.Sum(r => r.Total).DefaultMoneyRound();
-        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound().Add(reimbursementTotal);
-
-        // Step 9: Build PayStub entity
-        var paymentDate = allWageDetails.Any()
-            ? dateWorkEnd.GetPaymentDateForExternalWorkers()
-            : dateWorkEnd.GetPaymentDateForInternalWorkers();
-
-        var regularWage = payStubItems
-            .Where(i => i.Type == PayStubItemType.Regular)
-            .Sum(i => i.Total)
-            .DefaultMoneyRound();
-
-        var payStub = new PayStub
-        {
-            Id = Guid.NewGuid(),
-            WorkerProfileId = workerProfileId,
-            PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
-            PayStubNumberId = payStubNumber,
-            TypeOfWork = typeOfWork,
-            DateWorkBegins = dateWorkBegins,
-            DateWorkEnd = dateWorkEnd,
-            PaymentDate = paymentDate,
-            RegularWage = regularWage,
-            GrossPayment = grossPayment,
-            Vacations = vacations,
-            TotalEarnings = totalEarnings,
-            Cpp = deductions.Cpp,
-            Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax ?? 0,
-            ProvincialTax = deductions.ProvincialTax ?? 0,
-            TotalDeductions = totalDeductions,
-            TotalPaid = totalPaid,
-            CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
-        };
-
-        payStub.AddItems(payStubItems.Concat(reimbursementItems));
-        payStub.AddWageDetails(allWageDetails);
-        payStub.AddHolidays(publicHolidays);
-        payStub.AddOtherDeductionsDetail(otherDeductions);
-
-        // Step 10: Save
-        await payStubRepository.Create(payStub);
-        await payStubRepository.SaveChangesAsync();
-
-        return Result.Ok();
-    }
-
-    public async Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model)
-    {
-        // Step 1: Resolve pay stub number
-        if (model.PayStubNumber <= 0)
-        {
-            var numbers = await payStubRepository.GetNextPayStubNumbers(1);
-            model.PayStubNumber = numbers.First().NextNumber;
-        }
-        else
-        {
-            if (await payStubRepository.IsPayStubNumberTaken(model.PayStubNumber))
-                return Result.Fail<PayStub>("Pay stub number is taken");
-        }
-
-        // Step 2: Create PayStubItems from model
-        var payStubItems = new List<PayStubItem>();
-        var itemErrors = new List<ResultError>();
-
-        if (model.RegularHours > 0)
-            AddItem(PayStubItem.CreateRegular(model.RegularHours, model.UnitPriceRegularHours), payStubItems, itemErrors);
-        if (model.OvertimeHours > 0)
-            AddItem(PayStubItem.CreateOvertime(model.OvertimeHours, model.UnitPriceOvertimeHours), payStubItems, itemErrors);
-        if (model.MissingHours > 0)
-            AddItem(PayStubItem.CreateMissing(model.MissingHours, model.UnitPriceMissingHours), payStubItems, itemErrors);
-        if (model.MissingOvertimeHours > 0)
-            AddItem(PayStubItem.CreateMissingOvertime(model.MissingOvertimeHours, model.UnitPriceMissingOvertimeHours), payStubItems, itemErrors);
-        if (model.HolidayPremiumPayHours > 0)
-            AddItem(PayStubItem.CreateHolidayPremiumPay(model.HolidayPremiumPayHours, model.UnitPriceHolidayPremiumPayHours), payStubItems, itemErrors);
-        if (model.Other > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other, model.UnitPriceOther, model.BonusOthersDescription), payStubItems, itemErrors);
-        if (model.Other2 > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other2, model.UnitPriceOther2, model.BonusOthersDescription2), payStubItems, itemErrors);
-        if (model.Other3 > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other3, model.UnitPriceOther3, model.BonusOthersDescription3), payStubItems, itemErrors);
-
-        if (itemErrors.Any()) return Result.Fail<PayStub>(itemErrors);
-
-        // Step 3: Create holidays
-        var publicHolidays = new List<PayStubPublicHoliday>();
-        foreach (var h in model.Holidays)
-        {
-            var rHoliday = PayStubPublicHoliday.Create(h.Holiday, h.Amount, "This amount was added manually");
-            if (!rHoliday) return Result.Fail<PayStub>(rHoliday.Errors);
-            publicHolidays.Add(rHoliday.Value);
-        }
-
-        // Step 4: Create other deductions
-        var otherDeductions = model.OtherDeductions > 0
-            ? new[] { PayStubOtherDeduction.CreateDefaultDeduction(model.OtherDeductions, model.OtherDeductionsDescription) }
-            : [];
-
-        // Step 5: Adjust dates to week boundaries (Sunday-Saturday)
-        var dateWorkBegins = model.WorkBegins.AddDays(-(int)model.WorkBegins.DayOfWeek);
-        var dateWorkEnd = model.WorkEnd.AddDays(6 - (int)model.WorkEnd.DayOfWeek);
-
-        // Step 6: Filter and validate items
-        payStubItems = [.. payStubItems.Where(i => i.Total > 0)];
-        if (payStubItems.Count == 0)
-            return Result.Fail<PayStub>("There is not enough information to generate pay stub");
-        if (dateWorkBegins > dateWorkEnd)
-            return Result.Fail<PayStub>("Dates of work: start must be before end");
-
-        // Step 7: Calculate earnings
-        var grossForVacations = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
-        var vacations = model.PayVacations
-            ? calculatorService.CalculateVacationsAmount(grossForVacations, rates.Vacations)
-            : decimal.Zero;
-        var publicHolidayPay = publicHolidays.Sum(h => h.Amount).DefaultMoneyRound();
-
-        if (publicHolidayPay > 0)
-        {
-            var rHolidayItem = PayStubItem.CreateStatutoryHoliday(publicHolidayPay);
-            if (rHolidayItem) payStubItems.Add(rHolidayItem.Value);
-        }
-
-        var grossPayment = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
-        var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
-
-        // Step 8: Calculate deductions
-        var numberOfWeeks = dateWorkBegins.GetNumberOfWeeksIn(dateWorkEnd);
-        var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, model.WorkerProfileId);
-        var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
-        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
-
-        // Step 9: Calculate net pay
-        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound();
-
-        // Step 10: Build PayStub entity
-        var regularWage = payStubItems
-            .Where(i => i.Type == PayStubItemType.Regular)
-            .Sum(i => i.Total)
-            .DefaultMoneyRound();
-
-        var payStub = new PayStub
-        {
-            Id = Guid.NewGuid(),
-            WorkerProfileId = model.WorkerProfileId,
-            PayStubNumber = GeneratePayStubNumber(model.PayStubNumber, DateTime.Now),
-            PayStubNumberId = model.PayStubNumber,
-            TypeOfWork = model.TypeOfWork,
-            DateWorkBegins = dateWorkBegins,
-            DateWorkEnd = dateWorkEnd,
-            PaymentDate = dateWorkEnd.GetPaymentDateForInternalWorkers(),
-            RegularWage = regularWage,
-            GrossPayment = grossPayment,
-            Vacations = vacations,
-            TotalEarnings = totalEarnings,
-            Cpp = deductions.Cpp,
-            Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax ?? 0,
-            ProvincialTax = deductions.ProvincialTax ?? 0,
-            TotalDeductions = totalDeductions,
-            TotalPaid = totalPaid,
-            CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
-        };
-
-        payStub.AddItems(payStubItems);
-        payStub.AddHolidays(publicHolidays);
-        payStub.AddOtherDeductionsDetail(otherDeductions);
-
-        // Step 11: Save
-        await payStubRepository.Create(payStub);
-        await payStubRepository.SaveChangesAsync();
-
-        return Result.Ok(payStub);
     }
 
     private void Accumulate(Dictionary<decimal, double> dict, decimal rate, double hours)

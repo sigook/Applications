@@ -17,8 +17,8 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public decimal UnitPriceMissingHours { get; set; }
         public double MissingOvertimeHours { get; set; }
         public decimal UnitPriceMissingOvertimeHours { get; set; }
-        public double HolidayPremiumPayHours { get; set; }
-        public decimal UnitPriceHolidayPremiumPayHours { get; set; }
+        public double StatutoryWorkedHolidayPayHours { get; set; }
+        public decimal UnitPriceStatutoryWorkedHolidayPayHours { get; set; }
         public double Other { get; set; }
         public decimal UnitPriceOther { get; set; }
         public string BonusOthersDescription { get; set; }

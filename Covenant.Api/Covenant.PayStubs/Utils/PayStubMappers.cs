@@ -62,9 +62,9 @@ namespace Covenant.PayStubs.Utils
                 list.Add(missingOvertime.Value);
             }
 
-            if (model.HolidayPremiumPayHours > 0)
+            if (model.StatutoryWorkedHolidayPayHours > 0)
             {
-                var holiday = PayStubItem.CreateHolidayPremiumPay(model.HolidayPremiumPayHours, model.UnitPriceHolidayPremiumPayHours);
+                var holiday = PayStubItem.CreateStatutoryWorkedHoliday(model.StatutoryWorkedHolidayPayHours, model.UnitPriceStatutoryWorkedHolidayPayHours);
                 if (!holiday) return Result.Fail<List<PayStubItem>>(holiday.Errors);
                 list.Add(holiday.Value);
             }
