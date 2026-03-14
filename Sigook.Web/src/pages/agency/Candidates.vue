@@ -72,7 +72,7 @@
               </i>
             </template>
           </b-table-column>
-          <b-table-column field="skills" label="Skills" width="400px" sortable searchable>
+          <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -485,3 +485,15 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+::v-deep .b-table .table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+::v-deep .b-table .table td,
+::v-deep .b-table .table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

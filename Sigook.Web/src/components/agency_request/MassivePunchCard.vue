@@ -25,6 +25,13 @@
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
             </template>
           </b-table-column>
+          <b-table-column field="externalId" width="120" label="External ID" sortable searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress.native="onInputEntered"></b-input>
+            </template>
+            <template v-slot="props">{{ props.row.externalId }}</template>
+          </b-table-column>
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
@@ -113,6 +120,9 @@ export default {
           break;
         case 'status':
           this.serverParams.sortBy = 2;
+          break;
+        case 'externalId':
+          this.serverParams.sortBy = 6;
           break;
       }
       this.serverParams.isDescending = order !== 'asc';

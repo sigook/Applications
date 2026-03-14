@@ -18,6 +18,7 @@
         public bool Dnu { get; set; }
         public DateTime CreatedAt { get; set; }
         public string SinNumber { get; set; }
+        public string ExternalId { get; set; }
         public IEnumerable<BaseModel<Guid>> Requests { get; set; }
     }
 }

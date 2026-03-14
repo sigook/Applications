@@ -526,7 +526,8 @@ public class RequestRepository : IRequestRepository
                         StartWorking = wr.StartWorking,
                         NotesCount = wr.Notes.Count(n => !n.Note.IsDeleted),
                         TotalHoursApproved = wr.TimeSheets.Where(c => c.TimeOutApproved != null && c.TimeInApproved != null).Sum(s => (s.TimeOutApproved - s.TimeInApproved).Value.TotalHours),
-                        TotalHoursWorker = wr.TimeSheets.Where(c => c.TimeOut != null).Sum(c => (c.TimeOut - c.TimeIn).Value.TotalHours)
+                        TotalHoursWorker = wr.TimeSheets.Where(c => c.TimeOut != null).Sum(c => (c.TimeOut - c.TimeIn).Value.TotalHours),
+                        ExternalId = wp.ExternalId
                     };
         var predicateNew = ApplyFilterWorkersRequest(requestId, filter);
         query = query.Where(predicateNew);
@@ -566,6 +567,11 @@ public class RequestRepository : IRequestRepository
             predicate = predicate.And(c => c.RejectedBy.ToLower().Contains(filter.RejectedBy.ToLower()));
         if (filter.RejectedAtFrom.HasValue && filter.RejectedAtTo.HasValue)
             predicate = predicate.And(c => c.RejectedAt.Value.Date >= filter.RejectedAtFrom.Value.Date && c.RejectedAt.Value.Date <= filter.RejectedAtTo.Value.Date);
+        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
+        {
+            var externalId = filter.ExternalId.ToLower();
+            predicate = predicate.And(wr => EF.Functions.Like(wr.ExternalId.ToLower(), $"%{externalId}%"));
+        }
         return predicate;
     }
 
@@ -597,6 +603,9 @@ public class RequestRepository : IRequestRepository
                 else
                     query = query.AddOrderBy(filter, o => o.RejectedAt).ThenByDescending(o => o.RejectedBy);
                 break;
+            case GetWorkersRequestSortBy.ExternalId:
+                query = query.AddOrderBy(filter, wr => wr.ExternalId);
+                break;
         }
         return query;
     }
@@ -622,7 +631,8 @@ public class RequestRepository : IRequestRepository
                                                          ApprovedToWork = wp.ApprovedToWork,
                                                          SocialInsurance = wp.SocialInsurance,
                                                          DueDate = wp.DueDate,
-                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire
+                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire,
+                                                         ExternalId = wp.ExternalId
                                                      };
         return query.AsNoTracking().SingleOrDefaultAsync();
     }

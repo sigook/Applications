@@ -66,7 +66,7 @@ public class PayStubService : IPayStubService
 
         using var stream = new MemoryStream();
         using var workbook = new XLWorkbook();
-        GetReport(result, workbook, ["Address", "SIN #", "Total Earnings", "Total Tax", "Total"]);
+        GetCraPayrollReport(result, workbook);
         workbook.SaveAs(stream);
         return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"CRA_Payroll_{DateTime.Now.Year}.xlsx", string.Empty));
     }
@@ -494,6 +494,105 @@ public class PayStubService : IPayStubService
             }
             startAt++;
         }
+    }
+
+    private void GetCraPayrollReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
+    {
+        var sheet = workbook.Worksheets.Add("Report");
+
+        // Row 1: Group headers
+        sheet.Cell("D1").SetValue("PAYSTUB #");
+        sheet.Cell("E1").SetValue("Date Paid");
+        sheet.Cell("F1").SetValue("TOTAL EARNINGS");
+        sheet.Cell("G1").SetValue("EMPLOYEER");
+        sheet.Range("G1:I1").Merge();
+        sheet.Cell("J1").SetValue("EMPLOYEE");
+        sheet.Range("J1:M1").Merge();
+
+        // Row 2: Sub-headers
+        sheet.Cell("G2").SetValue("CPP");
+        sheet.Cell("H2").SetValue("EI");
+        sheet.Cell("I2").SetValue("OTHER");
+        sheet.Cell("J2").SetValue("CPP");
+        sheet.Cell("K2").SetValue("EI");
+        sheet.Cell("L2").SetValue("FED TAX");
+        sheet.Cell("M2").SetValue("PROV TAX");
+        sheet.Cell("N2").SetValue("Total Paid");
+
+        // Row 3: No. and Names
+        sheet.Cell("A3").SetValue("No.");
+        sheet.Cell("B3").SetValue("Names");
+
+        // Style rows 1-3
+        for (int r = 1; r <= 3; r++)
+        {
+            sheet.Row(r).Style.Font.Bold = true;
+            sheet.Row(r).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        }
+
+        var currentRow = 4;
+        var workerIndex = 0;
+        var dataStartRow = currentRow;
+
+        foreach (var worker in result)
+        {
+            var items = worker.Items.ToList();
+            var isFirstItem = true;
+            workerIndex++;
+
+            foreach (var item in items)
+            {
+                if (isFirstItem)
+                {
+                    if (workerIndex == 1)
+                        sheet.Cell($"A{currentRow}").SetValue(workerIndex);
+                    else
+                        sheet.Cell($"A{currentRow}").SetFormulaA1($"1+A{dataStartRow}");
+
+                    sheet.Cell($"B{currentRow}").SetValue(worker.WorkerFullName.Trim());
+                    sheet.Cell($"C{currentRow}").SetValue(item.CompanyName ?? string.Empty);
+                    dataStartRow = currentRow;
+                    isFirstItem = false;
+                }
+
+                sheet.Cell($"D{currentRow}").SetValue(item.PayStubNumber);
+                sheet.Cell($"E{currentRow}").SetValue(item.DatePaid.ToString("dd-MMM-yyyy"));
+                sheet.Cell($"F{currentRow}").SetValue(item.TotalEarnings).SetMoneyType();
+                sheet.Cell($"G{currentRow}").SetValue(item.Employer.Cpp).SetMoneyType();
+                sheet.Cell($"H{currentRow}").SetFormulaA1($"K{currentRow}*1.4");
+                sheet.Cell($"I{currentRow}").SetValue(item.Employer.OtherDeductions).SetMoneyType();
+                sheet.Cell($"J{currentRow}").SetValue(item.Employee.Cpp).SetMoneyType();
+                sheet.Cell($"K{currentRow}").SetValue(item.Employee.EI).SetMoneyType();
+                sheet.Cell($"L{currentRow}").SetValue(item.Employee.FederalTax).SetMoneyType();
+                sheet.Cell($"M{currentRow}").SetValue(item.Employee.ProvincialTax).SetMoneyType();
+                sheet.Cell($"N{currentRow}").SetValue(
+                    item.TotalEarnings - item.Employee.Cpp - item.Employee.EI
+                    - item.Employee.FederalTax - item.Employee.ProvincialTax
+                ).SetMoneyType();
+
+                currentRow++;
+            }
+
+            // Empty row between workers
+            currentRow++;
+        }
+
+        // Totals row with SUM formulas
+        var totalsRow = currentRow;
+        foreach (var col in new[] { "F", "G", "H", "I", "J", "K", "L", "M", "N" })
+        {
+            sheet.Cell($"{col}{totalsRow}").SetFormulaA1($"SUM({col}4:{col}{totalsRow - 1})").SetMoneyType();
+        }
+        sheet.Row(totalsRow).Style.Font.Bold = true;
+
+        // Column widths
+        sheet.Column("A").Width = 5;
+        sheet.Column("B").Width = 30;
+        sheet.Column("C").Width = 30;
+        sheet.Column("D").Width = 16;
+        sheet.Column("E").Width = 14;
+        for (int c = 6; c <= 14; c++)
+            sheet.Column(c).Width = 13;
     }
 
     private void GetDetail(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)

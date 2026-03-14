@@ -139,6 +139,17 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers
             return Ok();
         }
 
+        [HttpPut("{id:guid}/ExternalId")]
+        public async Task<IActionResult> UpdateExternalId(Guid id, [FromBody] WorkerProfileDetailModel model)
+        {
+            var entity = await _workerRepository.GetProfile(w => w.Id == id);
+            if (entity is null) return NotFound();
+            entity.ExternalId = model?.ExternalId;
+            await _workerRepository.UpdateProfile(entity);
+            await _workerRepository.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpPut("{id}/tax-category")]
         public async Task<IActionResult> UpdateTaxCategory([FromRoute] Guid id, [FromBody] WorkerProfileDetailModel model)
         {

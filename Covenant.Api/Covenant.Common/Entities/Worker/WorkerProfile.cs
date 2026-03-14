@@ -73,6 +73,7 @@ namespace Covenant.Common.Entities.Worker
         public bool IsSubcontractor { get; set; }
         public string PunchCardId { get; set; }
         public bool IsContractor { get; set; } = false;
+        public string ExternalId { get; set; }
         public string TextSearch { get; set; }
         public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; set; }
         public Gender Gender { get; private set; }

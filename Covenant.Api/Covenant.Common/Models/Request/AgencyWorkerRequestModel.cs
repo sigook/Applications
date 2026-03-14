@@ -36,5 +36,6 @@ namespace Covenant.Common.Models.Request
         public DateTime CreatedAt { get; set; }
         public double TotalHoursApproved { get; set; }
         public double TotalHoursWorker { get; set; }
+        public string ExternalId { get; set; }
     }
 }

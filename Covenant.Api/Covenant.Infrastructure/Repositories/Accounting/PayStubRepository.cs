@@ -87,7 +87,7 @@ public class PayStubRepository : IPayStubRepository
                     DeductionOthers = ps.OtherDeductions,
                     DeductionTotal = ps.TotalDeductions,
                     TotalNet = ps.TotalPaid,
-                    Items = ps.Items.Select(psi => new PayStubDetailItemModel(psi.Description, psi.Quantity, psi.UnitPrice, psi.Total)).ToList(),
+                    Items = ps.Items.OrderBy(psi => psi.Type).Select(psi => new PayStubDetailItemModel(psi.Description, psi.Quantity, psi.UnitPrice, psi.Total, psi.Type)).ToList(),
                     OtherDeductionsDetail = ps.OtherDeductionsDetail.Select(d => new PayStubDetailItemModel
                     {
                         Total = d.Total,
@@ -210,8 +210,9 @@ public class PayStubRepository : IPayStubRepository
                         Description = i.Description,
                         Quantity = i.Quantity,
                         Total = i.Total,
-                        UnitPrice = i.UnitPrice
-                    }).OrderBy(d => d.Description).ToList(),
+                        UnitPrice = i.UnitPrice,
+                        Type = i.Type
+                    }).OrderBy(d => d.Type).ToList(),
                     Companies = (from wd in ps.WageDetails
                                  join tst in _context.TimeSheetTotalPayroll on wd.TimeSheetTotalId equals tst.Id
                                  join ts in _context.TimeSheet on tst.TimeSheetId equals ts.Id
@@ -267,7 +268,10 @@ public class PayStubRepository : IPayStubRepository
                 p.Ei,
                 p.FederalTax,
                 p.ProvincialTax,
-                p.OtherDeductions
+                p.OtherDeductions,
+                CompanyName = p.WageDetails
+                    .Select(w => w.TimeSheetTotal.TimeSheet.WorkerRequest.Request.JobPositionRate.CompanyProfile.FullName)
+                    .FirstOrDefault()
             });
         var result = await query.GroupBy(p => p.WorkerProfileId).Select(p => new PayStubT4Model
         {
@@ -286,6 +290,7 @@ public class PayStubRepository : IPayStubRepository
                 PayStubNumber = i.PayStubNumber,
                 DatePaid = i.PaymentDate,
                 TotalEarnings = i.TotalEarnings,
+                CompanyName = i.CompanyName,
                 Employer = new PayStubT4Tax
                 {
                     Cpp = i.Cpp,

@@ -19,9 +19,9 @@ public class GeneratePaymentReport : IRequest<ResultGenerateDocument<byte[]>>
 public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentReport, ResultGenerateDocument<byte[]>>
 {
     private const string
-        PayStubNumber = "A",
+        NumberId = "A",
         FullName = "B",
-        NumberId = "C",
+        PayStubNumber = "C",
         Description = "D",
         Quantity = "E",
         UnitPrice = "F",
@@ -45,9 +45,9 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
 
     private static readonly IEnumerable<string> _columns = new[]
     {
-        PayStubNumber,
-        FullName,
         NumberId,
+        FullName,
+        PayStubNumber,
         Email,
         Description,
         Quantity,
@@ -134,9 +134,9 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         worksheet.Row(HeadRow).Style.Font.Bold = true;
         worksheet.Row(HeadRow).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         worksheet.Row(HeadRow).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-        worksheet.Cell($"{PayStubNumber}{HeadRow}").SetValue("PAY STUB #");
-        worksheet.Cell($"{FullName}{HeadRow}").SetValue("FULL NAME");
         worksheet.Cell($"{NumberId}{HeadRow}").SetValue("NUMBER ID");
+        worksheet.Cell($"{FullName}{HeadRow}").SetValue("FULL NAME");
+        worksheet.Cell($"{PayStubNumber}{HeadRow}").SetValue("PAY STUB #");
         worksheet.Cell($"{Description}{HeadRow}").SetValue("DESCRIPTION");
         worksheet.Cell($"{Quantity}{HeadRow}").SetValue("QUANTITY");
         worksheet.Cell($"{UnitPrice}{HeadRow}").SetValue("UNIT PRICE");
@@ -159,9 +159,9 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
 
     private void SetUpWidth(IXLWorksheet worksheet)
     {
-        worksheet.Column(PayStubNumber).Width = 9;
-        worksheet.Column(FullName).Width = 25;
         worksheet.Column(NumberId).Width = 12;
+        worksheet.Column(FullName).Width = 25;
+        worksheet.Column(PayStubNumber).Width = 9;
         worksheet.Column(Description).Width = 12;
         worksheet.Column(Quantity).Width = 9;
         worksheet.Column(UnitPrice).Width = 9;

@@ -285,7 +285,8 @@ public class WorkerRepository : IWorkerRepository
                     FederalTaxCategory = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.FederalCategory : null,
                     ProvincialTaxCategory = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.ProvincialCategory : null,
                     Cpp = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.Cpp : null,
-                    Ei = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.Ei : null
+                    Ei = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.Ei : null,
+                    ExternalId = wp.ExternalId
                 })
             .SingleOrDefaultAsync();
     }
@@ -409,7 +410,8 @@ public class WorkerRepository : IWorkerRepository
                         Requests = workerRequest.Where(wr => wr.WorkerId == wp.WorkerId).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
                         Dnu = wp.Dnu,
                         CreatedAt = wp.CreatedAt,
-                        SinNumber = wp.SocialInsurance
+                        SinNumber = wp.SocialInsurance,
+                        ExternalId = wp.ExternalId
                     };
         var predicateNew = ApplyFilterWorkersProfile(agencyId, filter);
         query = query.Where(predicateNew);
@@ -443,6 +445,11 @@ public class WorkerRepository : IWorkerRepository
         }
         if (!string.IsNullOrWhiteSpace(filter.RequestId))
             predicate = predicate.And(wp => wp.Requests.Any(r => r.Value == filter.RequestId));
+        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
+        {
+            var externalId = filter.ExternalId.ToLower();
+            predicate = predicate.And(wp => EF.Functions.Like(wp.ExternalId.ToLower(), $"%{externalId}%"));
+        }
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
             var location = filter.Location.ToLower();
@@ -484,6 +491,9 @@ public class WorkerRepository : IWorkerRepository
                 break;
             case GetWorkersProfileSortBy.Skills:
                 query = query.AddOrderBy(filter, wp => wp.Skills.Any() ? wp.Skills.FirstOrDefault() : null);
+                break;
+            case GetWorkersProfileSortBy.ExternalId:
+                query = query.AddOrderBy(filter, wp => wp.ExternalId);
                 break;
         }
         return query;

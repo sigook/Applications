@@ -67,5 +67,6 @@ namespace Covenant.Common.Models.Worker
         public bool Dnu { get; set; }
         public string CreatedBy { get; set; }
         public string PunchCardId { get; set; }
+        public string ExternalId { get; set; }
     }
 }
