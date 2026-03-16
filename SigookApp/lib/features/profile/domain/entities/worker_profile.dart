@@ -14,12 +14,15 @@ class WorkerProfile extends Equatable {
   final bool socialInsuranceExpire;
   final String? dueDate;
   final String? socialInsuranceFileName;
+  final String? socialInsuranceFileUrl;
   final String? identificationNumber1;
   final String? identificationNumber2;
   final String? identificationType1;
   final String? identificationType2;
   final String? identificationType1FileName;
+  final String? identificationType1FileUrl;
   final String? identificationType2FileName;
+  final String? identificationType2FileUrl;
   final bool havePoliceCheckBackground;
   final String? policeCheckBackgroundFileName;
   final String? mobileNumber;
@@ -27,19 +30,28 @@ class WorkerProfile extends Equatable {
   final String? email;
   final String? address;
   final String? city;
+  final String? cityId;
   final String? province;
   final String? country;
   final String? postalCode;
   final bool hasVehicle;
   final List<String> availabilities;
+  final List<String> availabilityIds;
   final List<String> availabilityTimes;
+  final List<String> availabilityTimeIds;
   final List<String> availabilityDays;
+  final List<String> availabilityDayIds;
   final String? liftCapacity;
+  final String? liftId;
   final List<String> languages;
+  final List<String> languageIds;
   final List<String> skills;
+  final List<String> skillIds;
   final bool hasResume;
+  final String? resumeFileUrl;
   final bool approvedToWork;
   final String? punchCardId;
+  final bool haveAnyHealthProblem;
   final String? contactEmergencyName;
   final String? contactEmergencyLastName;
   final String? contactEmergencyPhone;
@@ -58,12 +70,15 @@ class WorkerProfile extends Equatable {
     this.socialInsuranceExpire = false,
     this.dueDate,
     this.socialInsuranceFileName,
+    this.socialInsuranceFileUrl,
     this.identificationNumber1,
     this.identificationNumber2,
     this.identificationType1,
     this.identificationType2,
     this.identificationType1FileName,
+    this.identificationType1FileUrl,
     this.identificationType2FileName,
+    this.identificationType2FileUrl,
     this.havePoliceCheckBackground = false,
     this.policeCheckBackgroundFileName,
     this.mobileNumber,
@@ -71,19 +86,28 @@ class WorkerProfile extends Equatable {
     this.email,
     this.address,
     this.city,
+    this.cityId,
     this.province,
     this.country,
     this.postalCode,
     this.hasVehicle = false,
     this.availabilities = const [],
+    this.availabilityIds = const [],
     this.availabilityTimes = const [],
+    this.availabilityTimeIds = const [],
     this.availabilityDays = const [],
+    this.availabilityDayIds = const [],
     this.liftCapacity,
+    this.liftId,
     this.languages = const [],
+    this.languageIds = const [],
     this.skills = const [],
+    this.skillIds = const [],
     this.hasResume = false,
+    this.resumeFileUrl,
     this.approvedToWork = false,
     this.punchCardId,
+    this.haveAnyHealthProblem = false,
     this.contactEmergencyName,
     this.contactEmergencyLastName,
     this.contactEmergencyPhone,
@@ -146,15 +170,22 @@ class WorkerProfile extends Equatable {
   List<Object?> get props => [
     id, numberId, profilePhotoUrl, firstName, middleName, lastName,
     secondLastName, birthDay, gender, socialInsurance,
-    socialInsuranceExpire, dueDate, socialInsuranceFileName,
+    socialInsuranceExpire, dueDate, socialInsuranceFileName, socialInsuranceFileUrl,
     identificationNumber1, identificationNumber2,
     identificationType1, identificationType2,
-    identificationType1FileName, identificationType2FileName,
+    identificationType1FileName, identificationType1FileUrl,
+    identificationType2FileName, identificationType2FileUrl,
     havePoliceCheckBackground, policeCheckBackgroundFileName,
-    mobileNumber, phone, email, address, city, province, country,
-    postalCode, hasVehicle, availabilities, availabilityTimes,
-    availabilityDays, liftCapacity, languages, skills, hasResume,
-    approvedToWork, punchCardId, contactEmergencyName,
-    contactEmergencyLastName, contactEmergencyPhone,
+    mobileNumber, phone, email, address, city, cityId, province, country,
+    postalCode, hasVehicle,
+    availabilities, availabilityIds,
+    availabilityTimes, availabilityTimeIds,
+    availabilityDays, availabilityDayIds,
+    liftCapacity, liftId,
+    languages, languageIds,
+    skills, skillIds,
+    hasResume, resumeFileUrl,
+    approvedToWork, punchCardId, haveAnyHealthProblem,
+    contactEmergencyName, contactEmergencyLastName, contactEmergencyPhone,
   ];
 }

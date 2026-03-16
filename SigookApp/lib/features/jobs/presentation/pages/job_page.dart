@@ -14,8 +14,9 @@ import '../widgets/app_drawer.dart';
 
 class JobPage extends ConsumerStatefulWidget {
   final String jobId;
+  final bool isFromHistory;
 
-  const JobPage({super.key, required this.jobId});
+  const JobPage({super.key, required this.jobId, this.isFromHistory = false});
 
   @override
   ConsumerState<JobPage> createState() => _JobPageState();
@@ -200,6 +201,7 @@ class _JobPageState extends ConsumerState<JobPage> {
             children: [
               JobDetailsTab(
                 jobDetails: jobDetails,
+                isFromHistory: widget.isFromHistory,
                 onApplySuccess: () {
                   context.go(AppRoutes.jobs);
                 },

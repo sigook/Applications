@@ -22,7 +22,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   late Animation<double> _buttonsFade;
   late Animation<Offset> _buttonsSlide;
   late Animation<Offset> _panelsSlide;
-  late Animation<Offset> _ringsSlide;
   late Animation<Offset> _legalSlide;
 
   bool _isNavigating = false;
@@ -84,18 +83,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       ),
     );
 
-    // Ring circles slide in from the bottom-left corner
-    _ringsSlide = Tween<Offset>(
-      begin: const Offset(-70, 70),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.15, 0.75, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    // Legal pill button slides in from the right
+    // Legal icon slides in from the right
     _legalSlide = Tween<Offset>(
       begin: const Offset(60, 0),
       end: Offset.zero,
@@ -124,20 +112,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     _controller.dispose();
     _exitController.dispose();
     super.dispose();
-  }
-
-  Widget _withExit(Widget child, Offset exitOffset) {
-    return AnimatedBuilder(
-      animation: _exitController,
-      builder: (context, inner) => Opacity(
-        opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: exitOffset * _exitController.value,
-          child: inner!,
-        ),
-      ),
-      child: child,
-    );
   }
 
   Future<void> _navigateWithExit(String route) async {
@@ -190,7 +164,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             const SizedBox(height: 8),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.privacy_tip_outlined, color: AppTheme.primaryBlue),
+              leading: Icon(Icons.privacy_tip_outlined, color: AppTheme.secondaryRed),
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -199,7 +173,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
               },
             ),
             ListTile(
-              leading: Icon(Icons.description_outlined, color: AppTheme.primaryBlue),
+              leading: Icon(Icons.description_outlined, color: AppTheme.secondaryRed),
               title: const Text('Terms & Conditions'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -247,7 +221,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Top hero section — full-width welcome image
+          // ── Top hero section — diagonal split image panels
           Positioned(
             top: 0,
             left: 0,
@@ -261,18 +235,35 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   offset: _panelsSlide.value,
                   child: child!,
                 ),
-                child: Image.asset(
-                  'assets/images/welcome-screen/welcome-page.png',
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Right panel — family image (full width, base layer)
+                    Image.asset(
+                      'assets/images/welcome-screen/family.png',
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topRight,
+                    ),
+                    // Left panel — worker image clipped to diagonal shape
+                    ClipPath(
+                      clipper: const _DiagonalLeftClipper(),
+                      child: Image.asset(
+                        'assets/images/welcome-screen/worker.png',
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topLeft,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
 
-          // ── Gradient fade — blends the hero image into the blue section below
+          // ── Gradient fade — blends the hero image into the red section below
           Positioned(
             top: size.height * 0.18,
             left: 0,
@@ -286,9 +277,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     end: Alignment.bottomCenter,
                     stops: const [0.0, 0.55, 1.0],
                     colors: [
-                      AppTheme.primaryBlue.withValues(alpha: 0.0),
-                      AppTheme.primaryBlue.withValues(alpha: 0.55),
-                      AppTheme.primaryBlue,
+                      AppTheme.secondaryRed.withValues(alpha: 0.0),
+                      AppTheme.secondaryRed.withValues(alpha: 0.55),
+                      AppTheme.secondaryRed,
                     ],
                   ),
                 ),
@@ -296,106 +287,53 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             ),
           ),
 
-          // ── Bottom solid blue section
+          // ── Bottom solid red section
           Positioned(
             top: size.height * 0.43,
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(color: AppTheme.primaryBlue),
+            child: Container(color: AppTheme.secondaryRed),
           ),
 
-          // ── Boundary accent circles — straddle the image / content transition
+          // ── Decorative circles — bottom left
+          // Ring circle (border only, behind)
           Positioned(
-            top: size.height * 0.32,
-            right: -20,
+            bottom: -28,
+            left: -42,
             child: IgnorePointer(
-              child: _withExit(
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Container(
-                    width: 92,
-                    height: 92,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF90CAF9).withValues(alpha: 0.32),
-                    ),
-                  ),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: _RingCircle(
+                  diameter: 140,
+                  color: Colors.white.withValues(alpha: 0.30),
+                  strokeWidth: 2.0,
                 ),
-                const Offset(120, -80),
               ),
             ),
           ),
+          // Filled translucent circle (in front)
           Positioned(
-            top: size.height * 0.38,
-            left: 22,
+            bottom: 4,
+            left: -22,
             child: IgnorePointer(
-              child: _withExit(
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Container(
-                    width: 66,
-                    height: 66,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFEF9A9A).withValues(alpha: 0.38),
-                    ),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFFFCDD2).withValues(alpha: 0.55),
                   ),
                 ),
-                const Offset(-100, 60),
               ),
             ),
           ),
 
-          // ── Decorative ring circles — bottom left (slide in from bottom-left)
+          // ── Legal dot-grid button — slides in from the right
           Positioned(
-            bottom: -55,
-            left: -65,
-            child: _withExit(
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: AnimatedBuilder(
-                  animation: _ringsSlide,
-                  builder: (context, child) => Transform.translate(
-                    offset: _ringsSlide.value,
-                    child: child!,
-                  ),
-                  child: _RingCircle(
-                    diameter: 190,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                    strokeWidth: 24,
-                  ),
-                ),
-              ),
-              const Offset(-180, 120),
-            ),
-          ),
-          Positioned(
-            bottom: -85,
-            left: -95,
-            child: _withExit(
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: AnimatedBuilder(
-                  animation: _ringsSlide,
-                  builder: (context, child) => Transform.translate(
-                    offset: _ringsSlide.value,
-                    child: child!,
-                  ),
-                  child: _RingCircle(
-                    diameter: 250,
-                    color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
-                    strokeWidth: 18,
-                  ),
-                ),
-              ),
-              const Offset(-220, 160),
-            ),
-          ),
-
-          // ── Legal pill button — slides in from the right
-          Positioned(
-            bottom: 32,
+            bottom: 24,
             right: 20,
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -405,27 +343,14 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   offset: _legalSlide.value,
                   child: child!,
                 ),
-                child: OutlinedButton.icon(
-                  onPressed: _showLegalModal,
-                  icon: const Icon(Icons.shield_outlined, size: 14),
-                  label: const Text('Legal'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white.withValues(alpha: 0.65),
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.30),
-                      width: 1.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    shape: const StadiumBorder(),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.3,
+                child: GestureDetector(
+                  onTap: _showLegalModal,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: CustomPaint(
+                      size: const Size(50, 26),
+                      painter: const _DotGridPainter(),
                     ),
                   ),
                 ),
@@ -447,74 +372,11 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   opacity: _fadeAnimation,
                   child: Hero(
                     tag: 'sigook_logo',
-                    child: SizedBox(
-                      width: 260,
-                      height: 200,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Upper-left — soft blue filled circle (pushed further out)
-                          Positioned(
-                            top: -22,
-                            left: -28,
-                            child: Container(
-                              width: 68,
-                              height: 68,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
-                              ),
-                            ),
-                          ),
-                          // Lower-right — soft red filled circle (pushed further out)
-                          Positioned(
-                            bottom: -16,
-                            right: -22,
-                            child: Container(
-                              width: 58,
-                              height: 58,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
-                              ),
-                            ),
-                          ),
-                          // Upper-right — small blue circle (pushed further out)
-                          Positioned(
-                            top: -10,
-                            right: -26,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
-                              ),
-                            ),
-                          ),
-                          // Lower-left — small red circle (pushed further out)
-                          Positioned(
-                            bottom: -12,
-                            left: -24,
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                              ),
-                            ),
-                          ),
-                          // White logo centred
-                          Image.asset(
-                            'assets/images/logo/sigook_logo.png',
-                            width: 215,
-                            color: Colors.white,
-                            colorBlendMode: BlendMode.srcIn,
-                          ),
-                        ],
-                      ),
+                    child: Image.asset(
+                      'assets/images/logo/sigook_logo.png',
+                      width: 215,
+                      color: Colors.white,
+                      colorBlendMode: BlendMode.srcIn,
                     ),
                   ),
                 ),
@@ -553,7 +415,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Get Started — white fill, blue text
+                          // Get Started — white fill, red text
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -561,7 +423,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                               onPressed: _navigateToRegistration,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: AppTheme.primaryBlue,
+                                foregroundColor: AppTheme.secondaryRed,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(32),
                                 ),
@@ -638,6 +500,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     padding: const EdgeInsets.only(bottom: 20),
                     child: Text(
                       _appVersion,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.white.withValues(alpha: 0.4),
@@ -654,7 +517,28 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   }
 }
 
-/// Hollow ring circle used as a decorative accent.
+/// Clips the worker (left) image panel with a diagonal right edge.
+/// Diagonal runs from (75% width, top) down to (25% width, bottom).
+class _DiagonalLeftClipper extends CustomClipper<Path> {
+  const _DiagonalLeftClipper();
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width * 0.62, 0);           // top of diagonal
+    path.lineTo(size.width * 0.38, size.height); // bottom of diagonal
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_DiagonalLeftClipper old) => false;
+}
+
+
+/// Hollow ring used as a decorative accent.
 class _RingCircle extends StatelessWidget {
   final double diameter;
   final Color color;
@@ -679,3 +563,37 @@ class _RingCircle extends StatelessWidget {
   }
 }
 
+/// Draws a 4×3 grid of small rounded squares — the legal/menu trigger icon.
+class _DotGridPainter extends CustomPainter {
+  const _DotGridPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cols = 6;
+    const rows = 3;
+    const dotSize = 4.5;
+    const radius = 1.2;
+    final color = Colors.white.withValues(alpha: 0.65);
+    final paint = Paint()..color = color;
+
+    final hSpacing = size.width / cols;
+    final vSpacing = size.height / rows;
+
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        final cx = hSpacing * c + hSpacing / 2 - dotSize / 2;
+        final cy = vSpacing * r + vSpacing / 2 - dotSize / 2;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx, cy, dotSize, dotSize),
+            const Radius.circular(radius),
+          ),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DotGridPainter old) => false;
+}

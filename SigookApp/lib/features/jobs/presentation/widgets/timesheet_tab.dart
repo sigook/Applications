@@ -178,47 +178,23 @@ class TimesheetTab extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: entry.wasApproved
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.orange.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: entry.wasApproved ? Colors.green : Colors.orange,
-                        width: 1,
+                  if (entry.wasApproved)
+                                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green, width: 1),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, size: 14, color: Colors.green),
+                          SizedBox(width: 4),
+                          Text('Approved', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.green)),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          entry.wasApproved
-                              ? Icons.check_circle
-                              : Icons.pending,
-                          size: 14,
-                          color: entry.wasApproved
-                              ? Colors.green
-                              : Colors.orange,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          entry.wasApproved ? 'Approved' : 'Pending',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: entry.wasApproved
-                                ? Colors.green
-                                : Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -504,49 +480,40 @@ class TimesheetTab extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: entry.wasApproved
-                                ? Colors.green.withValues(alpha: 0.1)
-                                : Colors.orange.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: entry.wasApproved
-                                  ? Colors.green
-                                  : Colors.orange,
-                              width: 1.5,
+                        if (entry.wasApproved)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.green,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 16,
+                                  color: Colors.green,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Approved',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                entry.wasApproved
-                                    ? Icons.check_circle
-                                    : Icons.pending,
-                                size: 16,
-                                color: entry.wasApproved
-                                    ? Colors.green
-                                    : Colors.orange,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                entry.wasApproved ? 'Approved' : 'Pending',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: entry.wasApproved
-                                      ? Colors.green
-                                      : Colors.orange,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 24),

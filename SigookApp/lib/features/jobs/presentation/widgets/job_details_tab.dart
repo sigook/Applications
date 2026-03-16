@@ -8,11 +8,13 @@ import 'job_header_card.dart';
 
 class JobDetailsTab extends ConsumerStatefulWidget {
   final JobDetails jobDetails;
+  final bool isFromHistory;
   final VoidCallback? onApplySuccess;
 
   const JobDetailsTab({
     super.key,
     required this.jobDetails,
+    this.isFromHistory = false,
     this.onApplySuccess,
   });
 
@@ -57,7 +59,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             ],
           ),
         ),
-        if (jobDetails.shouldShowApplyButton)
+        if (jobDetails.shouldShowApplyButton && !widget.isFromHistory)
           Positioned(
             bottom: 16,
             left: 16,

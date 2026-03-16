@@ -174,21 +174,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  /// Wraps [child] so it flies toward [exitOffset] and fades out as [_exitController] runs.
-  Widget _withExit(Widget child, Offset exitOffset) {
-    return AnimatedBuilder(
-      animation: _exitController,
-      builder: (context, inner) => Opacity(
-        opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: exitOffset * _exitController.value,
-          child: inner!,
-        ),
-      ),
-      child: child,
-    );
-  }
-
   @override
   void dispose() {
     _logoController.dispose();
@@ -198,157 +183,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Full blue background
-          Container(color: AppTheme.primaryBlue),
-
-          // ── Background decorative circles — each flies off in its natural direction
-
-          // Top-right: large blue ring → flies up-right
-          Positioned(
-            top: -50,
-            right: -60,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: _RingCircle(
-                  diameter: 210,
-                  color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
-                  strokeWidth: 20,
-                ),
-              ),
-              const Offset(260, -180),
-            ),
-          ),
-          // Top-left: medium red filled circle → flies up-left
-          Positioned(
-            top: 50,
-            left: -28,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: Container(
-                  width: 95,
-                  height: 95,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.22),
-                  ),
-                ),
-              ),
-              const Offset(-210, -220),
-            ),
-          ),
-          // Top-right area: small blue filled circle → flies right-up
-          Positioned(
-            top: 90,
-            right: 28,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF90CAF9).withValues(alpha: 0.28),
-                  ),
-                ),
-              ),
-              const Offset(200, -200),
-            ),
-          ),
-          // Mid-left: tiny red circle → flies left
-          Positioned(
-            top: size.height * 0.46,
-            left: 18,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.30),
-                  ),
-                ),
-              ),
-              const Offset(-280, 80),
-            ),
-          ),
-          // Mid-right: small blue ring → flies right
-          Positioned(
-            top: size.height * 0.52,
-            right: -18,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: _RingCircle(
-                  diameter: 80,
-                  color: const Color(0xFF90CAF9).withValues(alpha: 0.20),
-                  strokeWidth: 10,
-                ),
-              ),
-              const Offset(260, 80),
-            ),
-          ),
-          // Bottom-left: red ring → flies down-left
-          Positioned(
-            bottom: -55,
-            left: -65,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: _RingCircle(
-                  diameter: 190,
-                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                  strokeWidth: 24,
-                ),
-              ),
-              const Offset(-220, 200),
-            ),
-          ),
-          // Bottom-left: outer blue ring → flies further down-left
-          Positioned(
-            bottom: -85,
-            left: -95,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: _RingCircle(
-                  diameter: 250,
-                  color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
-                  strokeWidth: 18,
-                ),
-              ),
-              const Offset(-260, 240),
-            ),
-          ),
-          // Bottom-right: small red filled circle → flies down-right
-          Positioned(
-            bottom: 85,
-            right: 28,
-            child: _withExit(
-              FadeTransition(
-                opacity: _logoFadeAnimation,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.28),
-                  ),
-                ),
-              ),
-              const Offset(220, 210),
-            ),
-          ),
+          // ── Full red background
+          Container(color: AppTheme.secondaryRed),
 
           // ── Main content
           SafeArea(
@@ -364,69 +204,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     scale: _logoScaleAnimation,
                     child: Hero(
                       tag: 'sigook_logo',
-                      child: SizedBox(
-                        width: 260,
-                        height: 200,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned(
-                              top: 8,
-                              left: 12,
-                              child: Container(
-                                width: 62,
-                                height: 62,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 10,
-                              right: 14,
-                              child: Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 18,
-                              right: 8,
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 18,
-                              left: 18,
-                              child: Container(
-                                width: 26,
-                                height: 26,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                                ),
-                              ),
-                            ),
-                            Image.asset(
-                              'assets/images/logo/sigook_logo.png',
-                              width: 215,
-                              color: Colors.white,
-                              colorBlendMode: BlendMode.srcIn,
-                            ),
-                          ],
-                        ),
+                      child: Image.asset(
+                        'assets/images/logo/sigook_logo.png',
+                        width: 215,
+                        color: Colors.white,
+                        colorBlendMode: BlendMode.srcIn,
                       ),
                     ),
                   ),
@@ -515,30 +297,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _RingCircle extends StatelessWidget {
-  final double diameter;
-  final Color color;
-  final double strokeWidth;
-
-  const _RingCircle({
-    required this.diameter,
-    required this.color,
-    required this.strokeWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: diameter,
-      height: diameter,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: strokeWidth),
       ),
     );
   }

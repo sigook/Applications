@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -12,6 +15,11 @@ import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../core/widgets/error_state_widget.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../registration/presentation/widgets/location_selector.dart';
+import '../../../registration/domain/entities/country.dart';
+import '../../../registration/domain/entities/province.dart';
+import '../../../registration/domain/entities/city.dart';
 import '../../domain/entities/worker_profile.dart';
 import '../../domain/usecases/update_worker_profile.dart';
 import '../providers/cached_worker_profile_provider.dart';
@@ -25,23 +33,55 @@ class UserProfilePage extends ConsumerStatefulWidget {
   ConsumerState<UserProfilePage> createState() => _UserProfilePageState();
 }
 
-class _UserProfilePageState extends ConsumerState<UserProfilePage> {
+class _UserProfilePageState extends ConsumerState<UserProfilePage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
   ProfileSection? _editingSection;
   bool _isSaving = false;
+  String _appVersion = '';
 
-  // Document deletion flags (only used when editing ProfileSection.documents)
+  // Document deletion flags
   bool _deleteSinFile = false;
   bool _deleteId1File = false;
   bool _deleteId2File = false;
-  bool _deletePoliceCheck = false;
 
-  // Pending document replacements (locally picked files, not yet uploaded)
+  // Pending document replacements
   PickedFileData? _replaceSinFile;
   PickedFileData? _replaceId1File;
   PickedFileData? _replaceId2File;
-  PickedFileData? _replacePoliceCheckFile;
 
-  // Text controllers for editable fields
+  // Location editing state
+  Country? _editCountry;
+  Province? _editProvince;
+  City? _editCity;
+
+  // Preferences editing state
+  Set<String> _editAvailabilityIds = {};
+  Set<String> _editAvailabilityTimeIds = {};
+  Set<String> _editAvailabilityDayIds = {};
+  String? _editLiftId;
+  bool _editHasVehicle = false;
+  Set<String> _editLanguageIds = {};
+  Set<String> _editSkillIds = {};
+
+  // Phone mask formatters
+  final _mobileMaskFormatter = MaskTextInputFormatter(
+    mask: '### ### ####',
+    filter: {'#': RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+  final _phoneMaskFormatter = MaskTextInputFormatter(
+    mask: '### ### ####',
+    filter: {'#': RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+  final _emergencyPhoneMaskFormatter = MaskTextInputFormatter(
+    mask: '### ### ####',
+    filter: {'#': RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+
+  // Text controllers
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -59,7 +99,24 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
   final _idNumber2Controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = 'v${info.version} (${info.buildNumber})';
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _firstNameController.dispose();
     _middleNameController.dispose();
     _lastNameController.dispose();
@@ -83,14 +140,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     _middleNameController.text = profile?.middleName ?? '';
     _lastNameController.text = profile?.lastName ?? '';
     _secondLastNameController.text = profile?.secondLastName ?? '';
-    _mobileNumberController.text = profile?.mobileNumber ?? '';
-    _phoneController.text = profile?.phone ?? '';
+    _mobileNumberController.text =
+        _mobileMaskFormatter.maskText(profile?.mobileNumber ?? '');
+    _phoneController.text =
+        _phoneMaskFormatter.maskText(profile?.phone ?? '');
     _emailController.text = profile?.email ?? '';
     _addressController.text = profile?.address ?? '';
     _postalCodeController.text = profile?.postalCode ?? '';
     _emergencyNameController.text = profile?.contactEmergencyName ?? '';
     _emergencyLastNameController.text = profile?.contactEmergencyLastName ?? '';
-    _emergencyPhoneController.text = profile?.contactEmergencyPhone ?? '';
+    _emergencyPhoneController.text =
+        _emergencyPhoneMaskFormatter.maskText(profile?.contactEmergencyPhone ?? '');
     _socialInsuranceController.text = profile?.socialInsurance ?? '';
     _idNumber1Controller.text = profile?.identificationNumber1 ?? '';
     _idNumber2Controller.text = profile?.identificationNumber2 ?? '';
@@ -103,11 +163,23 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       _deleteSinFile = false;
       _deleteId1File = false;
       _deleteId2File = false;
-      _deletePoliceCheck = false;
       _replaceSinFile = null;
       _replaceId1File = null;
       _replaceId2File = null;
-      _replacePoliceCheckFile = null;
+      _editCountry = null;
+      _editProvince = null;
+      _editCity = null;
+      if (section == ProfileSection.personal && profile != null) {
+        _editHasVehicle = profile.hasVehicle;
+      }
+      if (section == ProfileSection.preferences && profile != null) {
+        _editAvailabilityIds = Set.from(profile.availabilityIds);
+        _editAvailabilityTimeIds = Set.from(profile.availabilityTimeIds);
+        _editAvailabilityDayIds = Set.from(profile.availabilityDayIds);
+        _editLiftId = profile.liftId;
+        _editLanguageIds = Set.from(profile.languageIds);
+        _editSkillIds = Set.from(profile.skillIds);
+      }
     });
   }
 
@@ -117,11 +189,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       _deleteSinFile = false;
       _deleteId1File = false;
       _deleteId2File = false;
-      _deletePoliceCheck = false;
       _replaceSinFile = null;
       _replaceId1File = null;
       _replaceId2File = null;
-      _replacePoliceCheckFile = null;
+      _editCountry = null;
+      _editProvince = null;
+      _editCity = null;
     });
   }
 
@@ -129,7 +202,6 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     setState(() => _isSaving = true);
 
     final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
-
     late final Map<String, String> editedFields;
     Map<String, String>? newFilePaths;
 
@@ -140,33 +212,49 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           'middleName': _middleNameController.text,
           'lastName': _lastNameController.text,
           'secondLastName': _secondLastNameController.text,
+          'hasVehicle': _editHasVehicle.toString(),
         };
       case ProfileSection.contact:
         editedFields = {
-          'mobileNumber': _mobileNumberController.text,
-          'phone': _phoneController.text,
+          'mobileNumber': _mobileMaskFormatter.getUnmaskedText(),
+          'phone': _phoneMaskFormatter.getUnmaskedText(),
           'address': _addressController.text,
           'postalCode': _postalCodeController.text,
-          'contactEmergencyName': _emergencyNameController.text,
-          'contactEmergencyLastName': _emergencyLastNameController.text,
-          'contactEmergencyPhone': _emergencyPhoneController.text,
+          if (_editCity?.id != null) 'cityId': _editCity!.id!,
         };
-      case ProfileSection.documents:
+      case ProfileSection.sin:
         editedFields = {
           'socialInsurance': _socialInsuranceController.text,
-          'identificationNumber1': _idNumber1Controller.text,
-          'identificationNumber2': _idNumber2Controller.text,
           if (_deleteSinFile) '_deleteSinFile': 'true',
-          if (_deleteId1File) '_deleteId1File': 'true',
-          if (_deleteId2File) '_deleteId2File': 'true',
-          if (_deletePoliceCheck) '_deletePoliceCheck': 'true',
         };
         newFilePaths = {
           if (_replaceSinFile != null) 'sinFile': _replaceSinFile!.path,
+        };
+      case ProfileSection.documents:
+        editedFields = {
+          'identificationNumber1': _idNumber1Controller.text,
+          'identificationNumber2': _idNumber2Controller.text,
+          if (_deleteId1File) '_deleteId1File': 'true',
+          if (_deleteId2File) '_deleteId2File': 'true',
+        };
+        newFilePaths = {
           if (_replaceId1File != null) 'id1File': _replaceId1File!.path,
           if (_replaceId2File != null) 'id2File': _replaceId2File!.path,
-          if (_replacePoliceCheckFile != null)
-            'policeCheckFile': _replacePoliceCheckFile!.path,
+        };
+      case ProfileSection.emergency:
+        editedFields = {
+          'contactEmergencyName': _emergencyNameController.text,
+          'contactEmergencyLastName': _emergencyLastNameController.text,
+          'contactEmergencyPhone': _emergencyPhoneMaskFormatter.getUnmaskedText(),
+        };
+      case ProfileSection.preferences:
+        editedFields = {
+          'availabilityIds': _editAvailabilityIds.join(','),
+          'availabilityTimeIds': _editAvailabilityTimeIds.join(','),
+          'availabilityDayIds': _editAvailabilityDayIds.join(','),
+          if (_editLiftId != null) 'liftId': _editLiftId!,
+          'languageIds': _editLanguageIds.join(','),
+          'skillIds': _editSkillIds.join(','),
         };
     }
 
@@ -205,7 +293,6 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  /// Builds the edit/save/cancel actions shown in a section card's header.
   Widget _sectionEditActions(ProfileSection section, WorkerProfile? profile) {
     if (_editingSection == section) {
       return Row(
@@ -222,10 +309,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
             )
           else
             IconButton(
-              icon: const Icon(
-                Icons.check_circle_outline,
-                color: AppTheme.primaryBlue,
-              ),
+              icon: const Icon(Icons.check_circle_outline, color: AppTheme.primaryBlue),
               onPressed: () => _saveSection(section),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -242,16 +326,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         ],
       );
     }
-
-    // Hide this section's pencil while another section is being edited.
     if (_editingSection != null) return const SizedBox.shrink();
-
     return IconButton(
-      icon: const Icon(
-        Icons.edit_outlined,
-        color: AppTheme.primaryBlue,
-        size: 20,
-      ),
+      icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryBlue, size: 20),
       onPressed: profile == null ? null : () => _startEditing(section, profile),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
@@ -275,11 +352,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         case 'id2File':
           _replaceId2File = result.file;
           _deleteId2File = false;
-        case 'policeCheckFile':
-          _replacePoliceCheckFile = result.file;
-          _deletePoliceCheck = false;
       }
     });
+  }
+
+  void _previewDocument(String url, String title) {
+    final token = ref.read(authViewModelProvider).token?.accessToken;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _DocumentPreviewPage(url: url, title: title, token: token),
+      ),
+    );
   }
 
   @override
@@ -299,29 +382,45 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         title: const NavbarLogo(),
       ),
       body: profileAsync.when(
-        data: (profile) => SingleChildScrollView(
-          child: Column(
-            children: [
-              ProfileHeader(
-                name: profile?.fullName ?? 'User',
-                email: profile?.email ?? '',
-                photoUrl: profile?.profilePhotoUrl,
+        data: (profile) => Column(
+          children: [
+            ProfileHeader(
+              name: profile?.fullName ?? 'User',
+              email: profile?.email ?? '',
+              photoUrl: profile?.profilePhotoUrl,
+            ),
+            Container(
+              color: Colors.white,
+              child: TabBar(
+                controller: _tabController,
+                labelColor: AppTheme.primaryBlue,
+                unselectedLabelColor: Colors.grey.shade600,
+                indicatorColor: AppTheme.primaryBlue,
+                indicatorWeight: 3,
+                labelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                tabs: const [
+                  Tab(text: 'Personal Details'),
+                  Tab(text: 'Preferences'),
+                ],
               ),
-              const SizedBox(height: 16),
-              _buildPersonalInfoSection(profile),
-              const SizedBox(height: 12),
-              _buildContactLocationSection(profile),
-              const SizedBox(height: 12),
-              _buildPreferencesSection(profile),
-              const SizedBox(height: 12),
-              _buildDocumentsSection(profile),
-              const SizedBox(height: 12),
-              _buildCommentsSection(),
-              const SizedBox(height: 24),
-              _buildActionButtons(),
-              const SizedBox(height: 32),
-            ],
-          ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPersonalDetailsTab(profile),
+                  _buildPreferencesTab(profile),
+                ],
+              ),
+            ),
+          ],
         ),
         loading: () => const LoadingIndicator(message: 'Loading profile...'),
         error: (_, _) => ErrorStateWidget(
@@ -333,42 +432,99 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildPersonalInfoSection(WorkerProfile? profile) {
+  // ── Tab builders ──────────────────────────────────────────────────────────
+
+  Widget _buildPersonalDetailsTab(WorkerProfile? profile) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          _buildBasicInfoSection(profile),
+          const SizedBox(height: 12),
+          _buildContactInfoSection(profile),
+          const SizedBox(height: 12),
+          _buildSinSection(profile),
+          const SizedBox(height: 12),
+          _buildDocumentsSection(profile),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreferencesTab(WorkerProfile? profile) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          _buildPreferencesSection(profile),
+          const SizedBox(height: 12),
+          _buildEmergencyInfoSection(profile),
+          const SizedBox(height: 12),
+          _buildActionButtons(),
+          const SizedBox(height: 16),
+          if (_appVersion.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Text(
+                _appVersion,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Personal Details sections ─────────────────────────────────────────────
+
+  Widget _buildBasicInfoSection(WorkerProfile? profile) {
     final isEditing = _editingSection == ProfileSection.personal;
     return ProfileSectionCard(
-      title: 'Personal Information',
+      title: 'Basic Information',
       icon: Icons.person_outline,
       iconGradient: const [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
       trailing: _sectionEditActions(ProfileSection.personal, profile),
       children: [
-        ProfileInfoRow(
-          label: 'First Name',
-          value: profile?.firstName ?? 'N/A',
-          icon: Icons.badge_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _firstNameController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Middle Name',
-          value: profile?.middleName ?? '',
-          icon: Icons.badge_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _middleNameController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Last Name',
-          value: profile?.lastName ?? 'N/A',
-          icon: Icons.badge_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _lastNameController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Second Last Name',
-          value: profile?.secondLastName ?? '',
-          icon: Icons.badge_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _secondLastNameController : null,
-        ),
+        if (!isEditing)
+          ProfileInfoRow(
+            label: 'Full Name',
+            value: profile?.fullName.isNotEmpty == true ? profile!.fullName : 'N/A',
+            icon: Icons.badge_outlined,
+          )
+        else ...[
+          ProfileInfoRow(
+            label: 'First Name',
+            value: profile?.firstName ?? 'N/A',
+            icon: Icons.badge_outlined,
+            isEditing: true,
+            controller: _firstNameController,
+          ),
+          ProfileInfoRow(
+            label: 'Middle Name',
+            value: profile?.middleName ?? '',
+            icon: Icons.badge_outlined,
+            isEditing: true,
+            controller: _middleNameController,
+          ),
+          ProfileInfoRow(
+            label: 'Last Name',
+            value: profile?.lastName ?? 'N/A',
+            icon: Icons.badge_outlined,
+            isEditing: true,
+            controller: _lastNameController,
+          ),
+          ProfileInfoRow(
+            label: 'Second Last Name',
+            value: profile?.secondLastName ?? '',
+            icon: Icons.badge_outlined,
+            isEditing: true,
+            controller: _secondLastNameController,
+          ),
+        ],
         ProfileInfoRow(
           label: 'Date of Birth',
           value: profile?.formattedBirthDay ?? 'N/A',
@@ -379,37 +535,77 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           value: profile?.gender ?? 'N/A',
           icon: Icons.wc_outlined,
         ),
-        ProfileInfoRow(
-          label: 'Approved to Work',
-          value: profile?.approvedToWork == true ? 'Yes' : 'No',
-          icon: Icons.verified_outlined,
-        ),
-        if (profile?.punchCardId != null && profile!.punchCardId!.isNotEmpty)
+        if (!isEditing)
           ProfileInfoRow(
-            label: 'Punch Card ID',
-            value: profile.punchCardId!,
-            icon: Icons.credit_card_outlined,
+            label: 'Do you have your own vehicle?',
+            value: profile?.hasVehicle == true ? 'Yes' : 'No',
+            icon: Icons.directions_car_outlined,
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Icon(Icons.directions_car_outlined,
+                    size: 20, color: AppTheme.primaryBlue),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Do you have your own vehicle?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Switch(
+                            value: _editHasVehicle,
+                            onChanged: (v) => setState(() => _editHasVehicle = v),
+                            activeThumbColor: AppTheme.primaryBlue,
+                          ),
+                          Text(
+                            _editHasVehicle ? 'Yes' : 'No',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
       ],
     );
   }
 
-  /// Contact info and location share the ContactInformation API endpoint,
-  /// so they are presented as one editable section.
-  Widget _buildContactLocationSection(WorkerProfile? profile) {
+  Widget _buildContactInfoSection(WorkerProfile? profile) {
     final isEditing = _editingSection == ProfileSection.contact;
     return ProfileSectionCard(
-      title: 'Contact & Location',
+      title: 'Contact Information',
       icon: Icons.contact_phone_outlined,
       iconGradient: const [Color(0xFF4CAF50), Color(0xFF81C784)],
       trailing: _sectionEditActions(ProfileSection.contact, profile),
       children: [
         ProfileInfoRow(
           label: 'Mobile Number',
-          value: profile?.mobileNumber ?? 'N/A',
+          value: profile?.mobileNumber?.isNotEmpty == true
+              ? profile!.mobileNumber!
+              : 'N/A',
           icon: Icons.phone_outlined,
           isEditing: isEditing,
           controller: isEditing ? _mobileNumberController : null,
+          inputFormatters: isEditing ? [_mobileMaskFormatter] : null,
         ),
         ProfileInfoRow(
           label: 'Phone',
@@ -417,48 +613,58 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           icon: Icons.phone_outlined,
           isEditing: isEditing,
           controller: isEditing ? _phoneController : null,
+          inputFormatters: isEditing ? [_phoneMaskFormatter] : null,
         ),
         ProfileInfoRow(
           label: 'Email',
           value: profile?.email ?? 'N/A',
           icon: Icons.email_outlined,
         ),
-        ProfileInfoRow(
-          label: 'Emergency Contact Name',
-          value: profile?.contactEmergencyName ?? '',
-          icon: Icons.emergency_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _emergencyNameController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Emergency Contact Last Name',
-          value: profile?.contactEmergencyLastName ?? '',
-          icon: Icons.emergency_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _emergencyLastNameController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Emergency Phone',
-          value: profile?.contactEmergencyPhone ?? '',
-          icon: Icons.phone_callback_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _emergencyPhoneController : null,
-        ),
-        ProfileInfoRow(
-          label: 'Country',
-          value: profile?.country ?? 'N/A',
-          icon: Icons.flag_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'State/Province',
-          value: profile?.province ?? 'N/A',
-          icon: Icons.map_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'City',
-          value: profile?.city ?? 'N/A',
-          icon: Icons.location_city_outlined,
-        ),
+        if (!isEditing) ...[
+          ProfileInfoRow(
+            label: 'Country',
+            value: profile?.country ?? 'N/A',
+            icon: Icons.flag_outlined,
+          ),
+          ProfileInfoRow(
+            label: 'State / Province',
+            value: profile?.province ?? 'N/A',
+            icon: Icons.map_outlined,
+          ),
+          ProfileInfoRow(
+            label: 'City',
+            value: profile?.city ?? 'N/A',
+            icon: Icons.location_city_outlined,
+          ),
+        ],
+        if (isEditing) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Location',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LocationSelector(
+            selectedCountry: _editCountry,
+            selectedProvince: _editProvince,
+            selectedCity: _editCity,
+            onCountryChanged: (c) => setState(() {
+              _editCountry = c;
+              _editProvince = null;
+              _editCity = null;
+            }),
+            onProvinceChanged: (p) => setState(() {
+              _editProvince = p;
+              _editCity = null;
+            }),
+            onCityChanged: (c) => setState(() => _editCity = c),
+          ),
+          const SizedBox(height: 8),
+        ],
         ProfileInfoRow(
           label: 'Address',
           value: profile?.address ?? 'N/A',
@@ -467,7 +673,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
           controller: isEditing ? _addressController : null,
         ),
         ProfileInfoRow(
-          label: 'Postal Code',
+          label: 'Postal / ZIP Code',
           value: profile?.postalCode ?? 'N/A',
           icon: Icons.markunread_mailbox_outlined,
           isEditing: isEditing,
@@ -477,56 +683,444 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     );
   }
 
-  Widget _buildPreferencesSection(WorkerProfile? profile) {
+  Widget _buildSinSection(WorkerProfile? profile) {
+    final isEditing = _editingSection == ProfileSection.sin;
     return ProfileSectionCard(
-      title: 'Work Preferences',
-      icon: Icons.work_outline,
-      iconGradient: const [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+      title: 'SIN / SSN',
+      icon: Icons.security_outlined,
+      iconGradient: const [Color(0xFFFF9800), Color(0xFFFFB74D)],
+      trailing: _sectionEditActions(ProfileSection.sin, profile),
       children: [
         ProfileInfoRow(
+          label: 'SIN / SSN #',
+          value: isEditing
+              ? (profile?.socialInsurance ?? '')
+              : profile?.maskedSocialInsurance ?? 'N/A',
+          icon: Icons.lock_outlined,
+          isEditing: isEditing,
+          controller: isEditing ? _socialInsuranceController : null,
+        ),
+        ProfileInfoRow(
+          label: 'Expires',
+          value: profile?.socialInsuranceExpire == true ? 'Yes' : 'No',
+          icon: Icons.event_busy_outlined,
+        ),
+        if (profile?.socialInsuranceExpire == true)
+          ProfileInfoRow(
+            label: 'Due Date',
+            value: profile?.formattedDueDate ?? 'N/A',
+            icon: Icons.calendar_today_outlined,
+          ),
+        _buildDocumentFileRow(
+          label: 'File',
+          fileName: profile?.socialInsuranceFileName,
+          fileUrl: profile?.socialInsuranceFileUrl,
+          isMarkedForDeletion: _deleteSinFile,
+          pendingFile: _replaceSinFile,
+          docType: 'sinFile',
+          editingSection: ProfileSection.sin,
+          onDelete: () => setState(() {
+            _deleteSinFile = true;
+            _replaceSinFile = null;
+          }),
+          onUndo: () => setState(() => _deleteSinFile = false),
+          onClearPick: () => setState(() => _replaceSinFile = null),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDocumentsSection(WorkerProfile? profile) {
+    final isEditing = _editingSection == ProfileSection.documents;
+    return ProfileSectionCard(
+      title: 'Documents',
+      icon: Icons.description_outlined,
+      iconGradient: const [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+      trailing: _sectionEditActions(ProfileSection.documents, profile),
+      children: [
+        if (profile?.identificationType1 != null) ...[
+          ProfileInfoRow(
+            label: '${profile!.identificationType1!} #',
+            value: isEditing
+                ? (profile.identificationNumber1 ?? '')
+                : profile.maskedIdNumber1,
+            icon: Icons.credit_card_outlined,
+            isEditing: isEditing,
+            controller: isEditing ? _idNumber1Controller : null,
+          ),
+          _buildDocumentFileRow(
+            label: '${profile.identificationType1!} (File)',
+            fileName: profile.identificationType1FileName,
+            fileUrl: profile.identificationType1FileUrl,
+            isMarkedForDeletion: _deleteId1File,
+            pendingFile: _replaceId1File,
+            docType: 'id1File',
+            editingSection: ProfileSection.documents,
+            onDelete: () => setState(() {
+              _deleteId1File = true;
+              _replaceId1File = null;
+            }),
+            onUndo: () => setState(() => _deleteId1File = false),
+            onClearPick: () => setState(() => _replaceId1File = null),
+          ),
+        ],
+        if (profile?.identificationType2 != null) ...[
+          ProfileInfoRow(
+            label: '${profile!.identificationType2!} #',
+            value: isEditing
+                ? (profile.identificationNumber2 ?? '')
+                : profile.maskedIdNumber2,
+            icon: Icons.credit_card_outlined,
+            isEditing: isEditing,
+            controller: isEditing ? _idNumber2Controller : null,
+          ),
+          _buildDocumentFileRow(
+            label: '${profile.identificationType2!} (File)',
+            fileName: profile.identificationType2FileName,
+            fileUrl: profile.identificationType2FileUrl,
+            isMarkedForDeletion: _deleteId2File,
+            pendingFile: _replaceId2File,
+            docType: 'id2File',
+            editingSection: ProfileSection.documents,
+            onDelete: () => setState(() {
+              _deleteId2File = true;
+              _replaceId2File = null;
+            }),
+            onUndo: () => setState(() => _deleteId2File = false),
+            onClearPick: () => setState(() => _replaceId2File = null),
+          ),
+        ],
+        if (profile?.identificationType1 == null &&
+            profile?.identificationType2 == null)
+          Text(
+            'No documents on file',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade500,
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ── Preferences sections ──────────────────────────────────────────────────
+
+  Widget _buildPreferencesSection(WorkerProfile? profile) {
+    final isEditing = _editingSection == ProfileSection.preferences;
+    if (!isEditing) {
+      return ProfileSectionCard(
+        title: 'Preferences',
+        icon: Icons.work_outline,
+        iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
+        trailing: _sectionEditActions(ProfileSection.preferences, profile),
+        children: [
+          _buildChipDisplayRow(
+            label: 'Can you lift up to',
+            icon: Icons.fitness_center_outlined,
+            chips: profile?.liftCapacity != null ? [profile!.liftCapacity!] : [],
+          ),
+          _buildChipDisplayRow(
+            label: 'Availability',
+            icon: Icons.schedule_outlined,
+            chips: profile?.availabilities ?? [],
+          ),
+          _buildChipDisplayRow(
+            label: 'Available Time',
+            icon: Icons.access_time_outlined,
+            chips: profile?.availabilityTimes ?? [],
+          ),
+          _buildChipDisplayRow(
+            label: 'Available Days',
+            icon: Icons.calendar_today_outlined,
+            chips: profile?.availabilityDays ?? [],
+          ),
+          _buildChipDisplayRow(
+            label: 'Skills',
+            icon: Icons.stars_outlined,
+            chips: profile?.skills ?? [],
+          ),
+          _buildChipDisplayRow(
+            label: 'Languages',
+            icon: Icons.language_outlined,
+            chips: profile?.languages ?? [],
+          ),
+        ],
+      );
+    }
+
+    return ProfileSectionCard(
+      title: 'Preferences',
+      icon: Icons.work_outline,
+      iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
+      trailing: _sectionEditActions(ProfileSection.preferences, profile),
+      children: [
+        _buildChipSelector(
+          label: 'Can you lift up to',
+          asyncValue: ref.watch(liftingCapacitiesProvider),
+          selectedIds: _editLiftId != null ? {_editLiftId!} : {},
+          singleSelect: true,
+          onToggle: (id, selected) => setState(() {
+            _editLiftId = selected ? id : null;
+          }),
+        ),
+        const SizedBox(height: 12),
+        _buildChipSelector(
           label: 'Availability',
-          value: profile != null && profile.availabilities.isNotEmpty
-              ? profile.availabilities.join(', ')
-              : 'N/A',
-          icon: Icons.schedule_outlined,
+          asyncValue: ref.watch(availabilityListProvider),
+          selectedIds: _editAvailabilityIds,
+          singleSelect: false,
+          onToggle: (id, selected) => setState(() {
+            if (selected) {
+              _editAvailabilityIds.add(id);
+            } else {
+              _editAvailabilityIds.remove(id);
+            }
+          }),
         ),
-        ProfileInfoRow(
+        const SizedBox(height: 12),
+        _buildChipSelector(
+          label: 'Available Time',
+          asyncValue: ref.watch(availabilityTimeListProvider),
+          selectedIds: _editAvailabilityTimeIds,
+          singleSelect: false,
+          onToggle: (id, selected) => setState(() {
+            if (selected) {
+              _editAvailabilityTimeIds.add(id);
+            } else {
+              _editAvailabilityTimeIds.remove(id);
+            }
+          }),
+        ),
+        const SizedBox(height: 12),
+        _buildChipSelector(
           label: 'Available Days',
-          value: profile != null && profile.availabilityDays.isNotEmpty
-              ? profile.availabilityDays.join(', ')
-              : 'N/A',
-          icon: Icons.calendar_today_outlined,
+          asyncValue: ref.watch(daysOfWeekProvider),
+          selectedIds: _editAvailabilityDayIds,
+          singleSelect: false,
+          onToggle: (id, selected) => setState(() {
+            if (selected) {
+              _editAvailabilityDayIds.add(id);
+            } else {
+              _editAvailabilityDayIds.remove(id);
+            }
+          }),
         ),
-        ProfileInfoRow(
-          label: 'Preferred Time',
-          value: profile != null && profile.availabilityTimes.isNotEmpty
-              ? profile.availabilityTimes.join(', ')
-              : 'N/A',
-          icon: Icons.access_time_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'Lifting Capacity',
-          value: profile?.liftCapacity ?? 'N/A',
-          icon: Icons.fitness_center_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'Has Vehicle',
-          value: profile?.hasVehicle == true ? 'Yes' : 'No',
-          icon: Icons.directions_car_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'Languages',
-          value: profile != null && profile.languages.isNotEmpty
-              ? profile.languages.join(', ')
-              : 'N/A',
-          icon: Icons.language_outlined,
-        ),
-        ProfileInfoRow(
+        const SizedBox(height: 12),
+        _buildChipSelector(
           label: 'Skills',
-          value: profile != null && profile.skills.isNotEmpty
-              ? profile.skills.join(', ')
+          asyncValue: ref.watch(skillsProvider),
+          selectedIds: _editSkillIds,
+          singleSelect: false,
+          onToggle: (id, selected) => setState(() {
+            if (selected) {
+              _editSkillIds.add(id);
+            } else {
+              _editSkillIds.remove(id);
+            }
+          }),
+        ),
+        const SizedBox(height: 12),
+        _buildChipSelector(
+          label: 'Languages',
+          asyncValue: ref.watch(languagesProvider),
+          selectedIds: _editLanguageIds,
+          singleSelect: false,
+          onToggle: (id, selected) => setState(() {
+            if (selected) {
+              _editLanguageIds.add(id);
+            } else {
+              _editLanguageIds.remove(id);
+            }
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyInfoSection(WorkerProfile? profile) {
+    final isEditing = _editingSection == ProfileSection.emergency;
+    return ProfileSectionCard(
+      title: 'Emergency Information',
+      icon: Icons.emergency_outlined,
+      iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
+      trailing: _sectionEditActions(ProfileSection.emergency, profile),
+      children: [
+        ProfileInfoRow(
+          label: 'Do you have any health problems / allergies?',
+          value: profile?.haveAnyHealthProblem == true ? 'Yes' : 'No',
+          icon: Icons.health_and_safety_outlined,
+        ),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text(
+            'In case of emergency notify:',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.primaryBlue,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        ProfileInfoRow(
+          label: 'Name',
+          value: profile != null
+              ? '${profile.contactEmergencyName ?? ''} ${profile.contactEmergencyLastName ?? ''}'.trim()
               : 'N/A',
-          icon: Icons.stars_outlined,
+          icon: Icons.person_outline,
+          isEditing: isEditing,
+          controller: isEditing ? _emergencyNameController : null,
+        ),
+        if (isEditing)
+          ProfileInfoRow(
+            label: 'Last Name',
+            value: profile?.contactEmergencyLastName ?? '',
+            icon: Icons.person_outline,
+            isEditing: true,
+            controller: _emergencyLastNameController,
+          ),
+        ProfileInfoRow(
+          label: 'Phone',
+          value: profile?.contactEmergencyPhone ?? 'N/A',
+          icon: Icons.phone_callback_outlined,
+          isEditing: isEditing,
+          controller: isEditing ? _emergencyPhoneController : null,
+          inputFormatters: isEditing ? [_emergencyPhoneMaskFormatter] : null,
+        ),
+      ],
+    );
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  Widget _buildChipDisplayRow({
+    required String label,
+    required IconData icon,
+    required List<String> chips,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppTheme.primaryBlue),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                chips.isEmpty
+                    ? Text(
+                        'N/A',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textDark,
+                        ),
+                      )
+                    : Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: chips
+                            .map(
+                              (c) => Chip(
+                                label: Text(
+                                  c,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.primaryBlue,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                backgroundColor:
+                                    AppTheme.primaryBlue.withValues(alpha: 0.1),
+                                side: BorderSide(
+                                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 0),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            )
+                            .toList(),
+                      ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChipSelector({
+    required String label,
+    required AsyncValue<dynamic> asyncValue,
+    required Set<String> selectedIds,
+    required bool singleSelect,
+    required void Function(String id, bool selected) onToggle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        asyncValue.when(
+          data: (items) {
+            final list = items as List;
+            return Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: list.map((item) {
+                final id = (item.id as String?) ?? '';
+                final value = item.value != null
+                    ? item.value as String
+                    : item.toString();
+                final isSelected = selectedIds.contains(id);
+                return FilterChip(
+                  label: Text(value, style: const TextStyle(fontSize: 12)),
+                  selected: isSelected,
+                  onSelected: (s) => onToggle(id, s),
+                  selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                  checkmarkColor: AppTheme.primaryBlue,
+                  labelStyle: TextStyle(
+                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade300,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                );
+              }).toList(),
+            );
+          },
+          loading: () => const SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (_, _) => Text(
+            'Failed to load options',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          ),
         ),
       ],
     );
@@ -535,26 +1129,66 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
   Widget _buildDocumentFileRow({
     required String label,
     required String? fileName,
+    required String? fileUrl,
     required bool isMarkedForDeletion,
     required PickedFileData? pendingFile,
     required VoidCallback onDelete,
     required VoidCallback onUndo,
     required String docType,
     required VoidCallback onClearPick,
+    required ProfileSection editingSection,
   }) {
-    final isEditingDocs = _editingSection == ProfileSection.documents;
+    final isEditingDocs = _editingSection == editingSection;
     final hasFile = fileName != null && fileName.isNotEmpty;
     final hasPending = pendingFile != null;
+    final hasUrl = fileUrl != null && fileUrl.isNotEmpty;
 
     if (!isEditingDocs) {
-      return ProfileInfoRow(
-        label: label,
-        value: hasFile ? fileName : 'Not uploaded',
-        icon: Icons.attach_file_outlined,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    hasFile ? fileName : 'Not uploaded',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: hasFile ? AppTheme.textDark : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasUrl)
+              IconButton(
+                onPressed: () => _previewDocument(fileUrl, label),
+                icon: const Icon(Icons.visibility_outlined, size: 20),
+                color: AppTheme.primaryBlue,
+                tooltip: 'Preview',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+          ],
+        ),
       );
     }
 
-    // Determine display name and style
     final String displayName;
     final TextStyle nameStyle;
     final String? statusText;
@@ -580,7 +1214,6 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       statusText = null;
     }
 
-    // Determine action buttons
     Widget actions;
     if (hasPending || isMarkedForDeletion) {
       actions = TextButton.icon(
@@ -650,191 +1283,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
                     statusText,
                     style: TextStyle(
                       fontSize: 11,
-                      color: hasPending
-                          ? AppTheme.primaryBlue
-                          : AppTheme.errorRed,
+                      color: hasPending ? AppTheme.primaryBlue : AppTheme.errorRed,
                     ),
                   ),
               ],
             ),
           ),
           actions,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDocumentsSection(WorkerProfile? profile) {
-    final isEditing = _editingSection == ProfileSection.documents;
-    return ProfileSectionCard(
-      title: 'Documents & Account',
-      icon: Icons.description_outlined,
-      iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
-      trailing: _sectionEditActions(ProfileSection.documents, profile),
-      children: [
-        ProfileInfoRow(
-          label: 'Social Insurance (SIN)',
-          value: profile?.maskedSocialInsurance ?? 'N/A',
-          icon: Icons.security_outlined,
-          isEditing: isEditing,
-          controller: isEditing ? _socialInsuranceController : null,
-        ),
-        ProfileInfoRow(
-          label: 'SIN Expires',
-          value: profile?.socialInsuranceExpire == true ? 'Yes' : 'No',
-          icon: Icons.event_busy_outlined,
-        ),
-        if (profile?.socialInsuranceExpire == true)
-          ProfileInfoRow(
-            label: 'SIN Due Date',
-            value: profile?.formattedDueDate ?? 'N/A',
-            icon: Icons.calendar_today_outlined,
-          ),
-        _buildDocumentFileRow(
-          label: 'SIN Document',
-          fileName: profile?.socialInsuranceFileName,
-          isMarkedForDeletion: _deleteSinFile,
-          pendingFile: _replaceSinFile,
-          docType: 'sinFile',
-          onDelete: () => setState(() {
-            _deleteSinFile = true;
-            _replaceSinFile = null;
-          }),
-          onUndo: () => setState(() => _deleteSinFile = false),
-          onClearPick: () => setState(() => _replaceSinFile = null),
-        ),
-        if (profile?.identificationType1 != null)
-          ProfileInfoRow(
-            label: '${profile!.identificationType1!} (ID 1)',
-            value: profile.maskedIdNumber1,
-            icon: Icons.credit_card_outlined,
-            isEditing: isEditing,
-            controller: isEditing ? _idNumber1Controller : null,
-          ),
-        _buildDocumentFileRow(
-          label: 'ID 1 Document',
-          fileName: profile?.identificationType1FileName,
-          isMarkedForDeletion: _deleteId1File,
-          pendingFile: _replaceId1File,
-          docType: 'id1File',
-          onDelete: () => setState(() {
-            _deleteId1File = true;
-            _replaceId1File = null;
-          }),
-          onUndo: () => setState(() => _deleteId1File = false),
-          onClearPick: () => setState(() => _replaceId1File = null),
-        ),
-        if (profile?.identificationType2 != null)
-          ProfileInfoRow(
-            label: '${profile!.identificationType2!} (ID 2)',
-            value: profile.maskedIdNumber2,
-            icon: Icons.credit_card_outlined,
-            isEditing: isEditing,
-            controller: isEditing ? _idNumber2Controller : null,
-          ),
-        _buildDocumentFileRow(
-          label: 'ID 2 Document',
-          fileName: profile?.identificationType2FileName,
-          isMarkedForDeletion: _deleteId2File,
-          pendingFile: _replaceId2File,
-          docType: 'id2File',
-          onDelete: () => setState(() {
-            _deleteId2File = true;
-            _replaceId2File = null;
-          }),
-          onUndo: () => setState(() => _deleteId2File = false),
-          onClearPick: () => setState(() => _replaceId2File = null),
-        ),
-        _buildDocumentFileRow(
-          label: 'Police Check Document',
-          fileName: profile?.policeCheckBackgroundFileName,
-          isMarkedForDeletion: _deletePoliceCheck,
-          pendingFile: _replacePoliceCheckFile,
-          docType: 'policeCheckFile',
-          onDelete: () => setState(() {
-            _deletePoliceCheck = true;
-            _replacePoliceCheckFile = null;
-          }),
-          onUndo: () => setState(() => _deletePoliceCheck = false),
-          onClearPick: () => setState(() => _replacePoliceCheckFile = null),
-        ),
-        ProfileInfoRow(
-          label: 'Resume',
-          value: profile?.hasResume == true ? 'On file' : 'Not provided',
-          icon: Icons.description_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'Worker ID',
-          value: profile?.numberId?.toString() ?? 'N/A',
-          icon: Icons.numbers_outlined,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCommentsSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.comment_outlined,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Additional Comments',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Text(
-              'No additional comments.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
-                height: 1.5,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -944,5 +1399,61 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
 
     await notifier.logout();
     if (mounted) context.go(AppRoutes.welcome);
+  }
+}
+
+class _DocumentPreviewPage extends StatefulWidget {
+  final String url;
+  final String title;
+  final String? token;
+
+  const _DocumentPreviewPage({
+    required this.url,
+    required this.title,
+    this.token,
+  });
+
+  @override
+  State<_DocumentPreviewPage> createState() => _DocumentPreviewPageState();
+}
+
+class _DocumentPreviewPageState extends State<_DocumentPreviewPage> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) => setState(() => _isLoading = false),
+        ),
+      )
+      ..loadRequest(
+        Uri.parse(widget.url),
+        headers: widget.token != null
+            ? {'Authorization': 'Bearer ${widget.token}'}
+            : {},
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: AppTheme.primaryBlue,
+        foregroundColor: Colors.white,
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator()),
+        ],
+      ),
+    );
   }
 }

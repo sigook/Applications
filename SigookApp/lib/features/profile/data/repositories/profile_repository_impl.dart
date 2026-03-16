@@ -6,6 +6,7 @@ import '../../domain/entities/worker_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/usecases/update_worker_profile.dart';
 import '../datasources/profile_remote_datasource.dart';
+import '../models/worker_profile_model.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
@@ -63,6 +64,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         lastName: editedFields['lastName'] ?? currentModel.lastName,
         secondLastName:
             editedFields['secondLastName'] ?? currentModel.secondLastName,
+        hasVehicle: editedFields['hasVehicle'] != null
+            ? editedFields['hasVehicle'] == 'true'
+            : currentModel.hasVehicle,
         mobileNumber:
             editedFields['mobileNumber'] ?? currentModel.mobileNumber,
         phone: editedFields['phone'] ?? currentModel.phone,
@@ -91,6 +95,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
           address: editedFields['address'] ?? currentModel.location?.address,
           postalCode:
               editedFields['postalCode'] ?? currentModel.location?.postalCode,
+          city: editedFields['cityId'] != null
+              ? CityModel(
+                  id: editedFields['cityId'],
+                  value: '',
+                  province: currentModel.location?.city?.province,
+                )
+              : currentModel.location?.city,
         ),
       );
 
@@ -100,26 +111,55 @@ class ProfileRepositoryImpl implements ProfileRepository {
         case ProfileSection.contact:
           await remoteDataSource.updateWorkerContactInfo(
               workerId, updatedModel);
+        case ProfileSection.emergency:
+          await remoteDataSource.updateWorkerContactInfo(
+              workerId, updatedModel);
+        case ProfileSection.sin:
+          await remoteDataSource.updateWorkerSinInfo(
+            workerId,
+            updatedModel,
+            sinFilePath: newFilePaths?['sinFile'],
+          );
         case ProfileSection.documents:
-          await Future.wait([
-            remoteDataSource.updateWorkerSinInfo(
-              workerId,
-              updatedModel,
-              sinFilePath: newFilePaths?['sinFile'],
-            ),
-            remoteDataSource.updateWorkerDocuments(
-              workerId,
-              updatedModel,
-              newFilePaths: {
-                if (newFilePaths?['id1File'] != null)
-                  'id1File': newFilePaths!['id1File']!,
-                if (newFilePaths?['id2File'] != null)
-                  'id2File': newFilePaths!['id2File']!,
-                if (newFilePaths?['policeCheckFile'] != null)
-                  'policeCheckFile': newFilePaths!['policeCheckFile']!,
-              },
-            ),
-          ]);
+          await remoteDataSource.updateWorkerDocuments(
+            workerId,
+            updatedModel,
+            newFilePaths: {
+              if (newFilePaths?['id1File'] != null)
+                'id1File': newFilePaths!['id1File']!,
+              if (newFilePaths?['id2File'] != null)
+                'id2File': newFilePaths!['id2File']!,
+              if (newFilePaths?['policeCheckFile'] != null)
+                'policeCheckFile': newFilePaths!['policeCheckFile']!,
+            },
+          );
+        case ProfileSection.preferences:
+          List<String> parseIds(String key) => (editedFields[key] ?? '')
+              .split(',')
+              .where((s) => s.isNotEmpty)
+              .toList();
+          final prefModel = currentModel.copyWith(
+            availabilities: parseIds('availabilityIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            availabilityTimes: parseIds('availabilityTimeIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            availabilityDays: parseIds('availabilityDayIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            lift: editedFields['liftId'] != null
+                ? CatalogItemModel(id: editedFields['liftId'], value: '')
+                : currentModel.lift,
+            hasVehicle: editedFields['hasVehicle'] == 'true',
+            languages: parseIds('languageIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            skills: parseIds('skillIds')
+                .map((id) => SkillItemModel(id: id, skill: ''))
+                .toList(),
+          );
+          await remoteDataSource.updateWorkerBasicInfo(workerId, prefModel);
       }
 
       return Right(null);

@@ -127,10 +127,19 @@ class AppRouter {
         path: AppRoutes.jobDetails,
         name: 'jobDetails',
         pageBuilder: (context, state) {
-          final jobId = state.extra as String;
+          final extra = state.extra;
+          final String jobId;
+          final bool isFromHistory;
+          if (extra is Map<String, dynamic>) {
+            jobId = extra['id'] as String;
+            isFromHistory = (extra['isFromHistory'] as bool?) ?? false;
+          } else {
+            jobId = extra as String;
+            isFromHistory = false;
+          }
           return CustomTransitionPage(
             key: state.pageKey,
-            child: JobPage(jobId: jobId),
+            child: JobPage(jobId: jobId, isFromHistory: isFromHistory),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);
