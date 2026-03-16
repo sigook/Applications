@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
@@ -221,7 +222,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Top hero section — diagonal split image panels
+          // ── Top hero section — vertical split image panels
           Positioned(
             top: 0,
             left: 0,
@@ -235,26 +236,24 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   offset: _panelsSlide.value,
                   child: child!,
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
+                child: Row(
                   children: [
-                    // Right panel — family image (full width, base layer)
-                    Image.asset(
-                      'assets/images/welcome-screen/family.png',
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topRight,
-                    ),
-                    // Left panel — worker image clipped to diagonal shape
-                    ClipPath(
-                      clipper: const _DiagonalLeftClipper(),
+                    // Left panel — worker image (zoomed out to show full content)
+                    Expanded(
                       child: Image.asset(
                         'assets/images/welcome-screen/worker.png',
-                        width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        alignment: Alignment.topLeft,
+                        alignment: const Alignment(0.0, -0.3),
+                      ),
+                    ),
+                    // Right panel — family image (shifted left to show people)
+                    Expanded(
+                      child: Image.asset(
+                        'assets/images/welcome-screen/family.png',
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        alignment: const Alignment(-0.3, -0.3),
                       ),
                     ),
                   ],
@@ -263,22 +262,24 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             ),
           ),
 
-          // ── Gradient fade — blends the hero image into the red section below
+          // ── Gradient fade — blends the hero image smoothly into the red section
           Positioned(
-            top: size.height * 0.18,
+            top: size.height * 0.10,
             left: 0,
             right: 0,
-            height: size.height * 0.28,
+            height: size.height * 0.38,
             child: IgnorePointer(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    stops: const [0.0, 0.55, 1.0],
+                    stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
                     colors: [
                       AppTheme.secondaryRed.withValues(alpha: 0.0),
-                      AppTheme.secondaryRed.withValues(alpha: 0.55),
+                      AppTheme.secondaryRed.withValues(alpha: 0.15),
+                      AppTheme.secondaryRed.withValues(alpha: 0.50),
+                      AppTheme.secondaryRed.withValues(alpha: 0.85),
                       AppTheme.secondaryRed,
                     ],
                   ),
@@ -289,52 +290,59 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
 
           // ── Bottom solid red section
           Positioned(
-            top: size.height * 0.43,
+            top: size.height * 0.45,
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(color: AppTheme.secondaryRed),
           ),
 
-          // ── Decorative circles — bottom left
-          // Ring circle (border only, behind)
+          // ── Decorative circles — bottom left (ring from SVG + filled circle)
           Positioned(
-            bottom: -28,
-            left: -42,
+            bottom: -30,
+            left: -25,
             child: IgnorePointer(
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: _RingCircle(
-                  diameter: 140,
-                  color: Colors.white.withValues(alpha: 0.30),
-                  strokeWidth: 2.0,
-                ),
-              ),
-            ),
-          ),
-          // Filled translucent circle (in front)
-          Positioned(
-            bottom: 4,
-            left: -22,
-            child: IgnorePointer(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFFFCDD2).withValues(alpha: 0.55),
+                child: SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Large ring from SVG
+                      Opacity(
+                        opacity: 0.30,
+                        child: SvgPicture.asset(
+                          'assets/images/welcome-screen/circles.svg',
+                          width: 100,
+                          height: 100,
+                        ),
+                      ),
+                      // Small filled translucent circle (top-right of the ring)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.25),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
 
-          // ── Legal dot-grid button — slides in from the right
+          // ── Legal dots-rectangle button — bottom right (dots-rectangle.svg)
           Positioned(
-            bottom: 24,
-            right: 20,
+            bottom: 20,
+            right: 16,
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: AnimatedBuilder(
@@ -348,9 +356,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: CustomPaint(
-                      size: const Size(50, 26),
-                      painter: const _DotGridPainter(),
+                    child: SvgPicture.asset(
+                      'assets/images/welcome-screen/dots-rectangle.svg',
+                      width: 50,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -374,21 +383,21 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     tag: 'sigook_logo',
                     child: Image.asset(
                       'assets/images/logo/sigook_logo.png',
-                      width: 215,
+                      width: 270,
                       color: Colors.white,
                       colorBlendMode: BlendMode.srcIn,
                     ),
                   ),
                 ),
 
-                // Tagline — scale-in entrance independent of the Hero
-                ScaleTransition(
-                  scale: _logoScale,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: const Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Text(
+                // Tagline — pulled up to sit tight under the logo image
+                Transform.translate(
+                  offset: const Offset(0, -40),
+                  child: ScaleTransition(
+                    scale: _logoScale,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: const Text(
                         'Find Work That Fits Your Life',
                         style: TextStyle(
                           fontSize: 15,
@@ -517,83 +526,5 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   }
 }
 
-/// Clips the worker (left) image panel with a diagonal right edge.
-/// Diagonal runs from (75% width, top) down to (25% width, bottom).
-class _DiagonalLeftClipper extends CustomClipper<Path> {
-  const _DiagonalLeftClipper();
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(size.width * 0.62, 0);           // top of diagonal
-    path.lineTo(size.width * 0.38, size.height); // bottom of diagonal
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(_DiagonalLeftClipper old) => false;
-}
 
 
-/// Hollow ring used as a decorative accent.
-class _RingCircle extends StatelessWidget {
-  final double diameter;
-  final Color color;
-  final double strokeWidth;
-
-  const _RingCircle({
-    required this.diameter,
-    required this.color,
-    required this.strokeWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: diameter,
-      height: diameter,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: strokeWidth),
-      ),
-    );
-  }
-}
-
-/// Draws a 4×3 grid of small rounded squares — the legal/menu trigger icon.
-class _DotGridPainter extends CustomPainter {
-  const _DotGridPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const cols = 6;
-    const rows = 3;
-    const dotSize = 4.5;
-    const radius = 1.2;
-    final color = Colors.white.withValues(alpha: 0.65);
-    final paint = Paint()..color = color;
-
-    final hSpacing = size.width / cols;
-    final vSpacing = size.height / rows;
-
-    for (int r = 0; r < rows; r++) {
-      for (int c = 0; c < cols; c++) {
-        final cx = hSpacing * c + hSpacing / 2 - dotSize / 2;
-        final cy = vSpacing * r + vSpacing / 2 - dotSize / 2;
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(cx, cy, dotSize, dotSize),
-            const Radius.circular(radius),
-          ),
-          paint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotGridPainter old) => false;
-}

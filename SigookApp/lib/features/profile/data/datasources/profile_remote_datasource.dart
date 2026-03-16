@@ -25,6 +25,10 @@ abstract class ProfileRemoteDataSource {
     WorkerProfileModel profile, {
     Map<String, String>? newFilePaths,
   });
+  Future<void> updateWorkerEmergencyInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  );
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -172,6 +176,55 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to update contact info: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerEmergencyInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final emergencyData = <String, dynamic>{
+        'haveAnyHealthProblem': profile.haveAnyHealthProblem,
+        if (profile.healthProblem != null)
+          'healthProblem': profile.healthProblem,
+        if (profile.otherHealthProblem != null)
+          'otherHealthProblem': profile.otherHealthProblem,
+        if (profile.contactEmergencyName != null)
+          'contactEmergencyName': profile.contactEmergencyName,
+        if (profile.contactEmergencyLastName != null)
+          'contactEmergencyLastName': profile.contactEmergencyLastName,
+        if (profile.contactEmergencyPhone != null)
+          'contactEmergencyPhone': profile.contactEmergencyPhone,
+      };
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/EmergencyInformation',
+        data: emergencyData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update emergency info: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update emergency info: $e');
     }
   }
 

@@ -195,7 +195,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Spacer(flex: 3),
+                const Spacer(),
 
                 // Logo: scale-in + fade-in entrance; Hero flies it to welcome page
                 FadeTransition(
@@ -206,7 +206,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       tag: 'sigook_logo',
                       child: Image.asset(
                         'assets/images/logo/sigook_logo.png',
-                        width: 215,
+                        width: 270,
                         color: Colors.white,
                         colorBlendMode: BlendMode.srcIn,
                       ),
@@ -214,35 +214,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
-                // Tagline — drifts upward and fades out on exit
-                AnimatedBuilder(
-                  animation: _exitController,
-                  builder: (context, child) => Opacity(
-                    opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
-                    child: Transform.translate(
-                      offset: Offset(0, -20 * _exitController.value),
-                      child: child!,
-                    ),
-                  ),
-                  child: FadeTransition(
-                    opacity: _textFadeAnimation,
-                    child: const Text(
-                      'Find Work That Fits Your Life',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.3,
+                // Tagline — pulled up to sit tight under the logo, drifts up on exit
+                Transform.translate(
+                  offset: const Offset(0, -18),
+                  child: AnimatedBuilder(
+                    animation: _exitController,
+                    builder: (context, child) => Opacity(
+                      opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
+                      child: Transform.translate(
+                        offset: Offset(0, -20 * _exitController.value),
+                        child: child!,
                       ),
-                      textAlign: TextAlign.center,
+                    ),
+                    child: FadeTransition(
+                      opacity: _textFadeAnimation,
+                      child: const Text(
+                        'Find Work That Fits Your Life',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
 
-                const Spacer(flex: 4),
+                const Spacer(),
 
                 // Loading indicator — fades out on exit
                 AnimatedBuilder(

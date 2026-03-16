@@ -380,48 +380,78 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           onPressed: () => context.go(AppRoutes.jobs),
         ),
         title: const NavbarLogo(),
+        centerTitle: true,
       ),
       body: profileAsync.when(
-        data: (profile) => Column(
-          children: [
-            ProfileHeader(
-              name: profile?.fullName ?? 'User',
-              email: profile?.email ?? '',
-              photoUrl: profile?.profilePhotoUrl,
-            ),
-            Container(
-              color: Colors.white,
-              child: TabBar(
-                controller: _tabController,
-                labelColor: AppTheme.primaryBlue,
-                unselectedLabelColor: Colors.grey.shade600,
-                indicatorColor: AppTheme.primaryBlue,
-                indicatorWeight: 3,
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+        data: (profile) => ClipRect(child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              // expandedHeight = profile content area (222) + TabBar (48)
+              expandedHeight: 270.0,
+              // Collapse fully to zero — only the TabBar (bottom) stays pinned.
+              toolbarHeight: 0.0,
+              pinned: true,
+              floating: false,
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.white,
+              elevation: 2,
+              shadowColor: Colors.black.withValues(alpha: 0.08),
+              flexibleSpace: FlexibleSpaceBar(
+                collapseMode: CollapseMode.pin,
+                background: Builder(
+                  builder: (context) {
+                    final settings = context
+                        .dependOnInheritedWidgetOfExactType<
+                            FlexibleSpaceBarSettings>();
+                    final t = settings != null
+                        ? ((settings.currentExtent - settings.minExtent) /
+                                (settings.maxExtent - settings.minExtent))
+                            .clamp(0.0, 1.0)
+                        : 1.0;
+                    return ProfileHeader(
+                      name: profile?.fullName ?? 'User',
+                      email: profile?.email ?? '',
+                      photoUrl: profile?.profilePhotoUrl,
+                      collapseRatio: t,
+                    );
+                  },
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                tabs: const [
-                  Tab(text: 'Personal Details'),
-                  Tab(text: 'Preferences'),
-                ],
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildPersonalDetailsTab(profile),
-                  _buildPreferencesTab(profile),
-                ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(48.0),
+                child: Container(
+                  color: Colors.white,
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: AppTheme.primaryBlue,
+                    unselectedLabelColor: Colors.grey.shade600,
+                    indicatorColor: AppTheme.primaryBlue,
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    tabs: const [
+                      Tab(text: 'Personal Details'),
+                      Tab(text: 'Preferences'),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
-        ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildPersonalDetailsTab(profile),
+              _buildPreferencesTab(profile),
+            ],
+          ),
+        )),
         loading: () => const LoadingIndicator(message: 'Loading profile...'),
         error: (_, _) => ErrorStateWidget(
           title: 'Failed to load profile',
@@ -435,47 +465,45 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   // ── Tab builders ──────────────────────────────────────────────────────────
 
   Widget _buildPersonalDetailsTab(WorkerProfile? profile) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          _buildBasicInfoSection(profile),
-          const SizedBox(height: 12),
-          _buildContactInfoSection(profile),
-          const SizedBox(height: 12),
-          _buildSinSection(profile),
-          const SizedBox(height: 12),
-          _buildDocumentsSection(profile),
-          const SizedBox(height: 24),
-        ],
-      ),
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        const SizedBox(height: 16),
+        _buildBasicInfoSection(profile),
+        const SizedBox(height: 12),
+        _buildContactInfoSection(profile),
+        const SizedBox(height: 12),
+        _buildSinSection(profile),
+        const SizedBox(height: 12),
+        _buildDocumentsSection(profile),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
   Widget _buildPreferencesTab(WorkerProfile? profile) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          _buildPreferencesSection(profile),
-          const SizedBox(height: 12),
-          _buildEmergencyInfoSection(profile),
-          const SizedBox(height: 12),
-          _buildActionButtons(),
-          const SizedBox(height: 16),
-          if (_appVersion.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Text(
-                _appVersion,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        const SizedBox(height: 16),
+        _buildPreferencesSection(profile),
+        const SizedBox(height: 12),
+        _buildEmergencyInfoSection(profile),
+        const SizedBox(height: 12),
+        _buildActionButtons(),
+        const SizedBox(height: 16),
+        if (_appVersion.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Text(
+              _appVersion,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade500,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -1165,7 +1193,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    hasFile ? fileName : 'Not uploaded',
+                    hasFile ? label.replaceAll(' (File)', '') : 'Not uploaded',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

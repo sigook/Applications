@@ -112,7 +112,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           await remoteDataSource.updateWorkerContactInfo(
               workerId, updatedModel);
         case ProfileSection.emergency:
-          await remoteDataSource.updateWorkerContactInfo(
+          await remoteDataSource.updateWorkerEmergencyInfo(
               workerId, updatedModel);
         case ProfileSection.sin:
           await remoteDataSource.updateWorkerSinInfo(
