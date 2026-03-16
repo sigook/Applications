@@ -380,16 +380,16 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           onPressed: () => context.go(AppRoutes.jobs),
         ),
         title: const NavbarLogo(),
-        centerTitle: true,
       ),
       body: profileAsync.when(
-        data: (profile) => ClipRect(child: NestedScrollView(
+        data: (profile) => NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
               // expandedHeight = profile content area (222) + TabBar (48)
               expandedHeight: 270.0,
-              // Collapse fully to zero — only the TabBar (bottom) stays pinned.
-              toolbarHeight: 0.0,
+              // Collapse to minimum — only the TabBar (bottom) stays pinned.
+              // Using 1 instead of 0 avoids a 1px overflow rounding issue.
+              toolbarHeight: 1.0,
               pinned: true,
               floating: false,
               automaticallyImplyLeading: false,
@@ -451,7 +451,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               _buildPreferencesTab(profile),
             ],
           ),
-        )),
+        ),
         loading: () => const LoadingIndicator(message: 'Loading profile...'),
         error: (_, _) => ErrorStateWidget(
           title: 'Failed to load profile',

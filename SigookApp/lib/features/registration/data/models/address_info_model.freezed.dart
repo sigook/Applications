@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AddressInfoModel {
 
- String get country; String get provinceState; String get city; String get address;
+ String get country; String get provinceState; String get city; String get address; String get zipCode;
 /// Create a copy of AddressInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AddressInfoModelCopyWith<AddressInfoModel> get copyWith => _$AddressInfoModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddressInfoModel&&(identical(other.country, country) || other.country == country)&&(identical(other.provinceState, provinceState) || other.provinceState == provinceState)&&(identical(other.city, city) || other.city == city)&&(identical(other.address, address) || other.address == address));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddressInfoModel&&(identical(other.country, country) || other.country == country)&&(identical(other.provinceState, provinceState) || other.provinceState == provinceState)&&(identical(other.city, city) || other.city == city)&&(identical(other.address, address) || other.address == address)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,country,provinceState,city,address);
+int get hashCode => Object.hash(runtimeType,country,provinceState,city,address,zipCode);
 
 @override
 String toString() {
-  return 'AddressInfoModel(country: $country, provinceState: $provinceState, city: $city, address: $address)';
+  return 'AddressInfoModel(country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AddressInfoModelCopyWith<$Res>  {
   factory $AddressInfoModelCopyWith(AddressInfoModel value, $Res Function(AddressInfoModel) _then) = _$AddressInfoModelCopyWithImpl;
 @useResult
 $Res call({
- String country, String provinceState, String city, String address
+ String country, String provinceState, String city, String address, String zipCode
 });
 
 
@@ -65,12 +65,13 @@ class _$AddressInfoModelCopyWithImpl<$Res>
 
 /// Create a copy of AddressInfoModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? country = null,Object? provinceState = null,Object? city = null,Object? address = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? country = null,Object? provinceState = null,Object? city = null,Object? address = null,Object? zipCode = null,}) {
   return _then(_self.copyWith(
 country: null == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
 as String,provinceState: null == provinceState ? _self.provinceState : provinceState // ignore: cast_nullable_to_non_nullable
 as String,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,zipCode: null == zipCode ? _self.zipCode : zipCode // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -153,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String country,  String provinceState,  String city,  String address)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String country,  String provinceState,  String city,  String address,  String zipCode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddressInfoModel() when $default != null:
-return $default(_that.country,_that.provinceState,_that.city,_that.address);case _:
+return $default(_that.country,_that.provinceState,_that.city,_that.address,_that.zipCode);case _:
   return orElse();
 
 }
@@ -174,10 +175,10 @@ return $default(_that.country,_that.provinceState,_that.city,_that.address);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String country,  String provinceState,  String city,  String address)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String country,  String provinceState,  String city,  String address,  String zipCode)  $default,) {final _that = this;
 switch (_that) {
 case _AddressInfoModel():
-return $default(_that.country,_that.provinceState,_that.city,_that.address);}
+return $default(_that.country,_that.provinceState,_that.city,_that.address,_that.zipCode);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -191,10 +192,10 @@ return $default(_that.country,_that.provinceState,_that.city,_that.address);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String country,  String provinceState,  String city,  String address)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String country,  String provinceState,  String city,  String address,  String zipCode)?  $default,) {final _that = this;
 switch (_that) {
 case _AddressInfoModel() when $default != null:
-return $default(_that.country,_that.provinceState,_that.city,_that.address);case _:
+return $default(_that.country,_that.provinceState,_that.city,_that.address,_that.zipCode);case _:
   return null;
 
 }
@@ -206,13 +207,14 @@ return $default(_that.country,_that.provinceState,_that.city,_that.address);case
 @JsonSerializable()
 
 class _AddressInfoModel extends AddressInfoModel {
-  const _AddressInfoModel({required this.country, required this.provinceState, required this.city, required this.address}): super._();
+  const _AddressInfoModel({required this.country, required this.provinceState, required this.city, required this.address, this.zipCode = ''}): super._();
   factory _AddressInfoModel.fromJson(Map<String, dynamic> json) => _$AddressInfoModelFromJson(json);
 
 @override final  String country;
 @override final  String provinceState;
 @override final  String city;
 @override final  String address;
+@override@JsonKey() final  String zipCode;
 
 /// Create a copy of AddressInfoModel
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +229,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddressInfoModel&&(identical(other.country, country) || other.country == country)&&(identical(other.provinceState, provinceState) || other.provinceState == provinceState)&&(identical(other.city, city) || other.city == city)&&(identical(other.address, address) || other.address == address));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddressInfoModel&&(identical(other.country, country) || other.country == country)&&(identical(other.provinceState, provinceState) || other.provinceState == provinceState)&&(identical(other.city, city) || other.city == city)&&(identical(other.address, address) || other.address == address)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,country,provinceState,city,address);
+int get hashCode => Object.hash(runtimeType,country,provinceState,city,address,zipCode);
 
 @override
 String toString() {
-  return 'AddressInfoModel(country: $country, provinceState: $provinceState, city: $city, address: $address)';
+  return 'AddressInfoModel(country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode)';
 }
 
 
@@ -247,7 +249,7 @@ abstract mixin class _$AddressInfoModelCopyWith<$Res> implements $AddressInfoMod
   factory _$AddressInfoModelCopyWith(_AddressInfoModel value, $Res Function(_AddressInfoModel) _then) = __$AddressInfoModelCopyWithImpl;
 @override @useResult
 $Res call({
- String country, String provinceState, String city, String address
+ String country, String provinceState, String city, String address, String zipCode
 });
 
 
@@ -264,12 +266,13 @@ class __$AddressInfoModelCopyWithImpl<$Res>
 
 /// Create a copy of AddressInfoModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? country = null,Object? provinceState = null,Object? city = null,Object? address = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? country = null,Object? provinceState = null,Object? city = null,Object? address = null,Object? zipCode = null,}) {
   return _then(_AddressInfoModel(
 country: null == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
 as String,provinceState: null == provinceState ? _self.provinceState : provinceState // ignore: cast_nullable_to_non_nullable
 as String,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,zipCode: null == zipCode ? _self.zipCode : zipCode // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
