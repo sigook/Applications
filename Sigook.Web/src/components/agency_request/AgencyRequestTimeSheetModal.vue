@@ -152,6 +152,7 @@ export default {
     }
   },
   created() {
+    // no-op
   },
   methods: {
     validateHours(item) {

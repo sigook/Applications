@@ -259,16 +259,15 @@ export default {
         });
     },
     confirmDelete(worker) {
-      let vm = this;
       this.showAlertConfirm(
-        vm.$t("AreYouSure"),
-        vm.$t("YouWantToDisableTheWorker") +
+        this.$t("AreYouSure"),
+        this.$t("YouWantToDisableTheWorker") +
         ". " +
-        vm.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
+        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
       )
         .then((response) => {
           if (response) {
-            vm.updateApprovedToWork(worker);
+            this.updateApprovedToWork(worker);
           }
         })
         .catch((error) => {

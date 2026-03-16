@@ -35,9 +35,11 @@
             <template v-slot="props">
               <router-link :to="{ path: '/agency-companies/company/' + props.row.id }">
                 {{ props.row.businessName }}
-                <p v-for="(location, index) in props.row.locations" :key="location" v-if="index < 2">
-                  <i class="fz-2 block">{{ location }}</i>
-                </p>
+                <template v-for="(location, index) in props.row.locations">
+                  <p v-if="index < 2" :key="location">
+                    <i class="fz-2 block">{{ location }}</i>
+                  </p>
+                </template>
                 <p>
                   <i v-if="props.row.locations.length > 2" class="fz-2 block">See details...</i>
                 </p>

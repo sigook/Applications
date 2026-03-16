@@ -118,8 +118,6 @@ export default {
     Workers: () => import("@/components/agency/AgencyWorkers"),
     PunchCard: () => import("@/components/agency_request/MassivePunchCard"),
     CancelList: () => import("@/components/company/CompanyCancelList"),
-    EditTextarea: () => import("@/components/agency_request/EditTextarea"),
-    PersonnelList: () => import("@/components/agency_request/PersonnelListModal"),
     Applicants: () => import("@/components/agency_request/Applicants"),
     ShiftModal: () => import("@/components/request/ShiftEditModal"),
   },

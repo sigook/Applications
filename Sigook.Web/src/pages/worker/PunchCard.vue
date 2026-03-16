@@ -126,6 +126,7 @@ export default {
       if (this.timesheet && this.timesheet.items.length > 0) {
         return this.timesheet.items.map(i => new Date(i.day));
       }
+      return [];
     },
     todayData() {
       let today = this.timesheet.items.find(item => {

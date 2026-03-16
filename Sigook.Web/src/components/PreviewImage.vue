@@ -45,12 +45,11 @@ export default {
     'showDefault'
   ],
   data() {
-    let vm = this;
     return {
       pathImage: null,
       isLoading: false,
       selected: false,
-      localImage: vm.editedImage ? vm.editedImage.pathFile : null,
+      localImage: this.editedImage ? this.editedImage.pathFile : null,
       modalValidation: false,
       cropImage: '',
       hasImage: false
@@ -114,20 +113,19 @@ export default {
       input.type = 'file';
     },
     validateDimensions(evt) {
-      let vm = this;
       let reader = new FileReader();
       reader.readAsDataURL(evt.target.files[0]);
-      reader.onload = function (e) {
+      reader.onload = (e) => {
         let image = new Image();
         image.src = e.target.result;
-        image.onload = function () {
-          let height = this.height;
-          let width = this.width;
+        image.onload = () => {
+          let height = image.height;
+          let width = image.width;
           if (height < 150 || width < 150) {
-            vm.showAlertError(vm.$t('ErrorDimensionsImage'));
+            this.showAlertError(this.$t('ErrorDimensionsImage'));
             this.localImage = null;
           } else {
-            vm.showCrop(evt);
+            this.showCrop(evt);
           }
         };
       };

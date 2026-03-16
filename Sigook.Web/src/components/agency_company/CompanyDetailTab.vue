@@ -168,7 +168,6 @@ export default {
   },
   components: {
     EmailCard: () => import("@/components/EmailCard"),
-    ContactPerson: () => import("../../components/agency_company/ContactPersonList"),
     Location: () => import("../../components/agency_company/LocationDetail"),
     ContactInformation: () => import("./ContactInformation"),
     Documents: () => import("../../components/agency_company/Documents"),

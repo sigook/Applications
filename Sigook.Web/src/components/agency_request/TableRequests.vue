@@ -276,11 +276,9 @@ export default {
   components: {
     FloatingMenu: () => import("../../components/FloatingMenuDots"),
     ModalNotes: () => import("../notes/ModalNotes"),
-    ShiftDetail: () => import("../request/ShiftDetail"),
     PersonnelList: () => import("../../components/agency_request/PersonnelListModal"),
     AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail"),
-    Export: () => import("@/components/Export"),
-    DefaultImage: () => import("@/components/DefaultImage")
+    Export: () => import("@/components/Export")
   },
   methods: {
     onCellClick(row, column, rowIndex) {

@@ -71,9 +71,8 @@ export default {
       clearTimeout(this.timeOut);
 
       if (timer > 0) {
-        let vm = this;
-        this.timeOut = setTimeout(function() {
-          vm.closeModal();
+        this.timeOut = setTimeout(() => {
+          this.closeModal();
         }, timer);
       }
 
@@ -98,9 +97,8 @@ export default {
       }
     },
     showAlertConfirm(title, message, confirmBtnText) {
-      let vm = this;
       let body = document.getElementsByTagName("body");
-      confirmBtnText = confirmBtnText ? confirmBtnText : vm.$t("Ok");
+      confirmBtnText = confirmBtnText ? confirmBtnText : this.$t("Ok");
       return new Promise((resolve, reject) => {
         this.createModalInstance({
           type: "warning",
@@ -110,13 +108,13 @@ export default {
           confirmButton: true,
           cancelButton: true,
           confirmButtonText: confirmBtnText,
-          cancelButtonText: vm.$t("Cancel"),
+          cancelButtonText: this.$t("Cancel"),
         });
 
-        this.instance.$on("response", function(response) {
+        this.instance.$on("response", (response) => {
           if (response) {
             resolve(response);
-            vm.closeToastModal();
+            this.closeToastModal();
           } else {
             resolve(response);
           }

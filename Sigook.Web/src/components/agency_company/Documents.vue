@@ -110,29 +110,28 @@ export default {
       this.getAgencyCompanyDocument(this.currentPage);
     },
     deleteAgencyCompanyDocument(id, index) {
-      let vm = this;
       this.showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store
+            this.isLoading = true;
+            this.$store
               .dispatch("agency/deleteAgencyCompanyDocument", {
                 profileId: this.profileId,
                 id: id,
               })
               .then(() => {
-                vm.isLoading = false;
-                vm.showAlertSuccess("Deleted");
-                vm.data.items.splice(index, 1);
+                this.isLoading = false;
+                this.showAlertSuccess("Deleted");
+                this.data.items.splice(index, 1);
               })
               .catch((error) => {
-                vm.isLoading = false;
-                vm.showAlertError(error);
+                this.isLoading = false;
+                this.showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          vm.showAlertError(error);
+          this.showAlertError(error);
         });
     },
   },

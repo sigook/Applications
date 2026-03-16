@@ -7,7 +7,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "staging": "vue-cli-service build --mode staging",
-    "production": "vue-cli-service build --mode production"
+    "production": "vue-cli-service build --mode production",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@microsoft/applicationinsights-web": "2.6.5",
@@ -46,11 +47,18 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-optional-chaining": "^7.28.5",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "@vue/cli-plugin-babel": "^3.6.0",
-    "@vue/cli-plugin-eslint": "^3.6.0",
+    "@vue/cli-plugin-eslint": "~4.5.19",
+    "@vue/cli-plugin-typescript": "~4.5.19",
     "@vue/cli-service": "^4.5.19",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-polyfill": "^6.26.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^7.20.0",
+    "typescript": "~4.9.5",
+    "vue-eslint-parser": "^8.3.0",
     "vue-template-compiler": "^2.5.16",
     "webpack-bundle-analyzer": "^3.4.1"
   },
@@ -61,21 +69,38 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "eslint:recommended"
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
       "no-console": "off",
       "no-debugger": "off",
       "no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-var-requires": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
       "vue/require-v-for-key": "warn",
       "vue/no-unused-vars": "warn",
       "vue/no-parsing-error": "warn",
+      "vue/no-mutating-props": "warn",
       "no-irregular-whitespace": "warn",
       "no-undef": "warn"
     },
+    "parser": "vue-eslint-parser",
     "parserOptions": {
-      "parser": "babel-eslint"
-    }
+      "parser": "@typescript-eslint/parser"
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.js"
+        ],
+        "rules": {
+          "@typescript-eslint/no-unused-vars": "off"
+        }
+      }
+    ]
   },
   "postcss": {
     "plugins": {

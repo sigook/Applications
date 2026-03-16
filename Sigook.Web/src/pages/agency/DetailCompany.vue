@@ -83,7 +83,6 @@ export default {
     Requests: () => import("@/components/agency_company/CompanyRequests"),
     Workers: () => import("@/components/agency_company/CompanyWorkers"),
     FloatingMenu: () => import("@/components/FloatingMenuDots"),
-    EditTextarea: () => import("@/components/agency_request/EditTextarea"),
     CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo")
   },
   mixins: [billingAdminMixin],

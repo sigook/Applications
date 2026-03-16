@@ -91,7 +91,7 @@ export default {
       return require(`@/assets/images/positions/${this.solutionType}/${imageName}`);
     },
     scrollToRequestStaffForm() {
-
+      // no-op
     },
   },
   computed: {

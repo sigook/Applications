@@ -5,12 +5,13 @@
                     @click="changePage(currentPage - 1)"
                     :disabled="currentPage === 1" ></button>
 
-            <li v-for="(page, index) in totalPages"
-                :key="'pagination' + index"
-                v-if="Math.abs(page - currentPage) < 3 || page === totalPages - 1 || page === 0"
-                :class="[page === currentPage ? 'active' : '']">
-                <span @click="changePage(page)">{{page}}</span>
-            </li>
+            <template v-for="(page, index) in totalPages">
+                <li v-if="Math.abs(page - currentPage) < 3 || page === totalPages - 1 || page === 0"
+                    :key="'pagination' + index"
+                    :class="[page === currentPage ? 'active' : '']">
+                    <span @click="changePage(page)">{{page}}</span>
+                </li>
+            </template>
 
             <button class="btn-next"
                     @click="changePage(currentPage + 1)"

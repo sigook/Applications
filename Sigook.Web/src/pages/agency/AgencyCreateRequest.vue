@@ -243,7 +243,6 @@ import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
   components: {
-    AddressComponent: () => import("@/components/Address"),
     PositionForm: () => import("@/components/agency_company/JobPositionForm"),
     RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm"),
     LocationForm: () => import("@/components/agency_company/LocationForm"),

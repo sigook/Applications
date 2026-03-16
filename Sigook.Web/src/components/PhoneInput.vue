@@ -16,11 +16,10 @@ import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 export default {
   props: ["model", "defaultValue", "disabled", "required", "placeholder"],
   data() {
-    let self = this;
     return {
       phoneValue: 0,
       preventNextIteration: false,
-      formattedPhoneValue: self.defaultValue || ""
+      formattedPhoneValue: this.defaultValue || ""
     };
   },
   methods: {

@@ -69,23 +69,22 @@ export default {
       this.modalCertificate = false
     },
     confirmDelete(certificate) {
-      let vm = this;
       this.showAlertConfirm(this.$t("AreYouSure"), "You want to delete this document")
-        .then(response => {
+        .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store.dispatch("worker/deleteWorkerCertificates", { profileId: this.worker.id, certificateId: certificate.id })
+            this.isLoading = true;
+            this.$store.dispatch("worker/deleteWorkerCertificates", { profileId: this.worker.id, certificateId: certificate.id })
               .then(() => {
-                vm.isLoading = false;
-                vm.worker.certificates = vm.worker.certificates.filter(d => d.id !== certificate.id);
+                this.isLoading = false;
+                this.worker.certificates = this.worker.certificates.filter(d => d.id !== certificate.id);
               })
               .catch((error) => {
-                vm.isLoading = false;
+                this.isLoading = false;
                 this.showAlertError(error);
               });
           }
         })
-        .catch(error => {
+        .catch((error) => {
           this.showAlertError(error);
         });
     },

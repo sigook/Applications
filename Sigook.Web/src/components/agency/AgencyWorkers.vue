@@ -205,7 +205,6 @@ export default {
   },
   components: {
     WorkersList: () => import("./AgencyWorkersList"),
-    AgencyPunchCard: () => import("../../components/agency/AgencyPunchCard"),
     ModalNotes: () => import("../../components/notes/ModalNotes"),
     EditTextarea: () => import("../../components/agency_request/EditTextarea"),
     DatepickerModal: () => import("@/components/agency_request/DatepickerModal"),

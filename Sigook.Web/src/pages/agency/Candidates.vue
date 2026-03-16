@@ -414,20 +414,19 @@ export default {
         });
     },
     updateCandidateRecruiter(candidateId) {
-      let vm = this;
       this.showAlertConfirm("Do you want to manage this candidate?", "")
         .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store
+            this.isLoading = true;
+            this.$store
               .dispatch("agency/updateCandidateRecruiter", candidateId)
               .then(() => {
-                vm.isLoading = false;
-                vm.getAgencyCandidates(this.currentPage);
+                this.isLoading = false;
+                this.getAgencyCandidates(this.currentPage);
               })
               .catch((error) => {
-                vm.isLoading = false;
-                vm.showAlertError(error);
+                this.isLoading = false;
+                this.showAlertError(error);
               });
           }
         })

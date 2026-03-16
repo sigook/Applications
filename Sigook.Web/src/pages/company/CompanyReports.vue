@@ -17,7 +17,7 @@ export default {
   methods: {
   },
   created() {
-    
+    // no-op
   }
 }
 </script>

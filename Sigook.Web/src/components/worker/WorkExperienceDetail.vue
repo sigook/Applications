@@ -43,11 +43,10 @@ export default {
             return date ? dayjs(date).format('MM/YYYY') : date;
         },
         confirmDelete(){
-            let vm = this;
             this.showAlertConfirm('Are you sure', 'that you want to delete this item?')
-            .then(response => {
+            .then((response) => {
                 if (response){
-                    vm.deleteWorkerWorkExperience();
+                    this.deleteWorkerWorkExperience();
                 }
             })
         },

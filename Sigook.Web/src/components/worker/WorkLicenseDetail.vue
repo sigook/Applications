@@ -75,18 +75,17 @@ export default {
       this.modalLicense = false;
     },
     confirmDelete(license) {
-      let vm = this;
       this.showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store.dispatch("worker/deleteWorkerLicenses", { profileId: this.worker.id, licenseId: license.id })
+            this.isLoading = true;
+            this.$store.dispatch("worker/deleteWorkerLicenses", { profileId: this.worker.id, licenseId: license.id })
               .then(() => {
-                vm.isLoading = false;
-                vm.worker.licenses = vm.worker.licenses.filter(d => d.license.id !== license.id);
+                this.isLoading = false;
+                this.worker.licenses = this.worker.licenses.filter(d => d.license.id !== license.id);
               })
               .catch((error) => {
-                vm.isLoading = false;
+                this.isLoading = false;
                 this.showAlertError(error);
               });
           }

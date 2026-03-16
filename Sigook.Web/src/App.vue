@@ -60,14 +60,10 @@ export default {
     }
 
     this.getAppVersion();
-    let vm = this;
     let delay = 60 * 60 * 1000; // 1 hour in msec
-    setInterval(
-      function () {
-        vm.getAppVersion();
-      }.bind(this),
-      delay
-    );
+    setInterval(() => {
+      this.getAppVersion();
+    }, delay);
     await this.setIsLogged(this.$route);
   },
   methods: {
