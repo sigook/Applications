@@ -31,6 +31,7 @@
         public string PayStubNumber { get; set; }
         public DateTime DatePaid { get; set; }
         public decimal TotalEarnings { get; set; }
+        public string CompanyName { get; set; }
         public PayStubT4Tax Employer { get; set; }
         public PayStubT4Tax Employee { get; set; }
     }

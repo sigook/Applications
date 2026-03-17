@@ -2,6 +2,12 @@
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
+      <div class="col-2">
+        <b-field label="External ID">
+          <b-input v-model="worker.externalId" placeholder="External ID" @keypress.enter.native="updateExternalId">
+          </b-input>
+        </b-field>
+      </div>
       <b-checkbox class="col-2" v-model="worker.isContractor" @input="updateIsContractor">
         Is Contractor
       </b-checkbox>
@@ -76,6 +82,16 @@ export default {
     }
   },
   methods: {
+    updateExternalId() {
+      this.isLoading = true;
+      this.$store.dispatch('agency/updateWorkerProfileExternalId', this.worker)
+        .then(() => {
+          this.isLoading = false;
+        }).catch((error) => {
+          this.isLoading = false;
+          this.showAlertError(error);
+        });
+    },
     updateIsContractor() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyWorkerContractor", this.worker.id)

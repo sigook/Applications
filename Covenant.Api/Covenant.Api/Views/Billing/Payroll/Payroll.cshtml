@@ -151,10 +151,10 @@
                 @for (var i = 0; i < lenghtTable2; i++)
                 {
                     <tr style="@( i + 1 == lenghtTable2 ? "background-color: #A4CB7C;" : "" )">
-                        <td style="padding: 8px; @Model.GetBorderRadiosTable2(i).left">
+                        <td style="padding: 8px; white-space: nowrap; @Model.GetBorderRadiosTable2(i).left">
                             <strong>@Model.Table2Items.ElementAt(i).Label</strong>
                         </td>
-                        <td style="padding: 8px; text-align: right; @Model.GetBorderRadiosTable2(i).right">
+                        <td style="padding: 8px; text-align: right; white-space: nowrap; @Model.GetBorderRadiosTable2(i).right">
                             @Model.Table2Items.ElementAt(i).Value
                         </td>
                     </tr>

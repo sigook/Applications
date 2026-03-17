@@ -1397,6 +1397,14 @@ export default {
           .catch((error) => reject(error.response));
       });
     },
+    updateWorkerProfileExternalId(context, payload) {
+      return new Promise((resolve, reject) => {
+        http
+          .put(`/api/AgencyWorkerProfile/${payload.id}/ExternalId`, payload)
+          .then((response) => resolve(response.data))
+          .catch((error) => reject(error.response));
+      });
+    },
     getAgencyWorkerOtherDocuments(context, id) {
       return new Promise((resolve, reject) => {
         http
