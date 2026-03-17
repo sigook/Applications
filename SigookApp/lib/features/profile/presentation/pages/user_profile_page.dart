@@ -377,7 +377,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.jobs),
+          onPressed: () {
+            notifyLogoFlash();
+            context.go(AppRoutes.jobs);
+          },
         ),
         title: const NavbarLogo(),
       ),

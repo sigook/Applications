@@ -7,7 +7,6 @@ import 'core/providers/core_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/error_messages.dart';
-import 'core/widgets/navbar_logo.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/profile/presentation/providers/cached_worker_profile_provider.dart';
 
@@ -116,16 +115,11 @@ class _MyAppState extends ConsumerState<MyApp> {
       routerConfig: AppRouter.router,
       theme: AppTheme.lightTheme,
       builder: (context, child) {
-        return Listener(
-          onPointerUp: (_) {
-            globalTapNotifier.value++;
+        return GestureDetector(
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
           },
-          child: GestureDetector(
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: child,
-          ),
+          child: child,
         );
       },
     );

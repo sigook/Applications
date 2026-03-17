@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
@@ -61,7 +62,10 @@ class AppDrawer extends ConsumerWidget {
                   route: null,
                   isSelected: false,
                   isLogout: true,
-                  onTap: () => _handleLogout(context, ref),
+                  onTap: () {
+                    notifyLogoFlash();
+                    _handleLogout(context, ref);
+                  },
                 ),
               ],
             ),
@@ -88,7 +92,10 @@ class AppDrawer extends ConsumerWidget {
         ),
       ),
       child: InkWell(
-        onTap: () => _navigateToProfile(context),
+        onTap: () {
+          notifyLogoFlash();
+          _navigateToProfile(context);
+        },
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,6 +250,7 @@ class AppDrawer extends ConsumerWidget {
         onTap:
             onTap ??
             () {
+              notifyLogoFlash();
               Navigator.of(context).pop();
               if (route != null && !isSelected) {
                 context.go(route);

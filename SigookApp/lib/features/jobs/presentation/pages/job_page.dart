@@ -120,13 +120,19 @@ class _JobPageState extends ConsumerState<JobPage> {
                 backgroundColor: AppTheme.primaryBlue,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    notifyLogoFlash();
+                    Navigator.of(context).pop();
+                  },
                 ),
                 actions: [
                   Builder(
                     builder: (context) => IconButton(
                       icon: const Icon(Icons.menu, color: Colors.white),
-                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      onPressed: () {
+                        notifyLogoFlash();
+                        Scaffold.of(context).openEndDrawer();
+                      },
                     ),
                   ),
                 ],
