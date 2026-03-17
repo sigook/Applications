@@ -1,19 +1,15 @@
 ﻿using ClosedXML.Excel;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
-using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace Covenant.Core.BL.Services;
 
@@ -458,7 +454,7 @@ public class PayStubService : IPayStubService
         return Result.Ok();
     }
 
-    private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook, HashSet<string> excludeColumns = null)
+    private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
     {
         var sheet = workbook.Worksheets.Add("Report");
         var allColumns = new (string Header, Action<IXLCell, PayStubT4Model, int> WriteCell)[]
@@ -479,18 +475,15 @@ public class PayStubService : IPayStubService
             ("Net Pay", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.TotalEarnings - i.Employee.Cpp - i.Employee.EI - i.Employee.FederalTax - i.Employee.ProvincialTax)).SetMoneyType()),
             ("Total", (cell, d, _) => cell.SetValue(d.Items.Sum(i => i.Employer.Cpp + i.Employer.EI + i.Employee.Cpp + i.Employee.EI + i.Employee.FederalTax + i.Employee.ProvincialTax)).SetMoneyType()),
         };
-        var columns = excludeColumns is null
-            ? allColumns
-            : [.. allColumns.Where(c => !excludeColumns.Contains(c.Header))];
 
-        sheet.SetupHeaders([.. columns.Select(c => c.Header)]);
+        sheet.SetupHeaders([.. allColumns.Select(c => c.Header)]);
         var startAt = 2;
         for (int i = 0; i < result.Count(); i++)
         {
             var data = result.ElementAt(i);
-            for (int col = 0; col < columns.Length; col++)
+            for (int col = 0; col < allColumns.Length; col++)
             {
-                columns[col].WriteCell(sheet.Cell($"{(char)('A' + col)}{startAt}"), data, i);
+                allColumns[col].WriteCell(sheet.Cell($"{(char)('A' + col)}{startAt}"), data, i);
             }
             startAt++;
         }
@@ -499,17 +492,16 @@ public class PayStubService : IPayStubService
     private void GetCraPayrollReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
     {
         var sheet = workbook.Worksheets.Add("Report");
-
-        // Row 1: Group headers
-        sheet.Cell("D1").SetValue("PAYSTUB #");
-        sheet.Cell("E1").SetValue("Date Paid");
-        sheet.Cell("F1").SetValue("TOTAL EARNINGS");
+        sheet.Range("D1:D2").Merge().SetValue("PAYSTUB #");
+        sheet.Cell("D1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        sheet.Range("E1:E2").Merge().SetValue("Date Paid");
+        sheet.Cell("E1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        sheet.Range("F1:F2").Merge().SetValue("TOTAL EARNINGS");
+        sheet.Cell("F1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
         sheet.Cell("G1").SetValue("EMPLOYEER");
         sheet.Range("G1:I1").Merge();
         sheet.Cell("J1").SetValue("EMPLOYEE");
-        sheet.Range("J1:M1").Merge();
-
-        // Row 2: Sub-headers
+        sheet.Range("J1:N1").Merge();
         sheet.Cell("G2").SetValue("CPP");
         sheet.Cell("H2").SetValue("EI");
         sheet.Cell("I2").SetValue("OTHER");
@@ -518,12 +510,9 @@ public class PayStubService : IPayStubService
         sheet.Cell("L2").SetValue("FED TAX");
         sheet.Cell("M2").SetValue("PROV TAX");
         sheet.Cell("N2").SetValue("Total Paid");
-
-        // Row 3: No. and Names
         sheet.Cell("A3").SetValue("No.");
         sheet.Cell("B3").SetValue("Names");
 
-        // Style rows 1-3
         for (int r = 1; r <= 3; r++)
         {
             sheet.Row(r).Style.Font.Bold = true;
@@ -572,18 +561,7 @@ public class PayStubService : IPayStubService
 
                 currentRow++;
             }
-
-            // Empty row between workers
-            currentRow++;
         }
-
-        // Totals row with SUM formulas
-        var totalsRow = currentRow;
-        foreach (var col in new[] { "F", "G", "H", "I", "J", "K", "L", "M", "N" })
-        {
-            sheet.Cell($"{col}{totalsRow}").SetFormulaA1($"SUM({col}4:{col}{totalsRow - 1})").SetMoneyType();
-        }
-        sheet.Row(totalsRow).Style.Font.Bold = true;
 
         // Column widths
         sheet.Column("A").Width = 5;
@@ -749,7 +727,7 @@ public class PayStubService : IPayStubService
 
     private void Accumulate(Dictionary<decimal, double> dict, decimal rate, double hours)
     {
-        if (!dict.ContainsKey(rate)) 
+        if (!dict.ContainsKey(rate))
             dict[rate] = 0;
         dict[rate] += hours;
     }
