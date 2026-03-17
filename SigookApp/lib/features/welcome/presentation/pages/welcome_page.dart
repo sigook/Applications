@@ -18,12 +18,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late AnimationController _exitController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _logoScale;
+  late Animation<double> _panelsFade;
+  late Animation<double> _taglineFade;
   late Animation<double> _buttonsFade;
   late Animation<Offset> _buttonsSlide;
   late Animation<Offset> _panelsSlide;
   late Animation<Offset> _legalSlide;
+  late Animation<double> _circlesFade;
 
   bool _isNavigating = false;
   String _appVersion = '';
@@ -42,24 +43,27 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // Image panels fade in first
+    _panelsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
 
-    _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+    // Tagline appears after a short delay
+    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+        curve: const Interval(0.15, 0.55, curve: Curves.easeOut),
       ),
     );
 
+    // Buttons fade and slide in
     _buttonsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
+        curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
       ),
     );
 
@@ -69,7 +73,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 0.8, curve: Curves.easeOutCubic),
+        curve: const Interval(0.3, 0.7, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -92,6 +96,14 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Decorative circles fade in
+    _circlesFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.7, curve: Curves.easeOut),
       ),
     );
 
@@ -222,6 +234,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // ── Full red background (matches splash, visible before panels animate in)
+          Container(color: AppTheme.secondaryRed),
+
           // ── Top hero section — vertical split image panels
           Positioned(
             top: 0,
@@ -229,7 +244,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             right: 0,
             height: size.height * 0.44,
             child: FadeTransition(
-              opacity: _fadeAnimation,
+              opacity: _panelsFade,
               child: AnimatedBuilder(
                 animation: _panelsSlide,
                 builder: (context, child) => Transform.translate(
@@ -238,7 +253,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                 ),
                 child: Row(
                   children: [
-                    // Left panel — worker image (zoomed out to show full content)
+                    // Left panel — worker image
                     Expanded(
                       child: Image.asset(
                         'assets/images/welcome-screen/worker.png',
@@ -247,7 +262,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                         alignment: const Alignment(0.0, -0.3),
                       ),
                     ),
-                    // Right panel — family image (shifted left to show people)
+                    // Right panel — family image
                     Expanded(
                       child: Image.asset(
                         'assets/images/welcome-screen/family.png',
@@ -297,26 +312,26 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             child: Container(color: AppTheme.secondaryRed),
           ),
 
-          // ── Decorative circles — bottom left (ring from SVG + filled circle)
+          // ── Decorative circles — bottom left (larger, more visible)
           Positioned(
-            bottom: -30,
-            left: -25,
+            bottom: -45,
+            left: -35,
             child: IgnorePointer(
               child: FadeTransition(
-                opacity: _fadeAnimation,
+                opacity: _circlesFade,
                 child: SizedBox(
-                  width: 100,
-                  height: 100,
+                  width: 170,
+                  height: 170,
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
                       // Large ring from SVG
                       Opacity(
-                        opacity: 0.30,
+                        opacity: 0.40,
                         child: SvgPicture.asset(
                           'assets/images/welcome-screen/circles.svg',
-                          width: 100,
-                          height: 100,
+                          width: 170,
+                          height: 170,
                         ),
                       ),
                       // Small filled translucent circle (top-right of the ring)
@@ -324,8 +339,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                         top: 0,
                         right: 0,
                         child: Container(
-                          width: 34,
-                          height: 34,
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withValues(alpha: 0.25),
@@ -339,12 +354,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             ),
           ),
 
-          // ── Legal dots-rectangle button — bottom right (dots-rectangle.svg)
+          // ── Legal dots-rectangle button — bottom right
           Positioned(
             bottom: 20,
             right: 16,
             child: FadeTransition(
-              opacity: _fadeAnimation,
+              opacity: _panelsFade,
               child: AnimatedBuilder(
                 animation: _legalSlide,
                 builder: (context, child) => Transform.translate(
@@ -372,41 +387,120 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Push content down to the boundary between the two sections
+                // Push content down to match splash logo position
                 SizedBox(height: size.height * 0.36),
 
-                // Logo — Hero sits outside ScaleTransition so its landing
-                // position is stable and the flight path is clean.
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Hero(
-                    tag: 'sigook_logo',
-                    child: Image.asset(
-                      'assets/images/logo/sigook_logo.png',
-                      width: 270,
-                      color: Colors.white,
-                      colorBlendMode: BlendMode.srcIn,
+                // Logo — always visible (no fade), seamless from splash
+                Image.asset(
+                  'assets/images/logo/sigook_logo.png',
+                  width: 270,
+                  color: Colors.white,
+                  colorBlendMode: BlendMode.srcIn,
+                ),
+
+                // Tagline — fades in progressively
+                Transform.translate(
+                  offset: const Offset(0, -40),
+                  child: FadeTransition(
+                    opacity: _taglineFade,
+                    child: const Text(
+                      'Find Work That Fits Your Life',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.3,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
 
-                // Tagline — pulled up to sit tight under the logo image
+                // Buttons — right below the tagline
                 Transform.translate(
-                  offset: const Offset(0, -40),
-                  child: ScaleTransition(
-                    scale: _logoScale,
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Find Work That Fits Your Life',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.3,
+                  offset: const Offset(0, -24),
+                  child: FadeTransition(
+                    opacity: _buttonsFade,
+                    child: SlideTransition(
+                      position: _buttonsSlide,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Get Started — white fill, red text
+                            SizedBox(
+                              width: double.infinity,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: _navigateToRegistration,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppTheme.secondaryRed,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: const Text(
+                                  'Get Started',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            // Already have an account row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Already have an account?',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: authState.isLoading ? null : _signIn,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: authState.isLoading
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Sign In',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
@@ -414,95 +508,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
 
                 const Spacer(),
 
-                // Buttons
-                FadeTransition(
-                  opacity: _buttonsFade,
-                  child: SlideTransition(
-                    position: _buttonsSlide,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Get Started — white fill, red text
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _navigateToRegistration,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppTheme.secondaryRed,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: const Text(
-                                'Get Started',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          // Already have an account row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Already have an account?',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: authState.isLoading ? null : _signIn,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: authState.isLoading
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Sign In',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                // App version
+                // App version — pinned at the very bottom
                 FadeTransition(
                   opacity: _buttonsFade,
                   child: Padding(
@@ -525,6 +531,3 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     );
   }
 }
-
-
-
