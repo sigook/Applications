@@ -67,7 +67,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import toast from "../../mixins/toastMixin";
 export default {
   data() {
@@ -78,9 +78,9 @@ export default {
     };
   },
   components: {
-    RequestDetail: () => import("../../components/worker/RequestDetail"),
-    Location: () => import("../../components/request/RequestLocation"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea"),
+    RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
+    Location: () => import("../../components/request/RequestLocation.vue"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
   },
   mixins: [toast],
   methods: {

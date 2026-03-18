@@ -36,7 +36,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 import validationEmail from '../../mixins/validationEmail';
 import toastMixin from "../../mixins/toastMixin";

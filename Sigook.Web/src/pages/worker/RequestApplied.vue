@@ -37,14 +37,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    RequestDetail: () => import("../../components/worker/RequestDetail"),
-    Location: () => import("../../components/request/RequestLocation"),
-    PunchCard: () => import("./PunchCard"),
-    TimeSheet: () => import("./TimeSheet"),
+    RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
+    Location: () => import("../../components/request/RequestLocation.vue"),
+    PunchCard: () => import("./PunchCard.vue"),
+    TimeSheet: () => import("./TimeSheet.vue"),
   },
   data() {
     return {

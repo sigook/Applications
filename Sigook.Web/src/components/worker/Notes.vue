@@ -37,7 +37,7 @@
         </transition>
     </div>
 </template>
-<script>
+<script lang="ts">
     import toast from '../../mixins/toastMixin';
     export default {
         data(){
@@ -56,7 +56,7 @@
         },
         mixins: [toast],
         components: {
-            ModalNotes: () => import("../notes/ModalNotes")
+            ModalNotes: () => import("../notes/ModalNotes.vue")
         },
         methods: {
             getAgencyWorkerProfileNote(index){

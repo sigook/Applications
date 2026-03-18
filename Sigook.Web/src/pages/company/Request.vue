@@ -73,7 +73,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import confirmationAlert from "../../mixins/confirmationAlert";
 import directHiringMixin from "../../mixins/directHiringMixin";
 
@@ -90,12 +90,12 @@ export default {
     };
   },
   components: {
-    CancelList: () => import("../../components/company/CompanyCancelList"),
-    RequestAnotherWorker: () => import("../../components/company/DialogRequestWorker"),
-    FloatingMenu: () => import("../../components/FloatingMenuDots"),
-    Detail: () => import("../../components/company_request/CompanyRequestDetail"),
-    Workers: () => import("../../components/company_request/CompanyRequestWorkers"),
-    PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard"),
+    CancelList: () => import("../../components/company/CompanyCancelList.vue"),
+    RequestAnotherWorker: () => import("../../components/company/DialogRequestWorker.vue"),
+    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
+    Detail: () => import("../../components/company_request/CompanyRequestDetail.vue"),
+    Workers: () => import("../../components/company_request/CompanyRequestWorkers.vue"),
+    PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard.vue"),
   },
   mixins: [confirmationAlert, directHiringMixin],
   methods: {

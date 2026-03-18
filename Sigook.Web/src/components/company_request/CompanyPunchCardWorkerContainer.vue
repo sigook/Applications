@@ -73,7 +73,7 @@
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
       <time-sheet-modal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
-        :editable-day="editableDay" @updateData="updateCell" />
+        :editable-day.sync="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
@@ -94,7 +94,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 import timeSheetCompany from "@/mixins/companyTimeSheetReportMixin"
@@ -158,7 +158,7 @@ export default {
           this.isLoading = false;
           this.showClockIn = false;
           this.getAgencyWorkerTimeSheetByDate();
-          this.clockInTime = emptyTime;
+          this.clockInTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
         })
         .catch(error => {
           this.isLoading = false;
@@ -278,9 +278,9 @@ export default {
     }
   },
   components: {
-    Calendar: () => import("../calendar/CalendarPunchCard"),
-    TimeSheetModal: () => import("../../components/company_request/CompanyRequestTimeSheetModal"),
-    TimeSheetDetail: () => import("../../components/company_request/CompanyRequestTimeSheetDetail")
+    Calendar: () => import("../calendar/CalendarPunchCard.vue"),
+    TimeSheetModal: () => import("../../components/company_request/CompanyRequestTimeSheetModal.vue"),
+    TimeSheetDetail: () => import("../../components/company_request/CompanyRequestTimeSheetDetail.vue")
   }
 }
 </script>

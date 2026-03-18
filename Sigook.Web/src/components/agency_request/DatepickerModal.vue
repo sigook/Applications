@@ -3,7 +3,7 @@
     <div class="container-flex">
       <div class="col-12 col-padding">
         <b-field label="Start Working">
-          <b-datepicker v-model="startWorking" name="start" inline :focused-date="today" :min-date="minDate">
+          <b-datepicker v-model="localStartWorking" name="start" inline :focused-date="today" :min-date="minDate">
           </b-datepicker>
         </b-field>
       </div>
@@ -13,7 +13,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 
 export default {
@@ -21,11 +21,18 @@ export default {
   data() {
     return {
       today: new Date(),
+      localStartWorking: this.startWorking ? new Date(this.startWorking) : dayjs().toDate(),
+    }
+  },
+  watch: {
+    startWorking(newVal) {
+      this.localStartWorking = newVal ? new Date(newVal) : dayjs().toDate();
     }
   },
   methods: {
     bookWorker() {
-      this.$emit('onSelectCalendar', this.startWorking)
+      this.$emit('update:startWorking', this.localStartWorking);
+      this.$emit('onSelectCalendar', this.localStartWorking)
     }
   },
   computed: {
@@ -34,8 +41,8 @@ export default {
     }
   },
   created() {
-    if (this.startWorking) {
-      this.startWorking = dayjs().toDate();
+    if (!this.startWorking) {
+      this.localStartWorking = dayjs().toDate();
     }
   }
 }

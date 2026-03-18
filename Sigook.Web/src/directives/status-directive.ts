@@ -1,7 +1,7 @@
 import { DirectiveOptions } from 'vue';
 
 function addStatusClass(element: HTMLElement, binding: any): void {
-    let statusClass = 'status-' + binding.value.status.toLowerCase();
+    const statusClass = 'status-' + binding.value.status.toLowerCase();
     element.classList.add(statusClass);
 }
 

@@ -13,12 +13,12 @@
           <b-icon :icon="item.icon" class="mr-2"></b-icon>
           {{ $t(item.label) }}
         </b-navbar-item>
-        <b-navbar-dropdown v-for="(item, i) in multiMenus" :key="item.label" :active="$route.path.startsWith(item.to)">
+        <b-navbar-dropdown v-for="item in multiMenus" :key="item.label" :active="$route.path.startsWith(item.to)">
           <template #label>
             <b-icon :icon="item.icon" class="mr-2"></b-icon>
             {{ $t(item.label) }}
           </template>
-          <b-navbar-item v-for="(subItem, j) in item.items" :key="subItem.label" tag="router-link"
+          <b-navbar-item v-for="subItem in item.items" :key="subItem.label" tag="router-link"
             :to="item.to + subItem.to">
             {{ $t(subItem.label) }}
           </b-navbar-item>
@@ -54,7 +54,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
 import menu from "@/security/menu";
 import roles from "@/security/roles";
 

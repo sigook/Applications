@@ -36,7 +36,7 @@
 
   </div>
 </template>
-<script>
+<script lang="ts">
 import pubSub from '../../mixins/pubSub';
 import multipartUploadMixin from '../../mixins/multipartUploadMixin';
 export default {
@@ -90,7 +90,7 @@ export default {
     }
   },
   components: {
-    UploadImage: () => import("../../components/PreviewImage"),
+    UploadImage: () => import("../../components/PreviewImage.vue"),
   },
   created() {
     if (this.data != null) {

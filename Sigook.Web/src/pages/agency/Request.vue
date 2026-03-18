@@ -91,7 +91,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import directHiringMixin from "../../mixins/directHiringMixin";
 
 export default {
@@ -113,13 +113,13 @@ export default {
     };
   },
   components: {
-    FloatingMenu: () => import("@/components/FloatingMenuDots"),
-    Detail: () => import("@/components/agency_request/AgencyRequestDetail"),
-    Workers: () => import("@/components/agency/AgencyWorkers"),
-    PunchCard: () => import("@/components/agency_request/MassivePunchCard"),
-    CancelList: () => import("@/components/company/CompanyCancelList"),
-    Applicants: () => import("@/components/agency_request/Applicants"),
-    ShiftModal: () => import("@/components/request/ShiftEditModal"),
+    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
+    Detail: () => import("@/components/agency_request/AgencyRequestDetail.vue"),
+    Workers: () => import("@/components/agency/AgencyWorkers.vue"),
+    PunchCard: () => import("@/components/agency_request/MassivePunchCard.vue"),
+    CancelList: () => import("@/components/company/CompanyCancelList.vue"),
+    Applicants: () => import("@/components/agency_request/Applicants.vue"),
+    ShiftModal: () => import("@/components/request/ShiftEditModal.vue"),
   },
   mixins: [directHiringMixin],
   methods: {

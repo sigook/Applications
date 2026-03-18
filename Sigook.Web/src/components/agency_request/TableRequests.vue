@@ -232,7 +232,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 import billingAdminMixin from '@/mixins/billingAdminMixin'
 
 export default {
@@ -274,11 +274,11 @@ export default {
   },
   mixins: [billingAdminMixin],
   components: {
-    FloatingMenu: () => import("../../components/FloatingMenuDots"),
-    ModalNotes: () => import("../notes/ModalNotes"),
-    PersonnelList: () => import("../../components/agency_request/PersonnelListModal"),
-    AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail"),
-    Export: () => import("@/components/Export")
+    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
+    ModalNotes: () => import("../notes/ModalNotes.vue"),
+    PersonnelList: () => import("../../components/agency_request/PersonnelListModal.vue"),
+    AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue"),
+    Export: () => import("@/components/Export.vue")
   },
   methods: {
     onCellClick(row, column, rowIndex) {

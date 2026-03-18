@@ -33,7 +33,7 @@
     <!-- end Select custom modal -->
   </div>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ['requestId', 'companyId', 'canEdit'],
@@ -46,7 +46,7 @@ export default {
     }
   },
   components: {
-    ContactList: () => import("./ContactListModal")
+    ContactList: () => import("./ContactListModal.vue")
   },
   methods: {
     getAgencyRequestReportTo() {

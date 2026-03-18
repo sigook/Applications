@@ -1,8 +1,8 @@
 import Oidc from "oidc-client";
 
-let redirectUrl = window.location.origin;
-let securityServerUrl = process.env.VUE_APP_SECURITY_SERVER;
-let client = process.env.VUE_APP_CLIENT;
+const redirectUrl = window.location.origin;
+const securityServerUrl = process.env.VUE_APP_SECURITY_SERVER;
+const client = process.env.VUE_APP_CLIENT;
 
 if (process.env.NODE_ENV !== "production") {
   Oidc.Log.logger = console;

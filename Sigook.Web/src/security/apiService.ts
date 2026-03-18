@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import store from '../store';
 import qs from 'qs';
 
-let apiUrl: string = process.env.VUE_APP_URL_API as string;
+const apiUrl: string = process.env.VUE_APP_URL_API as string;
 
 const http = axios.create({
   baseURL: apiUrl,
@@ -29,7 +29,7 @@ http.interceptors.request.use(async (config: any) => {
 http.interceptors.response.use(response => response, async (error: AxiosError) => {
   const originalRequest: any = error.config;
 
-  if (error.response!.status === 401 && !originalRequest._retry) {
+  if (error.response?.status === 401 && !originalRequest._retry) {
     originalRequest._retry = true;
 
     try {
@@ -45,14 +45,14 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
       return Promise.reject(e);
     }
   } else {
-    switch (error.response!.status) {
+    switch (error.response?.status) {
       case 403:
         alert('You are not authorized to perform this action');
         break;
       case 500:
         alert('Oops something was wrong please try again later');
-        if ((error.response!.config as any).responseType === 'blob') {
-          let errorMsg = "An error occurred please try again, if the error persists try later one of our engineers will solve it soon";
+        if ((error.response?.config as any)?.responseType === 'blob') {
+          const errorMsg = "An error occurred please try again, if the error persists try later one of our engineers will solve it soon";
           return Promise.reject({ response: errorMsg });
         }
         break;

@@ -114,7 +114,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 
 export default {
@@ -139,9 +139,9 @@ export default {
   },
   mixins: [phoneMaskMixin],
   components: {
-    manageTabs: () => import("./ManageApplicantsModal"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots")
+    manageTabs: () => import("./ManageApplicantsModal.vue"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
+    FloatingMenu: () => import("@/components/FloatingMenuDots.vue")
   },
   methods: {
     onPageChange(params) {

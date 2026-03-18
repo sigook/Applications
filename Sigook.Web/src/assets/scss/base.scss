@@ -1,3 +1,4 @@
+@use "sass:color";
 @import 'mixins';
 @import 'variables';
 
@@ -821,13 +822,13 @@ button {
 // popups
 .swal2-show.custom-modal,
 .vue-modal {
-  @media(min-width:768px) {
-    min-width: 350px;
-  }
-
   border-radius: 0;
   width: auto;
   padding: 0;
+
+  @media(min-width:768px) {
+    min-width: 350px;
+  }
 
   .modal-mask {
     z-index: 8 !important;
@@ -1295,7 +1296,7 @@ input[type="file"] {
 // Open status - Yellow/Orange
 .tag-yellow {
   background-color: rgba(255, 153, 50, 0.15);
-  color: darken($accent, 15%);
+  color: color.adjust($accent, $lightness: -15%);
   border: 1.5px solid rgba(255, 153, 50, 0.4);
 
   &:hover {
@@ -1307,7 +1308,7 @@ input[type="file"] {
 // Filled status - Green
 .tag-green {
   background-color: rgba(73, 197, 0, 0.15);
-  color: darken($green, 10%);
+  color: color.adjust($green, $lightness: -10%);
   border: 1.5px solid rgba(73, 197, 0, 0.4);
 
   &:hover {
@@ -1332,7 +1333,7 @@ input[type="file"] {
 // Blue status tag (general purpose, InProgress removed 2026-01-28)
 .tag-blue {
   background-color: rgba(33, 183, 255, 0.15);
-  color: darken($primary, 10%);
+  color: color.adjust($primary, $lightness: -10%);
   border: 1.5px solid rgba(33, 183, 255, 0.4);
 
   &:hover {

@@ -67,7 +67,7 @@
     <!-- end custom modal -->
   </section>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 export default {
   props: ["worker", 'justWhmis'],
@@ -102,7 +102,7 @@ export default {
     }
   },
   components: {
-    documentsForm: () => import("./WorkerOtherDocumentsForm"),
+    documentsForm: () => import("./WorkerOtherDocumentsForm.vue"),
   }
 };
 </script>

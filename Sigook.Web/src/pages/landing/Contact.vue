@@ -106,7 +106,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin";
 import recaptchaMixin from "@/mixins/recaptchaMixin";

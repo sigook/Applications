@@ -67,7 +67,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 export default {
   props: ['currentPosition', 'profileId'],
@@ -91,7 +91,7 @@ export default {
   },
   mixins: [billingAdminMixin],
   components: {
-    Shift: () => import("../request/ShiftsForm")
+    Shift: () => import("../request/ShiftsForm.vue")
   },
   methods: {
     async validateForm() {
@@ -116,7 +116,7 @@ export default {
     createAgencyCompanyJobPosition() {
       this.isLoading = true;
       this.$store.dispatch('agency/createAgencyCompanyJobPosition', { profileId: this.profileId, model: this.model })
-        .then(response => {
+        .then(() => {
           this.isLoading = false;
           this.$emit('updateContent');
         })

@@ -11,7 +11,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -21,7 +21,7 @@ export default {
     }
   },
   components: {
-    ShiftForm: () => import("../../components/request/ShiftsForm")
+    ShiftForm: () => import("../../components/request/ShiftsForm.vue")
   },
   created() {
     this.getRequestShift();

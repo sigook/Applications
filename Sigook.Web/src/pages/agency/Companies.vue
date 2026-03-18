@@ -160,13 +160,13 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    Export: () => import("@/components/Export"),
-    ModalNotes: () => import("@/components/notes/ModalNotes"),
-    BulkData: () => import("@/components/agency/BulkData"),
+    Export: () => import("@/components/Export.vue"),
+    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
+    BulkData: () => import("@/components/agency/BulkData.vue"),
   },
   data() {
     return {
@@ -253,7 +253,7 @@ export default {
       this.serverParams.updatedAtTo = this.updatedAtDatesSelected[1];
       this.getCompanies();
     },
-    onCellClick(row, column, rowIndex) {
+    onCellClick(row, column) {
       switch (column._props.field) {
         case 'notesCount':
         case 'email':

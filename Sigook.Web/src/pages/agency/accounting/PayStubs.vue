@@ -104,14 +104,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 
 export default {
   components: {
-    Export: () => import("@/components/Export"),
-    GeneratePayStubs: () => import("@/components/agency_accounting/GeneratePayStubs"),
-    SkipPayrollNumber: () => import("@/components/agency_accounting/SkipPayrollNumber")
+    Export: () => import("@/components/Export.vue"),
+    GeneratePayStubs: () => import("@/components/agency_accounting/GeneratePayStubs.vue"),
+    SkipPayrollNumber: () => import("@/components/agency_accounting/SkipPayrollNumber.vue")
   },
   mixins: [download],
   data() {

@@ -3,7 +3,7 @@
         <i>{{ user.address }} <span class="uppercase">{{user.postalCode}}</span></i>
     </a>
 </template>
-<script>
+<script lang="ts">
 export default {
     props: ['user'],
     computed: {

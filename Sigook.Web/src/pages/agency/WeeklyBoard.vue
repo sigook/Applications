@@ -133,7 +133,7 @@
         </div>
     </div>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 import dayjs from "dayjs";
 export default {
@@ -152,9 +152,9 @@ export default {
     },
     mixins: [toastMixin],
     components: {
-        Pagination: () => import("../../components/Paginator"),
-        ModalNotes: () => import("../../components/notes/ModalNotes"),
-        AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail")
+        Pagination: () => import("../../components/Paginator.vue"),
+        ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
+        AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue")
     },
     methods: {
         getAgencyRequestBoard(index){

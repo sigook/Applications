@@ -52,7 +52,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   props: ['data'],
@@ -91,7 +91,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../PhoneInput")
+    phoneInput: () => import("../PhoneInput.vue")
   }
 }
 </script>

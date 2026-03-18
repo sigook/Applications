@@ -30,10 +30,10 @@
 
     <b-tabs v-model="currentTab" @input="changeTab" v-if="company">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :company="company" class="p-2" />
+        <detail v-if="visitedTabs.includes('Detail')" :company.sync="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Settings" value="Settings" v-if="isPayrollManager">
-        <settings v-if="visitedTabs.includes('Settings')" :company="company" class="p-2" />
+        <settings v-if="visitedTabs.includes('Settings')" :company.sync="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
         <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />
@@ -59,7 +59,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
@@ -75,15 +75,15 @@ export default {
     };
   },
   components: {
-    Detail: () => import("@/components/agency_company/CompanyDetailTab"),
-    Settings: () => import("@/components/agency_company/CompanySettings"),
-    Users: () => import("@/components/agency_company/UserList"),
-    ContactPerson: () => import("@/components/agency_company/ContactPersonList"),
-    JobPosition: () => import("@/components/agency_company/JobPositionList"),
-    Requests: () => import("@/components/agency_company/CompanyRequests"),
-    Workers: () => import("@/components/agency_company/CompanyWorkers"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots"),
-    CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo")
+    Detail: () => import("@/components/agency_company/CompanyDetailTab.vue"),
+    Settings: () => import("@/components/agency_company/CompanySettings.vue"),
+    Users: () => import("@/components/agency_company/UserList.vue"),
+    ContactPerson: () => import("@/components/agency_company/ContactPersonList.vue"),
+    JobPosition: () => import("@/components/agency_company/JobPositionList.vue"),
+    Requests: () => import("@/components/agency_company/CompanyRequests.vue"),
+    Workers: () => import("@/components/agency_company/CompanyWorkers.vue"),
+    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
+    CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo.vue")
   },
   mixins: [billingAdminMixin],
   methods: {

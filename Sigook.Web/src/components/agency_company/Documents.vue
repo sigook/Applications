@@ -63,7 +63,7 @@
     </transition>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -78,8 +78,8 @@ export default {
   },
   components: {
     documentsForm: () =>
-      import("../../components/agency_company/DocumentsForm"),
-    Pagination: () => import("../../components/Paginator"),
+      import("../../components/agency_company/DocumentsForm.vue"),
+    Pagination: () => import("../../components/Paginator.vue"),
   },
   methods: {
     onShowDocuments() {
@@ -105,7 +105,7 @@ export default {
           this.showAlertError(error);
         });
     },
-    onCreateDocument(item) {
+    onCreateDocument() {
       this.showModal = false;
       this.getAgencyCompanyDocument(this.currentPage);
     },

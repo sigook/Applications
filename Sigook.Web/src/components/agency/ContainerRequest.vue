@@ -38,7 +38,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['data'],
   data() {
@@ -60,7 +60,7 @@ export default {
     showFinishWarning(date) {
       try {
         if(!this.showFinishAt(date)) return false;
-        let milliseconds = Math.abs(new Date(date) - this.now);
+        let milliseconds = Math.abs(new Date(date).getTime() - (this as any).now.getTime());
         let days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
         return days <= 7;
       } catch (e) {

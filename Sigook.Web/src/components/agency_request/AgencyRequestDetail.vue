@@ -1,7 +1,7 @@
 <template>
   <div class="container-flex">
     <section class="col-sm-12 col-md-9">
-      <request-detail :request="request" @refreshRequest="$emit('refreshRequest')" />
+      <request-detail :request.sync="request" @refreshRequest="$emit('refreshRequest')" />
     </section>
     <aside class="col-sm-12 col-md-3">
       <notes :canEdit="request.canEdit" />
@@ -18,15 +18,15 @@
     </aside>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ["request"],
   components: {
-    RequestDetail: () => import("../request/RequestDetail"),
-    Location: () => import("../request/RequestLocation"),
-    Notes: () => import("../agency_request/RequestNotes"),
-    RequestedBy: () => import("./RequestedBy"),
-    ReportTo: () => import("./ReportTo")
+    RequestDetail: () => import("../request/RequestDetail.vue"),
+    Location: () => import("../request/RequestLocation.vue"),
+    Notes: () => import("../agency_request/RequestNotes.vue"),
+    RequestedBy: () => import("./RequestedBy.vue"),
+    ReportTo: () => import("./ReportTo.vue")
   }
 }
 </script>

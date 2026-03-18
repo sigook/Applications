@@ -76,7 +76,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   props: ['request'],
@@ -101,9 +101,9 @@ export default {
     }
   },
   components: {
-    PunchCard: () => import("@/components/agency_request/AgencyPunchCardWorkerContainer"),
-    AgencyPunchCard: () => import("@/components/agency/AgencyPunchCard"),
-    Export: () => import("@/components/Export"),
+    PunchCard: () => import("@/components/agency_request/AgencyPunchCardWorkerContainer.vue"),
+    AgencyPunchCard: () => import("@/components/agency/AgencyPunchCard.vue"),
+    Export: () => import("@/components/Export.vue"),
   },
   methods: {
     onPageChange(params) {

@@ -20,7 +20,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
     export default {
         props: ['sizePage', 'indexPage', 'totalPages'],
         methods: {

@@ -10,9 +10,9 @@
         :worker="worker" @updateProfile="() => updateProfile()" />
       <resume id="resume" :class="{ 'missing': !worker.resume }" :worker="worker"
         @updateProfile="() => updateProfile()" />
-      <licenses v-if="worker && worker.licenses" id="licenses" :class="{ 'missing': worker.licenses.length === 0 }" :worker="worker"
+      <licenses v-if="worker && worker.licenses" id="licenses" :class="{ 'missing': worker.licenses.length === 0 }" :worker.sync="worker"
         @updateProfile="() => updateProfile()" />
-      <certificates v-if="worker && worker.certificates" id="certificates" :class="{ 'missing': worker.certificates.length === 0 }" :worker="worker"
+      <certificates v-if="worker && worker.certificates" id="certificates" :class="{ 'missing': worker.certificates.length === 0 }" :worker.sync="worker"
         @updateProfile="() => updateProfile()" />
       <other-documents v-if="worker && worker.otherDocuments" id="otherdocuments" :class="{ 'missing': worker.otherDocuments.length === 0 }" :worker="worker"
         :justWhmis="true" />
@@ -20,9 +20,7 @@
   </div>
 </template>
 
-<script>
-import worker from "../../store/modules/worker";
-
+<script lang="ts">
 export default {
   props: ['worker'],
   inject: ['$validator'],
@@ -32,14 +30,14 @@ export default {
     }
   },
   components: {
-    basicInformation: () => import("./WorkBasicInformationDetail"),
-    socialInsurance: () => import("./WorkSinDetail"),
-    documents: () => import("./WorkDocumentsDetail"),
-    contactInformation: () => import('./WorkContactInformationDetail'),
-    resume: () => import('./WorkResumeDetail'),
-    licenses: () => import('./WorkLicenseDetail'),
-    certificates: () => import('./WorkCertificatesDetail'),
-    otherDocuments: () => import('./WorkerOtherDocumentsDetail')
+    basicInformation: () => import("./WorkBasicInformationDetail.vue"),
+    socialInsurance: () => import("./WorkSinDetail.vue"),
+    documents: () => import("./WorkDocumentsDetail.vue"),
+    contactInformation: () => import('./WorkContactInformationDetail.vue'),
+    resume: () => import('./WorkResumeDetail.vue'),
+    licenses: () => import('./WorkLicenseDetail.vue'),
+    certificates: () => import('./WorkCertificatesDetail.vue'),
+    otherDocuments: () => import('./WorkerOtherDocumentsDetail.vue')
   },
   methods: {
     updateProfile() {

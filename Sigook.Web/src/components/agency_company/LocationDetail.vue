@@ -33,7 +33,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -103,7 +103,7 @@ export default {
     await this.getAgencyCompanyLocation();
   },
   components: {
-    LocationForm: () => import("./LocationForm")
+    LocationForm: () => import("./LocationForm.vue")
   }
 }
 </script>

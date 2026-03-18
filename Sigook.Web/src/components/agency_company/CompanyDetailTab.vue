@@ -4,7 +4,7 @@
     <!-- Detail -->
     <section class="col-md-8 col-sm-12 p-3 pr-5">
       <!-- Highlight -->
-      <contact-information v-if="company" :company="company" />
+      <contact-information v-if="company" :company.sync="company" />
 
       <!-- Detail -->
       <table class="table-detail">
@@ -21,9 +21,9 @@
             <span class="fw-700">{{ $t("VaccinationRequired") }}</span>
           </td>
           <td>
-            {{ getLabelVaccinationRequired(company.vaccinationRequired) }}
-            {{ company.vaccinationRequiredComments ? "|" : "" }}
-            {{ company.vaccinationRequiredComments }}
+            {{ getLabelVaccinationRequired(localCompany.vaccinationRequired) }}
+            {{ localCompany.vaccinationRequiredComments ? "|" : "" }}
+            {{ localCompany.vaccinationRequiredComments }}
             <b-button type="is-ghost" @click="showEditVaccinationRequired = true" icon-right="pencil"></b-button>
           </td>
         </tr>
@@ -134,7 +134,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
@@ -142,6 +142,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      localCompany: JSON.parse(JSON.stringify(this.company)),
       editorContent: null,
       showEditor: false,
       showRecipients: false,
@@ -167,14 +168,22 @@ export default {
     };
   },
   components: {
-    EmailCard: () => import("@/components/EmailCard"),
-    Location: () => import("../../components/agency_company/LocationDetail"),
-    ContactInformation: () => import("./ContactInformation"),
-    Documents: () => import("../../components/agency_company/Documents"),
-    Notes: () => import("../../components/agency_company/CompanyNotes"),
-    EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired")
+    EmailCard: () => import("@/components/EmailCard.vue"),
+    Location: () => import("../../components/agency_company/LocationDetail.vue"),
+    ContactInformation: () => import("./ContactInformation.vue"),
+    Documents: () => import("../../components/agency_company/Documents.vue"),
+    Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
+    EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
   },
   mixins: [billingAdminMixin],
+  watch: {
+    company: {
+      handler(newVal) {
+        this.localCompany = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
+    }
+  },
   methods: {
     showNotesEditor() {
       if (this.showEditor) {
@@ -287,8 +296,9 @@ export default {
     },
     vaccinationRequiredUpdated(model) {
       this.showEditVaccinationRequired = false;
-      this.company.vaccinationRequired = model.required;
-      this.company.vaccinationRequiredComments = model.comments;
+      this.localCompany.vaccinationRequired = model.required;
+      this.localCompany.vaccinationRequiredComments = model.comments;
+      this.$emit('update:company', this.localCompany);
     },
     updateRequiresPermissionToSee(e) {
       this.isLoading = true;

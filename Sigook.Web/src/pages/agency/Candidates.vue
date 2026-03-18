@@ -210,7 +210,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 import phoneFormat from "@/mixins/phoneFormatMixin";
@@ -239,18 +239,18 @@ export default {
   },
   mixins: [phoneMaskMixin, download, phoneFormat],
   components: {
-    CreateCandidate: () => import("@/components/candidate/CreateCandidate"),
-    DetailCandidate: () => import("@/components/candidate/DetailCandidate"),
-    ModalDocuments: () => import("@/components/candidate/ModalDocuments"),
-    ModalNotes: () => import("@/components/notes/ModalNotes"),
+    CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
+    DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
+    ModalDocuments: () => import("@/components/candidate/ModalDocuments.vue"),
+    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
     SkillsForm: () => import("@/components/FormSkillAdd.vue"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots"),
-    CandidateRequest: () => import("@/components/candidate/ModalCandidateRequests"),
-    BulkData: () => import("@/components/agency/BulkData"),
-    Export: () => import("@/components/Export")
+    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
+    CandidateRequest: () => import("@/components/candidate/ModalCandidateRequests.vue"),
+    BulkData: () => import("@/components/agency/BulkData.vue"),
+    Export: () => import("@/components/Export.vue")
   },
   methods: {
-    onCellClick(row, column, rowIndex) {
+    onCellClick(row, column) {
       if (column._props.field === 'name' && row.hasDocuments) {
         this.showDocumentsCandidate(row.id);
       }
@@ -486,12 +486,23 @@ export default {
 </script>
 <style lang="scss" scoped>
 ::v-deep .b-table .table {
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
 }
 
 ::v-deep .b-table .table td,
 ::v-deep .b-table .table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+::v-deep .b-table .table td .taginput .taginput-container {
+  flex-wrap: wrap;
+}
+
+::v-deep .b-table .table td .taginput .taginput-container .tag {
+  white-space: nowrap;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }

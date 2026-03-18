@@ -9,7 +9,7 @@ interface MenuItem {
 
 export default {
   getMenu(userRoles: string[], agency: any): MenuItem[] {
-    let result: MenuItem[] = [];
+    const result: MenuItem[] = [];
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
         case roles.agencyPersonnel:
@@ -72,7 +72,7 @@ export default {
       label: "MenuBilling",
       items: [],
     };
-    root.items!.push(
+    root.items?.push(
       {
         to: "/invoices",
         label: "Invoices",
@@ -84,7 +84,7 @@ export default {
     );
     const menus: MenuItem[] = [root];
     if (!agency.usaAgency) {
-      root.items!.push({
+      root.items?.push({
         to: "/paystubs",
         label: "Paystubs",
       });

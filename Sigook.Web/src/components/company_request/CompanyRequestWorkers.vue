@@ -80,7 +80,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -105,7 +105,7 @@ export default {
     }
   },
   components: {
-    EditTextarea: () => import("../../components/agency_request/EditTextarea"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
   },
   methods: {
     onPageChange(params) {

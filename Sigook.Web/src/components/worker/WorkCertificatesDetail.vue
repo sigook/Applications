@@ -9,7 +9,7 @@
       </b-button>
     </div>
     <div class="profile-licenses profile-experience">
-      <div class="container-license hover-actions" v-for="(item, index) in worker.certificates"
+      <div class="container-license hover-actions" v-for="(item, index) in localWorker.certificates"
         v-bind:key="'certificates' + index">
 
         <div class="button-right">
@@ -41,7 +41,7 @@
               <button @click="modalCertificate = false" type="button" class="cross-icon">
                 {{ $t('Close') }}
               </button>
-              <certificate-edit :data="worker" @closeModal="() => closeModalEdit()" />
+              <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
           </div>
         </div>
@@ -51,7 +51,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 export default {
   props: ['worker'],
@@ -60,7 +60,16 @@ export default {
     return {
       modalCertificate: false,
       modalEdit: false,
-      isLoading: false
+      isLoading: false,
+      localWorker: JSON.parse(JSON.stringify(this.worker))
+    }
+  },
+  watch: {
+    worker: {
+      handler(newVal) {
+        this.localWorker = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   methods: {
@@ -73,10 +82,11 @@ export default {
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("worker/deleteWorkerCertificates", { profileId: this.worker.id, certificateId: certificate.id })
+            this.$store.dispatch("worker/deleteWorkerCertificates", { profileId: this.localWorker.id, certificateId: certificate.id })
               .then(() => {
                 this.isLoading = false;
-                this.worker.certificates = this.worker.certificates.filter(d => d.id !== certificate.id);
+                this.localWorker.certificates = this.localWorker.certificates.filter(d => d.id !== certificate.id);
+                this.$emit('update:worker', this.localWorker);
               })
               .catch((error) => {
                 this.isLoading = false;
@@ -89,7 +99,7 @@ export default {
         });
     },
     deleteCertificate(certificateArr) {
-      this.$store.dispatch('worker/createWorkerCertificates', { profileId: this.worker.id, model: certificateArr })
+      this.$store.dispatch('worker/createWorkerCertificates', { profileId: this.localWorker.id, model: certificateArr })
         .then(() => {
           this.isLoading = false;
           this.$emit('updateProfile', true);
@@ -101,7 +111,7 @@ export default {
     }
   },
   components: {
-    certificateEdit: () => import("./WorkCertificatesForm")
+    certificateEdit: () => import("./WorkCertificatesForm.vue")
   }
 }
 </script>

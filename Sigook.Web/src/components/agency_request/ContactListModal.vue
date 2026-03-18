@@ -20,7 +20,7 @@
     </ul>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['requestId', 'companyId', 'activeUsers'],
   data() {
@@ -30,7 +30,7 @@ export default {
     }
   },
   methods: {
-    getAgencyCompanyContactPerson(index) {
+    getAgencyCompanyContactPerson() {
       this.isLoading = true;
       this.$store.dispatch('agency/getAgencyCompanyContactPerson', this.companyId)
         .then(response => {
