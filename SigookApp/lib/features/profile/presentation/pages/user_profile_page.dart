@@ -498,11 +498,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         if (_appVersion.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
-            child: Text(
-              _appVersion,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
+            child: Center(
+              child: Text(
+                _appVersion,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                ),
               ),
             ),
           ),
@@ -630,9 +632,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       children: [
         ProfileInfoRow(
           label: 'Mobile Number',
-          value: profile?.mobileNumber?.isNotEmpty == true
-              ? profile!.mobileNumber!
-              : 'N/A',
+          value: _formatPhone(profile?.mobileNumber),
           icon: Icons.phone_outlined,
           isEditing: isEditing,
           controller: isEditing ? _mobileNumberController : null,
@@ -640,7 +640,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         ),
         ProfileInfoRow(
           label: 'Phone',
-          value: profile?.phone ?? '',
+          value: _formatPhone(profile?.phone),
           icon: Icons.phone_outlined,
           isEditing: isEditing,
           controller: isEditing ? _phoneController : null,
@@ -1012,7 +1012,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           ),
         ProfileInfoRow(
           label: 'Phone',
-          value: profile?.contactEmergencyPhone ?? 'N/A',
+          value: _formatPhone(profile?.contactEmergencyPhone),
           icon: Icons.phone_callback_outlined,
           isEditing: isEditing,
           controller: isEditing ? _emergencyPhoneController : null,
@@ -1020,6 +1020,19 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         ),
       ],
     );
+  }
+
+  /// Formats a raw phone number string using the ### ### #### mask.
+  String _formatPhone(String? phone) {
+    if (phone == null || phone.isEmpty) return 'N/A';
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return 'N/A';
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length && i < 10; i++) {
+      if (i == 3 || i == 6) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+    return buffer.toString();
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

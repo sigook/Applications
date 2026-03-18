@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navbar_logo.dart';
@@ -69,6 +70,24 @@ class AppDrawer extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox.shrink();
+              final info = snapshot.data!;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24, top: 8),
+                child: Text(
+                  'v${info.version} (${info.buildNumber})',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
           ),
         ],
       ),
