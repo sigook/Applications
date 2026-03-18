@@ -33,9 +33,10 @@ const securityModule = {
           return resolve(user);
         } else {
           mgr.getUser()
-            .then((user: UserProfile) => {
-              context.commit("setUser", user);
-              return resolve(user);
+            .then((user) => {
+              const userProfile = user as unknown as UserProfile;
+              context.commit("setUser", userProfile);
+              return resolve(userProfile);
             })
             .catch((error: any) => {
               context.commit("setUser", null);
@@ -56,8 +57,8 @@ const securityModule = {
     silentSignin(context: any): Promise<void> {
       return new Promise((resolve, reject) => {
         mgr.signinSilent()
-          .then((user: UserProfile) => {
-            context.commit('setUser', user);
+          .then((user) => {
+            context.commit('setUser', user as unknown as UserProfile);
             resolve();
           })
           .catch((error: any) => reject(error));

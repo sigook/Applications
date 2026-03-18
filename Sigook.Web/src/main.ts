@@ -17,7 +17,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.min.js'
 import 'jquery/dist/jquery.min.js'
 import 'buefy/dist/buefy.css';
-import 'babel-polyfill';
+
 
 import currencyFilter from './filters/currencyFilter';
 import currencyCadFilter from "./filters/currencyCadFilter";

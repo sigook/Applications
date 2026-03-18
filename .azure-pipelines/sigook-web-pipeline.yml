@@ -77,10 +77,16 @@ stages:
               npm run lint
             displayName: 'Lint Code'
 
-          # Verify build works (without actually building artifacts)
+          # TypeScript type checking
           - script: |
               cd $(workingDirectory)
-              echo "✅ Build validation passed"
+              npm run type-check
+            displayName: 'TypeScript Type Check'
+
+          # Verify build compiles successfully
+          - script: |
+              cd $(workingDirectory)
+              npm run build
             displayName: 'Build Validation'
 
   # ============================================
