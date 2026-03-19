@@ -51,10 +51,10 @@ stages:
           - script: |
               export NVM_DIR="$HOME/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm use sigook-web  # Alias for Node.js 16
+              nvm use sigook-web  # Alias for Node.js 18
               echo "Node version: $(node --version)"
               echo "NPM version: $(npm --version)"
-            displayName: 'Setup Node.js 16 via NVM'
+            displayName: 'Setup Node.js 18 via NVM'
 
           # Cache node_modules for faster builds
           - task: Cache@2
