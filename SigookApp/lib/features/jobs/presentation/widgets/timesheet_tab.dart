@@ -672,32 +672,6 @@ class TimesheetTab extends ConsumerWidget {
                       ),
                     ],
 
-                    // Additional Info
-                    const SizedBox(height: 20),
-                    _buildDetailSection(
-                      'Additional Information',
-                      Icons.info_outline,
-                      Colors.grey,
-                      [
-                        _buildDetailRow(
-                          'Timesheet ID',
-                          '#${entry.numberId}',
-                          Icons.tag,
-                        ),
-                        _buildDetailRow(
-                          'Week',
-                          'Week ${entry.week}',
-                          Icons.calendar_view_week,
-                        ),
-                        _buildDetailRow(
-                          'Can Update',
-                          entry.canUpdate ? 'Yes' : 'No',
-                          entry.canUpdate ? Icons.edit : Icons.lock,
-                          entry.canUpdate ? Colors.green : Colors.grey,
-                        ),
-                      ],
-                    ),
-
                     // Comment Section
                     if (entry.comment != null && entry.comment!.isNotEmpty) ...[
                       const SizedBox(height: 20),
