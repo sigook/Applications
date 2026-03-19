@@ -77,11 +77,11 @@ stages:
               npm run lint
             displayName: 'Lint Code'
 
-          # Verify build works (without actually building artifacts)
+          # TypeScript type checking (validates compilation without generating artifacts)
           - script: |
               cd $(workingDirectory)
-              echo "✅ Build validation passed"
-            displayName: 'Build Validation'
+              npm run type-check
+            displayName: 'TypeScript Type Check'
 
   # ============================================
   # Stage 2: Docker Build and Deploy

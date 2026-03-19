@@ -45,7 +45,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -107,7 +107,7 @@ export default {
     this.getAgencyCompanyContactPerson();
   },
   components: {
-    ContactForm: () => import("./ContactPersonForm")
+    ContactForm: () => import("./ContactPersonForm.vue")
   }
 }
 </script>

@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ['data'],
@@ -29,8 +29,8 @@ export default {
     }
   },
   components: {
-    LocationAddress: () => import("@/components/Address"),
-    phoneInput: () => import("@/components/PhoneInput")
+    LocationAddress: () => import("@/components/Address.vue"),
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   methods: {
     validateAll() {

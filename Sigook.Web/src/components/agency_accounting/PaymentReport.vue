@@ -31,7 +31,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import download from '@/mixins/downloadFileMixin';
 
 export default {

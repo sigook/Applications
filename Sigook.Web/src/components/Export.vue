@@ -4,7 +4,7 @@
     <b-button type="is-ghost" icon-right="file-excel" @click="downloadReport">Export</b-button>
   </b-field>
 </template>
-<script>
+<script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 export default {
   props: ["url", "params", "fileName"],

@@ -51,7 +51,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
 import menu from "@/security/menu";
 
 export default {

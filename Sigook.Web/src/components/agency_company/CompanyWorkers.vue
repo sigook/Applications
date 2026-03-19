@@ -108,7 +108,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 

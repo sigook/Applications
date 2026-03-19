@@ -5,13 +5,13 @@
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Company Business Name" :type="errors.has('business name') ? 'is-danger' : ''"
           :message="errors.has('business name') ? errors.first('business name') : ''">
-          <b-input v-model="companyData.businessName" v-validate="'required|max:50|min:2'" name="business name" />
+          <b-input v-model="localCompanyData.businessName" v-validate="'required|max:50|min:2'" name="business name" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Company Full Name" :type="errors.has('full name') ? 'is-danger' : ''"
           :message="errors.has('full name') ? errors.first('full name') : ''">
-          <b-input v-model="companyData.fullName" v-validate="'required|max:50|min:2'" name="full name" />
+          <b-input v-model="localCompanyData.fullName" v-validate="'required|max:50|min:2'" name="full name" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -22,29 +22,29 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-        <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="companyData.phone"
-          @formattedPhone="(phone) => companyData.phone = phone"></phone-input>
+        <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="localCompanyData.phone"
+          @formattedPhone="(phone) => localCompanyData.phone = phone"></phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="Phone Ext" :type="errors.has('phoneExt') ? 'is-danger' : ''"
           :message="errors.has('phoneExt') ? errors.first('phoneExt') : ''">
-          <b-input type="text" v-model="companyData.phoneExt" name="phoneExt" v-validate="'max:8|min:1|numeric'" />
+          <b-input type="text" v-model="localCompanyData.phoneExt" name="phoneExt" v-validate="'max:8|min:1|numeric'" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Website" :type="errors.has('website') ? 'is-danger' : ''"
           :message="errors.has('website') ? errors.first('website') : ''">
-          <b-input type="text" v-model="companyData.website" name="website" v-validate="'max:50|url'" />
+          <b-input type="text" v-model="localCompanyData.website" name="website" v-validate="'max:50|url'" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-        <phone-input ref="faxComponent" :required="false" model="Fax" :defaultValue="companyData.fax"
-          @formattedPhone="(phone) => companyData.fax = phone"></phone-input>
+        <phone-input ref="faxComponent" :required="false" model="Fax" :defaultValue="localCompanyData.fax"
+          @formattedPhone="(phone) => localCompanyData.fax = phone"></phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="Fax Ext" :type="errors.has('faxExt') ? 'is-danger' : ''"
           :message="errors.has('faxExt') ? errors.first('faxExt') : ''">
-          <b-input type="text" v-model="companyData.faxExt" name="faxExt" v-validate="'max:8|min:1|numeric'" />
+          <b-input type="text" v-model="localCompanyData.faxExt" name="faxExt" v-validate="'max:8|min:1|numeric'" />
         </b-field>
       </div>
       <div class="col-12 col-padding">
@@ -54,7 +54,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 
 export default {
@@ -64,17 +64,26 @@ export default {
       isLoading: false,
       industries: [],
       industrySelected: '',
+      localCompanyData: JSON.parse(JSON.stringify(this.companyData)),
+    }
+  },
+  watch: {
+    companyData: {
+      handler(newVal) {
+        this.localCompanyData = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   components: {
-    phoneInput: () => import("../../components/PhoneInput"),
+    phoneInput: () => import("../../components/PhoneInput.vue"),
   },
   methods: {
     selectIndustry(option) {
       if (option) {
-        this.companyData.industry.industry = option;
+        this.localCompanyData.industry.industry = option;
       } else {
-        this.companyData.industry = null;
+        this.localCompanyData.industry = null;
       }
     },
     async save() {
@@ -83,8 +92,9 @@ export default {
       const mainFormValid = await this.$validator.validateAll();
       if (mainFormValid && phoneValid && faxValid) {
         this.isLoading = true;
-        this.$store.dispatch('company/updateProfile', { id: this.companyData.id, company: this.companyData })
-          .then((response) => {
+        this.$emit('update:companyData', this.localCompanyData);
+        this.$store.dispatch('company/updateProfile', { id: this.localCompanyData.id, company: this.localCompanyData })
+          .then(() => {
             this.isLoading = false;
             this.showAlertSuccess('Profile updated');
           })
@@ -98,7 +108,7 @@ export default {
   async created() {
     this.industries = await this.$store.dispatch('getCompanyIndustry');
     setTimeout(() => {
-      this.$refs.industryComponent.setSelected(this.companyData.industry.industry);
+      this.$refs.industryComponent.setSelected(this.localCompanyData.industry.industry);
     });
   },
   computed: {

@@ -27,7 +27,7 @@
 
     </div>
 </template>
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import toastMixin from "../../mixins/toastMixin";
 export default {
@@ -43,11 +43,10 @@ export default {
             return date ? dayjs(date).format('MM/YYYY') : date;
         },
         confirmDelete(){
-            let vm = this;
             this.showAlertConfirm('Are you sure', 'that you want to delete this item?')
-            .then(response => {
+            .then((response) => {
                 if (response){
-                    vm.deleteWorkerWorkExperience();
+                    this.deleteWorkerWorkExperience();
                 }
             })
         },
@@ -66,7 +65,7 @@ export default {
         }
     },
     components: {
-        workExperienceForm: () => import("./WorkExperienceForm")
+        workExperienceForm: () => import("./WorkExperienceForm.vue")
     }
 }
 </script>

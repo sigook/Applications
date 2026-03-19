@@ -28,7 +28,7 @@
     <b-button @click="deleteInvoice" type="is-danger">Delete</b-button>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ["invoice"],
   data() {

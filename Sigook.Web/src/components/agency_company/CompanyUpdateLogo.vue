@@ -29,8 +29,8 @@
   </div>
 </template>
 
-<script>
-import UploadImage from "@/components/PreviewImage";
+<script lang="ts">
+import UploadImage from "@/components/PreviewImage.vue";
 import pubSub from "@/mixins/pubSub";
 
 export default {

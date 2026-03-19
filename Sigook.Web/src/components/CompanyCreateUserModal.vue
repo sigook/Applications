@@ -43,12 +43,12 @@
 </template>
 
 
-<script>
+<script lang="ts">
 
 export default {
   props: ['companyId'],
   components: {
-    PhoneInput: () => import("@/components/PhoneInput")
+    PhoneInput: () => import("@/components/PhoneInput.vue")
   },
   data() {
     return {

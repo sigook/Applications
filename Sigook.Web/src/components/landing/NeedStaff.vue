@@ -20,7 +20,7 @@
     <h6 class="text-danger">{{ formError }}</h6>
   </form>
 </template>
-<script>
+<script lang="ts">
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin";
 import recaptchaMixin from "@/mixins/recaptchaMixin";

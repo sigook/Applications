@@ -33,7 +33,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -79,24 +79,23 @@ export default {
       this.showModal = true;
     },
     deleteAgencyCompanyLocation(id, index) {
-      let vm = this;
       this.showAlertConfirm("Are you sure", "You want to delete this location")
-        .then(response => {
+        .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store.dispatch('agency/deleteAgencyCompanyLocation', { profileId: this.profileId, locationId: id })
+            this.isLoading = true;
+            this.$store.dispatch('agency/deleteAgencyCompanyLocation', { profileId: this.profileId, locationId: id })
               .then(() => {
-                vm.isLoading = false;
-                vm.showAlertSuccess('Deleted')
-                vm.data.splice(index, 1);
+                this.isLoading = false;
+                this.showAlertSuccess('Deleted')
+                this.data.splice(index, 1);
               })
-              .catch(error => {
-                vm.isLoading = false;
-                vm.showAlertError(error)
+              .catch((error) => {
+                this.isLoading = false;
+                this.showAlertError(error)
               })
           }
-        }).catch(error => {
-          vm.showAlertError(error)
+        }).catch((error) => {
+          this.showAlertError(error)
         })
     }
   },
@@ -104,7 +103,7 @@ export default {
     await this.getAgencyCompanyLocation();
   },
   components: {
-    LocationForm: () => import("./LocationForm")
+    LocationForm: () => import("./LocationForm.vue")
   }
 }
 </script>

@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'ProvinceSettingsModal',
   props: ["provinceId", "provinceName", "currentSettings"],

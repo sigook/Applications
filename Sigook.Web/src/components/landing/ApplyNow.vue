@@ -178,7 +178,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
 import multipartUploadMixin from "@/mixins/multipartUploadMixin";
 
@@ -186,7 +186,7 @@ export default {
   props: ['jobToApply'],
   mixins: [updateMixin, multipartUploadMixin],
   components: {
-    phoneInput: () => import("@/components/PhoneInput")
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   data() {
     return {
@@ -304,7 +304,7 @@ export default {
     }
   },
   watch: {
-    activeTab(newValue) {
+    activeTab() {
       this.termnsAndConditions = !this.isNewApplicantTab;
     }
   }

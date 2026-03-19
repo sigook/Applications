@@ -85,7 +85,7 @@
     </form>
   </div>
 </template>
-<script>
+<script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
 
 export default {
@@ -114,7 +114,7 @@ export default {
   },
   mixins: [updateMixin],
   components: {
-    phoneInput: () => import("@/components/PhoneInput")
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   methods: {
     async validateForm() {

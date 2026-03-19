@@ -63,7 +63,7 @@
     </section>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['solutionType'],
   data() {
@@ -72,7 +72,7 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu")
+    SubMenu: () => import("@/components/landing/SubMenu.vue")
   },
   async created() {
     if (this.$route.params.position) {
@@ -91,7 +91,7 @@ export default {
       return require(`@/assets/images/positions/${this.solutionType}/${imageName}`);
     },
     scrollToRequestStaffForm() {
-
+      // no-op
     },
   },
   computed: {
@@ -128,6 +128,8 @@ export default {
   }
 
   .caption-title {
+    font-weight: 900;
+
     @include smaller-than-desktop {
       font-size: 3rem;
     }
@@ -139,8 +141,6 @@ export default {
     @include only-mobile {
       font-size: 2.2rem;
     }
-
-    font-weight: 900;
   }
 
   .caption-line {
@@ -151,6 +151,8 @@ export default {
   }
 
   .caption {
+    border-radius: 18px;
+
     @include tablet {
       grid-column: 2/4;
     }
@@ -166,8 +168,6 @@ export default {
     @include desktop {
       grid-column: 2/3;
     }
-
-    border-radius: 18px;
   }
 }
 

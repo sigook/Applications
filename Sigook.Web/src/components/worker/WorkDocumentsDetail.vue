@@ -54,7 +54,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ["worker"],
   data() {
@@ -69,7 +69,7 @@ export default {
     },
   },
   components: {
-    documentsEdit: () => import("./WorkDocumentsForm"),
+    documentsEdit: () => import("./WorkDocumentsForm.vue"),
   },
 };
 </script>

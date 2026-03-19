@@ -4,11 +4,11 @@
         <button v-if="displayShift" @click.stop="getRequestShift" class="no-border" :class="{'up': showDetail}">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ml-2">
         </button>
-        <shift-detail v-if="showDetail" :shift="shift" :isLoading="isLoading" />
+        <shift-detail v-if="showDetail" :shift="shift" :isLoading.sync="isLoading" />
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
     props: ['displayShift', 'requestId'],
@@ -21,7 +21,7 @@ export default {
     },
     mixins: [toastMixin],
     components: {
-        ShiftDetail: () => import("../request/ShiftDetail")
+        ShiftDetail: () => import("../request/ShiftDetail.vue")
     },
     methods: {
         getRequestShift(){

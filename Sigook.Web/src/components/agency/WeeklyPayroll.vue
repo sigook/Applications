@@ -54,7 +54,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import toast from '../../mixins/toastMixin'
 import download from '../../mixins/downloadFileMixin';
 export default {
@@ -137,7 +137,7 @@ export default {
         this.getWeeklyPayroll(this.currentPage);
     },
     components: {
-        Pagination: () => import("../../components/Paginator")
+        Pagination: () => import("../../components/Paginator.vue")
     },
     mixins: [
         toast,

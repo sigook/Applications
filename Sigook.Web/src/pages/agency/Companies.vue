@@ -35,9 +35,11 @@
             <template v-slot="props">
               <router-link :to="{ path: '/agency-companies/company/' + props.row.id }">
                 {{ props.row.businessName }}
-                <p v-for="(location, index) in props.row.locations" :key="location" v-if="index < 2">
-                  <i class="fz-2 block">{{ location }}</i>
-                </p>
+                <template v-for="(location, index) in props.row.locations">
+                  <p v-if="index < 2" :key="location">
+                    <i class="fz-2 block">{{ location }}</i>
+                  </p>
+                </template>
                 <p>
                   <i v-if="props.row.locations.length > 2" class="fz-2 block">See details...</i>
                 </p>
@@ -158,13 +160,13 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    Export: () => import("@/components/Export"),
-    ModalNotes: () => import("@/components/notes/ModalNotes"),
-    BulkData: () => import("@/components/agency/BulkData"),
+    Export: () => import("@/components/Export.vue"),
+    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
+    BulkData: () => import("@/components/agency/BulkData.vue"),
   },
   data() {
     return {
@@ -251,7 +253,7 @@ export default {
       this.serverParams.updatedAtTo = this.updatedAtDatesSelected[1];
       this.getCompanies();
     },
-    onCellClick(row, column, rowIndex) {
+    onCellClick(row, column) {
       switch (column._props.field) {
         case 'notesCount':
         case 'email':

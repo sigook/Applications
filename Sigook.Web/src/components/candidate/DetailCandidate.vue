@@ -58,7 +58,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {

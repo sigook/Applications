@@ -2,14 +2,14 @@
   <b-loading active></b-loading>
 </template>
 
-<script>
+<script lang="ts">
 import Oidc from 'oidc-client';
 import menu from "@/security/menu";
 
 export default {
   data() {
     return {
-      userManager: new Oidc.UserManager()
+      userManager: new Oidc.UserManager({} as any)
     }
   },
   async created() {

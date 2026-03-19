@@ -170,13 +170,13 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import confirmationAlert from "@/mixins/confirmationAlert";
 
 export default {
   components: {
-    LocationForm: () => import("@/components/agency_company/LocationForm"),
+    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
   data() {
     let breakDate = new Date();
@@ -187,7 +187,7 @@ export default {
     maxBreak.setHours(1);
     maxBreak.setMinutes(0);
 
-    let timeZero = new Date(dayjs().subtract(14, "days"));
+    let timeZero = dayjs().subtract(14, "days").toDate();
     timeZero.setHours(0);
     timeZero.setMinutes(0);
     return {

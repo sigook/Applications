@@ -27,7 +27,7 @@
     </b-table>
 
     <b-modal v-model="showModal" width="500px">
-      <address-component ref="addressComponent" :model="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
+      <address-component ref="addressComponent" :model.sync="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
       <div class="container-flex">
         <div class="col-12 col-padding">
           <b-checkbox v-model="locationBeingUpdate.isBilling">{{ $t('CompanyUseAsBillingAddress') }}</b-checkbox>
@@ -40,9 +40,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
-import AddressComponent from "@/components/Address";
+import AddressComponent from "@/components/Address.vue";
 
 export default {
   components: { AddressComponent },

@@ -39,12 +39,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   name: "CompanyUsers",
   components: {
-    CreateUser: () => import("@/components/CompanyCreateUserModal")
+    CreateUser: () => import("@/components/CompanyCreateUserModal.vue")
   },
   data() {
     return {

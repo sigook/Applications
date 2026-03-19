@@ -17,7 +17,7 @@
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="companyProfile">
         <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data="companyProfile" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data.sync="companyProfile" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
@@ -44,19 +44,19 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import confirmationAlert from "@/mixins/confirmationAlert";
 import switchLocaleMixin from "@/mixins/switchLocaleMixin";
 
 export default {
   components: {
-    BusinessInformation: () => import("../../components/company/ProfileBusiness"),
-    ContactInformation: () => import("../../components/company/ProfileContact"),
-    LocationInformation: () => import("../../components/company/ProfileLocation"),
-    UploadImage: () => import("../../components/PreviewImage"),
-    AccountSecurity: () => import("../../components/agency/ProfileAccountInformation"),
-    UserNotification: () => import("../../components/UserNotification"),
-    CompanyUsers: () => import("../../components/company/CompanyUsers"),
+    BusinessInformation: () => import("../../components/company/ProfileBusiness.vue"),
+    ContactInformation: () => import("../../components/company/ProfileContact.vue"),
+    LocationInformation: () => import("../../components/company/ProfileLocation.vue"),
+    UploadImage: () => import("../../components/PreviewImage.vue"),
+    AccountSecurity: () => import("../../components/agency/ProfileAccountInformation.vue"),
+    UserNotification: () => import("../../components/UserNotification.vue"),
+    CompanyUsers: () => import("../../components/company/CompanyUsers.vue"),
   },
   data() {
     return {
@@ -115,7 +115,7 @@ export default {
     getProfile() {
       this.isLoading = true;
       this.$store.dispatch("company/getProfile")
-        .then((data) => (this.isLoading = false))
+        .then(() => (this.isLoading = false))
         .catch((error) => {
           this.showAlertError(error.data);
           this.isLoading = false;

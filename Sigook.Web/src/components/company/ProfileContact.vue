@@ -98,7 +98,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ['companyData', 'isDisabled'],
@@ -111,7 +111,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../../components/PhoneInput")
+    phoneInput: () => import("../../components/PhoneInput.vue")
   },
   methods: {
     async getContactPersons() {
@@ -128,7 +128,7 @@ export default {
       if (mainFormValid && phoneValid && officeValid) {
         this.isLoading = true;
         this.$store.dispatch('company/saveContactPerson', this.contact)
-          .then(async (response) => {
+          .then(async () => {
             this.isLoading = false;
             await this.getContactPersons();
             this.showAlertSuccess('Profile updated');

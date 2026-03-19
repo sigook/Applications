@@ -55,18 +55,18 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 import confirmationAlert from "../../mixins/confirmationAlert";
 
 export default {
   components: {
-    PersonalDetails: () => import("../../components/worker/ProfilePersonal"),
-    Preferences: () => import("../../components/worker/ProfilePreferences"),
-    WorkExperience: () => import("../../components/worker/ProfileExperience"),
-    Comments: () => import("../../components/worker/ProfileComments"),
-    WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity"),
-    imageDetail: () => import("../../components/worker/WorkImageDetail"),
+    PersonalDetails: () => import("../../components/worker/ProfilePersonal.vue"),
+    Preferences: () => import("../../components/worker/ProfilePreferences.vue"),
+    WorkExperience: () => import("../../components/worker/ProfileExperience.vue"),
+    Comments: () => import("../../components/worker/ProfileComments.vue"),
+    WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity.vue"),
+    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
   },
   data() {
     return {

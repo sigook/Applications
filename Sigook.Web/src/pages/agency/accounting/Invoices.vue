@@ -105,14 +105,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 
 export default {
   components: {
-    Export: () => import("@/components/Export"),
-    DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice"),
-    SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail"),
+    Export: () => import("@/components/Export.vue"),
+    DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice.vue"),
+    SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue"),
   },
   mixins: [download],
   data() {

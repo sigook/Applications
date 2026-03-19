@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -30,7 +30,7 @@ export default {
     }
   },
   components: {
-    skillsEdit: () => import("./WorkSkillsForm")
+    skillsEdit: () => import("./WorkSkillsForm.vue")
   }
 }
 </script>

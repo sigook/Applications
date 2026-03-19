@@ -18,7 +18,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['currentNote', 'currentIndex'],
   data() {
@@ -34,7 +34,7 @@ export default {
     }
   },
   components: {
-    ColorPicker: () => import("./ColorPicker"),
+    ColorPicker: () => import("./ColorPicker.vue"),
   },
   methods: {
     addNote() {

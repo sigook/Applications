@@ -1,8 +1,8 @@
 <template>
     <div>
-        <h2>{{ $t("NewComment")}}</h2>
+        <h2>{{ $t("NewComment")}}</h2>
         <div class="contain-new-comment">
-            <p>{{ $t("Qualification")}}</p>
+            <p>{{ $t("Qualification")}}</p>
 
 
             <div class="select-rating">
@@ -20,7 +20,7 @@
 
             </div>
 
-            <p>{{ $t("Comment")}}</p>
+            <p>{{ $t("Comment")}}</p>
               <label>
                 <textarea id="textareaComment"
                           v-model="textarea"
@@ -33,12 +33,12 @@
 
               </label>
 
-         <button class="background-btn create-btn primary-button btn-radius" @click="comment">{{ $t("Comment")}}</button>
+         <button class="background-btn create-btn primary-button btn-radius" @click="comment">{{ $t("Comment")}}</button>
         </div>
     </div>
 </template>
 
-<script>
+<script lang="ts">
     export default {
         data(){
             return {
