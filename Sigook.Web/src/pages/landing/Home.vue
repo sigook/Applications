@@ -208,11 +208,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo"),
-    JobSearch: () => import("@/components/landing/JobSearch")
+    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
+    JobSearch: () => import("@/components/landing/JobSearch.vue")
   },
 }
 

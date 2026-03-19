@@ -8,7 +8,7 @@
       </b-button>
     </div>
     <div class="profile-licenses profile-experience">
-      <div class="container-license hover-actions" v-for="(item, index) in worker.licenses"
+      <div class="container-license hover-actions" v-for="(item, index) in localWorker.licenses"
         v-bind:key="'licences' + index">
         <div class="button-right">
           <a :href="item.license.pathFile" target="_blank" download>
@@ -47,7 +47,7 @@
               <button @click="modalLicense = false" type="button" class="cross-icon">
                 {{ $t("Close") }}
               </button>
-              <license-edit :data="worker" @closeModal="() => closeModalEdit()" />
+              <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 export default {
   props: ["worker"],
@@ -66,7 +66,16 @@ export default {
       modalLicense: false,
       modalEdit: false,
       isLoading: false,
+      localWorker: JSON.parse(JSON.stringify(this.worker)),
     };
+  },
+  watch: {
+    worker: {
+      handler(newVal) {
+        this.localWorker = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
+    }
   },
   mixins: [toastMixin],
   methods: {
@@ -75,18 +84,18 @@ export default {
       this.modalLicense = false;
     },
     confirmDelete(license) {
-      let vm = this;
       this.showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
-            vm.isLoading = true;
-            vm.$store.dispatch("worker/deleteWorkerLicenses", { profileId: this.worker.id, licenseId: license.id })
+            this.isLoading = true;
+            this.$store.dispatch("worker/deleteWorkerLicenses", { profileId: this.localWorker.id, licenseId: license.id })
               .then(() => {
-                vm.isLoading = false;
-                vm.worker.licenses = vm.worker.licenses.filter(d => d.license.id !== license.id);
+                this.isLoading = false;
+                this.localWorker.licenses = this.localWorker.licenses.filter(d => d.license.id !== license.id);
+                this.$emit('update:worker', this.localWorker);
               })
               .catch((error) => {
-                vm.isLoading = false;
+                this.isLoading = false;
                 this.showAlertError(error);
               });
           }
@@ -97,7 +106,7 @@ export default {
     },
   },
   components: {
-    licenseEdit: () => import("./WorkLicenseForm"),
+    licenseEdit: () => import("./WorkLicenseForm.vue"),
   },
 };
 </script>

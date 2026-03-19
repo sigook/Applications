@@ -19,12 +19,12 @@
 </template>
 
 
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    JobPosition: () => import("@/components/landing/JobPosition"),
-    NeedStaff: () => import("@/components/landing/NeedStaff")
+    JobPosition: () => import("@/components/landing/JobPosition.vue"),
+    NeedStaff: () => import("@/components/landing/NeedStaff.vue")
   },
   data() {
     return {

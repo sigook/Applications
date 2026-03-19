@@ -41,7 +41,7 @@
     </div>
 
     <b-modal v-model="showModal" width="800px">
-      <contact-information-form :model="company" @save="closeEditModal" />
+      <contact-information-form :model="company" @update:model="$emit('update:company', $event)" @save="closeEditModal" />
     </b-modal>
 
 
@@ -51,7 +51,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ['company'],
@@ -59,6 +59,7 @@ export default {
     return {
       showModal: false,
       showModalUpdateEmail: false,
+      localCompany: JSON.parse(JSON.stringify(this.company)),
       model: {
         phone: this.company.phone,
         phoneExt: this.company.phoneExt,
@@ -67,6 +68,14 @@ export default {
         website: this.company.website
       },
       profileId: this.$route.params.id
+    }
+  },
+  watch: {
+    company: {
+      handler(newVal) {
+        this.localCompany = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   methods: {
@@ -82,7 +91,10 @@ export default {
     },
     closeEditEmailModal(closeModal, newEmail) {
       this.showModalUpdateEmail = false;
-      if (newEmail) this.company.email = newEmail;
+      if (newEmail) {
+        this.localCompany.email = newEmail;
+        this.$emit('update:company', this.localCompany);
+      }
     },
     getFullUrl(url) {
       if (url.includes('http')) {
@@ -92,8 +104,8 @@ export default {
     }
   },
   components: {
-    DialogCompanyUpdateEmail: () => import("@/components/company/DialogCompanyUpdateEmail"),
-    ContactInformationForm: () => import("@/components/agency_company/ContactInformationForm"),
+    DialogCompanyUpdateEmail: () => import("@/components/company/DialogCompanyUpdateEmail.vue"),
+    ContactInformationForm: () => import("@/components/agency_company/ContactInformationForm.vue"),
   },
 }
 </script>

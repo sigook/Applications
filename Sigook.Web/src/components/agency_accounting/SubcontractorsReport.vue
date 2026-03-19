@@ -27,7 +27,7 @@
     </b-table>
   </div>
 </template>
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import download from "@/mixins/downloadFileMixin";
 

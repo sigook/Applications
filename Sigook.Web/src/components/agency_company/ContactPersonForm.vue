@@ -84,7 +84,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['currentContact', 'profileId'],
   data() {
@@ -104,7 +104,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../PhoneInput")
+    phoneInput: () => import("../PhoneInput.vue")
   },
   methods: {
     validateForm() {
@@ -124,7 +124,7 @@ export default {
     createAgencyCompanyContactPerson() {
       this.isLoading = true;
       this.$store.dispatch('agency/createAgencyCompanyContactPerson', { profileId: this.profileId, model: this.contactPerson })
-        .then(response => {
+        .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created')
           this.$emit('updateContent');

@@ -4,29 +4,64 @@ module.exports = {
   outputDir: "wwwroot",
   devServer: {
     port: 3001,
-    public: "http://localhost:3001",
+    client: {
+      webSocketURL: "ws://localhost:3001/ws",
+    },
   },
   productionSourceMap: false,
-  configureWebpack: (config) => {
-    if (process.env.NODE_ENV !== "production") {
-      return {
-        output: {
-          jsonpFunction: "webpackJsonpFunction3",
+  css: {
+    loaderOptions: {
+      sass: {
+        api: "modern-compiler",
+        sassOptions: {
+          silenceDeprecations: ["import"],
         },
-        plugins: [
-          new BundleAnalizer.BundleAnalyzerPlugin({
-            analyzerMode: "static",
-            openAnalyzer: false
-          }),
-        ],
-      };
-    } else {
-      return { 
-        output: { jsonpFunction: "webpackJsonpFunction3" }
-      };
+      },
+      scss: {
+        api: "modern-compiler",
+        sassOptions: {
+          silenceDeprecations: ["import"],
+        },
+      },
+    },
+  },
+  configureWebpack: (config) => {
+    const base = {
+      output: { chunkLoadingGlobal: "webpackJsonpFunction3" },
+    };
+
+    if (process.env.NODE_ENV === "production") {
+      base.performance = { hints: false };
     }
+
+    if (process.env.ANALYZE === "true") {
+      base.plugins = [
+        new BundleAnalizer.BundleAnalyzerPlugin({
+          analyzerMode: "static",
+          openAnalyzer: false,
+        }),
+      ];
+    }
+
+    return base;
   },
   chainWebpack: (config) => {
+    // Skip css-loader URL resolution for absolute paths (served from public/)
+    ['css', 'scss', 'sass'].forEach((lang) => {
+      const rule = config.module.rule(lang);
+      ['vue-modules', 'vue', 'normal-modules', 'normal'].forEach((type) => {
+        const oneOf = rule.oneOf(type);
+        if (oneOf.uses.has('css-loader')) {
+          oneOf.use('css-loader').tap((options) => {
+            options.url = {
+              filter: (url) => !url.startsWith('/assets/'),
+            };
+            return options;
+          });
+        }
+      });
+    });
+
     // Configuración de chunks optimizados para code splitting
     if (process.env.NODE_ENV === 'production') {
       config.optimization.splitChunks({

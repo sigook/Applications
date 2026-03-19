@@ -10,7 +10,7 @@
       <template>
         <b-table-column field="payStubNumber" v-slot="props">
           <i>{{ props.row.payStubNumber }}</i>
-          <p v-for="company in props.row.companies">
+          <p v-for="(company, idx) in props.row.companies" :key="idx">
             {{ company }}
           </p>
         </b-table-column>
@@ -31,7 +31,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in props.row.items">
+              <tr v-for="(item, idx) in props.row.items" :key="idx">
                 <td width="120px">{{ item.description }}</td>
                 <td width="80px">{{ item.quantity }}</td>
                 <td width="80px">{{ item.total | currency }}</td>
@@ -71,7 +71,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ["workerId"],

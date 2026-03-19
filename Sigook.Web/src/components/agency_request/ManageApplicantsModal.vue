@@ -204,7 +204,7 @@
         </b-modal>
     </div>
 </template>
-<script>
+<script lang="ts">
 export default {
     data() {
         return {
@@ -228,11 +228,11 @@ export default {
         }
     },
     components: {
-        Pagination: () => import("../../components/Paginator"),
-        EditTextarea: () => import("../../components/agency_request/EditTextarea"),
-        Searcher: () => import("../../components/Searcher"),
-        DetailAddress: () => import("../../components/candidate/DetailAddress"),
-        CreateCandidate: () => import("../candidate/CreateCandidate")
+        Pagination: () => import("../../components/Paginator.vue"),
+        EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
+        Searcher: () => import("../../components/Searcher.vue"),
+        DetailAddress: () => import("../../components/candidate/DetailAddress.vue"),
+        CreateCandidate: () => import("../candidate/CreateCandidate.vue")
     },
     methods: {
         filterResultsWorkers(data){

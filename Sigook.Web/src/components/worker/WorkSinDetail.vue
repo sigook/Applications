@@ -35,7 +35,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -51,7 +51,7 @@ export default {
     }
   },
   components: {
-    socialInsuranceEdit: () => import("./WorkSinForm")
+    socialInsuranceEdit: () => import("./WorkSinForm.vue")
   }
 }
 </script>

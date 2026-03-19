@@ -17,7 +17,7 @@
     <b-button type="is-primary" :disabled="selectedWorkers.length === 0" @click="generatePayStubs">Generate</b-button>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -46,7 +46,7 @@ export default {
       this.isLoading = true;
       const workerIds = this.selectedWorkers.map(worker => worker.workerId);
       this.$store.dispatch("agency/generatePayStubs", workerIds)
-        .then((response) => {
+        .then(() => {
           this.isLoading = false;
           this.$emit("pay-stubs-generated");
         })

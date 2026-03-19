@@ -67,7 +67,7 @@
     <!-- end custom modal -->
   </section>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 export default {
   props: ["worker", 'justWhmis'],
@@ -85,17 +85,16 @@ export default {
       this.$emit('updateProfile', true);
     },
     confirmDelete(document) {
-      const vm = this;
       this.showAlertConfirm("Are you sure", "You want to delete this document").then((response) => {
         if (response) {
-          vm.isLoading = true;
-          vm.$store.dispatch("worker/deleteWorkerOtherDocuments", { profileId: this.worker.id, otherDocumentId: document.id })
+          this.isLoading = true;
+          this.$store.dispatch("worker/deleteWorkerOtherDocuments", { profileId: this.worker.id, otherDocumentId: document.id })
             .then(() => {
-              vm.isLoading = false;
+              this.isLoading = false;
               this.$emit('updateProfile', true);
             })
             .catch((error) => {
-              vm.isLoading = false;
+              this.isLoading = false;
               this.showAlertError(error);
             });
         }
@@ -103,7 +102,7 @@ export default {
     }
   },
   components: {
-    documentsForm: () => import("./WorkerOtherDocumentsForm"),
+    documentsForm: () => import("./WorkerOtherDocumentsForm.vue"),
   }
 };
 </script>

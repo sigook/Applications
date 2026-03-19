@@ -62,7 +62,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ["invoice"],
   data() {
@@ -118,7 +118,7 @@ export default {
           subject: this.newEmail.subject,
           body: this.newEmail.body,
           attachments: this.newEmail.attachments
-        }).then(response => {
+        }).then(() => {
           this.isLoading = false;
           this.$emit('sent');
         }).catch(error => {

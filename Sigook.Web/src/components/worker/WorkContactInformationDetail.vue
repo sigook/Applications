@@ -40,7 +40,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -55,7 +55,7 @@ export default {
     }
   },
   components: {
-    contactInformationEdit: () => import("./WorkContactInformationForm")
+    contactInformationEdit: () => import("./WorkContactInformationForm.vue")
   }
 }
 </script>

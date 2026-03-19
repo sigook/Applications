@@ -46,7 +46,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import toast from "../../mixins/toastMixin";
 import pubSub from "@/mixins/pubSub";
 import updateMixin from "../../mixins/uploadFiles";
@@ -67,7 +67,7 @@ export default {
     };
   },
   components: {
-    UploadFile: () => import("../../components/UploadFiles"),
+    UploadFile: () => import("../../components/UploadFiles.vue"),
   },
   created() {
     this.getCandidateDocuments();

@@ -135,7 +135,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import pubSub from "../../mixins/pubSub";
 import confirmationAlert from "../../mixins/confirmationAlert";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
@@ -168,8 +168,8 @@ export default {
     billingAdminMixin
   ],
   components: {
-    UploadImage: () => import("@/components/PreviewImage"),
-    phoneInput: () => import("@/components/PhoneInput"),
+    UploadImage: () => import("@/components/PreviewImage.vue"),
+    phoneInput: () => import("@/components/PhoneInput.vue"),
   },
   async created() {
     const company = this.$route.meta.company;

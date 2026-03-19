@@ -13,7 +13,7 @@
     </span>
   </div>
 </template>
-<script>
+<script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
 
 export default {

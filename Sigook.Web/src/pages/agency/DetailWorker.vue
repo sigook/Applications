@@ -75,10 +75,10 @@
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses :worker="worker" @updateProfile="() => getWorker()" />
+            <licenses :worker.sync="worker" @updateProfile="() => getWorker()" />
 
             <span class="line-gray" />
-            <certificates :worker="worker" @updateProfile="() => getWorker()" />
+            <certificates :worker.sync="worker" @updateProfile="() => getWorker()" />
 
             <span class="line-gray"></span>
             <other-documents :worker="worker" @updateProfile="() => getWorker()" />
@@ -129,7 +129,7 @@
         </div>
       </b-tab-item>
       <b-tab-item label="Settings" value="workerSettings" v-if="isPayrollManager">
-        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker="worker" />
+        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker.sync="worker" />
       </b-tab-item>
       <b-tab-item label="PayStubs" value="wageHistory" v-if="isPayrollManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
@@ -144,7 +144,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import statusWorkerMixin from "@/mixins/statusWorkerMixin";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
@@ -163,33 +163,33 @@ export default {
   },
   mixins: [statusWorkerMixin, billingAdminMixin],
   components: {
-    imageDetail: () => import("../../components/worker/WorkImageDetail"),
-    Comments: () => import("../../components/Comments"),
-    workExperienceForm: () => import("../../components/worker/WorkExperienceForm"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail"),
-    socialInsurance: () => import("../../components/worker/WorkSinDetail"),
-    basicInformation: () => import("../../components/worker/WorkBasicInformationDetail"),
-    emergencyInformation: () => import("../../components/worker/WorkEmergencyInformationDetail"),
-    documents: () => import("../../components/worker/WorkDocumentsDetail"),
-    resume: () => import("../../components/worker/WorkResumeDetail"),
-    contactInformation: () => import("../../components/worker/WorkContactInformationDetail"),
-    emailDetail: () => import("../../components/worker/WorkEmailDetail"),
-    availability: () => import("../../components/worker/WorkAvailabilitiesDetail"),
-    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail"),
-    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail"),
-    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail"),
-    lift: () => import("../../components/worker/WorkLiftDetail"),
-    languages: () => import("../../components/worker/WorkLanguagesDetail"),
-    skills: () => import("../../components/worker/WorkSkillsDetail"),
-    licenses: () => import("../../components/worker/WorkLicenseDetail"),
-    certificates: () => import("../../components/worker/WorkCertificatesDetail"),
-    workerSettings: () => import('@/components/worker/WorkerSettings'),
-    wageHistory: () => import("../../components/worker/WorkWageHistory"),
-    requestHistory: () => import("../../components/agency/AgencyWorkerRequestHistory"),
-    timeSheetHistory: () => import("../../components/worker/TimeSheetHistory"),
-    notes: () => import("../../components/worker/Notes"),
-    FloatingMenu: () => import("../../components/FloatingMenuDots"),
-    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail"),
+    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
+    Comments: () => import("../../components/Comments.vue"),
+    workExperienceForm: () => import("../../components/worker/WorkExperienceForm.vue"),
+    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue"),
+    socialInsurance: () => import("../../components/worker/WorkSinDetail.vue"),
+    basicInformation: () => import("../../components/worker/WorkBasicInformationDetail.vue"),
+    emergencyInformation: () => import("../../components/worker/WorkEmergencyInformationDetail.vue"),
+    documents: () => import("../../components/worker/WorkDocumentsDetail.vue"),
+    resume: () => import("../../components/worker/WorkResumeDetail.vue"),
+    contactInformation: () => import("../../components/worker/WorkContactInformationDetail.vue"),
+    emailDetail: () => import("../../components/worker/WorkEmailDetail.vue"),
+    availability: () => import("../../components/worker/WorkAvailabilitiesDetail.vue"),
+    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail.vue"),
+    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail.vue"),
+    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail.vue"),
+    lift: () => import("../../components/worker/WorkLiftDetail.vue"),
+    languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
+    skills: () => import("../../components/worker/WorkSkillsDetail.vue"),
+    licenses: () => import("../../components/worker/WorkLicenseDetail.vue"),
+    certificates: () => import("../../components/worker/WorkCertificatesDetail.vue"),
+    workerSettings: () => import('@/components/worker/WorkerSettings.vue'),
+    wageHistory: () => import("../../components/worker/WorkWageHistory.vue"),
+    requestHistory: () => import("../../components/agency/AgencyWorkerRequestHistory.vue"),
+    timeSheetHistory: () => import("../../components/worker/TimeSheetHistory.vue"),
+    notes: () => import("../../components/worker/Notes.vue"),
+    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
+    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue"),
   },
   async created() {
     this.getWorker();
@@ -259,16 +259,15 @@ export default {
         });
     },
     confirmDelete(worker) {
-      let vm = this;
       this.showAlertConfirm(
-        vm.$t("AreYouSure"),
-        vm.$t("YouWantToDisableTheWorker") +
+        this.$t("AreYouSure"),
+        this.$t("YouWantToDisableTheWorker") +
         ". " +
-        vm.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
+        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
       )
         .then((response) => {
           if (response) {
-            vm.updateApprovedToWork(worker);
+            this.updateApprovedToWork(worker);
           }
         })
         .catch((error) => {

@@ -76,12 +76,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import toast from "@/mixins/toastMixin";
 
 export default {
   components: {
-    AgencyShift: () => import("@/components/agency_request/AgencyShiftDetail"),
+    AgencyShift: () => import("@/components/agency_request/AgencyShiftDetail.vue"),
   },
   data() {
     return {

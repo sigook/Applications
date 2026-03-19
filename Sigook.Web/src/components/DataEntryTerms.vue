@@ -43,7 +43,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 import roles from "@/security/roles";
 

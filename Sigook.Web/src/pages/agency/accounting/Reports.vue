@@ -19,7 +19,7 @@
     </b-tabs>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -27,11 +27,11 @@ export default {
     };
   },
   components: {
-    SubcontractorsReport: () => import("@/components/agency_accounting/SubcontractorsReport"),
-    HoursWorkedReport: () => import("@/components/agency_accounting/HoursWorkedReport"),
-    T4Report: () => import("@/components/agency_accounting/T4"),
-    CraPayrollReport: () => import("@/components/agency_accounting/CRAPayroll"),
-    PaymentReport: () => import("@/components/agency_accounting/PaymentReport")
+    SubcontractorsReport: () => import("@/components/agency_accounting/SubcontractorsReport.vue"),
+    HoursWorkedReport: () => import("@/components/agency_accounting/HoursWorkedReport.vue"),
+    T4Report: () => import("@/components/agency_accounting/T4.vue"),
+    CraPayrollReport: () => import("@/components/agency_accounting/CRAPayroll.vue"),
+    PaymentReport: () => import("@/components/agency_accounting/PaymentReport.vue")
   },
   created() {
     if (this.isUsaAgency) {

@@ -102,11 +102,11 @@
 </template>
 
 
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    JobSearch: () => import("@/components/landing/JobSearch")
+    JobSearch: () => import("@/components/landing/JobSearch.vue")
   }
 }
 

@@ -63,7 +63,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
@@ -82,9 +82,9 @@ export default {
   },
   mixins: [billingAdminMixin],
   components: {
-    PositionForm: () => import("@/components/agency_company/JobPositionForm"),
-    RequestPositionForm: () => import("../../components/agency_company/RequestJobPositionForm"),
-    RolesShift: () => import("../agency_company/RolesShiftDetail"),
+    PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
+    RequestPositionForm: () => import("../../components/agency_company/RequestJobPositionForm.vue"),
+    RolesShift: () => import("../agency_company/RolesShiftDetail.vue"),
   },
   methods: {
     async getAgencyCompanyJobPosition() {

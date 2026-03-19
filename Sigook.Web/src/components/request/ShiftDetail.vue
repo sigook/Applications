@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-loading v-model="isLoading"></b-loading>
+        <b-loading v-model="localIsLoading"></b-loading>
         <ul class="table-shift-detail" v-if="shift">
             <li v-if="shift.sunday">
                 Sun {{ shift.sundayStart | hourminutes }} to {{ shift.sundayFinish | hourminutes }}
@@ -27,9 +27,19 @@
         </ul>
     </div>
 </template>
-<script>
+<script lang="ts">
 export default {
-    props: ['shift', 'isLoading']
+    props: ['shift', 'isLoading'],
+    data() {
+        return {
+            localIsLoading: this.isLoading
+        }
+    },
+    watch: {
+        isLoading(newVal) {
+            this.localIsLoading = newVal;
+        }
+    }
 }
 </script>
 <style lang="scss">

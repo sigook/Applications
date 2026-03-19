@@ -145,7 +145,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -158,10 +158,10 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu"),
-    SigookVideo: () => import("@/components/landing/SigookVideo"),
-    JobSearch: () => import("@/components/landing/JobSearch"),
-    ApplyNow: () => import("@/components/landing/ApplyNow"),
+    SubMenu: () => import("@/components/landing/SubMenu.vue"),
+    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
+    JobSearch: () => import("@/components/landing/JobSearch.vue"),
+    ApplyNow: () => import("@/components/landing/ApplyNow.vue"),
   },
   async created() {
     this.isLoading = true;

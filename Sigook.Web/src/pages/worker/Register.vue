@@ -59,7 +59,7 @@
               </b-field>
             </div>
           </div>
-          <address-component ref="addressComponent" :model="worker.location" @isLoading="(value) => isLoading = value"
+          <address-component ref="addressComponent" :model.sync="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -610,7 +610,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import createWorkerMixin from "@/mixins/createWorkerMixin";
 import confirmationAlert from "../../mixins/confirmationAlert";
@@ -619,9 +619,9 @@ import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
   components: {
-    uploadImage: () => import("../../components/PreviewImage"),
-    addressComponent: () => import("../../components/Address"),
-    phoneInput: () => import("../../components/PhoneInput"),
+    uploadImage: () => import("../../components/PreviewImage.vue"),
+    addressComponent: () => import("../../components/Address.vue"),
+    phoneInput: () => import("../../components/PhoneInput.vue"),
   },
   data() {
     return {

@@ -13,7 +13,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
     import toastMixin from "../../mixins/toastMixin";
 
     export default {
@@ -22,8 +22,8 @@
             toastMixin
         ],
         components: {
-            languages: () => import("../../components/worker/WorkLanguagesDetail"),
-            skills: () => import("../../components/worker/WorkSkillsDetail")
+            languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
+            skills: () => import("../../components/worker/WorkSkillsDetail.vue")
         },
         methods: {
             updateProfile(){

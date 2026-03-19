@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 
 export default {
