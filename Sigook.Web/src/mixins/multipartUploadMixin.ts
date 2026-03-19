@@ -176,7 +176,7 @@ export default {
         try {
           const compressedImage = await vm.compressFile(fileObjects.profileImage);
           formData.append(generatedFileNames.profileImage, compressedImage, generatedFileNames.profileImage);
-        } catch (error) {
+        } catch {
           formData.append(generatedFileNames.profileImage, fileObjects.profileImage, generatedFileNames.profileImage);
         }
       }

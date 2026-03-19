@@ -72,7 +72,11 @@ export default {
         this.isEntryTime = clockType === 1;
         this.canBeRegistered = clockType !== 0;
         this.isLoading = false;
-        this.isEntryTime ? this.showAlertSuccess(this.$t("EnjoyYourShift")) : this.showAlertSuccess(this.$t("ThanksForYourJob"));
+        if (this.entryTime) {
+          this.showAlertSuccess(this.$t("EnjoyYourShift"));
+        } else {
+          this.showAlertSuccess(this.$t("ThanksForYourJob"));
+        }
       }).catch(error => {
         this.isLoading = false;
         this.showAlertError(error.data);

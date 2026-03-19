@@ -67,7 +67,7 @@ export default {
         let fileToUpload;
         try {
           fileToUpload = await this.compressFile(this.profileImageFile);
-        } catch (error) {
+        } catch {
           fileToUpload = this.profileImageFile;
         }
 

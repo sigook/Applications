@@ -41,7 +41,7 @@ import agencyTypeFilter from "@/filters/agencyTypeFilter";
 
 import statusDirective from './directives/status-directive';
 import cleaveDirective from '@/directives/cleave-directive';
-import applicationInsights from "@/utils/applicationInsights";
+
 
 Vue.filter('currency', currencyFilter);
 Vue.filter('currencyCad', currencyCadFilter);
@@ -72,10 +72,7 @@ Vue.component("vue-editor", VueEditor);
 Vue.component('vue-recaptcha', VueRecaptcha)
 Vue.mixin(toastMixin);
 
-const appInstrumentationKey = process.env.VUE_APP_INSTRUMENTATION_KEY;
-
 Vue.config.productionTip = false;
-Vue.use(applicationInsights, { id: appInstrumentationKey });
 Vue.use(VueScrollTo);
 Vue.use(Buefy);
 Vue.use(VueLazyload, {

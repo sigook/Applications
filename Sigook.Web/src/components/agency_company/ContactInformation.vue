@@ -41,7 +41,7 @@
     </div>
 
     <b-modal v-model="showModal" width="800px">
-      <contact-information-form :model.sync="company" @save="closeEditModal" />
+      <contact-information-form :model="company" @update:model="$emit('update:company', $event)" @save="closeEditModal" />
     </b-modal>
 
 

@@ -10,9 +10,9 @@
         :worker="worker" @updateProfile="() => updateProfile()" />
       <resume id="resume" :class="{ 'missing': !worker.resume }" :worker="worker"
         @updateProfile="() => updateProfile()" />
-      <licenses v-if="worker && worker.licenses" id="licenses" :class="{ 'missing': worker.licenses.length === 0 }" :worker.sync="worker"
+      <licenses v-if="worker && worker.licenses" id="licenses" :class="{ 'missing': worker.licenses.length === 0 }" :worker="worker" @update:worker="$emit('update:worker', $event)"
         @updateProfile="() => updateProfile()" />
-      <certificates v-if="worker && worker.certificates" id="certificates" :class="{ 'missing': worker.certificates.length === 0 }" :worker.sync="worker"
+      <certificates v-if="worker && worker.certificates" id="certificates" :class="{ 'missing': worker.certificates.length === 0 }" :worker="worker" @update:worker="$emit('update:worker', $event)"
         @updateProfile="() => updateProfile()" />
       <other-documents v-if="worker && worker.otherDocuments" id="otherdocuments" :class="{ 'missing': worker.otherDocuments.length === 0 }" :worker="worker"
         :justWhmis="true" />

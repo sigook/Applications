@@ -76,7 +76,11 @@ export default {
     validateAll() {
       this.$validator.validateAll().then(async (isValid) => {
         if (isValid) {
-          this.data ? this.editWorkerWorkExperience() : this.createWorkerWorkExperience();
+          if (this.data) {
+            this.editWorkerWorkExperience()
+          } else {
+            this.createWorkerWorkExperience();
+          }
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));

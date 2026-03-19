@@ -4,7 +4,7 @@
     <!-- Detail -->
     <section class="col-md-8 col-sm-12 p-3 pr-5">
       <!-- Highlight -->
-      <contact-information v-if="company" :company.sync="company" />
+      <contact-information v-if="company" :company="company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
       <table class="table-detail">

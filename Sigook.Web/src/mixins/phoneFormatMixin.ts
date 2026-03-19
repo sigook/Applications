@@ -17,7 +17,7 @@ export default {
           const instance = phoneUtil.parse(value, 'CA');
           const region = phoneUtil.getRegionCodeForNumber(instance);
           return validRegions.some(vr => vr === region);
-        } catch (ex) {
+        } catch {
           return false;
         }
       }

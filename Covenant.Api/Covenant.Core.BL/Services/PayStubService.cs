@@ -1,19 +1,15 @@
 ﻿using ClosedXML.Excel;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
-using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace Covenant.Core.BL.Services;
 
@@ -749,7 +745,7 @@ public class PayStubService : IPayStubService
 
     private void Accumulate(Dictionary<decimal, double> dict, decimal rate, double hours)
     {
-        if (!dict.ContainsKey(rate)) 
+        if (!dict.ContainsKey(rate))
             dict[rate] = 0;
         dict[rate] += hours;
     }
