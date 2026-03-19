@@ -156,7 +156,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 .map((id) => CatalogItemModel(id: id, value: ''))
                 .toList(),
             skills: parseIds('skillIds')
-                .map((id) => SkillItemModel(id: id, skill: ''))
+                .map((name) => SkillItemModel(skill: name))
                 .toList(),
           );
           await remoteDataSource.updateWorkerBasicInfo(workerId, prefModel);

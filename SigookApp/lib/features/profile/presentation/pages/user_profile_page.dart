@@ -25,6 +25,7 @@ import '../../domain/usecases/update_worker_profile.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/searchable_toggle_list.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
   const UserProfilePage({super.key});
@@ -178,7 +179,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         _editAvailabilityDayIds = Set.from(profile.availabilityDayIds);
         _editLiftId = profile.liftId;
         _editLanguageIds = Set.from(profile.languageIds);
-        _editSkillIds = Set.from(profile.skillIds);
+        _editSkillIds = Set.from(profile.skills);
       }
     });
   }
@@ -937,11 +938,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           }),
         ),
         const SizedBox(height: 12),
-        _buildChipSelector(
+        SearchableToggleList(
           label: 'Skills',
           asyncValue: ref.watch(skillsProvider),
           selectedIds: _editSkillIds,
-          singleSelect: false,
           onToggle: (id, selected) => setState(() {
             if (selected) {
               _editSkillIds.add(id);
@@ -951,11 +951,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           }),
         ),
         const SizedBox(height: 12),
-        _buildChipSelector(
+        SearchableToggleList(
           label: 'Languages',
           asyncValue: ref.watch(languagesProvider),
           selectedIds: _editLanguageIds,
-          singleSelect: false,
           onToggle: (id, selected) => setState(() {
             if (selected) {
               _editLanguageIds.add(id);
