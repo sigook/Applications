@@ -67,37 +67,31 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       ),
     );
 
-    _buttonsSlide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.3, 0.7, curve: Curves.easeOutCubic),
-      ),
-    );
+    _buttonsSlide =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.3, 0.7, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // Panels slide in from slightly above
-    _panelsSlide = Tween<Offset>(
-      begin: const Offset(0, -40),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-      ),
-    );
+    _panelsSlide = Tween<Offset>(begin: const Offset(0, -40), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // Legal icon slides in from the right
-    _legalSlide = Tween<Offset>(
-      begin: const Offset(60, 0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
-      ),
-    );
+    _legalSlide = Tween<Offset>(begin: const Offset(60, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // Decorative circles fade in
     _circlesFade = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -177,7 +171,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             const SizedBox(height: 8),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.privacy_tip_outlined, color: AppTheme.secondaryRed),
+              leading: Icon(
+                Icons.privacy_tip_outlined,
+                color: AppTheme.secondaryRed,
+              ),
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -186,7 +183,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
               },
             ),
             ListTile(
-              leading: Icon(Icons.description_outlined, color: AppTheme.secondaryRed),
+              leading: Icon(
+                Icons.description_outlined,
+                color: AppTheme.secondaryRed,
+              ),
               title: const Text('Terms & Conditions'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -253,22 +253,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                 ),
                 child: Row(
                   children: [
-                    // Left panel — worker image
+                    // Welcome Image
                     Expanded(
                       child: Image.asset(
-                        'assets/images/welcome-screen/worker.png',
+                        'assets/images/welcome-screen/welcome-page.png',
                         height: double.infinity,
-                        fit: BoxFit.cover,
-                        alignment: const Alignment(0.0, -0.3),
-                      ),
-                    ),
-                    // Right panel — family image
-                    Expanded(
-                      child: Image.asset(
-                        'assets/images/welcome-screen/family.png',
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        alignment: const Alignment(-0.3, -0.3),
+                        fit: BoxFit.fill,
+                        alignment: const Alignment(0.0, 0.0),
                       ),
                     ),
                   ],
@@ -289,12 +280,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
+                    stops: const [0.0, 0.15, 0.50, 0.85, 1.0],
                     colors: [
                       AppTheme.secondaryRed.withValues(alpha: 0.0),
                       AppTheme.secondaryRed.withValues(alpha: 0.15),
-                      AppTheme.secondaryRed.withValues(alpha: 0.50),
-                      AppTheme.secondaryRed.withValues(alpha: 0.85),
+                      AppTheme.secondaryRed.withValues(alpha: 0.60),
+                      AppTheme.secondaryRed.withValues(alpha: 0.99),
                       AppTheme.secondaryRed,
                     ],
                   ),
@@ -337,7 +328,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       // Small filled translucent circle (top-right of the ring)
                       Positioned(
                         top: 0,
-                        right: 0,
+                        left: 100,
                         child: Container(
                           width: 48,
                           height: 48,
@@ -391,35 +382,35 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                 SizedBox(height: size.height * 0.36),
 
                 // Logo — always visible (no fade), seamless from splash
-                Image.asset(
-                  'assets/images/logo/sigook_logo.png',
-                  width: 270,
-                  color: Colors.white,
-                  colorBlendMode: BlendMode.srcIn,
-                ),
-
-                // Tagline — fades in progressively
                 Transform.translate(
-                  offset: const Offset(0, -40),
-                  child: FadeTransition(
-                    opacity: _taglineFade,
-                    child: const Text(
-                      'Find Work That Fits Your Life',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontStyle: FontStyle.italic,
+                  offset: const Offset(0, -32),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo/sigook-logo.png',
                         color: Colors.white,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.3,
+                        width: 270,
+                        colorBlendMode: BlendMode.srcIn,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
+                      SizedBox(height: 12),
+                      const Text(
+                        'Find Work That Fits Your Life',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
 
                 // Buttons — right below the tagline
                 Transform.translate(
-                  offset: const Offset(0, -24),
+                  offset: const Offset(0, 84),
                   child: FadeTransition(
                     opacity: _buttonsFade,
                     child: SlideTransition(
@@ -431,7 +422,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                           children: [
                             // Get Started — white fill, red text
                             SizedBox(
-                              width: double.infinity,
+                              width: 300,
                               height: 56,
                               child: ElevatedButton(
                                 onPressed: _navigateToRegistration,
@@ -439,7 +430,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                   backgroundColor: Colors.white,
                                   foregroundColor: AppTheme.secondaryRed,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(32),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                   elevation: 0,
                                 ),
@@ -453,51 +444,61 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 7),
                             // Already have an account row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Already have an account?',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: authState.isLoading ? null : _signIn,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                            SizedBox(
+                              width: 300,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Already have an account?',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      fontSize: 16,
                                     ),
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: authState.isLoading
-                                      ? const SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
+                                  Spacer(),
+                                  TextButton(
+                                    onPressed: authState.isLoading
+                                        ? null
+                                        : _signIn,
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: authState.isLoading
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Sign In',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                        )
-                                      : const Text(
-                                          'Sign In',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                ),
-                              ],
+                                  ),
+                                  SizedBox(width: 10),
+                                ],
+                              ),
                             ),
                           ],
                         ),

@@ -8,7 +8,7 @@ class AppTheme {
 
   // Color Palette
   static const Color primaryBlue = Color(0xFF1565C0); // Deep Blue
-  static const Color secondaryRed = Color(0xFFE53935); // Vibrant Red
+  static const Color secondaryRed = Color(0xFFEA1D25); // Vibrant Red
   static const Color tertiaryBlue = Color(0xFF0277BD); // Light Blue
   static const Color surfaceGrey = Color(0xFFF2F3F5); // Neutral light grey
   static const Color cardBackground = Color(0xFFFAFAFB); // Soft off-white

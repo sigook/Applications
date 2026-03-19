@@ -29,6 +29,10 @@ abstract class ProfileRemoteDataSource {
     String workerId,
     WorkerProfileModel profile,
   );
+  Future<void> uploadWorkerResume(
+    String workerId, {
+    required String filePath,
+  });
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -404,6 +408,53 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to update documents: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadWorkerResume(
+    String workerId, {
+    required String filePath,
+  }) async {
+    try {
+      final fileName = _basenameOf(filePath);
+
+      final formData = FormData();
+      formData.fields.add(MapEntry(
+        'data',
+        jsonEncode({'fileName': fileName, 'description': ''}),
+      ));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Resume',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload resume: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload resume: $e');
     }
   }
 }

@@ -3,7 +3,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/profile_repository.dart';
 
-enum ProfileSection { personal, contact, sin, documents, emergency, preferences }
+enum ProfileSection { personal, contact, sin, documents, resume, emergency, preferences }
 
 class UpdateWorkerProfile implements UseCase<void, UpdateWorkerProfileParams> {
   final ProfileRepository repository;

@@ -133,6 +133,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 'policeCheckFile': newFilePaths!['policeCheckFile']!,
             },
           );
+        case ProfileSection.resume:
+          if (newFilePaths?['resumeFile'] != null) {
+            await remoteDataSource.uploadWorkerResume(
+              workerId,
+              filePath: newFilePaths!['resumeFile']!,
+            );
+          }
         case ProfileSection.preferences:
           List<String> parseIds(String key) => (editedFields[key] ?? '')
               .split(',')

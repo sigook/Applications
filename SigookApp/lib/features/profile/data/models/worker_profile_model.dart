@@ -225,6 +225,7 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       skills: skills.map((e) => e.skill ?? '').where((v) => v.isNotEmpty).toList(),
       skillIds: skills.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       hasResume: resume != null,
+      resumeFileName: resume?.fileName,
       resumeFileUrl: resume?.pathFile,
       approvedToWork: approvedToWork,
       punchCardId: punchCardId,

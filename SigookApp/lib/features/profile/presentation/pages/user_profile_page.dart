@@ -51,6 +51,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   PickedFileData? _replaceId1File;
   PickedFileData? _replaceId2File;
 
+  // Resume state
+  PickedFileData? _replaceResumeFile;
+  bool _isUploadingResume = false;
+
   // Location editing state
   Country? _editCountry;
   Province? _editProvince;
@@ -141,17 +145,18 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     _middleNameController.text = profile?.middleName ?? '';
     _lastNameController.text = profile?.lastName ?? '';
     _secondLastNameController.text = profile?.secondLastName ?? '';
-    _mobileNumberController.text =
-        _mobileMaskFormatter.maskText(profile?.mobileNumber ?? '');
-    _phoneController.text =
-        _phoneMaskFormatter.maskText(profile?.phone ?? '');
+    _mobileNumberController.text = _mobileMaskFormatter.maskText(
+      profile?.mobileNumber ?? '',
+    );
+    _phoneController.text = _phoneMaskFormatter.maskText(profile?.phone ?? '');
     _emailController.text = profile?.email ?? '';
     _addressController.text = profile?.address ?? '';
     _postalCodeController.text = profile?.postalCode ?? '';
     _emergencyNameController.text = profile?.contactEmergencyName ?? '';
     _emergencyLastNameController.text = profile?.contactEmergencyLastName ?? '';
-    _emergencyPhoneController.text =
-        _emergencyPhoneMaskFormatter.maskText(profile?.contactEmergencyPhone ?? '');
+    _emergencyPhoneController.text = _emergencyPhoneMaskFormatter.maskText(
+      profile?.contactEmergencyPhone ?? '',
+    );
     _socialInsuranceController.text = profile?.socialInsurance ?? '';
     _idNumber1Controller.text = profile?.identificationNumber1 ?? '';
     _idNumber2Controller.text = profile?.identificationNumber2 ?? '';
@@ -246,7 +251,14 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         editedFields = {
           'contactEmergencyName': _emergencyNameController.text,
           'contactEmergencyLastName': _emergencyLastNameController.text,
-          'contactEmergencyPhone': _emergencyPhoneMaskFormatter.getUnmaskedText(),
+          'contactEmergencyPhone': _emergencyPhoneMaskFormatter
+              .getUnmaskedText(),
+        };
+      case ProfileSection.resume:
+        editedFields = {};
+        newFilePaths = {
+          if (_replaceResumeFile != null)
+            'resumeFile': _replaceResumeFile!.path,
         };
       case ProfileSection.preferences:
         editedFields = {
@@ -310,7 +322,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             )
           else
             IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: AppTheme.primaryBlue),
+              icon: const Icon(
+                Icons.check_circle_outline,
+                color: AppTheme.primaryBlue,
+              ),
               onPressed: () => _saveSection(section),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -329,7 +344,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     }
     if (_editingSection != null) return const SizedBox.shrink();
     return IconButton(
-      icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryBlue, size: 20),
+      icon: const Icon(
+        Icons.edit_outlined,
+        color: AppTheme.primaryBlue,
+        size: 20,
+      ),
       onPressed: profile == null ? null : () => _startEditing(section, profile),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
@@ -338,9 +357,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   }
 
   Future<void> _pickFileFor(String docType) async {
-    final result = await ref.read(filePickerServiceProvider).pickFile(
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-    );
+    final result = await ref
+        .read(filePickerServiceProvider)
+        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
     if (!result.isSuccess || result.file == null) return;
     setState(() {
       switch (docType) {
@@ -361,7 +380,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     final token = ref.read(authViewModelProvider).token?.accessToken;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _DocumentPreviewPage(url: url, title: title, token: token),
+        builder: (_) =>
+            _DocumentPreviewPage(url: url, title: title, token: token),
       ),
     );
   }
@@ -406,11 +426,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   builder: (context) {
                     final settings = context
                         .dependOnInheritedWidgetOfExactType<
-                            FlexibleSpaceBarSettings>();
+                          FlexibleSpaceBarSettings
+                        >();
                     final t = settings != null
                         ? ((settings.currentExtent - settings.minExtent) /
-                                (settings.maxExtent - settings.minExtent))
-                            .clamp(0.0, 1.0)
+                                  (settings.maxExtent - settings.minExtent))
+                              .clamp(0.0, 1.0)
                         : 1.0;
                     return ProfileHeader(
                       name: profile?.fullName ?? 'User',
@@ -480,6 +501,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         _buildSinSection(profile),
         const SizedBox(height: 12),
         _buildDocumentsSection(profile),
+        const SizedBox(height: 12),
+        _buildResumeSection(profile),
         const SizedBox(height: 24),
       ],
     );
@@ -502,10 +525,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             child: Center(
               child: Text(
                 _appVersion,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ),
           ),
@@ -526,7 +546,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         if (!isEditing)
           ProfileInfoRow(
             label: 'Full Name',
-            value: profile?.fullName.isNotEmpty == true ? profile!.fullName : 'N/A',
+            value: profile?.fullName.isNotEmpty == true
+                ? profile!.fullName
+                : 'N/A',
             icon: Icons.badge_outlined,
           )
         else ...[
@@ -580,8 +602,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Icon(Icons.directions_car_outlined,
-                    size: 20, color: AppTheme.primaryBlue),
+                Icon(
+                  Icons.directions_car_outlined,
+                  size: 20,
+                  color: AppTheme.primaryBlue,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -600,7 +625,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                         children: [
                           Switch(
                             value: _editHasVehicle,
-                            onChanged: (v) => setState(() => _editHasVehicle = v),
+                            onChanged: (v) =>
+                                setState(() => _editHasVehicle = v),
                             activeThumbColor: AppTheme.primaryBlue,
                           ),
                           Text(
@@ -826,12 +852,208 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             profile?.identificationType2 == null)
           Text(
             'No documents on file',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildResumeSection(WorkerProfile? profile) {
+    final hasResume = profile?.hasResume == true;
+    final hasUrl =
+        profile?.resumeFileUrl != null && profile!.resumeFileUrl!.isNotEmpty;
+
+    return ProfileSectionCard(
+      title: 'Resume',
+      icon: Icons.description_outlined,
+      iconGradient: const [Color(0xFF00897B), Color(0xFF4DB6AC)],
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.attach_file_outlined,
+                size: 20,
+                color: AppTheme.primaryBlue,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Resume File',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (_replaceResumeFile != null)
+                      Text(
+                        profile?.fullName.isNotEmpty == true
+                            ? profile!.fullName + '\'s resume'
+                            : ' ',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      )
+                    else
+                      Text(
+                        hasResume
+                            ? ("${profile?.fullName!}'s resume")
+                            : 'Not uploaded',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: hasResume ? AppTheme.textDark : Colors.grey,
+                        ),
+                      ),
+                    if (_replaceResumeFile != null)
+                      const Text(
+                        'Tap upload to save',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (hasUrl && _replaceResumeFile == null)
+                IconButton(
+                  onPressed: () =>
+                      _previewDocument(profile.resumeFileUrl!, 'Resume'),
+                  icon: const Icon(Icons.visibility_outlined, size: 20),
+                  color: AppTheme.primaryBlue,
+                  tooltip: 'Preview',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (_replaceResumeFile != null)
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isUploadingResume ? null : _uploadResume,
+                  icon: _isUploadingResume
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined, size: 18),
+                  label: Text(
+                    _isUploadingResume ? 'Uploading...' : 'Upload Resume',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _isUploadingResume
+                    ? null
+                    : () => setState(() => _replaceResumeFile = null),
+                icon: Icon(
+                  Icons.cancel_outlined,
+                  color: Colors.grey.shade500,
+                  size: 22,
+                ),
+                tooltip: 'Cancel',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ],
+          )
+        else
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickResumeFile,
+              icon: Icon(
+                hasResume ? Icons.swap_horiz : Icons.upload_file,
+                size: 18,
+              ),
+              label: Text(hasResume ? 'Replace Resume' : 'Upload Resume'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryBlue,
+                side: const BorderSide(color: AppTheme.primaryBlue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
       ],
+    );
+  }
+
+  Future<void> _pickResumeFile() async {
+    final result = await ref
+        .read(filePickerServiceProvider)
+        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+    if (!result.isSuccess || result.file == null) return;
+    setState(() => _replaceResumeFile = result.file);
+  }
+
+  Future<void> _uploadResume() async {
+    if (_replaceResumeFile == null) return;
+    setState(() => _isUploadingResume = true);
+
+    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
+    final result = await updateUseCase(
+      UpdateWorkerProfileParams(
+        editedFields: {},
+        section: ProfileSection.resume,
+        newFilePaths: {'resumeFile': _replaceResumeFile!.path},
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() => _isUploadingResume = false);
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload resume: ${failure.message}'),
+            backgroundColor: AppTheme.errorRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      (_) {
+        setState(() => _replaceResumeFile = null);
+        ref.invalidate(cachedWorkerProfileProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Resume uploaded successfully!'),
+            backgroundColor: AppTheme.successGreen,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
     );
   }
 
@@ -849,7 +1071,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           _buildChipDisplayRow(
             label: 'Can you lift up to',
             icon: Icons.fitness_center_outlined,
-            chips: profile?.liftCapacity != null ? [profile!.liftCapacity!] : [],
+            chips: profile?.liftCapacity != null
+                ? [profile!.liftCapacity!]
+                : [],
           ),
           _buildChipDisplayRow(
             label: 'Availability',
@@ -995,7 +1219,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         ProfileInfoRow(
           label: 'Name',
           value: profile != null
-              ? '${profile.contactEmergencyName ?? ''} ${profile.contactEmergencyLastName ?? ''}'.trim()
+              ? '${profile.contactEmergencyName ?? ''} ${profile.contactEmergencyLastName ?? ''}'
+                    .trim()
               : 'N/A',
           icon: Icons.person_outline,
           isEditing: isEditing,
@@ -1084,13 +1309,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                backgroundColor:
-                                    AppTheme.primaryBlue.withValues(alpha: 0.1),
+                                backgroundColor: AppTheme.primaryBlue
+                                    .withValues(alpha: 0.1),
                                 side: BorderSide(
-                                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                                  color: AppTheme.primaryBlue.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 0),
+                                  horizontal: 4,
+                                  vertical: 0,
+                                ),
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                                 visualDensity: VisualDensity.compact,
@@ -1144,13 +1373,22 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
                   checkmarkColor: AppTheme.primaryBlue,
                   labelStyle: TextStyle(
-                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected
+                        ? AppTheme.primaryBlue
+                        : AppTheme.textDark,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                   side: BorderSide(
-                    color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppTheme.primaryBlue
+                        : Colors.grey.shade300,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 0,
+                  ),
                 );
               }).toList(),
             );
@@ -1192,7 +1430,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+            Icon(
+              Icons.attach_file_outlined,
+              size: 20,
+              color: AppTheme.primaryBlue,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1326,7 +1568,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     statusText,
                     style: TextStyle(
                       fontSize: 11,
-                      color: hasPending ? AppTheme.primaryBlue : AppTheme.errorRed,
+                      color: hasPending
+                          ? AppTheme.primaryBlue
+                          : AppTheme.errorRed,
                     ),
                   ),
               ],
@@ -1493,8 +1737,7 @@ class _DocumentPreviewPageState extends State<_DocumentPreviewPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

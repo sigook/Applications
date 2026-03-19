@@ -48,6 +48,7 @@ class WorkerProfile extends Equatable {
   final List<String> skills;
   final List<String> skillIds;
   final bool hasResume;
+  final String? resumeFileName;
   final String? resumeFileUrl;
   final bool approvedToWork;
   final String? punchCardId;
@@ -104,6 +105,7 @@ class WorkerProfile extends Equatable {
     this.skills = const [],
     this.skillIds = const [],
     this.hasResume = false,
+    this.resumeFileName,
     this.resumeFileUrl,
     this.approvedToWork = false,
     this.punchCardId,
@@ -184,7 +186,7 @@ class WorkerProfile extends Equatable {
     liftCapacity, liftId,
     languages, languageIds,
     skills, skillIds,
-    hasResume, resumeFileUrl,
+    hasResume, resumeFileName, resumeFileUrl,
     approvedToWork, punchCardId, haveAnyHealthProblem,
     contactEmergencyName, contactEmergencyLastName, contactEmergencyPhone,
   ];
