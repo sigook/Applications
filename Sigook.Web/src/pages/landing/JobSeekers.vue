@@ -166,7 +166,7 @@ export default {
   async created() {
     this.isLoading = true;
     this.jobs = await this.$store.dispatch("getJobs", this.$route.query);
-    this.jobSelected = this.jobs[0];
+    this.selectJob(this.jobs[0]);
     this.isLoading = false;
     const VueScrollTo = require('vue-scrollto');
     VueScrollTo.scrollTo("#jobsContainer");
