@@ -895,7 +895,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     if (_replaceResumeFile != null)
                       Text(
                         profile?.fullName.isNotEmpty == true
-                            ? profile!.fullName + '\'s resume'
+                            ? '${profile!.fullName}\'s resume'
                             : ' ',
                         style: const TextStyle(
                           fontSize: 14,
@@ -905,7 +905,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     else
                       Text(
                         hasResume
-                            ? ("${profile?.fullName!}'s resume")
+                            ? ("${profile?.fullName}'s resume")
                             : 'Not uploaded',
                         style: TextStyle(
                           fontSize: 15,
