@@ -18,7 +18,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
     import toast from '../../mixins/toastMixin';
     export default {
         props: ['workerId'],
@@ -49,8 +49,8 @@
             this.getAgencyWorkerProfileRequestHistory(this.currentPage)
         },
         components: {
-            Pagination: () => import("../../components/Paginator"),
-            ContainerRequest: () => import("../agency/AgencyWorkerRequestHistoryContainer")
+            Pagination: () => import("../../components/Paginator.vue"),
+            ContainerRequest: () => import("../agency/AgencyWorkerRequestHistoryContainer.vue")
         }
     }
 </script>

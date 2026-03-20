@@ -16,7 +16,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
     export default {
         props: ['type', 'title', 'message', 'customClass', 'confirmButton', 'cancelButton', 'confirmButtonText', 'cancelButtonText'],
         data() {

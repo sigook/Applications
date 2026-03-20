@@ -9,7 +9,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -21,7 +21,7 @@ export default {
     }
   },
   components: {
-    Comments: () => import("../../components/Comments")
+    Comments: () => import("../../components/Comments.vue")
   },
   methods: {
     updateComments() {

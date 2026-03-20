@@ -52,7 +52,7 @@
         <template #label>
           {{ $t('Address') }} <span class="has-text-danger">*</span>
         </template>
-        <b-input type="text" v-model="model.address" name="address"
+        <b-input type="text" v-model="localModel.address" name="address"
           v-validate="{ required: true, max: 100, min: 6, regex: $regexAddress }" />
       </b-field>
     </div>
@@ -62,7 +62,7 @@
         <template #label>
           {{ $t('PostalCode') }} <span class="has-text-danger">*</span>
         </template>
-        <b-input type="text" v-model="model.postalCode" name="postalCode"
+        <b-input type="text" v-model="localModel.postalCode" name="postalCode"
           v-validate="{ 'cvn-postal-code': 'cvn-postal-code' }" />
       </b-field>
     </div>
@@ -74,9 +74,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import roles from "@/security/roles";
-import ProvinceSettingsModal from "@/components/ProvinceSettingsModal";
+import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
@@ -88,6 +88,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      localModel: JSON.parse(JSON.stringify(this.model)),
       countries: [],
       country: null,
       provinces: [],
@@ -101,14 +102,14 @@ export default {
   },
   created() {
     this.getCountries();
-    if (this.model && this.model.id) {
-      this.getProvincesByCountry(this.model.city.province.country);
-      this.getCityByProvince(this.model.city.province);
-      this.country = this.model.city.province.country;
-      this.province = this.model.city.province.value;
-      this.provinceSelected = this.model.city.province;
-      this.city = this.model.city.value;
-      this.citySelected = this.model.city;
+    if (this.localModel && this.localModel.id) {
+      this.getProvincesByCountry(this.localModel.city.province.country);
+      this.getCityByProvince(this.localModel.city.province);
+      this.country = this.localModel.city.province.country;
+      this.province = this.localModel.city.province.value;
+      this.provinceSelected = this.localModel.city.province;
+      this.city = this.localModel.city.value;
+      this.citySelected = this.localModel.city;
     }
   },
   methods: {
@@ -125,7 +126,7 @@ export default {
     },
     onCitySelected(city) {
       this.citySelected = city;
-      this.model.city = {
+      this.localModel.city = {
         ...this.citySelected,
         province: {
           ...this.provinceSelected,
@@ -134,6 +135,7 @@ export default {
           }
         }
       };
+      this.$emit('update:model', this.localModel);
     },
     getCountries() {
       this.$emit("isLoading", true);
@@ -213,13 +215,20 @@ export default {
     },
     onProvinceSettingsSaved(settings) {
       this.provinceSelected.settings = settings;
-      if (this.model.city && this.model.city.province) {
-        this.model.city.province.settings = settings;
+      if (this.localModel.city && this.localModel.city.province) {
+        this.localModel.city.province.settings = settings;
+        this.$emit('update:model', this.localModel);
       }
       this.showProvinceSettingsModal = false;
     }
   },
   watch: {
+    model: {
+      handler(newVal) {
+        this.localModel = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
+    },
     province(newVal) {
       if (this.provinceSelected && this.provinceSelected.value !== newVal) {
         this.provinceSelected = null;

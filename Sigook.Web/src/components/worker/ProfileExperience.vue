@@ -22,7 +22,7 @@
   </form>
 </template>
 
-<script>
+<script lang="ts">
 import utilsWorkerMixin from '@/mixins/utilsWorkerMixin';
 export default {
   data() {
@@ -57,8 +57,8 @@ export default {
     }
   },
   components: {
-    workExperience: () => import("./WorkExperienceForm"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail")
+    workExperience: () => import("./WorkExperienceForm.vue"),
+    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue")
   },
   created() {
     this.$store.dispatch('getCurrentDate').then(response => {

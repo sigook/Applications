@@ -144,7 +144,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin";
 import recaptchaMixin from "@/mixins/recaptchaMixin";
@@ -164,7 +164,7 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu")
+    SubMenu: () => import("@/components/landing/SubMenu.vue")
   },
   created() {
     this.solutionType = this.$route.query.solutionType;

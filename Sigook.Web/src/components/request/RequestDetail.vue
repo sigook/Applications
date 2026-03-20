@@ -50,13 +50,13 @@
       <div class="item">
         <span class="fw-700">Is Asap</span>
         <p>
-          <b-checkbox v-model="request.isAsap" @input="updateAgencyRequestIsAsap()"></b-checkbox>
+          <b-checkbox v-model="localRequest.isAsap" @input="updateAgencyRequestIsAsap()"></b-checkbox>
         </p>
       </div>
       <div class="item">
         <span class="fw-700">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="request.punchCardOptionEnabled" @input="updatePunchCardIsVisibleInApp()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @input="updatePunchCardIsVisibleInApp()"></b-checkbox>
         </p>
       </div>
       <div class="item">
@@ -120,19 +120,28 @@
     </section>
   </div>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ["request"],
   data() {
     return {
       isLoading: false,
+      localRequest: JSON.parse(JSON.stringify(this.request)),
     };
+  },
+  watch: {
+    request: {
+      handler(newVal) {
+        this.localRequest = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
+    }
   },
   mixins: [toastMixin],
   components: {
-    Skills: () => import("../agency_request/AgencyRequestSkills"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail"),
+    Skills: () => import("../agency_request/AgencyRequestSkills.vue"),
+    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
   },
   methods: {
     increaseWorkersQuantityByOne() {

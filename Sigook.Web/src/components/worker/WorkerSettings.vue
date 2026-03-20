@@ -4,20 +4,20 @@
     <div class="container-flex">
       <div class="col-2">
         <b-field label="External ID">
-          <b-input v-model="worker.externalId" placeholder="External ID" @keypress.enter.native="updateExternalId">
+          <b-input v-model="localWorker.externalId" placeholder="External ID" @keypress.enter.native="updateExternalId">
           </b-input>
         </b-field>
       </div>
-      <b-checkbox class="col-2" v-model="worker.isContractor" @input="updateIsContractor">
+      <b-checkbox class="col-2" v-model="localWorker.isContractor" @input="updateIsContractor">
         Is Contractor
       </b-checkbox>
-      <b-checkbox class="col-2" v-model="worker.isSubcontractor" @input="updateIsSubContractor">
+      <b-checkbox class="col-2" v-model="localWorker.isSubcontractor" @input="updateIsSubContractor">
         Is Subcontractor
       </b-checkbox>
       <span class="line-gray"></span>
       <div class="col-2">
         <b-field label="Federal Category">
-          <b-select v-model="worker.federalTaxCategory" @input="updateTaxCategory" expanded>
+          <b-select v-model="localWorker.federalTaxCategory" @input="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">
               {{ taxCategory.value }}
@@ -27,7 +27,7 @@
       </div>
       <div class="col-2">
         <b-field label="Provincial Category" class="mr-5">
-          <b-select v-model="worker.provincialTaxCategory" @input="updateTaxCategory" expanded>
+          <b-select v-model="localWorker.provincialTaxCategory" @input="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">
               {{ taxCategory.value }}
@@ -38,7 +38,7 @@
       <div class="col-2">
         <b-field label="CPP" :type="errors.has('cpp') ? 'is-danger' : ''"
           :message="errors.has('cpp') ? errors.first('cpp') : ''">
-          <b-numberinput v-model="worker.cpp" name="cpp" :step="0.01" :controls="false" expanded
+          <b-numberinput v-model="localWorker.cpp" name="cpp" :step="0.01" :controls="false" expanded
             v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
           </b-numberinput>
         </b-field>
@@ -46,7 +46,7 @@
       <div class="col-2">
         <b-field label="EI" :type="errors.has('ei') ? 'is-danger' : ''"
           :message="errors.has('ei') ? errors.first('ei') : ''">
-          <b-numberinput v-model="worker.ei" name="ei" :step="0.01" :controls="false" expanded
+          <b-numberinput v-model="localWorker.ei" name="ei" :step="0.01" :controls="false" expanded
             v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
           </b-numberinput>
         </b-field>
@@ -69,7 +69,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   props: ['worker'],
@@ -78,15 +78,25 @@ export default {
       isLoading: false,
       taxCategories: [],
       workerHolidays: [],
-      workerHolidaySelected: null
+      workerHolidaySelected: null,
+      localWorker: JSON.parse(JSON.stringify(this.worker))
+    }
+  },
+  watch: {
+    worker: {
+      handler(newVal) {
+        this.localWorker = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   methods: {
     updateExternalId() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileExternalId', this.worker)
+      this.$store.dispatch('agency/updateWorkerProfileExternalId', this.localWorker)
         .then(() => {
           this.isLoading = false;
+          this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
@@ -94,9 +104,10 @@ export default {
     },
     updateIsContractor() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerContractor", this.worker.id)
+      this.$store.dispatch("agency/updateAgencyWorkerContractor", this.localWorker.id)
         .then(() => {
           this.isLoading = false;
+          this.$emit('update:worker', this.localWorker);
         })
         .catch((error) => {
           this.isLoading = false;
@@ -105,9 +116,10 @@ export default {
     },
     updateIsSubContractor() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerSubContractor", this.worker.id)
+      this.$store.dispatch("agency/updateAgencyWorkerSubContractor", this.localWorker.id)
         .then(() => {
           this.isLoading = false;
+          this.$emit('update:worker', this.localWorker);
         })
         .catch((error) => {
           this.isLoading = false;
@@ -116,9 +128,10 @@ export default {
     },
     updateTaxCategory() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileTaxCategory', this.worker)
+      this.$store.dispatch('agency/updateWorkerProfileTaxCategory', this.localWorker)
         .then(() => {
           this.isLoading = false;
+          this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
@@ -126,9 +139,10 @@ export default {
     },
     updateTaxRate() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileTaxRate', this.worker)
+      this.$store.dispatch('agency/updateWorkerProfileTaxRate', this.localWorker)
         .then(() => {
           this.isLoading = false;
+          this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
@@ -144,8 +158,8 @@ export default {
         closeOnConfirm: false,
         confirmText: 'Add',
         onConfirm: async (value, dialog) => {
-          await this.$store.dispatch('agency/addNewHoliday', { workerProfileId: this.worker.id, date: value });
-          this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.worker.id);
+          await this.$store.dispatch('agency/addNewHoliday', { workerProfileId: this.localWorker.id, date: value });
+          this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.localWorker.id);
           dialog.close();
         }
       })
@@ -156,7 +170,7 @@ export default {
     async addUpdateWorkerHoliday() {
       this.isLoading = true;
       await this.$store.dispatch('agency/addUpdateAgencyWorkerProfileHolidays', {
-        workerProfileId: this.worker.id,
+        workerProfileId: this.localWorker.id,
         data: this.workerHolidaySelected
       });
       this.isLoading = false;
@@ -164,7 +178,7 @@ export default {
   },
   async created() {
     this.taxCategories = await this.$store.dispatch('getTaxCategories');
-    this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.worker.id);
+    this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.localWorker.id);
   },
   computed: {
     selectableDates() {

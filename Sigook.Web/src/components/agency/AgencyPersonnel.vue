@@ -30,12 +30,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   name: "AgencyUsers",
   components: {
-    CreateUser: () => import("./AgencyCreatePersonnelModal")
+    CreateUser: () => import("./AgencyCreatePersonnelModal.vue")
   },
   data() {
     return {

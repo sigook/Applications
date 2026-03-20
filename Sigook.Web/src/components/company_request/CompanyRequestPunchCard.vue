@@ -62,7 +62,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import download from '@/mixins/downloadFileMixin';
 
 export default {
@@ -86,7 +86,7 @@ export default {
     }
   },
   components: {
-    TablePunchCard: () => import("@/components/company_request/CompanyPunchCardWorkerContainer"),
+    TablePunchCard: () => import("@/components/company_request/CompanyPunchCardWorkerContainer.vue"),
     DataEntryTerms: () => import("@/components/DataEntryTerms.vue")
   },
   mixins: [download],

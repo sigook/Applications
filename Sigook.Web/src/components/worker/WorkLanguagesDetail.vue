@@ -14,7 +14,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -29,7 +29,7 @@ export default {
     }
   },
   components: {
-    languagesEdit: () => import("./WorkLanguagesForm")
+    languagesEdit: () => import("./WorkLanguagesForm.vue")
   }
 }
 </script>

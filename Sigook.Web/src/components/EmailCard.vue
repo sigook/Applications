@@ -3,12 +3,12 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-card" :class="{ 'edit': !disabled }">
       <label>{{ $t('Name') }}:
-        <input type="text" v-model="item.name" placeholder="Name" :name="'name' + index"
+        <input type="text" v-model="localItem.name" placeholder="Name" :name="'name' + index"
           v-validate="'required|max:50|min:3'" :class="{ 'is-danger': errors.has('name' + index) }" :disabled="disabled">
         <span v-show="errors.has('name' + index)" class="help is-danger no-margin">{{ errors.first('name') }}</span>
       </label>
       <label>{{ $t('Email') }}:
-        <input type="text" v-model="item.email" placeholder="Email" :name="'email' + index"
+        <input type="text" v-model="localItem.email" placeholder="Email" :name="'email' + index"
           v-validate="'required|max:50|min:6|email'" :class="{ 'is-danger': errors.has('email' + index) }"
           :disabled="disabled">
         <span v-show="errors.has('email' + index)" class="help is-danger no-margin">{{ errors.first('email') }}</span>
@@ -19,24 +19,33 @@
       <button v-if="disabled" @click="toogleEditInput()">
         <img src="../assets/images/edit-button.svg" alt="edit">
       </button>
-      <button v-if="!disabled" @click="validateUpdate(item, index)">
+      <button v-if="!disabled" @click="validateUpdate(localItem, index)">
         <img src="../assets/images/checked-accent.png" alt="edit">
       </button>
-      <button @click="deleteCompanyInvoiceRecipient(item, index)">
+      <button @click="deleteCompanyInvoiceRecipient(localItem, index)">
         <img src="../assets/images/delete-icon.png" alt="edit">
       </button>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['index', 'item'],
   inject: ['$validator'],
   data() {
     return {
       isLoading: false,
-      disabled: true
+      disabled: true,
+      localItem: JSON.parse(JSON.stringify(this.item))
+    }
+  },
+  watch: {
+    item: {
+      handler(newVal) {
+        this.localItem = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   methods: {

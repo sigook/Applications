@@ -4,10 +4,10 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   components: {
-    Invoices: () => import("../../components/company/CompanyInvoices")
+    Invoices: () => import("../../components/company/CompanyInvoices.vue")
   },
   data() {
     return {
@@ -17,7 +17,7 @@ export default {
   methods: {
   },
   created() {
-    
+    // no-op
   }
 }
 </script>

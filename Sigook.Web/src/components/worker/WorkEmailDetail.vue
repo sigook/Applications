@@ -13,7 +13,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -28,7 +28,7 @@ export default {
     }
   },
   components: {
-    emailEdit: () => import("./WorkEmailForm")
+    emailEdit: () => import("./WorkEmailForm.vue")
   }
 }
 </script>

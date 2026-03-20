@@ -34,7 +34,7 @@
     </section>
 </template>
 
-<script>
+<script lang="ts">
 export default {
     props: ['worker'],
     data() {
@@ -49,7 +49,7 @@ export default {
         }
     },
     components: {
-        resumeEdit: () => import("./WorkResumeForm")
+        resumeEdit: () => import("./WorkResumeForm.vue")
     }
 }
 </script>

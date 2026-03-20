@@ -48,7 +48,7 @@
         </section>
     </div>
 </template>
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 

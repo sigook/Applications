@@ -33,16 +33,16 @@
           <h1 class="capitalize fz2">{{ companyUser.name }} {{ companyUser.lastname }}</h1>
         </div>
       </div>
-      <component v-bind:is="currentTabComponent" class="tab" :user="companyUser"></component>
+      <component v-bind:is="currentTabComponent" class="tab" :user.sync="companyUser"></component>
     </div>
 
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
-import CompanyUserUpdate from "@/components/company/CompanyUserUpdate";
-import ProfileAccountInformation from "@/components/agency/ProfileAccountInformation";
+import CompanyUserUpdate from "@/components/company/CompanyUserUpdate.vue";
+import ProfileAccountInformation from "@/components/agency/ProfileAccountInformation.vue";
 
 
 export default {

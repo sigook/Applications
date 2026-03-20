@@ -25,7 +25,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Oidc from "oidc-client";
 
 export default {
@@ -34,14 +34,14 @@ export default {
     return {
       isMobile: false,
       isANewVersion: false,
-      userManager: new Oidc.UserManager(),
+      userManager: new Oidc.UserManager({} as any),
       isLogged: false
     };
   },
   components: {
-    NavBarLogged: () => import("@/components/NavBarLogged"),
-    Header: () => import("@/components/landing/Header"),
-    Footer: () => import("@/components/landing/Footer")
+    NavBarLogged: () => import("@/components/NavBarLogged.vue"),
+    Header: () => import("@/components/landing/Header.vue"),
+    Footer: () => import("@/components/landing/Footer.vue")
   },
   computed: {
     isCallback() {
@@ -60,14 +60,10 @@ export default {
     }
 
     this.getAppVersion();
-    let vm = this;
     let delay = 60 * 60 * 1000; // 1 hour in msec
-    setInterval(
-      function () {
-        vm.getAppVersion();
-      }.bind(this),
-      delay
-    );
+    setInterval(() => {
+      this.getAppVersion();
+    }, delay);
     await this.setIsLogged(this.$route);
   },
   methods: {
@@ -91,10 +87,10 @@ export default {
         caches.keys().then(names => {
           names.forEach(name => caches.delete(name));
         }).then(() => {
-          window.location.reload(true);
+          (window as any).location.reload();
         });
       } else {
-        window.location.reload(true);
+        (window as any).location.reload();
       }
     },
     async setIsLogged(route) {

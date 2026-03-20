@@ -6,7 +6,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ['company'],
@@ -17,7 +17,7 @@ export default {
     }
   },
   components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests"),
+    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
   }
 }
 </script>

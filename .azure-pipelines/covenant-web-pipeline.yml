@@ -305,3 +305,24 @@ stages:
                 echo "3. Test the application at the URL above"
                 echo "4. Check App Service logs if needed:"
                 echo "   az webapp log tail --name $(azureAppName) --resource-group <your-rg>"
+
+  # ============================================
+  # Stage 2: Notify Production Deployment
+  # ============================================
+  - stage: Notify
+    displayName: 'Notify Production Deploy'
+    dependsOn: CI_CD
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    pool:
+      name: 'covenant-build-pool'
+    jobs:
+      - job: SendEmail
+        displayName: 'Send Deployment Email'
+        variables:
+          - group: Sigook-Notifications
+        steps:
+          - checkout: none
+          - template: templates/notify-deployment.yml
+            parameters:
+              appType: 'website'
+              recipients: '$(NotificationRecipients)'

@@ -22,7 +22,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -32,7 +32,7 @@ export default {
     };
   },
   components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests"),
+    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
   }
 };
 </script>

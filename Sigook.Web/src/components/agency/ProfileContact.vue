@@ -4,7 +4,7 @@
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
-    <b-table :data="agencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated
+    <b-table :data="localAgencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated
       pagination-rounded>
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -39,7 +39,7 @@
             <b-field label="Title" :type="errors.has('title') ? 'is-danger' : ''"
               :message="errors.has('title') ? errors.first('title') : ''">
               <b-select v-model="contact.title" v-validate="'required'" name="title" expanded>
-                <option :value="item" v-for="item in $t('TitleList')">{{ item }}</option>
+                <option :value="item" v-for="(item, idx) in $t('TitleList')" :key="idx">{{ item }}</option>
               </b-select>
             </b-field>
           </div>
@@ -96,7 +96,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['agencyData'],
   data() {
@@ -104,10 +104,19 @@ export default {
       isLoading: false,
       showModal: false,
       contact: {},
+      localAgencyData: JSON.parse(JSON.stringify(this.agencyData)),
+    }
+  },
+  watch: {
+    agencyData: {
+      handler(newVal) {
+        this.localAgencyData = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   components: {
-    phoneInput: () => import("@/components/PhoneInput")
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   methods: {
     async validateForm() {
@@ -116,8 +125,9 @@ export default {
       const valid = await this.$validator.validateAll();
       if (mobileValid && officeValid && valid) {
         this.isLoading = true;
-        this.agencyData.contactInformation.push(this.contact);
-        this.$store.dispatch("agency/updateAgency", this.agencyData)
+        this.localAgencyData.contactInformation.push(this.contact);
+        this.$emit('update:agencyData', this.localAgencyData);
+        this.$store.dispatch("agency/updateAgency", this.localAgencyData)
           .then(() => {
             this.isLoading = false;
             this.showModal = false;
@@ -130,8 +140,9 @@ export default {
     },
     removeContact(index) {
       this.isLoading = true;
-      this.agencyData.contactInformation.splice(index, 1);
-      this.$store.dispatch("agency/updateAgency", this.agencyData)
+      this.localAgencyData.contactInformation.splice(index, 1);
+      this.$emit('update:agencyData', this.localAgencyData);
+      this.$store.dispatch("agency/updateAgency", this.localAgencyData)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("Updated"));

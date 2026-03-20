@@ -21,7 +21,7 @@
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
         <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data="agency" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
@@ -29,7 +29,7 @@
         </b-tab-item>
 
         <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data="agency" />
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
@@ -48,7 +48,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import confirmationAlert from "../../mixins/confirmationAlert";
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 
@@ -63,13 +63,13 @@ export default {
     };
   },
   components: {
-    BusinessInformation: () => import("@/components/agency/ProfileBusiness"),
-    BillingInformation: () => import("@/components/agency/ProfileBilling"),
-    ContactInformation: () => import("@/components/agency/ProfileContact"),
-    AccountSecurity: () => import("@/components/agency/ProfileAccountInformation"),
-    UploadImage: () => import("@/components/PreviewImage"),
-    UserNotification: () => import("../../components/UserNotification"),
-    Users: () => import("../../components/agency/AgencyPersonnel"),
+    BusinessInformation: () => import("@/components/agency/ProfileBusiness.vue"),
+    BillingInformation: () => import("@/components/agency/ProfileBilling.vue"),
+    ContactInformation: () => import("@/components/agency/ProfileContact.vue"),
+    AccountSecurity: () => import("@/components/agency/ProfileAccountInformation.vue"),
+    UploadImage: () => import("@/components/PreviewImage.vue"),
+    UserNotification: () => import("../../components/UserNotification.vue"),
+    Users: () => import("../../components/agency/AgencyPersonnel.vue"),
   },
   async created() {
     if (this.$route.query && this.$route.query.tab) {

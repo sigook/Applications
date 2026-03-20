@@ -52,7 +52,7 @@
     </b-table>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['workerId'],
   data() {

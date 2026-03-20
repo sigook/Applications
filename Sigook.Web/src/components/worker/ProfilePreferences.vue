@@ -30,19 +30,19 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ['worker'],
   components: {
-    skills: () => import("../../components/worker/WorkSkillsDetail"),
-    languages: () => import("../../components/worker/WorkLanguagesDetail"),
-    lift: () => import("../../components/worker/WorkLiftDetail"),
-    availability: () => import("../../components/worker/WorkAvailabilitiesDetail"),
-    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail"),
-    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail"),
-    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail"),
-    emergencyInformation: () => import("./WorkEmergencyInformationDetail")
+    skills: () => import("../../components/worker/WorkSkillsDetail.vue"),
+    languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
+    lift: () => import("../../components/worker/WorkLiftDetail.vue"),
+    availability: () => import("../../components/worker/WorkAvailabilitiesDetail.vue"),
+    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail.vue"),
+    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail.vue"),
+    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail.vue"),
+    emergencyInformation: () => import("./WorkEmergencyInformationDetail.vue")
   },
   methods: {
     updateProfile() {

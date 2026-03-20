@@ -237,16 +237,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
   components: {
-    AddressComponent: () => import("@/components/Address"),
-    PositionForm: () => import("@/components/agency_company/JobPositionForm"),
-    RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm"),
-    LocationForm: () => import("@/components/agency_company/LocationForm"),
+    PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
+    RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm.vue"),
+    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
   mixins: [billingAdminMixin],
   name: "AgencyCreateRequest",
@@ -254,7 +253,7 @@ export default {
     const maxBreak = new Date();
     maxBreak.setHours(1);
     maxBreak.setMinutes(0);
-    let timeZero = new Date(dayjs().subtract(14, "days"));
+    let timeZero = dayjs().subtract(14, "days").toDate();
     timeZero.setHours(0);
     timeZero.setMinutes(0);
     return {
