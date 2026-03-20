@@ -318,7 +318,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     children: [
                       // Large ring from SVG
                       Opacity(
-                        opacity: 0.40,
+                        opacity: 0.90,
                         child: SvgPicture.asset(
                           'assets/images/welcome-screen/circles.svg',
                           width: 170,
@@ -349,23 +349,26 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
           Positioned(
             bottom: 20,
             right: 16,
-            child: FadeTransition(
-              opacity: _panelsFade,
-              child: AnimatedBuilder(
-                animation: _legalSlide,
-                builder: (context, child) => Transform.translate(
-                  offset: _legalSlide.value,
-                  child: child!,
-                ),
-                child: GestureDetector(
-                  onTap: _showLegalModal,
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: SvgPicture.asset(
-                      'assets/images/welcome-screen/dots-rectangle.svg',
-                      width: 50,
-                      height: 20,
+            child: Opacity(
+              opacity: 0.750,
+              child: FadeTransition(
+                opacity: _panelsFade,
+                child: AnimatedBuilder(
+                  animation: _legalSlide,
+                  builder: (context, child) => Transform.translate(
+                    offset: _legalSlide.value,
+                    child: child!,
+                  ),
+                  child: GestureDetector(
+                    onTap: _showLegalModal,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: SvgPicture.asset(
+                        'assets/images/welcome-screen/dots-rectangle.svg',
+                        width: 50,
+                        height: 20,
+                      ),
                     ),
                   ),
                 ),
