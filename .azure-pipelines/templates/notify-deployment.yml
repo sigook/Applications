@@ -62,19 +62,19 @@ steps:
 
         if [ "${{ parameters.appType }}" = "api" ]; then
           APP_LABEL="Covenant API"
-          BODY="Hello,\n\nThe Covenant API has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Backend API services (covenant.sigook.ca)\n\nAll API endpoints are now running the latest version. If you experience any issues, please contact the development team.\n\n— Sigook DevOps"
+          BODY="Hello,\n\nThe Covenant API has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Backend API services (covenant.sigook.ca)\n\nAll API endpoints are now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
 
         elif [ "${{ parameters.appType }}" = "agency-portal" ]; then
           APP_LABEL="Sigook Web Portal"
-          BODY="Hello,\n\nThe Sigook agency web portal has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Agency web portal (covenant.sigook.ca)\n\nThe portal is now running the latest version. If you experience any issues, please contact the development team.\n\n— Sigook DevOps"
+          BODY="Hello,\n\nThe Sigook agency web portal has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Agency web portal (covenant.sigook.ca)\n\nThe portal is now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
 
         elif [ "${{ parameters.appType }}" = "website" ]; then
           APP_LABEL="Covenant Group Website"
-          BODY="Hello,\n\nThe Covenant Group website has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Corporate website (covenantgroup.com)\n\nThe changes are now live. If you experience any issues, please contact the development team.\n\n— Sigook DevOps"
+          BODY="Hello,\n\nThe Covenant Group website has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Corporate website (covenantgroup.com)\n\nThe changes are now live. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
 
         elif [ "${{ parameters.appType }}" = "mobile" ]; then
           APP_LABEL="Sigook Mobile App"
-          BODY="Hello,\n\nThe Sigook mobile app has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Android: Google Play Store (https://play.google.com/store/apps/details?id=com.sigook.app)\n- iOS: App Store (https://apps.apple.com/app/sigook)\n\nThe new version is being rolled out to users. It may take a few hours for the update to be available in all regions.\n\n— Sigook DevOps"
+          BODY="Hello,\n\nThe Sigook mobile app has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Android: Google Play Store (https://play.google.com/store/apps/details?id=com.sigook.app)\n- iOS: App Store (https://apps.apple.com/app/sigook)\n\nThe new version is being rolled out to users. It may take a few hours for the update to be available in all regions.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
         fi
 
         SUBJECT="Deployment Notification — ${APP_LABEL} v${{ parameters.version }}"
