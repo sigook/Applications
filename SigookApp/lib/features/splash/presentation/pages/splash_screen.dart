@@ -149,10 +149,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Full red background
           Container(color: AppTheme.secondaryRed),
 
-          // Logo only — positioned to match welcome page placement
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
