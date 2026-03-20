@@ -210,3 +210,22 @@ stages:
                   echo "URL: https://sigook.azurewebsites.net"
                 fi
                 echo "Version: $(Build.BuildId)"
+
+  # ============================================
+  # Stage 3: Notify Production Deployment
+  # ============================================
+  - stage: Notify
+    displayName: 'Notify Production Deploy'
+    dependsOn: CI_CD
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    jobs:
+      - job: SendEmail
+        displayName: 'Send Deployment Email'
+        variables:
+          - group: Sigook-Notifications
+        steps:
+          - checkout: none
+          - template: templates/notify-deployment.yml
+            parameters:
+              appType: 'agency-portal'
+              recipients: '$(NotificationRecipients)'

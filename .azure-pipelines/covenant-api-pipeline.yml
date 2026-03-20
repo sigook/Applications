@@ -179,3 +179,22 @@ stages:
                 echo "1. Verify API health endpoints"
                 echo "2. Check application logs if needed"
                 echo "3. Run smoke tests"
+
+  # ============================================
+  # Stage 3: Notify Production Deployment
+  # ============================================
+  - stage: Notify
+    displayName: 'Notify Production Deploy'
+    dependsOn: CI_CD
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    jobs:
+      - job: SendEmail
+        displayName: 'Send Deployment Email'
+        variables:
+          - group: Sigook-Notifications
+        steps:
+          - checkout: none
+          - template: templates/notify-deployment.yml
+            parameters:
+              appType: 'api'
+              recipients: '$(NotificationRecipients)'
