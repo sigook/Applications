@@ -186,7 +186,7 @@ stages:
   - stage: Notify
     displayName: 'Notify Production Deploy'
     dependsOn: CI_CD
-    condition: and(succeeded(), eq(variables['isMain'], true))
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
     jobs:
       - job: SendEmail
         displayName: 'Send Deployment Email'
