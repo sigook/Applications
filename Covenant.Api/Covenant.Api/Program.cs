@@ -74,7 +74,7 @@ builder.Services.AddSwaggerGen(opt =>
                         Id = "Bearer"
                     }
                 }
-            ] = Array.Empty<string>()
+            ] = []
         };
         opt.AddSecurityRequirement(securityRequirement);
 

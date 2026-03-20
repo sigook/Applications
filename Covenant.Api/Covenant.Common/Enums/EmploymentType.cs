@@ -1,10 +1,9 @@
-﻿namespace Covenant.Common.Enums
+﻿namespace Covenant.Common.Enums;
+
+public enum EmploymentType : byte
 {
-    public enum EmploymentType : byte
-    {
-        FullTime = 1,
-        PartTime,
-        Contractor,
-        Temporary
-    }
+    FullTime = 1,
+    PartTime,
+    Contractor,
+    Temporary
 }

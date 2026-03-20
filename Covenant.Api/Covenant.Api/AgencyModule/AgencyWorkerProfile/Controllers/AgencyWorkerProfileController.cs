@@ -109,7 +109,6 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers
             if (entity is null) return BadRequest();
             var result = entity.UpdateSubcontractor(service.GetCurrentDateTime());
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            entity.UpdateTextSearch();
             await _workerRepository.UpdateProfile(entity);
             await _workerRepository.SaveChangesAsync();
             return Ok();
@@ -133,7 +132,6 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers
             if (entity is null || entity.AgencyId != User.GetAgencyId()) return BadRequest();
             Result result = entity.UpdateApprovedToWork(timeService.GetCurrentDateTime());
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            entity.UpdateTextSearch();
             await _workerRepository.UpdateProfile(entity);
             await _workerRepository.SaveChangesAsync();
             return Ok();

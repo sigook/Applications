@@ -29,7 +29,7 @@ namespace Covenant.Tests.Billing
         public void SubtotalCannotBeNegative()
         {
             var discounts = new[] { new InvoiceUSADiscount(4, 4, "Error Missing hours") };
-            var result = InvoiceUSA.Create(default, default, default, Array.Empty<InvoiceUSAItem>(), discounts, new ProvinceTaxModel { Tax1 = 0.06m });
+            var result = InvoiceUSA.Create(default, default, default, [], discounts, new ProvinceTaxModel { Tax1 = 0.06m });
             Assert.False(result);
             Assert.Equal($"Subtotal cannot be a negative value -16", result.Errors.Single().Message);
         }

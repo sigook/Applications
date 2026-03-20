@@ -1,12 +1,7 @@
-namespace Covenant.Common.Enums
+namespace Covenant.Common.Enums;
+
+public enum WorkerRequestStatus
 {
-    public enum WorkerRequestStatus
-    {
-        //None,
-        [Obsolete] Applied,//Applied
-        [Obsolete] Declined,//Declined
-        Rejected,//Rejected
-        Booked,//Booked
-        [Obsolete] InQueue
-    }
+    Rejected,
+    Booked
 }

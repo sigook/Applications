@@ -79,9 +79,9 @@ public class Startup
 
 public static class Data
 {
-    public static readonly DateTime Now = new DateTime(2019, 01, 10);
-    public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency();
-    public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(new User(CvnEmail.Create("fake_worker_profile@mail.com").Value)) { Agency = Agency };
+    public static readonly DateTime Now = new(2019, 01, 10);
+    public static readonly Covenant.Common.Entities.Agency.Agency Agency = new();
+    public static readonly WorkerProfile FakeWorkerProfile = new(new User(CvnEmail.Create("fake_worker_profile@mail.com").Value)) { Agency = Agency };
     public static PayStub FakePayStub;
 
     public static void Seed(this CovenantContext context)
@@ -104,8 +104,8 @@ public static class Data
             {
                 PayStubItem.CreateItem("Regular",1,10,PayStubItemType.Regular).Value
             })
-            .WithWageDetails(Array.Empty<PayStubWageDetail>())
-            .WithPublicHolidaysToPay(Array.Empty<PayStubPublicHoliday>())
+            .WithWageDetails([])
+            .WithPublicHolidaysToPay([])
             .WithNoMoreDeductions()
             .WithoutReimbursement()
             .PayVacations()

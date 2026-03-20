@@ -9,8 +9,8 @@ public class CreateInvoiceModel
     public Guid? ProvinceId { get; set; }
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
-    public IEnumerable<CreateInvoiceItemModel> Discounts { get; set; } = Array.Empty<CreateInvoiceItemModel>();
-    public IEnumerable<CreateInvoiceItemModel> AdditionalItems { get; set; } = Array.Empty<CreateInvoiceItemModel>();
+    public IEnumerable<CreateInvoiceItemModel> Discounts { get; set; } = [];
+    public IEnumerable<CreateInvoiceItemModel> AdditionalItems { get; set; } = [];
     public bool DirectHiring { get; set; }
     public string ClientSiteAddress { get; set; }
 }

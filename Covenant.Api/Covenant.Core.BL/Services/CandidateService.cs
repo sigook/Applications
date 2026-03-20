@@ -154,7 +154,6 @@ public class CandidateService : ICandidateService
         });
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
-        profile.UpdateTextSearch();
         candidateRepository.Delete(candidate.Documents);
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();

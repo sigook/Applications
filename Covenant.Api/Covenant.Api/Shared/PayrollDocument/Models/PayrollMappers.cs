@@ -72,7 +72,7 @@ internal static class PayrollMappers
                 return model.OtherDeductionsDetail.Select(s =>
                      new PayrollTable2Item(string.IsNullOrEmpty(s.Description) ? "Others Deductions (-)" : s.Description, s.Total.ToString("C")));
             }
-            return model.DeductionOthers > 0 ? new[] { new PayrollTable2Item("Others Deductions (-)", model.DeductionOthers.ToString("C")) } : Array.Empty<PayrollTable2Item>();
+            return model.DeductionOthers > 0 ? [new PayrollTable2Item("Others Deductions (-)", model.DeductionOthers.ToString("C"))] : [];
         }
     }
 

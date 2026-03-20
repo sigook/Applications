@@ -34,12 +34,12 @@ public class PayStubBuilder :
     private DateTime _workBegins;
     private DateTime _workEnd;
     private DateTime _createdAt = DateTime.Now;
-    private IEnumerable<PayStubWageDetail> _wageDetails = new List<PayStubWageDetail>();
-    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = Array.Empty<PayStubPublicHoliday>();
-    private IReadOnlyCollection<PayStubItem> _items = new List<PayStubItem>();
+    private IEnumerable<PayStubWageDetail> _wageDetails = [];
+    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = [];
+    private IReadOnlyCollection<PayStubItem> _items = [];
     private bool _payVacations;
-    private IEnumerable<PayStubOtherDeduction> _otherDeductions = Array.Empty<PayStubOtherDeduction>();
-    private IReadOnlyCollection<PayStubItem> _reimbursements = new List<PayStubItem>();
+    private IEnumerable<PayStubOtherDeduction> _otherDeductions = [];
+    private IReadOnlyCollection<PayStubItem> _reimbursements = [];
 
     private PayStubBuilder(Rates rates, IPayrollDeductionsAndContributionsCalculator deductionsCalculator, IWorkerRepository workerRepository)
     {
@@ -80,7 +80,7 @@ public class PayStubBuilder :
     public IPublicHolidaysToPayHolder WithoutWageDetails() => this;
 
     public IOtherDeductionsHolder WithPublicHolidaysToPay(IReadOnlyCollection<PayStubPublicHoliday> publicHolidays) =>
-        this.Chain(b => b._holidaysToPay = new List<PayStubPublicHoliday>(publicHolidays ?? Array.Empty<PayStubPublicHoliday>()));
+        this.Chain(b => b._holidaysToPay = [.. publicHolidays ?? []]);
 
     public IOtherDeductionsHolder WithoutPublicHolidaysToPay() => this;
 
@@ -100,7 +100,7 @@ public class PayStubBuilder :
     {
         _items = _items.Where(i => i.Total > 0).ToList();
         _reimbursements = _reimbursements.Where(r => r.Total > 0).ToList();
-        if (!_items.Any()) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
+        if (_items.Count == 0) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
         if (_workBegins > _workEnd) return Result.Fail<PayStub>("Dates of work: start must be before end");
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(_workerProfileId);
         var grossForVacations = _items.Sum(i => i.Total).DefaultMoneyRound();

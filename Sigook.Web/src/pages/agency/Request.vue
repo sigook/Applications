@@ -144,28 +144,18 @@ export default {
              (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
     },
     getAgencyRequest() {
-      console.log('📡 Loading request data from API...');
       this.isLoading = true;
       this.$store.dispatch("agency/getAgencyRequest", this.$route.params.id)
         .then((response) => {
-          console.log('📥 API response received:', {
-            id: response.id,
-            workersQuantity: response.workersQuantity,
-            workersQuantityWorking: response.workersQuantityWorking,
-            status: response.status
-          });
-          // Use $set to ensure Vue detects the change
           const updatedRequest = Object.assign({}, response, {
             canEdit: this.canEditRequest(response),
             canCancel: this.canCancelRequest(response)
           });
           this.$set(this, 'request', updatedRequest);
-          console.log('✅ Request data updated successfully');
           this.setCanSendInvitation(this.request);
           this.isLoading = false;
         })
         .catch((error) => {
-          console.error('❌ Error loading request:', error);
           this.isLoading = false;
           this.showAlertError(error);
         });

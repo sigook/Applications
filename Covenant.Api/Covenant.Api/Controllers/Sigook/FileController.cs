@@ -53,7 +53,7 @@ namespace Covenant.Api.Controllers.Sigook
             {
                 long size = files.Sum(c => c.Length);
                 if (size > filesConfiguration.MaximumFileSize) return BadRequest(ModelState.AddError(ApiResources.MaxSizeFileError));
-                string[] allowImageFormats = _configuration.GetSection("ImageFormatSupport").Get<string[]>() ?? Array.Empty<string>();
+                string[] allowImageFormats = _configuration.GetSection("ImageFormatSupport").Get<string[]>() ?? [];
                 var fileSaver = new FileSaver(filesConfiguration);
                 var result = await fileSaver.SaveImageProfile(files, allowImageFormats, options, async (path, contentType) => await filesContainer.Upload(path, contentType));
                 if (result) return Ok(result.Value);
@@ -75,7 +75,7 @@ namespace Covenant.Api.Controllers.Sigook
             {
                 long size = files.Sum(c => c.Length);
                 if (size > filesConfiguration.MaximumFileSize) return BadRequest(ModelState.AddError(ApiResources.MaxSizeFileError));
-                string[] allowFormats = _configuration.GetSection("DocumentFormatSupport").Get<string[]>() ?? Array.Empty<string>();
+                string[] allowFormats = _configuration.GetSection("DocumentFormatSupport").Get<string[]>() ?? [];
                 var fileSaver = new FileSaver(filesConfiguration);
                 var result = await fileSaver.SaveFiles(files, allowFormats, options, async (path, contentType) => await filesContainer.Upload(path, contentType));
                 if (!result) return BadRequest(ModelState.AddErrors(result.Errors));

@@ -22,8 +22,6 @@ public class PayStubService : IPayStubService
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
 
-    private static readonly SemaphoreSlim SemaphoreSlim = new(1, 1);
-
     public PayStubService(
         IPayStubRepository payStubRepository,
         ITimesheetCalculatorService calculatorService,
@@ -197,20 +195,11 @@ public class PayStubService : IPayStubService
 
     public async Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds)
     {
-        await SemaphoreSlim.WaitAsync();
-        try
+        foreach (var workerId in workerIds)
         {
-            foreach (var workerId in workerIds)
-            {
-                var result = await GeneratePayStubForWorker(agencyIds, workerId);
-                if (!result) return result;
-            }
+            var result = await GeneratePayStubForWorker(agencyIds, workerId);
+            if (!result) return result;
         }
-        finally
-        {
-            SemaphoreSlim.Release();
-        }
-
         return Result.Ok();
     }
 

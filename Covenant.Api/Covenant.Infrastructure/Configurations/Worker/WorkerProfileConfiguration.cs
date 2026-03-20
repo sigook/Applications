@@ -10,8 +10,6 @@ namespace Covenant.Infrastructure.Configurations.Worker
         {
             builder.Property(c => c.NumberId).ValueGeneratedOnAdd();
             builder.HasIndex(p => new { p.WorkerId, p.AgencyId }).IsUnique();
-            builder.HasIndex(p => p.PunchCardId).IsUnique();
-            builder.HasIndex(p => p.TextSearch);
 
             builder.HasOne(wp => wp.WorkerProfileTaxCategory)
                 .WithOne(wp => wp.WorkerProfile)

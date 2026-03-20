@@ -1,9 +1,8 @@
-﻿namespace Covenant.Common.Enums
+﻿namespace Covenant.Common.Enums;
+
+public enum NotificationTarget
 {
-    public enum NotificationTarget
-    {
-        Agency,
-        Worker,
-        Company
-    }
+    Agency,
+    Worker,
+    Company
 }

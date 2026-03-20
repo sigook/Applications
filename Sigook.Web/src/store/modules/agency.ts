@@ -332,11 +332,11 @@ export default {
           .catch((error: any) => reject(error.response));
       });
     },
-    getAgencyRequestWorkersAll(context: any, { requestId, pagination, filter }: any): Promise<any> {
+    searchApplicants(context: any, { requestId, searchTerm }: any): Promise<any> {
       return new Promise((resolve, reject) => {
         http
-          .get(`/api/AgencyRequest/${requestId}/Worker/All`, {
-            params: { ...pagination, filter },
+          .get(`/api/AgencyRequest/${requestId}/Applicant/Search`, {
+            params: { searchTerm },
           })
           .then((response: any) => resolve(response.data))
           .catch((error: any) => reject(error.response));

@@ -1,12 +1,11 @@
-﻿namespace Covenant.Common.Enums
+﻿namespace Covenant.Common.Enums;
+
+public enum EmailSettingName
 {
-    public enum EmailSettingName
-    {
-        Default,
-        PayrollCovenant,
-        PayrollSigook,
-        Notification,
-        CovenantNotification,
-        SigookNotification,
-    }
+    Default,
+    PayrollCovenant,
+    PayrollSigook,
+    Notification,
+    CovenantNotification,
+    SigookNotification,
 }

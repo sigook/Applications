@@ -18,6 +18,5 @@ namespace Covenant.Common.Models.WebSite
         public string Shift { get; set; }
         public string CreatedBy { get; set; }
         public Guid? AgencyId { get; set; }
-        public CompanyType? CompanyType { get; set; }
     }
 }
