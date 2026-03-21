@@ -120,6 +120,24 @@ Map<String, dynamic> _$LocationModelToJson(_LocationModel instance) =>
       'isUSA': instance.isUSA,
     };
 
+_LicenseItemModel _$LicenseItemModelFromJson(Map<String, dynamic> json) =>
+    _LicenseItemModel(
+      license: json['license'] == null
+          ? null
+          : ProfileImageModel.fromJson(json['license'] as Map<String, dynamic>),
+      number: json['number'] as String?,
+      issued: json['issued'] as String?,
+      expires: json['expires'] as String?,
+    );
+
+Map<String, dynamic> _$LicenseItemModelToJson(_LicenseItemModel instance) =>
+    <String, dynamic>{
+      'license': instance.license,
+      'number': instance.number,
+      'issued': instance.issued,
+      'expires': instance.expires,
+    };
+
 _WorkerProfileListItemModel _$WorkerProfileListItemModelFromJson(
   Map<String, dynamic> json,
 ) => _WorkerProfileListItemModel(
@@ -199,12 +217,14 @@ _WorkerProfileModel _$WorkerProfileModelFromJson(Map<String, dynamic> json) =>
       hasVehicle: json['hasVehicle'] as bool? ?? false,
       licenses:
           (json['licenses'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => LicenseItemModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       certificates:
           (json['certificates'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                (e) => ProfileImageModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
       otherDocuments:

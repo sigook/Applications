@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/file_naming_service.dart';
 import '../models/worker_profile_model.dart';
 
 abstract class ProfileRemoteDataSource {
@@ -30,6 +31,17 @@ abstract class ProfileRemoteDataSource {
     WorkerProfileModel profile,
   );
   Future<void> uploadWorkerResume(
+    String workerId, {
+    required String filePath,
+  });
+  Future<void> uploadWorkerLicense(
+    String workerId, {
+    required String filePath,
+    required String number,
+    required String issued,
+    required String expires,
+  });
+  Future<void> uploadWorkerCertificate(
     String workerId, {
     required String filePath,
   });
@@ -455,6 +467,116 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to upload resume: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadWorkerLicense(
+    String workerId, {
+    required String filePath,
+    required String number,
+    required String issued,
+    required String expires,
+  }) async {
+    try {
+      final fileName = FileNamingService.generateLicenseName(filePath);
+
+      final licenseData = [
+        {
+          'license': {
+            'fileName': fileName,
+            'description': 'license',
+          },
+          'number': number,
+          'issued': issued,
+          'expires': expires,
+        }
+      ];
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(licenseData)));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Licenses',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload license: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload license: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadWorkerCertificate(
+    String workerId, {
+    required String filePath,
+  }) async {
+    try {
+      final fileName = FileNamingService.generateCertificateName(filePath);
+
+      final certificateData = [
+        {
+          'fileName': fileName,
+          'description': 'CERTIFICATE',
+        }
+      ];
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(certificateData)));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Certificates',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload certificate: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload certificate: $e');
     }
   }
 }

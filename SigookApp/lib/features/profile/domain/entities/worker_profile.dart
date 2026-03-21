@@ -1,5 +1,69 @@
 import 'package:equatable/equatable.dart';
 
+class WorkerLicense extends Equatable {
+  final String? fileUrl;
+  final String? fileName;
+  final String? description;
+  final String? number;
+  final String? issued;
+  final String? expires;
+
+  const WorkerLicense({
+    this.fileUrl,
+    this.fileName,
+    this.description,
+    this.number,
+    this.issued,
+    this.expires,
+  });
+
+  String get formattedIssued => _formatDate(issued);
+  String get formattedExpires => _formatDate(expires);
+
+  bool get isExpired {
+    if (expires == null || expires!.isEmpty) return false;
+    try {
+      return DateTime.parse(expires!).isBefore(DateTime.now());
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'N/A';
+    try {
+      final date = DateTime.parse(dateStr);
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+      return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  @override
+  List<Object?> get props => [fileUrl, fileName, description, number, issued, expires];
+}
+
+class WorkerCertificate extends Equatable {
+  final String? id;
+  final String? fileUrl;
+  final String? fileName;
+  final String? description;
+
+  const WorkerCertificate({
+    this.id,
+    this.fileUrl,
+    this.fileName,
+    this.description,
+  });
+
+  @override
+  List<Object?> get props => [id, fileUrl, fileName, description];
+}
+
 class WorkerProfile extends Equatable {
   final String id;
   final int? numberId;
@@ -50,6 +114,8 @@ class WorkerProfile extends Equatable {
   final bool hasResume;
   final String? resumeFileName;
   final String? resumeFileUrl;
+  final List<WorkerLicense> licenses;
+  final List<WorkerCertificate> certificates;
   final bool approvedToWork;
   final String? punchCardId;
   final bool haveAnyHealthProblem;
@@ -107,6 +173,8 @@ class WorkerProfile extends Equatable {
     this.hasResume = false,
     this.resumeFileName,
     this.resumeFileUrl,
+    this.licenses = const [],
+    this.certificates = const [],
     this.approvedToWork = false,
     this.punchCardId,
     this.haveAnyHealthProblem = false,
@@ -187,6 +255,7 @@ class WorkerProfile extends Equatable {
     languages, languageIds,
     skills, skillIds,
     hasResume, resumeFileName, resumeFileUrl,
+    licenses, certificates,
     approvedToWork, punchCardId, haveAnyHealthProblem,
     contactEmergencyName, contactEmergencyLastName, contactEmergencyPhone,
   ];

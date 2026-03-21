@@ -55,6 +55,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   PickedFileData? _replaceResumeFile;
   bool _isUploadingResume = false;
 
+  // License state
+  PickedFileData? _newLicenseFile;
+  bool _isUploadingLicense = false;
+  final _licenseNumberController = TextEditingController();
+  DateTime? _licenseIssuedDate;
+  DateTime? _licenseExpiresDate;
+
+  // Certificate state
+  PickedFileData? _newCertificateFile;
+  bool _isUploadingCertificate = false;
+
   // Location editing state
   Country? _editCountry;
   Province? _editProvince;
@@ -137,6 +148,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     _socialInsuranceController.dispose();
     _idNumber1Controller.dispose();
     _idNumber2Controller.dispose();
+    _licenseNumberController.dispose();
     super.dispose();
   }
 
@@ -259,6 +271,22 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         newFilePaths = {
           if (_replaceResumeFile != null)
             'resumeFile': _replaceResumeFile!.path,
+        };
+      case ProfileSection.licenses:
+        editedFields = {
+          'licenseNumber': _licenseNumberController.text,
+          'licenseIssued': _licenseIssuedDate?.toUtc().toIso8601String() ?? '',
+          'licenseExpires': _licenseExpiresDate?.toUtc().toIso8601String() ?? '',
+        };
+        newFilePaths = {
+          if (_newLicenseFile != null)
+            'licenseFile': _newLicenseFile!.path,
+        };
+      case ProfileSection.certificates:
+        editedFields = {};
+        newFilePaths = {
+          if (_newCertificateFile != null)
+            'certificateFile': _newCertificateFile!.path,
         };
       case ProfileSection.preferences:
         editedFields = {
@@ -503,6 +531,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         _buildDocumentsSection(profile),
         const SizedBox(height: 12),
         _buildResumeSection(profile),
+        const SizedBox(height: 12),
+        _buildLicensesSection(profile),
+        const SizedBox(height: 12),
+        _buildCertificatesSection(profile),
         const SizedBox(height: 24),
       ],
     );
@@ -1049,6 +1081,598 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Resume uploaded successfully!'),
+            backgroundColor: AppTheme.successGreen,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Licenses section ─────────────────────────────────────────────────────
+
+  Widget _buildLicensesSection(WorkerProfile? profile) {
+    return ProfileSectionCard(
+      title: 'Licenses',
+      icon: Icons.card_membership_outlined,
+      iconGradient: const [Color(0xFF7B1FA2), Color(0xFFBA68C8)],
+      children: [
+        // Existing licenses
+        if (profile != null && profile.licenses.isNotEmpty) ...[
+          ...profile.licenses.asMap().entries.map((entry) {
+            final license = entry.value;
+            final isExpired = license.isExpired;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: license.fileUrl != null
+                    ? () => _previewDocument(
+                          license.fileUrl!,
+                          license.description ?? 'License',
+                        )
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isExpired
+                        ? Colors.red.shade50
+                        : Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isExpired
+                          ? Colors.red.shade200
+                          : Colors.green.shade200,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.card_membership_outlined,
+                            size: 18,
+                            color: isExpired ? Colors.red.shade700 : Colors.green.shade700,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              license.description ?? 'License',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isExpired ? Colors.red.shade700 : Colors.green.shade700,
+                              ),
+                            ),
+                          ),
+                          if (isExpired)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Expired',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red.shade700,
+                                ),
+                              ),
+                            ),
+                          if (license.fileUrl != null)
+                            Icon(
+                              Icons.visibility_outlined,
+                              size: 18,
+                              color: isExpired ? Colors.red.shade400 : Colors.green.shade400,
+                            ),
+                        ],
+                      ),
+                      if (license.number != null && license.number!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.numbers_outlined, size: 16, color: Colors.grey.shade600),
+                            const SizedBox(width: 6),
+                            Text(
+                              'No. ${license.number}',
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Issued: ${license.formattedIssued}  ·  Expires: ${license.formattedExpires}',
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 4),
+        ],
+        // New license form
+        if (_newLicenseFile != null) ...[
+          const Divider(height: 24),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'New License',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profile?.fullName.isNotEmpty == true
+                            ? '${profile!.fullName}\'s license'
+                            : 'License file',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                      const Text(
+                        'Tap upload to save',
+                        style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextField(
+            controller: _licenseNumberController,
+            decoration: InputDecoration(
+              labelText: 'License Number',
+              prefixIcon: const Icon(Icons.numbers_outlined, size: 20),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              isDense: true,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDatePickerField(
+                  label: 'Issued Date',
+                  value: _licenseIssuedDate,
+                  onTap: () => _pickDate(isIssued: true),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDatePickerField(
+                  label: 'Expires Date',
+                  value: _licenseExpiresDate,
+                  onTap: () => _pickDate(isIssued: false),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isUploadingLicense ? null : _uploadLicense,
+                  icon: _isUploadingLicense
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined, size: 18),
+                  label: Text(
+                    _isUploadingLicense ? 'Uploading...' : 'Upload License',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _isUploadingLicense
+                    ? null
+                    : () => setState(() {
+                          _newLicenseFile = null;
+                          _licenseNumberController.clear();
+                          _licenseIssuedDate = null;
+                          _licenseExpiresDate = null;
+                        }),
+                icon: Icon(
+                  Icons.cancel_outlined,
+                  color: Colors.grey.shade500,
+                  size: 22,
+                ),
+                tooltip: 'Cancel',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ],
+          ),
+        ] else
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickLicenseFile,
+              icon: const Icon(Icons.upload_file, size: 18),
+              label: const Text('Add License'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryBlue,
+                side: const BorderSide(color: AppTheme.primaryBlue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDatePickerField({
+    required String label,
+    required DateTime? value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          isDense: true,
+        ),
+        child: Text(
+          value != null
+              ? '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}'
+              : 'Select date',
+          style: TextStyle(
+            fontSize: 14,
+            color: value != null ? AppTheme.textDark : Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickDate({required bool isIssued}) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: isIssued
+          ? (_licenseIssuedDate ?? now)
+          : (_licenseExpiresDate ?? now),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primaryBlue,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isIssued) {
+        _licenseIssuedDate = picked;
+      } else {
+        _licenseExpiresDate = picked;
+      }
+    });
+  }
+
+  Future<void> _pickLicenseFile() async {
+    final result = await ref
+        .read(filePickerServiceProvider)
+        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+    if (!result.isSuccess || result.file == null) return;
+    setState(() => _newLicenseFile = result.file);
+  }
+
+  Future<void> _uploadLicense() async {
+    if (_newLicenseFile == null) return;
+    if (_licenseNumberController.text.isEmpty ||
+        _licenseIssuedDate == null ||
+        _licenseExpiresDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all license fields'),
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isUploadingLicense = true);
+
+    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
+    final result = await updateUseCase(
+      UpdateWorkerProfileParams(
+        editedFields: {
+          'licenseNumber': _licenseNumberController.text,
+          'licenseIssued': _licenseIssuedDate!.toUtc().toIso8601String(),
+          'licenseExpires': _licenseExpiresDate!.toUtc().toIso8601String(),
+        },
+        section: ProfileSection.licenses,
+        newFilePaths: {'licenseFile': _newLicenseFile!.path},
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() => _isUploadingLicense = false);
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload license: ${failure.message}'),
+            backgroundColor: AppTheme.errorRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      (_) {
+        setState(() {
+          _newLicenseFile = null;
+          _licenseNumberController.clear();
+          _licenseIssuedDate = null;
+          _licenseExpiresDate = null;
+        });
+        ref.invalidate(cachedWorkerProfileProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('License uploaded successfully!'),
+            backgroundColor: AppTheme.successGreen,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Certificates section ────────────────────────────────────────────────────
+
+  Widget _buildCertificatesSection(WorkerProfile? profile) {
+    return ProfileSectionCard(
+      title: 'Certificates',
+      icon: Icons.workspace_premium_outlined,
+      iconGradient: const [Color(0xFFE65100), Color(0xFFFF9800)],
+      children: [
+        // Existing certificates
+        if (profile != null && profile.certificates.isNotEmpty) ...[
+          ...profile.certificates.map((cert) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: cert.fileUrl != null
+                    ? () => _previewDocument(
+                          cert.fileUrl!,
+                          cert.description ?? 'Certificate',
+                        )
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.workspace_premium_outlined,
+                        size: 18,
+                        color: Colors.orange.shade700,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          cert.description ?? 'Certificate',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                      ),
+                      if (cert.fileUrl != null)
+                        Icon(
+                          Icons.visibility_outlined,
+                          size: 18,
+                          color: Colors.orange.shade400,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 4),
+        ],
+        if (_newCertificateFile != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profile?.fullName.isNotEmpty == true
+                            ? '${profile!.fullName}\'s certificate'
+                            : 'Certificate file',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                      const Text(
+                        'Tap upload to save',
+                        style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isUploadingCertificate ? null : _uploadCertificate,
+                  icon: _isUploadingCertificate
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined, size: 18),
+                  label: Text(
+                    _isUploadingCertificate ? 'Uploading...' : 'Upload Certificate',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _isUploadingCertificate
+                    ? null
+                    : () => setState(() => _newCertificateFile = null),
+                icon: Icon(
+                  Icons.cancel_outlined,
+                  color: Colors.grey.shade500,
+                  size: 22,
+                ),
+                tooltip: 'Cancel',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ],
+          ),
+        ] else
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickCertificateFile,
+              icon: const Icon(Icons.upload_file, size: 18),
+              label: const Text('Add Certificate'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryBlue,
+                side: const BorderSide(color: AppTheme.primaryBlue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _pickCertificateFile() async {
+    final result = await ref
+        .read(filePickerServiceProvider)
+        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+    if (!result.isSuccess || result.file == null) return;
+    setState(() => _newCertificateFile = result.file);
+  }
+
+  Future<void> _uploadCertificate() async {
+    if (_newCertificateFile == null) return;
+
+    setState(() => _isUploadingCertificate = true);
+
+    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
+    final result = await updateUseCase(
+      UpdateWorkerProfileParams(
+        editedFields: {},
+        section: ProfileSection.certificates,
+        newFilePaths: {'certificateFile': _newCertificateFile!.path},
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() => _isUploadingCertificate = false);
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload certificate: ${failure.message}'),
+            backgroundColor: AppTheme.errorRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      (_) {
+        setState(() => _newCertificateFile = null);
+        ref.invalidate(cachedWorkerProfileProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Certificate uploaded successfully!'),
             backgroundColor: AppTheme.successGreen,
             behavior: SnackBarBehavior.floating,
           ),

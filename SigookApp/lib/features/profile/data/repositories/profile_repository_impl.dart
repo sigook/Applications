@@ -140,6 +140,23 @@ class ProfileRepositoryImpl implements ProfileRepository {
               filePath: newFilePaths!['resumeFile']!,
             );
           }
+        case ProfileSection.licenses:
+          if (newFilePaths?['licenseFile'] != null) {
+            await remoteDataSource.uploadWorkerLicense(
+              workerId,
+              filePath: newFilePaths!['licenseFile']!,
+              number: editedFields['licenseNumber'] ?? '',
+              issued: editedFields['licenseIssued'] ?? '',
+              expires: editedFields['licenseExpires'] ?? '',
+            );
+          }
+        case ProfileSection.certificates:
+          if (newFilePaths?['certificateFile'] != null) {
+            await remoteDataSource.uploadWorkerCertificate(
+              workerId,
+              filePath: newFilePaths!['certificateFile']!,
+            );
+          }
         case ProfileSection.preferences:
           List<String> parseIds(String key) => (editedFields[key] ?? '')
               .split(',')

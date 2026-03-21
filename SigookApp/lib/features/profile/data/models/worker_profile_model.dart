@@ -100,6 +100,19 @@ abstract class LocationModel with _$LocationModel {
       _$LocationModelFromJson(json);
 }
 
+@freezed
+abstract class LicenseItemModel with _$LicenseItemModel {
+  const factory LicenseItemModel({
+    ProfileImageModel? license,
+    String? number,
+    String? issued,
+    String? expires,
+  }) = _LicenseItemModel;
+
+  factory LicenseItemModel.fromJson(Map<String, dynamic> json) =>
+      _$LicenseItemModelFromJson(json);
+}
+
 // --- Worker profile list item (from GET /WorkerProfile) ---
 
 @freezed
@@ -147,8 +160,8 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
     String? phoneExt,
     LocationModel? location,
     @Default(false) bool hasVehicle,
-    @Default([]) List<CatalogItemModel> licenses,
-    @Default([]) List<CatalogItemModel> certificates,
+    @Default([]) List<LicenseItemModel> licenses,
+    @Default([]) List<ProfileImageModel> certificates,
     @Default([]) List<CatalogItemModel> otherDocuments,
     @Default([]) List<CatalogItemModel> availabilities,
     @Default([]) List<CatalogItemModel> availabilityTimes,
@@ -227,6 +240,24 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       hasResume: resume != null,
       resumeFileName: resume?.fileName,
       resumeFileUrl: resume?.pathFile,
+      licenses: licenses
+          .map((l) => WorkerLicense(
+                fileUrl: l.license?.pathFile,
+                fileName: l.license?.fileName,
+                description: l.license?.description,
+                number: l.number,
+                issued: l.issued,
+                expires: l.expires,
+              ))
+          .toList(),
+      certificates: certificates
+          .map((c) => WorkerCertificate(
+                id: c.id,
+                fileUrl: c.pathFile,
+                fileName: c.fileName,
+                description: c.description,
+              ))
+          .toList(),
       approvedToWork: approvedToWork,
       punchCardId: punchCardId,
       haveAnyHealthProblem: haveAnyHealthProblem,
