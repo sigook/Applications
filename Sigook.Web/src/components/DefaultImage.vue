@@ -3,7 +3,7 @@
         <span>{{ name ? name.substring(0, 2) : '' }}</span>
     </span>
 </template>
-<script>
+<script lang="ts">
 export default {
     props: ['name'],
     data() {

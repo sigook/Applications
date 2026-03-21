@@ -10,7 +10,7 @@
       <template>
         <b-table-column field="payStubNumber" v-slot="props">
           <i>{{ props.row.payStubNumber }}</i>
-          <p v-for="company in props.row.companies">
+          <p v-for="(company, idx) in props.row.companies" :key="idx">
             {{ company }}
           </p>
         </b-table-column>
@@ -31,7 +31,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in props.row.items">
+              <tr v-for="(item, idx) in props.row.items" :key="idx">
                 <td width="120px">{{ item.description }}</td>
                 <td width="80px">{{ item.quantity }}</td>
                 <td width="80px">{{ item.total | currency }}</td>
@@ -43,9 +43,6 @@
               </tr>
             </tbody>
           </table>
-        </b-table-column>
-        <b-table-column field="publicHolidays" label="Public Holidays" v-slot="props">
-          {{ props.row.publicHolidays | currency }}
         </b-table-column>
         <b-table-column field="vacations" label="Vacations" v-slot="props">
           {{ props.row.vacations | currency }}
@@ -62,7 +59,6 @@
             <template v-slot:content>
               <div><strong>Qty: </strong>{{ rowDetail.quantity }}</div>
               <div><strong>Total: </strong>{{ rowDetail.total | currency }}</div>
-              <div><strong>Public Holidays: </strong>{{ rowDetail.publicHolidays | currency }}</div>
               <div><strong>Vacations: </strong> {{ rowDetail.vacations | currency }}</div>
               <div><strong>Total Earnings: </strong>{{ rowDetail.totalEarnings | currency }}</div>
               <div><strong>Total Paid: </strong>{{ rowDetail.totalPaid | currency }}</div>
@@ -75,7 +71,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   props: ["workerId"],

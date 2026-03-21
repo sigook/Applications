@@ -1,7 +1,7 @@
 <template>
   <div></div>
 </template>
-<script>
+<script lang="ts">
 import mgr from '../security/securityService';
 
 export default {

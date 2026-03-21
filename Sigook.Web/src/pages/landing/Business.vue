@@ -130,13 +130,13 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 export default {
   components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo"),
-    SubMenu: () => import("@/components/landing/SubMenu"),
-    NeedStaff: () => import("@/components/landing/NeedStaff")
+    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
+    SubMenu: () => import("@/components/landing/SubMenu.vue"),
+    NeedStaff: () => import("@/components/landing/NeedStaff.vue")
   },
   data() {
     return {

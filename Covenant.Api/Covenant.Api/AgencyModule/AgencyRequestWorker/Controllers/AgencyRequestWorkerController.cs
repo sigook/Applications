@@ -32,16 +32,6 @@ namespace Covenant.Api.AgencyModule.AgencyRequestWorker.Controllers
         public async Task<ActionResult> Get([FromServices] IRequestRepository repository, [FromRoute] Guid requestId, [FromQuery] GetWorkersRequestFilter pagination) =>
             Ok(await repository.GetWorkersRequestByRequestId(requestId, pagination));
 
-        [HttpGet]
-        [Route("Whole")]
-        [Route("All")]
-        public async Task<ActionResult> GetAllWorkers([FromServices] IRequestRepository repository, [FromRoute] Guid requestId, [FromQuery] Pagination pagination, string filter = null)
-        {
-            Guid agencyId = User.GetAgencyId();
-            var list = await repository.GetAllWorkersThatCanApplyToRequest(agencyId, requestId, pagination ?? new Pagination(), filter);
-            return Ok(list);
-        }
-
         [HttpGet("{id}")]
         public async Task<ActionResult> GetById([FromServices] IRequestRepository repository, Guid requestId, Guid id)
         {

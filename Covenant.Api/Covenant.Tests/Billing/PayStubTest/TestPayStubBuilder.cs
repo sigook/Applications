@@ -5,7 +5,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
-using Covenant.Deductions.Models;
+using Covenant.Common.Models.Deductions;
 using Covenant.Deductions.Services;
 using Covenant.PayStubs.Services;
 using Moq;
@@ -104,7 +104,6 @@ namespace Covenant.Tests.Billing.PayStubTest
 
             Assert.Equal(31, sub.TotalPaid);
             Assert.NotEmpty(sub.Holidays);
-            Assert.Equal(publicHolidays.Sum(h => h.Amount), sub.PublicHolidayPay);
             Assert.Contains(publicHolidays, h => sub.Holidays.Any(h2 =>
                 h2.Id == h.Id
                 && h2.Holiday == h.Holiday

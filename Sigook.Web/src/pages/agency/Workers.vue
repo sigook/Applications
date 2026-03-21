@@ -39,6 +39,13 @@
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
             </template>
           </b-table-column>
+          <b-table-column field="externalId" width="120" label="External ID" sortable searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress.native="onInputEntered"></b-input>
+            </template>
+            <template v-slot="props">{{ props.row.externalId }}</template>
+          </b-table-column>
           <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.fullName" placeholder="Search..." icon="magnify" size="is-small"
@@ -100,19 +107,20 @@
             </template>
             <template v-slot="props">{{ props.row.createdAt | dateMonth }}</template>
           </b-table-column>
-          <b-table-column field="skills" width="800px" label="Skills" sortable searchable>
+          <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <div v-if="props.row.skills.length > 0">
-                <span v-for="(skill, index) in props.row.skills" :key="`${skill}_${index}`"
-                  class="tag-sm-gray mb-1 mr-1 ellipsis-full">
+              <div v-if="props.row.skills.length > 0" class="skills-inline">
+                <b-tag v-for="(skill, index) in props.row.skills.slice(0, 3)" :key="`${skill}_${index}`" rounded>
                   {{ skill }}
-                </span>
+                </b-tag>
+                <b-tooltip v-if="props.row.skills.length > 3" :label="props.row.skills.join(', ')" type="is-dark" multilined append-to-body>
+                  <b-tag rounded type="is-info is-light" class="see-more">See more...</b-tag>
+                </b-tooltip>
               </div>
-              <span v-else class="op3 is-inline-block v-middle pr-0">Skill</span>
             </template>
           </b-table-column>
           <b-table-column field="isCurrentlyWorking" width="250px" label="Details" searchable>
@@ -150,7 +158,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
@@ -172,8 +180,8 @@ export default {
     }
   },
   components: {
-    FloatingMenu: () => import("../../components/FloatingMenuDots"),
-    Export: () => import("@/components/Export")
+    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
+    Export: () => import("@/components/Export.vue")
   },
   mixins: [workerFeaturesMixin, phoneMaskMixin],
   methods: {
@@ -197,6 +205,9 @@ export default {
           break;
         case 'skills':
           this.serverParams.sortBy = 4;
+          break;
+        case 'externalId':
+          this.serverParams.sortBy = 5;
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
@@ -265,15 +276,14 @@ export default {
         });
     },
     confirmDelete(worker) {
-      let vm = this;
       this.showAlertConfirm(
-        vm.$t("AreYouSure"),
-        vm.$t("YouWantToDisableTheWorker") +
+        this.$t("AreYouSure"),
+        this.$t("YouWantToDisableTheWorker") +
         ". " +
-        vm.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
+        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
       ).then((response) => {
         if (response) {
-          vm.deleteWorker(worker);
+          this.deleteWorker(worker);
         }
       })
         .catch((error) => {
@@ -296,4 +306,26 @@ export default {
   },
 }
 </script>
-<style lang="scss"></style>
+<style lang="scss" scoped>
+::v-deep .b-table .table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+::v-deep .b-table .table td,
+::v-deep .b-table .table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skills-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.see-more {
+  cursor: pointer;
+}
+</style>

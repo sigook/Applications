@@ -12,7 +12,7 @@ namespace Covenant.PayStubs.Services
             items.AddRange(Regular(totals));
             items.AddRange(OtherRegular(totals));
             items.AddRange(Overtime(totals));
-            items.AddRange(HolidayPremiumPay(totals));
+            items.AddRange(StatutoryWorkedHolidayPay(totals));
             items.AddRange(NightShift(totals));
             items.AddRange(Missing(totals));
             items.AddRange(MissingOvertime(totals));
@@ -31,9 +31,9 @@ namespace Covenant.PayStubs.Services
             totals.Where(w => w.NightShift > decimal.Zero).GroupBy(w => w.NightShiftRate)
                 .Select(w => PayStubItem.CreateNightShift(w.Sum(t => t.NightShiftHours.TotalHours), w.Key));
 
-        private static IEnumerable<Result<PayStubItem>> HolidayPremiumPay(IEnumerable<TotalDailyWage> totals) =>
+        private static IEnumerable<Result<PayStubItem>> StatutoryWorkedHolidayPay(IEnumerable<TotalDailyWage> totals) =>
             totals.Where(w => w.Holiday > decimal.Zero).GroupBy(w => w.HolidayRate)
-                .Select(w => PayStubItem.CreateHolidayPremiumPay(w.Sum(t => t.HolidayHours.TotalHours), w.Key));
+                .Select(w => PayStubItem.CreateStatutoryWorkedHoliday(w.Sum(t => t.HolidayHours.TotalHours), w.Key));
 
         private static IEnumerable<Result<PayStubItem>> Overtime(IEnumerable<TotalDailyWage> totals) =>
             totals.Where(w => w.Overtime > decimal.Zero).GroupBy(w => w.OvertimeRate)

@@ -28,7 +28,7 @@
       </template>
     </b-table>
     <b-modal v-model="showModal" width="500px">
-      <address-component ref="addressComponent" :model="locationBeingUpdate"
+      <address-component ref="addressComponent" :model.sync="locationBeingUpdate"
         :enableProvinceSettings="true"
         @isLoading="(value) => isLoading = value" />
       <div class="container-flex">
@@ -43,8 +43,8 @@
   </div>
 </template>
 
-<script>
-import AddressComponent from "@/components/Address";
+<script lang="ts">
+import AddressComponent from "@/components/Address.vue";
 
 export default {
   components: { AddressComponent },

@@ -71,12 +71,12 @@
     </aside>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ["request"],
   components: {
-    Location: () => import("../request/RequestLocation"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail"),
+    Location: () => import("../request/RequestLocation.vue"),
+    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
   },
 };
 </script>

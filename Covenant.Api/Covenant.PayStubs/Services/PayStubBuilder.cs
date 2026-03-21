@@ -34,12 +34,12 @@ public class PayStubBuilder :
     private DateTime _workBegins;
     private DateTime _workEnd;
     private DateTime _createdAt = DateTime.Now;
-    private IEnumerable<PayStubWageDetail> _wageDetails = new List<PayStubWageDetail>();
-    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = Array.Empty<PayStubPublicHoliday>();
-    private IReadOnlyCollection<PayStubItem> _items = new List<PayStubItem>();
+    private IEnumerable<PayStubWageDetail> _wageDetails = [];
+    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = [];
+    private IReadOnlyCollection<PayStubItem> _items = [];
     private bool _payVacations;
-    private IEnumerable<PayStubOtherDeduction> _otherDeductions = Array.Empty<PayStubOtherDeduction>();
-    private IReadOnlyCollection<PayStubItem> _reimbursements = new List<PayStubItem>();
+    private IEnumerable<PayStubOtherDeduction> _otherDeductions = [];
+    private IReadOnlyCollection<PayStubItem> _reimbursements = [];
 
     private PayStubBuilder(Rates rates, IPayrollDeductionsAndContributionsCalculator deductionsCalculator, IWorkerRepository workerRepository)
     {
@@ -80,7 +80,7 @@ public class PayStubBuilder :
     public IPublicHolidaysToPayHolder WithoutWageDetails() => this;
 
     public IOtherDeductionsHolder WithPublicHolidaysToPay(IReadOnlyCollection<PayStubPublicHoliday> publicHolidays) =>
-        this.Chain(b => b._holidaysToPay = new List<PayStubPublicHoliday>(publicHolidays ?? Array.Empty<PayStubPublicHoliday>()));
+        this.Chain(b => b._holidaysToPay = [.. publicHolidays ?? []]);
 
     public IOtherDeductionsHolder WithoutPublicHolidaysToPay() => this;
 
@@ -100,14 +100,27 @@ public class PayStubBuilder :
     {
         _items = _items.Where(i => i.Total > 0).ToList();
         _reimbursements = _reimbursements.Where(r => r.Total > 0).ToList();
-        if (!_items.Any()) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
+        if (_items.Count == 0) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
         if (_workBegins > _workEnd) return Result.Fail<PayStub>("Dates of work: start must be before end");
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(_workerProfileId);
-        var grossPayment = _items.Sum(i => i.Total).DefaultMoneyRound();
-        var vacations = _payVacations ? PayrollFormulas.Vacations(grossPayment, _rates.Vacations).DefaultMoneyRound() : decimal.Zero;
+        var grossForVacations = _items.Sum(i => i.Total).DefaultMoneyRound();
+        var vacations = _payVacations ? PayrollFormulas.Vacations(grossForVacations, _rates.Vacations).DefaultMoneyRound() : decimal.Zero;
         var publicHolidayPay = _holidaysToPay.Sum(r => r.Amount).DefaultMoneyRound();
-        var totalEarnings = grossPayment.Add(vacations).Add(publicHolidayPay).DefaultMoneyRound();
-        var numberOfWeeks = DateExtensions.GetNumberOfWeeksIn(_workBegins, _workEnd);
+
+        if (publicHolidayPay > 0)
+        {
+            var rHolidayItem = PayStubItem.CreateStatutoryHoliday(publicHolidayPay);
+            if (rHolidayItem)
+            {
+                var items = _items.ToList();
+                items.Add(rHolidayItem.Value);
+                _items = items;
+            }
+        }
+
+        var grossPayment = _items.Sum(i => i.Total).DefaultMoneyRound();
+        var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
+        var numberOfWeeks = _workBegins.GetNumberOfWeeksIn(_workEnd);
         var payrollDeductionsAndContributions = await _deductionsCalculator.CalculateFor(
             totalEarnings,
             numberOfWeeks,
@@ -119,27 +132,27 @@ public class PayStubBuilder :
         var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound().Add(reimbursement);
         var paymentDate = GetPaymentDate();
         var regularWage = _items.GetRegularWage();
-        var payStub = new PayStub(
-            _workerProfileId,
-            Common.Entities.Accounting.PayStub.PayStub.PayrollNumber(_number, _createdAt),
-            _number,
-            _typeOfWork,
-            _workBegins,
-            _workEnd,
-            paymentDate,
-            regularWage,
-            grossPayment,
-            vacations,
-            publicHolidayPay,
-            totalEarnings,
-            payrollDeductionsAndContributions.Cpp,
-            payrollDeductionsAndContributions.Ei,
-            payrollDeductionsAndContributions.FederalTax,
-            payrollDeductionsAndContributions.ProvincialTax,
-            totalDeductions,
-            totalPaid,
-            _createdAt)
+        var payStub = new PayStub
         {
+            Id = Guid.NewGuid(),
+            WorkerProfileId = _workerProfileId,
+            PayStubNumber = $"PS-{_number:0000}-{_createdAt:yy}",
+            PayStubNumberId = _number,
+            TypeOfWork = _typeOfWork,
+            DateWorkBegins = _workBegins,
+            DateWorkEnd = _workEnd,
+            PaymentDate = paymentDate,
+            RegularWage = regularWage,
+            GrossPayment = grossPayment,
+            Vacations = vacations,
+            TotalEarnings = totalEarnings,
+            Cpp = payrollDeductionsAndContributions.Cpp,
+            Ei = payrollDeductionsAndContributions.Ei,
+            FederalTax = payrollDeductionsAndContributions.FederalTax,
+            ProvincialTax = payrollDeductionsAndContributions.ProvincialTax,
+            TotalDeductions = totalDeductions,
+            TotalPaid = totalPaid,
+            CreatedAt = _createdAt,
             WeekEnding = _workEnd.GetWeekEndingCurrentWeek()
         };
         payStub.AddItems(_items.Concat(_reimbursements));

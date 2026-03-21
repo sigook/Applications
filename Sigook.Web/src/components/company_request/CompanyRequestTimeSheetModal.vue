@@ -1,63 +1,63 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> {{ editableDay.day | dateMonth }} </h2>
+    <h2 class="text-center main-title"> {{ localEditableDay.day | dateMonth }} </h2>
     <div class="text-center">
       <div class="container-worker-report">
         <h3 class="fz-0">Worker Report</h3>
         <div class="d-flex space-between">
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Clock In</span>
-            <span v-if="editableDay.clockIn">{{ editableDay.clockIn | dateHHmm }}</span>
+            <span v-if="localEditableDay.clockIn">{{ localEditableDay.clockIn | dateHHmm }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Clock Out</span>
-            <span v-if="editableDay.clockOut">{{ editableDay.clockOut | dateHHmm }}</span>
+            <span v-if="localEditableDay.clockOut">{{ localEditableDay.clockOut | dateHHmm }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Hours</span>
-            <span v-if="editableDay.clockOut && editableDay.totalHours">
-              {{ editableDay.totalHours | hour }}
+            <span v-if="localEditableDay.clockOut && localEditableDay.totalHours">
+              {{ localEditableDay.totalHours | hour }}
             </span>
             <span v-else class="fz-1">No reported</span>
           </div>
         </div>
       </div>
     </div>
-    <b-message type="is-info" v-if="this.editableDay.clockIn && !this.editableDay.clockOut" has-icon>
+    <b-message type="is-info" v-if="this.localEditableDay.clockIn && !this.localEditableDay.clockOut" has-icon>
         The worker didn't clock out. Please enter the total hours worked in the "Hours Approved" field.
     </b-message>
     <div class="container-flex">
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field :label="$t('HoursApproved')">
-          <b-timepicker v-model="editableDay.hoursApprovedToDate" name="timeOut" hour-format="24"
+          <b-timepicker v-model="localEditableDay.hoursApprovedToDate" name="timeOut" hour-format="24"
             :max-time="maximumDailyHours">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field :label="$t('MissingHours')">
-          <b-timepicker v-model="editableDay.missinghoursToDate" name="timeOut" hour-format="24"
+          <b-timepicker v-model="localEditableDay.missinghoursToDate" name="timeOut" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Missing Hours Overtime">
-          <b-timepicker v-model="editableDay.missingHoursOvertimeToDate" name="timeOut" hour-format="24"
+          <b-timepicker v-model="localEditableDay.missingHoursOvertimeToDate" name="timeOut" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="validateHours(editableDay)">{{ $t("Save") }}</b-button>
+        <b-button type="is-primary" @click="validateHours(localEditableDay)">{{ $t("Save") }}</b-button>
       </div>
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 
 export default {
@@ -70,7 +70,16 @@ export default {
     return {
       timeOutInvalid: false,
       maximumMissing: maximumMissing,
-      isLoading: false
+      isLoading: false,
+      localEditableDay: JSON.parse(JSON.stringify(this.editableDay))
+    }
+  },
+  watch: {
+    editableDay: {
+      handler(newVal) {
+        this.localEditableDay = JSON.parse(JSON.stringify(newVal));
+      },
+      deep: true
     }
   },
   methods: {

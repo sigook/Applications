@@ -1,0 +1,154 @@
+# Reusable template for sending email notifications after production deployments
+# Uses Microsoft Graph API with Azure AD authentication (no SMTP passwords needed)
+#
+# Prerequisites:
+#   1. Azure AD App Registration with Mail.Send (Application) permission
+#   2. Pipeline variables (via variable group or pipeline settings):
+#      - GraphTenantId: Azure AD tenant ID
+#      - GraphClientId: App Registration client ID
+#      - GraphClientSecret: App Registration client secret (mark as secret)
+#      - NotificationRecipients: Semicolon-separated list of email recipients
+#
+# Usage:
+#   - template: templates/notify-deployment.yml
+#     parameters:
+#       appType: 'api'             # api | agency-portal | website | mobile
+#       recipients: '$(NotificationRecipients)'
+#       version: '$(Build.BuildId)'
+
+parameters:
+  - name: appType
+    type: string
+    displayName: 'Type of application (determines email body)'
+    values:
+      - api
+      - agency-portal
+      - website
+      - mobile
+
+  - name: recipients
+    type: string
+    displayName: 'Semicolon-separated list of email recipients'
+
+  - name: version
+    type: string
+    default: '$(Build.BuildId)'
+    displayName: 'Version identifier to include in the email'
+
+  - name: senderEmail
+    type: string
+    default: 'it@covenantgroupl.com'
+    displayName: 'Email address to send from (must match Azure AD user)'
+
+steps:
+  - task: Bash@3
+    name: SendDeploymentEmail
+    displayName: 'Send Deployment Email via Microsoft Graph'
+    env:
+      GRAPH_TENANT_ID: $(GraphTenantId)
+      GRAPH_CLIENT_ID: $(GraphClientId)
+      GRAPH_CLIENT_SECRET: $(GraphClientSecret)
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "========================================"
+        echo "Deployment Notification via Microsoft Graph"
+        echo "========================================"
+        echo "Type: ${{ parameters.appType }}"
+        echo "Version: ${{ parameters.version }}"
+        echo "Sender: ${{ parameters.senderEmail }}"
+
+        # --- Compose subject and body based on app type ---
+
+        if [ "${{ parameters.appType }}" = "api" ]; then
+          APP_LABEL="Covenant API"
+          BODY="Hello,\n\nThe Covenant API has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Backend API services (covenant.sigook.ca)\n\nAll API endpoints are now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+
+        elif [ "${{ parameters.appType }}" = "agency-portal" ]; then
+          APP_LABEL="Sigook Web Portal"
+          BODY="Hello,\n\nThe Sigook agency web portal has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Agency web portal (covenant.sigook.ca)\n\nThe portal is now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+
+        elif [ "${{ parameters.appType }}" = "website" ]; then
+          APP_LABEL="Covenant Group Website"
+          BODY="Hello,\n\nThe Covenant Group website has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Corporate website (covenantgroup.com)\n\nThe changes are now live. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+
+        elif [ "${{ parameters.appType }}" = "mobile" ]; then
+          APP_LABEL="Sigook Mobile App"
+          BODY="Hello,\n\nThe Sigook mobile app has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Android: Google Play Store (https://play.google.com/store/apps/details?id=com.sigook.app)\n- iOS: App Store (https://apps.apple.com/app/sigook)\n\nThe new version is being rolled out to users. It may take a few hours for the update to be available in all regions.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+        fi
+
+        SUBJECT="Deployment Notification — ${APP_LABEL} v${{ parameters.version }}"
+
+        echo ""
+        echo "Subject: $SUBJECT"
+        echo "========================================"
+
+        # --- Get OAuth token from Azure AD ---
+
+        echo "Requesting OAuth token..."
+        TOKEN_RESPONSE=$(curl -s -X POST \
+          "https://login.microsoftonline.com/${GRAPH_TENANT_ID}/oauth2/v2.0/token" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -d "client_id=${GRAPH_CLIENT_ID}" \
+          -d "client_secret=${GRAPH_CLIENT_SECRET}" \
+          -d "scope=https://graph.microsoft.com/.default" \
+          -d "grant_type=client_credentials")
+
+        ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
+
+        if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+          echo "❌ Failed to obtain OAuth token"
+          echo "Response: $TOKEN_RESPONSE"
+          exit 1
+        fi
+
+        echo "✅ OAuth token obtained"
+
+        # --- Build recipients JSON array ---
+
+        RECIPIENTS_JSON="["
+        IFS=';' read -ra ADDR <<< "${{ parameters.recipients }}"
+        FIRST=true
+        for email in "${ADDR[@]}"; do
+          email=$(echo "$email" | xargs)  # trim whitespace
+          if [ -n "$email" ]; then
+            if [ "$FIRST" = true ]; then
+              FIRST=false
+            else
+              RECIPIENTS_JSON+=","
+            fi
+            RECIPIENTS_JSON+="{\"emailAddress\":{\"address\":\"${email}\"}}"
+          fi
+        done
+        RECIPIENTS_JSON+="]"
+
+        # --- Send email via Microsoft Graph API ---
+
+        echo "Sending email to: ${{ parameters.recipients }}"
+
+        HTTP_STATUS=$(curl -s -o /tmp/graph_response.txt -w "%{http_code}" -X POST \
+          "https://graph.microsoft.com/v1.0/users/${{ parameters.senderEmail }}/sendMail" \
+          -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"message\": {
+              \"subject\": \"${SUBJECT}\",
+              \"body\": {
+                \"contentType\": \"Text\",
+                \"content\": \"${BODY}\"
+              },
+              \"toRecipients\": ${RECIPIENTS_JSON}
+            }
+          }")
+
+        if [ "$HTTP_STATUS" = "202" ] || [ "$HTTP_STATUS" = "200" ]; then
+          echo "✅ Deployment notification sent successfully!"
+          echo "   From: ${{ parameters.senderEmail }}"
+          echo "   To: ${{ parameters.recipients }}"
+          echo "   Subject: ${SUBJECT}"
+        else
+          echo "❌ Failed to send email (HTTP ${HTTP_STATUS})"
+          echo "Response:"
+          cat /tmp/graph_response.txt
+          exit 1
+        fi

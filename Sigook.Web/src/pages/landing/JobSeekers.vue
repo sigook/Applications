@@ -145,7 +145,7 @@
 </template>
 
 
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -158,15 +158,15 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu"),
-    SigookVideo: () => import("@/components/landing/SigookVideo"),
-    JobSearch: () => import("@/components/landing/JobSearch"),
-    ApplyNow: () => import("@/components/landing/ApplyNow"),
+    SubMenu: () => import("@/components/landing/SubMenu.vue"),
+    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
+    JobSearch: () => import("@/components/landing/JobSearch.vue"),
+    ApplyNow: () => import("@/components/landing/ApplyNow.vue"),
   },
   async created() {
     this.isLoading = true;
     this.jobs = await this.$store.dispatch("getJobs", this.$route.query);
-    this.jobSelected = this.jobs[0];
+    this.selectJob(this.jobs[0]);
     this.isLoading = false;
     const VueScrollTo = require('vue-scrollto');
     VueScrollTo.scrollTo("#jobsContainer");

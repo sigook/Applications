@@ -42,7 +42,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import pubSub from "@/mixins/pubSub";
 import updateMixin from "../../mixins/uploadFiles";
 
@@ -59,7 +59,7 @@ export default {
     };
   },
   components: {
-    UploadFile: () => import("../../components/UploadFiles"),
+    UploadFile: () => import("../../components/UploadFiles.vue"),
   },
   mixins: [pubSub, updateMixin],
   methods: {

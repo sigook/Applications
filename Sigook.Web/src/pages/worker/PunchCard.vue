@@ -41,7 +41,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 
 export default {
@@ -72,7 +72,11 @@ export default {
         this.isEntryTime = clockType === 1;
         this.canBeRegistered = clockType !== 0;
         this.isLoading = false;
-        this.isEntryTime ? this.showAlertSuccess(this.$t("EnjoyYourShift")) : this.showAlertSuccess(this.$t("ThanksForYourJob"));
+        if (this.entryTime) {
+          this.showAlertSuccess(this.$t("EnjoyYourShift"));
+        } else {
+          this.showAlertSuccess(this.$t("ThanksForYourJob"));
+        }
       }).catch(error => {
         this.isLoading = false;
         this.showAlertError(error.data);
@@ -126,6 +130,7 @@ export default {
       if (this.timesheet && this.timesheet.items.length > 0) {
         return this.timesheet.items.map(i => new Date(i.day));
       }
+      return [];
     },
     todayData() {
       let today = this.timesheet.items.find(item => {

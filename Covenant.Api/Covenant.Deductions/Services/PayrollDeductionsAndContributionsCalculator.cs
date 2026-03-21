@@ -2,8 +2,8 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Deductions.Models;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Models.Deductions;
+using Covenant.Common.Repositories;
 
 namespace Covenant.Deductions.Services;
 

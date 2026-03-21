@@ -6,7 +6,8 @@ namespace Covenant.Common.Models.Worker
         NumberId,
         RequestId,
         CreatedAt,
-        Skills
+        Skills,
+        ExternalId
     }
 
     public enum WorkersProfileFeature
@@ -33,5 +34,6 @@ namespace Covenant.Common.Models.Worker
         public IEnumerable<WorkersProfileFeature> Features { get; set; }
         public Guid? CompanyProfileId { get; set; }
         public string Location { get; set; }
+        public string ExternalId { get; set; }
     }
 }

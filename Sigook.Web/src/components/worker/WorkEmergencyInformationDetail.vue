@@ -44,7 +44,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -59,7 +59,7 @@ export default {
     }
   },
   components: {
-    emergencyInformationEdit: () => import("./WorkEmergencyInformationForm")
+    emergencyInformationEdit: () => import("./WorkEmergencyInformationForm.vue")
   }
 }
 </script>

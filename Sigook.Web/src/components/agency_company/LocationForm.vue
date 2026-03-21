@@ -4,7 +4,7 @@
     <h2 class="text-center main-title">{{ $t("Location") }}</h2>
 
     <div class="container-flex">
-      <cvn-address :model="location" :enableProvinceSettings="enableProvinceSettings" />
+      <cvn-address :model.sync="location" :enableProvinceSettings="enableProvinceSettings" />
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Latitude" :type="errors.has('latitude') ? 'is-danger' : ''">
           <b-input v-model="location.latitude" />
@@ -43,8 +43,8 @@
   </div>
 </template>
 
-<script>
-import CvnAddress from "@/components/Address";
+<script lang="ts">
+import CvnAddress from "@/components/Address.vue";
 
 export default {
   components: { CvnAddress },

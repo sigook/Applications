@@ -9,7 +9,7 @@ using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Accounting;
-using Covenant.Deductions.Entities;
+using Covenant.Common.Entities.Deductions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Context

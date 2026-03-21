@@ -77,7 +77,6 @@ public class WorkerAdapter : IWorkerAdapter
         entity.AgencyId = agencyId;
         entity.Agency = agency;
         entity.ApprovedToWork = false;
-        entity.UpdateTextSearch();
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = model.Email,

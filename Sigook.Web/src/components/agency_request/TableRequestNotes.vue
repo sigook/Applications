@@ -33,7 +33,7 @@
         <!-- end CREATE custom modal -->
     </div>
 </template>
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
     props: ['canEdit', 'requestId'],
@@ -50,7 +50,7 @@ export default {
     },
     mixins: [toastMixin],
     components: {
-        ModalNotes: () => import("../notes/ModalNotes")
+        ModalNotes: () => import("../notes/ModalNotes.vue")
     },
     methods: {
         getAgencyRequestFirstNote(){

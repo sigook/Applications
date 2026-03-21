@@ -49,7 +49,7 @@
     <!-- end CREATE custom modal -->
   </div>
 </template>
-<script>
+<script lang="ts">
 import toast from '../../mixins/toastMixin';
 export default {
   props: ['requestId', 'userId', 'onGet', 'onCreate', 'onUpdate', 'onDelete', 'canCreate', 'currentNote'],
@@ -67,8 +67,8 @@ export default {
     }
   },
   components: {
-    NoteForm: () => import("./NoteForm"),
-    Pagination: () => import("../../components/Paginator")
+    NoteForm: () => import("./NoteForm.vue"),
+    Pagination: () => import("../../components/Paginator.vue")
   },
   mounted() {
     this.getNotes(this.currentPage);

@@ -37,11 +37,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: ['company'],
   components: {
-    CreateUser: () => import("@/components/CompanyCreateUserModal")
+    CreateUser: () => import("@/components/CompanyCreateUserModal.vue")
   },
   data() {
     return {

@@ -1,5 +1,6 @@
 ﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
+using CandidateEntity = Covenant.Common.Entities.Candidate.Candidate;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
@@ -22,34 +23,23 @@ using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Request;
 
-public class RequestRepository : IRequestRepository
+public class RequestRepository(CovenantContext context, IOptions<FilesConfiguration> options) : IRequestRepository
 {
-    private readonly CovenantContext _context;
-    private readonly FilesConfiguration filesConfiguration;
-    private readonly ITimeService _timeService;
+    private readonly FilesConfiguration filesConfiguration = options.Value;
 
-    public RequestRepository(CovenantContext context,
-        IOptions<FilesConfiguration> options,
-        ITimeService timeService)
-    {
-        _context = context;
-        filesConfiguration = options.Value;
-        _timeService = timeService;
-    }
+    public async Task Create<T>(T entity) where T : class => await context.Set<T>().AddAsync(entity);
 
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
+    public void Delete<T>(T entity) where T : class => context.Set<T>().Remove(entity);
 
-    public void Delete<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
-
-    public Task Update<T>(T entity) where T : class => Task.FromResult(_context.Set<T>().Update(entity));
+    public Task Update<T>(T entity) where T : class => Task.FromResult(context.Set<T>().Update(entity));
 
     public IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
     {
-        var requests = _context.Request.AsQueryable();
+        var requests = context.Request.AsQueryable();
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {
             requests = from r in requests
-                       join rr in _context.RequestRecruiter.Where(c => c.Recruiter.User.Email.ToLower() == filter.Recruiter.ToLower()) on r.Id equals rr.RequestId
+                       join rr in context.RequestRecruiter.Where(c => c.Recruiter.User.Email.ToLower() == filter.Recruiter.ToLower()) on r.Id equals rr.RequestId
                        select r;
         }
         if (filter.CompanyId.HasValue)
@@ -57,10 +47,10 @@ public class RequestRepository : IRequestRepository
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
         var query = from r in requests
-                    join cp in _context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
+                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
+                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
-                    join rc in _context.RequestComissions on r.Id equals rc.RequestId into tmp1
+                    join rc in context.RequestComissions on r.Id equals rc.RequestId into tmp1
                     from rrc in tmp1.DefaultIfEmpty()
                     select new AgencyRequestListModel
                     {
@@ -109,7 +99,7 @@ public class RequestRepository : IRequestRepository
         return await query.ToPaginatedList(filter);
     }
 
-    private Expression<Func<AgencyRequestListModel, bool>> ApplyFilterForAgency(GetRequestForAgencyFilter filter)
+    private static Expression<Func<AgencyRequestListModel, bool>> ApplyFilterForAgency(GetRequestForAgencyFilter filter)
     {
         var predicate = PredicateBuilder.New<AgencyRequestListModel>(true);
         if (!filter.HasPermissionToSeeInternalOrders)
@@ -124,7 +114,7 @@ public class RequestRepository : IRequestRepository
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
             var locationCriteria = filter.Location.ToLower();
-            predicate = predicate.And(r => 
+            predicate = predicate.And(r =>
                 r.Address.ToLower().Contains(locationCriteria) ||
                 r.City.ToLower().Contains(locationCriteria) ||
                 r.ProvinceName.ToLower().Contains(locationCriteria) ||
@@ -154,7 +144,7 @@ public class RequestRepository : IRequestRepository
         return predicate;
     }
 
-    private IQueryable<AgencyRequestListModel> ApplySortForAgency(IQueryable<AgencyRequestListModel> query, GetRequestForAgencyFilter filter)
+    private static IQueryable<AgencyRequestListModel> ApplySortForAgency(IQueryable<AgencyRequestListModel> query, GetRequestForAgencyFilter filter)
     {
         switch (filter.SortBy)
         {
@@ -192,9 +182,9 @@ public class RequestRepository : IRequestRepository
     public async Task<IEnumerable<JobViewModel>> GetAvailableRequest(IEnumerable<string> countries)
     {
         var openStatus = new RequestStatus[] { RequestStatus.Open };
-        var requests = _context.Request.Include(r => r.Shift)
+        var requests = context.Request.Include(r => r.Shift)
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
-            .Join(_context.CompanyProfile.Where(cp => cp.Active), r => r.CompanyId, cp => cp.CompanyId, (r, cp) => r)
+            .Join(context.CompanyProfile.Where(cp => cp.Active), r => r.CompanyId, cp => cp.CompanyId, (r, cp) => r)
             .Where(r => openStatus.Contains(r.Status))
             .Where(r => countries.Contains(r.JobLocation.City.Province.Country.Code))
             .Select(r => new JobViewModel
@@ -216,10 +206,10 @@ public class RequestRepository : IRequestRepository
 
     public Task<PaginatedList<WorkerRequestAgencyBoardModel>> GetWorkersRequestBoard(Guid agencyId, Pagination pagination)
     {
-        return (from wr in _context.WorkerRequest
-                join r in _context.Request.Where(wR => wR.AgencyId == agencyId) on wr.RequestId equals r.Id
-                join wp in _context.WorkerProfile on new { WId = wr.WorkerId, AId = r.AgencyId } equals new { WId = wp.WorkerId, AId = wp.AgencyId }
-                join cp in _context.CompanyProfile on new { CId = r.CompanyId, AId = r.AgencyId } equals new { CId = cp.CompanyId, AId = cp.AgencyId }
+        return (from wr in context.WorkerRequest
+                join r in context.Request.Where(wR => wR.AgencyId == agencyId) on wr.RequestId equals r.Id
+                join wp in context.WorkerProfile on new { WId = wr.WorkerId, AId = r.AgencyId } equals new { WId = wp.WorkerId, AId = wp.AgencyId }
+                join cp in context.CompanyProfile on new { CId = r.CompanyId, AId = r.AgencyId } equals new { CId = cp.CompanyId, AId = cp.AgencyId }
                 orderby wr.StartWorking descending
                 select new WorkerRequestAgencyBoardModel
                 {
@@ -259,24 +249,24 @@ public class RequestRepository : IRequestRepository
 
     public async Task<AgencyRequestDetailModel> GetRequestDetailForAgency(Guid id)
     {
-        var requests = _context.Request
+        var requests = context.Request
             .Include(r => r.JobLocation)
             .ThenInclude(jl => jl.City)
             .ThenInclude(c => c.Province)
             .ThenInclude(p => p.Country)
             .Where(c => c.Id == id);
         var query = from r in requests
-                    join cpj in _context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
+                    join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
                     from cpj in tmp1.DefaultIfEmpty()
-                    join jp in _context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
+                    join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
                     from jp in tmp2.DefaultIfEmpty()
-                    join cp in _context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
+                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
+                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
-                    join rcd in _context.RequestCancellationDetail on r.Id equals rcd.RequestId
+                    join rcd in context.RequestCancellationDetail on r.Id equals rcd.RequestId
                     into tmpRcd
                     from rcd in tmpRcd.DefaultIfEmpty()
-                    join rc in _context.RequestComissions on r.Id equals rc.RequestId into tmp3
+                    join rc in context.RequestComissions on r.Id equals rc.RequestId into tmp3
                     from rc in tmp3.DefaultIfEmpty()
                     select new AgencyRequestDetailModel
                     {
@@ -353,11 +343,11 @@ public class RequestRepository : IRequestRepository
 
     public async Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter)
     {
-        var requests = _context.Request.AsQueryable();
+        var requests = context.Request.AsQueryable();
         if (filter.CompanyUserId.HasValue)
             requests = requests.Where(r => r.RequestCompanyUser.Any(rcu => rcu.CompanyUserId == filter.CompanyUserId));
         var query = from request in requests
-                    join agency in _context.Agencies on request.AgencyId equals agency.Id
+                    join agency in context.Agencies on request.AgencyId equals agency.Id
                     select new RequestListModel
                     {
                         CompanyId = request.CompanyId,
@@ -382,7 +372,7 @@ public class RequestRepository : IRequestRepository
         return await query.ToPaginatedList(filter);
     }
 
-    private Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(Guid companyId, GetRequestForCompanyFilter filter)
+    private static Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(Guid companyId, GetRequestForCompanyFilter filter)
     {
         // Companies can see Open and Filled orders (InProgress was removed 2026-01-28)
         var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.Filled };
@@ -419,10 +409,10 @@ public class RequestRepository : IRequestRepository
     }
 
     public Task<CompanyRequestDetailModel> GetRequestDetailForCompany(Guid id) =>
-        (from r in _context.Request.Where(c => c.Id == id)
-         join cpj in _context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
+        (from r in context.Request.Where(c => c.Id == id)
+         join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
          from cpj in tmp1.DefaultIfEmpty()
-         join jp in _context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
+         join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
          from jp in tmp2.DefaultIfEmpty()
          select new CompanyRequestDetailModel
          {
@@ -483,7 +473,7 @@ public class RequestRepository : IRequestRepository
          }).SingleOrDefaultAsync();
 
     public Task<Common.Entities.Request.Request> GetRequest(Expression<Func<Common.Entities.Request.Request, bool>> condition) =>
-        _context.Request.Where(condition)
+        context.Request.Where(condition)
             .Include(r => r.JobPositionRate).ThenInclude(c => c.JobPosition)
             .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province)
             .Include(r => r.Workers)
@@ -493,9 +483,9 @@ public class RequestRepository : IRequestRepository
 
     public async Task<PaginatedList<AgencyWorkerRequestModel>> GetWorkersRequestByRequestId(Guid requestId, GetWorkersRequestFilter filter)
     {
-        var query = from wr in _context.WorkerRequest
-                    join wp in _context.WorkerProfile on wr.WorkerId equals wp.WorkerId
-                    join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
+        var query = from wr in context.WorkerRequest
+                    join wp in context.WorkerProfile on wr.WorkerId equals wp.WorkerId
+                    join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
                     select new AgencyWorkerRequestModel
                     {
@@ -526,7 +516,8 @@ public class RequestRepository : IRequestRepository
                         StartWorking = wr.StartWorking,
                         NotesCount = wr.Notes.Count(n => !n.Note.IsDeleted),
                         TotalHoursApproved = wr.TimeSheets.Where(c => c.TimeOutApproved != null && c.TimeInApproved != null).Sum(s => (s.TimeOutApproved - s.TimeInApproved).Value.TotalHours),
-                        TotalHoursWorker = wr.TimeSheets.Where(c => c.TimeOut != null).Sum(c => (c.TimeOut - c.TimeIn).Value.TotalHours)
+                        TotalHoursWorker = wr.TimeSheets.Where(c => c.TimeOut != null).Sum(c => (c.TimeOut - c.TimeIn).Value.TotalHours),
+                        ExternalId = wp.ExternalId
                     };
         var predicateNew = ApplyFilterWorkersRequest(requestId, filter);
         query = query.Where(predicateNew);
@@ -566,6 +557,11 @@ public class RequestRepository : IRequestRepository
             predicate = predicate.And(c => c.RejectedBy.ToLower().Contains(filter.RejectedBy.ToLower()));
         if (filter.RejectedAtFrom.HasValue && filter.RejectedAtTo.HasValue)
             predicate = predicate.And(c => c.RejectedAt.Value.Date >= filter.RejectedAtFrom.Value.Date && c.RejectedAt.Value.Date <= filter.RejectedAtTo.Value.Date);
+        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
+        {
+            var externalId = filter.ExternalId.ToLower();
+            predicate = predicate.And(wr => EF.Functions.Like(wr.ExternalId.ToLower(), $"%{externalId}%"));
+        }
         return predicate;
     }
 
@@ -597,15 +593,18 @@ public class RequestRepository : IRequestRepository
                 else
                     query = query.AddOrderBy(filter, o => o.RejectedAt).ThenByDescending(o => o.RejectedBy);
                 break;
+            case GetWorkersRequestSortBy.ExternalId:
+                query = query.AddOrderBy(filter, wr => wr.ExternalId);
+                break;
         }
         return query;
     }
 
     public Task<AgencyWorkerRequestModel> GetWorkerRequestByAgencyId(Guid agencyId, Guid requestId, Guid workerRequestId)
     {
-        IQueryable<AgencyWorkerRequestModel> query = from wr in _context.WorkerRequest.Where(c => c.Id == workerRequestId && c.RequestId == requestId)
-                                                     join wp in _context.WorkerProfile.Where(c => c.AgencyId == agencyId) on wr.WorkerId equals wp.WorkerId
-                                                     join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
+        IQueryable<AgencyWorkerRequestModel> query = from wr in context.WorkerRequest.Where(c => c.Id == workerRequestId && c.RequestId == requestId)
+                                                     join wp in context.WorkerProfile.Where(c => c.AgencyId == agencyId) on wr.WorkerId equals wp.WorkerId
+                                                     join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
                                                      from cfl in tmp.DefaultIfEmpty()
                                                      where wr.WorkerId == wp.WorkerId
                                                      select new AgencyWorkerRequestModel
@@ -622,60 +621,18 @@ public class RequestRepository : IRequestRepository
                                                          ApprovedToWork = wp.ApprovedToWork,
                                                          SocialInsurance = wp.SocialInsurance,
                                                          DueDate = wp.DueDate,
-                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire
+                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire,
+                                                         ExternalId = wp.ExternalId
                                                      };
         return query.AsNoTracking().SingleOrDefaultAsync();
     }
 
-    public Task<PaginatedList<AgencyWorkerRequestModel>> GetAllWorkersThatCanApplyToRequest(Guid agencyId, Guid requestId, Pagination pagination, string filter)
-    {
-        IQueryable<WorkerProfile> workers = _context.WorkerProfile.Where(c => c.AgencyId == agencyId);
-        if (!string.IsNullOrEmpty(filter))
-        {
-            string textSearch = filter.GetTextSearch();
-            workers = workers.Where(p => EF.Functions.ToTsVector(p.TextSearch).Matches(EF.Functions.ToTsQuery(textSearch)));
-        }
-
-        IQueryable<AgencyWorkerRequestModel> query = from wp in workers
-                                                     join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id
-                                                         into tmp1
-                                                     from cfl in tmp1.DefaultIfEmpty()
-                                                     join l in _context.Location on wp.LocationId equals l.Id
-                                                     join c in _context.City on l.CityId equals c.Id
-                                                     join p in _context.Province on c.ProvinceId equals p.Id
-                                                     join wr in _context.WorkerRequest.Where(c => c.RequestId == requestId) on wp.WorkerId equals wr.WorkerId
-                                                         into tmp
-                                                     from wr in tmp.DefaultIfEmpty()
-                                                     orderby wp.FirstName
-                                                     select new AgencyWorkerRequestModel
-                                                     {
-                                                         NumberId = wp.NumberId,
-                                                         Id = wr == null ? Guid.Empty : wr.Id,
-                                                         WorkerId = wp.WorkerId,
-                                                         WorkerProfileId = wp.Id,
-                                                         Name =
-                                                            wp.FirstName +
-                                                            (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
-                                                            " " + wp.LastName +
-                                                            (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
-                                                         Status = wr == null ? string.Empty : wr.WorkerRequestStatus.ToString(),
-                                                         ProfileImage = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-                                                         ApprovedToWork = wp.ApprovedToWork,
-                                                         SocialInsurance = wp.SocialInsurance,
-                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire,
-                                                         DueDate = wp.DueDate,
-                                                         Address = $"{l.Address} {c.Value} {p.Code} {l.PostalCode}",
-                                                         MobileNumber = wp.MobileNumber
-                                                     };
-        return query.AsNoTracking().ToPaginatedList(pagination);
-    }
-
     public Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination) =>
-        (from wp in _context.WorkerProfile.Where(c => c.WorkerId == workerId)
-         join r in _context.Request.Where(r => r.Status == RequestStatus.Cancelled) on wp.AgencyId equals r.AgencyId
-         join wr in _context.WorkerRequest.Where(c => c.WorkerId == workerId) on r.Id equals wr.RequestId
-         join agency in _context.Agencies on r.AgencyId equals agency.Id
-         join afl in _context.CovenantFile on agency.LogoId equals afl.Id into tmp3
+        (from wp in context.WorkerProfile.Where(c => c.WorkerId == workerId)
+         join r in context.Request.Where(r => r.Status == RequestStatus.Cancelled) on wp.AgencyId equals r.AgencyId
+         join wr in context.WorkerRequest.Where(c => c.WorkerId == workerId) on r.Id equals wr.RequestId
+         join agency in context.Agencies on r.AgencyId equals agency.Id
+         join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
          from afl in tmp3.DefaultIfEmpty()
          orderby r.NumberId descending
          select new WorkerRequestListModel
@@ -701,11 +658,11 @@ public class RequestRepository : IRequestRepository
 
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
     {
-        var workerProfile = await _context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
-        var workerRequests = _context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+        var workerProfile = await context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
+        var workerRequests = context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
         var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = Enumerable.Empty<WorkerRequestListModel>();
-        var ownRequest = _context.Request.Include(wr => wr.Agency)
+        var ownRequest = context.Request.Include(wr => wr.Agency)
             .Join(workerRequests, r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
             .Select(lj => new WorkerRequestListModel
             {
@@ -726,8 +683,8 @@ public class RequestRepository : IRequestRepository
             }).AsEnumerable();
         if (!ownRequest.Any())
         {
-            var requestToExclude = _context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
-            var availableRequest = _context.Request.Include(r => r.Agency)
+            var requestToExclude = context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
+            var availableRequest = context.Request.Include(r => r.Agency)
                 .Where(r => openStatus.Contains(r.Status))
                 .Where(r => r.AgencyId == workerProfile.AgencyId)
                 .Where(r => !requestToExclude.Any(rte => rte.RequestId == r.Id))
@@ -762,19 +719,19 @@ public class RequestRepository : IRequestRepository
 
     public Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId)
     {
-        return (from r in _context.Request.Where(c => c.Id == requestId)
-                join cpj in _context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
+        return (from r in context.Request.Where(c => c.Id == requestId)
+                join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
                 from cpj in tmp1.DefaultIfEmpty()
-                join jp in _context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
+                join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
                 from jp in tmp2.DefaultIfEmpty()
-                join wp in _context.WorkerProfile.Where(c => c.WorkerId == workerId) on r.AgencyId equals wp.AgencyId
-                join wr in _context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId) on r.Id equals wr.RequestId into tmp
+                join wp in context.WorkerProfile.Where(c => c.WorkerId == workerId) on r.AgencyId equals wp.AgencyId
+                join wr in context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId) on r.Id equals wr.RequestId into tmp
                 from wr in tmp.DefaultIfEmpty()
-                join l in _context.Location on r.JobLocationId equals l.Id
-                join agency in _context.Agencies on r.AgencyId equals agency.Id
-                join afl in _context.CovenantFile on agency.LogoId equals afl.Id into tmp3
+                join l in context.Location on r.JobLocationId equals l.Id
+                join agency in context.Agencies on r.AgencyId equals agency.Id
+                join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
                 from afl in tmp3.DefaultIfEmpty()
-                join ra in _context.RequestApplicant on new { rId = r.Id, wpId = wp.Id } equals new { rId = ra.RequestId, wpId = ra.WorkerProfileId.Value }
+                join ra in context.RequestApplicant on new { rId = r.Id, wpId = wp.Id } equals new { rId = ra.RequestId, wpId = ra.WorkerProfileId.Value }
                     into tmpRa
                 from ra in tmpRa.DefaultIfEmpty()
                 select new WorkerRequestDetailModel
@@ -839,14 +796,14 @@ public class RequestRepository : IRequestRepository
 
     private Task<PaginatedList<RequestListModel>> GetWorkerRequestHistory(Expression<Func<WorkerProfile, bool>> filter, Pagination pagination)
     {
-        var query = from wp in _context.WorkerProfile.Where(filter)
-                    join wr in _context.WorkerRequest on wp.WorkerId equals wr.WorkerId
-                    join r in _context.Request on new { Ag = wp.AgencyId, Re = wr.RequestId } equals new { Ag = r.AgencyId, Re = r.Id }
-                    join cp in _context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
+        var query = from wp in context.WorkerProfile.Where(filter)
+                    join wr in context.WorkerRequest on wp.WorkerId equals wr.WorkerId
+                    join r in context.Request on new { Ag = wp.AgencyId, Re = wr.RequestId } equals new { Ag = r.AgencyId, Re = r.Id }
+                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
+                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
-                    join agency in _context.Agencies on r.AgencyId equals agency.Id
-                    join afl in _context.CovenantFile on agency.LogoId equals afl.Id into tmp3
+                    join agency in context.Agencies on r.AgencyId equals agency.Id
+                    join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
                     from afl in tmp3.DefaultIfEmpty()
                     orderby r.NumberId descending
                     select new RequestListModel
@@ -864,11 +821,11 @@ public class RequestRepository : IRequestRepository
                         Status = r.Status.ToString(),
                         WorkersQuantity = r.WorkersQuantity,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
-                        StartWorking = (from wrS in _context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
-                                        join tS in _context.TimeSheet on wrS.Id equals tS.WorkerRequestId
+                        StartWorking = (from wrS in context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
+                                        join tS in context.TimeSheet on wrS.Id equals tS.WorkerRequestId
                                         select tS.Date).DefaultIfEmpty().Min(),
-                        FinishWorking = (from wrS in _context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
-                                         join tS in _context.TimeSheet on wrS.Id equals tS.WorkerRequestId
+                        FinishWorking = (from wrS in context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
+                                         join tS in context.TimeSheet on wrS.Id equals tS.WorkerRequestId
                                          select tS.Date).DefaultIfEmpty().Max()
                     };
         return query.ToPaginatedList(pagination);
@@ -876,11 +833,11 @@ public class RequestRepository : IRequestRepository
 
     public Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerId)
     {
-        var query = (from r in _context.Request.Where(c => c.Id == requestId && c.CompanyId == companyId)
-                     join wp in _context.WorkerProfile on r.AgencyId equals wp.AgencyId
-                     join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
+        var query = (from r in context.Request.Where(c => c.Id == requestId && c.CompanyId == companyId)
+                     join wp in context.WorkerProfile on r.AgencyId equals wp.AgencyId
+                     join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
                      from cfl in tmp.DefaultIfEmpty()
-                     join wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerId == workerId) on wp.WorkerId equals wr.WorkerId
+                     join wr in context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerId == workerId) on wp.WorkerId equals wr.WorkerId
                      where wp.WorkerId == wr.WorkerId
                      select new AgencyWorkerRequestModel
                      {
@@ -899,7 +856,7 @@ public class RequestRepository : IRequestRepository
     }
 
     public Task<ShiftModel> GetRequestShift(Guid requestId) =>
-        _context.Request.Where(c => c.Id == requestId)
+        context.Request.Where(c => c.Id == requestId)
             .Select(s => new ShiftModel
             {
                 Sunday = s.Shift.Sunday,
@@ -927,16 +884,16 @@ public class RequestRepository : IRequestRepository
             }).SingleOrDefaultAsync();
 
     public Task<RequestCancellationDetail> GetRequestCancellationDetail(Guid requestId) =>
-        _context.RequestCancellationDetail.Where(s => s.RequestId == requestId)
+        context.RequestCancellationDetail.Where(s => s.RequestId == requestId)
             .Include(i => i.ReasonCancellationRequest)
             .SingleOrDefaultAsync();
 
-    public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => _context.RequestFinalizationDetail.SingleOrDefaultAsync(s => s.RequestId == requestId);
+    public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => context.RequestFinalizationDetail.SingleOrDefaultAsync(s => s.RequestId == requestId);
 
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
+    public Task SaveChangesAsync() => context.SaveChangesAsync();
 
     public Task<RequestContactPersonDetailModel> GetRequestedByDetail(Guid requestId, Guid contactPersonId) =>
-        _context.RequestRequestedBy.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
+        context.RequestRequestedBy.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
             .Select(s => new RequestContactPersonDetailModel
             {
                 Id = s.ContactPerson.Id,
@@ -952,7 +909,7 @@ public class RequestRepository : IRequestRepository
             }).SingleOrDefaultAsync();
 
     public Task<RequestContactPersonDetailModel> GetReportToDetail(Guid requestId, Guid contactPersonId) =>
-        _context.RequestReportTo.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
+        context.RequestReportTo.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
             .Select(s => new RequestContactPersonDetailModel
             {
                 Id = s.ContactPerson.Id,
@@ -968,7 +925,7 @@ public class RequestRepository : IRequestRepository
             }).SingleOrDefaultAsync();
 
     public Task<PaginatedList<RequestContactPersonModel>> GetRequestedByList(Guid requestId, Pagination pagination) =>
-        _context.RequestRequestedBy.Where(c => c.RequestId == requestId)
+        context.RequestRequestedBy.Where(c => c.RequestId == requestId)
             .Select(s => new RequestContactPersonModel
             {
                 Id = s.ContactPerson.Id,
@@ -978,12 +935,12 @@ public class RequestRepository : IRequestRepository
                 LastName = s.ContactPerson.LastName,
             }).ToPaginatedList(pagination);
 
-    public Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId) => _context.RequestRequestedBy.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
+    public Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId) => context.RequestRequestedBy.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
 
-    public Task<RequestReportTo> GetReportTo(Guid requestId, Guid contactPersonId) => _context.RequestReportTo.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
+    public Task<RequestReportTo> GetReportTo(Guid requestId, Guid contactPersonId) => context.RequestReportTo.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
 
     public Task<PaginatedList<RequestContactPersonModel>> GetReportToList(Guid requestId, Pagination pagination) =>
-        _context.RequestReportTo.Where(c => c.RequestId == requestId)
+        context.RequestReportTo.Where(c => c.RequestId == requestId)
             .Select(s => new RequestContactPersonModel
             {
                 Id = s.ContactPerson.Id,
@@ -994,45 +951,45 @@ public class RequestRepository : IRequestRepository
             }).ToPaginatedList(pagination);
 
     public Task<PaginatedList<NoteModel>> GetNotes(Guid requestId, Pagination pagination) =>
-        _context.RequestNotes.Where(w => w.RequestId == requestId && !w.Note.IsDeleted)
+        context.RequestNotes.Where(w => w.RequestId == requestId && !w.Note.IsDeleted)
             .Select(RequestExtensionsMapping.SelectNote).OrderByDescending(c => c.CreatedAt).ToPaginatedList(pagination);
 
     public Task<NoteModel> GetNoteDetail(Guid requestId, Guid id) =>
-        _context.RequestNotes.Where(w => w.RequestId == requestId && w.NoteId == id)
+        context.RequestNotes.Where(w => w.RequestId == requestId && w.NoteId == id)
             .Select(RequestExtensionsMapping.SelectNote).SingleOrDefaultAsync();
 
     public Task<RequestNote> GetNote(Guid requestId, Guid id) =>
-        _context.RequestNotes.Where(c => c.RequestId == requestId && c.NoteId == id)
+        context.RequestNotes.Where(c => c.RequestId == requestId && c.NoteId == id)
             .Include(c => c.Note).SingleOrDefaultAsync();
 
     public Task<PaginatedList<RequestRecruiterDetailModel>> GetRecruiters(Guid requestId, Pagination pagination) =>
-        _context.RequestRecruiter.Where(c => c.RequestId == requestId)
+        context.RequestRecruiter.Where(c => c.RequestId == requestId)
             .Select(s => new RequestRecruiterDetailModel { RecruiterId = s.RecruiterId, Email = s.Recruiter.User.Email })
             .ToPaginatedList(pagination);
 
-    public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => _context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
+    public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 
     public async Task<IEnumerable<SkillModel>> GetSkills(Guid requestId) =>
-        await _context.RequestSkill.Where(c => c.RequestId == requestId)
+        await context.RequestSkill.Where(c => c.RequestId == requestId)
             .Select(p => new SkillModel { Id = p.Id, Skill = p.Skill })
             .ToListAsync();
 
-    public Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression) => _context.RequestApplicant.SingleOrDefaultAsync(expression);
+    public Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression) => context.RequestApplicant.SingleOrDefaultAsync(expression);
 
     public async Task<IEnumerable<RequestApplicant>> GetRequestApplicants(Expression<Func<RequestApplicant, bool>> expression)
     {
-        var applicants = _context.RequestApplicant.Where(expression);
+        var applicants = context.RequestApplicant.Where(expression);
         return await applicants.ToListAsync();
     }
 
     public async Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter)
     {
-        var query = from rc in _context.RequestApplicant.Where(c => c.RequestId == requestId)
-                    join c in _context.Candidates on rc.CandidateId equals c.Id into tC
+        var query = from rc in context.RequestApplicant.Where(c => c.RequestId == requestId)
+                    join c in context.Candidates on rc.CandidateId equals c.Id into tC
                     from c in tC.DefaultIfEmpty()
-                    join wp in _context.WorkerProfile on rc.WorkerProfileId equals wp.Id into tWp
+                    join wp in context.WorkerProfile on rc.WorkerProfileId equals wp.Id into tWp
                     from wp in tWp.DefaultIfEmpty()
-                    join u in _context.User on wp.WorkerId equals u.Id into tU
+                    join u in context.User on wp.WorkerId equals u.Id into tU
                     from u in tU.DefaultIfEmpty()
                     select new RequestApplicantDetailModel
                     {
@@ -1093,14 +1050,92 @@ public class RequestRepository : IRequestRepository
         return query;
     }
 
-    public async Task<RequestComission> GetRequestComission(Guid requestId) => await _context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);
+    private static Expression<Func<WorkerProfile, bool>> BuildWorkerSearchPredicate(
+        Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
+        IQueryable<RequestApplicant> existingApplicants, IQueryable<WorkerRequest> bookedWorkers)
+    {
+        var predicate = PredicateBuilder.New<WorkerProfile>(wp => wp.AgencyId == agencyId);
+        predicate = predicate.And(wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id));
+        predicate = predicate.And(wp => !bookedWorkers.Any(wr => wr.WorkerId == wp.WorkerId));
 
-    public async Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId) => await _context.RequestCompanyUsers.Where(rcu => rcu.RequestId == requestId).ToListAsync();
+        var search = PredicateBuilder.New<WorkerProfile>(false);
+        search = search.Or(wp => (wp.FirstName + " " + wp.LastName).ToLower().Contains(searchLower));
+        if (isNumericSearch)
+            search = search.Or(wp => wp.NumberId == numberId);
+
+        return predicate.And(search);
+    }
+
+    private static Expression<Func<CandidateEntity, bool>> BuildCandidateSearchPredicate(
+        Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
+        IQueryable<RequestApplicant> existingApplicants)
+    {
+        var predicate = PredicateBuilder.New<CandidateEntity>(c => c.AgencyId == agencyId);
+        predicate = predicate.And(c => !existingApplicants.Any(ra => ra.CandidateId == c.Id));
+
+        var search = PredicateBuilder.New<CandidateEntity>(false);
+        search = search.Or(c => c.Name.ToLower().Contains(searchLower));
+        search = search.Or(c => c.Email != null && c.Email.ToLower().Contains(searchLower));
+        if (isNumericSearch)
+            search = search.Or(c => c.NumberId == numberId);
+
+        return predicate.And(search);
+    }
+
+    public async Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm)
+    {
+        var searchLower = searchTerm.ToLower();
+
+        var existingApplicants = context.RequestApplicant.Where(ra => ra.RequestId == requestId);
+        var bookedWorkers = context.WorkerRequest.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+
+        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
+        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId, existingApplicants, bookedWorkers);
+        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId, existingApplicants);
+
+        var workers = from wp in context.WorkerProfile.Where(workerPredicate)
+                      join u in context.User on wp.WorkerId equals u.Id
+                      select new ApplicantSearchResultModel
+                      {
+                          WorkerProfileId = wp.Id,
+                          CandidateId = null,
+                          NumberId = wp.NumberId,
+                          Name = wp.FirstName +
+                              (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
+                              " " + wp.LastName +
+                              (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
+                          Email = u.Email,
+                          Type = nameof(UserType.Worker),
+                          ApprovedToWork = wp.ApprovedToWork
+                      };
+
+        var candidates = from c in context.Candidates.Where(candidatePredicate)
+                         select new ApplicantSearchResultModel
+                         {
+                             WorkerProfileId = null,
+                             CandidateId = c.Id,
+                             NumberId = c.NumberId,
+                             Name = c.Name,
+                             Email = c.Email,
+                             Type = nameof(UserType.Candidate),
+                             ApprovedToWork = true
+                         };
+
+        return await workers.Concat(candidates)
+            .OrderBy(a => a.Name)
+            .Take(20)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<RequestComission> GetRequestComission(Guid requestId) => await context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);
+
+    public async Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId) => await context.RequestCompanyUsers.Where(rcu => rcu.RequestId == requestId).ToListAsync();
 
     public async Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds)
     {
-        var companyProfiles = _context.CompanyProfile.Where(cp => agencyIds.Contains(cp.AgencyId));
-        var query = from r in _context.Request
+        var companyProfiles = context.CompanyProfile.Where(cp => agencyIds.Contains(cp.AgencyId));
+        var query = from r in context.Request
                     join cp in companyProfiles on r.CompanyId equals cp.CompanyId
                     select new CompanyProfileListModel
                     {
@@ -1114,13 +1149,13 @@ public class RequestRepository : IRequestRepository
 
     public async Task<IEnumerable<Common.Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids)
     {
-        var requests = _context.Request.Where(r => ids.Contains(r.Id));
+        var requests = context.Request.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
     }
 
     public async Task<bool> ExistsRequestByNumber(int orderId)
     {
-        var result = await _context.Request.AnyAsync(r => r.NumberId == orderId);
+        var result = await context.Request.AnyAsync(r => r.NumberId == orderId);
         return result;
     }
 }

@@ -10,7 +10,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ['request'],
@@ -22,7 +22,7 @@ export default {
   },
   mixins: [toastMixin],
   components: {
-    SkillsForm: () => import("../FormSkillAdd")
+    SkillsForm: () => import("../FormSkillAdd.vue")
   },
   methods: {
     getAgencySkill() {
@@ -44,7 +44,7 @@ export default {
       }
       this.isLoading = true;
       this.$store.dispatch("agency/postAgencySkill", { requestId: this.request.id, model: model })
-        .then(response => {
+        .then(() => {
           this.isLoading = false;
           this.getAgencySkill()
         }).catch(error => {

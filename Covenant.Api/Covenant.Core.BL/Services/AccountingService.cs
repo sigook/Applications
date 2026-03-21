@@ -61,7 +61,7 @@ public class AccountingService : IAccountingService
 
     public async Task DeletePayStub(Guid payStubId)
     {
-        await payStubRepository.Delete(new Guid[] { payStubId });
+        await payStubRepository.Delete([payStubId]);
         await payStubsContainer.DeleteFileIfExists(payStubId.ToPayStubBlobName());
         await payStubRepository.SaveChangesAsync();
     }

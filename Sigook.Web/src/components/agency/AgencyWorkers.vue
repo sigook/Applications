@@ -31,6 +31,13 @@
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
             </template>
           </b-table-column>
+          <b-table-column field="externalId" width="120" label="External ID" sortable searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress.native="onInputEntered"></b-input>
+            </template>
+            <template v-slot="props">{{ props.row.externalId }}</template>
+          </b-table-column>
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
@@ -155,13 +162,13 @@
     </b-modal>
 
     <b-modal v-model="modalStartWorking" width="415px">
-      <datepicker-modal v-if="currentWorker" :startWorking="currentWorker.startWorking"
+      <datepicker-modal v-if="currentWorker" :startWorking.sync="currentWorker.startWorking"
         @onSelectCalendar="(date) => updateAgencyRequestWorkerStartDate(date)" />
     </b-modal>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 
@@ -197,11 +204,10 @@ export default {
     this.getWorkers();
   },
   components: {
-    WorkersList: () => import("./AgencyWorkersList"),
-    AgencyPunchCard: () => import("../../components/agency/AgencyPunchCard"),
-    ModalNotes: () => import("../../components/notes/ModalNotes"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea"),
-    DatepickerModal: () => import("@/components/agency_request/DatepickerModal"),
+    WorkersList: () => import("./AgencyWorkersList.vue"),
+    ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
+    DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue"),
   },
   methods: {
     onCellClick(row, column, rowIndex) {
@@ -242,6 +248,9 @@ export default {
           break;
         case 'rejectedBy':
           this.serverParams.sortBy = 5;
+          break;
+        case 'externalId':
+          this.serverParams.sortBy = 6;
           break;
       }
       this.serverParams.isDescending = order !== 'asc';

@@ -237,16 +237,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 
 export default {
   components: {
-    AddressComponent: () => import("@/components/Address"),
-    PositionForm: () => import("@/components/agency_company/JobPositionForm"),
-    RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm"),
-    LocationForm: () => import("@/components/agency_company/LocationForm"),
+    PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
+    RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm.vue"),
+    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
   mixins: [billingAdminMixin],
   name: "AgencyCreateRequest",
@@ -254,7 +253,7 @@ export default {
     const maxBreak = new Date();
     maxBreak.setHours(1);
     maxBreak.setMinutes(0);
-    let timeZero = new Date(dayjs().subtract(14, "days"));
+    let timeZero = dayjs().subtract(14, "days").toDate();
     timeZero.setHours(0);
     timeZero.setMinutes(0);
     return {
@@ -264,10 +263,13 @@ export default {
       companyProfileId: this.$route.params.companyProfileId,
       companyJobPositions: [],
       jobPosition: '',
+      jobPositionSelected: null,
       locations: [],
       jobLocation: '',
+      locationSelected: null,
       salesRepresentatives: [],
       salesRepresentative: '',
+      salesRepresentativeSelected: null,
       companyUsers: [],
       companyUsersSelected: [],
       request: {
@@ -284,6 +286,7 @@ export default {
   },
   methods: {
     onJobPositionSelected(option) {
+      this.jobPositionSelected = option;
       if (option) {
         this.request.shift = option.shift;
         this.request.rate = option.workerRate;
@@ -295,6 +298,7 @@ export default {
       }
     },
     onLocationSelected(option) {
+      this.locationSelected = option;
       if (option) {
         this.request.locationId = option.id;
       } else {
@@ -302,15 +306,32 @@ export default {
       }
     },
     onSalesRepresentativeSelected(option) {
+      this.salesRepresentativeSelected = option;
       if (option) {
         this.request.salesRepresentativeId = option.id;
       } else {
         this.request.salesRepresentativeId = null;
       }
     },
+    validateAutocompleteSelections() {
+      let valid = true;
+
+      if (!this.directHiring && this.jobPosition && (!this.jobPositionSelected || this.jobPositionSelected.value.toLowerCase() !== this.jobPosition.toLowerCase())) {
+        this.errors.add({ field: 'job type', msg: 'Please select a role from the list' });
+        valid = false;
+      }
+
+      if (this.jobLocation && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.jobLocation.toLowerCase())) {
+        this.errors.add({ field: 'branchOffice', msg: 'Please select a location from the list' });
+        valid = false;
+      }
+
+      return valid;
+    },
     validateForm() {
       this.$validator.validateAll().then((result) => {
-        if (result) {
+        const selectionsValid = this.validateAutocompleteSelections();
+        if (result && selectionsValid) {
           if (this.isUpdate) {
             this.updateRequest();
           } else {
@@ -394,7 +415,8 @@ export default {
       this.companyUsersSelected = this.companyUsers.filter(cu => agencyRequest.companyUserIds.some(ar => cu.id == ar));
       let record = this.companyJobPositions.find(cjp => cjp.id === agencyRequest.jobPositionId);
       if (record) {
-        this.jobPosition = record.value
+        this.jobPosition = record.value;
+        this.jobPositionSelected = record;
       }
       record = this.locations.find(l => l.address === agencyRequest.jobLocation.address);
       if (record) {
@@ -403,10 +425,12 @@ export default {
       record = this.locations.find(l => l.id === this.request.locationId);
       if (record) {
         this.jobLocation = record.formattedAddress;
+        this.locationSelected = record;
       }
       record = this.salesRepresentatives.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
       if (record) {
         this.salesRepresentative = `${record.name} - ${record.email}`;
+        this.salesRepresentativeSelected = record;
       }
     } else {
       this.companyJobPositions = await this.$store.dispatch("agency/getAgencyCompanyJobPositions", this.companyProfileId);
@@ -437,6 +461,29 @@ export default {
     }
   },
   watch: {
+    jobPosition(newVal) {
+      if (this.jobPositionSelected && this.jobPositionSelected.value !== newVal) {
+        this.jobPositionSelected = null;
+        this.request.shift = null;
+        this.request.rate = null;
+        this.request.jobPositionRateId = null;
+      }
+    },
+    jobLocation(newVal) {
+      if (this.locationSelected && this.locationSelected.formattedAddress !== newVal) {
+        this.locationSelected = null;
+        this.request.locationId = null;
+      }
+    },
+    salesRepresentative(newVal) {
+      if (this.salesRepresentativeSelected) {
+        const formatted = `${this.salesRepresentativeSelected.name} - ${this.salesRepresentativeSelected.email}`;
+        if (formatted !== newVal) {
+          this.salesRepresentativeSelected = null;
+          this.request.salesRepresentativeId = null;
+        }
+      }
+    },
     directHiring: function (val) {
       if (val) {
         this.$validator.detach("job type");

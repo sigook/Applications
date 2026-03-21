@@ -51,12 +51,20 @@
 </template>
 
 
-<script>
+<script lang="ts">
+import menu from "@/security/menu";
 
 export default {
   methods: {
     async login() {
-      await this.$store.dispatch('signIn');
+      const user = this.$store.state.security.user;
+      if (user) {
+        const roles = this.$store.state.security.userRoles;
+        const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
+        this.$router.push(homePageUrl);
+      } else {
+        await this.$store.dispatch('signIn');
+      }
     }
   },
   computed: {

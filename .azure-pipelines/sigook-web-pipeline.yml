@@ -51,10 +51,10 @@ stages:
           - script: |
               export NVM_DIR="$HOME/.nvm"
               [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm use sigook-web  # Alias for Node.js 16
+              nvm use sigook-web  # Alias for Node.js 18
               echo "Node version: $(node --version)"
               echo "NPM version: $(npm --version)"
-            displayName: 'Setup Node.js 16 via NVM'
+            displayName: 'Setup Node.js 18 via NVM'
 
           # Cache node_modules for faster builds
           - task: Cache@2
@@ -77,11 +77,11 @@ stages:
               npm run lint
             displayName: 'Lint Code'
 
-          # Verify build works (without actually building artifacts)
+          # TypeScript type checking (validates compilation without generating artifacts)
           - script: |
               cd $(workingDirectory)
-              echo "✅ Build validation passed"
-            displayName: 'Build Validation'
+              npm run type-check
+            displayName: 'TypeScript Type Check'
 
   # ============================================
   # Stage 2: Docker Build and Deploy
@@ -210,3 +210,22 @@ stages:
                   echo "URL: https://sigook.azurewebsites.net"
                 fi
                 echo "Version: $(Build.BuildId)"
+
+  # ============================================
+  # Stage 3: Notify Production Deployment
+  # ============================================
+  - stage: Notify
+    displayName: 'Notify Production Deploy'
+    dependsOn: CI_CD
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    jobs:
+      - job: SendEmail
+        displayName: 'Send Deployment Email'
+        variables:
+          - group: Sigook-Notifications
+        steps:
+          - checkout: none
+          - template: templates/notify-deployment.yml
+            parameters:
+              appType: 'agency-portal'
+              recipients: '$(NotificationRecipients)'

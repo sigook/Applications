@@ -1,5 +1,5 @@
-using Covenant.Deductions.Models;
-using Covenant.Deductions.Repositories;
+using Covenant.Common.Models.Deductions;
+using Covenant.Common.Repositories;
 using Covenant.Infrastructure.Deductions;
 using Microsoft.AspNetCore.Mvc;
 

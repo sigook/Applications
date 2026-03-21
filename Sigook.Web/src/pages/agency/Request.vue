@@ -91,7 +91,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import directHiringMixin from "../../mixins/directHiringMixin";
 
 export default {
@@ -113,15 +113,13 @@ export default {
     };
   },
   components: {
-    FloatingMenu: () => import("@/components/FloatingMenuDots"),
-    Detail: () => import("@/components/agency_request/AgencyRequestDetail"),
-    Workers: () => import("@/components/agency/AgencyWorkers"),
-    PunchCard: () => import("@/components/agency_request/MassivePunchCard"),
-    CancelList: () => import("@/components/company/CompanyCancelList"),
-    EditTextarea: () => import("@/components/agency_request/EditTextarea"),
-    PersonnelList: () => import("@/components/agency_request/PersonnelListModal"),
-    Applicants: () => import("@/components/agency_request/Applicants"),
-    ShiftModal: () => import("@/components/request/ShiftEditModal"),
+    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
+    Detail: () => import("@/components/agency_request/AgencyRequestDetail.vue"),
+    Workers: () => import("@/components/agency/AgencyWorkers.vue"),
+    PunchCard: () => import("@/components/agency_request/MassivePunchCard.vue"),
+    CancelList: () => import("@/components/company/CompanyCancelList.vue"),
+    Applicants: () => import("@/components/agency_request/Applicants.vue"),
+    ShiftModal: () => import("@/components/request/ShiftEditModal.vue"),
   },
   mixins: [directHiringMixin],
   methods: {
@@ -146,28 +144,18 @@ export default {
              (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
     },
     getAgencyRequest() {
-      console.log('📡 Loading request data from API...');
       this.isLoading = true;
       this.$store.dispatch("agency/getAgencyRequest", this.$route.params.id)
         .then((response) => {
-          console.log('📥 API response received:', {
-            id: response.id,
-            workersQuantity: response.workersQuantity,
-            workersQuantityWorking: response.workersQuantityWorking,
-            status: response.status
-          });
-          // Use $set to ensure Vue detects the change
           const updatedRequest = Object.assign({}, response, {
             canEdit: this.canEditRequest(response),
             canCancel: this.canCancelRequest(response)
           });
           this.$set(this, 'request', updatedRequest);
-          console.log('✅ Request data updated successfully');
           this.setCanSendInvitation(this.request);
           this.isLoading = false;
         })
         .catch((error) => {
-          console.error('❌ Error loading request:', error);
           this.isLoading = false;
           this.showAlertError(error);
         });

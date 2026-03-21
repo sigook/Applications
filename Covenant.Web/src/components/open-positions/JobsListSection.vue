@@ -44,6 +44,7 @@
               :key="job.numberId"
               class="job-card"
               :class="{ 'is-selected': selectedJob?.numberId === job.numberId }"
+              :data-job-id="job.numberId"
               @click="selectJob(job)"
             >
               <h3 class="card-title">{{ job.title }}</h3>
@@ -135,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJobs } from '@/composables/useJobs'
 import ApplyNowDialog from '@/components/jobs/ApplyNowDialog.vue'
@@ -189,6 +190,22 @@ const onApplicationSubmitted = () => {
   successSnackbar.value = true
 }
 
+// Scroll hacia el job card seleccionado dentro de la lista
+const scrollToSelectedJob = async (jobNumberId: string) => {
+  await nextTick()
+  const jobCard = document.querySelector(`.job-card[data-job-id="${jobNumberId}"]`) as HTMLElement | null
+  if (jobCard) {
+    // Scroll de la lista interna para centrar la card
+    jobCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // Scroll de la página para centrar la sección de jobs
+    const jobsSection = document.getElementById('jobs-results')
+    if (jobsSection) {
+      jobsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+}
+
 // Al montar el componente, cargamos trabajos desde la API
 onMounted(async () => {
   // Obtenemos filtros de la URL (incluyendo jobId si existe)
@@ -205,6 +222,11 @@ onMounted(async () => {
     if (filters.jobId) {
       const jobFromUrl = jobs.value.find(j => j.numberId === filters.jobId)
       selectedJob.value = jobFromUrl || jobs.value[0]
+
+      // Hacer scroll hacia el job seleccionado
+      if (selectedJob.value) {
+        scrollToSelectedJob(selectedJob.value.numberId)
+      }
     } else {
       selectedJob.value = jobs.value[0]
     }

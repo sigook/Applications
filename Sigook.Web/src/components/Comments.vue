@@ -50,7 +50,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import roles from "@/security/roles";
 
 export default {
@@ -67,8 +67,8 @@ export default {
   },
   props: ['userId', 'data', "sizeComments", "onlyView"],
   components: {
-    DialogComment: () => import("./DialogWorkerComment"),
-    Pagination: () => import("./Paginator")
+    DialogComment: () => import("./DialogWorkerComment.vue"),
+    Pagination: () => import("./Paginator.vue")
   },
   methods: {
     alertComment() {

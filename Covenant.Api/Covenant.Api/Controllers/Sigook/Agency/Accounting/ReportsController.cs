@@ -63,7 +63,26 @@ public class ReportsController : ControllerBase
             return BadRequest("Dates are mandatory");
         }
         var file = await payStubService.GenerateT4(startDate.Value, endDate.Value);
-        return File(file.Value.Document, CovenantConstants.ExcelMime, file.Value.DocumentName);
+        if (file.IsSuccess)
+        {
+            return File(file.Value.Document, CovenantConstants.ExcelMime, file.Value.DocumentName);
+        }
+        return BadRequest(ModelState.AddErrors(file.Errors));
+    }
+
+    [HttpGet("cra-payroll")]
+    public async Task<IActionResult> GetCraPayroll([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    {
+        if (!startDate.HasValue || !endDate.HasValue)
+        {
+            return BadRequest("Dates are mandatory");
+        }
+        var file = await payStubService.GenerateCraPayroll(startDate.Value, endDate.Value);
+        if (file.IsSuccess)
+        {
+            return File(file.Value.Document, CovenantConstants.ExcelMime, file.Value.DocumentName);
+        }
+        return BadRequest(ModelState.AddErrors(file.Errors));
     }
 
     [HttpGet("payments")]

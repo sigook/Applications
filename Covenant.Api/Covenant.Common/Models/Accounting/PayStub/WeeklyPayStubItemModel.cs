@@ -1,3 +1,5 @@
+using Covenant.Common.Enums;
+
 namespace Covenant.Common.Models.Accounting.PayStub
 {
 	public class WeeklyPayStubItemModel
@@ -24,5 +26,6 @@ namespace Covenant.Common.Models.Accounting.PayStub
 		public double Quantity { get; set; }
 		public decimal UnitPrice { get; set; }
 		public decimal Total { get; set; }
+		public PayStubItemType Type { get; set; }
 	}
 }

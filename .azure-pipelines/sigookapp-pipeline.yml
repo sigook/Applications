@@ -532,3 +532,24 @@ stages:
           echo "Environment: $(environment)"
           echo "Status: $(deployStatus)"
           echo "========================================"
+
+# ============================================
+# Stage 4: Notify Production Deployment
+# ============================================
+- stage: Notify
+  displayName: 'Notify Production Deploy'
+  dependsOn: Deploy_Android_PlayStore
+  condition: and(succeeded(), eq(variables.isMain, true))
+  pool:
+    name: 'covenant-build-pool'
+  jobs:
+  - job: SendEmail
+    displayName: 'Send Deployment Email'
+    variables:
+    - group: Sigook-Notifications
+    steps:
+    - checkout: none
+    - template: templates/notify-deployment.yml
+      parameters:
+        appType: 'mobile'
+        recipients: '$(NotificationRecipients)'

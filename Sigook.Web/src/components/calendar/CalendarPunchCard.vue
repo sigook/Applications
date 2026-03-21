@@ -84,7 +84,7 @@
     </div>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 import calendarMixin from "@/mixins/calendarMixin";
 import distributeHours from "@/mixins/distributeHoursMixin";

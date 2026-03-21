@@ -65,7 +65,7 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
             return BadRequest("Invalid Verification Code");
         }
         (Guid InvoiceId, string InvoiceNumber) invoicesDeleted;
-        IReadOnlyList<string> payStubsDeleted = Array.Empty<string>();
+        IReadOnlyList<string> payStubsDeleted = [];
         Location billingLocation = await agencyRepository.GetBillingLocation(User.GetAgencyId());
         if (billingLocation?.IsUSA == true)
         {

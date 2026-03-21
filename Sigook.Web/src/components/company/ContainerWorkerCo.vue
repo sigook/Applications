@@ -6,7 +6,7 @@
             <div class="container-worker-inline-name">
             <h3 class="fz1 fw-200 capitalize">{{data.name | lowercase}} {{data.lastName | lowercase}}</h3>
             <span class="fz-1 fw-200 color-gray-light"
-                      v-for="(item, index) in data.skills" v-if="index < 2"> {{item}}
+                      v-for="(item, index) in data.skills.slice(0, 2)" :key="index"> {{item}}
                 <span v-if="index === 0 && data.skills.length > 1 "> - </span>
             </span>
             </div>
@@ -18,7 +18,7 @@
             </span>
             <div class="bg-gray">
                 <div class="text-center">
-                     <span v-for="item in data.availabilities">
+                     <span v-for="(item, idx) in data.availabilities" :key="idx">
                     {{item}}
                 </span>
                 </div>
@@ -32,7 +32,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
     export default {
         data() {
             return {}

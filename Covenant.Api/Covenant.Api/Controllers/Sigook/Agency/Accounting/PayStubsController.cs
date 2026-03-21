@@ -19,15 +19,18 @@ public class PayStubsController : ControllerBase
     private readonly IAccountingService accountingService;
     private readonly ITimeSheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
+    private readonly IPayStubService payStubService;
 
     public PayStubsController(
         IAccountingService accountingService,
         ITimeSheetRepository timeSheetRepository,
-        ISkipPayrollNumberRepository skipPayrollNumberRepository)
+        ISkipPayrollNumberRepository skipPayrollNumberRepository,
+        IPayStubService payStubService)
     {
         this.accountingService = accountingService;
         this.timeSheetRepository = timeSheetRepository;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
+        this.payStubService = payStubService;
     }
 
     [HttpGet]
@@ -48,6 +51,18 @@ public class PayStubsController : ControllerBase
     public async Task<IActionResult> GeneratePayStubs([FromBody] IEnumerable<Guid> workerIds)
     {
         var result = await accountingService.GeneratePayStubs(workerIds);
+        if (result)
+        {
+            return Ok();
+        }
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    [HttpPost("generate-v2")]
+    public async Task<IActionResult> GeneratePayStubsV2([FromBody] IEnumerable<Guid> workerIds)
+    {
+        var agencyIds = User.GetAgencyIds();
+        var result = await payStubService.Generate(agencyIds, workerIds);
         if (result)
         {
             return Ok();

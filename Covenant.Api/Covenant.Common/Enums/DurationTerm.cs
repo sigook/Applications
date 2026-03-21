@@ -1,8 +1,7 @@
-namespace Covenant.Common.Enums
+namespace Covenant.Common.Enums;
+
+public enum DurationTerm
 {
-	public enum DurationTerm
-	{
-		LongTerm,
-		ShortTerm
-	}
+	LongTerm,
+	ShortTerm
 }

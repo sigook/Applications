@@ -46,7 +46,7 @@
     </form>
   </div>
 </template>
-<script>
+<script lang="ts">
 
 export default {
   data() {
@@ -58,7 +58,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("@/components/PhoneInput")
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   methods: {
     async validateForm() {

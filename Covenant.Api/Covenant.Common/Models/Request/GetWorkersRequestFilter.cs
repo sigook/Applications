@@ -10,7 +10,8 @@ namespace Covenant.Common.Models.Request
         Status,
         StartWorking,
         CreatedBy,
-        RejectedBy
+        RejectedBy,
+        ExternalId
     }
 
     public class GetWorkersRequestFilter : Pagination
@@ -29,5 +30,6 @@ namespace Covenant.Common.Models.Request
         public DateTime? RejectedAtFrom { get; set; }
         public DateTime? RejectedAtTo { get; set; }
         public IEnumerable<WorkerRequestStatus> Statuses { get; set; }
+        public string ExternalId { get; set; }
     }
 }

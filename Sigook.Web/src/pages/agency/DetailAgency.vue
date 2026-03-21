@@ -20,7 +20,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -31,7 +31,7 @@ export default {
     };
   },
   components: {
-    AgencyRequests: () => import("@/components/agency/AgencyRequests"),
+    AgencyRequests: () => import("@/components/agency/AgencyRequests.vue"),
   },
   methods: {
     changeTab(tab) {

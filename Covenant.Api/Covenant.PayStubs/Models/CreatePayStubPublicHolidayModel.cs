@@ -1,10 +1,5 @@
-using System;
-
 namespace Covenant.PayStubs.Models
 {
-	public class CreatePayStubPublicHolidayModel
-	{
-		public DateTime Holiday { get; set; }
-		public decimal Amount { get; set; }
-	}
+    [Obsolete("Use Covenant.Common.Models.Accounting.PayStub.CreatePayStubPublicHolidayModel instead")]
+    public class CreatePayStubPublicHolidayModel : Common.Models.Accounting.PayStub.CreatePayStubPublicHolidayModel { }
 }

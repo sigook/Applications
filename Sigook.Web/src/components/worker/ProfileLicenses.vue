@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="profile-worker">
-      <licenses :class="{ 'missing': worker.licenses.length === 0 }" :worker="worker"
+      <licenses :class="{ 'missing': worker.licenses.length === 0 }" :worker.sync="worker"
         @updateProfile="() => updateProfile()" />
-      <certificates :class="{ 'missing': worker.certificates.length === 0 }" :worker="worker"
+      <certificates :class="{ 'missing': worker.certificates.length === 0 }" :worker.sync="worker"
         @updateProfile="() => updateProfile()" />
       <otherDocuments :class="{ 'missing': worker.otherDocuments.length === 0 }" :worker="worker" :justWhmis="true">
       </otherDocuments>
@@ -11,7 +11,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 
 export default {
@@ -20,9 +20,9 @@ export default {
     toastMixin
   ],
   components: {
-    licenses: () => import("../../components/worker/WorkLicenseDetail"),
-    certificates: () => import("../../components/worker/WorkCertificatesDetail"),
-    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail")
+    licenses: () => import("../../components/worker/WorkLicenseDetail.vue"),
+    certificates: () => import("../../components/worker/WorkCertificatesDetail.vue"),
+    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue")
   },
   methods: {
     updateProfile() {

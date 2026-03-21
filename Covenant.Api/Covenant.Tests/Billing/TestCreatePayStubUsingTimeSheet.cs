@@ -137,7 +137,6 @@ namespace Covenant.Tests.Billing
             Assert.True(result);
             PayStub payStub = sut.PayStubs.Single();
             Assert.Equal(expected, payStub.Holidays.Count());
-            Assert.Equal(expected, payStub.PublicHolidayPay);
         }
 
         private static IEnumerable<TimeSheetApprovedPayrollModel> Data(

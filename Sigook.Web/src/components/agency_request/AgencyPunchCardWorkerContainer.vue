@@ -89,7 +89,7 @@
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" :editable-day="editableDay"
+      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" :editable-day.sync="editableDay"
         @updateData="updateCell" />
     </b-modal>
 
@@ -99,7 +99,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 import timeSheetReportMixin from "@/mixins/agencyTimeSheetReportMixin";
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
@@ -265,9 +265,9 @@ export default {
     },
   },
   components: {
-    Calendar: () => import("../calendar/CalendarPunchCard"),
-    TimeSheetModal: () => import("../../components/agency_request/AgencyRequestTimeSheetModal"),
-    TimeSheetDetail: () => import("../../components/agency_request/AgencyRequestTimeSheetDetail"),
+    Calendar: () => import("../calendar/CalendarPunchCard.vue"),
+    TimeSheetModal: () => import("../../components/agency_request/AgencyRequestTimeSheetModal.vue"),
+    TimeSheetDetail: () => import("../../components/agency_request/AgencyRequestTimeSheetDetail.vue"),
   }
 }
 </script>

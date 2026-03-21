@@ -497,9 +497,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("ProvincialTax")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("PublicHolidayPay")
-                        .HasColumnType("numeric");
-
                     b.Property<decimal>("RegularWage")
                         .HasColumnType("numeric");
 
@@ -547,9 +544,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<string>("PayStubNumber")
                         .HasColumnType("text");
-
-                    b.Property<decimal>("PublicHolidayPay")
-                        .HasColumnType("numeric");
 
                     b.Property<int>("RowNumber")
                         .HasColumnType("integer");
@@ -1669,6 +1663,522 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Day");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.TaxWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TaxWeekly");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Gender", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2752,6 +3262,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("text");
+
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
@@ -2848,9 +3361,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid?>("SocialInsuranceFileId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("TextSearch")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("WorkerId")
                         .HasColumnType("uuid");
 
@@ -2876,14 +3386,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ProfileImageId");
 
-                    b.HasIndex("PunchCardId")
-                        .IsUnique();
-
                     b.HasIndex("ResumeId");
 
                     b.HasIndex("SocialInsuranceFileId");
-
-                    b.HasIndex("TextSearch");
 
                     b.HasIndex("WorkerId", "AgencyId")
                         .IsUnique();
@@ -3191,522 +3696,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("view_doesnt_exitst", (string)null);
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.TaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TaxWeekly");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>

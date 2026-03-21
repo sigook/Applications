@@ -12,7 +12,7 @@
     </b-modal>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: ['worker'],
   data() {
@@ -27,7 +27,7 @@ export default {
     }
   },
   components: {
-    liftEdit: () => import("./WorkLiftForm")
+    liftEdit: () => import("./WorkLiftForm.vue")
   }
 }
 </script>

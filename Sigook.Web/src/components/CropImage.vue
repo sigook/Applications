@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2 class="bg-dark">{{ $t("MoveAndScale")}}</h2>
+        <h2 class="bg-dark">{{ $t("MoveAndScale")}}</h2>
         <vue-cropper
                 ref='cropper'
                 :guides="true"
@@ -24,15 +24,15 @@
             </div>
 
             <div class="actions">
-                <button @click="closeModal" type="button" class="background-btn gray-light-button sm-btn">{{ $t("Cancel")}}</button>
-                <button @click="uploadCroppedImage()" type="button" class="background-btn primary-button sm-btn">{{ $t("CropAndUpload")}}</button>
+                <button @click="closeModal" type="button" class="background-btn gray-light-button sm-btn">{{ $t("Cancel")}}</button>
+                <button @click="uploadCroppedImage()" type="button" class="background-btn primary-button sm-btn">{{ $t("CropAndUpload")}}</button>
             </div>
 
         </div>
 
     </div>
 </template>
-<script>
+<script lang="ts">
     export default {
         props: ['image'],
         data(){
@@ -59,7 +59,7 @@
                 this.$refs.cropper.rotate(rotationAngle);
             },
             closeModal(){
-                this.$emit('closeModal', file);
+                this.$emit('closeModal');
             },
 
 

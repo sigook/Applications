@@ -74,6 +74,14 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(Guid requestId, GetRequestApplicantFilter filter) => Ok(await _repository.GetRequestApplicants(requestId, filter));
 
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search(Guid requestId, [FromQuery] string searchTerm)
+        {
+            var agencyId = User.GetAgencyId();
+            var results = await _repository.SearchApplicants(agencyId, requestId, searchTerm);
+            return Ok(results);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

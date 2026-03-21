@@ -170,13 +170,13 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import dayjs from "dayjs";
 import confirmationAlert from "@/mixins/confirmationAlert";
 
 export default {
   components: {
-    LocationForm: () => import("@/components/agency_company/LocationForm"),
+    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
   data() {
     let breakDate = new Date();
@@ -187,7 +187,7 @@ export default {
     maxBreak.setHours(1);
     maxBreak.setMinutes(0);
 
-    let timeZero = new Date(dayjs().subtract(14, "days"));
+    let timeZero = dayjs().subtract(14, "days").toDate();
     timeZero.setHours(0);
     timeZero.setMinutes(0);
     return {
@@ -202,7 +202,9 @@ export default {
       errorMessage: this.$t("PleaseVerifyThatTheFieldsAreCorrect"),
       directHiring: false,
       jobPosition: '',
+      jobPositionSelected: null,
       jobLocation: '',
+      locationSelected: null,
       showLocationModal: false,
     };
   },
@@ -213,9 +215,25 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    validateAutocompleteSelections() {
+      let valid = true;
+
+      if (!this.directHiring && this.jobPosition && (!this.jobPositionSelected || this.jobPositionSelected.value.toLowerCase() !== this.jobPosition.toLowerCase())) {
+        this.errors.add({ field: 'job type', msg: 'Please select a role from the list' });
+        valid = false;
+      }
+
+      if (this.jobLocation && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.jobLocation.toLowerCase())) {
+        this.errors.add({ field: 'branchOffice', msg: 'Please select a location from the list' });
+        valid = false;
+      }
+
+      return valid;
+    },
     validateForm() {
       this.$validator.validateAll().then((result) => {
-        if (result) {
+        const selectionsValid = this.validateAutocompleteSelections();
+        if (result && selectionsValid) {
           this.createRequest();
           return;
         }
@@ -267,6 +285,7 @@ export default {
         })
     },
     onJobPositionSelected(option) {
+      this.jobPositionSelected = option;
       if (option) {
         this.request.shift = option.shift;
         this.request.rate = option.workerRate;
@@ -278,6 +297,7 @@ export default {
       }
     },
     onLocationSelected(option) {
+      this.locationSelected = option;
       if (option) {
         this.request.locationId = option.id;
       } else {
@@ -305,6 +325,20 @@ export default {
     },
   },
   watch: {
+    jobPosition(newVal) {
+      if (this.jobPositionSelected && this.jobPositionSelected.value !== newVal) {
+        this.jobPositionSelected = null;
+        this.request.shift = null;
+        this.request.rate = null;
+        this.request.jobPositionRateId = null;
+      }
+    },
+    jobLocation(newVal) {
+      if (this.locationSelected && this.locationSelected.formattedAddress !== newVal) {
+        this.locationSelected = null;
+        this.request.locationId = null;
+      }
+    },
     directHiring: function (val) {
       if (val) {
         this.$validator.detach("job type");
