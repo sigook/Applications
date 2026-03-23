@@ -71,13 +71,14 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   Province? _editProvince;
   City? _editCity;
 
-  // Preferences editing state
-  Set<String> _editAvailabilityIds = {};
-  Set<String> _editAvailabilityTimeIds = {};
-  Set<String> _editAvailabilityDayIds = {};
+  // Preferences editing state — maps of id → value
+  Map<String, String> _editAvailabilityMap = {};
+  Map<String, String> _editAvailabilityTimeMap = {};
+  Map<String, String> _editAvailabilityDayMap = {};
   String? _editLiftId;
+  String? _editLiftValue;
   bool _editHasVehicle = false;
-  Set<String> _editLanguageIds = {};
+  Map<String, String> _editLanguageMap = {};
   Set<String> _editSkillIds = {};
 
   // Phone mask formatters
@@ -191,11 +192,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         _editHasVehicle = profile.hasVehicle;
       }
       if (section == ProfileSection.preferences && profile != null) {
-        _editAvailabilityIds = Set.from(profile.availabilityIds);
-        _editAvailabilityTimeIds = Set.from(profile.availabilityTimeIds);
-        _editAvailabilityDayIds = Set.from(profile.availabilityDayIds);
+        _editAvailabilityMap = Map.fromIterables(
+          profile.availabilityIds, profile.availabilities,
+        );
+        _editAvailabilityTimeMap = Map.fromIterables(
+          profile.availabilityTimeIds, profile.availabilityTimes,
+        );
+        _editAvailabilityDayMap = Map.fromIterables(
+          profile.availabilityDayIds, profile.availabilityDays,
+        );
         _editLiftId = profile.liftId;
-        _editLanguageIds = Set.from(profile.languageIds);
+        _editLiftValue = profile.liftCapacity;
+        _editLanguageMap = Map.fromIterables(
+          profile.languageIds, profile.languages,
+        );
         _editSkillIds = Set.from(profile.skills);
       }
     });
@@ -290,11 +300,16 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         };
       case ProfileSection.preferences:
         editedFields = {
-          'availabilityIds': _editAvailabilityIds.join(','),
-          'availabilityTimeIds': _editAvailabilityTimeIds.join(','),
-          'availabilityDayIds': _editAvailabilityDayIds.join(','),
+          'availabilityIds': _editAvailabilityMap.keys.join(','),
+          'availabilityValues': _editAvailabilityMap.values.join(','),
+          'availabilityTimeIds': _editAvailabilityTimeMap.keys.join(','),
+          'availabilityTimeValues': _editAvailabilityTimeMap.values.join(','),
+          'availabilityDayIds': _editAvailabilityDayMap.keys.join(','),
+          'availabilityDayValues': _editAvailabilityDayMap.values.join(','),
           if (_editLiftId != null) 'liftId': _editLiftId!,
-          'languageIds': _editLanguageIds.join(','),
+          if (_editLiftValue != null) 'liftValue': _editLiftValue!,
+          'languageIds': _editLanguageMap.keys.join(','),
+          'languageValues': _editLanguageMap.values.join(','),
           'skillIds': _editSkillIds.join(','),
         };
     }
@@ -1739,51 +1754,68 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           asyncValue: ref.watch(liftingCapacitiesProvider),
           selectedIds: _editLiftId != null ? {_editLiftId!} : {},
           singleSelect: true,
-          onToggle: (id, selected) => setState(() {
-            _editLiftId = selected ? id : null;
-          }),
+          onToggle: (id, selected) {
+            final items = ref.read(liftingCapacitiesProvider).value;
+            final value = items?.where((e) => e.id == id).firstOrNull?.value;
+            setState(() {
+              _editLiftId = selected ? id : null;
+              _editLiftValue = selected ? value : null;
+            });
+          },
         ),
         const SizedBox(height: 12),
         _buildChipSelector(
           label: 'Availability',
           asyncValue: ref.watch(availabilityListProvider),
-          selectedIds: _editAvailabilityIds,
+          selectedIds: _editAvailabilityMap.keys.toSet(),
           singleSelect: false,
-          onToggle: (id, selected) => setState(() {
-            if (selected) {
-              _editAvailabilityIds.add(id);
-            } else {
-              _editAvailabilityIds.remove(id);
-            }
-          }),
+          onToggle: (id, selected) {
+            final items = ref.read(availabilityListProvider).value;
+            final value = items?.where((e) => e.id == id).firstOrNull?.value ?? '';
+            setState(() {
+              if (selected) {
+                _editAvailabilityMap[id] = value;
+              } else {
+                _editAvailabilityMap.remove(id);
+              }
+            });
+          },
         ),
         const SizedBox(height: 12),
         _buildChipSelector(
           label: 'Available Time',
           asyncValue: ref.watch(availabilityTimeListProvider),
-          selectedIds: _editAvailabilityTimeIds,
+          selectedIds: _editAvailabilityTimeMap.keys.toSet(),
           singleSelect: false,
-          onToggle: (id, selected) => setState(() {
-            if (selected) {
-              _editAvailabilityTimeIds.add(id);
-            } else {
-              _editAvailabilityTimeIds.remove(id);
-            }
-          }),
+          onToggle: (id, selected) {
+            final items = ref.read(availabilityTimeListProvider).value;
+            final value = items?.where((e) => e.id == id).firstOrNull?.value ?? '';
+            setState(() {
+              if (selected) {
+                _editAvailabilityTimeMap[id] = value;
+              } else {
+                _editAvailabilityTimeMap.remove(id);
+              }
+            });
+          },
         ),
         const SizedBox(height: 12),
         _buildChipSelector(
           label: 'Available Days',
           asyncValue: ref.watch(daysOfWeekProvider),
-          selectedIds: _editAvailabilityDayIds,
+          selectedIds: _editAvailabilityDayMap.keys.toSet(),
           singleSelect: false,
-          onToggle: (id, selected) => setState(() {
-            if (selected) {
-              _editAvailabilityDayIds.add(id);
-            } else {
-              _editAvailabilityDayIds.remove(id);
-            }
-          }),
+          onToggle: (id, selected) {
+            final items = ref.read(daysOfWeekProvider).value;
+            final value = items?.where((e) => e.id == id).firstOrNull?.value ?? '';
+            setState(() {
+              if (selected) {
+                _editAvailabilityDayMap[id] = value;
+              } else {
+                _editAvailabilityDayMap.remove(id);
+              }
+            });
+          },
         ),
         const SizedBox(height: 12),
         SearchableToggleList(
@@ -1802,14 +1834,18 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         SearchableToggleList(
           label: 'Languages',
           asyncValue: ref.watch(languagesProvider),
-          selectedIds: _editLanguageIds,
-          onToggle: (id, selected) => setState(() {
-            if (selected) {
-              _editLanguageIds.add(id);
-            } else {
-              _editLanguageIds.remove(id);
-            }
-          }),
+          selectedIds: _editLanguageMap.keys.toSet(),
+          onToggle: (id, selected) {
+            final items = ref.read(languagesProvider).value;
+            final value = items?.where((e) => e.id == id).firstOrNull?.value ?? '';
+            setState(() {
+              if (selected) {
+                _editLanguageMap[id] = value;
+              } else {
+                _editLanguageMap.remove(id);
+              }
+            });
+          },
         ),
       ],
     );

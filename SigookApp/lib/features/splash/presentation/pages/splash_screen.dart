@@ -160,11 +160,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   opacity: _logoFadeAnimation,
                   child: ScaleTransition(
                     scale: _logoScaleAnimation,
-                    child: Image.asset(
-                      'assets/images/logo/sigook_logo.png',
-                      width: 270,
-                      color: Colors.white,
-                      colorBlendMode: BlendMode.srcIn,
+                    child: Hero(
+                      tag: 'app-logo',
+                      child: Image.asset(
+                        'assets/images/logo/sigook-logo.png',
+                        width: 270,
+                        color: Colors.white,
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),

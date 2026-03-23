@@ -62,10 +62,10 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const WelcomePage(),
-          transitionDuration: Duration.zero,
+          transitionDuration: const Duration(milliseconds: 600),
           reverseTransitionDuration: Duration.zero,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return child;
+            return FadeTransition(opacity: animation, child: child);
           },
         ),
       ),
