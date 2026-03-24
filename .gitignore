@@ -705,4 +705,4 @@ local.properties
 !appsettings.*.json
 
 # Claude Code - AI assistant workspace files
-.claude/settings.local.json
+.claude/
