@@ -83,6 +83,9 @@ dependencies:
   connectivity_plus: ^7.0.0
   retry: ^3.1.2
 
+  # SVG rendering
+  flutter_svg: ^2.1.0
+
   # File Picker (Cross-platform file selection for iOS/Android/Web)
   file_picker: 10.3.7  # Pinned - version 10.3.9 has breaking API changes (FilePicker.platform removed)
   image_picker: ^1.2.1

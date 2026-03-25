@@ -141,13 +141,17 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.filter_list),
-          onPressed: _showFilterModal,
+          onPressed: () {
+            notifyLogoFlash();
+            _showFilterModal();
+          },
         ),
         title: const NavbarLogo(),
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
+              notifyLogoFlash();
               _scaffoldKey.currentState?.openEndDrawer();
             },
           ),

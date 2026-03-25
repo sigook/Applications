@@ -62,15 +62,10 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const WelcomePage(),
-          transitionDuration: const Duration(milliseconds: 800),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOut,
-              ),
-              child: child,
-            );
+            return child;
           },
         ),
       ),
@@ -127,10 +122,19 @@ class AppRouter {
         path: AppRoutes.jobDetails,
         name: 'jobDetails',
         pageBuilder: (context, state) {
-          final jobId = state.extra as String;
+          final extra = state.extra;
+          final String jobId;
+          final bool isFromHistory;
+          if (extra is Map<String, dynamic>) {
+            jobId = extra['id'] as String;
+            isFromHistory = (extra['isFromHistory'] as bool?) ?? false;
+          } else {
+            jobId = extra as String;
+            isFromHistory = false;
+          }
           return CustomTransitionPage(
             key: state.pageKey,
-            child: JobPage(jobId: jobId),
+            child: JobPage(jobId: jobId, isFromHistory: isFromHistory),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);

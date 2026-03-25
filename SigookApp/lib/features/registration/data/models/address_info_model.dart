@@ -13,6 +13,7 @@ sealed class AddressInfoModel with _$AddressInfoModel {
     required String provinceState,
     required String city,
     required String address,
+    @Default('') String zipCode,
   }) = _AddressInfoModel;
 
   /// Convert from domain entity
@@ -22,6 +23,7 @@ sealed class AddressInfoModel with _$AddressInfoModel {
       provinceState: entity.provinceState,
       city: entity.city,
       address: entity.address,
+      zipCode: entity.zipCode,
     );
   }
 
@@ -32,7 +34,7 @@ sealed class AddressInfoModel with _$AddressInfoModel {
       provinceState: provinceState,
       city: city,
       address: address,
-      zipCode: '', // TODO: Add zipCode field to model
+      zipCode: zipCode,
     );
   }
 

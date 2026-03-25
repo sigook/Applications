@@ -11,10 +11,8 @@
       ],
       "args": [
         "--flavor",
-        "staging",
-        "-d",
-        "emulator-5554"
-      ],
+        "staging"
+      ]
     },
     {
       "name": "Production",
@@ -26,10 +24,8 @@
       ],
       "args": [
         "--flavor",
-        "production",
-        "-d",
-        "emulator-5554"
-      ],
+        "production"
+      ]
     },
     {
       "name": "Local (localhost services)",
@@ -41,10 +37,8 @@
       ],
       "args": [
         "--flavor",
-        "production",
-        "-d",
-        "emulator-5554"
-      ],
+        "production"
+      ]
     },
     {
       "name": "Attach to Flutter Process",
