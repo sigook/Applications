@@ -45,30 +45,6 @@ abstract class ProfileRemoteDataSource {
     String workerId, {
     required String filePath,
   });
-  Future<void> updateWorkerOtherInfo(
-    String workerId,
-    Map<String, dynamic> data,
-  );
-  Future<void> updateWorkerAvailabilities(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  );
-  Future<void> updateWorkerAvailabilityTimes(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  );
-  Future<void> updateWorkerAvailabilityDays(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  );
-  Future<void> updateWorkerLanguages(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  );
-  Future<void> updateWorkerSkills(
-    String workerId,
-    List<String> data,
-  );
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -554,41 +530,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<void> updateWorkerOtherInfo(
-    String workerId,
-    Map<String, dynamic> data,
-  ) async {
-    try {
-      final response = await apiClient.dio.post(
-        '/WorkerProfile/$workerId/OtherInformation',
-        data: data,
-      );
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw ServerException(
-          message: 'Failed to update other info: ${response.statusCode}',
-        );
-      }
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException('Connection timeout');
-      } else if (e.type == DioExceptionType.connectionError) {
-        throw NetworkException('No internet connection');
-      } else if (e.response != null) {
-        throw ServerException(
-          message: 'Server error: ${e.response?.statusCode}',
-        );
-      } else {
-        throw NetworkException('Network error: ${e.message}');
-      }
-    } catch (e) {
-      if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Failed to update other info: $e');
-    }
-  }
-
-  @override
   Future<void> uploadWorkerCertificate(
     String workerId, {
     required String filePath,
@@ -637,92 +578,5 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to upload certificate: $e');
     }
-  }
-
-  Future<void> _postJson(String url, Object data, String errorLabel) async {
-    try {
-      final response = await apiClient.dio.post(url, data: data);
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw ServerException(
-          message: 'Failed to update $errorLabel: ${response.statusCode}',
-        );
-      }
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException('Connection timeout');
-      } else if (e.type == DioExceptionType.connectionError) {
-        throw NetworkException('No internet connection');
-      } else if (e.response != null) {
-        throw ServerException(
-          message: 'Server error: ${e.response?.statusCode}',
-        );
-      } else {
-        throw NetworkException('Network error: ${e.message}');
-      }
-    } catch (e) {
-      if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Failed to update $errorLabel: $e');
-    }
-  }
-
-  @override
-  Future<void> updateWorkerAvailabilities(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  ) async {
-    await _postJson(
-      '/WorkerProfile/$workerId/Availabilities',
-      data,
-      'availabilities',
-    );
-  }
-
-  @override
-  Future<void> updateWorkerAvailabilityTimes(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  ) async {
-    await _postJson(
-      '/WorkerProfile/$workerId/AvailabilityTimes',
-      data,
-      'availability times',
-    );
-  }
-
-  @override
-  Future<void> updateWorkerAvailabilityDays(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  ) async {
-    await _postJson(
-      '/WorkerProfile/$workerId/AvailabilityDays',
-      data,
-      'availability days',
-    );
-  }
-
-  @override
-  Future<void> updateWorkerLanguages(
-    String workerId,
-    List<Map<String, dynamic>> data,
-  ) async {
-    await _postJson(
-      '/WorkerProfile/$workerId/Languages',
-      data,
-      'languages',
-    );
-  }
-
-  @override
-  Future<void> updateWorkerSkills(
-    String workerId,
-    List<String> data,
-  ) async {
-    await _postJson(
-      '/WorkerProfile/$workerId/Skills',
-      data,
-      'skills',
-    );
   }
 }

@@ -384,36 +384,36 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                 // Push content down to match splash logo position
                 SizedBox(height: size.height * 0.36),
 
-                // Logo — Hero-animated from splash screen
-                Hero(
-                  tag: 'app-logo',
-                  child: Image.asset(
-                    'assets/images/logo/sigook-logo.png',
-                    color: Colors.white,
-                    width: 270,
-                    colorBlendMode: BlendMode.srcIn,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Tagline fades in after logo lands
-                FadeTransition(
-                  opacity: _taglineFade,
-                  child: const Text(
-                    'Find Work That Fits Your Life',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.3,
-                    ),
-                    textAlign: TextAlign.center,
+                // Logo — always visible (no fade), seamless from splash
+                Transform.translate(
+                  offset: const Offset(0, -32),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo/sigook-logo.png',
+                        color: Colors.white,
+                        width: 270,
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
+                      SizedBox(height: 12),
+                      const Text(
+                        'Find Work That Fits Your Life',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
 
                 // Buttons — right below the tagline
                 Transform.translate(
-                  offset: const Offset(0, 20),
+                  offset: const Offset(0, 84),
                   child: FadeTransition(
                     opacity: _buttonsFade,
                     child: SlideTransition(

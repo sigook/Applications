@@ -158,59 +158,32 @@ class ProfileRepositoryImpl implements ProfileRepository {
             );
           }
         case ProfileSection.preferences:
-          List<String> parseList(String key) => (editedFields[key] ?? '')
+          List<String> parseIds(String key) => (editedFields[key] ?? '')
               .split(',')
               .where((s) => s.isNotEmpty)
               .toList();
-
-          List<Map<String, dynamic>> buildCatalogPayload(
-            String idsKey,
-            String valuesKey,
-          ) {
-            final ids = parseList(idsKey);
-            final values = parseList(valuesKey);
-            return [
-              for (int i = 0; i < ids.length; i++)
-                {'id': ids[i], 'value': i < values.length ? values[i] : ''},
-            ];
-          }
-
-          // Send each preference to its dedicated endpoint
-          await remoteDataSource.updateWorkerAvailabilities(
-            workerId,
-            buildCatalogPayload('availabilityIds', 'availabilityValues'),
+          final prefModel = currentModel.copyWith(
+            availabilities: parseIds('availabilityIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            availabilityTimes: parseIds('availabilityTimeIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            availabilityDays: parseIds('availabilityDayIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            lift: editedFields['liftId'] != null
+                ? CatalogItemModel(id: editedFields['liftId'], value: '')
+                : currentModel.lift,
+            hasVehicle: editedFields['hasVehicle'] == 'true',
+            languages: parseIds('languageIds')
+                .map((id) => CatalogItemModel(id: id, value: ''))
+                .toList(),
+            skills: parseIds('skillIds')
+                .map((name) => SkillItemModel(skill: name))
+                .toList(),
           );
-          await remoteDataSource.updateWorkerAvailabilityTimes(
-            workerId,
-            buildCatalogPayload('availabilityTimeIds', 'availabilityTimeValues'),
-          );
-          await remoteDataSource.updateWorkerAvailabilityDays(
-            workerId,
-            buildCatalogPayload('availabilityDayIds', 'availabilityDayValues'),
-          );
-          // Lift → OtherInformation endpoint
-          final liftPayload = <String, dynamic>{
-            'lift': editedFields['liftId'] != null
-                ? {
-                    'id': editedFields['liftId'],
-                    'value': editedFields['liftValue'] ?? '',
-                  }
-                : currentModel.lift != null
-                    ? {
-                        'id': currentModel.lift!.id,
-                        'value': currentModel.lift!.value,
-                      }
-                    : null,
-          };
-          await remoteDataSource.updateWorkerOtherInfo(workerId, liftPayload);
-          // Languages → dedicated endpoint
-          await remoteDataSource.updateWorkerLanguages(
-            workerId,
-            buildCatalogPayload('languageIds', 'languageValues'),
-          );
-          // Skills → dedicated endpoint (plain string array)
-          final skillNames = parseList('skillIds');
-          await remoteDataSource.updateWorkerSkills(workerId, skillNames);
+          await remoteDataSource.updateWorkerBasicInfo(workerId, prefModel);
       }
 
       return Right(null);
