@@ -343,7 +343,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```bash
 flutter analyze                # Check for static errors
 flutter test                   # Run unit tests
-flutter run --flavor staging -t lib/main_staging.dart  # Manual test
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart  # Manual test
 ```
 
 ## Reusable Core Widgets
@@ -419,14 +419,15 @@ Pre-configured launch configurations:
 
 See `.vscode/README.md` for detailed configuration.
 
-### Build Flavors
+### Build Environments
 
 ```bash
+# Local (localhost services)
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
+
 # Staging
-flutter run --flavor staging -t lib/main_staging.dart
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 
 # Production
-flutter build apk --flavor production -t lib/main_production.dart --release
+flutter build apk --dart-define-from-file=.env.production -t lib/main_production.dart --release
 ```
-
-See `BUILD_FLAVORS_GUIDE.md` for complete setup instructions.

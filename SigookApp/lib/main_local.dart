@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'main_common.dart';
 
 /// Local development entry point - connects to locally running services
-/// Run with: flutter run --dart-define-from-file=.env.local --flavor production -t lib/main_local.dart
+/// Run with: flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 ///
 /// Prerequisites:
 /// 1. Run Covenant.IdentityServer locally

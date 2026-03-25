@@ -102,7 +102,6 @@ echo "Build Version: $VERSION_NAME ($VERSION_CODE)"
 echo "Starting Flutter iOS build..."
 
 flutter build ios --release \
-  --flavor "$ENVIRONMENT" \
   -t "$ENTRY_POINT" \
   --no-codesign \
   --build-name="$VERSION_NAME" \

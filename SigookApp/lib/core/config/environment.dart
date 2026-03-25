@@ -89,7 +89,7 @@ class EnvironmentConfig {
       throw Exception(
         'Missing required environment configuration: ${missing.join(', ')}\n'
         'Ensure you pass environment variables via --dart-define-from-file or --dart-define.\n'
-        'Example: flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart',
+        'Example: flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart',
       );
     }
   }
