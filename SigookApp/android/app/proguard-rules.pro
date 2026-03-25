@@ -29,7 +29,7 @@
 -keep class com.google.gson.** { *; }
 
 # Keep model classes (adjust package name as needed)
--keep class com.example.sigook_app_flutter.** { *; }
+-keep class com.sigook.sigook.** { *; }
 
 # Prevent stripping of native methods
 -keepclasseswithmembernames class * {

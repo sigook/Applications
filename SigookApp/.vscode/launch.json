@@ -8,10 +8,6 @@
       "program": "lib/main_staging.dart",
       "toolArgs": [
         "--dart-define-from-file=.env.staging"
-      ],
-      "args": [
-        "--flavor",
-        "staging"
       ]
     },
     {
@@ -21,10 +17,6 @@
       "program": "lib/main_production.dart",
       "toolArgs": [
         "--dart-define-from-file=.env.production"
-      ],
-      "args": [
-        "--flavor",
-        "production"
       ]
     },
     {
@@ -34,10 +26,6 @@
       "program": "lib/main_local.dart",
       "toolArgs": [
         "--dart-define-from-file=.env.local"
-      ],
-      "args": [
-        "--flavor",
-        "production"
       ]
     },
     {
