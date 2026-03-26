@@ -13,8 +13,16 @@
           <b-button tag="router-link" to="/accounting/create-paystub" icon-left="plus">
             Create
           </b-button>
-          <b-button icon-left="table-plus" @click="showGeneratePayStubsModal = true">Generate</b-button>
-          <b-button icon-left="step-forward" @click="showSkipPayrollNumberModal = true">Skip Payroll Number</b-button>
+        </template>
+        <template v-slot:dropdown-actions>
+          <b-dropdown-item aria-role="listitem" @click="showGeneratePayStubsModal = true">
+            <b-icon icon="table-plus"></b-icon>
+            <span>Generate</span>
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="showSkipPayrollNumberModal = true">
+            <b-icon icon="step-forward"></b-icon>
+            <span>Skip Payroll Number</span>
+          </b-dropdown-item>
         </template>
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting

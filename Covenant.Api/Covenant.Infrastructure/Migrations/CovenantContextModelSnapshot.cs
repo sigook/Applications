@@ -494,6 +494,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("ProvincialTax")
                         .HasColumnType("numeric");
 
@@ -508,9 +511,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<decimal>("TotalPaid")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
 
                     b.Property<decimal>("Vacations")
                         .HasColumnType("numeric");

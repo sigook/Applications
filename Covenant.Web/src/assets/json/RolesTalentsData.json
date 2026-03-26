@@ -1,197 +1,197 @@
 [
-    {
-      "title": "Automotive",
-      "image": "automotive.png",
-      "icon": "car.svg",
-      "description": "Drive your career forward in the automotive industry. Join the teams that keep the world in motion — one vehicle at a time.",
-      "detailList": [
-        "Automotive Technicians / Mechanics",
-        "Auto Body / Paint Specialists",
-        "Quality Control Inspectors",
-        "Production Line Assemblers",
-        "Maintenance / Repair Technicians",
-        "Parts / Inventory Clerks",
-        "Machine Operators",
-        "Material Handlers / Logistics Staff",
-        "Detailers / Finishers",
-        "Service Advisors"
-      ]
-    },
-    {
-      "title": "Aviation",
-      "image": "aviation.png",
-      "icon": "plane.svg",
-      "description": "Take your aviation career to new heights. Whether you're a ground handler, technician, or logistics professional, we connect you with trusted employers who value safety, precision, and reliability.",
-      "detailList": [
-        "Aircraft Maintenance Technicians (AMT / A&P)",
-        "Avionics Technicians",
-        "Ground Handling / Ramp Agents",
-        "Baggage / Cargo Handlers",
-        "Line Service Technicians",
-        "Quality Assurance Inspectors",
-        "Warehouse/Parts Inventory Clerks",
-        "Customer Service Representatives",
-        "Logistics / Supply Chain Assistants"
-      ]
-    },
-    {
-      "title": "Construction",
-      "image": "construction.png",
-      "icon": "crane.svg",
-      "description": "Build your future with confidence. We help you find opportunities with companies that value craftsmanship, teamwork, and safety on every job site.",
-      "detailList": [
-        "Civil Engineers",
-        "Structural Engineers",
-        "Project Engineers",
-        "Architects",
-        "Architectural Technologists",
-        "Supervisors / Site Managers",
-        "Project Managers / Coordinators",
-        "Cost Estimators / Quantity Surveyors",
-        "Health & Safety Coordinators",
-        "Procurement / Contract Administrators",
-        "Quality Assurance / Compliance Specialists",
-        "Planning / Scheduling Analysts"
-      ]
-    },
-    {
-      "title": "Engineering",
-      "image": "engineering.png",
-      "icon": "gear.svg",
-      "description": "Design, innovate, and build the future. We connect top talent in IT, civil works, oil and gas, drilling, and industrial sectors with companies leading large-scale infrastructure and technology projects.",
-      "detailList": [
-        "Civil, Structural, and Mechanical specialists",
-        "Electrical and Instrumentation (E&I)",
-        "Petroleum, Drilling, Reservoir specialists",
-        "Process, Production, Operations experts",
-        "Project Management and Coordination",
-        "Planning, Scheduling, and Project Controls",
-        "Cost Estimation, Quantity Surveying, Procurement",
-        "Reliability, Maintenance, and QA/QC specialists",
-        "Commissioning, Field, Start-up professionals",
-        "SCADA, Automation, and Controls experts",
-        "Industrial and Manufacturing specialists",
-        "CAD / BIM Designers",
-        "Geotechnical, Survey, and Inspection staff"
-      ]
-    },
-    {
-      "title": "IT / AI",
-      "image": "it-ai.png",
-      "icon": "chip.svg",
-      "description": "Step into the fast-paced world of IT and AI, where your skills can power the next digital breakthrough. Join teams that are redefining the future.",
-      "detailList": [
-        "Software, DevOps, Cloud professionals",
-        "Data Science, Machine Learning, AI specialists",
-        "Cybersecurity, Systems, Network experts"
-      ]
-    },
-    {
-      "title": "Financial/Insurance",
-      "image": "finance.png",
-      "icon": "money.svg",
-      "description": "Grow your professional career in finance and insurance. We connect you with organizations that rely on accuracy, integrity, and expertise—helping you contribute to financial stability and long-term success.",
-      "detailList": [
-        "Accounting Clerks and Bookkeepers",
-        "Financial Analysts",
-        "Claims Processors and Adjusters",
-        "Underwriting Assistants",
-        "Payroll and Billing Specialists",
-        "Data Entry and Compliance Clerks",
-        "Credit and Collections Coordinators",
-        "Customer Service Representatives",
-        "Administrative Assistants",
-        "Office Managers"
-      ]
-    },
-    {
-      "title": "Legal/Accounting",
-      "image": "legal.png",
-      "icon": "doc.svg",
-      "description": "Grow your professional career. We connect you with organizations—helping you contribute to financial stability and long-term success.",
-      "detailList": [
-        "Accounting Clerks and Bookkeepers",
-        "Financial Analysts",
-        "Claims Processors and Adjusters",
-        "Underwriting Assistants",
-        "Payroll and Billing Specialists",
-        "Data Entry and Compliance Clerks",
-        "Credit and Collections Coordinators",
-        "Customer Service Representatives",
-        "Administrative Assistants",
-        "Office Managers"
-      ]
-    },
-    {
-      "title": "Logistics, 3PL/4PL",
-      "image": "logistics.png",
-      "icon": "truck.svg",
-      "description": "Drive your logistics career forward. We connect you with opportunities that reward reliability, performance, and growth in one of the world's fastest-moving industries.",
-      "detailList": [
-        "Warehouse Associates and Material Handlers",
-        "Forklift and Reach Truck Operators",
-        "Pickers, Packers, and Shippers",
-        "Inventory and Order Fulfillment Clerks",
-        "Dispatchers and Route Coordinators",
-        "Loaders and Unloaders",
-        "Shipping & Receiving Clerks",
-        "Supervisors and Shift Leads",
-        "Quality Control Inspectors",
-        "Logistics Analysts"
-      ]
-    },
-    {
-      "title": "Manufacturing",
-      "image": "manufacturing.png",
-      "icon": "factory.svg",
-      "description": "Shape the future of production. Join leading manufacturers looking for dependable, skilled professionals to ensure quality, efficiency, and innovation in every process.",
-      "detailList": [
-        "Production Line Workers",
-        "Machine Operators and Assemblers",
-        "Maintenance Technicians",
-        "Quality Control Inspectors",
-        "CNC Machinists",
-        "Welders and Fabricators",
-        "Packaging and Labeling Staff",
-        "Industrial Mechanics",
-        "Process Technicians",
-        "Production Supervisors"
-      ]
-    },
-    {
-      "title": "Retail",
-      "image": "retail.png",
-      "icon": "store.svg",
-      "description": "Turn your talent into success. Whether in customer service, merchandising, or management, we help you join retailers who value energy, excellence, and a great customer experience.",
-      "detailList": [
-        "Cashiers and Sales Associates",
-        "Merchandisers and Stock Clerks",
-        "Customer Service Representatives",
-        "Store Supervisors and Shift Leads",
-        "Inventory Control Clerks",
-        "Visual Merchandisers",
-        "Warehouse and Fulfillment Staff",
-        "E-commerce Order Processors",
-        "Brand Ambassadors",
-        "Retail Managers"
-      ]
-    },
-    {
-      "title": "Transportation",
-      "image": "transportation.png",
-      "icon": "transport.svg",
-      "description": "Move your career in the right direction. We connect professional drivers and logistics experts with reliable employers who prioritize safety, efficiency, and respect on the road.",
-      "detailList": [
-        "AZ, DZ Drivers",
-        "G Drivers",
-        "Delivery Drivers and Couriers",
-        "Dispatchers and Fleet Coordinators",
-        "Mechanics and Diesel Technicians",
-        "Dock Workers and Loaders",
-        "Route Planners and Schedulers",
-        "Safety and Compliance Officers",
-        "Traffic and Logistics Clerks",
-        "Transportation Supervisors"
-      ]
-    }
-  ]
+  {
+    "title": "Automotive",
+    "image": "automotive.png",
+    "icon": "car.svg",
+    "description": "Drive your career forward in the automotive industry. Join the teams that keep the world in motion — one vehicle at a time.",
+    "detailList": [
+      "Automotive Technicians / Mechanics",
+      "Auto Body / Paint Specialists",
+      "Quality Control Inspectors",
+      "Production Line Assemblers",
+      "Maintenance / Repair Technicians",
+      "Parts / Inventory Clerks",
+      "Machine Operators",
+      "Material Handlers / Logistics Staff",
+      "Detailers / Finishers",
+      "Service Advisors"
+    ]
+  },
+  {
+    "title": "Aviation",
+    "image": "aviation.png",
+    "icon": "plane.svg",
+    "description": "Take your aviation career to new heights. Whether you're a ground handler, technician, or logistics professional, we connect you with trusted employers who value safety, precision, and reliability.",
+    "detailList": [
+      "Aircraft Maintenance Technicians (AMT / A&P)",
+      "Avionics Technicians",
+      "Ground Handling / Ramp Agents",
+      "Baggage / Cargo Handlers",
+      "Line Service Technicians",
+      "Quality Assurance Inspectors",
+      "Warehouse/Parts Inventory Clerks",
+      "Customer Service Representatives",
+      "Logistics / Supply Chain Assistants"
+    ]
+  },
+  {
+    "title": "Construction",
+    "image": "construction.png",
+    "icon": "crane.svg",
+    "description": "Build your future with confidence. We help you find opportunities with companies that value craftsmanship, teamwork, and safety on every job site.",
+    "detailList": [
+      "Civil Engineers",
+      "Structural Engineers",
+      "Project Engineers",
+      "Architects",
+      "Architectural Technologists",
+      "Supervisors / Site Managers",
+      "Project Managers / Coordinators",
+      "Cost Estimators / Quantity Surveyors",
+      "Health & Safety Coordinators",
+      "Procurement / Contract Administrators",
+      "Quality Assurance / Compliance Specialists",
+      "Planning / Scheduling Analysts"
+    ]
+  },
+  {
+    "title": "Engineering",
+    "image": "engineering.png",
+    "icon": "gear.svg",
+    "description": "Design, innovate, and build the future. We connect top talent in IT, civil works, oil and gas, drilling, and industrial sectors with companies leading large-scale infrastructure and technology projects.",
+    "detailList": [
+      "Civil, Structural, and Mechanical specialists",
+      "Electrical and Instrumentation (E&I)",
+      "Petroleum, Drilling, Reservoir specialists",
+      "Process, Production, Operations experts",
+      "Project Management and Coordination",
+      "Planning, Scheduling, and Project Controls",
+      "Cost Estimation, Quantity Surveying, Procurement",
+      "Reliability, Maintenance, and QA/QC specialists",
+      "Commissioning, Field, Start-up professionals",
+      "SCADA, Automation, and Controls experts",
+      "Industrial and Manufacturing specialists",
+      "CAD / BIM Designers",
+      "Geotechnical, Survey, and Inspection staff"
+    ]
+  },
+  {
+    "title": "IT / AI",
+    "image": "it-ai.png",
+    "icon": "chip.svg",
+    "description": "Step into the fast-paced world of IT and AI, where your skills can power the next digital breakthrough. Join teams that are redefining the future.",
+    "detailList": [
+      "Software, DevOps, Cloud professionals",
+      "Data Science, Machine Learning, AI specialists",
+      "Cybersecurity, Systems, Network experts"
+    ]
+  },
+  {
+    "title": "Financial/Insurance",
+    "image": "finance.png",
+    "icon": "money.svg",
+    "description": "Grow your professional career in finance and insurance. We connect you with organizations that rely on accuracy, integrity, and expertise—helping you contribute to financial stability and long-term success.",
+    "detailList": [
+      "Accounting Clerks and Bookkeepers",
+      "Financial Analysts",
+      "Claims Processors and Adjusters",
+      "Underwriting Assistants",
+      "Payroll and Billing Specialists",
+      "Data Entry and Compliance Clerks",
+      "Credit and Collections Coordinators",
+      "Customer Service Representatives",
+      "Administrative Assistants",
+      "Office Managers"
+    ]
+  },
+  {
+    "title": "Legal/Accounting",
+    "image": "legal.png",
+    "icon": "doc.svg",
+    "description": "Grow your professional career. We connect you with organizations—helping you contribute to financial stability and long-term success.",
+    "detailList": [
+      "Accounting Clerks and Bookkeepers",
+      "Financial Analysts",
+      "Claims Processors and Adjusters",
+      "Underwriting Assistants",
+      "Payroll and Billing Specialists",
+      "Data Entry and Compliance Clerks",
+      "Credit and Collections Coordinators",
+      "Customer Service Representatives",
+      "Administrative Assistants",
+      "Office Managers"
+    ]
+  },
+  {
+    "title": "Logistics, 3PL/4PL",
+    "image": "logistics.png",
+    "icon": "truck.svg",
+    "description": "Drive your logistics career forward. We connect you with opportunities that reward reliability, performance, and growth in one of the world's fastest-moving industries.",
+    "detailList": [
+      "Warehouse Associates and Material Handlers",
+      "Forklift and Reach Truck Operators",
+      "Pickers, Packers, and Shippers",
+      "Inventory and Order Fulfillment Clerks",
+      "Dispatchers and Route Coordinators",
+      "Loaders and Unloaders",
+      "Shipping & Receiving Clerks",
+      "Supervisors and Shift Leads",
+      "Quality Control Inspectors",
+      "Logistics Analysts"
+    ]
+  },
+  {
+    "title": "Manufacturing",
+    "image": "manufacturing.png",
+    "icon": "factory.svg",
+    "description": "Shape the future of production. Join leading manufacturers looking for dependable, skilled professionals to ensure quality, efficiency, and innovation in every process.",
+    "detailList": [
+      "Production Line Workers",
+      "Machine Operators and Assemblers",
+      "Maintenance Technicians",
+      "Quality Control Inspectors",
+      "CNC Machinists",
+      "Welders and Fabricators",
+      "Packaging and Labeling Staff",
+      "Industrial Mechanics",
+      "Process Technicians",
+      "Production Supervisors"
+    ]
+  },
+  {
+    "title": "Retail",
+    "image": "retail.png",
+    "icon": "store.svg",
+    "description": "Turn your talent into success. Whether in customer service, merchandising, or management, we help you join retailers who value energy, excellence, and a great customer experience.",
+    "detailList": [
+      "Cashiers and Sales Associates",
+      "Merchandisers and Stock Clerks",
+      "Customer Service Representatives",
+      "Store Supervisors and Shift Leads",
+      "Inventory Control Clerks",
+      "Visual Merchandisers",
+      "Warehouse and Fulfillment Staff",
+      "E-commerce Order Processors",
+      "Brand Ambassadors",
+      "Retail Managers"
+    ]
+  },
+  {
+    "title": "Transportation",
+    "image": "transportation.png",
+    "icon": "transport.svg",
+    "description": "Move your career in the right direction. We connect professional drivers and logistics experts with reliable employers who prioritize safety, efficiency, and respect on the road.",
+    "detailList": [
+      "AZ, DZ Drivers",
+      "G Drivers",
+      "Delivery Drivers and Couriers",
+      "Dispatchers and Fleet Coordinators",
+      "Mechanics and Diesel Technicians",
+      "Dock Workers and Loaders",
+      "Route Planners and Schedulers",
+      "Safety and Compliance Officers",
+      "Traffic and Logistics Clerks",
+      "Transportation Supervisors"
+    ]
+  }
+]

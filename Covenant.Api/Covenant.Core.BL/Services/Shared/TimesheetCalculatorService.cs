@@ -29,11 +29,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     #region Deductions
 
-    public async Task<DeductionsResult> CalculateDeductions(
-        decimal totalEarnings,
-        int numberOfWeeks,
-        int year,
-        Guid workerProfileId)
+    public async Task<DeductionsResult> CalculateDeductions(decimal totalEarnings, int numberOfWeeks, int year, Guid workerProfileId)
     {
         var workerProfileTaxCategory = await _workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
         var federalCategory = workerProfileTaxCategory?.FederalCategory ?? TaxCategory.Cc1;
@@ -70,8 +66,8 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         {
             Cpp = cpp,
             Ei = ei,
-            FederalTax = federalTax,
-            ProvincialTax = provincialTax,
+            FederalTax = federalTax ?? 0,
+            ProvincialTax = provincialTax ?? 0,
         };
     }
 

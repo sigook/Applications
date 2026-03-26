@@ -32,6 +32,7 @@ public class AccountingPayStubV4Controller : AccountingBaseController
         this.payStubService = payStubService;
     }
 
+    [Obsolete]
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreatePayStubModel model)
     {

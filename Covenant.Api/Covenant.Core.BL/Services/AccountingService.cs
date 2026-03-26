@@ -66,6 +66,7 @@ public class AccountingService : IAccountingService
         await payStubRepository.SaveChangesAsync();
     }
 
+    [Obsolete]
     public async Task<Result> GeneratePayStubs(IEnumerable<Guid> workerIds)
     {
         var result = Result.Ok();

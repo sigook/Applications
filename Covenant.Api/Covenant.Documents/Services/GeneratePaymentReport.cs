@@ -106,10 +106,9 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
             worksheet.Cell($"{Ei}{startIndex}").SetValue(payStub.Ei).SetMoneyType();
             worksheet.Cell($"{FederalTax}{startIndex}").SetValue(payStub.FederalTax).SetMoneyType();
             worksheet.Cell($"{ProvincialTax}{startIndex}").SetValue(payStub.ProvincialTax).SetMoneyType();
-            worksheet.Cell($"{OtherDeductions}{startIndex}").SetValue(payStub.OtherDeductions).SetMoneyType();
-            if (payStub.OtherDeductionsDetail.Any())
+            if (payStub.OtherDeductions.Count != 0)
             {
-                worksheet.Cell($"{OtherDeductions}{startIndex}").CreateComment().AddText(string.Join("-", payStub.OtherDeductionsDetail));
+                worksheet.Cell($"{OtherDeductions}{startIndex}").CreateComment().AddText(string.Join("-", payStub.OtherDeductions));
             }
             worksheet.Cell($"{TotalDeductions}{startIndex}").SetValue(payStub.TotalDeductions).SetMoneyType();
             worksheet.Cell($"{TotalPaid}{startIndex}").SetValue(payStub.TotalPaid).SetMoneyType();

@@ -1,0 +1,79 @@
+[
+  {
+    "id": 1,
+    "label": "Automotive",
+    "image": "ind-automotive.png",
+    "icon": "automotive.png",
+    "description": "We supply skilled talent for the automotive industry—from technicians to engineers. Our candidates support manufacturing, repair, and sales across all vehicle types."
+  },
+  {
+    "id": 2,
+    "label": "Aviation",
+    "image": "ind-aviation.png",
+    "icon": "aviation.png",
+    "description": "We recruit aviation experts—pilots, technicians, and support staff. Our candidates help airlines and aviation firms maintain safety, compliance, and operational excellence."
+  },
+  {
+    "id": 3,
+    "label": "Construction",
+    "image": "ind-construction.png",
+    "icon": "construction.png",
+    "description": "We connect skilled tradespeople and professionals with top-tier construction companies. We provide talent that drives growth and ensures quality from the ground up."
+  },
+  {
+    "id": 4,
+    "label": "Engineering",
+    "image": "ind-engineering.png",
+    "icon": "engineering.png",
+    "description": "We recruit engineers across multiple disciplines. Our candidates bring innovation, precision, and technical expertise to every project, fueling infrastructure and development."
+  },
+  {
+    "id": 5,
+    "label": "IT / AI",
+    "image": "ind-it-ai.png",
+    "icon": "ai-it.png",
+    "description": "We source top tech talent in software, data, and AI. Our candidates fuel innovation, boost performance, and deliver smart solutions in fast-evolving digital environments."
+  },
+  {
+    "id": 6,
+    "label": "Financial / Insurance",
+    "image": "ind-financial.png",
+    "icon": "financial.png",
+    "description": "We source finance and insurance professionals across banking, accounting, risk, and underwriting—delivering accuracy, compliance, and insight in fast-paced environments."
+  },
+  {
+    "id": 7,
+    "label": "Legal / Accounting",
+    "image": "ind-legal.png",
+    "icon": "legal.png",
+    "description": "We recruit legal professionals, including assistants, paralegals, and lawyers. Our candidates bring organization, precision, and expertise to every legal team."
+  },
+  {
+    "id": 8,
+    "label": "Logistics, 3PL/4PL",
+    "image": "ind-logistics.png",
+    "icon": "logistics.png",
+    "description": "We provide logistics and supply chain talent—from warehouse workers to dispatchers. Our candidates help streamline operations and ensure timely, accurate delivery."
+  },
+  {
+    "id": 9,
+    "label": "Manufacturing",
+    "image": "ind-manufacturing.png",
+    "icon": "manufacturing.png",
+    "description": "We support manufacturing with reliable workers—machine operators, assemblers, and supervisors. Our talent helps boost productivity, safety, and product quality."
+  },
+  {
+    "id": 10,
+    "label": "Retail",
+    "image": "ind-retail.png",
+    "icon": "retail.png",
+    "description": "We provide retail staff at all levels—from sales associates to managers. Our candidates deliver strong customer service and help drive daily operations and sales success."
+  },
+  {
+    "id": 11,
+    "label": "Transportation",
+    "image": "ind-transportation.png",
+    "icon": "transportation.png",
+    "description": "We recruit drivers, coordinators, and support staff for transport operations. Our candidates keep people and goods moving safely, efficiently, and on schedule."
+  }
+]

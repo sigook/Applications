@@ -3,6 +3,7 @@ namespace Covenant.Common.Models.Company
     public class CompanyUserModel
     {
         public Guid Id { get; set; }
+        public Guid? CompanyId { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Email { get; set; }
         public string Name { get; set; }

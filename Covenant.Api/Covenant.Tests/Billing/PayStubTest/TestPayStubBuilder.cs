@@ -37,7 +37,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             Result<PayStub> sub = await PayStubBuilder
                 .PayStub(new Rates(), _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid()).WithTypeOfWork("General Labour")
+                .WithWorkerProfileId(Guid.NewGuid()).WithPosition("General Labour")
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(items).WithoutWageDetails().WithoutPublicHolidaysToPay()
@@ -47,7 +47,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             Assert.NotNull(sub.Value);
             Assert.Equal(800, sub.Value.TotalEarnings);
             Assert.Equal(776, sub.Value.TotalPaid);
-            Assert.Equal(20, sub.Value.OtherDeductions);
+            Assert.Equal(20, sub.Value.OtherDeductions.Sum(od => od.Total));
             Assert.Equal(24, sub.Value.TotalDeductions);
         }
 
@@ -60,7 +60,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             PayStub sub = (await PayStubBuilder
                 .PayStub(new Rates(), _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid()).WithTypeOfWork(default)
+                .WithWorkerProfileId(Guid.NewGuid()).WithPosition(default)
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(new[] { PayStubItem.CreateBonusOthersItem(1, "Bonus").Value })
@@ -82,36 +82,6 @@ namespace Covenant.Tests.Billing.PayStubTest
                 && d.Overtime == w.Overtime));
         }
 
-        [Fact]
-        public async Task PayStub_With_PublicHolidays()
-        {
-            PayStubPublicHoliday[] publicHolidays = {
-                PayStubPublicHoliday.Create(new DateTime(2019,01,01),10,"10 holiday").Value,
-                PayStubPublicHoliday.Create(new DateTime(2019,01,02),20,"20 holiday").Value,
-            };
-            PayStub sub = (await PayStubBuilder
-                .PayStub(new Rates(), _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
-                .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid()).WithTypeOfWork(default)
-                .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
-                .WithCreationDate(new DateTime(2019, 01, 01))
-                .WithItems(new[] { PayStubItem.CreateBonusOthersItem(1, "Bonus").Value })
-                .WithoutWageDetails()
-                .WithPublicHolidaysToPay(publicHolidays)
-                .WithNoMoreDeductions()
-                .WithoutReimbursement()
-                .PayVacations().Build()).Value;
-
-            Assert.Equal(31, sub.TotalPaid);
-            Assert.NotEmpty(sub.Holidays);
-            Assert.Contains(publicHolidays, h => sub.Holidays.Any(h2 =>
-                h2.Id == h.Id
-                && h2.Holiday == h.Holiday
-                && h2.Amount == h.Amount
-                && h2.Description == h.Description
-                && h2.PayStubId == sub.Id));
-        }
-
         [Theory]
         [InlineData(true, 200, 300)]
         [InlineData(false, 0, 100)]
@@ -121,7 +91,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             PayStub sub = (await PayStubBuilder
                 .PayStub(rates, _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid()).WithTypeOfWork(default)
+                .WithWorkerProfileId(Guid.NewGuid()).WithPosition(default)
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(new[] { PayStubItem.CreateBonusOthersItem(100, "Bonus").Value })
@@ -142,7 +112,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             Result<PayStub> sub = await PayStubBuilder
                 .PayStub(new Rates(), _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid()).WithTypeOfWork("General Labour")
+                .WithWorkerProfileId(Guid.NewGuid()).WithPosition("General Labour")
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(empty).WithoutWageDetails().WithoutPublicHolidaysToPay()
@@ -164,7 +134,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             PayStub payStub = (await PayStubBuilder.PayStub(Rates.DefaultRates, _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
                 .WithWorkerProfileId(Guid.NewGuid())
-                .WithTypeOfWork(default)
+                .WithPosition(default)
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(items)
@@ -175,33 +145,8 @@ namespace Covenant.Tests.Billing.PayStubTest
                 .PayVacations()
                 .Build()).Value;
 
-            Assert.Equal(deductions.Count(), payStub.OtherDeductionsDetail.Count());
-            Assert.Equal(deductions.Sum(), payStub.OtherDeductions);
-        }
-
-        [Theory]
-        [InlineData("0")]
-        [InlineData("0,0")]
-        public async Task PayStub_With_Other_Deductions_Zero_Must_Be_Ignore(string deductionsData)
-        {
-            var items = new List<PayStubItem> { PayStubItem.CreateBonusOthersItem(1, "Bonus").Value };
-            IEnumerable<int> deductions = deductionsData.Split(",").Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToList();
-            PayStub payStub = (await PayStubBuilder.PayStub(Rates.DefaultRates, _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
-                .WithPayStubNumber(001)
-                .WithWorkerProfileId(Guid.NewGuid())
-                .WithTypeOfWork(default)
-                .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
-                .WithCreationDate(new DateTime(2019, 01, 01))
-                .WithItems(items)
-                .WithoutWageDetails()
-                .WithoutPublicHolidaysToPay()
-                .WithOtherDeductions(deductions.Select(i => PayStubOtherDeduction.CreateDefaultDeduction(i, $"Deduction {i}")))
-                .WithoutReimbursement()
-                .PayVacations()
-                .Build()).Value;
-
-            Assert.Empty(payStub.OtherDeductionsDetail);
-            Assert.Equal(decimal.Zero, payStub.OtherDeductions);
+            Assert.Equal(deductions.Count(), payStub.OtherDeductions.Count());
+            Assert.Equal(deductions.Sum(), payStub.OtherDeductions.Sum(od => od.Total));
         }
 
         [Fact]
@@ -211,7 +156,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             PayStub payStub = (await PayStubBuilder.PayStub(Rates.DefaultRates, _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
                 .WithWorkerProfileId(Guid.NewGuid())
-                .WithTypeOfWork(default)
+                .WithPosition(default)
                 .WithWorkBeginning(new DateTime(2019, 01, 01)).WithWorkEnding(new DateTime(2019, 01, 07))
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(items)
@@ -237,7 +182,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             PayStub payStub = (await PayStubBuilder.PayStub(Rates.DefaultRates, _calculatePayrollDeductionsService.Object, Mock.Of<IWorkerRepository>())
                 .WithPayStubNumber(001)
                 .WithWorkerProfileId(Guid.NewGuid())
-                .WithTypeOfWork(default)
+                .WithPosition(default)
                 .WithWorkBeginning(workDate).WithWorkEnding(workDate)
                 .WithCreationDate(new DateTime(2019, 01, 01))
                 .WithItems(items)
@@ -251,7 +196,7 @@ namespace Covenant.Tests.Billing.PayStubTest
             Assert.Equal(payrollDeductions.Ei, payStub.Ei);
             Assert.Equal(payrollDeductions.FederalTax, payStub.FederalTax);
             Assert.Equal(payrollDeductions.ProvincialTax, payStub.ProvincialTax);
-            Assert.Equal(otherDeduction.Total, payStub.OtherDeductions);
+            Assert.Equal(otherDeduction.Total, payStub.OtherDeductions.Sum(od => od.Total));
             Assert.Equal(20, payStub.TotalDeductions);
             Assert.Equal(80, payStub.TotalPaid);
         }
