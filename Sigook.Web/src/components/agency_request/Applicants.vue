@@ -90,24 +90,10 @@
       </b-table>
     </div>
 
-    <!-- custom modal Manage Workers / Applicants-->
-    <transition name="modal">
-      <div v-if="modalManageWorkers" class="vue-modal header-fixed">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light full-container overflow-initial border-radius">
-              <button @click="modalManageWorkers = false" type="button" class="cross-icon">
-                close
-              </button>
-              <manage-tabs @updateApplicants="(args) => postAgencyRequestApplicant(args.model)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal  Manage Workers / Applicant-->
+    <b-modal v-model="modalManageWorkers" width="800px">
+      <manage-tabs @updateApplicants="(args) => postAgencyRequestApplicant(args.model)" />
+    </b-modal>
 
-    <!-- custom modal TextArea-->
     <b-modal v-model="modalComment" width="500px">
       <edit-textarea v-if="currentItem" :title="'Comments'" subtitle="Comments" :min-length="0" :data="currentItem.comments"
         @updateContent="(data) => updateAgencyRequestApplicant(data)"></edit-textarea>
@@ -202,7 +188,7 @@ export default {
       this.modalManageWorkers = false;
       this.isLoading = true;
       this.$store.dispatch("agency/postAgencyRequestApplicant", {
-        requestId: this.requestId,
+        requestId: this.serverParams.requestId,
         model: model,
       }).then(() => {
         this.isLoading = false;

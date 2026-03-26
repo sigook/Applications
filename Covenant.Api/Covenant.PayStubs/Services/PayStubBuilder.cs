@@ -10,10 +10,11 @@ using Covenant.PayStubs.Utils;
 
 namespace Covenant.PayStubs.Services;
 
+[Obsolete]
 public class PayStubBuilder :
     IPayStubNumberHolder,
     IWorkerProfileIdHolder,
-    ITypeOfWorkHolder,
+    IPositionHolder,
     IDateWorkBeginHolder,
     IDateWorkEndsHolder,
     ICreatedAtHolder,
@@ -30,16 +31,16 @@ public class PayStubBuilder :
     private readonly IWorkerRepository workerRepository;
     private long _number;
     private Guid _workerProfileId;
-    private string _typeOfWork;
+    private string _position;
     private DateTime _workBegins;
     private DateTime _workEnd;
     private DateTime _createdAt = DateTime.Now;
-    private IEnumerable<PayStubWageDetail> _wageDetails = new List<PayStubWageDetail>();
-    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = Array.Empty<PayStubPublicHoliday>();
-    private IReadOnlyCollection<PayStubItem> _items = new List<PayStubItem>();
+    private IEnumerable<PayStubWageDetail> _wageDetails = [];
+    private IReadOnlyCollection<PayStubPublicHoliday> _holidaysToPay = [];
+    private IReadOnlyCollection<PayStubItem> _items = [];
     private bool _payVacations;
-    private IEnumerable<PayStubOtherDeduction> _otherDeductions = Array.Empty<PayStubOtherDeduction>();
-    private IReadOnlyCollection<PayStubItem> _reimbursements = new List<PayStubItem>();
+    private IEnumerable<PayStubOtherDeduction> _otherDeductions = [];
+    private IReadOnlyCollection<PayStubItem> _reimbursements = [];
 
     private PayStubBuilder(Rates rates, IPayrollDeductionsAndContributionsCalculator deductionsCalculator, IWorkerRepository workerRepository)
     {
@@ -53,9 +54,9 @@ public class PayStubBuilder :
 
     public IWorkerProfileIdHolder WithPayStubNumber(long number) => this.Chain(b => b._number = number);
 
-    public ITypeOfWorkHolder WithWorkerProfileId(Guid workerProfileId) => this.Chain(b => b._workerProfileId = workerProfileId);
+    public IPositionHolder WithWorkerProfileId(Guid workerProfileId) => this.Chain(b => b._workerProfileId = workerProfileId);
 
-    public IDateWorkBeginHolder WithTypeOfWork(string type) => this.Chain(b => b._typeOfWork = type);
+    public IDateWorkBeginHolder WithPosition(string position) => this.Chain(b => b._position = position);
 
     public IDateWorkEndsHolder WithWorkBeginning(DateTime workBegins) => this.Chain(b =>
     {
@@ -73,14 +74,14 @@ public class PayStubBuilder :
 
     public IPayStubItemsHolder WithCreationDate(DateTime createdAt) => this.Chain(b => b._createdAt = createdAt);
 
-    public IWageDetailsHolder WithItems(IReadOnlyCollection<PayStubItem> items) => this.Chain(b => b._items = new List<PayStubItem>(items));
+    public IWageDetailsHolder WithItems(IReadOnlyCollection<PayStubItem> items) => this.Chain(b => b._items = [.. items]);
 
     public IPublicHolidaysToPayHolder WithWageDetails(IEnumerable<PayStubWageDetail> wageDetails) => this.Chain(b => b._wageDetails = wageDetails);
 
     public IPublicHolidaysToPayHolder WithoutWageDetails() => this;
 
     public IOtherDeductionsHolder WithPublicHolidaysToPay(IReadOnlyCollection<PayStubPublicHoliday> publicHolidays) =>
-        this.Chain(b => b._holidaysToPay = new List<PayStubPublicHoliday>(publicHolidays ?? Array.Empty<PayStubPublicHoliday>()));
+        this.Chain(b => b._holidaysToPay = [.. publicHolidays ?? []]);
 
     public IOtherDeductionsHolder WithoutPublicHolidaysToPay() => this;
 
@@ -100,7 +101,7 @@ public class PayStubBuilder :
     {
         _items = _items.Where(i => i.Total > 0).ToList();
         _reimbursements = _reimbursements.Where(r => r.Total > 0).ToList();
-        if (!_items.Any()) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
+        if (_items.Count == 0) return Result.Fail<PayStub>(ApiResources.There_is_not_enough_information_to_generate_pay_stub);
         if (_workBegins > _workEnd) return Result.Fail<PayStub>("Dates of work: start must be before end");
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(_workerProfileId);
         var grossForVacations = _items.Sum(i => i.Total).DefaultMoneyRound();
@@ -132,13 +133,14 @@ public class PayStubBuilder :
         var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound().Add(reimbursement);
         var paymentDate = GetPaymentDate();
         var regularWage = _items.GetRegularWage();
+        _items = [.. _items, .. _reimbursements];
         var payStub = new PayStub
         {
             Id = Guid.NewGuid(),
             WorkerProfileId = _workerProfileId,
             PayStubNumber = $"PS-{_number:0000}-{_createdAt:yy}",
             PayStubNumberId = _number,
-            TypeOfWork = _typeOfWork,
+            Position = _position,
             DateWorkBegins = _workBegins,
             DateWorkEnd = _workEnd,
             PaymentDate = paymentDate,
@@ -153,12 +155,12 @@ public class PayStubBuilder :
             TotalDeductions = totalDeductions,
             TotalPaid = totalPaid,
             CreatedAt = _createdAt,
-            WeekEnding = _workEnd.GetWeekEndingCurrentWeek()
+            WeekEnding = _workEnd.GetWeekEndingCurrentWeek(),
+            Items = _items,
+            WageDetails = _wageDetails,
+            Holidays = _holidaysToPay,
+            OtherDeductions = _otherDeductions
         };
-        payStub.AddItems(_items.Concat(_reimbursements));
-        payStub.AddWageDetails(_wageDetails);
-        payStub.AddHolidays(_holidaysToPay);
-        payStub.AddOtherDeductionsDetail(_otherDeductions);
         return Result.Ok(payStub);
     }
 
@@ -181,12 +183,12 @@ public interface IPayStubNumberHolder
 
 public interface IWorkerProfileIdHolder
 {
-    ITypeOfWorkHolder WithWorkerProfileId(Guid workerProfileId);
+    IPositionHolder WithWorkerProfileId(Guid workerProfileId);
 }
 
-public interface ITypeOfWorkHolder
+public interface IPositionHolder
 {
-    IDateWorkBeginHolder WithTypeOfWork(string type);
+    IDateWorkBeginHolder WithPosition(string type);
 }
 
 public interface IDateWorkBeginHolder

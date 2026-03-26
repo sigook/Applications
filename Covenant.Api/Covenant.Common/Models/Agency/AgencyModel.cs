@@ -15,7 +15,7 @@ public class AgencyModel
     public CovenantFileModel Logo { get; set; }
     public string Email { get; set; }
     public AgencyType AgencyType { get; set; }
-    public IEnumerable<BaseModel<Guid>> WsibGroup { get; set; } = Array.Empty<BaseModel<Guid>>();
-    public IEnumerable<LocationDetailModel> Locations { get; set; } = Array.Empty<LocationDetailModel>();
-    public IEnumerable<AgencyContactInformationModel> ContactInformation { get; set; } = Array.Empty<AgencyContactInformationModel>();
+    public IEnumerable<BaseModel<Guid>> WsibGroup { get; set; } = [];
+    public IEnumerable<LocationDetailModel> Locations { get; set; } = [];
+    public IEnumerable<AgencyContactInformationModel> ContactInformation { get; set; } = [];
 }

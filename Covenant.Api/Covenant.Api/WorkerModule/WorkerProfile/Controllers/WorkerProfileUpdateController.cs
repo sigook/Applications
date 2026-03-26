@@ -37,7 +37,6 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             if (entity is null) return BadRequest();
             Result result = await update(entity);
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            entity.UpdateTextSearch();
             await _workerRepository.UpdateProfile(entity);
             await _workerRepository.SaveChangesAsync();
             return Ok();

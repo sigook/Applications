@@ -19,7 +19,7 @@ class HistoryCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => context.push(AppRoutes.jobDetails, extra: job.id),
+        onTap: () => context.push(AppRoutes.jobDetails, extra: {'id': job.id, 'isFromHistory': true}),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

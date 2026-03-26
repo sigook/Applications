@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
@@ -17,13 +18,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late AnimationController _exitController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _logoScale;
+  late Animation<double> _panelsFade;
+  late Animation<double> _taglineFade;
   late Animation<double> _buttonsFade;
   late Animation<Offset> _buttonsSlide;
   late Animation<Offset> _panelsSlide;
-  late Animation<Offset> _ringsSlide;
   late Animation<Offset> _legalSlide;
+  late Animation<double> _circlesFade;
 
   bool _isNavigating = false;
   String _appVersion = '';
@@ -42,67 +43,61 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // Image panels fade in first
+    _panelsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
 
-    _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+    // Tagline appears after a short delay
+    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+        curve: const Interval(0.15, 0.55, curve: Curves.easeOut),
       ),
     );
 
+    // Buttons fade and slide in
     _buttonsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
+        curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
       ),
     );
 
-    _buttonsSlide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
+    _buttonsSlide =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.3, 0.7, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // Panels slide in from slightly above
-    _panelsSlide = Tween<Offset>(
-      begin: const Offset(0, -40),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
-      ),
-    );
+    _panelsSlide = Tween<Offset>(begin: const Offset(0, -40), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+          ),
+        );
 
-    // Ring circles slide in from the bottom-left corner
-    _ringsSlide = Tween<Offset>(
-      begin: const Offset(-70, 70),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.15, 0.75, curve: Curves.easeOutCubic),
-      ),
-    );
+    // Legal icon slides in from the right
+    _legalSlide = Tween<Offset>(begin: const Offset(60, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
+          ),
+        );
 
-    // Legal pill button slides in from the right
-    _legalSlide = Tween<Offset>(
-      begin: const Offset(60, 0),
-      end: Offset.zero,
-    ).animate(
+    // Decorative circles fade in
+    _circlesFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.3, 0.85, curve: Curves.easeOutCubic),
+        curve: const Interval(0.2, 0.7, curve: Curves.easeOut),
       ),
     );
 
@@ -124,20 +119,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     _controller.dispose();
     _exitController.dispose();
     super.dispose();
-  }
-
-  Widget _withExit(Widget child, Offset exitOffset) {
-    return AnimatedBuilder(
-      animation: _exitController,
-      builder: (context, inner) => Opacity(
-        opacity: (1.0 - _exitController.value).clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: exitOffset * _exitController.value,
-          child: inner!,
-        ),
-      ),
-      child: child,
-    );
   }
 
   Future<void> _navigateWithExit(String route) async {
@@ -190,7 +171,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             const SizedBox(height: 8),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.privacy_tip_outlined, color: AppTheme.primaryBlue),
+              leading: Icon(
+                Icons.privacy_tip_outlined,
+                color: AppTheme.secondaryRed,
+              ),
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -199,7 +183,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
               },
             ),
             ListTile(
-              leading: Icon(Icons.description_outlined, color: AppTheme.primaryBlue),
+              leading: Icon(
+                Icons.description_outlined,
+                color: AppTheme.secondaryRed,
+              ),
               title: const Text('Terms & Conditions'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -247,48 +234,59 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Top hero section — full-width welcome image
+          // ── Full red background (matches splash, visible before panels animate in)
+          Container(color: AppTheme.secondaryRed),
+
+          // ── Top hero section — vertical split image panels
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             height: size.height * 0.44,
             child: FadeTransition(
-              opacity: _fadeAnimation,
+              opacity: _panelsFade,
               child: AnimatedBuilder(
                 animation: _panelsSlide,
                 builder: (context, child) => Transform.translate(
                   offset: _panelsSlide.value,
                   child: child!,
                 ),
-                child: Image.asset(
-                  'assets/images/welcome-screen/welcome-page.png',
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
+                child: Row(
+                  children: [
+                    // Welcome Image
+                    Expanded(
+                      child: Image.asset(
+                        'assets/images/welcome-screen/welcome-page.png',
+                        height: double.infinity,
+                        fit: BoxFit.fill,
+                        alignment: const Alignment(0.0, 0.0),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
 
-          // ── Gradient fade — blends the hero image into the blue section below
+          // ── Gradient fade — blends the hero image smoothly into the red section
           Positioned(
-            top: size.height * 0.18,
+            top: size.height * 0.10,
             left: 0,
             right: 0,
-            height: size.height * 0.28,
+            height: size.height * 0.38,
             child: IgnorePointer(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    stops: const [0.0, 0.55, 1.0],
+                    stops: const [0.0, 0.15, 0.50, 0.85, 1.0],
                     colors: [
-                      AppTheme.primaryBlue.withValues(alpha: 0.0),
-                      AppTheme.primaryBlue.withValues(alpha: 0.55),
-                      AppTheme.primaryBlue,
+                      AppTheme.secondaryRed.withValues(alpha: 0.0),
+                      AppTheme.secondaryRed.withValues(alpha: 0.15),
+                      AppTheme.secondaryRed.withValues(alpha: 0.60),
+                      AppTheme.secondaryRed.withValues(alpha: 0.99),
+                      AppTheme.secondaryRed,
                     ],
                   ),
                 ),
@@ -296,136 +294,81 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             ),
           ),
 
-          // ── Bottom solid blue section
+          // ── Bottom solid red section
           Positioned(
-            top: size.height * 0.43,
+            top: size.height * 0.45,
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(color: AppTheme.primaryBlue),
+            child: Container(color: AppTheme.secondaryRed),
           ),
 
-          // ── Boundary accent circles — straddle the image / content transition
+          // ── Decorative circles — bottom left (larger, more visible)
           Positioned(
-            top: size.height * 0.32,
-            right: -20,
+            bottom: -45,
+            left: -35,
             child: IgnorePointer(
-              child: _withExit(
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Container(
-                    width: 92,
-                    height: 92,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF90CAF9).withValues(alpha: 0.32),
-                    ),
+              child: FadeTransition(
+                opacity: _circlesFade,
+                child: SizedBox(
+                  width: 170,
+                  height: 170,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Large ring from SVG
+                      Opacity(
+                        opacity: 0.90,
+                        child: SvgPicture.asset(
+                          'assets/images/welcome-screen/circles.svg',
+                          width: 170,
+                          height: 170,
+                        ),
+                      ),
+                      // Small filled translucent circle (top-right of the ring)
+                      Positioned(
+                        top: 0,
+                        left: 100,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.25),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const Offset(120, -80),
               ),
             ),
           ),
-          Positioned(
-            top: size.height * 0.38,
-            left: 22,
-            child: IgnorePointer(
-              child: _withExit(
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Container(
-                    width: 66,
-                    height: 66,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFEF9A9A).withValues(alpha: 0.38),
-                    ),
-                  ),
-                ),
-                const Offset(-100, 60),
-              ),
-            ),
-          ),
 
-          // ── Decorative ring circles — bottom left (slide in from bottom-left)
+          // ── Legal dots-rectangle button — bottom right
           Positioned(
-            bottom: -55,
-            left: -65,
-            child: _withExit(
-              FadeTransition(
-                opacity: _fadeAnimation,
+            bottom: 20,
+            right: 16,
+            child: Opacity(
+              opacity: 0.750,
+              child: FadeTransition(
+                opacity: _panelsFade,
                 child: AnimatedBuilder(
-                  animation: _ringsSlide,
+                  animation: _legalSlide,
                   builder: (context, child) => Transform.translate(
-                    offset: _ringsSlide.value,
+                    offset: _legalSlide.value,
                     child: child!,
                   ),
-                  child: _RingCircle(
-                    diameter: 190,
-                    color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                    strokeWidth: 24,
-                  ),
-                ),
-              ),
-              const Offset(-180, 120),
-            ),
-          ),
-          Positioned(
-            bottom: -85,
-            left: -95,
-            child: _withExit(
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: AnimatedBuilder(
-                  animation: _ringsSlide,
-                  builder: (context, child) => Transform.translate(
-                    offset: _ringsSlide.value,
-                    child: child!,
-                  ),
-                  child: _RingCircle(
-                    diameter: 250,
-                    color: const Color(0xFF90CAF9).withValues(alpha: 0.22),
-                    strokeWidth: 18,
-                  ),
-                ),
-              ),
-              const Offset(-220, 160),
-            ),
-          ),
-
-          // ── Legal pill button — slides in from the right
-          Positioned(
-            bottom: 32,
-            right: 20,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: AnimatedBuilder(
-                animation: _legalSlide,
-                builder: (context, child) => Transform.translate(
-                  offset: _legalSlide.value,
-                  child: child!,
-                ),
-                child: OutlinedButton.icon(
-                  onPressed: _showLegalModal,
-                  icon: const Icon(Icons.shield_outlined, size: 14),
-                  label: const Text('Legal'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white.withValues(alpha: 0.65),
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.30),
-                      width: 1.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    shape: const StadiumBorder(),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.3,
+                  child: GestureDetector(
+                    onTap: _showLegalModal,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: SvgPicture.asset(
+                        'assets/images/welcome-screen/dots-rectangle.svg',
+                        width: 50,
+                        height: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -438,95 +381,22 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Push content down to the boundary between the two sections
+                // Push content down to match splash logo position
                 SizedBox(height: size.height * 0.36),
 
-                // Logo — Hero sits outside ScaleTransition so its landing
-                // position is stable and the flight path is clean.
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Hero(
-                    tag: 'sigook_logo',
-                    child: SizedBox(
-                      width: 260,
-                      height: 200,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Upper-left — soft blue filled circle (pushed further out)
-                          Positioned(
-                            top: -22,
-                            left: -28,
-                            child: Container(
-                              width: 68,
-                              height: 68,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF90CAF9).withValues(alpha: 0.45),
-                              ),
-                            ),
-                          ),
-                          // Lower-right — soft red filled circle (pushed further out)
-                          Positioned(
-                            bottom: -16,
-                            right: -22,
-                            child: Container(
-                              width: 58,
-                              height: 58,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.50),
-                              ),
-                            ),
-                          ),
-                          // Upper-right — small blue circle (pushed further out)
-                          Positioned(
-                            top: -10,
-                            right: -26,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF90CAF9).withValues(alpha: 0.35),
-                              ),
-                            ),
-                          ),
-                          // Lower-left — small red circle (pushed further out)
-                          Positioned(
-                            bottom: -12,
-                            left: -24,
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFEF9A9A).withValues(alpha: 0.40),
-                              ),
-                            ),
-                          ),
-                          // White logo centred
-                          Image.asset(
-                            'assets/images/logo/sigook_logo.png',
-                            width: 215,
-                            color: Colors.white,
-                            colorBlendMode: BlendMode.srcIn,
-                          ),
-                        ],
+                // Logo — always visible (no fade), seamless from splash
+                Transform.translate(
+                  offset: const Offset(0, -32),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo/sigook-logo.png',
+                        color: Colors.white,
+                        width: 270,
+                        colorBlendMode: BlendMode.srcIn,
                       ),
-                    ),
-                  ),
-                ),
-
-                // Tagline — scale-in entrance independent of the Hero
-                ScaleTransition(
-                  scale: _logoScale,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: const Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Text(
+                      SizedBox(height: 12),
+                      const Text(
                         'Find Work That Fits Your Life',
                         style: TextStyle(
                           fontSize: 15,
@@ -537,107 +407,119 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                         ),
                         textAlign: TextAlign.center,
                       ),
+                    ],
+                  ),
+                ),
+
+                // Buttons — right below the tagline
+                Transform.translate(
+                  offset: const Offset(0, 84),
+                  child: FadeTransition(
+                    opacity: _buttonsFade,
+                    child: SlideTransition(
+                      position: _buttonsSlide,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Get Started — white fill, red text
+                            SizedBox(
+                              width: 300,
+                              height: 56,
+                              child: ElevatedButton(
+                                onPressed: _navigateToRegistration,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppTheme.secondaryRed,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: const Text(
+                                  'Get Started',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            // Already have an account row
+                            SizedBox(
+                              width: 300,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Already have an account?',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  TextButton(
+                                    onPressed: authState.isLoading
+                                        ? null
+                                        : _signIn,
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: authState.isLoading
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Sign In',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                  ),
+                                  SizedBox(width: 10),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
 
                 const Spacer(),
 
-                // Buttons
-                FadeTransition(
-                  opacity: _buttonsFade,
-                  child: SlideTransition(
-                    position: _buttonsSlide,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Get Started — white fill, blue text
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _navigateToRegistration,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppTheme.primaryBlue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: const Text(
-                                'Get Started',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          // Already have an account row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Already have an account?',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: authState.isLoading ? null : _signIn,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: authState.isLoading
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Sign In',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                // App version
+                // App version — pinned at the very bottom
                 FadeTransition(
                   opacity: _buttonsFade,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 20),
                     child: Text(
                       _appVersion,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.white.withValues(alpha: 0.4),
@@ -653,29 +535,3 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     );
   }
 }
-
-/// Hollow ring circle used as a decorative accent.
-class _RingCircle extends StatelessWidget {
-  final double diameter;
-  final Color color;
-  final double strokeWidth;
-
-  const _RingCircle({
-    required this.diameter,
-    required this.color,
-    required this.strokeWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: diameter,
-      height: diameter,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: strokeWidth),
-      ),
-    );
-  }
-}
-

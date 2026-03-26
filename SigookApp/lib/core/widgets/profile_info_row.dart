@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
 class ProfileInfoRow extends StatelessWidget {
@@ -8,6 +9,7 @@ class ProfileInfoRow extends StatelessWidget {
   final bool isEditing;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
 
   const ProfileInfoRow({
     super.key,
@@ -17,6 +19,7 @@ class ProfileInfoRow extends StatelessWidget {
     this.isEditing = false,
     this.controller,
     this.onChanged,
+    this.inputFormatters,
   });
 
   @override
@@ -46,6 +49,7 @@ class ProfileInfoRow extends StatelessWidget {
                     controller:
                         controller ?? TextEditingController(text: value),
                     onChanged: onChanged,
+                    inputFormatters: inputFormatters,
                     decoration: InputDecoration(
                       isDense: true,
                       filled: true,

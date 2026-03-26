@@ -1,9 +1,8 @@
-﻿namespace Covenant.Common.Enums
+﻿namespace Covenant.Common.Enums;
+
+public enum ClockType : byte
 {
-    public enum ClockType : byte
-    {
-        None = 0,
-        ClockIn,
-        ClockOut,
-    }
+    None = 0,
+    ClockIn,
+    ClockOut,
 }

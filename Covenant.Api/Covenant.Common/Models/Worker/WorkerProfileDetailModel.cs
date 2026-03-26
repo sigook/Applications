@@ -37,16 +37,16 @@ namespace Covenant.Common.Models.Worker
         public int? PhoneExt { get; set; }
         public LocationDetailModel Location { get; set; }
         public bool HasVehicle { get; set; }
-        public IEnumerable<WorkerProfileLicenseDetailModel> Licenses { get; set; } = Array.Empty<WorkerProfileLicenseDetailModel>();
-        public IEnumerable<CovenantFileModel> Certificates { get; set; } = Array.Empty<CovenantFileModel>();
-        public IEnumerable<CovenantFileModel> OtherDocuments { get; set; } = Array.Empty<CovenantFileModel>();
-        public IEnumerable<BaseModel<Guid>> Availabilities { get; set; } = Array.Empty<BaseModel<Guid>>();
-        public IEnumerable<BaseModel<Guid>> AvailabilityTimes { get; set; } = Array.Empty<BaseModel<Guid>>();
-        public IEnumerable<BaseModel<Guid>> AvailabilityDays { get; set; } = Array.Empty<BaseModel<Guid>>();
-        public IEnumerable<BaseModel<Guid>> LocationPreferences { get; set; } = Array.Empty<BaseModel<Guid>>();
+        public IEnumerable<WorkerProfileLicenseDetailModel> Licenses { get; set; } = [];
+        public IEnumerable<CovenantFileModel> Certificates { get; set; } = [];
+        public IEnumerable<CovenantFileModel> OtherDocuments { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> Availabilities { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> AvailabilityTimes { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> AvailabilityDays { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> LocationPreferences { get; set; } = [];
         public BaseModel<Guid> Lift { get; set; }
-        public IEnumerable<BaseModel<Guid>> Languages { get; set; } = Array.Empty<BaseModel<Guid>>();
-        public IEnumerable<SkillModel> Skills { get; set; } = Array.Empty<SkillModel>();
+        public IEnumerable<BaseModel<Guid>> Languages { get; set; } = [];
+        public IEnumerable<SkillModel> Skills { get; set; } = [];
         public CovenantFileModel Resume { get; set; }
         public bool HaveAnyHealthProblem { get; set; }
         public string HealthProblem { get; set; }
@@ -54,7 +54,7 @@ namespace Covenant.Common.Models.Worker
         public string ContactEmergencyName { get; set; }
         public string ContactEmergencyLastName { get; set; }
         public string ContactEmergencyPhone { get; set; }
-        public IEnumerable<WorkerProfileJobExperienceDetailModel> JobExperiences { get; set; } = Array.Empty<WorkerProfileJobExperienceDetailModel>();
+        public IEnumerable<WorkerProfileJobExperienceDetailModel> JobExperiences { get; set; } = [];
         public string Email { get; set; }
         public bool ApprovedToWork { get; set; }
         public Guid WorkerId { get; set; }

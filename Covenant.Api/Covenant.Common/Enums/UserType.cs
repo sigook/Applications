@@ -6,5 +6,6 @@ public enum UserType : byte
     Company,
     CompanyUser,
     AgencyPersonnel,
-    Agency
+    Agency,
+    Candidate
 }

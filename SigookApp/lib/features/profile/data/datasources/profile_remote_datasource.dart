@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/file_naming_service.dart';
 import '../models/worker_profile_model.dart';
 
 abstract class ProfileRemoteDataSource {
@@ -24,6 +25,55 @@ abstract class ProfileRemoteDataSource {
     String workerId,
     WorkerProfileModel profile, {
     Map<String, String>? newFilePaths,
+  });
+  Future<void> updateWorkerEmergencyInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  );
+  Future<void> uploadWorkerResume(
+    String workerId, {
+    required String filePath,
+  });
+  Future<void> uploadWorkerLicense(
+    String workerId, {
+    required String filePath,
+    required String number,
+    required String issued,
+    required String expires,
+  });
+  Future<void> uploadWorkerCertificate(
+    String workerId, {
+    required String filePath,
+  });
+
+  // Preference update endpoints
+  Future<void> updateOtherInformation(
+    String workerId, {
+    required Map<String, String> lift,
+  });
+  Future<void> updateAvailabilities(
+    String workerId, {
+    required List<Map<String, String>> availabilities,
+  });
+  Future<void> updateAvailabilityTimes(
+    String workerId, {
+    required List<Map<String, String>> availabilityTimes,
+  });
+  Future<void> updateAvailabilityDays(
+    String workerId, {
+    required List<Map<String, String>> availabilityDays,
+  });
+  Future<void> updateLocationPreferences(
+    String workerId, {
+    required List<Map<String, String>> locationPreferences,
+  });
+  Future<void> updateSkills(
+    String workerId, {
+    required List<String> skills,
+  });
+  Future<void> updateLanguages(
+    String workerId, {
+    required List<Map<String, String>> languages,
   });
 }
 
@@ -172,6 +222,55 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to update contact info: $e');
+    }
+  }
+
+  @override
+  Future<void> updateWorkerEmergencyInfo(
+    String workerId,
+    WorkerProfileModel profile,
+  ) async {
+    try {
+      final emergencyData = <String, dynamic>{
+        'haveAnyHealthProblem': profile.haveAnyHealthProblem,
+        if (profile.healthProblem != null)
+          'healthProblem': profile.healthProblem,
+        if (profile.otherHealthProblem != null)
+          'otherHealthProblem': profile.otherHealthProblem,
+        if (profile.contactEmergencyName != null)
+          'contactEmergencyName': profile.contactEmergencyName,
+        if (profile.contactEmergencyLastName != null)
+          'contactEmergencyLastName': profile.contactEmergencyLastName,
+        if (profile.contactEmergencyPhone != null)
+          'contactEmergencyPhone': profile.contactEmergencyPhone,
+      };
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/EmergencyInformation',
+        data: emergencyData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update emergency info: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update emergency info: $e');
     }
   }
 
@@ -351,6 +450,253 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to update documents: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadWorkerResume(
+    String workerId, {
+    required String filePath,
+  }) async {
+    try {
+      final fileName = _basenameOf(filePath);
+
+      final formData = FormData();
+      formData.fields.add(MapEntry(
+        'data',
+        jsonEncode({'fileName': fileName, 'description': ''}),
+      ));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Resume',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload resume: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload resume: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadWorkerLicense(
+    String workerId, {
+    required String filePath,
+    required String number,
+    required String issued,
+    required String expires,
+  }) async {
+    try {
+      final fileName = FileNamingService.generateLicenseName(filePath);
+
+      final licenseData = [
+        {
+          'license': {
+            'fileName': fileName,
+            'description': 'license',
+          },
+          'number': number,
+          'issued': issued,
+          'expires': expires,
+        }
+      ];
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(licenseData)));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Licenses',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload license: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload license: $e');
+    }
+  }
+
+  // ── Preference update endpoints ──────────────────────────────────────────
+
+  Future<void> _postPreference(String workerId, String path, Object data) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/$path',
+        data: data,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update $path: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update $path: $e');
+    }
+  }
+
+  @override
+  Future<void> updateOtherInformation(
+    String workerId, {
+    required Map<String, String> lift,
+  }) async {
+    await _postPreference(workerId, 'OtherInformation', {'lift': lift});
+  }
+
+  @override
+  Future<void> updateAvailabilities(
+    String workerId, {
+    required List<Map<String, String>> availabilities,
+  }) async {
+    await _postPreference(workerId, 'Availabilities', availabilities);
+  }
+
+  @override
+  Future<void> updateAvailabilityTimes(
+    String workerId, {
+    required List<Map<String, String>> availabilityTimes,
+  }) async {
+    await _postPreference(workerId, 'AvailabilityTimes', availabilityTimes);
+  }
+
+  @override
+  Future<void> updateAvailabilityDays(
+    String workerId, {
+    required List<Map<String, String>> availabilityDays,
+  }) async {
+    await _postPreference(workerId, 'AvailabilityDays', availabilityDays);
+  }
+
+  @override
+  Future<void> updateLocationPreferences(
+    String workerId, {
+    required List<Map<String, String>> locationPreferences,
+  }) async {
+    await _postPreference(
+        workerId, 'LocationPreferences', locationPreferences);
+  }
+
+  @override
+  Future<void> updateSkills(
+    String workerId, {
+    required List<String> skills,
+  }) async {
+    await _postPreference(workerId, 'Skills', skills);
+  }
+
+  @override
+  Future<void> updateLanguages(
+    String workerId, {
+    required List<Map<String, String>> languages,
+  }) async {
+    await _postPreference(workerId, 'Languages', languages);
+  }
+
+  @override
+  Future<void> uploadWorkerCertificate(
+    String workerId, {
+    required String filePath,
+  }) async {
+    try {
+      final fileName = FileNamingService.generateCertificateName(filePath);
+
+      final certificateData = [
+        {
+          'fileName': fileName,
+          'description': 'CERTIFICATE',
+        }
+      ];
+
+      final formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(certificateData)));
+      formData.files.add(MapEntry(
+        fileName,
+        await MultipartFile.fromFile(filePath, filename: fileName),
+      ));
+
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/Certificates',
+        data: formData,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to upload certificate: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to upload certificate: $e');
     }
   }
 }

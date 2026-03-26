@@ -7,11 +7,7 @@ namespace Covenant.Core.BL.Interfaces;
 
 public interface ITimesheetCalculatorService
 {
-    Task<DeductionsResult> CalculateDeductions(
-        decimal totalEarnings,
-        int numberOfWeeks,
-        int year,
-        Guid workerProfileId);
+    Task<DeductionsResult> CalculateDeductions(decimal totalEarnings, int numberOfWeeks, int year, Guid workerProfileId);
 
     TimeSheetHoursBreakdown CalculateHoursBreakdown(
         DateTime timeIn,

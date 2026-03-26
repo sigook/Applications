@@ -89,19 +89,7 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import gsap from 'gsap'
-
-  // --- ICONOS DE LAS CARDS ---
-  import iconAi from '@/assets/images/industries-cards-icons/ai-it.png'
-  import iconAutomotive from '@/assets/images/industries-cards-icons/automotive.png'
-  import iconAviation from '@/assets/images/industries-cards-icons/aviation.png'
-  import iconConstruction from '@/assets/images/industries-cards-icons/construction.png'
-  import iconEngineering from '@/assets/images/industries-cards-icons/engineering.png'
-  import iconFinancial from '@/assets/images/industries-cards-icons/financial.png'
-  import iconLegal from '@/assets/images/industries-cards-icons/legal.png'
-  import iconLogistics from '@/assets/images/industries-cards-icons/logistics.png'
-  import iconManufacturing from '@/assets/images/industries-cards-icons/manufacturing.png'
-  import iconRetail from '@/assets/images/industries-cards-icons/retail.png'
-  import iconTransportation from '@/assets/images/industries-cards-icons/transportation.png'
+  import industriesData from '../../assets/json/IndustriesData.json'
 
   type Industry = {
     id: number
@@ -111,96 +99,24 @@
     description: string
   }
 
-  const industries: Industry[] = [
-    {
-      id: 1,
-      label: 'Automotive',
-      image: new URL('@/assets/images/ind-automotive.png', import.meta.url).href,
-      icon: iconAutomotive,
-      description:
-        'We supply skilled talent for the automotive industry—from technicians to engineers. Our candidates support manufacturing, repair, and sales across all vehicle types.',
-    },
-    {
-      id: 2,
-      label: 'Aviation',
-      image: new URL('@/assets/images/ind-aviation.png', import.meta.url).href,
-      icon: iconAviation,
-      description:
-        'We recruit aviation experts—pilots, technicians, and support staff. Our candidates help airlines and aviation firms maintain safety, compliance, and operational excellence.',
-    },
-    {
-      id: 3,
-      label: 'Construction',
-      image: new URL('@/assets/images/ind-construction.png', import.meta.url).href,
-      icon: iconConstruction,
-      description:
-        'We connect skilled tradespeople and professionals with top-tier construction companies. We provide talent that drives growth and ensures quality from the ground up.',
-    },
-    {
-      id: 4,
-      label: 'Engineering',
-      image: new URL('@/assets/images/ind-engineering.png', import.meta.url).href,
-      icon: iconEngineering,
-      description:
-        'We recruit engineers across multiple disciplines. Our candidates bring innovation, precision, and technical expertise to every project, fueling infrastructure and development.',
-    },
-    {
-      id: 5,
-      label: 'IT / AI',
-      image: new URL('@/assets/images/ind-it-ai.png', import.meta.url).href,
-      icon: iconAi,
-      description:
-        'We source top tech talent in software, data, and AI. Our candidates fuel innovation, boost performance, and deliver smart solutions in fast-evolving digital environments.',
-    },
-    {
-      id: 6,
-      label: 'Financial',
-      image: new URL('@/assets/images/ind-financial.png', import.meta.url).href,
-      icon: iconFinancial,
-      description:
-        'We source skilled finance professionals in banking, accounting, and more. Our candidates bring accuracy, compliance, and insight to fast-paced financial environments.',
-    },
-    {
-      id: 7,
-      label: 'Legal / Accounting',
-      image: new URL('@/assets/images/ind-legal.png', import.meta.url).href,
-      icon: iconLegal,
-      description:
-        'We recruit legal professionals, including assistants, paralegals, and lawyers. Our candidates bring organization, precision, and expertise to every legal team.',
-    },
-    {
-      id: 8,
-      label: 'Logistics, 3PL/4PL',
-      image: new URL('@/assets/images/ind-logistics.png', import.meta.url).href,
-      icon: iconLogistics,
-      description:
-        'We provide logistics and supply chain talent—from warehouse workers to dispatchers. Our candidates help streamline operations and ensure timely, accurate delivery.',
-    },
-    {
-      id: 9,
-      label: 'Manufacturing',
-      image: new URL('@/assets/images/ind-manufacturing.png', import.meta.url).href,
-      icon: iconManufacturing,
-      description:
-        'We support manufacturing with reliable workers—machine operators, assemblers, and supervisors. Our talent helps boost productivity, safety, and product quality.',
-    },
-    {
-      id: 10,
-      label: 'Retail',
-      image: new URL('@/assets/images/ind-retail.png', import.meta.url).href,
-      icon: iconRetail,
-      description:
-        'We provide retail staff at all levels—from sales associates to managers. Our candidates deliver strong customer service and help drive daily operations and sales success.',
-    },
-    {
-      id: 11,
-      label: 'Transportation',
-      image: new URL('@/assets/images/ind-transportation.png', import.meta.url).href,
-      icon: iconTransportation,
-      description:
-        'We recruit drivers, coordinators, and support staff for transport operations. Our candidates keep people and goods moving safely, efficiently, and on schedule.',
-    },
-  ]
+  const imageModules = import.meta.glob('@/assets/images/ind-*.png', { eager: true, import: 'default' }) as Record<string, string>
+  const iconModules = import.meta.glob('@/assets/images/industries-cards-icons/*.png', { eager: true, import: 'default' }) as Record<string, string>
+
+  const resolveImage = (filename: string): string => {
+    const key = Object.keys(imageModules).find(k => k.endsWith(`/${filename}`))
+    return key ? imageModules[key] : ''
+  }
+
+  const resolveIcon = (filename: string): string => {
+    const key = Object.keys(iconModules).find(k => k.endsWith(`/${filename}`))
+    return key ? iconModules[key] : ''
+  }
+
+  const industries: Industry[] = industriesData.map(item => ({
+    ...item,
+    image: resolveImage(item.image),
+    icon: resolveIcon(item.icon),
+  }))
 
   // id de la card actualmente abierta
   const activeId = ref<number | null>(null)

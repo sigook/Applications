@@ -13,8 +13,13 @@
       <export :url="'/api/AgencyCandidate/File'" :params="serverParams" :fileName="'Candidates'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button @click="addFile = true" icon-left="file-plus">Bulk Data</b-button>
           <b-button @click="createCandidate = true" icon-left="plus">{{ $t('Create') }}</b-button>
+        </template>
+        <template v-slot:dropdown-actions>
+          <b-dropdown-item aria-role="listitem" @click="addFile = true">
+            <b-icon icon="file-plus"></b-icon>
+            <span>Bulk Data</span>
+          </b-dropdown-item>
         </template>
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting

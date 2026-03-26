@@ -1,35 +1,20 @@
-namespace Covenant.Common.Entities.Accounting.PayStub
+namespace Covenant.Common.Entities.Accounting.PayStub;
+
+public class PayStubOtherDeduction
 {
-    public class PayStubOtherDeduction : IPayStubDeduction
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public double Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal Total { get; set; }
+    public string Description { get; set; }
+    public Guid PayStubId { get; set; }
+    public PayStub PayStub { get; set; }
+
+    public static PayStubOtherDeduction CreateDefaultDeduction(decimal unitPrice, string description) => new()
     {
-        private PayStubOtherDeduction()
-        {
-        }
-
-        private PayStubOtherDeduction(double quantity, decimal unitPrice, string description, Guid id = default)
-        {
-            Id = id == default ? Guid.NewGuid() : id;
-            Quantity = quantity;
-            UnitPrice = unitPrice;
-            Description = description;
-            Total = decimal.Multiply(new decimal(quantity), unitPrice);
-        }
-
-        public Guid Id { get; private set; }
-        public double Quantity { get; private set; }
-        public decimal UnitPrice { get; private set; }
-        public decimal Total { get; private set; }
-        public string Description { get; private set; }
-        public Guid PayStubId { get; private set; }
-        public PayStub PayStub { get; private set; }
-
-        public void AssignTo(PayStub payStub)
-        {
-            PayStub = payStub ?? throw new ArgumentNullException(nameof(payStub));
-            PayStubId = payStub.Id;
-        }
-
-        public static PayStubOtherDeduction CreateDefaultDeduction(decimal total, string description) =>
-            new PayStubOtherDeduction(1, total, description);
-    }
+        Quantity = 1,
+        UnitPrice = unitPrice,
+        Description = description,
+        Total = decimal.Multiply(unitPrice, 1m)
+    };
 }

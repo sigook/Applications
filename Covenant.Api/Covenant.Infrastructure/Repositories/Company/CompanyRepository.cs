@@ -233,6 +233,71 @@ namespace Covenant.Infrastructure.Repositories.Company
             return query;
         }
 
+        public async Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
+        {
+            var companyList = GetAllCompaniesProfileForAgency(agencyId, filter).ToList();
+            var profileIds = companyList.Select(c => c.Id).ToList();
+            var companyUserIds = companyList.Select(c => c.CompanyId).Distinct().ToList();
+
+            var contacts = await _context.CompanyProfileContactPersons
+                .Where(cp => profileIds.Contains(cp.CompanyProfileId))
+                .Select(cp => new CompanyProfileContactPersonModel
+                {
+                    Id = cp.Id,
+                    CompanyProfileId = cp.CompanyProfileId,
+                    Title = cp.Title,
+                    FirstName = cp.FirstName,
+                    MiddleName = cp.MiddleName,
+                    LastName = cp.LastName,
+                    Position = cp.Position,
+                    Email = cp.Email,
+                    MobileNumber = cp.MobileNumber,
+                    OfficeNumber = cp.OfficeNumber,
+                    OfficeNumberExt = cp.OfficeNumberExt
+                }).ToListAsync();
+
+            var jobPositions = await _context.CompanyProfileJobPositionRate
+                .Where(jp => profileIds.Contains(jp.CompanyProfileId) && !jp.IsDeleted)
+                .Select(jp => new CompanyProfileJobPositionRateModel
+                {
+                    Id = jp.Id,
+                    CompanyProfileId = jp.CompanyProfileId,
+                    Rate = jp.Rate,
+                    WorkerRate = jp.WorkerRate,
+                    WorkerRateMin = jp.WorkerRateMin,
+                    WorkerRateMax = jp.WorkerRateMax,
+                    AsapRate = jp.AsapRate,
+                    Description = jp.Description,
+                    CreatedAt = jp.CreatedAt,
+                    CreatedBy = jp.CreatedBy,
+                    OtherJobPosition = jp.OtherJobPosition,
+                    Value = jp.JobPositionId == null ? jp.OtherJobPosition : jp.JobPosition.Value
+                }).ToListAsync();
+
+            var users = await _context.CompanyUser
+                .Where(cu => companyUserIds.Contains(cu.CompanyId))
+                .Select(cu => new CompanyUserModel
+                {
+                    Id = cu.Id,
+                    CompanyId = cu.CompanyId,
+                    Name = cu.Name,
+                    Lastname = cu.Lastname,
+                    Position = cu.Position,
+                    MobileNumber = cu.MobileNumber,
+                    Email = cu.User.Email,
+                    CreatedAt = cu.CreatedAt
+                }).ToListAsync();
+
+            var result = companyList.Select(c => new CompanyProfileWithDetailsModel
+            {
+                Company = c,
+                Contacts = contacts.Where(cp => cp.CompanyProfileId == c.Id),
+                JobPositions = jobPositions.Where(jp => jp.CompanyProfileId == c.Id),
+                Users = users.Where(u => u.CompanyId == c.CompanyId)
+            }).ToList();
+            return result;
+        }
+
         private Expression<Func<CompanyProfileListModel, bool>> ApplyFilterCompanyProfiles(Guid agencyId, GetCompanyForAgencyFilter filter)
         {
             Expression<Func<CompanyProfileListModel, bool>> predicate = c => c.AgencyId == agencyId;

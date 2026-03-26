@@ -14,8 +14,9 @@ import '../widgets/app_drawer.dart';
 
 class JobPage extends ConsumerStatefulWidget {
   final String jobId;
+  final bool isFromHistory;
 
-  const JobPage({super.key, required this.jobId});
+  const JobPage({super.key, required this.jobId, this.isFromHistory = false});
 
   @override
   ConsumerState<JobPage> createState() => _JobPageState();
@@ -119,13 +120,19 @@ class _JobPageState extends ConsumerState<JobPage> {
                 backgroundColor: AppTheme.primaryBlue,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    notifyLogoFlash();
+                    Navigator.of(context).pop();
+                  },
                 ),
                 actions: [
                   Builder(
                     builder: (context) => IconButton(
                       icon: const Icon(Icons.menu, color: Colors.white),
-                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      onPressed: () {
+                        notifyLogoFlash();
+                        Scaffold.of(context).openEndDrawer();
+                      },
                     ),
                   ),
                 ],
@@ -200,6 +207,7 @@ class _JobPageState extends ConsumerState<JobPage> {
             children: [
               JobDetailsTab(
                 jobDetails: jobDetails,
+                isFromHistory: widget.isFromHistory,
                 onApplySuccess: () {
                   context.go(AppRoutes.jobs);
                 },

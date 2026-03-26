@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// Global notifier that fires whenever any tap occurs in the app.
+/// Global notifier that fires when the user taps an interactable element.
 /// NavbarLogo listens to this to trigger its flash animation.
+/// Call [notifyLogoFlash] from buttons or tappable widgets to trigger it.
 final globalTapNotifier = ValueNotifier<int>(0);
+
+/// Triggers the navbar logo flash animation.
+/// Call this from onTap/onPressed callbacks of interactive widgets.
+void notifyLogoFlash() {
+  globalTapNotifier.value++;
+}
 
 /// A navbar logo widget that displays the white header logo by default
 /// and briefly cross-fades to the colored logo whenever a tap occurs

@@ -29,6 +29,7 @@ class _AboutPageState extends State<AboutPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
+            notifyLogoFlash();
             if (context.canPop()) {
               context.pop();
             } else {
@@ -40,7 +41,10 @@ class _AboutPageState extends State<AboutPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+            onPressed: () {
+              notifyLogoFlash();
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
         ],
       ),

@@ -22,8 +22,6 @@ public class PayStubService : IPayStubService
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
 
-    private static readonly SemaphoreSlim SemaphoreSlim = new(1, 1);
-
     public PayStubService(
         IPayStubRepository payStubRepository,
         ITimesheetCalculatorService calculatorService,
@@ -70,50 +68,36 @@ public class PayStubService : IPayStubService
     public async Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model)
     {
         // Step 1: Resolve pay stub number
-        if (model.PayStubNumber <= 0)
-        {
-            var numbers = await payStubRepository.GetNextPayStubNumbers(1);
-            model.PayStubNumber = numbers.First().NextNumber;
-        }
-        else
-        {
-            if (await payStubRepository.IsPayStubNumberTaken(model.PayStubNumber))
-                return Result.Fail<PayStub>("Pay stub number is taken");
-        }
+        var nextNumbers = await payStubRepository.GetNextPayStubNumbers(1);
+        var payStubNumber = nextNumbers.First().NextNumber;
 
         // Step 2: Create PayStubItems from model
         var payStubItems = new List<PayStubItem>();
         var itemErrors = new List<ResultError>();
 
-        if (model.RegularHours > 0)
-            AddItem(PayStubItem.CreateRegular(model.RegularHours, model.UnitPriceRegularHours), payStubItems, itemErrors);
-        if (model.OvertimeHours > 0)
-            AddItem(PayStubItem.CreateOvertime(model.OvertimeHours, model.UnitPriceOvertimeHours), payStubItems, itemErrors);
-        if (model.MissingHours > 0)
-            AddItem(PayStubItem.CreateMissing(model.MissingHours, model.UnitPriceMissingHours), payStubItems, itemErrors);
-        if (model.MissingOvertimeHours > 0)
-            AddItem(PayStubItem.CreateMissingOvertime(model.MissingOvertimeHours, model.UnitPriceMissingOvertimeHours), payStubItems, itemErrors);
-        if (model.StatutoryWorkedHolidayPayHours > 0)
-            AddItem(PayStubItem.CreateStatutoryWorkedHoliday(model.StatutoryWorkedHolidayPayHours, model.UnitPriceStatutoryWorkedHolidayPayHours), payStubItems, itemErrors);
-        if (model.Other > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other, model.UnitPriceOther, model.BonusOthersDescription), payStubItems, itemErrors);
-        if (model.Other2 > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other2, model.UnitPriceOther2, model.BonusOthersDescription2), payStubItems, itemErrors);
-        if (model.Other3 > 0)
-            AddItem(PayStubItem.CreateBonusOthersItem(model.Other3, model.UnitPriceOther3, model.BonusOthersDescription3), payStubItems, itemErrors);
-
-        if (itemErrors.Any()) return Result.Fail<PayStub>(itemErrors);
-
-        // Step 3: Create holidays
-        var publicHolidays = new List<PayStubPublicHoliday>();
-        foreach (var h in model.Holidays)
+        foreach (var item in model.Items)
         {
-            var rHoliday = PayStubPublicHoliday.Create(h.Holiday, h.Amount, "This amount was added manually");
-            if (!rHoliday) return Result.Fail<PayStub>(rHoliday.Errors);
-            publicHolidays.Add(rHoliday.Value);
+            var result = item.Type switch
+            {
+                PayStubItemType.Regular => PayStubItem.CreateItem(item.Description ?? PayStubItem.RegularHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.Regular),
+                PayStubItemType.OtherRegular => PayStubItem.CreateItem(item.Description ?? PayStubItem.OtherRegularHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.OtherRegular),
+                PayStubItemType.Overtime => PayStubItem.CreateItem(item.Description ?? PayStubItem.OvertimeHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.Overtime),
+                PayStubItemType.StatutoryHoliday => PayStubItem.CreateItem(item.Description ?? PayStubItem.StatutoryHolidayLabel, 1, item.UnitPrice, PayStubItemType.StatutoryHoliday),
+                PayStubItemType.StatutoryWorkedHoliday => PayStubItem.CreateItem(item.Description ?? PayStubItem.StatutoryWorkedHolidayLabel, item.Quantity, item.UnitPrice, PayStubItemType.StatutoryWorkedHoliday),
+                PayStubItemType.NightShift => PayStubItem.CreateItem(item.Description ?? PayStubItem.NightShiftHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.NightShift),
+                PayStubItemType.Missing => PayStubItem.CreateItem(item.Description ?? PayStubItem.MissingHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.Missing),
+                PayStubItemType.MissingOvertime => PayStubItem.CreateItem(item.Description ?? PayStubItem.MissingOvertimeHoursLabel, item.Quantity, item.UnitPrice, PayStubItemType.MissingOvertime),
+                PayStubItemType.Vacations => PayStubItem.CreateItem(item.Description ?? "Vacations", item.Quantity, item.UnitPrice, PayStubItemType.Vacations),
+                PayStubItemType.Other => PayStubItem.CreateBonusOthersItem(item.Quantity, item.UnitPrice, item.Description),
+                PayStubItemType.Reimbursement => PayStubItem.CreateReimbursements(decimal.Multiply(new decimal(item.Quantity), item.UnitPrice), item.Description),
+                _ => Result.Fail<PayStubItem>($"Unknown item type: {item.Type}")
+            };
+            AddItem(result, payStubItems, itemErrors);
         }
 
-        // Step 4: Create other deductions
+        if (itemErrors.Count != 0) return Result.Fail<PayStub>(itemErrors);
+
+        // Step 3: Create other deductions
         var otherDeductions = model.OtherDeductions > 0
             ? new[] { PayStubOtherDeduction.CreateDefaultDeduction(model.OtherDeductions, model.OtherDeductionsDescription) }
             : [];
@@ -129,27 +113,30 @@ public class PayStubService : IPayStubService
         if (dateWorkBegins > dateWorkEnd)
             return Result.Fail<PayStub>("Dates of work: start must be before end");
 
-        // Step 7: Calculate earnings
-        var grossForVacations = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
-        var vacations = model.PayVacations
-            ? calculatorService.CalculateVacationsAmount(grossForVacations, rates.Vacations)
-            : decimal.Zero;
-        var publicHolidayPay = publicHolidays.Sum(h => h.Amount).DefaultMoneyRound();
-
-        if (publicHolidayPay > 0)
+        // Step 6: Calculate earnings
+        var vacations = 0m;
+        var grossPayment = payStubItems
+            .Where(i => i.Type != PayStubItemType.Vacations && i.Type != PayStubItemType.Reimbursement)
+            .Sum(i => i.Total)
+            .DefaultMoneyRound();
+        if (model.PayVacations)
         {
-            var rHolidayItem = PayStubItem.CreateStatutoryHoliday(publicHolidayPay);
-            if (rHolidayItem) payStubItems.Add(rHolidayItem.Value);
+            vacations = calculatorService.CalculateVacationsAmount(grossPayment, rates.Vacations).DefaultMoneyRound();
         }
-
-        var grossPayment = payStubItems.Sum(i => i.Total).DefaultMoneyRound();
+        else if (model.Items.Any(i => i.Type == PayStubItemType.Vacations))
+        {
+            vacations = payStubItems
+                .Where(i => i.Type == PayStubItemType.Vacations)
+                .Sum(i => i.Total)
+                .DefaultMoneyRound();
+        }
         var totalEarnings = grossPayment.Add(vacations).DefaultMoneyRound();
 
         // Step 8: Calculate deductions
         var numberOfWeeks = dateWorkBegins.GetNumberOfWeeksIn(dateWorkEnd);
         var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, model.WorkerProfileId);
         var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
-        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
+        var totalDeductions = deductions.Cpp + deductions.Ei + deductions.FederalTax + deductions.ProvincialTax + otherDeductionsTotal;
 
         // Step 9: Calculate net pay
         var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound();
@@ -164,9 +151,9 @@ public class PayStubService : IPayStubService
         {
             Id = Guid.NewGuid(),
             WorkerProfileId = model.WorkerProfileId,
-            PayStubNumber = GeneratePayStubNumber(model.PayStubNumber, DateTime.Now),
-            PayStubNumberId = model.PayStubNumber,
-            TypeOfWork = model.TypeOfWork,
+            PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            PayStubNumberId = payStubNumber,
+            Position = model.Position,
             DateWorkBegins = dateWorkBegins,
             DateWorkEnd = dateWorkEnd,
             PaymentDate = dateWorkEnd.GetPaymentDateForInternalWorkers(),
@@ -176,19 +163,17 @@ public class PayStubService : IPayStubService
             TotalEarnings = totalEarnings,
             Cpp = deductions.Cpp,
             Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax ?? 0,
-            ProvincialTax = deductions.ProvincialTax ?? 0,
+            FederalTax = deductions.FederalTax,
+            ProvincialTax = deductions.ProvincialTax,
             TotalDeductions = totalDeductions,
             TotalPaid = totalPaid,
             CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
+            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
+            Items = payStubItems,
+            OtherDeductions = otherDeductions,
         };
 
-        payStub.AddItems(payStubItems);
-        payStub.AddHolidays(publicHolidays);
-        payStub.AddOtherDeductionsDetail(otherDeductions);
-
-        // Step 11: Save
+        // Step 10: Save
         await payStubRepository.Create(payStub);
         await payStubRepository.SaveChangesAsync();
 
@@ -197,20 +182,11 @@ public class PayStubService : IPayStubService
 
     public async Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds)
     {
-        await SemaphoreSlim.WaitAsync();
-        try
+        foreach (var workerId in workerIds)
         {
-            foreach (var workerId in workerIds)
-            {
-                var result = await GeneratePayStubForWorker(agencyIds, workerId);
-                if (!result) return result;
-            }
+            var result = await GeneratePayStubForWorker(agencyIds, workerId);
+            if (!result) return result;
         }
-        finally
-        {
-            SemaphoreSlim.Release();
-        }
-
         return Result.Ok();
     }
 
@@ -400,7 +376,7 @@ public class PayStubService : IPayStubService
 
         var deductions = await calculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, dateWorkEnd.Year, workerProfileId);
         var otherDeductionsTotal = otherDeductions.Sum(d => d.Total);
-        var totalDeductions = deductions.Cpp + deductions.Ei + (deductions.FederalTax ?? 0) + (deductions.ProvincialTax ?? 0) + otherDeductionsTotal;
+        var totalDeductions = deductions.Cpp + deductions.Ei + deductions.FederalTax + deductions.ProvincialTax + otherDeductionsTotal;
 
         // Step 8: Calculate net pay
         var reimbursementTotal = payStubItems
@@ -424,7 +400,7 @@ public class PayStubService : IPayStubService
             WorkerProfileId = workerProfileId,
             PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
             PayStubNumberId = payStubNumber,
-            TypeOfWork = typeOfWork,
+            Position = typeOfWork,
             DateWorkBegins = dateWorkBegins,
             DateWorkEnd = dateWorkEnd,
             PaymentDate = paymentDate,
@@ -434,18 +410,17 @@ public class PayStubService : IPayStubService
             TotalEarnings = totalEarnings,
             Cpp = deductions.Cpp,
             Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax ?? 0,
-            ProvincialTax = deductions.ProvincialTax ?? 0,
+            FederalTax = deductions.FederalTax,
+            ProvincialTax = deductions.ProvincialTax,
             TotalDeductions = totalDeductions,
             TotalPaid = totalPaid,
             CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek()
+            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
+            Items = payStubItems,
+            WageDetails = allWageDetails,
+            Holidays = publicHolidays,
+            OtherDeductions = otherDeductions
         };
-
-        payStub.AddItems(payStubItems);
-        payStub.AddWageDetails(allWageDetails);
-        payStub.AddHolidays(publicHolidays);
-        payStub.AddOtherDeductionsDetail(otherDeductions);
 
         // Step 10: Save
         await payStubRepository.Create(payStub);
@@ -487,90 +462,6 @@ public class PayStubService : IPayStubService
             }
             startAt++;
         }
-    }
-
-    private void GetCraPayrollReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
-    {
-        var sheet = workbook.Worksheets.Add("Report");
-        sheet.Range("D1:D2").Merge().SetValue("PAYSTUB #");
-        sheet.Cell("D1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-        sheet.Range("E1:E2").Merge().SetValue("Date Paid");
-        sheet.Cell("E1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-        sheet.Range("F1:F2").Merge().SetValue("TOTAL EARNINGS");
-        sheet.Cell("F1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-        sheet.Cell("G1").SetValue("EMPLOYEER");
-        sheet.Range("G1:I1").Merge();
-        sheet.Cell("J1").SetValue("EMPLOYEE");
-        sheet.Range("J1:N1").Merge();
-        sheet.Cell("G2").SetValue("CPP");
-        sheet.Cell("H2").SetValue("EI");
-        sheet.Cell("I2").SetValue("OTHER");
-        sheet.Cell("J2").SetValue("CPP");
-        sheet.Cell("K2").SetValue("EI");
-        sheet.Cell("L2").SetValue("FED TAX");
-        sheet.Cell("M2").SetValue("PROV TAX");
-        sheet.Cell("N2").SetValue("Total Paid");
-        sheet.Cell("A3").SetValue("No.");
-        sheet.Cell("B3").SetValue("Names");
-
-        for (int r = 1; r <= 3; r++)
-        {
-            sheet.Row(r).Style.Font.Bold = true;
-            sheet.Row(r).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-        }
-
-        var currentRow = 4;
-        var workerIndex = 0;
-        var dataStartRow = currentRow;
-
-        foreach (var worker in result)
-        {
-            var items = worker.Items.ToList();
-            var isFirstItem = true;
-            workerIndex++;
-
-            foreach (var item in items)
-            {
-                if (isFirstItem)
-                {
-                    if (workerIndex == 1)
-                        sheet.Cell($"A{currentRow}").SetValue(workerIndex);
-                    else
-                        sheet.Cell($"A{currentRow}").SetFormulaA1($"1+A{dataStartRow}");
-
-                    sheet.Cell($"B{currentRow}").SetValue(worker.WorkerFullName.Trim());
-                    sheet.Cell($"C{currentRow}").SetValue(item.CompanyName ?? string.Empty);
-                    dataStartRow = currentRow;
-                    isFirstItem = false;
-                }
-
-                sheet.Cell($"D{currentRow}").SetValue(item.PayStubNumber);
-                sheet.Cell($"E{currentRow}").SetValue(item.DatePaid.ToString("dd-MMM-yyyy"));
-                sheet.Cell($"F{currentRow}").SetValue(item.TotalEarnings).SetMoneyType();
-                sheet.Cell($"G{currentRow}").SetValue(item.Employer.Cpp).SetMoneyType();
-                sheet.Cell($"H{currentRow}").SetFormulaA1($"K{currentRow}*1.4");
-                sheet.Cell($"I{currentRow}").SetValue(item.Employer.OtherDeductions).SetMoneyType();
-                sheet.Cell($"J{currentRow}").SetValue(item.Employee.Cpp).SetMoneyType();
-                sheet.Cell($"K{currentRow}").SetValue(item.Employee.EI).SetMoneyType();
-                sheet.Cell($"L{currentRow}").SetValue(item.Employee.FederalTax).SetMoneyType();
-                sheet.Cell($"M{currentRow}").SetValue(item.Employee.ProvincialTax).SetMoneyType();
-                sheet.Cell($"N{currentRow}").SetValue(
-                    item.TotalEarnings - item.Employee.Cpp - item.Employee.EI
-                    - item.Employee.FederalTax - item.Employee.ProvincialTax
-                ).SetMoneyType();
-
-                currentRow++;
-            }
-        }
-
-        // Column widths
-        sheet.Column("A").Width = 5;
-        sheet.Column("B").Width = 30;
-        sheet.Column("C").Width = 30;
-        sheet.Column("D").Width = 16;
-        sheet.Column("E").Width = 14;
-        for (int c = 6; c <= 14; c++)
-            sheet.Column(c).Width = 13;
     }
 
     private void GetDetail(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
@@ -723,6 +614,90 @@ public class PayStubService : IPayStubService
         row++;
         sheet.Cell($"L{row}").SetFormulaA1($"SUM(F{row - 1}:L{row - 1})").SetMoneyType().Config(tableFooter);
         row++;
+    }
+
+    private void GetCraPayrollReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)
+    {
+        var sheet = workbook.Worksheets.Add("Report");
+        sheet.Range("D1:D2").Merge().SetValue("PAYSTUB #");
+        sheet.Cell("D1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        sheet.Range("E1:E2").Merge().SetValue("Date Paid");
+        sheet.Cell("E1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        sheet.Range("F1:F2").Merge().SetValue("TOTAL EARNINGS");
+        sheet.Cell("F1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        sheet.Cell("G1").SetValue("EMPLOYEER");
+        sheet.Range("G1:I1").Merge();
+        sheet.Cell("J1").SetValue("EMPLOYEE");
+        sheet.Range("J1:N1").Merge();
+        sheet.Cell("G2").SetValue("CPP");
+        sheet.Cell("H2").SetValue("EI");
+        sheet.Cell("I2").SetValue("OTHER");
+        sheet.Cell("J2").SetValue("CPP");
+        sheet.Cell("K2").SetValue("EI");
+        sheet.Cell("L2").SetValue("FED TAX");
+        sheet.Cell("M2").SetValue("PROV TAX");
+        sheet.Cell("N2").SetValue("Total Paid");
+        sheet.Cell("A3").SetValue("No.");
+        sheet.Cell("B3").SetValue("Names");
+
+        for (int r = 1; r <= 3; r++)
+        {
+            sheet.Row(r).Style.Font.Bold = true;
+            sheet.Row(r).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        }
+
+        var currentRow = 4;
+        var workerIndex = 0;
+        var dataStartRow = currentRow;
+
+        foreach (var worker in result)
+        {
+            var items = worker.Items.ToList();
+            var isFirstItem = true;
+            workerIndex++;
+
+            foreach (var item in items)
+            {
+                if (isFirstItem)
+                {
+                    if (workerIndex == 1)
+                        sheet.Cell($"A{currentRow}").SetValue(workerIndex);
+                    else
+                        sheet.Cell($"A{currentRow}").SetFormulaA1($"1+A{dataStartRow}");
+
+                    sheet.Cell($"B{currentRow}").SetValue(worker.WorkerFullName.Trim());
+                    sheet.Cell($"C{currentRow}").SetValue(item.CompanyName ?? string.Empty);
+                    dataStartRow = currentRow;
+                    isFirstItem = false;
+                }
+
+                sheet.Cell($"D{currentRow}").SetValue(item.PayStubNumber);
+                sheet.Cell($"E{currentRow}").SetValue(item.DatePaid.ToString("dd-MMM-yyyy"));
+                sheet.Cell($"F{currentRow}").SetValue(item.TotalEarnings).SetMoneyType();
+                sheet.Cell($"G{currentRow}").SetValue(item.Employer.Cpp).SetMoneyType();
+                sheet.Cell($"H{currentRow}").SetFormulaA1($"K{currentRow}*1.4");
+                sheet.Cell($"I{currentRow}").SetValue(item.Employer.OtherDeductions).SetMoneyType();
+                sheet.Cell($"J{currentRow}").SetValue(item.Employee.Cpp).SetMoneyType();
+                sheet.Cell($"K{currentRow}").SetValue(item.Employee.EI).SetMoneyType();
+                sheet.Cell($"L{currentRow}").SetValue(item.Employee.FederalTax).SetMoneyType();
+                sheet.Cell($"M{currentRow}").SetValue(item.Employee.ProvincialTax).SetMoneyType();
+                sheet.Cell($"N{currentRow}").SetValue(
+                    item.TotalEarnings - item.Employee.Cpp - item.Employee.EI
+                    - item.Employee.FederalTax - item.Employee.ProvincialTax
+                ).SetMoneyType();
+
+                currentRow++;
+            }
+        }
+
+        // Column widths
+        sheet.Column("A").Width = 5;
+        sheet.Column("B").Width = 30;
+        sheet.Column("C").Width = 30;
+        sheet.Column("D").Width = 16;
+        sheet.Column("E").Width = 14;
+        for (int c = 6; c <= 14; c++)
+            sheet.Column(c).Width = 13;
     }
 
     private void Accumulate(Dictionary<decimal, double> dict, decimal rate, double hours)

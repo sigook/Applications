@@ -11,6 +11,7 @@ using Covenant.TimeSheetTotal.Services;
 
 namespace Covenant.Subcontractor.Services;
 
+[Obsolete]
 public class CreateReportSubcontractorUsingTimeSheet
 {
     private readonly TimeLimits _timeLimits;

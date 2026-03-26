@@ -30,7 +30,6 @@ class ApiClient {
   }
 
   void _addInterceptors(Interceptor? authInterceptor) {
-    // Add custom error interceptor for logging
     _dio.interceptors.add(DioErrorInterceptor());
 
     if (authInterceptor != null) {

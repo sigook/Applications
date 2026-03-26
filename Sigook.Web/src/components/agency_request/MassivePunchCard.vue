@@ -49,12 +49,12 @@
           </b-table-column>
           <b-table-column field="status" label="Status" width="250px" sortable searchable>
             <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="filteredStatuses" open-on-focus
+                field="value" icon="label" placeholder="Select Status" @typing="filterStatuses" @input="onStatusSelected">
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <b-tag rounded :type="props.row.workerRequestStatus === 3 ? 'is-success' : 'is-danger'">{{ props.row.workerRequestStatus === 3 ? 'Booked' : 'Rejected' }}</b-tag>
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
@@ -90,13 +90,15 @@ export default {
         { id: 3, value: 'Booked' },
       ],
       statusesSelected: [],
+      filteredStatuses: [],
       modalPunchCard: false,
       currentWorker: {},
       serverParams: {
-        sortBy: 1,
+        sortBy: 2,
         requestId: this.$route.params.id,
         pageIndex: 1,
-        pageSize: 30
+        pageSize: 30,
+        isDescending: true,
       }
     }
   },
@@ -133,7 +135,16 @@ export default {
         this.getWorkers();
       }
     },
+    filterStatuses(text) {
+      this.filteredStatuses = this.statuses.filter(s =>
+        !this.statusesSelected.some(ss => ss.id === s.id) &&
+        s.value.toLowerCase().includes(text.toLowerCase())
+      );
+    },
     onStatusSelected() {
+      this.filteredStatuses = this.statuses.filter(s =>
+        !this.statusesSelected.some(ss => ss.id === s.id)
+      );
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
       this.getWorkers();
     },
@@ -162,6 +173,7 @@ export default {
     },
   },
   created() {
+    this.filteredStatuses = this.statuses;
     this.getWorkers();
   },
   computed: {

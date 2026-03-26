@@ -494,6 +494,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("ProvincialTax")
                         .HasColumnType("numeric");
 
@@ -508,9 +511,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<decimal>("TotalPaid")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
 
                     b.Property<decimal>("Vacations")
                         .HasColumnType("numeric");
@@ -3361,9 +3361,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid?>("SocialInsuranceFileId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("TextSearch")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("WorkerId")
                         .HasColumnType("uuid");
 
@@ -3389,14 +3386,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ProfileImageId");
 
-                    b.HasIndex("PunchCardId")
-                        .IsUnique();
-
                     b.HasIndex("ResumeId");
 
                     b.HasIndex("SocialInsuranceFileId");
-
-                    b.HasIndex("TextSearch");
 
                     b.HasIndex("WorkerId", "AgencyId")
                         .IsUnique();

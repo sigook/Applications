@@ -228,7 +228,7 @@ onMounted(async () => {
         scrollToSelectedJob(selectedJob.value.numberId)
       }
     } else {
-      selectedJob.value = jobs.value[0]
+      selectJob(jobs.value[0])
     }
   }
 })
@@ -236,7 +236,7 @@ onMounted(async () => {
 // Cuando los resultados cambien (por búsqueda), seleccionar el primero automáticamente
 watch(jobs, (newJobs) => {
   if (newJobs.length > 0) {
-    selectedJob.value = newJobs[0]
+    selectJob(newJobs[0])
   } else {
     selectedJob.value = null
   }

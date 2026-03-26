@@ -21,7 +21,7 @@ internal static class PayrollMappers
             MaskedSin = model.SinNumber.MaskSIN(),
             EmployeeId = model.EmployeeId,
             WorkerEmail = model.WorkerEmail,
-            TypeOfJob = model.TypeOfJob,
+            Position = model.Position,
             StartDate = model.StartDate,
             EndDate = model.EndDate,
             CreatedAt = model.CreatedAt,
@@ -49,7 +49,7 @@ internal static class PayrollMappers
             new PayrollTable2Item($"Provincial TAX {model.ProvincialCategory.ToString().ToUpper()} (-)", model.DeductionProvincialTax.ToString("C"))
         ]).Concat(GetOtherDeductions()).Concat(
             [
-                new PayrollTable2Item("Current Deductions (-)",model.DeductionTotal.ToString("C")),
+                new PayrollTable2Item("Current Deductions (-)", model.DeductionTotal.ToString("C")),
                 PayrollTable2Item.EmptyRow,
                 new PayrollTable2Item("Total Net Paid",model.TotalNet.ToString("C"))
             ]);
@@ -67,12 +67,12 @@ internal static class PayrollMappers
 
         IEnumerable<PayrollTable2Item> GetOtherDeductions()
         {
-            if (model.OtherDeductionsDetail.Any())
+            if (model.OtherDeductions.Count != 0)
             {
-                return model.OtherDeductionsDetail.Select(s =>
+                return model.OtherDeductions.Select(s =>
                      new PayrollTable2Item(string.IsNullOrEmpty(s.Description) ? "Others Deductions (-)" : s.Description, s.Total.ToString("C")));
             }
-            return model.DeductionOthers > 0 ? new[] { new PayrollTable2Item("Others Deductions (-)", model.DeductionOthers.ToString("C")) } : Array.Empty<PayrollTable2Item>();
+            return [];
         }
     }
 

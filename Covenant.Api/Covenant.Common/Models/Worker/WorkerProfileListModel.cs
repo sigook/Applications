@@ -10,7 +10,7 @@
         public string MobileNumber { get; set; }
         public string Address { get; set; }
         public string ProfileImage { get; set; }
-        public IEnumerable<string> Skills { get; set; } = Array.Empty<string>();
+        public IEnumerable<string> Skills { get; set; } = [];
         public Guid WorkerId { get; set; }
         public bool ApprovedToWork { get; set; }
         public bool IsCurrentlyWorking { get; set; }

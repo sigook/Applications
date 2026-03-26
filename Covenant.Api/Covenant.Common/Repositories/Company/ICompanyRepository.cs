@@ -21,6 +21,7 @@ namespace Covenant.Common.Repositories.Company
         Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression);
         Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
         IEnumerable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
+        Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
         Task<string> GetCompanyProfileInvoiceNotes(Guid companyProfileId);
         Task UpdateCompanyProfileInvoiceNotes(Guid companyProfileId, string htmlNotes);
         Task<List<CompanyProfileInvoiceRecipientModel>> GetInvoiceRecipients(Guid companyProfileId);

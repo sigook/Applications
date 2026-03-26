@@ -70,6 +70,7 @@ class LanguageSettingsPage extends ConsumerWidget {
           ? const Icon(Icons.check_circle, color: AppTheme.primaryBlue)
           : null,
       onTap: () async {
+        notifyLogoFlash();
         await ref.read(localeProvider.notifier).setLocale(locale);
 
         if (context.mounted) {

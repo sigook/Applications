@@ -34,11 +34,11 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test → Docker+Deploy | `sigook-api-staging` / `sigook-api` |
-| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint → Docker+Deploy | `sigook-web-staging` / `sigook` |
-| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | Type-check+Lint+Build → Deploy | `covenantgroup-staging` / `covenantgroup` |
+| Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test → Docker+Deploy → Notify | `sigook-api-staging` / `sigook-api` |
+| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
+| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | Type-check+Lint+Build → Deploy → Notify | `covenantgroup-staging` / `covenantgroup` |
 | IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
-| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play | Google Play (internal/production) |
+| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
 | Covenant.Common | `covenant-common-nuget-pipeline.yml` | Manual only | Build+Test → Pack+Publish | Azure Artifacts feed `sigook/Covenant.Common` |
@@ -67,6 +67,9 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Staging: `https://sigook-api-staging.azurewebsites.net`
 - Production: `https://sigook-api.azurewebsites.net`
 
+**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
+- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `api`)
+
 ### Sigook.Web (Vue.js 2 + Docker + Nginx)
 
 **Build naming:** `SigookWeb-YYYYMMDDr`
@@ -83,6 +86,9 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Image: `sigook.azurecr.io/web:<tag>`
 - Staging: `https://sigook-web-staging.azurewebsites.net`
 - Production: `https://sigook.azurewebsites.net`
+
+**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
+- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `agency-portal`)
 
 ### Covenant.Web (Vue.js 3 + Azure App Service)
 
@@ -102,6 +108,9 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Runtime: Node.js 20 LTS, startup: `npm start`
 - Staging: `https://covenantgroup-staging.azurewebsites.net`
 - Production: `https://covenantgroup.azurewebsites.net`
+
+**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
+- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `website`)
 
 ### Covenant.IdentityServer (.NET 6)
 
@@ -144,6 +153,9 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Deploy via Fastlane: `fastlane android deploy`
 - Uses `GOOGLE_PLAY_JSON_KEY` from variable group
 - `continueOnError: true` (pipeline doesn't fail if Play Store deployment fails)
+
+**Stage 4 - Notify** (production only, uses `Sigook-Notifications` variable group):
+- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `mobile`)
 
 **Required Variable Groups:**
 - `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `GOOGLE_PLAY_JSON_KEY`
@@ -278,6 +290,31 @@ Installs Fastlane via Bundler with gem caching.
 
 **Note:** Currently SigookApp pipeline uses pre-installed Fastlane on the VM instead of this template.
 
+### notify-deployment.yml
+Sends a deployment notification email via Microsoft Graph API using Azure AD OAuth authentication. No SMTP credentials needed — authenticates with an Azure AD App Registration.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `appType` | string | required | `api`, `agency-portal`, `website`, or `mobile` |
+| `recipients` | string | required | Semicolon-separated email recipients |
+| `version` | string | `$(Build.BuildId)` | Version identifier for the email |
+| `senderEmail` | string | `it@covenantgroupl.com` | Sender email (must match Azure AD user) |
+
+**App type email bodies:**
+
+| appType | Label | Description |
+|---------|-------|-------------|
+| `api` | Covenant API | Backend API services — covenant.sigook.ca |
+| `agency-portal` | Sigook Web Portal | Agency web portal — covenant.sigook.ca |
+| `website` | Covenant Group Website | Corporate website — covenantgroup.com |
+| `mobile` | Sigook Mobile App | Mobile app — Google Play Store & App Store links |
+
+**Required variables** (from `Sigook-Notifications` variable group): `GraphTenantId`, `GraphClientId`, `GraphClientSecret`.
+
+**Azure AD prerequisites:**
+- App Registration with `Mail.Send` (Application) permission and admin consent granted
+- The sender email (`it@covenantgroupl.com`) must be a valid Azure AD user
+
 ---
 
 ## Common Pipeline Variables
@@ -317,6 +354,11 @@ variables:
 - **`PatSigookPackages`** - Azure Artifacts PAT (used by IdentityServer Dockerfile for NuGet restore)
 - **`SigookApp-Staging`** / **`SigookApp-Production`** - Flutter app env vars + Google Play key
 - **`SigookApp-Android`** - Android keystore signing credentials
+- **`Sigook-Notifications`** - Microsoft Graph API credentials for deployment email notifications:
+  - `GraphTenantId` - Azure AD tenant ID
+  - `GraphClientId` - App Registration client ID
+  - `GraphClientSecret` - App Registration client secret (secret)
+  - `NotificationRecipients` - Semicolon-separated list of email recipients (use a Distribution List for company-wide notifications)
 
 ### Secure Files
 - **`sigook.jks`** - Android keystore for SigookApp signing

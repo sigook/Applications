@@ -47,7 +47,7 @@ public class EmailService : IEmailService
             mail.From.Add(new MailboxAddress(settings.DisplayName, settings.FromEmail));
             if (settings.Test)
             {
-                string[] emails = settings.TestEmails.Split(",") ?? Array.Empty<string>();
+                string[] emails = settings.TestEmails.Split(",") ?? [];
                 if (!emails.Any())
                 {
                     return false;
@@ -69,7 +69,7 @@ public class EmailService : IEmailService
                 {
                     mail.Bcc.Add(new MailboxAddress(string.Empty, bcc));
                 }
-                var ccEmails = string.IsNullOrEmpty(settings.CcEmail) ? Array.Empty<string>() : settings.CcEmail.Split(",");
+                var ccEmails = string.IsNullOrEmpty(settings.CcEmail) ? [] : settings.CcEmail.Split(",");
                 foreach (string ccEmail in ccEmails)
                 {
                     mail.Bcc.Add(new MailboxAddress(string.Empty, ccEmail));
@@ -142,7 +142,7 @@ public class EmailService : IEmailService
             };
             if (settings.Test)
             {
-                string[] testEmails = settings.TestEmails?.Split(",") ?? Array.Empty<string>();
+                string[] testEmails = settings.TestEmails?.Split(",") ?? [];
                 foreach (var email in testEmails)
                 {
                     message.ToRecipients.Add(new Recipient
@@ -172,7 +172,7 @@ public class EmailService : IEmailService
                         EmailAddress = new EmailAddress { Address = bcc }
                     });
                 }
-                var ccEmails = string.IsNullOrWhiteSpace(settings.CcEmail) ? Array.Empty<string>() : settings.CcEmail.Split(",");
+                var ccEmails = string.IsNullOrWhiteSpace(settings.CcEmail) ? [] : settings.CcEmail.Split(",");
                 foreach (string ccEmail in ccEmails)
                 {
                     message.BccRecipients.Add(new Recipient

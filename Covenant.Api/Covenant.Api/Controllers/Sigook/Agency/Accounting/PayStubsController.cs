@@ -47,6 +47,7 @@ public class PayStubsController : ControllerBase
         return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
     }
 
+    [Obsolete("Use GeneratePayStubsV2 instead.")]
     [HttpPost("generate")]
     public async Task<IActionResult> GeneratePayStubs([FromBody] IEnumerable<Guid> workerIds)
     {

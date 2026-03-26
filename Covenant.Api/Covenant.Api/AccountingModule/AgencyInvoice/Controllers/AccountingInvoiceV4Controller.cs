@@ -7,14 +7,11 @@ using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Documents.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -65,7 +62,7 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
             return BadRequest("Invalid Verification Code");
         }
         (Guid InvoiceId, string InvoiceNumber) invoicesDeleted;
-        IReadOnlyList<string> payStubsDeleted = Array.Empty<string>();
+        IReadOnlyList<string> payStubsDeleted = [];
         Location billingLocation = await agencyRepository.GetBillingLocation(User.GetAgencyId());
         if (billingLocation?.IsUSA == true)
         {

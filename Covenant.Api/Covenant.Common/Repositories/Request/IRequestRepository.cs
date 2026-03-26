@@ -32,7 +32,6 @@ public interface IRequestRepository
     Task<ShiftModel> GetRequestShift(Guid requestId);
     Task<RequestCancellationDetail> GetRequestCancellationDetail(Guid requestId);
     Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId);
-    Task<PaginatedList<AgencyWorkerRequestModel>> GetAllWorkersThatCanApplyToRequest(Guid agencyId, Guid requestId, Pagination pagination, string filter);
     Task<RequestContactPersonDetailModel> GetRequestedByDetail(Guid requestId, Guid contactPersonId);
     Task<PaginatedList<RequestContactPersonModel>> GetRequestedByList(Guid requestId, Pagination pagination);
     Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId);
@@ -48,6 +47,7 @@ public interface IRequestRepository
     Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression);
     Task<IEnumerable<RequestApplicant>> GetRequestApplicants(Expression<Func<RequestApplicant, bool>> expression);
     Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter);
+    Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm);
     Task<RequestComission> GetRequestComission(Guid requestId);
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
     Task SaveChangesAsync();
