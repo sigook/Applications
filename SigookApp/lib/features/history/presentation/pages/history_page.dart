@@ -63,13 +63,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.jobs),
+          onPressed: () {
+            notifyLogoFlash();
+            context.go(AppRoutes.jobs);
+          },
         ),
         title: const NavbarLogo(),
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+            onPressed: () {
+              notifyLogoFlash();
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
         ],
       ),

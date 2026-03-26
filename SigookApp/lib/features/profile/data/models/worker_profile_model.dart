@@ -100,6 +100,19 @@ abstract class LocationModel with _$LocationModel {
       _$LocationModelFromJson(json);
 }
 
+@freezed
+abstract class LicenseItemModel with _$LicenseItemModel {
+  const factory LicenseItemModel({
+    ProfileImageModel? license,
+    String? number,
+    String? issued,
+    String? expires,
+  }) = _LicenseItemModel;
+
+  factory LicenseItemModel.fromJson(Map<String, dynamic> json) =>
+      _$LicenseItemModelFromJson(json);
+}
+
 // --- Worker profile list item (from GET /WorkerProfile) ---
 
 @freezed
@@ -147,8 +160,8 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
     String? phoneExt,
     LocationModel? location,
     @Default(false) bool hasVehicle,
-    @Default([]) List<CatalogItemModel> licenses,
-    @Default([]) List<CatalogItemModel> certificates,
+    @Default([]) List<LicenseItemModel> licenses,
+    @Default([]) List<ProfileImageModel> certificates,
     @Default([]) List<CatalogItemModel> otherDocuments,
     @Default([]) List<CatalogItemModel> availabilities,
     @Default([]) List<CatalogItemModel> availabilityTimes,
@@ -191,12 +204,15 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       socialInsuranceExpire: socialInsuranceExpire,
       dueDate: dueDate,
       socialInsuranceFileName: socialInsuranceFile?.fileName,
+      socialInsuranceFileUrl: socialInsuranceFile?.pathFile,
       identificationNumber1: identificationNumber1,
       identificationNumber2: identificationNumber2,
       identificationType1: identificationType1?.value,
       identificationType2: identificationType2?.value,
       identificationType1FileName: identificationType1File?.fileName,
+      identificationType1FileUrl: identificationType1File?.pathFile,
       identificationType2FileName: identificationType2File?.fileName,
+      identificationType2FileUrl: identificationType2File?.pathFile,
       havePoliceCheckBackground: havePoliceCheckBackground,
       policeCheckBackgroundFileName: policeCheckBackGround?.fileName,
       mobileNumber: mobileNumber,
@@ -204,19 +220,47 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       email: email,
       address: location?.address,
       city: location?.city?.value,
+      cityId: location?.city?.id,
       province: location?.city?.province?.value,
       country: location?.city?.province?.country?.value,
       postalCode: location?.postalCode,
       hasVehicle: hasVehicle,
       availabilities: availabilities.map((e) => e.value ?? '').where((v) => v.isNotEmpty).toList(),
+      availabilityIds: availabilities.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       availabilityTimes: availabilityTimes.map((e) => e.value ?? '').where((v) => v.isNotEmpty).toList(),
+      availabilityTimeIds: availabilityTimes.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       availabilityDays: availabilityDays.map((e) => e.value ?? '').where((v) => v.isNotEmpty).toList(),
+      availabilityDayIds: availabilityDays.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       liftCapacity: lift?.value,
+      liftId: lift?.id,
       languages: languages.map((e) => e.value ?? '').where((v) => v.isNotEmpty).toList(),
+      languageIds: languages.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       skills: skills.map((e) => e.skill ?? '').where((v) => v.isNotEmpty).toList(),
+      skillIds: skills.map((e) => e.id ?? '').where((v) => v.isNotEmpty).toList(),
       hasResume: resume != null,
+      resumeFileName: resume?.fileName,
+      resumeFileUrl: resume?.pathFile,
+      licenses: licenses
+          .map((l) => WorkerLicense(
+                fileUrl: l.license?.pathFile,
+                fileName: l.license?.fileName,
+                description: l.license?.description,
+                number: l.number,
+                issued: l.issued,
+                expires: l.expires,
+              ))
+          .toList(),
+      certificates: certificates
+          .map((c) => WorkerCertificate(
+                id: c.id,
+                fileUrl: c.pathFile,
+                fileName: c.fileName,
+                description: c.description,
+              ))
+          .toList(),
       approvedToWork: approvedToWork,
       punchCardId: punchCardId,
+      haveAnyHealthProblem: haveAnyHealthProblem,
       contactEmergencyName: contactEmergencyName,
       contactEmergencyLastName: contactEmergencyLastName,
       contactEmergencyPhone: contactEmergencyPhone,

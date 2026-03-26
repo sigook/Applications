@@ -1998,6 +1998,302 @@ $CityModelCopyWith<$Res>? get city {
 
 
 /// @nodoc
+mixin _$LicenseItemModel {
+
+ ProfileImageModel? get license; String? get number; String? get issued; String? get expires;
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LicenseItemModelCopyWith<LicenseItemModel> get copyWith => _$LicenseItemModelCopyWithImpl<LicenseItemModel>(this as LicenseItemModel, _$identity);
+
+  /// Serializes this LicenseItemModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LicenseItemModel&&(identical(other.license, license) || other.license == license)&&(identical(other.number, number) || other.number == number)&&(identical(other.issued, issued) || other.issued == issued)&&(identical(other.expires, expires) || other.expires == expires));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,license,number,issued,expires);
+
+@override
+String toString() {
+  return 'LicenseItemModel(license: $license, number: $number, issued: $issued, expires: $expires)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LicenseItemModelCopyWith<$Res>  {
+  factory $LicenseItemModelCopyWith(LicenseItemModel value, $Res Function(LicenseItemModel) _then) = _$LicenseItemModelCopyWithImpl;
+@useResult
+$Res call({
+ ProfileImageModel? license, String? number, String? issued, String? expires
+});
+
+
+$ProfileImageModelCopyWith<$Res>? get license;
+
+}
+/// @nodoc
+class _$LicenseItemModelCopyWithImpl<$Res>
+    implements $LicenseItemModelCopyWith<$Res> {
+  _$LicenseItemModelCopyWithImpl(this._self, this._then);
+
+  final LicenseItemModel _self;
+  final $Res Function(LicenseItemModel) _then;
+
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? license = freezed,Object? number = freezed,Object? issued = freezed,Object? expires = freezed,}) {
+  return _then(_self.copyWith(
+license: freezed == license ? _self.license : license // ignore: cast_nullable_to_non_nullable
+as ProfileImageModel?,number: freezed == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
+as String?,issued: freezed == issued ? _self.issued : issued // ignore: cast_nullable_to_non_nullable
+as String?,expires: freezed == expires ? _self.expires : expires // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProfileImageModelCopyWith<$Res>? get license {
+    if (_self.license == null) {
+    return null;
+  }
+
+  return $ProfileImageModelCopyWith<$Res>(_self.license!, (value) {
+    return _then(_self.copyWith(license: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [LicenseItemModel].
+extension LicenseItemModelPatterns on LicenseItemModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _LicenseItemModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LicenseItemModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _LicenseItemModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _LicenseItemModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _LicenseItemModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _LicenseItemModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ProfileImageModel? license,  String? number,  String? issued,  String? expires)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LicenseItemModel() when $default != null:
+return $default(_that.license,_that.number,_that.issued,_that.expires);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ProfileImageModel? license,  String? number,  String? issued,  String? expires)  $default,) {final _that = this;
+switch (_that) {
+case _LicenseItemModel():
+return $default(_that.license,_that.number,_that.issued,_that.expires);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ProfileImageModel? license,  String? number,  String? issued,  String? expires)?  $default,) {final _that = this;
+switch (_that) {
+case _LicenseItemModel() when $default != null:
+return $default(_that.license,_that.number,_that.issued,_that.expires);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _LicenseItemModel implements LicenseItemModel {
+  const _LicenseItemModel({this.license, this.number, this.issued, this.expires});
+  factory _LicenseItemModel.fromJson(Map<String, dynamic> json) => _$LicenseItemModelFromJson(json);
+
+@override final  ProfileImageModel? license;
+@override final  String? number;
+@override final  String? issued;
+@override final  String? expires;
+
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LicenseItemModelCopyWith<_LicenseItemModel> get copyWith => __$LicenseItemModelCopyWithImpl<_LicenseItemModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$LicenseItemModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LicenseItemModel&&(identical(other.license, license) || other.license == license)&&(identical(other.number, number) || other.number == number)&&(identical(other.issued, issued) || other.issued == issued)&&(identical(other.expires, expires) || other.expires == expires));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,license,number,issued,expires);
+
+@override
+String toString() {
+  return 'LicenseItemModel(license: $license, number: $number, issued: $issued, expires: $expires)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LicenseItemModelCopyWith<$Res> implements $LicenseItemModelCopyWith<$Res> {
+  factory _$LicenseItemModelCopyWith(_LicenseItemModel value, $Res Function(_LicenseItemModel) _then) = __$LicenseItemModelCopyWithImpl;
+@override @useResult
+$Res call({
+ ProfileImageModel? license, String? number, String? issued, String? expires
+});
+
+
+@override $ProfileImageModelCopyWith<$Res>? get license;
+
+}
+/// @nodoc
+class __$LicenseItemModelCopyWithImpl<$Res>
+    implements _$LicenseItemModelCopyWith<$Res> {
+  __$LicenseItemModelCopyWithImpl(this._self, this._then);
+
+  final _LicenseItemModel _self;
+  final $Res Function(_LicenseItemModel) _then;
+
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? license = freezed,Object? number = freezed,Object? issued = freezed,Object? expires = freezed,}) {
+  return _then(_LicenseItemModel(
+license: freezed == license ? _self.license : license // ignore: cast_nullable_to_non_nullable
+as ProfileImageModel?,number: freezed == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
+as String?,issued: freezed == issued ? _self.issued : issued // ignore: cast_nullable_to_non_nullable
+as String?,expires: freezed == expires ? _self.expires : expires // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+/// Create a copy of LicenseItemModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProfileImageModelCopyWith<$Res>? get license {
+    if (_self.license == null) {
+    return null;
+  }
+
+  return $ProfileImageModelCopyWith<$Res>(_self.license!, (value) {
+    return _then(_self.copyWith(license: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$WorkerProfileListItemModel {
 
  String get id; String? get agencyFullName; String? get agencyLogo;
@@ -2269,7 +2565,7 @@ as String?,
 /// @nodoc
 mixin _$WorkerProfileModel {
 
- String get id; int? get numberId; ProfileImageModel? get profileImage; String? get firstName; String? get middleName; String? get lastName; String? get secondLastName; String? get birthDay; CatalogItemModel? get gender; String? get socialInsurance; bool get socialInsuranceExpire; String? get dueDate; ProfileImageModel? get socialInsuranceFile; String? get identificationNumber1; String? get identificationNumber2; bool get havePoliceCheckBackground; ProfileImageModel? get identificationType1File; ProfileImageModel? get identificationType2File; CatalogItemModel? get identificationType1; CatalogItemModel? get identificationType2; ProfileImageModel? get policeCheckBackGround; String? get mobileNumber; String? get phone; String? get phoneExt; LocationModel? get location; bool get hasVehicle; List<CatalogItemModel> get licenses; List<CatalogItemModel> get certificates; List<CatalogItemModel> get otherDocuments; List<CatalogItemModel> get availabilities; List<CatalogItemModel> get availabilityTimes; List<CatalogItemModel> get availabilityDays; List<CatalogItemModel> get locationPreferences; CatalogItemModel? get lift; List<CatalogItemModel> get languages; List<SkillItemModel> get skills; ProfileImageModel? get resume; bool get haveAnyHealthProblem; String? get healthProblem; String? get otherHealthProblem; String? get contactEmergencyName; String? get contactEmergencyLastName; String? get contactEmergencyPhone; String? get email; bool get approvedToWork; String? get workerId; bool get isSubcontractor; bool get isContractor; bool get dnu; String? get punchCardId;
+ String get id; int? get numberId; ProfileImageModel? get profileImage; String? get firstName; String? get middleName; String? get lastName; String? get secondLastName; String? get birthDay; CatalogItemModel? get gender; String? get socialInsurance; bool get socialInsuranceExpire; String? get dueDate; ProfileImageModel? get socialInsuranceFile; String? get identificationNumber1; String? get identificationNumber2; bool get havePoliceCheckBackground; ProfileImageModel? get identificationType1File; ProfileImageModel? get identificationType2File; CatalogItemModel? get identificationType1; CatalogItemModel? get identificationType2; ProfileImageModel? get policeCheckBackGround; String? get mobileNumber; String? get phone; String? get phoneExt; LocationModel? get location; bool get hasVehicle; List<LicenseItemModel> get licenses; List<ProfileImageModel> get certificates; List<CatalogItemModel> get otherDocuments; List<CatalogItemModel> get availabilities; List<CatalogItemModel> get availabilityTimes; List<CatalogItemModel> get availabilityDays; List<CatalogItemModel> get locationPreferences; CatalogItemModel? get lift; List<CatalogItemModel> get languages; List<SkillItemModel> get skills; ProfileImageModel? get resume; bool get haveAnyHealthProblem; String? get healthProblem; String? get otherHealthProblem; String? get contactEmergencyName; String? get contactEmergencyLastName; String? get contactEmergencyPhone; String? get email; bool get approvedToWork; String? get workerId; bool get isSubcontractor; bool get isContractor; bool get dnu; String? get punchCardId;
 /// Create a copy of WorkerProfileModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2302,7 +2598,7 @@ abstract mixin class $WorkerProfileModelCopyWith<$Res>  {
   factory $WorkerProfileModelCopyWith(WorkerProfileModel value, $Res Function(WorkerProfileModel) _then) = _$WorkerProfileModelCopyWithImpl;
 @useResult
 $Res call({
- String id, int? numberId, ProfileImageModel? profileImage, String? firstName, String? middleName, String? lastName, String? secondLastName, String? birthDay, CatalogItemModel? gender, String? socialInsurance, bool socialInsuranceExpire, String? dueDate, ProfileImageModel? socialInsuranceFile, String? identificationNumber1, String? identificationNumber2, bool havePoliceCheckBackground, ProfileImageModel? identificationType1File, ProfileImageModel? identificationType2File, CatalogItemModel? identificationType1, CatalogItemModel? identificationType2, ProfileImageModel? policeCheckBackGround, String? mobileNumber, String? phone, String? phoneExt, LocationModel? location, bool hasVehicle, List<CatalogItemModel> licenses, List<CatalogItemModel> certificates, List<CatalogItemModel> otherDocuments, List<CatalogItemModel> availabilities, List<CatalogItemModel> availabilityTimes, List<CatalogItemModel> availabilityDays, List<CatalogItemModel> locationPreferences, CatalogItemModel? lift, List<CatalogItemModel> languages, List<SkillItemModel> skills, ProfileImageModel? resume, bool haveAnyHealthProblem, String? healthProblem, String? otherHealthProblem, String? contactEmergencyName, String? contactEmergencyLastName, String? contactEmergencyPhone, String? email, bool approvedToWork, String? workerId, bool isSubcontractor, bool isContractor, bool dnu, String? punchCardId
+ String id, int? numberId, ProfileImageModel? profileImage, String? firstName, String? middleName, String? lastName, String? secondLastName, String? birthDay, CatalogItemModel? gender, String? socialInsurance, bool socialInsuranceExpire, String? dueDate, ProfileImageModel? socialInsuranceFile, String? identificationNumber1, String? identificationNumber2, bool havePoliceCheckBackground, ProfileImageModel? identificationType1File, ProfileImageModel? identificationType2File, CatalogItemModel? identificationType1, CatalogItemModel? identificationType2, ProfileImageModel? policeCheckBackGround, String? mobileNumber, String? phone, String? phoneExt, LocationModel? location, bool hasVehicle, List<LicenseItemModel> licenses, List<ProfileImageModel> certificates, List<CatalogItemModel> otherDocuments, List<CatalogItemModel> availabilities, List<CatalogItemModel> availabilityTimes, List<CatalogItemModel> availabilityDays, List<CatalogItemModel> locationPreferences, CatalogItemModel? lift, List<CatalogItemModel> languages, List<SkillItemModel> skills, ProfileImageModel? resume, bool haveAnyHealthProblem, String? healthProblem, String? otherHealthProblem, String? contactEmergencyName, String? contactEmergencyLastName, String? contactEmergencyPhone, String? email, bool approvedToWork, String? workerId, bool isSubcontractor, bool isContractor, bool dnu, String? punchCardId
 });
 
 
@@ -2348,8 +2644,8 @@ as String?,phoneExt: freezed == phoneExt ? _self.phoneExt : phoneExt // ignore: 
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as LocationModel?,hasVehicle: null == hasVehicle ? _self.hasVehicle : hasVehicle // ignore: cast_nullable_to_non_nullable
 as bool,licenses: null == licenses ? _self.licenses : licenses // ignore: cast_nullable_to_non_nullable
-as List<CatalogItemModel>,certificates: null == certificates ? _self.certificates : certificates // ignore: cast_nullable_to_non_nullable
-as List<CatalogItemModel>,otherDocuments: null == otherDocuments ? _self.otherDocuments : otherDocuments // ignore: cast_nullable_to_non_nullable
+as List<LicenseItemModel>,certificates: null == certificates ? _self.certificates : certificates // ignore: cast_nullable_to_non_nullable
+as List<ProfileImageModel>,otherDocuments: null == otherDocuments ? _self.otherDocuments : otherDocuments // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilities: null == availabilities ? _self.availabilities : availabilities // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilityTimes: null == availabilityTimes ? _self.availabilityTimes : availabilityTimes // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilityDays: null == availabilityDays ? _self.availabilityDays : availabilityDays // ignore: cast_nullable_to_non_nullable
@@ -2588,7 +2884,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<CatalogItemModel> licenses,  List<CatalogItemModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<LicenseItemModel> licenses,  List<ProfileImageModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkerProfileModel() when $default != null:
 return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that.middleName,_that.lastName,_that.secondLastName,_that.birthDay,_that.gender,_that.socialInsurance,_that.socialInsuranceExpire,_that.dueDate,_that.socialInsuranceFile,_that.identificationNumber1,_that.identificationNumber2,_that.havePoliceCheckBackground,_that.identificationType1File,_that.identificationType2File,_that.identificationType1,_that.identificationType2,_that.policeCheckBackGround,_that.mobileNumber,_that.phone,_that.phoneExt,_that.location,_that.hasVehicle,_that.licenses,_that.certificates,_that.otherDocuments,_that.availabilities,_that.availabilityTimes,_that.availabilityDays,_that.locationPreferences,_that.lift,_that.languages,_that.skills,_that.resume,_that.haveAnyHealthProblem,_that.healthProblem,_that.otherHealthProblem,_that.contactEmergencyName,_that.contactEmergencyLastName,_that.contactEmergencyPhone,_that.email,_that.approvedToWork,_that.workerId,_that.isSubcontractor,_that.isContractor,_that.dnu,_that.punchCardId);case _:
@@ -2609,7 +2905,7 @@ return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<CatalogItemModel> licenses,  List<CatalogItemModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<LicenseItemModel> licenses,  List<ProfileImageModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)  $default,) {final _that = this;
 switch (_that) {
 case _WorkerProfileModel():
 return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that.middleName,_that.lastName,_that.secondLastName,_that.birthDay,_that.gender,_that.socialInsurance,_that.socialInsuranceExpire,_that.dueDate,_that.socialInsuranceFile,_that.identificationNumber1,_that.identificationNumber2,_that.havePoliceCheckBackground,_that.identificationType1File,_that.identificationType2File,_that.identificationType1,_that.identificationType2,_that.policeCheckBackGround,_that.mobileNumber,_that.phone,_that.phoneExt,_that.location,_that.hasVehicle,_that.licenses,_that.certificates,_that.otherDocuments,_that.availabilities,_that.availabilityTimes,_that.availabilityDays,_that.locationPreferences,_that.lift,_that.languages,_that.skills,_that.resume,_that.haveAnyHealthProblem,_that.healthProblem,_that.otherHealthProblem,_that.contactEmergencyName,_that.contactEmergencyLastName,_that.contactEmergencyPhone,_that.email,_that.approvedToWork,_that.workerId,_that.isSubcontractor,_that.isContractor,_that.dnu,_that.punchCardId);case _:
@@ -2629,7 +2925,7 @@ return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<CatalogItemModel> licenses,  List<CatalogItemModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  int? numberId,  ProfileImageModel? profileImage,  String? firstName,  String? middleName,  String? lastName,  String? secondLastName,  String? birthDay,  CatalogItemModel? gender,  String? socialInsurance,  bool socialInsuranceExpire,  String? dueDate,  ProfileImageModel? socialInsuranceFile,  String? identificationNumber1,  String? identificationNumber2,  bool havePoliceCheckBackground,  ProfileImageModel? identificationType1File,  ProfileImageModel? identificationType2File,  CatalogItemModel? identificationType1,  CatalogItemModel? identificationType2,  ProfileImageModel? policeCheckBackGround,  String? mobileNumber,  String? phone,  String? phoneExt,  LocationModel? location,  bool hasVehicle,  List<LicenseItemModel> licenses,  List<ProfileImageModel> certificates,  List<CatalogItemModel> otherDocuments,  List<CatalogItemModel> availabilities,  List<CatalogItemModel> availabilityTimes,  List<CatalogItemModel> availabilityDays,  List<CatalogItemModel> locationPreferences,  CatalogItemModel? lift,  List<CatalogItemModel> languages,  List<SkillItemModel> skills,  ProfileImageModel? resume,  bool haveAnyHealthProblem,  String? healthProblem,  String? otherHealthProblem,  String? contactEmergencyName,  String? contactEmergencyLastName,  String? contactEmergencyPhone,  String? email,  bool approvedToWork,  String? workerId,  bool isSubcontractor,  bool isContractor,  bool dnu,  String? punchCardId)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkerProfileModel() when $default != null:
 return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that.middleName,_that.lastName,_that.secondLastName,_that.birthDay,_that.gender,_that.socialInsurance,_that.socialInsuranceExpire,_that.dueDate,_that.socialInsuranceFile,_that.identificationNumber1,_that.identificationNumber2,_that.havePoliceCheckBackground,_that.identificationType1File,_that.identificationType2File,_that.identificationType1,_that.identificationType2,_that.policeCheckBackGround,_that.mobileNumber,_that.phone,_that.phoneExt,_that.location,_that.hasVehicle,_that.licenses,_that.certificates,_that.otherDocuments,_that.availabilities,_that.availabilityTimes,_that.availabilityDays,_that.locationPreferences,_that.lift,_that.languages,_that.skills,_that.resume,_that.haveAnyHealthProblem,_that.healthProblem,_that.otherHealthProblem,_that.contactEmergencyName,_that.contactEmergencyLastName,_that.contactEmergencyPhone,_that.email,_that.approvedToWork,_that.workerId,_that.isSubcontractor,_that.isContractor,_that.dnu,_that.punchCardId);case _:
@@ -2644,7 +2940,7 @@ return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that
 @JsonSerializable()
 
 class _WorkerProfileModel extends WorkerProfileModel {
-  const _WorkerProfileModel({required this.id, this.numberId, this.profileImage, this.firstName, this.middleName, this.lastName, this.secondLastName, this.birthDay, this.gender, this.socialInsurance, this.socialInsuranceExpire = false, this.dueDate, this.socialInsuranceFile, this.identificationNumber1, this.identificationNumber2, this.havePoliceCheckBackground = false, this.identificationType1File, this.identificationType2File, this.identificationType1, this.identificationType2, this.policeCheckBackGround, this.mobileNumber, this.phone, this.phoneExt, this.location, this.hasVehicle = false, final  List<CatalogItemModel> licenses = const [], final  List<CatalogItemModel> certificates = const [], final  List<CatalogItemModel> otherDocuments = const [], final  List<CatalogItemModel> availabilities = const [], final  List<CatalogItemModel> availabilityTimes = const [], final  List<CatalogItemModel> availabilityDays = const [], final  List<CatalogItemModel> locationPreferences = const [], this.lift, final  List<CatalogItemModel> languages = const [], final  List<SkillItemModel> skills = const [], this.resume, this.haveAnyHealthProblem = false, this.healthProblem, this.otherHealthProblem, this.contactEmergencyName, this.contactEmergencyLastName, this.contactEmergencyPhone, this.email, this.approvedToWork = false, this.workerId, this.isSubcontractor = false, this.isContractor = false, this.dnu = false, this.punchCardId}): _licenses = licenses,_certificates = certificates,_otherDocuments = otherDocuments,_availabilities = availabilities,_availabilityTimes = availabilityTimes,_availabilityDays = availabilityDays,_locationPreferences = locationPreferences,_languages = languages,_skills = skills,super._();
+  const _WorkerProfileModel({required this.id, this.numberId, this.profileImage, this.firstName, this.middleName, this.lastName, this.secondLastName, this.birthDay, this.gender, this.socialInsurance, this.socialInsuranceExpire = false, this.dueDate, this.socialInsuranceFile, this.identificationNumber1, this.identificationNumber2, this.havePoliceCheckBackground = false, this.identificationType1File, this.identificationType2File, this.identificationType1, this.identificationType2, this.policeCheckBackGround, this.mobileNumber, this.phone, this.phoneExt, this.location, this.hasVehicle = false, final  List<LicenseItemModel> licenses = const [], final  List<ProfileImageModel> certificates = const [], final  List<CatalogItemModel> otherDocuments = const [], final  List<CatalogItemModel> availabilities = const [], final  List<CatalogItemModel> availabilityTimes = const [], final  List<CatalogItemModel> availabilityDays = const [], final  List<CatalogItemModel> locationPreferences = const [], this.lift, final  List<CatalogItemModel> languages = const [], final  List<SkillItemModel> skills = const [], this.resume, this.haveAnyHealthProblem = false, this.healthProblem, this.otherHealthProblem, this.contactEmergencyName, this.contactEmergencyLastName, this.contactEmergencyPhone, this.email, this.approvedToWork = false, this.workerId, this.isSubcontractor = false, this.isContractor = false, this.dnu = false, this.punchCardId}): _licenses = licenses,_certificates = certificates,_otherDocuments = otherDocuments,_availabilities = availabilities,_availabilityTimes = availabilityTimes,_availabilityDays = availabilityDays,_locationPreferences = locationPreferences,_languages = languages,_skills = skills,super._();
   factory _WorkerProfileModel.fromJson(Map<String, dynamic> json) => _$WorkerProfileModelFromJson(json);
 
 @override final  String id;
@@ -2673,15 +2969,15 @@ class _WorkerProfileModel extends WorkerProfileModel {
 @override final  String? phoneExt;
 @override final  LocationModel? location;
 @override@JsonKey() final  bool hasVehicle;
- final  List<CatalogItemModel> _licenses;
-@override@JsonKey() List<CatalogItemModel> get licenses {
+ final  List<LicenseItemModel> _licenses;
+@override@JsonKey() List<LicenseItemModel> get licenses {
   if (_licenses is EqualUnmodifiableListView) return _licenses;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_licenses);
 }
 
- final  List<CatalogItemModel> _certificates;
-@override@JsonKey() List<CatalogItemModel> get certificates {
+ final  List<ProfileImageModel> _certificates;
+@override@JsonKey() List<ProfileImageModel> get certificates {
   if (_certificates is EqualUnmodifiableListView) return _certificates;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_certificates);
@@ -2785,7 +3081,7 @@ abstract mixin class _$WorkerProfileModelCopyWith<$Res> implements $WorkerProfil
   factory _$WorkerProfileModelCopyWith(_WorkerProfileModel value, $Res Function(_WorkerProfileModel) _then) = __$WorkerProfileModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, int? numberId, ProfileImageModel? profileImage, String? firstName, String? middleName, String? lastName, String? secondLastName, String? birthDay, CatalogItemModel? gender, String? socialInsurance, bool socialInsuranceExpire, String? dueDate, ProfileImageModel? socialInsuranceFile, String? identificationNumber1, String? identificationNumber2, bool havePoliceCheckBackground, ProfileImageModel? identificationType1File, ProfileImageModel? identificationType2File, CatalogItemModel? identificationType1, CatalogItemModel? identificationType2, ProfileImageModel? policeCheckBackGround, String? mobileNumber, String? phone, String? phoneExt, LocationModel? location, bool hasVehicle, List<CatalogItemModel> licenses, List<CatalogItemModel> certificates, List<CatalogItemModel> otherDocuments, List<CatalogItemModel> availabilities, List<CatalogItemModel> availabilityTimes, List<CatalogItemModel> availabilityDays, List<CatalogItemModel> locationPreferences, CatalogItemModel? lift, List<CatalogItemModel> languages, List<SkillItemModel> skills, ProfileImageModel? resume, bool haveAnyHealthProblem, String? healthProblem, String? otherHealthProblem, String? contactEmergencyName, String? contactEmergencyLastName, String? contactEmergencyPhone, String? email, bool approvedToWork, String? workerId, bool isSubcontractor, bool isContractor, bool dnu, String? punchCardId
+ String id, int? numberId, ProfileImageModel? profileImage, String? firstName, String? middleName, String? lastName, String? secondLastName, String? birthDay, CatalogItemModel? gender, String? socialInsurance, bool socialInsuranceExpire, String? dueDate, ProfileImageModel? socialInsuranceFile, String? identificationNumber1, String? identificationNumber2, bool havePoliceCheckBackground, ProfileImageModel? identificationType1File, ProfileImageModel? identificationType2File, CatalogItemModel? identificationType1, CatalogItemModel? identificationType2, ProfileImageModel? policeCheckBackGround, String? mobileNumber, String? phone, String? phoneExt, LocationModel? location, bool hasVehicle, List<LicenseItemModel> licenses, List<ProfileImageModel> certificates, List<CatalogItemModel> otherDocuments, List<CatalogItemModel> availabilities, List<CatalogItemModel> availabilityTimes, List<CatalogItemModel> availabilityDays, List<CatalogItemModel> locationPreferences, CatalogItemModel? lift, List<CatalogItemModel> languages, List<SkillItemModel> skills, ProfileImageModel? resume, bool haveAnyHealthProblem, String? healthProblem, String? otherHealthProblem, String? contactEmergencyName, String? contactEmergencyLastName, String? contactEmergencyPhone, String? email, bool approvedToWork, String? workerId, bool isSubcontractor, bool isContractor, bool dnu, String? punchCardId
 });
 
 
@@ -2831,8 +3127,8 @@ as String?,phoneExt: freezed == phoneExt ? _self.phoneExt : phoneExt // ignore: 
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as LocationModel?,hasVehicle: null == hasVehicle ? _self.hasVehicle : hasVehicle // ignore: cast_nullable_to_non_nullable
 as bool,licenses: null == licenses ? _self._licenses : licenses // ignore: cast_nullable_to_non_nullable
-as List<CatalogItemModel>,certificates: null == certificates ? _self._certificates : certificates // ignore: cast_nullable_to_non_nullable
-as List<CatalogItemModel>,otherDocuments: null == otherDocuments ? _self._otherDocuments : otherDocuments // ignore: cast_nullable_to_non_nullable
+as List<LicenseItemModel>,certificates: null == certificates ? _self._certificates : certificates // ignore: cast_nullable_to_non_nullable
+as List<ProfileImageModel>,otherDocuments: null == otherDocuments ? _self._otherDocuments : otherDocuments // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilities: null == availabilities ? _self._availabilities : availabilities // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilityTimes: null == availabilityTimes ? _self._availabilityTimes : availabilityTimes // ignore: cast_nullable_to_non_nullable
 as List<CatalogItemModel>,availabilityDays: null == availabilityDays ? _self._availabilityDays : availabilityDays // ignore: cast_nullable_to_non_nullable

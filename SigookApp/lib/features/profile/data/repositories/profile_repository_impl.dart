@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -6,6 +8,7 @@ import '../../domain/entities/worker_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/usecases/update_worker_profile.dart';
 import '../datasources/profile_remote_datasource.dart';
+import '../models/worker_profile_model.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
@@ -63,6 +66,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         lastName: editedFields['lastName'] ?? currentModel.lastName,
         secondLastName:
             editedFields['secondLastName'] ?? currentModel.secondLastName,
+        hasVehicle: editedFields['hasVehicle'] != null
+            ? editedFields['hasVehicle'] == 'true'
+            : currentModel.hasVehicle,
         mobileNumber:
             editedFields['mobileNumber'] ?? currentModel.mobileNumber,
         phone: editedFields['phone'] ?? currentModel.phone,
@@ -91,6 +97,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
           address: editedFields['address'] ?? currentModel.location?.address,
           postalCode:
               editedFields['postalCode'] ?? currentModel.location?.postalCode,
+          city: editedFields['cityId'] != null
+              ? CityModel(
+                  id: editedFields['cityId'],
+                  value: '',
+                  province: currentModel.location?.city?.province,
+                )
+              : currentModel.location?.city,
         ),
       );
 
@@ -100,26 +113,109 @@ class ProfileRepositoryImpl implements ProfileRepository {
         case ProfileSection.contact:
           await remoteDataSource.updateWorkerContactInfo(
               workerId, updatedModel);
+        case ProfileSection.emergency:
+          await remoteDataSource.updateWorkerEmergencyInfo(
+              workerId, updatedModel);
+        case ProfileSection.sin:
+          await remoteDataSource.updateWorkerSinInfo(
+            workerId,
+            updatedModel,
+            sinFilePath: newFilePaths?['sinFile'],
+          );
         case ProfileSection.documents:
+          await remoteDataSource.updateWorkerDocuments(
+            workerId,
+            updatedModel,
+            newFilePaths: {
+              if (newFilePaths?['id1File'] != null)
+                'id1File': newFilePaths!['id1File']!,
+              if (newFilePaths?['id2File'] != null)
+                'id2File': newFilePaths!['id2File']!,
+              if (newFilePaths?['policeCheckFile'] != null)
+                'policeCheckFile': newFilePaths!['policeCheckFile']!,
+            },
+          );
+        case ProfileSection.resume:
+          if (newFilePaths?['resumeFile'] != null) {
+            await remoteDataSource.uploadWorkerResume(
+              workerId,
+              filePath: newFilePaths!['resumeFile']!,
+            );
+          }
+        case ProfileSection.licenses:
+          if (newFilePaths?['licenseFile'] != null) {
+            await remoteDataSource.uploadWorkerLicense(
+              workerId,
+              filePath: newFilePaths!['licenseFile']!,
+              number: editedFields['licenseNumber'] ?? '',
+              issued: editedFields['licenseIssued'] ?? '',
+              expires: editedFields['licenseExpires'] ?? '',
+            );
+          }
+        case ProfileSection.certificates:
+          if (newFilePaths?['certificateFile'] != null) {
+            await remoteDataSource.uploadWorkerCertificate(
+              workerId,
+              filePath: newFilePaths!['certificateFile']!,
+            );
+          }
+        case ProfileSection.preferences:
+          List<Map<String, String>> parseIdValueList(String key) {
+            final raw = editedFields[key];
+            if (raw == null || raw.isEmpty) return [];
+            final decoded = jsonDecode(raw) as List<dynamic>;
+            return decoded
+                .map((e) => Map<String, String>.from(e as Map))
+                .toList();
+          }
+
+          final availabilities = parseIdValueList('availabilities');
+          final availabilityTimes = parseIdValueList('availabilityTimes');
+          final availabilityDays = parseIdValueList('availabilityDays');
+          final languages = parseIdValueList('languages');
+          final skills = editedFields['skills'] != null && editedFields['skills']!.isNotEmpty
+              ? (jsonDecode(editedFields['skills']!) as List<dynamic>)
+                  .cast<String>()
+              : <String>[];
+          final locationPreferences = parseIdValueList('locationPreferences');
+
           await Future.wait([
-            remoteDataSource.updateWorkerSinInfo(
+            remoteDataSource.updateAvailabilities(
               workerId,
-              updatedModel,
-              sinFilePath: newFilePaths?['sinFile'],
+              availabilities: availabilities,
             ),
-            remoteDataSource.updateWorkerDocuments(
+            remoteDataSource.updateAvailabilityTimes(
               workerId,
-              updatedModel,
-              newFilePaths: {
-                if (newFilePaths?['id1File'] != null)
-                  'id1File': newFilePaths!['id1File']!,
-                if (newFilePaths?['id2File'] != null)
-                  'id2File': newFilePaths!['id2File']!,
-                if (newFilePaths?['policeCheckFile'] != null)
-                  'policeCheckFile': newFilePaths!['policeCheckFile']!,
-              },
+              availabilityTimes: availabilityTimes,
             ),
+            remoteDataSource.updateAvailabilityDays(
+              workerId,
+              availabilityDays: availabilityDays,
+            ),
+            remoteDataSource.updateSkills(
+              workerId,
+              skills: skills,
+            ),
+            remoteDataSource.updateLanguages(
+              workerId,
+              languages: languages,
+            ),
+            if (locationPreferences.isNotEmpty)
+              remoteDataSource.updateLocationPreferences(
+                workerId,
+                locationPreferences: locationPreferences,
+              ),
           ]);
+
+          if (editedFields['lift'] != null && editedFields['lift']!.isNotEmpty) {
+            final lift = Map<String, String>.from(
+              jsonDecode(editedFields['lift']!) as Map,
+            );
+            await remoteDataSource.updateOtherInformation(
+              workerId,
+              lift: lift,
+            );
+          }
       }
 
       return Right(null);

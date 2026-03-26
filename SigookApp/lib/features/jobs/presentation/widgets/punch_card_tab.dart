@@ -85,17 +85,26 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 12),
-          _buildCalendarCard(),
-          const SizedBox(height: 12),
-          _buildClockCard(),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 100),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                _buildCalendarCard(),
+                const SizedBox(height: 12),
+                _buildClockCard(),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
