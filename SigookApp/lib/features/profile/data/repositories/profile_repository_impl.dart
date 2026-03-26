@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -158,32 +160,62 @@ class ProfileRepositoryImpl implements ProfileRepository {
             );
           }
         case ProfileSection.preferences:
-          List<String> parseIds(String key) => (editedFields[key] ?? '')
-              .split(',')
-              .where((s) => s.isNotEmpty)
-              .toList();
-          final prefModel = currentModel.copyWith(
-            availabilities: parseIds('availabilityIds')
-                .map((id) => CatalogItemModel(id: id, value: ''))
-                .toList(),
-            availabilityTimes: parseIds('availabilityTimeIds')
-                .map((id) => CatalogItemModel(id: id, value: ''))
-                .toList(),
-            availabilityDays: parseIds('availabilityDayIds')
-                .map((id) => CatalogItemModel(id: id, value: ''))
-                .toList(),
-            lift: editedFields['liftId'] != null
-                ? CatalogItemModel(id: editedFields['liftId'], value: '')
-                : currentModel.lift,
-            hasVehicle: editedFields['hasVehicle'] == 'true',
-            languages: parseIds('languageIds')
-                .map((id) => CatalogItemModel(id: id, value: ''))
-                .toList(),
-            skills: parseIds('skillIds')
-                .map((name) => SkillItemModel(skill: name))
-                .toList(),
-          );
-          await remoteDataSource.updateWorkerBasicInfo(workerId, prefModel);
+          List<Map<String, String>> parseIdValueList(String key) {
+            final raw = editedFields[key];
+            if (raw == null || raw.isEmpty) return [];
+            final decoded = jsonDecode(raw) as List<dynamic>;
+            return decoded
+                .map((e) => Map<String, String>.from(e as Map))
+                .toList();
+          }
+
+          final availabilities = parseIdValueList('availabilities');
+          final availabilityTimes = parseIdValueList('availabilityTimes');
+          final availabilityDays = parseIdValueList('availabilityDays');
+          final languages = parseIdValueList('languages');
+          final skills = editedFields['skills'] != null && editedFields['skills']!.isNotEmpty
+              ? (jsonDecode(editedFields['skills']!) as List<dynamic>)
+                  .cast<String>()
+              : <String>[];
+          final locationPreferences = parseIdValueList('locationPreferences');
+
+          await Future.wait([
+            remoteDataSource.updateAvailabilities(
+              workerId,
+              availabilities: availabilities,
+            ),
+            remoteDataSource.updateAvailabilityTimes(
+              workerId,
+              availabilityTimes: availabilityTimes,
+            ),
+            remoteDataSource.updateAvailabilityDays(
+              workerId,
+              availabilityDays: availabilityDays,
+            ),
+            remoteDataSource.updateSkills(
+              workerId,
+              skills: skills,
+            ),
+            remoteDataSource.updateLanguages(
+              workerId,
+              languages: languages,
+            ),
+            if (locationPreferences.isNotEmpty)
+              remoteDataSource.updateLocationPreferences(
+                workerId,
+                locationPreferences: locationPreferences,
+              ),
+          ]);
+
+          if (editedFields['lift'] != null && editedFields['lift']!.isNotEmpty) {
+            final lift = Map<String, String>.from(
+              jsonDecode(editedFields['lift']!) as Map,
+            );
+            await remoteDataSource.updateOtherInformation(
+              workerId,
+              lift: lift,
+            );
+          }
       }
 
       return Right(null);

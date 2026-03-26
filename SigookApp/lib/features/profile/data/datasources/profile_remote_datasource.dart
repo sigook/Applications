@@ -45,6 +45,36 @@ abstract class ProfileRemoteDataSource {
     String workerId, {
     required String filePath,
   });
+
+  // Preference update endpoints
+  Future<void> updateOtherInformation(
+    String workerId, {
+    required Map<String, String> lift,
+  });
+  Future<void> updateAvailabilities(
+    String workerId, {
+    required List<Map<String, String>> availabilities,
+  });
+  Future<void> updateAvailabilityTimes(
+    String workerId, {
+    required List<Map<String, String>> availabilityTimes,
+  });
+  Future<void> updateAvailabilityDays(
+    String workerId, {
+    required List<Map<String, String>> availabilityDays,
+  });
+  Future<void> updateLocationPreferences(
+    String workerId, {
+    required List<Map<String, String>> locationPreferences,
+  });
+  Future<void> updateSkills(
+    String workerId, {
+    required List<String> skills,
+  });
+  Future<void> updateLanguages(
+    String workerId, {
+    required List<Map<String, String>> languages,
+  });
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -527,6 +557,96 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to upload license: $e');
     }
+  }
+
+  // ── Preference update endpoints ──────────────────────────────────────────
+
+  Future<void> _postPreference(String workerId, String path, Object data) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/WorkerProfile/$workerId/$path',
+        data: data,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: 'Failed to update $path: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException('Connection timeout');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw NetworkException('No internet connection');
+      } else if (e.response != null) {
+        throw ServerException(
+          message: 'Server error: ${e.response?.statusCode}',
+        );
+      } else {
+        throw NetworkException('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Failed to update $path: $e');
+    }
+  }
+
+  @override
+  Future<void> updateOtherInformation(
+    String workerId, {
+    required Map<String, String> lift,
+  }) async {
+    await _postPreference(workerId, 'OtherInformation', {'lift': lift});
+  }
+
+  @override
+  Future<void> updateAvailabilities(
+    String workerId, {
+    required List<Map<String, String>> availabilities,
+  }) async {
+    await _postPreference(workerId, 'Availabilities', availabilities);
+  }
+
+  @override
+  Future<void> updateAvailabilityTimes(
+    String workerId, {
+    required List<Map<String, String>> availabilityTimes,
+  }) async {
+    await _postPreference(workerId, 'AvailabilityTimes', availabilityTimes);
+  }
+
+  @override
+  Future<void> updateAvailabilityDays(
+    String workerId, {
+    required List<Map<String, String>> availabilityDays,
+  }) async {
+    await _postPreference(workerId, 'AvailabilityDays', availabilityDays);
+  }
+
+  @override
+  Future<void> updateLocationPreferences(
+    String workerId, {
+    required List<Map<String, String>> locationPreferences,
+  }) async {
+    await _postPreference(
+        workerId, 'LocationPreferences', locationPreferences);
+  }
+
+  @override
+  Future<void> updateSkills(
+    String workerId, {
+    required List<String> skills,
+  }) async {
+    await _postPreference(workerId, 'Skills', skills);
+  }
+
+  @override
+  Future<void> updateLanguages(
+    String workerId, {
+    required List<Map<String, String>> languages,
+  }) async {
+    await _postPreference(workerId, 'Languages', languages);
   }
 
   @override
