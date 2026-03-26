@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/dev/projects/Applications/SigookApp/lib/features -type d -name *preference* -o -type d -name *profile*)",
+      "Bash(flutter analyze:*)",
+      "Bash(grep -E \"\\\\.\\(dart|png|svg\\)$\")"
+    ]
+  }
+}

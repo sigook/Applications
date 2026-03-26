@@ -156,15 +156,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: size.height * 0.36),
-                FadeTransition(
-                  opacity: _logoFadeAnimation,
-                  child: ScaleTransition(
-                    scale: _logoScaleAnimation,
-                    child: Image.asset(
-                      'assets/images/logo/sigook_logo.png',
-                      width: 270,
-                      color: Colors.white,
-                      colorBlendMode: BlendMode.srcIn,
+                Transform.translate(
+                  offset: const Offset(0, -32),
+                  child: FadeTransition(
+                    opacity: _logoFadeAnimation,
+                    child: ScaleTransition(
+                      scale: _logoScaleAnimation,
+                      child: Image.asset(
+                        'assets/images/logo/sigook-logo.png',
+                        width: 270,
+                        color: Colors.white,
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),
