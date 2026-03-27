@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../../jobs/presentation/widgets/app_drawer.dart';
 
 class AboutPage extends StatefulWidget {

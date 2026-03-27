@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 
-class ErrorStateWidget extends StatelessWidget {
+class EmptyStateWidget extends StatelessWidget {
   final String message;
   final String? title;
-  final VoidCallback? onRetry;
   final IconData icon;
+  final VoidCallback? onAction;
+  final String? actionLabel;
 
-  const ErrorStateWidget({
+  const EmptyStateWidget({
     super.key,
     required this.message,
     this.title,
-    this.onRetry,
-    this.icon = Icons.error_outline,
+    this.icon = Icons.inbox_outlined,
+    this.onAction,
+    this.actionLabel,
   });
 
   @override
@@ -24,7 +26,11 @@ class ErrorStateWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppTheme.spacing64, color: AppTheme.errorRed),
+            Icon(
+              icon,
+              size: AppTheme.spacing64 + AppTheme.spacing16,
+              color: AppTheme.textLight,
+            ),
             SizedBox(height: AppTheme.spacing16),
             if (title != null) ...[
               Text(
@@ -39,21 +45,9 @@ class ErrorStateWidget extends StatelessWidget {
               style: AppTheme.bodyMedium.copyWith(color: AppTheme.textLight),
               textAlign: TextAlign.center,
             ),
-            if (onRetry != null) ...[
+            if (onAction != null && actionLabel != null) ...[
               SizedBox(height: AppTheme.spacing24),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing24,
-                    vertical: AppTheme.spacing12,
-                  ),
-                ),
-              ),
+              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],
         ),
