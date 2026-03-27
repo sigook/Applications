@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/status_badge.dart';
+import '../../../../core/widgets/display/status_badge.dart';
 import '../../domain/entities/job_details.dart';
 
 class JobHeaderCard extends StatelessWidget {
