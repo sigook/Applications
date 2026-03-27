@@ -70,7 +70,7 @@ steps:
 
         elif [ "${{ parameters.appType }}" = "website" ]; then
           APP_LABEL="Covenant Group Website"
-          BODY="Hello,\n\nThe Covenant Group website has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Corporate website (covenantgroup.com)\n\nThe changes are now live. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+          BODY="Hello,\n\nThe Covenant Group website has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Corporate website (www.covenantgroupl.com)\n\nThe changes are now live. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
 
         elif [ "${{ parameters.appType }}" = "mobile" ]; then
           APP_LABEL="Sigook Mobile App"
