@@ -46,7 +46,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
       final filePickerService = ref.read(filePickerServiceProvider);
 
       final result = await filePickerService.pickFile(
-        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png'],
         maxFileSizeMB: 10,
       );
 

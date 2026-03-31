@@ -85,6 +85,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
             currentModel.identificationNumber1,
         identificationNumber2: editedFields['identificationNumber2'] ??
             currentModel.identificationNumber2,
+        identificationType1: editedFields.containsKey('identificationType1Id')
+            ? CatalogItemModel(
+                id: editedFields['identificationType1Id'],
+                value: editedFields['identificationType1Value'],
+              )
+            : currentModel.identificationType1,
+        identificationType2: editedFields.containsKey('identificationType2Id')
+            ? CatalogItemModel(
+                id: editedFields['identificationType2Id'],
+                value: editedFields['identificationType2Value'],
+              )
+            : currentModel.identificationType2,
         socialInsuranceFile:
             deleteSinFile ? null : currentModel.socialInsuranceFile,
         identificationType1File:
