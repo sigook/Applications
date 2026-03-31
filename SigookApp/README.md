@@ -62,6 +62,7 @@ features/<feature>/
 ## Tech Stack
 
 ### Core Dependencies
+
 - **flutter_riverpod** (^2.5.1) - State management
 - **freezed** (^2.5.7) - Immutable data classes & code generation
 - **dartz** (^0.10.1) - Functional programming (`Either<Failure, T>`)
@@ -72,6 +73,7 @@ features/<feature>/
 - **shared_preferences** (^2.2.3) - Local storage
 
 ### Code Generation
+
 - **build_runner** (^2.4.12)
 - **freezed_annotation** (^2.4.4)
 - **json_serializable** (^6.8.0)
@@ -402,22 +404,113 @@ CacheException           →  CacheFailure
 
 ### Debugging with VS Code
 
-Pre-configured launch configurations:
+#### 1. Create your `.vscode/launch.json`
 
-- **Development (Staging)** - Default development with staging environment
-- **Staging Environment** - Explicit staging build
-- **Production Environment** - Explicit production build
-- **Platform-specific variants** for iOS Simulator and Android Emulator
+The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `SigookApp/`:
 
-1. Open VS Code, press `Ctrl+Shift+D` (`Cmd+Shift+D` on Mac)
-2. Select configuration from the dropdown
+Copy the block below and save it as `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug — Staging",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Profile — Staging",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "profile",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Debug — Local",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_local.dart",
+      "args": ["--dart-define-from-file=.env.local"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Profile — Local",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_local.dart",
+      "args": ["--dart-define-from-file=.env.local"],
+      "flutterMode": "profile",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Debug — Staging (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"],
+      "deviceId": "android"
+    },
+    {
+      "name": "Debug — Staging (iOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"],
+      "deviceId": "ios"
+    },
+    {
+      "name": "Attach to Device",
+      "request": "attach",
+      "type": "dart"
+    }
+  ]
+}
+```
+
+#### 2. Create your `.env` file
+
+The `.env.*` files are gitignored and contain real credentials — never commit them. Ask a teammate for the values, then create the file for the environment you need:
+
+```bash
+# Most common: connect to staging servers
+cp .env.example .env.staging
+# Then edit .env.staging and fill in the real values
+
+# For local backend development
+cp .env.example .env.local
+# Then edit .env.local — see URL notes below
+```
+
+**Local URL notes** — update `API_BASE_URL` and `AUTH_AUTHORITY` in `.env.local` based on your setup:
+
+| Target           | API_BASE_URL                          | AUTH_AUTHORITY                  |
+| ---------------- | ------------------------------------- | ------------------------------- |
+| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44381/`       |
+| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44381/`      |
+| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44381/`  |
+
+#### 3. Run
+
+1. Open the Run & Debug panel — `Ctrl+Shift+D` (Windows/Linux) or `Cmd+Shift+D` (Mac)
+2. Select a configuration from the dropdown:
+   - **Debug — Staging** — day-to-day development against staging servers
+   - **Profile — Staging** — performance profiling (DevTools)
+   - **Debug — Local** — requires local backend (`Covenant.Api` + `Covenant.IdentityServer` running)
+   - **Debug — Staging (Android/iOS)** — forces a specific platform when multiple devices are connected
+   - **Attach to Device** — attach the debugger to an already-running app
 3. Press `F5`
-
-- **Staging**: Orange theme, points to staging servers
-- **Production**: Clean theme, points to production servers
-- Each environment loads its respective `.env` file
-
-See `.vscode/README.md` for detailed configuration.
 
 ### Build Environments
 
