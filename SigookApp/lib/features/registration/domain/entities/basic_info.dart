@@ -88,7 +88,7 @@ class BasicInfo extends Equatable {
   }
 
   String? get zipCodeError =>
-      zipCode.value.isEmpty ? 'ZIP Code is required' : null;
+      zipCode.value.isEmpty ? 'Postal/ZIP code is required' : null;
   String? get mobileNumberError => mobileNumber.errorMessage;
   String? get dateOfBirthError =>
       !isAdult ? 'You must be at least 18 years old' : null;

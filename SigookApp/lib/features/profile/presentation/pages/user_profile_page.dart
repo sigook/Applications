@@ -2001,6 +2001,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               _editSkillIds.remove(id);
             }
           }),
+          onAddCustom: (value) => setState(() => _editSkillIds.add(value)),
         ),
         const SizedBox(height: 12),
         SearchableToggleList(

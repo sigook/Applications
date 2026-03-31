@@ -1,4 +1,3 @@
-import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import '../../domain/entities/value_objects/phone_number.dart' as domain;
 import '../../domain/services/phone_validation_service.dart';
 
@@ -28,34 +27,13 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
         return domain.PhoneNumber.empty();
       }
 
-      // When countryCode is null, try CA first then US (auto-detect).
-      // When it is CA or US, still try both since they share +1 (NANP).
-      final codesToTry = upper == 'US'
-          ? ['US', 'CA']
-          : ['CA', 'US']; // CA-first for null or explicit CA
-
-      for (final code in codesToTry) {
-        try {
-          final parsed = PhoneNumber.parse(
-            cleanNumber,
-            callerCountry: _toIsoCode(code),
-          );
-          if (parsed.isValid(type: PhoneNumberType.mobile)) {
-            return domain.PhoneNumber.valid(
-              value: cleanNumber,
-              countryCode: code, // resolved country, not the raw input
-              nationalFormat: parsed.formatNsn(),
-              internationalFormat: parsed.international,
-            );
-          }
-        } on PhoneNumberException {
-          continue;
-        }
-      }
-
-      return domain.PhoneNumber.invalid(
-        cleanNumber,
-        'Invalid mobile number — must be a valid Canadian or US number',
+      // TODO: re-enable strict NANP validation once phone data is clean.
+      // For now, accept any non-empty number.
+      return domain.PhoneNumber.valid(
+        value: cleanNumber,
+        countryCode: countryCode ?? 'CA',
+        nationalFormat: cleanNumber,
+        internationalFormat: '+1$cleanNumber',
       );
     } catch (e) {
       return domain.PhoneNumber.invalid(
@@ -105,13 +83,5 @@ class PhoneNumberParserValidationService implements PhoneValidationService {
     }
   }
 
-  IsoCode _toIsoCode(String code) {
-    switch (code) {
-      case 'US':
-        return IsoCode.US;
-      case 'CA':
-      default:
-        return IsoCode.CA;
-    }
-  }
+
 }

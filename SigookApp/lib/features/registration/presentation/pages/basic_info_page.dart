@@ -386,13 +386,15 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               ),
               const SizedBox(height: 24),
               CustomTextField(
-                label: 'ZIP Code',
-                hint: 'Enter your ZIP code',
+                label: 'Postal/ZIP Code',
+                hint: _selectedCountry?.isoCode == 'US'
+                    ? 'e.g. 90210'
+                    : 'e.g. A1A 1A1',
                 controller: _zipCodeController,
                 errorText: _zipCodeError,
                 isRequired: true,
                 keyboardType: TextInputType.text,
-                onChanged: (value) {},
+                onChanged: (value) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('zipCode');
                 },
