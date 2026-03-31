@@ -4,7 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 
 class PhoneNumberField extends StatefulWidget {
   final String? initialValue;
-  final String countryCode; // ISO code (US, CA)
+  final String? countryCode; // ISO code (US, CA) — null means auto-detect
   final String? errorText;
   final Function(String) onChanged;
   final Function(bool)? onFocusChanged;
@@ -82,24 +82,11 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
 
   String _getPlaceholder() {
     if (widget.hint != null) return widget.hint!;
-
-    switch (widget.countryCode.toUpperCase()) {
-      case 'US':
-      case 'CA':
-        return '555 123 4567';
-      default:
-        return 'Enter phone number';
-    }
+    return '555 123 4567';
   }
 
   String _getCountryPrefix() {
-    switch (widget.countryCode.toUpperCase()) {
-      case 'US':
-      case 'CA':
-        return '+1';
-      default:
-        return '+1';
-    }
+    return '+1';
   }
 
   @override

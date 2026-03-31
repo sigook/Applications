@@ -18,6 +18,8 @@ import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../catalog/domain/entities/catalog_item.dart';
+import '../../../registration/presentation/widgets/file_upload_modal.dart';
 import '../../../registration/presentation/widgets/location_selector.dart';
 import '../../../registration/domain/entities/country.dart';
 import '../../../registration/domain/entities/province.dart';
@@ -52,6 +54,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   PickedFileData? _replaceSinFile;
   PickedFileData? _replaceId1File;
   PickedFileData? _replaceId2File;
+
+  // Pending identification types/numbers for new document uploads (when no type is set by agency)
+  CatalogItem? _pendingId1Type;
+  String _pendingId1Number = '';
+  CatalogItem? _pendingId2Type;
+  String _pendingId2Number = '';
 
   // Resume state
   PickedFileData? _replaceResumeFile;
@@ -186,6 +194,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       _replaceSinFile = null;
       _replaceId1File = null;
       _replaceId2File = null;
+      _pendingId1Type = null;
+      _pendingId1Number = '';
+      _pendingId2Type = null;
+      _pendingId2Number = '';
       _editCountry = null;
       _editProvince = null;
       _editCity = null;
@@ -212,6 +224,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       _replaceSinFile = null;
       _replaceId1File = null;
       _replaceId2File = null;
+      _pendingId1Type = null;
+      _pendingId1Number = '';
+      _pendingId2Type = null;
+      _pendingId2Number = '';
       _editCountry = null;
       _editProvince = null;
       _editCity = null;
@@ -252,8 +268,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         };
       case ProfileSection.documents:
         editedFields = {
-          'identificationNumber1': _idNumber1Controller.text,
-          'identificationNumber2': _idNumber2Controller.text,
+          'identificationNumber1': _pendingId1Type != null
+              ? _pendingId1Number
+              : _idNumber1Controller.text,
+          'identificationNumber2': _pendingId2Type != null
+              ? _pendingId2Number
+              : _idNumber2Controller.text,
+          if (_pendingId1Type?.id != null)
+            'identificationType1Id': _pendingId1Type!.id!,
+          if (_pendingId1Type != null)
+            'identificationType1Value': _pendingId1Type!.value,
+          if (_pendingId2Type?.id != null)
+            'identificationType2Id': _pendingId2Type!.id!,
+          if (_pendingId2Type != null)
+            'identificationType2Value': _pendingId2Type!.value,
           if (_deleteId1File) '_deleteId1File': 'true',
           if (_deleteId2File) '_deleteId2File': 'true',
         };
@@ -443,7 +471,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   Future<void> _pickFileFor(String docType) async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
     if (!result.isSuccess || result.file == null) return;
     setState(() {
       switch (docType) {
@@ -458,6 +486,103 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           _deleteId2File = false;
       }
     });
+  }
+
+  Future<void> _showDocumentUploadModal(String docType) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => const FileUploadModal(
+        title: 'Add Document',
+        description:
+            'Select identification type, enter the number, and upload the file.',
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    final type = result['identificationType'] as CatalogItem;
+    final number = result['identificationNumber'] as String;
+    final filePath = result['filePath'] as String;
+    final fileName = result['file'] as String;
+    final fileSize = result['fileSize'] as int;
+
+    setState(() {
+      if (docType == 'id1File') {
+        _pendingId1Type = type;
+        _pendingId1Number = number;
+        _replaceId1File =
+            PickedFileData(name: fileName, path: filePath, size: fileSize);
+        _deleteId1File = false;
+      } else {
+        _pendingId2Type = type;
+        _pendingId2Number = number;
+        _replaceId2File =
+            PickedFileData(name: fileName, path: filePath, size: fileSize);
+        _deleteId2File = false;
+      }
+    });
+  }
+
+  Widget _buildNewDocumentSlot({
+    required String docType,
+    required CatalogItem? pendingType,
+    required PickedFileData? pendingFile,
+    required VoidCallback onUndo,
+  }) {
+    if (pendingType != null && pendingFile != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pendingType.value,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  Text(
+                    pendingFile.name,
+                    style: const TextStyle(
+                        fontSize: 13, color: AppTheme.primaryBlue),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const Text(
+                    'Will upload on save',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onUndo,
+              icon: const Icon(Icons.undo, size: 16),
+              label: const Text('Undo'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.primaryBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: OutlinedButton.icon(
+        onPressed: () => _showDocumentUploadModal(docType),
+        icon: const Icon(Icons.add, size: 18),
+        label: Text(docType == 'id1File' ? 'Add Document 1' : 'Add Document 2'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.primaryBlue,
+          side: BorderSide(color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
+        ),
+      ),
+    );
   }
 
   void _previewDocument(String url, String title) {
@@ -937,11 +1062,34 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           ),
         ],
         if (profile?.identificationType1 == null &&
-            profile?.identificationType2 == null)
-          Text(
-            'No documents on file',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-          ),
+            profile?.identificationType2 == null) ...[
+          if (isEditing) ...[
+            _buildNewDocumentSlot(
+              docType: 'id1File',
+              pendingType: _pendingId1Type,
+              pendingFile: _replaceId1File,
+              onUndo: () => setState(() {
+                _pendingId1Type = null;
+                _pendingId1Number = '';
+                _replaceId1File = null;
+              }),
+            ),
+            _buildNewDocumentSlot(
+              docType: 'id2File',
+              pendingType: _pendingId2Type,
+              pendingFile: _replaceId2File,
+              onUndo: () => setState(() {
+                _pendingId2Type = null;
+                _pendingId2Number = '';
+                _replaceId2File = null;
+              }),
+            ),
+          ] else
+            Text(
+              'No documents on file',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            ),
+        ],
       ],
     );
   }
@@ -1100,7 +1248,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   Future<void> _pickResumeFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _replaceResumeFile = result.file);
   }
@@ -1466,7 +1614,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   Future<void> _pickLicenseFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _newLicenseFile = result.file);
   }
@@ -1691,7 +1839,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   Future<void> _pickCertificateFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _newCertificateFile = result.file);
   }
@@ -1853,6 +2001,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               _editSkillIds.remove(id);
             }
           }),
+          onAddCustom: (value) => setState(() => _editSkillIds.add(value)),
         ),
         const SizedBox(height: 12),
         SearchableToggleList(

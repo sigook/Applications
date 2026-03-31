@@ -8,12 +8,17 @@ class SearchableToggleList extends StatefulWidget {
   final Set<String> selectedIds;
   final void Function(String id, bool selected) onToggle;
 
+  /// When provided, shows an "Add '[query]'" button when the search has no
+  /// matches, allowing the user to add a custom entry not in the catalog.
+  final void Function(String value)? onAddCustom;
+
   const SearchableToggleList({
     super.key,
     required this.label,
     required this.asyncValue,
     required this.selectedIds,
     required this.onToggle,
+    this.onAddCustom,
   });
 
   @override
@@ -66,6 +71,12 @@ class _SearchableToggleListState extends State<SearchableToggleList> {
 
             final selectedItems = allItems
                 .where((item) => widget.selectedIds.contains(item.id))
+                .toList();
+
+            // Custom entries: selected IDs that don't exist in the catalog.
+            final catalogIds = allItems.map((i) => i.id).toSet();
+            final customSelected = widget.selectedIds
+                .where((id) => !catalogIds.contains(id))
                 .toList();
 
             return Column(
@@ -135,17 +146,44 @@ class _SearchableToggleListState extends State<SearchableToggleList> {
                   ),
                   child: filteredItems.isEmpty
                       ? Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Center(
-                            child: Text(
-                              _searchQuery.isNotEmpty
-                                  ? 'No ${widget.label.toLowerCase()} match "$_searchQuery"'
-                                  : 'No ${widget.label.toLowerCase()} available',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade500,
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _searchQuery.isNotEmpty
+                                    ? 'No ${widget.label.toLowerCase()} match "$_searchQuery"'
+                                    : 'No ${widget.label.toLowerCase()} available',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
+                              if (_searchQuery.isNotEmpty &&
+                                  widget.onAddCustom != null) ...[
+                                const SizedBox(height: 8),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    widget.onAddCustom!(_searchQuery.trim());
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                  icon: const Icon(Icons.add, size: 16),
+                                  label: Text(
+                                    'Add "$_searchQuery"',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppTheme.primaryBlue,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         )
                       : ListView.separated(
@@ -209,36 +247,64 @@ class _SearchableToggleListState extends State<SearchableToggleList> {
                           },
                         ),
                 ),
-                // Selected skills chips
-                if (selectedItems.isNotEmpty) ...[
+                // Selected chips (catalog + custom)
+                if (selectedItems.isNotEmpty || customSelected.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 6,
                     runSpacing: 4,
-                    children: selectedItems.map((item) {
-                      return Chip(
-                        label:
-                            Text(item.value, style: const TextStyle(fontSize: 11)),
-                        deleteIcon: const Icon(Icons.close, size: 16),
-                        onDeleted: () => widget.onToggle(item.id, false),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                        backgroundColor:
-                            AppTheme.primaryBlue.withValues(alpha: 0.1),
-                        deleteIconColor: AppTheme.primaryBlue,
-                        labelStyle: const TextStyle(
-                          color: AppTheme.primaryBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        side: BorderSide(
-                          color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 0,
-                        ),
-                      );
-                    }).toList(),
+                    children: [
+                      ...selectedItems.map((item) => Chip(
+                            label: Text(
+                              item.value,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => widget.onToggle(item.id, false),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            backgroundColor:
+                                AppTheme.primaryBlue.withValues(alpha: 0.1),
+                            deleteIconColor: AppTheme.primaryBlue,
+                            labelStyle: const TextStyle(
+                              color: AppTheme.primaryBlue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            side: BorderSide(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 0,
+                            ),
+                          )),
+                      ...customSelected.map((id) => Chip(
+                            label: Text(
+                              id,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => widget.onToggle(id, false),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            backgroundColor:
+                                AppTheme.primaryBlue.withValues(alpha: 0.1),
+                            deleteIconColor: AppTheme.primaryBlue,
+                            labelStyle: const TextStyle(
+                              color: AppTheme.primaryBlue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            side: BorderSide(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 0,
+                            ),
+                          )),
+                    ],
                   ),
                 ],
               ],
