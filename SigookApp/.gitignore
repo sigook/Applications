@@ -134,4 +134,3 @@ app.*.symbols
 
 # IDE specific
 .claude/
-.vscode/
