@@ -96,14 +96,11 @@ public static class Data
         FakePayStub = PayStubBuilder.PayStub(Rates.DefaultRates, new Mock<IPayrollDeductionsAndContributionsCalculator>().Object, mockWorkerRepository.Object)
             .WithPayStubNumber(1)
             .WithWorkerProfileId(FakeWorkerProfile.Id)
-            .WithTypeOfWork("General Labour")
+            .WithPosition("General Labour")
             .WithWorkBeginning(Now)
             .WithWorkEnding(Now.AddDays(1))
             .WithCreationDate(Now)
-            .WithItems(new[]
-            {
-                PayStubItem.CreateItem("Regular",1,10,PayStubItemType.Regular).Value
-            })
+            .WithItems([PayStubItem.CreateItem("Regular",1,10,PayStubItemType.Regular).Value])
             .WithWageDetails([])
             .WithPublicHolidaysToPay([])
             .WithNoMoreDeductions()

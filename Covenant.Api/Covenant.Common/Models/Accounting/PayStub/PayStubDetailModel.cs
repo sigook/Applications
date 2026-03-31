@@ -14,7 +14,7 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public string AgencyLocation { get; set; }
         public string WorkerFullName { get; set; }
         public string WorkerEmail { get; set; }
-        public string TypeOfJob { get; set; }
+        public string Position { get; set; }
         public string SinNumber { get; set; }
         public int EmployeeId { get; set; }
         public DateTime StartDate { get; set; }
@@ -33,9 +33,7 @@ namespace Covenant.Common.Models.Accounting.PayStub
         public string PayrollNumber { get; set; }
         public decimal DeductionProvincialTax { get; set; }
         public List<PayStubDetailItemModel> Items { get; set; } = new List<PayStubDetailItemModel>();
-        public List<PayStubDetailItemModel> OtherDeductionsDetail { get; set; } = new List<PayStubDetailItemModel>();
-        public List<PayStubDetailItemModel> Deductions { get; set; } = new List<PayStubDetailItemModel>();
-        public List<PayStubDetailItemModel> Taxes { get; set; } = new List<PayStubDetailItemModel>();
+        public List<PayStubDetailItemModel> OtherDeductions { get; set; } = new List<PayStubDetailItemModel>();
         public TaxCategory FederalCategory { get; set; }
         public TaxCategory ProvincialCategory { get; set; }
         public Guid WorkerProfileId { get; set; }

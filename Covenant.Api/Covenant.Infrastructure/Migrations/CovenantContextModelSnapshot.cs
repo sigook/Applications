@@ -482,9 +482,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
-                    b.Property<decimal>("OtherDeductions")
-                        .HasColumnType("numeric");
-
                     b.Property<string>("PayStubNumber")
                         .HasColumnType("text");
 
@@ -493,6 +490,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("ProvincialTax")
                         .HasColumnType("numeric");
@@ -508,9 +508,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<decimal>("TotalPaid")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
 
                     b.Property<decimal>("Vacations")
                         .HasColumnType("numeric");
@@ -3867,7 +3864,7 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubOtherDeduction", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayStub", "PayStub")
-                        .WithMany("OtherDeductionsDetail")
+                        .WithMany("OtherDeductions")
                         .HasForeignKey("PayStubId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5065,7 +5062,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Navigation("Items");
 
-                    b.Navigation("OtherDeductionsDetail");
+                    b.Navigation("OtherDeductions");
 
                     b.Navigation("WageDetails");
                 });

@@ -3,17 +3,17 @@
     <b-loading v-model="isLoading"></b-loading>
     <sub-menu solutionType="jobSeekers"></sub-menu>
     <section class="container-fluid">
-      <div class="looking-for-worker-banner p-3 px-sm-0 py-sm-5 color-white">
-        <div class="pb-4 pb-sm-0">
-          <h3>Looking for an entry-level job, or to improve your career?</h3>
-          <h3 class="font-weight-bold pb-3">SIGOOK<label class="superscript">®</label> is for you.</h3>
-          <hr class="w-10 col-2 b-color-white ml-0" />
-          <h4>✔ Anywhere in the USA</h4>
-          <h4>✔ Receive the right job offer for you</h4>
-          <h4>✔ Get hired on the spot</h4>
-          <h4>✔ Review your timesheets in real-time data</h4>
-          <h4>✔ Rate your employers</h4>
-          <h4>✔ Count on a human team of recruiters ready to assist and guide you along the way</h4>
+      <div class="looking-for-worker-banner p-3 px-sm-0 py-sm-3 color-white">
+        <div class="pb-2 pb-sm-0">
+          <h5>Looking for an entry-level job, or to improve your career?</h5>
+          <h5 class="font-weight-bold pb-2">SIGOOK<label class="superscript">®</label> is for you.</h5>
+          <hr class="w-10 col-2 b-color-white ml-0 my-1" />
+          <h6>✔ Anywhere in the USA</h6>
+          <h6>✔ Receive the right job offer for you</h6>
+          <h6>✔ Get hired on the spot</h6>
+          <h6>✔ Review your timesheets in real-time data</h6>
+          <h6>✔ Rate your employers</h6>
+          <h6>✔ Count on a human team of recruiters ready to assist and guide you along the way</h6>
         </div>
         <sigook-video></sigook-video>
       </div>
@@ -166,10 +166,25 @@ export default {
   async created() {
     this.isLoading = true;
     this.jobs = await this.$store.dispatch("getJobs", this.$route.query);
-    this.selectJob(this.jobs[0]);
+
+    const jobIdFromQuery = this.$route.query.jobId;
+    if (jobIdFromQuery) {
+      const targetJob = this.jobs.find(j => String(j.numberId) === String(jobIdFromQuery));
+      this.selectJob(targetJob || this.jobs[0]);
+    } else {
+      this.selectJob(this.jobs[0]);
+    }
+
     this.isLoading = false;
-    const VueScrollTo = require('vue-scrollto');
-    VueScrollTo.scrollTo("#jobsContainer");
+
+    this.$nextTick(() => {
+      const VueScrollTo = require('vue-scrollto');
+      if (jobIdFromQuery) {
+        VueScrollTo.scrollTo("#jobsContainer", 500, { offset: -20 });
+      } else {
+        VueScrollTo.scrollTo("#jobsContainer");
+      }
+    });
   },
   methods: {
     selectJob(job) {
@@ -205,7 +220,6 @@ export default {
   justify-content: center;
   display: grid;
   column-gap: 15px;
-
   @include desktop {
     grid-template-columns: 40% 40%;
   }

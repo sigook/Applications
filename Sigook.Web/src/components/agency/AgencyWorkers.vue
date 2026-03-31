@@ -192,10 +192,11 @@ export default {
       modalRejectWorker: false,
       modalStartWorking: false,
       serverParams: {
-        sortBy: 1,
+        sortBy: 2,
         requestId: this.id || this.$route.params.id,
         pageIndex: 1,
-        pageSize: 30
+        pageSize: 30,
+        isDescending: true,
       }
     };
   },

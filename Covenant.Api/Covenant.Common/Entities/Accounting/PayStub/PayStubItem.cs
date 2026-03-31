@@ -19,9 +19,8 @@ public class PayStubItem
     public const string BonusOthersLabel = "Bonus/Others";
     public const string ReimbursementLabel = "Reimbursement";
 
-    private PayStubItem(string description, double quantity, decimal unitPrice, PayStubItemType type, Guid id = default)
+    private PayStubItem(string description, double quantity, decimal unitPrice, PayStubItemType type)
     {
-        Id = id == default ? Guid.NewGuid() : id;
         Description = description;
         Quantity = quantity;
         UnitPrice = unitPrice;
@@ -29,7 +28,7 @@ public class PayStubItem
         Type = type;
     }
 
-    public Guid Id { get; protected set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Description { get; protected set; }
     public double Quantity { get; protected set; }
     public decimal UnitPrice { get; protected set; }
@@ -38,12 +37,12 @@ public class PayStubItem
     public Guid PayStubId { get; private set; }
     public PayStub PayStub { get; private set; }
 
-    public static Result<PayStubItem> CreateItem(string description, double quantity, decimal unitPrice, PayStubItemType type, Guid id = default)
+    public static Result<PayStubItem> CreateItem(string description, double quantity, decimal unitPrice, PayStubItemType type)
     {
         if (string.IsNullOrEmpty(description)) return Result.Fail<PayStubItem>(DescriptionIsRequired);
         if (quantity <= 0) return Result.Fail<PayStubItem>($"{description} {QuantityMustBeGraterThanZero}");
         if (unitPrice <= 0) return Result.Fail<PayStubItem>($"{description} {UnitPriceMustBeGreaterThanZero}");
-        return Result.Ok(new PayStubItem(description, quantity, unitPrice, type, id));
+        return Result.Ok(new PayStubItem(description, quantity, unitPrice, type));
     }
 
     public static Result<PayStubItem> CreateRegular(double quantity, decimal unitPrice) =>
@@ -84,10 +83,4 @@ public class PayStubItem
         total <= 0 
         ? Result.Fail<PayStubItem>("Reimbursement must be greater than zero") 
         : Result.Ok(new PayStubItem(string.IsNullOrEmpty(description) ? ReimbursementLabel : description, 1, total, PayStubItemType.Reimbursement));
-
-    public void AssignTo(PayStub payStub)
-    {
-        PayStub = payStub ?? throw new ArgumentNullException(nameof(payStub));
-        PayStubId = payStub.Id;
-    }
 }

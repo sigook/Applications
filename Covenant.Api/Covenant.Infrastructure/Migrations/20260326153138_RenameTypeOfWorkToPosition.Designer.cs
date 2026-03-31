@@ -12,229 +12,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    [Migration("20240718185203_RemoveInvoiceDateColumn")]
-    partial class RemoveInvoiceDateColumn
+    [Migration("20260326153138_RenameTypeOfWorkToPosition")]
+    partial class RenameTypeOfWorkToPosition
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.13")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceCharge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("LastAttempt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StripeChargeId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.ToTable("InvoiceCharge");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceChargeError", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("FailureMessage")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("InvoiceChargeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceChargeId");
-
-                    b.ToTable("InvoiceChargeError");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSA", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BillFromAddress")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillFromFax")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillFromPhone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillToAddress")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillToEmail")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillToFax")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BillToPhone")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CompanyProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HtmlNotes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("InvoiceNumberId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("NumberId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Tax")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalNet")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("WeekEnding")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyProfileId");
-
-                    b.HasIndex("InvoiceNumber")
-                        .IsUnique();
-
-                    b.HasIndex("InvoiceNumberId")
-                        .IsUnique();
-
-                    b.ToTable("InvoiceUSA");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSADiscount", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("InvoiceUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceUSAId");
-
-                    b.ToTable("InvoiceUSADiscount");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSAItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("InvoiceUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceUSAId");
-
-                    b.ToTable("InvoiceUSAItem");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSATimeSheetTotal", b =>
-                {
-                    b.Property<Guid>("InvoiceUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TimeSheetTotalId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("InvoiceUSAId", "TimeSheetTotalId");
-
-                    b.HasIndex("TimeSheetTotalId");
-
-                    b.ToTable("InvoiceUSATimeSheetTotal");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.SkipPayrollNumber", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("PayrollNumber")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SkipPayrollNumber");
-                });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
                 {
@@ -295,6 +84,32 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("CompanyId");
 
                     b.ToTable("Invoice");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CanadaInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientSiteAddress")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsaInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanadaInvoiceId")
+                        .IsUnique();
+
+                    b.HasIndex("UsaInvoiceId")
+                        .IsUnique();
+
+                    b.ToTable("InvoiceAdditionalDetail", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
@@ -380,53 +195,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceHoliday");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoicePaymentSupport", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("FileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Ip")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileId");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("InvoicePaymentSupport");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -436,6 +204,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("AgencyRate")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("Holiday")
                         .HasColumnType("numeric");
 
@@ -457,16 +228,25 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("Overtime")
                         .HasColumnType("numeric");
 
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
+
                     b.Property<decimal>("Regular")
                         .HasColumnType("numeric");
 
                     b.Property<Guid>("TimeSheetTotalId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("TotalGross")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("TotalNet")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
@@ -475,35 +255,51 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("InvoiceTotal");
+                    b.ToTable("InvoiceTotal", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
+                    b.Property<string>("BillFromAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillFromFax")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillFromPhone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillToAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillToEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillToFax")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillToPhone")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyProfileId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateWorkBegins")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("HtmlNotes")
+                        .HasColumnType("text");
 
-                    b.Property<DateTime>("DateWorkEnd")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<decimal>("Ei")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("FederalTax")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("GrossPayment")
-                        .HasColumnType("numeric");
+                    b.Property<long>("InvoiceNumberId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("NumberId")
                         .ValueGeneratedOnAdd()
@@ -511,75 +307,32 @@ namespace Covenant.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
-                    b.Property<decimal>("OtherDeductions")
+                    b.Property<decimal>("SubTotal")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("PaymentDate")
+                    b.Property<decimal>("Tax")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalNet")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("WeekEnding")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("ProvincialTax")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("PublicHolidayPay")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("RegularWage")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalDeductions")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalEarnings")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalPaid")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Vacations")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("WeekEnding")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerProfileId");
+                    b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("PayrollReport");
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("InvoiceNumberId")
+                        .IsUnique();
+
+                    b.ToTable("InvoiceUSA");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportHolidayPay", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Holiday")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("PayrollReportId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayrollReportId");
-
-                    b.ToTable("PayrollReportHolidayPay");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -588,38 +341,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PayrollReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayrollReportId");
-
-                    b.ToTable("PayrollReportItem");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportOtherDeduction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PayrollReportId")
+                    b.Property<Guid>("InvoiceUSAId")
                         .HasColumnType("uuid");
 
                     b.Property<double>("Quantity")
@@ -633,19 +355,28 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PayrollReportId");
+                    b.HasIndex("InvoiceUSAId");
 
-                    b.ToTable("PayrollReportOtherDeduction");
+                    b.ToTable("InvoiceUSADiscount");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportWageDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("AgencyRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Holiday")
                         .HasColumnType("numeric");
+
+                    b.Property<Guid>("InvoiceUSAId")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Missing")
                         .HasColumnType("numeric");
@@ -662,25 +393,63 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("Overtime")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("PayrollReportId")
-                        .HasColumnType("uuid");
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
 
                     b.Property<decimal>("Regular")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("TimeSheetTotalId")
+                    b.Property<Guid?>("TimeSheetTotalId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("WorkerRate")
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalGross")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalNet")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PayrollReportId");
+                    b.HasIndex("InvoiceUSAId");
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("PayrollReportWageDetail");
+                    b.ToTable("InvoiceUSAItem", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
+                {
+                    b.Property<Guid>("InvoiceUSAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TimeSheetTotalId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("InvoiceUSAId", "TimeSheetTotalId");
+
+                    b.HasIndex("TimeSheetTotalId");
+
+                    b.ToTable("InvoiceUSATimeSheetTotal", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.SkipPayrollNumber", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PayrollNumber")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SkipPayrollNumber", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
@@ -728,10 +497,10 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("ProvincialTax")
-                        .HasColumnType("numeric");
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
 
-                    b.Property<decimal>("PublicHolidayPay")
+                    b.Property<decimal>("ProvincialTax")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("RegularWage")
@@ -745,9 +514,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<decimal>("TotalPaid")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
 
                     b.Property<decimal>("Vacations")
                         .HasColumnType("numeric");
@@ -763,6 +529,46 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerProfileId");
 
                     b.ToTable("PayStub");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubHistory", b =>
+                {
+                    b.Property<DateTime>("DateWorkBegins")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateWorkEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("NumberId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PayStubNumber")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalEarnings")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalPaid")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Vacations")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("WeekEnding")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("PayStubHistory", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubItem", b =>
@@ -846,7 +652,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubPublicHoliday");
+                    b.ToTable("PayStubPublicHoliday", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubWageDetail", b =>
@@ -894,59 +700,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubWageDetail");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReport", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("BonusRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("CompanyProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("HolidayRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("NightShiftRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<long>("NumberId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
-
-                    b.Property<decimal>("OverTimeRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalNet")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("VacationsRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("WeekEnding")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyProfileId");
-
-                    b.ToTable("SummaryReport");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportAdditionalItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -958,20 +712,72 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<double>("Quantity")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("SummaryReportId")
+                    b.Property<Guid>("ReportSubcontractorId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SummaryReportId");
+                    b.HasIndex("ReportSubcontractorId");
 
-                    b.ToTable("SummaryReportAdditionalItem");
+                    b.ToTable("ReportSubContractorOtherDeduction");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportDiscount", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateWorkBegins")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateWorkEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("DeductionOthers")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Earnings")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Gross")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("NumberId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("PublicHolidayPay")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("RegularWage")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalNet")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("WeekEnding")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkerProfileId");
+
+                    b.ToTable("ReportSubcontractor");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -983,54 +789,24 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("SummaryReportId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SummaryReportId");
-
-                    b.ToTable("SummaryReportDiscount");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportHoliday", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime>("Holiday")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("Hours")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("SummaryReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("WorkerProfileId")
+                    b.Property<Guid>("ReportSubcontractorId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SummaryReportId");
+                    b.HasIndex("ReportSubcontractorId");
 
-                    b.HasIndex("WorkerProfileId");
-
-                    b.ToTable("SummaryReportHoliday");
+                    b.ToTable("ReportSubcontractorPublicHoliday", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorWageDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("AgencyRate")
-                        .HasColumnType("numeric");
 
                     b.Property<decimal>("Holiday")
                         .HasColumnType("numeric");
@@ -1053,25 +829,22 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("Regular")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("SummaryReportId")
+                    b.Property<Guid>("ReportSubcontractorId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("TimeSheetTotalId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("TotalGross")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalNet")
+                    b.Property<decimal>("WorkerRate")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SummaryReportId");
+                    b.HasIndex("ReportSubcontractorId");
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("SummaryReportTotal");
+                    b.ToTable("ReportSubcontractorWageDetail");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
@@ -1080,38 +853,23 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("AgreeTermsAndConditions")
-                        .HasColumnType("boolean");
+                    b.Property<Guid?>("AgencyParentId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("BusinessName")
-                        .HasColumnType("text");
+                    b.Property<byte>("AgencyType")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("BusinessNumber")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CityOfIncorporationId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateOfIncorporation")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Fax")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("FaxExt")
-                        .HasColumnType("integer");
 
                     b.Property<string>("FullName")
                         .HasColumnType("text");
 
                     b.Property<string>("HstNumber")
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsMasterAgency")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("LogoId")
                         .HasColumnType("uuid");
@@ -1137,12 +895,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("WebPage")
                         .HasColumnType("text");
 
-                    b.Property<string>("Wsib")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CityOfIncorporationId");
+                    b.HasIndex("AgencyParentId");
 
                     b.HasIndex("LogoId");
 
@@ -1240,7 +995,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("AgencyId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("AgencyPersonnel");
+                    b.ToTable("AgencyPersonnel", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyWsibGroup", b =>
@@ -1256,97 +1011,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WsibGroupId");
 
                     b.ToTable("AgencyWsibGroup");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CommissionRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("Hst")
-                        .HasColumnType("numeric");
-
-                    b.Property<long>("NumberId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("SummaryReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SummaryReportId")
-                        .IsUnique();
-
-                    b.ToTable("AppCommission");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommissionCharge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("AppCommissionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("LastAttempt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StripeChargeId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppCommissionId");
-
-                    b.ToTable("AppCommissionCharge");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommissionChargeError", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AppCommissionChargeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("FailureMessage")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppCommissionChargeId");
-
-                    b.ToTable("AppCommissionChargeError");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Availability", b =>
@@ -1676,15 +1340,15 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileContactPerson");
+                    b.ToTable("CompanyProfileContactPerson", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileDocument", b =>
                 {
-                    b.Property<Guid>("CompanyProfileId")
+                    b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DocumentId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1693,11 +1357,14 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.HasKey("CompanyProfileId", "DocumentId");
+                    b.Property<byte>("DocumentType")
+                        .HasColumnType("smallint");
 
-                    b.HasIndex("DocumentId");
+                    b.HasKey("DocumentId", "CompanyProfileId");
 
-                    b.ToTable("CompanyProfileDocument");
+                    b.HasIndex("CompanyProfileId");
+
+                    b.ToTable("CompanyProfileDocument", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileHoliday", b =>
@@ -1861,7 +1528,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("CompanyProfileLocation");
+                    b.ToTable("CompanyProfileLocation", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileNote", b =>
@@ -1876,33 +1543,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("CompanyProfileNote");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyTimeSheetRoundingConfiguration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("RoundTo")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("RoundToShift")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId")
-                        .IsUnique();
-
-                    b.ToTable("CompanyTimeSheetRoundingConfiguration");
+                    b.ToTable("CompanyProfileNote", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
@@ -1942,7 +1583,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("CompanyId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("CompanyUser");
+                    b.ToTable("CompanyUser", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Country", b =>
@@ -2025,6 +1666,522 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Day");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CppWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FederalTaxSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxBiWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxBiWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxSemiMonthly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxSemiMonthly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvincialTaxWeekly");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Deductions.TaxWeekly", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TaxWeekly");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Gender", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2059,7 +2216,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("Date")
                         .IsUnique();
 
-                    b.ToTable("Holiday");
+                    b.ToTable("Holiday", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.IdentificationType", b =>
@@ -2082,39 +2239,15 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IndustryGroupId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ParentIndustryId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Value")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IndustryGroupId");
-
-                    b.HasIndex("ParentIndustryId");
 
                     b.ToTable("Industry");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.IndustryGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("IndustryGroup");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.JobPosition", b =>
@@ -2254,36 +2387,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("UserNotificationType");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Payments.PaymentProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Platform")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("PaymentProfile");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2306,13 +2409,26 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Province");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.ProvinceTax", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.ProvinceSetting", b =>
                 {
                     b.Property<Guid>("ProvinceId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("ProvinceProfit")
-                        .HasColumnType("numeric");
+                    b.Property<TimeSpan?>("OvertimeStartsAfter")
+                        .HasColumnType("interval");
+
+                    b.Property<bool?>("PaidHolidays")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("ProvinceId");
+
+                    b.ToTable("ProvinceSettings", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.ProvinceTax", b =>
+                {
+                    b.Property<Guid>("ProvinceId")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Tax1")
                         .HasColumnType("numeric");
@@ -2404,9 +2520,6 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsAsap")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsOpen")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("JobIsOnBranchOffice")
@@ -2533,7 +2646,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ReasonCancellationRequestId");
 
-                    b.ToTable("RequestCancellationDetail");
+                    b.ToTable("RequestCancellationDetail", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComission", b =>
@@ -2603,7 +2716,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("RequestNote");
+                    b.ToTable("RequestNote", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
@@ -2621,7 +2734,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RecruiterId");
 
-                    b.ToTable("RequestRecruiter");
+                    b.ToTable("RequestRecruiter", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestReportTo", b =>
@@ -2636,7 +2749,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("RequestReportTo");
+                    b.ToTable("RequestReportTo", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRequestedBy", b =>
@@ -2651,7 +2764,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("RequestRequestedBy");
+                    b.ToTable("RequestRequestedBy", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
@@ -2767,7 +2880,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PhotoId");
 
-                    b.ToTable("TimeSheetPhoto");
+                    b.ToTable("TimeSheetPhoto", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
@@ -2802,7 +2915,8 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TimeSheetId");
+                    b.HasIndex("TimeSheetId")
+                        .IsUnique();
 
                     b.ToTable("TimeSheetTotal");
                 });
@@ -2842,7 +2956,50 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("TimeSheetId")
                         .IsUnique();
 
-                    b.ToTable("TimeSheetTotalPayroll");
+                    b.ToTable("TimeSheetTotalPayroll", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.TimesheetHistory", b =>
+                {
+                    b.Property<string>("CompanyName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeSpan?>("HolidayHours")
+                        .HasColumnType("interval");
+
+                    b.Property<bool>("IsHoliday")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("MissingHours")
+                        .HasColumnType("interval");
+
+                    b.Property<TimeSpan?>("MissingHoursOvertime")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("NumberId")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeSpan?>("OvertimeHours")
+                        .HasColumnType("interval");
+
+                    b.Property<TimeSpan?>("RegularHours")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("TimesheetHistory", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -2888,7 +3045,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("RequestId", "WorkerId")
                         .IsUnique();
 
-                    b.ToTable("WorkerRequest");
+                    b.ToTable("WorkerRequest", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
@@ -2903,7 +3060,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("WorkerRequestNote");
+                    b.ToTable("WorkerRequestNote", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Shift", b =>
@@ -3028,7 +3185,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
@@ -3069,7 +3226,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerComment");
+                    b.ToTable("WorkerComment", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
@@ -3107,6 +3264,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("text");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
@@ -3204,9 +3364,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid?>("SocialInsuranceFileId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("TextSearch")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("WorkerId")
                         .HasColumnType("uuid");
 
@@ -3232,14 +3389,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ProfileImageId");
 
-                    b.HasIndex("PunchCardId")
-                        .IsUnique();
-
                     b.HasIndex("ResumeId");
 
                     b.HasIndex("SocialInsuranceFileId");
-
-                    b.HasIndex("TextSearch");
 
                     b.HasIndex("WorkerId", "AgencyId")
                         .IsUnique();
@@ -3259,7 +3411,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AvailabilityId");
 
-                    b.ToTable("WorkerProfileAvailability");
+                    b.ToTable("WorkerProfileAvailability", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityDay", b =>
@@ -3274,7 +3426,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("DayId");
 
-                    b.ToTable("WorkerProfileAvailabilityDay");
+                    b.ToTable("WorkerProfileAvailabilityDay", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityTime", b =>
@@ -3289,7 +3441,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AvailabilityTimeId");
 
-                    b.ToTable("WorkerProfileAvailabilityTime");
+                    b.ToTable("WorkerProfileAvailabilityTime", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileCertificate", b =>
@@ -3310,7 +3462,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileCertificate");
+                    b.ToTable("WorkerProfileCertificate", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileHoliday", b =>
@@ -3335,7 +3487,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerProfileId", "HolidayId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfileHoliday");
+                    b.ToTable("WorkerProfileHoliday", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileJobExperience", b =>
@@ -3384,7 +3536,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.ToTable("WorkerProfileLanguage");
+                    b.ToTable("WorkerProfileLanguage", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLicense", b =>
@@ -3429,7 +3581,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("WorkerProfileLocationPreference");
+                    b.ToTable("WorkerProfileLocationPreference", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileNote", b =>
@@ -3475,7 +3627,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileOtherDocument");
+                    b.ToTable("WorkerProfileOtherDocument", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileSkill", b =>
@@ -3501,6 +3653,12 @@ namespace Covenant.Infrastructure.Migrations
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Ei")
+                        .HasColumnType("numeric");
 
                     b.Property<byte?>("FederalCategory")
                         .HasColumnType("smallint");
@@ -3538,992 +3696,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<long>("NextNumber")
                         .HasColumnType("bigint");
 
-                    b.ToView("view_doesnt_exitst");
-                });
+                    b.ToTable((string)null);
 
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.CppWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.FederalTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.ProvincialTaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Deductions.Entities.TaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TaxWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Payments.Entities.PaymentReceipt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InternalTransactionId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RawConfirmation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RawResponse")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TransactionId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PaymentReceipt");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayrollReportTotal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Holiday")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Missing")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("MissingOvertime")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("NightShift")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Overtime")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("PayrollReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Regular")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("TimeSheetTotalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("WorkerRate")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayrollReportId");
-
-                    b.HasIndex("TimeSheetTotalId");
-
-                    b.ToTable("PayrollReportTotal");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSA", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DateWorkBegins")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DateWorkEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("GrossPayment")
-                        .HasColumnType("numeric");
-
-                    b.Property<long>("NumberId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
-
-                    b.Property<string>("PayStubNumber")
-                        .HasColumnType("text");
-
-                    b.Property<long>("PayStubNumberId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("PaymentDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("TotalDeductions")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalEarnings")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalPaid")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalTaxes")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("TypeOfWork")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("WeekEnding")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayStubNumber")
-                        .IsUnique();
-
-                    b.HasIndex("PayStubNumberId")
-                        .IsUnique();
-
-                    b.HasIndex("WorkerProfileId");
-
-                    b.ToTable("PayStubUSA");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSACompensation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PayStubUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayStubUSAId");
-
-                    b.ToTable("PayStubUSACompensation");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSADeduction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PayStubUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayStubUSAId");
-
-                    b.ToTable("PayStubUSADeduction");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSATax", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PayStubUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PayStubUSAId");
-
-                    b.ToTable("PayStubUSATax");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSATimeSheetTotalPayroll", b =>
-                {
-                    b.Property<Guid>("PayStubUSAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TimeSheetTotalPayrollId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("PayStubUSAId", "TimeSheetTotalPayrollId");
-
-                    b.HasIndex("TimeSheetTotalPayrollId");
-
-                    b.ToTable("PayStubUSATimeSheetTotalPayroll");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateWorkBegins")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateWorkEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("DeductionOthers")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Earnings")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Gross")
-                        .HasColumnType("numeric");
-
-                    b.Property<long>("NumberId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal>("PublicHolidayPay")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("RegularWage")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalNet")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("WeekEnding")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkerProfileId");
-
-                    b.ToTable("ReportSubcontractor");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubContractorOtherDeduction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("ReportSubcontractorId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportSubcontractorId");
-
-                    b.ToTable("ReportSubContractorOtherDeduction");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractorPublicHoliday", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Holiday")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ReportSubcontractorId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportSubcontractorId");
-
-                    b.ToTable("ReportSubcontractorPublicHoliday");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractorWageDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Holiday")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Missing")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("MissingOvertime")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("NightShift")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("OtherRegular")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Overtime")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Regular")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("ReportSubcontractorId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TimeSheetTotalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("WorkerRate")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportSubcontractorId");
-
-                    b.HasIndex("TimeSheetTotalId");
-
-                    b.ToTable("ReportSubcontractorWageDetail");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceCharge", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
-                        .WithMany()
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Invoice");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceChargeError", b =>
-                {
-                    b.HasOne("Covenant.Billing.Entities.InvoiceCharge", "InvoiceCharge")
-                        .WithMany("ChargeErrors")
-                        .HasForeignKey("InvoiceChargeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InvoiceCharge");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSA", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany()
-                        .HasForeignKey("CompanyProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProfile");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSADiscount", b =>
-                {
-                    b.HasOne("Covenant.Billing.Entities.InvoiceUSA", "InvoiceUSA")
-                        .WithMany("Discounts")
-                        .HasForeignKey("InvoiceUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InvoiceUSA");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSAItem", b =>
-                {
-                    b.HasOne("Covenant.Billing.Entities.InvoiceUSA", "InvoiceUSA")
-                        .WithMany("Items")
-                        .HasForeignKey("InvoiceUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InvoiceUSA");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSATimeSheetTotal", b =>
-                {
-                    b.HasOne("Covenant.Billing.Entities.InvoiceUSA", "InvoiceUSA")
-                        .WithMany("TimeSheetTotals")
-                        .HasForeignKey("InvoiceUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
-                        .WithMany()
-                        .HasForeignKey("TimeSheetTotalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InvoiceUSA");
-
-                    b.Navigation("TimeSheetTotal");
+                    b.ToView("view_doesnt_exitst", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
@@ -4535,6 +3710,23 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "CanadaInvoice")
+                        .WithOne("AdditionalDetail")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "CanadaInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "UsaInvoice")
+                        .WithOne("AdditionalDetail")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "UsaInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CanadaInvoice");
+
+                    b.Navigation("UsaInvoice");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
@@ -4576,31 +3768,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoicePaymentSupport", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.CovenantFile", "File")
-                        .WithMany()
-                        .HasForeignKey("FileId");
-
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
-                        .WithMany()
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("File");
-
-                    b.Navigation("Invoice");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
@@ -4620,65 +3787,60 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("WorkerProfileId")
+                        .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("WorkerProfile");
+                    b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportHolidayPay", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", "PayrollReport")
-                        .WithMany("Holidays")
-                        .HasForeignKey("PayrollReportId")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
+                        .WithMany("Discounts")
+                        .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PayrollReport");
+                    b.Navigation("InvoiceUSA");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", "PayrollReport")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
                         .WithMany("Items")
-                        .HasForeignKey("PayrollReportId")
+                        .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PayrollReport");
+                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
+                        .WithMany()
+                        .HasForeignKey("TimeSheetTotalId");
+
+                    b.Navigation("InvoiceUSA");
+
+                    b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportOtherDeduction", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", "PayrollReport")
-                        .WithMany("OtherDeductionsDetail")
-                        .HasForeignKey("PayrollReportId")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
+                        .WithMany("TimeSheetTotals")
+                        .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PayrollReport");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReportWageDetail", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", "PayrollReport")
-                        .WithMany("WageDetails")
-                        .HasForeignKey("PayrollReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PayrollReport");
+                    b.Navigation("InvoiceUSA");
 
                     b.Navigation("TimeSheetTotal");
                 });
@@ -4746,80 +3908,64 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReport", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany()
-                        .HasForeignKey("CompanyProfileId")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                        .WithMany("OtherDeductionsDetail")
+                        .HasForeignKey("ReportSubcontractorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CompanyProfile");
+                    b.Navigation("ReportSubcontractor");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportAdditionalItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.SummaryReport", "SummaryReport")
-                        .WithMany("AdditionalItems")
-                        .HasForeignKey("SummaryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SummaryReport");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportDiscount", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.SummaryReport", "SummaryReport")
-                        .WithMany("Discounts")
-                        .HasForeignKey("SummaryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SummaryReport");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportHoliday", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.SummaryReport", "SummaryReport")
-                        .WithMany("Holidays")
-                        .HasForeignKey("SummaryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
                         .WithMany()
-                        .HasForeignKey("WorkerProfileId");
-
-                    b.Navigation("SummaryReport");
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReportTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.SummaryReport", "SummaryReport")
-                        .WithMany("SummaryReportTotals")
-                        .HasForeignKey("SummaryReportId")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                        .WithMany("Holidays")
+                        .HasForeignKey("ReportSubcontractorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
+                    b.Navigation("ReportSubcontractor");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorWageDetail", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                        .WithMany("WageDetails")
+                        .HasForeignKey("ReportSubcontractorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SummaryReport");
+                    b.Navigation("ReportSubcontractor");
 
                     b.Navigation("TimeSheetTotal");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.City", "CityOfIncorporation")
+                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "AgencyParent")
                         .WithMany()
-                        .HasForeignKey("CityOfIncorporationId");
+                        .HasForeignKey("AgencyParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Covenant.Common.Entities.CovenantFile", "Logo")
                         .WithMany()
@@ -4831,7 +3977,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CityOfIncorporation");
+                    b.Navigation("AgencyParent");
 
                     b.Navigation("Logo");
 
@@ -4900,39 +4046,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Agency");
 
                     b.Navigation("WsibGroup");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommission", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.SummaryReport", "SummaryReport")
-                        .WithMany()
-                        .HasForeignKey("SummaryReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SummaryReport");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommissionCharge", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.AppCommission.AppCommission", "AppCommission")
-                        .WithMany()
-                        .HasForeignKey("AppCommissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppCommission");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommissionChargeError", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.AppCommission.AppCommissionCharge", "AppCommissionCharge")
-                        .WithMany("ChargeErrors")
-                        .HasForeignKey("AppCommissionChargeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppCommissionCharge");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
@@ -5114,7 +4227,7 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Industry", "Industry")
-                        .WithMany()
+                        .WithMany("CompanyProfileIndustries")
                         .HasForeignKey("IndustryId");
 
                     b.Navigation("Industry");
@@ -5203,17 +4316,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Note");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyTimeSheetRoundingConfiguration", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.User", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.User", "Company")
@@ -5231,23 +4333,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Company");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Industry", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.IndustryGroup", "IndustryGroup")
-                        .WithMany("Industries")
-                        .HasForeignKey("IndustryGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Industry", "ParentIndustry")
-                        .WithMany()
-                        .HasForeignKey("ParentIndustryId");
-
-                    b.Navigation("IndustryGroup");
-
-                    b.Navigation("ParentIndustry");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.JobPosition", b =>
@@ -5291,17 +4376,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Payments.PaymentProfile", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Country", "Country")
@@ -5311,6 +4385,17 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Country");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.ProvinceSetting", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Province", "Province")
+                        .WithOne("ProvinceSetting")
+                        .HasForeignKey("Covenant.Common.Entities.ProvinceSetting", "ProvinceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Province");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.ProvinceTax", b =>
@@ -5573,8 +4658,8 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.TimeSheet", "TimeSheet")
-                        .WithMany("TimeSheetTotals")
-                        .HasForeignKey("TimeSheetId")
+                        .WithOne("TimeSheetTotal")
+                        .HasForeignKey("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5953,156 +5038,10 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayrollReportTotal", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", "PayrollReport")
-                        .WithMany()
-                        .HasForeignKey("PayrollReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
-                        .WithMany()
-                        .HasForeignKey("TimeSheetTotalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PayrollReport");
-
-                    b.Navigation("TimeSheetTotal");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSA", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
-                        .WithMany()
-                        .HasForeignKey("WorkerProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkerProfile");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSACompensation", b =>
-                {
-                    b.HasOne("Covenant.PayStubs.Entities.PayStubUSA", "PayStubUSA")
-                        .WithMany("Compensation")
-                        .HasForeignKey("PayStubUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PayStubUSA");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSADeduction", b =>
-                {
-                    b.HasOne("Covenant.PayStubs.Entities.PayStubUSA", "PayStubUSA")
-                        .WithMany("Deductions")
-                        .HasForeignKey("PayStubUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PayStubUSA");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSATax", b =>
-                {
-                    b.HasOne("Covenant.PayStubs.Entities.PayStubUSA", "PayStubUSA")
-                        .WithMany("Taxes")
-                        .HasForeignKey("PayStubUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PayStubUSA");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSATimeSheetTotalPayroll", b =>
-                {
-                    b.HasOne("Covenant.PayStubs.Entities.PayStubUSA", "PayStubUSA")
-                        .WithMany("TimeSheetTotalPayroll")
-                        .HasForeignKey("PayStubUSAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotalPayroll")
-                        .WithMany()
-                        .HasForeignKey("TimeSheetTotalPayrollId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PayStubUSA");
-
-                    b.Navigation("TimeSheetTotalPayroll");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractor", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
-                        .WithMany()
-                        .HasForeignKey("WorkerProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkerProfile");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubContractorOtherDeduction", b =>
-                {
-                    b.HasOne("Covenant.Subcontractor.Entities.ReportSubcontractor", "ReportSubcontractor")
-                        .WithMany("OtherDeductionsDetail")
-                        .HasForeignKey("ReportSubcontractorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ReportSubcontractor");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractorPublicHoliday", b =>
-                {
-                    b.HasOne("Covenant.Subcontractor.Entities.ReportSubcontractor", "ReportSubcontractor")
-                        .WithMany("Holidays")
-                        .HasForeignKey("ReportSubcontractorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ReportSubcontractor");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractorWageDetail", b =>
-                {
-                    b.HasOne("Covenant.Subcontractor.Entities.ReportSubcontractor", "ReportSubcontractor")
-                        .WithMany("WageDetails")
-                        .HasForeignKey("ReportSubcontractorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotal")
-                        .WithMany()
-                        .HasForeignKey("TimeSheetTotalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ReportSubcontractor");
-
-                    b.Navigation("TimeSheetTotal");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceCharge", b =>
-                {
-                    b.Navigation("ChargeErrors");
-                });
-
-            modelBuilder.Entity("Covenant.Billing.Entities.InvoiceUSA", b =>
-                {
-                    b.Navigation("Discounts");
-
-                    b.Navigation("Items");
-
-                    b.Navigation("TimeSheetTotals");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
                 {
+                    b.Navigation("AdditionalDetail");
+
                     b.Navigation("AdditionalItems");
 
                     b.Navigation("Discounts");
@@ -6112,15 +5051,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("InvoiceTotals");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayrollReport", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
                 {
-                    b.Navigation("Holidays");
+                    b.Navigation("AdditionalDetail");
+
+                    b.Navigation("Discounts");
 
                     b.Navigation("Items");
 
-                    b.Navigation("OtherDeductionsDetail");
-
-                    b.Navigation("WageDetails");
+                    b.Navigation("TimeSheetTotals");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
@@ -6134,15 +5073,13 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WageDetails");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.SummaryReport", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
                 {
-                    b.Navigation("AdditionalItems");
-
-                    b.Navigation("Discounts");
-
                     b.Navigation("Holidays");
 
-                    b.Navigation("SummaryReportTotals");
+                    b.Navigation("OtherDeductionsDetail");
+
+                    b.Navigation("WageDetails");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
@@ -6152,11 +5089,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Locations");
 
                     b.Navigation("WsibGroup");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.AppCommission.AppCommissionCharge", b =>
-                {
-                    b.Navigation("ChargeErrors");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
@@ -6192,16 +5124,15 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Industry", b =>
                 {
-                    b.Navigation("JobPositions");
-                });
+                    b.Navigation("CompanyProfileIndustries");
 
-            modelBuilder.Entity("Covenant.Common.Entities.IndustryGroup", b =>
-                {
-                    b.Navigation("Industries");
+                    b.Navigation("JobPositions");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
                 {
+                    b.Navigation("ProvinceSetting");
+
                     b.Navigation("ProvinceTax");
                 });
 
@@ -6220,7 +5151,7 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
-                    b.Navigation("TimeSheetTotals");
+                    b.Navigation("TimeSheetTotal");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -6255,26 +5186,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Skills");
 
                     b.Navigation("WorkerProfileTaxCategory");
-                });
-
-            modelBuilder.Entity("Covenant.PayStubs.Entities.PayStubUSA", b =>
-                {
-                    b.Navigation("Compensation");
-
-                    b.Navigation("Deductions");
-
-                    b.Navigation("Taxes");
-
-                    b.Navigation("TimeSheetTotalPayroll");
-                });
-
-            modelBuilder.Entity("Covenant.Subcontractor.Entities.ReportSubcontractor", b =>
-                {
-                    b.Navigation("Holidays");
-
-                    b.Navigation("OtherDeductionsDetail");
-
-                    b.Navigation("WageDetails");
                 });
 #pragma warning restore 612, 618
         }

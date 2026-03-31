@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -289,13 +291,67 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             'certificateFile': _newCertificateFile!.path,
         };
       case ProfileSection.preferences:
+        List<Map<String, String>> resolveItems(
+          Set<String> selectedIds,
+          AsyncValue<dynamic> catalogAsync,
+        ) {
+          final items = catalogAsync.asData?.value as List<dynamic>? ?? [];
+          return selectedIds
+              .map((id) {
+                final match = items.cast<dynamic>().where(
+                    (item) => (item.id as String?) == id);
+                if (match.isEmpty) return null;
+                final item = match.first;
+                final value = item.value != null
+                    ? item.value as String
+                    : item.toString();
+                return {'id': id, 'value': value};
+              })
+              .whereType<Map<String, String>>()
+              .toList();
+        }
+
+        final availabilities = resolveItems(
+          _editAvailabilityIds,
+          ref.read(availabilityListProvider),
+        );
+        final availabilityTimes = resolveItems(
+          _editAvailabilityTimeIds,
+          ref.read(availabilityTimeListProvider),
+        );
+        final availabilityDays = resolveItems(
+          _editAvailabilityDayIds,
+          ref.read(daysOfWeekProvider),
+        );
+        final languages = resolveItems(
+          _editLanguageIds,
+          ref.read(languagesProvider),
+        );
+        final skills = _editSkillIds.toList();
+
+        Map<String, String>? liftMap;
+        if (_editLiftId != null) {
+          final liftItems =
+              ref.read(liftingCapacitiesProvider).asData?.value as List<dynamic>? ?? [];
+          final liftMatch = liftItems
+              .cast<dynamic>()
+              .where((item) => (item.id as String?) == _editLiftId);
+          if (liftMatch.isNotEmpty) {
+            final item = liftMatch.first;
+            final value = item.value != null
+                ? item.value as String
+                : item.toString();
+            liftMap = {'id': _editLiftId!, 'value': value};
+          }
+        }
+
         editedFields = {
-          'availabilityIds': _editAvailabilityIds.join(','),
-          'availabilityTimeIds': _editAvailabilityTimeIds.join(','),
-          'availabilityDayIds': _editAvailabilityDayIds.join(','),
-          if (_editLiftId != null) 'liftId': _editLiftId!,
-          'languageIds': _editLanguageIds.join(','),
-          'skillIds': _editSkillIds.join(','),
+          'availabilities': jsonEncode(availabilities),
+          'availabilityTimes': jsonEncode(availabilityTimes),
+          'availabilityDays': jsonEncode(availabilityDays),
+          'languages': jsonEncode(languages),
+          'skills': jsonEncode(skills),
+          if (liftMap != null) 'lift': jsonEncode(liftMap),
         };
     }
 

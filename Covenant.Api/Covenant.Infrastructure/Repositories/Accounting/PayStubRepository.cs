@@ -67,7 +67,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                     PaymentDate = ps.PaymentDate,
                     StartDate = ps.DateWorkBegins,
                     EndDate = ps.DateWorkEnd,
-                    TypeOfJob = ps.TypeOfWork,
+                    Position = ps.Position,
                     Gross = ps.GrossPayment,
                     Vacations = ps.Vacations,
                     Earnings = ps.TotalEarnings,
@@ -75,11 +75,10 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                     DeductionEi = ps.Ei,
                     DeductionTax = ps.FederalTax,
                     DeductionProvincialTax = ps.ProvincialTax,
-                    DeductionOthers = ps.OtherDeductions,
                     DeductionTotal = ps.TotalDeductions,
                     TotalNet = ps.TotalPaid,
                     Items = ps.Items.OrderBy(psi => psi.Type).Select(psi => new PayStubDetailItemModel(psi.Description, psi.Quantity, psi.UnitPrice, psi.Total, psi.Type)).ToList(),
-                    OtherDeductionsDetail = ps.OtherDeductionsDetail.Select(d => new PayStubDetailItemModel
+                    OtherDeductions = ps.OtherDeductions.Select(d => new PayStubDetailItemModel
                     {
                         Total = d.Total,
                         Description = d.Description
@@ -190,8 +189,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                     Ei = ps.Ei,
                     FederalTax = ps.FederalTax,
                     ProvincialTax = ps.ProvincialTax,
-                    OtherDeductions = ps.OtherDeductions,
-                    OtherDeductionsDetail = ps.OtherDeductionsDetail.Select(od => od.Description).ToList(),
+                    OtherDeductions = ps.OtherDeductions.Select(od => od.Description).ToList(),
                     TotalDeductions = ps.TotalDeductions,
                     TotalPaid = ps.TotalPaid,
                     WeedEnding = ps.WeekEnding,
@@ -286,7 +284,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                 {
                     Cpp = i.Cpp,
                     EI = i.Ei * rates.EmployerInsurance,
-                    OtherDeductions = i.OtherDeductions
+                    OtherDeductions = i.OtherDeductions.Sum(od => od.Total)
                 },
                 Employee = new PayStubT4Tax
                 {

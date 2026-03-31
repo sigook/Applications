@@ -576,10 +576,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 query = query.AddOrderBy(filter, wr => wr.Name);
                 break;
             case GetWorkersRequestSortBy.Status:
-                query = query.AddOrderBy(filter, wr => wr.WorkerRequestStatus);
+                query = query.AddOrderBy(filter, wr => wr.WorkerRequestStatus).ThenBy(wr => wr.Name);
                 break;
             case GetWorkersRequestSortBy.StartWorking:
-                query = query.AddOrderBy(filter, wr => wr.StartWorking);
+                query = query.AddOrderBy(filter, wr => wr.StartWorking).ThenBy(wr => wr.Name);
                 break;
             case GetWorkersRequestSortBy.CreatedBy:
                 if (!filter.IsDescending)

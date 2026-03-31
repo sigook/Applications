@@ -17,9 +17,9 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-          <b-field label="Type of work" :type="errors.has('typeOfWork') ? 'is-danger' : ''"
-            :message="errors.has('typeOfWork') ? errors.first('typeOfWork') : ''">
-            <b-input v-model="payStub.typeOfWork" name="typeOfWork" v-validate="'required'"></b-input>
+          <b-field label="Position" :type="errors.has('position') ? 'is-danger' : ''"
+            :message="errors.has('position') ? errors.first('position') : ''">
+            <b-input v-model="payStub.position" name="position" v-validate="'required'"></b-input>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
@@ -38,47 +38,57 @@
         </div>
       </div>
       <div class="container-flex">
-        <!-- Regular Items Section -->
+        <!-- Items Section -->
         <div class="col-12 col-padding">
-          <h3 class="fz1 fw-600 mb-3">Regular Items</h3>
+          <h3 class="fz1 fw-600 mb-3">Items</h3>
           <div class="expandable-section-container mb-5">
-            <div class="expandable-section-header" @click="addItem">
+            <div class="expandable-section-header" @click="addItem"
+              :class="{ 'is-disabled': availableItemTypes.length === 0 }">
               <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
                 <b-icon icon="plus-circle" class="mr-2"></b-icon>
-                Add Regular Item
+                Add Item
               </h3>
-              <p class="fz-1 color-gray mb-0 text-center">Click here to add a regular item to the pay stub</p>
+              <p class="fz-1 color-gray mb-0 text-center">Click here to add an item to the pay stub</p>
             </div>
             <div class="expandable-section-list" v-if="items.length > 0">
               <div class="container-flex" v-for="(item, i) in items" :key="i">
-                <div class="col-sm-6 col-md-3 col-lg-4 col-padding">
-                  <b-field label="Description" expanded :type="errors.has('description' + i) ? 'is-danger' : ''"
-                    :message="errors.has('description' + i) ? errors.first('description' + i) : ''">
-                    <b-autocomplete :data="filteredDescriptions" v-model="item.description" :name="'description' + i"
-                      :loading="isLoadingList" v-validate="'required'" autocomplete append-to-body open-on-focus>
-                    </b-autocomplete>
+                <div class="col-sm-6 col-md-3 col-lg-3 col-padding">
+                  <b-field label="Type" expanded :type="errors.has('type' + i) ? 'is-danger' : ''"
+                    :message="errors.has('type' + i) ? errors.first('type' + i) : ''">
+                    <b-select v-model="item.type" :name="'type' + i" v-validate="'required'" expanded
+                      placeholder="Select a type" @input="onItemTypeChanged(item)">
+                      <option v-for="opt in getAvailableTypesForItem(item)" :key="opt.type" :value="opt.type"
+                        :disabled="opt.disabled">
+                        {{ opt.label }}{{ opt.disabled ? ' (auto-calculated)' : '' }}
+                      </option>
+                    </b-select>
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
+                  <b-field label="Description" expanded>
+                    <b-input v-model="item.description" placeholder="Optional"></b-input>
+                  </b-field>
+                </div>
+                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
                   <b-field label="Quantity" expanded :type="errors.has('quantity' + i) ? 'is-danger' : ''"
                     :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
                     <b-numberinput v-model="item.quantity" :min="1" :max="1000000" :step="0.01" :controls="false"
                       :name="'quantity' + i" v-validate="'required|min_value:0.01'" @input="updateItem(item)" />
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
+                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
                   <b-field label="Price" expanded :type="errors.has('unitPrice' + i) ? 'is-danger' : ''"
                     :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
                     <b-numberinput v-model="item.unitPrice" :min="0.01" :max="1000000" :step="0.01" :controls="false"
                       :name="'unitPrice' + i" v-validate="'required|min_value:0.01'" @input="updateItem(item)" />
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
+                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
                   <b-field label="Total" expanded>
                     <b-input v-model="item.total" disabled></b-input>
                   </b-field>
                 </div>
-                <div class="col-sm-2 col-md-3 col-lg-2 col-padding">
+                <div class="col-sm-2 col-md-1 col-lg-1 col-padding">
                   <b-field label="Delete" expanded>
                     <b-button type="is-danger" outlined rounded icon-right="delete"
                       @click="removeItem(item)"></b-button>
@@ -140,15 +150,33 @@
 <script lang="ts">
 import dayjs from 'dayjs';
 
+const PayStubItemType = {
+  Regular: 0,
+  OtherRegular: 1,
+  Overtime: 2,
+  StatutoryHoliday: 3,
+  StatutoryWorkedHoliday: 4,
+  NightShift: 5,
+  Missing: 6,
+  MissingOvertime: 7,
+  Vacations: 8,
+  Other: 9,
+  Reimbursement: 10
+};
+
+const itemTypeOptions = [
+  { type: PayStubItemType.Regular, label: 'Regular Hours' },
+  { type: PayStubItemType.Overtime, label: 'Overtime Hours' },
+  { type: PayStubItemType.Missing, label: 'Missing Hours' },
+  { type: PayStubItemType.MissingOvertime, label: 'Missing Overtime Hours' },
+  { type: PayStubItemType.StatutoryWorkedHoliday, label: 'Statutory Worked Holiday Pay' },
+  { type: PayStubItemType.Vacations, label: 'Vacations' },
+  { type: PayStubItemType.Other, label: 'Bonus/Others' },
+  { type: PayStubItemType.Reimbursement, label: 'Reimbursement' }
+];
+
 export default {
   data() {
-    const descriptions = [
-      { value: 'Regular Hours' },
-      { value: 'Overtime Hours' },
-      { value: 'Missing Hours' },
-      { value: 'Missing Overtime Hours' },
-      { value: 'Statutory Worked Holiday Pay Hours' }
-    ];
     return {
       isLoading: false,
       isLoadingList: false,
@@ -156,8 +184,6 @@ export default {
       workers: [],
       workerSelected: null,
       datesSelected: [],
-      descriptions: descriptions,
-      descriptionsSelected: [],
       items: [],
       discount: null
     }
@@ -200,16 +226,19 @@ export default {
       }
     },
     addItem() {
-      if (this.items.length >= 8) {
-        this.showAlertError('You can only add 8 items');
-        return;
-      }
+      if (this.availableItemTypes.length === 0) return;
       this.items.push({
+        type: null,
         description: '',
         quantity: 1,
         unitPrice: 0,
         total: 0
       });
+    },
+    onItemTypeChanged(item) {
+      if (item.type === PayStubItemType.Vacations && this.payStub.payVacations) {
+        item.type = null;
+      }
     },
     updateItem(item) {
       item.total = item.quantity * item.unitPrice;
@@ -226,61 +255,39 @@ export default {
     removeDiscount() {
       this.discount = null;
     },
+    getAvailableTypesForItem(currentItem) {
+      const selectedTypes = this.items
+        .filter(i => i !== currentItem && i.type !== null)
+        .map(i => i.type);
+      return itemTypeOptions
+        .filter(opt => !selectedTypes.includes(opt.type) || opt.type === currentItem.type)
+        .map(opt => ({
+          ...opt,
+          disabled: opt.type === PayStubItemType.Vacations && this.payStub.payVacations
+        }));
+    },
     async createPayStub() {
       const validation = await this.$validator.validateAll();
       if (validation) {
         this.isLoading = true;
-        const regularHours = this.items.find(i => i.description === 'Regular Hours');
-        const overtimeHours = this.items.find(i => i.description === 'Overtime Hours');
-        const missingHours = this.items.find(i => i.description === 'Missing Hours');
-        const missingOvertimeHours = this.items.find(i => i.description === 'Missing Overtime Hours');
-        const statutoryWorkedHolidayPayHours = this.items.find(i => i.description === 'Statutory Worked Holiday Pay Hours');
-        if (regularHours) {
-          this.payStub.regularHours = regularHours.quantity;
-          this.payStub.unitPriceRegularHours = regularHours.unitPrice;
-        }
-        if (overtimeHours) {
-          this.payStub.overtimeHours = overtimeHours.quantity;
-          this.payStub.unitPriceOvertimeHours = overtimeHours.unitPrice;
-        }
-        if (missingHours) {
-          this.payStub.missingHours = missingHours.quantity;
-          this.payStub.unitPriceMissingHours = missingHours.unitPrice;
-        }
-        if (missingOvertimeHours) {
-          this.payStub.missingOvertimeHours = missingOvertimeHours.quantity;
-          this.payStub.unitPriceMissingOvertimeHours = missingOvertimeHours.unitPrice;
-        }
-        if (statutoryWorkedHolidayPayHours) {
-          this.payStub.statutoryWorkedHolidayPayHours = statutoryWorkedHolidayPayHours.quantity;
-          this.payStub.unitPriceStatutoryWorkedHolidayPayHours = statutoryWorkedHolidayPayHours.unitPrice;
-        }
-        if (this.discount) {
-          this.payStub.otherDeductions = this.discount.amount;
-          this.payStub.otherDeductionsDescription = this.discount.description;
-        }
-        this.items.filter(i => !this.descriptions.some(d => d.value === i.description))
-          .forEach((i, index) => {
-            console.log(i);
-            switch (index) {
-              case 0:
-                this.payStub.other = i.quantity;
-                this.payStub.unitPriceOther = i.unitPrice;
-                this.payStub.bonusOthersDescription = i.description;
-                break;
-              case 1:
-                this.payStub.other2 = i.quantity;
-                this.payStub.unitPriceOther2 = i.unitPrice;
-                this.payStub.bonusOthersDescription2 = i.description;
-                break;
-              case 2:
-                this.payStub.other3 = i.quantity;
-                this.payStub.unitPriceOther3 = i.unitPrice;
-                this.payStub.bonusOthersDescription3 = i.description;
-                break;
-            }
-          });
-        this.$store.dispatch("agency/createPayStub", this.payStub)
+        const payload = {
+          workerProfileId: this.payStub.workerProfileId,
+          position: this.payStub.position,
+          workBegins: this.payStub.workBegins,
+          workEnd: this.payStub.workEnd,
+          payVacations: this.payStub.payVacations,
+          items: this.items
+            .filter(i => i.type !== null)
+            .map(i => ({
+              type: i.type,
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+              description: i.description || null
+            })),
+          otherDeductions: this.discount ? this.discount.amount : 0,
+          otherDeductionsDescription: this.discount ? this.discount.description : null
+        };
+        this.$store.dispatch("agency/createPayStub", payload)
           .then(() => {
             this.isLoading = false;
             this.showAlertSuccess('PayStub created successfully');
@@ -293,9 +300,17 @@ export default {
       }
     }
   },
+  watch: {
+    'payStub.payVacations'(value) {
+      if (value) {
+        this.items = this.items.filter(i => i.type !== PayStubItemType.Vacations);
+      }
+    }
+  },
   computed: {
-    filteredDescriptions() {
-      return this.descriptions.filter(d => !this.items.map(i => i.description).includes(d.value));
+    availableItemTypes() {
+      const selectedTypes = this.items.filter(i => i.type !== null).map(i => i.type);
+      return itemTypeOptions.filter(opt => !selectedTypes.includes(opt.type));
     }
   }
 }
@@ -307,5 +322,10 @@ export default {
   opacity: 0.6 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
+}
+
+::v-deep select option:disabled {
+  color: #b5b5b5;
+  font-style: italic;
 }
 </style>

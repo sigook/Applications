@@ -12,6 +12,8 @@
 *.swp
 .buildlog/
 .history
+.claude/
+.vscode/
 
 # Environment Configuration
 # These files contain environment-specific URLs and are not committed

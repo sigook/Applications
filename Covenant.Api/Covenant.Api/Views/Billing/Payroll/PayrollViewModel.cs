@@ -20,7 +20,7 @@ namespace Covenant.HtmlTemplates.Views.Billing.Payroll
         public int? AgencyPhoneExt { get; set; }
         public string AgencyLogoFileName { get; set; }
         public string WorkerEmail { get; set; }
-        public string TypeOfJob { get; set; }
+        public string Position { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime PaymentDate { get; set; }
         public IEnumerable<PayrollTable1Item> Table1Items { get; set; } = new List<PayrollTable1Item>();

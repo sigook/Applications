@@ -13,10 +13,19 @@
       <export :url="'/api/v2/AgencyCompanyProfile/File'" :params="serverParams" :fileName="'Companies'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button @click="addFile = true" icon-left="file-plus">Bulk Data</b-button>
           <b-button tag="router-link" to="/create-company" icon-left="plus">
             {{ $t('Create') }}
           </b-button>
+        </template>
+        <template v-slot:dropdown-actions>
+          <b-dropdown-item aria-role="listitem" @click="addFile = true">
+            <b-icon icon="file-plus"></b-icon>
+            <span>Bulk Data</span>
+          </b-dropdown-item>
+          <b-dropdown-item v-if="isPayrollManager" aria-role="listitem" @click="exportWithDetails">
+            <b-icon icon="file-excel"></b-icon>
+            <span>Export with details</span>
+          </b-dropdown-item>
         </template>
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
@@ -162,12 +171,15 @@
 </template>
 <script lang="ts">
 
+import download from "@/mixins/downloadFileMixin";
+import billingAdminMixin from "@/mixins/billingAdminMixin";
 export default {
   components: {
     Export: () => import("@/components/Export.vue"),
     ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
     BulkData: () => import("@/components/agency/BulkData.vue"),
   },
+  mixins: [download, billingAdminMixin],
   data() {
     return {
       isLoading: true,
@@ -265,6 +277,18 @@ export default {
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
       this.$set(this.rows[index], "showNotes", status);
+    },
+    exportWithDetails() {
+      this.isLoading = true;
+      this.$store.dispatch("agency/getAgencyReport", {
+        filter: this.serverParams,
+        url: "/api/v2/AgencyCompanyProfile/FileWithDetails"
+      })
+        .then(file => {
+          this.isLoading = false;
+          this.downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
+        })
+        .catch(() => this.isLoading = false);
     },
     getCompanies() {
       this.isLoading = true;

@@ -3,6 +3,7 @@ namespace Covenant.Common.Models.Company
     public class CompanyProfileJobPositionRateModel
     {
         public Guid? Id { get; set; }
+        public Guid? CompanyProfileId { get; set; }
         public JobPositionDetailModel JobPosition { get; set; }
         public decimal Rate { get; set; }
         public decimal? AsapRate { get; set; }

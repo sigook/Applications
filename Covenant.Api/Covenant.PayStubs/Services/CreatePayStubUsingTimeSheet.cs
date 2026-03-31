@@ -14,6 +14,7 @@ using Covenant.TimeSheetTotal.Services;
 
 namespace Covenant.PayStubs.Services;
 
+[Obsolete]
 public class CreatePayStubUsingTimeSheet
 {
     private readonly TimeLimits _timeLimits;
@@ -47,6 +48,7 @@ public class CreatePayStubUsingTimeSheet
 
     public List<PayStub> PayStubs { get; }
 
+    [Obsolete]
     public async Task<Result> Create(IEnumerable<TimeSheetApprovedPayrollModel> list)
     {
         await SemaphoreSlim.WaitAsync();
@@ -73,6 +75,7 @@ public class CreatePayStubUsingTimeSheet
         return Result.Ok();
     }
 
+    [Obsolete]
     private async Task<Result<PayStub>> CreatePayStub(Guid workerProfileId, IReadOnlyCollection<TimeSheetApprovedPayrollModel> timeSheets, long payStubNumber)
     {
         var first = timeSheets.First();
@@ -118,7 +121,7 @@ public class CreatePayStubUsingTimeSheet
         return await PayStubBuilder.PayStub(_rates, _deductionsAndContributionsCalculator, workerRepository)
             .WithPayStubNumber(payStubNumber)
             .WithWorkerProfileId(workerProfileId)
-            .WithTypeOfWork(first.TypeOfWork)
+            .WithPosition(first.TypeOfWork)
             .WithWorkBeginning(minDate)
             .WithWorkEnding(maxDate)
             .WithCreationDate(DateTime.Now)

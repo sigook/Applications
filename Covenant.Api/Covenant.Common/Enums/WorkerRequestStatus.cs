@@ -2,6 +2,6 @@ namespace Covenant.Common.Enums;
 
 public enum WorkerRequestStatus
 {
-    Rejected,
+    Rejected = 2,
     Booked
 }

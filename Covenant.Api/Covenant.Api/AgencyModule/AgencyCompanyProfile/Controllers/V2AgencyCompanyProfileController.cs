@@ -56,6 +56,14 @@ public class V2AgencyCompanyProfileController : ControllerBase
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
 
+    [HttpGet("FileWithDetails")]
+    public async Task<IActionResult> GetFileCompanyProfilesWithDetails([FromQuery] GetCompanyForAgencyFilter filter)
+    {
+        var data = await companyRepository.GetCompaniesWithDetailsForAgency(User.GetAgencyId(), filter);
+        var file = await Mediator.Send(new GenerateAgencyCompanyProfileWithDetailsReport(data));
+        return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetCompanyProfileById([FromRoute] Guid id)
     {

@@ -1,7 +1,16 @@
 <template>
   <b-field grouped position="is-right">
     <slot name="actions"></slot>
-    <b-button type="is-ghost" icon-right="file-excel" @click="downloadReport">Export</b-button>
+    <b-dropdown aria-role="list" position="is-bottom-left">
+      <template #trigger>
+        <b-button type="is-ghost" icon-right="chevron-down" icon-left="dots-vertical">Actions</b-button>
+      </template>
+      <slot name="dropdown-actions"></slot>
+      <b-dropdown-item aria-role="listitem" @click="downloadReport">
+        <b-icon icon="file-excel"></b-icon>
+        <span>Export</span>
+      </b-dropdown-item>
+    </b-dropdown>
   </b-field>
 </template>
 <script lang="ts">
