@@ -120,10 +120,10 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       zipCode:
           ZipCode.parse(
             input: _zipCodeController.text,
-            countryCode: _selectedCountry?.code ?? 'US',
+            countryCode: _selectedCountry?.isoCode ?? 'CA',
             provinceCode: _selectedProvince?.code,
           ).fold(
-            (error) => _selectedCountry?.code == 'CA'
+            (error) => _selectedCountry?.isoCode == 'CA'
                 ? ZipCode.emptyCA
                 : ZipCode.emptyUS,
             (validZip) => validZip,
@@ -386,13 +386,15 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               ),
               const SizedBox(height: 24),
               CustomTextField(
-                label: 'ZIP Code',
-                hint: 'Enter your ZIP code',
+                label: 'Postal/ZIP Code',
+                hint: _selectedCountry?.isoCode == 'US'
+                    ? 'e.g. 90210'
+                    : 'e.g. A1A 1A1',
                 controller: _zipCodeController,
                 errorText: _zipCodeError,
                 isRequired: true,
                 keyboardType: TextInputType.text,
-                onChanged: (value) {},
+                onChanged: (value) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('zipCode');
                 },
@@ -401,11 +403,11 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               PhoneNumberField(
                 label: 'Mobile Number',
                 initialValue: _mobileNumber.value,
-                countryCode: _selectedCountry?.code ?? 'US',
+                countryCode: _selectedCountry?.isoCode ,
                 errorText: _mobileNumberError,
                 isRequired: true,
                 onChanged: (value) {
-                  final countryCode = _selectedCountry?.code ?? 'US';
+                  final countryCode = _selectedCountry?.isoCode ;
                   final validated = _phoneService.validate(value, countryCode);
                   setState(() {
                     _mobileNumber = validated;

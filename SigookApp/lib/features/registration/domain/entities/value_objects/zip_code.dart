@@ -42,7 +42,7 @@ class ZipCode extends Equatable {
     final code = countryCode.toUpperCase();
     final cleaned = input.replaceAll(' ', '').toUpperCase();
 
-    if (cleaned.isEmpty) return 'ZIP code is required';
+    if (cleaned.isEmpty) return 'Postal/ZIP code is required';
 
     return switch (code) {
       'US' => _validateUS(cleaned, provinceCode),
@@ -72,14 +72,7 @@ class ZipCode extends Equatable {
 
   static String? _validateCA(String cleaned, String? provinceCode) {
     if (!RegExp(r'^[A-Z]\d[A-Z]\d[A-Z]\d$').hasMatch(cleaned)) {
-      return 'Canadian postal code must be A1A1A1';
-    }
-    if (provinceCode != null) {
-      final firstLetter = cleaned[0];
-      final prefixes = _caProvinceToPrefixes[provinceCode];
-      if (prefixes == null || !prefixes.contains(firstLetter)) {
-        return 'Postal code does not match province';
-      }
+      return 'Enter a valid Canadian postal code (e.g. A1A 1A1)';
     }
     return null;
   }
@@ -100,22 +93,6 @@ class ZipCode extends Equatable {
       _ => cleaned,
     };
   }
-
-  static const Map<String, Set<String>> _caProvinceToPrefixes = {
-    'NL': {'A'},
-    'NS': {'B'},
-    'PE': {'C'},
-    'NB': {'E'},
-    'QC': {'G', 'H', 'J'},
-    'ON': {'K', 'L', 'M', 'N', 'P'},
-    'MB': {'R'},
-    'SK': {'S'},
-    'AB': {'T'},
-    'BC': {'V'},
-    'NT': {'X'},
-    'NU': {'X'},
-    'YT': {'Y'},
-  };
 
   static const Map<String, List<(int, int)>> _usStateToZipRanges = {
     'AK': [(99501, 99950)],
