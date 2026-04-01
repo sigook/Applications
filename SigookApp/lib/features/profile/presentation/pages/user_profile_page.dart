@@ -5,16 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
+import '../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../core/widgets/display/profile_info_row.dart';
+import '../../../../core/widgets/display/chip_display_row.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
+import '../../../../core/widgets/inputs/date_picker_field.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
@@ -28,8 +30,15 @@ import '../../domain/entities/worker_profile.dart';
 import '../../domain/usecases/update_worker_profile.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import '../providers/profile_providers.dart';
+import '../widgets/certificate_card.dart';
+import '../widgets/chip_selector.dart';
+import '../widgets/document_file_row.dart';
+import '../widgets/license_card.dart';
+import '../widgets/profile_action_buttons.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/searchable_toggle_list.dart';
+import '../widgets/section_edit_actions.dart';
+import '../widgets/upload_action_row.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
   const UserProfilePage({super.key});
@@ -167,15 +176,16 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     _middleNameController.text = profile?.middleName ?? '';
     _lastNameController.text = profile?.lastName ?? '';
     _secondLastNameController.text = profile?.secondLastName ?? '';
-    _mobileNumberController.text = _mobileMaskFormatter.maskText(
-      profile?.mobileNumber ?? '',
-    );
-    _phoneController.text = _phoneMaskFormatter.maskText(profile?.phone ?? '');
+    _mobileNumberController.text =
+        _mobileMaskFormatter.maskText(profile?.mobileNumber ?? '');
+    _phoneController.text =
+        _phoneMaskFormatter.maskText(profile?.phone ?? '');
     _emailController.text = profile?.email ?? '';
     _addressController.text = profile?.address ?? '';
     _postalCodeController.text = profile?.postalCode ?? '';
     _emergencyNameController.text = profile?.contactEmergencyName ?? '';
-    _emergencyLastNameController.text = profile?.contactEmergencyLastName ?? '';
+    _emergencyLastNameController.text =
+        profile?.contactEmergencyLastName ?? '';
     _emergencyPhoneController.text = _emergencyPhoneMaskFormatter.maskText(
       profile?.contactEmergencyPhone ?? '',
     );
@@ -293,8 +303,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         editedFields = {
           'contactEmergencyName': _emergencyNameController.text,
           'contactEmergencyLastName': _emergencyLastNameController.text,
-          'contactEmergencyPhone': _emergencyPhoneMaskFormatter
-              .getUnmaskedText(),
+          'contactEmergencyPhone':
+              _emergencyPhoneMaskFormatter.getUnmaskedText(),
         };
       case ProfileSection.resume:
         editedFields = {};
@@ -305,12 +315,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       case ProfileSection.licenses:
         editedFields = {
           'licenseNumber': _licenseNumberController.text,
-          'licenseIssued': _licenseIssuedDate?.toUtc().toIso8601String() ?? '',
-          'licenseExpires': _licenseExpiresDate?.toUtc().toIso8601String() ?? '',
+          'licenseIssued':
+              _licenseIssuedDate?.toUtc().toIso8601String() ?? '',
+          'licenseExpires':
+              _licenseExpiresDate?.toUtc().toIso8601String() ?? '',
         };
         newFilePaths = {
-          if (_newLicenseFile != null)
-            'licenseFile': _newLicenseFile!.path,
+          if (_newLicenseFile != null) 'licenseFile': _newLicenseFile!.path,
         };
       case ProfileSection.certificates:
         editedFields = {};
@@ -326,8 +337,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           final items = catalogAsync.asData?.value as List<dynamic>? ?? [];
           return selectedIds
               .map((id) {
-                final match = items.cast<dynamic>().where(
-                    (item) => (item.id as String?) == id);
+                final match = items
+                    .cast<dynamic>()
+                    .where((item) => (item.id as String?) == id);
                 if (match.isEmpty) return null;
                 final item = match.first;
                 final value = item.value != null
@@ -359,8 +371,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
         Map<String, String>? liftMap;
         if (_editLiftId != null) {
-          final liftItems =
-              ref.read(liftingCapacitiesProvider).asData?.value as List<dynamic>? ?? [];
+          final liftItems = ref.read(liftingCapacitiesProvider).asData?.value
+                  as List<dynamic>? ??
+              [];
           final liftMatch = liftItems
               .cast<dynamic>()
               .where((item) => (item.id as String?) == _editLiftId);
@@ -418,53 +431,19 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  Widget _sectionEditActions(ProfileSection section, WorkerProfile? profile) {
-    if (_editingSection == section) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_isSaving)
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppTheme.primaryBlue,
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(
-                Icons.check_circle_outline,
-                color: AppTheme.primaryBlue,
-              ),
-              onPressed: () => _saveSection(section),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              tooltip: 'Save',
-            ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.cancel_outlined, color: Colors.grey.shade500),
-            onPressed: _isSaving ? null : _cancelEditing,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            tooltip: 'Cancel',
-          ),
-        ],
-      );
-    }
-    if (_editingSection != null) return const SizedBox.shrink();
-    return IconButton(
-      icon: const Icon(
-        Icons.edit_outlined,
-        color: AppTheme.primaryBlue,
-        size: 20,
-      ),
-      onPressed: profile == null ? null : () => _startEditing(section, profile),
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-      tooltip: 'Edit',
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  SectionEditActions _sectionActions(
+    ProfileSection section,
+    WorkerProfile? profile,
+  ) {
+    return SectionEditActions(
+      isEditingThis: _editingSection == section,
+      isAnyEditing: _editingSection != null,
+      isSaving: _isSaving,
+      onSave: () => _saveSection(section),
+      onCancel: _cancelEditing,
+      onEdit: profile == null ? null : () => _startEditing(section, profile),
     );
   }
 
@@ -576,10 +555,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       child: OutlinedButton.icon(
         onPressed: () => _showDocumentUploadModal(docType),
         icon: const Icon(Icons.add, size: 18),
-        label: Text(docType == 'id1File' ? 'Add Document 1' : 'Add Document 2'),
+        label:
+            Text(docType == 'id1File' ? 'Add Document 1' : 'Add Document 2'),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppTheme.primaryBlue,
-          side: BorderSide(color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
+          side: BorderSide(
+              color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
         ),
       ),
     );
@@ -590,10 +571,24 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) =>
-            _DocumentPreviewPage(url: url, title: title, token: token),
+            DocumentPreviewPage(url: url, title: title, token: token),
       ),
     );
   }
+
+  String _formatPhone(String? phone) {
+    if (phone == null || phone.isEmpty) return 'N/A';
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return 'N/A';
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length && i < 10; i++) {
+      if (i == 3 || i == 6) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+    return buffer.toString();
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -618,10 +613,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         data: (profile) => NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
-              // expandedHeight = profile content area (222) + TabBar (48)
               expandedHeight: 270.0,
-              // Collapse to minimum — only the TabBar (bottom) stays pinned.
-              // Using 1 instead of 0 avoids a 1px overflow rounding issue.
               toolbarHeight: 1.0,
               pinned: true,
               floating: false,
@@ -635,12 +627,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   builder: (context) {
                     final settings = context
                         .dependOnInheritedWidgetOfExactType<
-                          FlexibleSpaceBarSettings
-                        >();
+                            FlexibleSpaceBarSettings>();
                     final t = settings != null
                         ? ((settings.currentExtent - settings.minExtent) /
-                                  (settings.maxExtent - settings.minExtent))
-                              .clamp(0.0, 1.0)
+                                (settings.maxExtent - settings.minExtent))
+                            .clamp(0.0, 1.0)
                         : 1.0;
                     return ProfileHeader(
                       name: profile?.fullName ?? 'User',
@@ -730,7 +721,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         const SizedBox(height: 12),
         _buildEmergencyInfoSection(profile),
         const SizedBox(height: 12),
-        _buildActionButtons(),
+        ProfileActionButtons(
+          onLogout: _showLogoutDialog,
+        ),
         const SizedBox(height: 16),
         if (_appVersion.isNotEmpty)
           Padding(
@@ -738,7 +731,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             child: Center(
               child: Text(
                 _appVersion,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                style:
+                    TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ),
           ),
@@ -754,7 +748,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'Basic Information',
       icon: Icons.person_outline,
       iconGradient: const [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
-      trailing: _sectionEditActions(ProfileSection.personal, profile),
+      trailing: _sectionActions(ProfileSection.personal, profile),
       children: [
         if (!isEditing)
           ProfileInfoRow(
@@ -815,7 +809,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.directions_car_outlined,
                   size: 20,
                   color: AppTheme.primaryBlue,
@@ -868,7 +862,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'Contact Information',
       icon: Icons.contact_phone_outlined,
       iconGradient: const [Color(0xFF4CAF50), Color(0xFF81C784)],
-      trailing: _sectionEditActions(ProfileSection.contact, profile),
+      trailing: _sectionActions(ProfileSection.contact, profile),
       children: [
         ProfileInfoRow(
           label: 'Mobile Number',
@@ -960,7 +954,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'SIN / SSN',
       icon: Icons.security_outlined,
       iconGradient: const [Color(0xFFFF9800), Color(0xFFFFB74D)],
-      trailing: _sectionEditActions(ProfileSection.sin, profile),
+      trailing: _sectionActions(ProfileSection.sin, profile),
       children: [
         ProfileInfoRow(
           label: 'SIN / SSN #',
@@ -982,20 +976,26 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             value: profile?.formattedDueDate ?? 'N/A',
             icon: Icons.calendar_today_outlined,
           ),
-        _buildDocumentFileRow(
+        DocumentFileRow(
           label: 'File',
           fileName: profile?.socialInsuranceFileName,
           fileUrl: profile?.socialInsuranceFileUrl,
           isMarkedForDeletion: _deleteSinFile,
           pendingFile: _replaceSinFile,
-          docType: 'sinFile',
-          editingSection: ProfileSection.sin,
+          isEditing: isEditing,
           onDelete: () => setState(() {
             _deleteSinFile = true;
             _replaceSinFile = null;
           }),
           onUndo: () => setState(() => _deleteSinFile = false),
+          onPickFile: () => _pickFileFor('sinFile'),
           onClearPick: () => setState(() => _replaceSinFile = null),
+          onPreview: profile?.socialInsuranceFileUrl != null
+              ? () => _previewDocument(
+                    profile!.socialInsuranceFileUrl!,
+                    'SIN File',
+                  )
+              : null,
         ),
       ],
     );
@@ -1007,7 +1007,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'Documents',
       icon: Icons.description_outlined,
       iconGradient: const [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-      trailing: _sectionEditActions(ProfileSection.documents, profile),
+      trailing: _sectionActions(ProfileSection.documents, profile),
       children: [
         if (profile?.identificationType1 != null) ...[
           ProfileInfoRow(
@@ -1019,20 +1019,26 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             isEditing: isEditing,
             controller: isEditing ? _idNumber1Controller : null,
           ),
-          _buildDocumentFileRow(
+          DocumentFileRow(
             label: '${profile.identificationType1!} (File)',
             fileName: profile.identificationType1FileName,
             fileUrl: profile.identificationType1FileUrl,
             isMarkedForDeletion: _deleteId1File,
             pendingFile: _replaceId1File,
-            docType: 'id1File',
-            editingSection: ProfileSection.documents,
+            isEditing: isEditing,
             onDelete: () => setState(() {
               _deleteId1File = true;
               _replaceId1File = null;
             }),
             onUndo: () => setState(() => _deleteId1File = false),
+            onPickFile: () => _pickFileFor('id1File'),
             onClearPick: () => setState(() => _replaceId1File = null),
+            onPreview: profile.identificationType1FileUrl != null
+                ? () => _previewDocument(
+                      profile.identificationType1FileUrl!,
+                      '${profile.identificationType1} File',
+                    )
+                : null,
           ),
         ],
         if (profile?.identificationType2 != null) ...[
@@ -1045,20 +1051,26 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             isEditing: isEditing,
             controller: isEditing ? _idNumber2Controller : null,
           ),
-          _buildDocumentFileRow(
+          DocumentFileRow(
             label: '${profile.identificationType2!} (File)',
             fileName: profile.identificationType2FileName,
             fileUrl: profile.identificationType2FileUrl,
             isMarkedForDeletion: _deleteId2File,
             pendingFile: _replaceId2File,
-            docType: 'id2File',
-            editingSection: ProfileSection.documents,
+            isEditing: isEditing,
             onDelete: () => setState(() {
               _deleteId2File = true;
               _replaceId2File = null;
             }),
             onUndo: () => setState(() => _deleteId2File = false),
+            onPickFile: () => _pickFileFor('id2File'),
             onClearPick: () => setState(() => _replaceId2File = null),
+            onPreview: profile.identificationType2FileUrl != null
+                ? () => _previewDocument(
+                      profile.identificationType2FileUrl!,
+                      '${profile.identificationType2} File',
+                    )
+                : null,
           ),
         ],
         if (profile?.identificationType1 == null &&
@@ -1109,7 +1121,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
+              const Icon(
                 Icons.attach_file_outlined,
                 size: 20,
                 color: AppTheme.primaryBlue,
@@ -1177,49 +1189,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           ),
         ),
         if (_replaceResumeFile != null)
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isUploadingResume ? null : _uploadResume,
-                  icon: _isUploadingResume
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined, size: 18),
-                  label: Text(
-                    _isUploadingResume ? 'Uploading...' : 'Upload Resume',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _isUploadingResume
-                    ? null
-                    : () => setState(() => _replaceResumeFile = null),
-                icon: Icon(
-                  Icons.cancel_outlined,
-                  color: Colors.grey.shade500,
-                  size: 22,
-                ),
-                tooltip: 'Cancel',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-            ],
+          UploadActionRow(
+            isUploading: _isUploadingResume,
+            label: 'Upload Resume',
+            onUpload: _uploadResume,
+            onCancel: () => setState(() => _replaceResumeFile = null),
           )
         else
           SizedBox(
@@ -1257,8 +1231,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     if (_replaceResumeFile == null) return;
     setState(() => _isUploadingResume = true);
 
-    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
-    final result = await updateUseCase(
+    final result = await ref.read(updateWorkerProfileUseCaseProvider)(
       UpdateWorkerProfileParams(
         editedFields: {},
         section: ProfileSection.resume,
@@ -1270,15 +1243,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     setState(() => _isUploadingResume = false);
 
     result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload resume: ${failure.message}'),
-            backgroundColor: AppTheme.errorRed,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      },
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload resume: ${failure.message}'),
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      ),
       (_) {
         setState(() => _replaceResumeFile = null);
         ref.invalidate(cachedWorkerProfileProvider);
@@ -1293,7 +1264,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  // ── Licenses section ─────────────────────────────────────────────────────
+  // ── Licenses section ──────────────────────────────────────────────────────
 
   Widget _buildLicensesSection(WorkerProfile? profile) {
     return ProfileSectionCard(
@@ -1301,114 +1272,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       icon: Icons.card_membership_outlined,
       iconGradient: const [Color(0xFF7B1FA2), Color(0xFFBA68C8)],
       children: [
-        // Existing licenses
         if (profile != null && profile.licenses.isNotEmpty) ...[
-          ...profile.licenses.asMap().entries.map((entry) {
-            final license = entry.value;
-            final isExpired = license.isExpired;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: license.fileUrl != null
-                    ? () => _previewDocument(
-                          license.fileUrl!,
-                          license.description ?? 'License',
-                        )
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isExpired
-                        ? Colors.red.shade50
-                        : Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isExpired
-                          ? Colors.red.shade200
-                          : Colors.green.shade200,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.card_membership_outlined,
-                            size: 18,
-                            color: isExpired ? Colors.red.shade700 : Colors.green.shade700,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              license.description ?? 'License',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isExpired ? Colors.red.shade700 : Colors.green.shade700,
-                              ),
-                            ),
-                          ),
-                          if (isExpired)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade100,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'Expired',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.red.shade700,
-                                ),
-                              ),
-                            ),
-                          if (license.fileUrl != null)
-                            Icon(
-                              Icons.visibility_outlined,
-                              size: 18,
-                              color: isExpired ? Colors.red.shade400 : Colors.green.shade400,
-                            ),
-                        ],
-                      ),
-                      if (license.number != null && license.number!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.numbers_outlined, size: 16, color: Colors.grey.shade600),
-                            const SizedBox(width: 6),
-                            Text(
-                              'No. ${license.number}',
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              'Issued: ${license.formattedIssued}  ·  Expires: ${license.formattedExpires}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
+          ...profile.licenses.map(
+            (license) => LicenseCard(
+              license: license,
+              onPreview: license.fileUrl != null
+                  ? () => _previewDocument(
+                        license.fileUrl!,
+                        license.description ?? 'License',
+                      )
+                  : null,
+            ),
+          ),
           const SizedBox(height: 4),
         ],
-        // New license form
         if (_newLicenseFile != null) ...[
           const Divider(height: 24),
           Padding(
@@ -1426,7 +1303,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
-                Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+                const Icon(Icons.attach_file_outlined,
+                    size: 20, color: AppTheme.primaryBlue),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1443,7 +1321,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                       ),
                       const Text(
                         'Tap upload to save',
-                        style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue),
+                        style: TextStyle(
+                            fontSize: 11, color: AppTheme.primaryBlue),
                       ),
                     ],
                   ),
@@ -1455,9 +1334,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             controller: _licenseNumberController,
             decoration: InputDecoration(
               labelText: 'License Number',
-              prefixIcon: const Icon(Icons.numbers_outlined, size: 20),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              prefixIcon:
+                  const Icon(Icons.numbers_outlined, size: 20),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
               isDense: true,
             ),
           ),
@@ -1465,7 +1347,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           Row(
             children: [
               Expanded(
-                child: _buildDatePickerField(
+                child: DatePickerField(
                   label: 'Issued Date',
                   value: _licenseIssuedDate,
                   onTap: () => _pickDate(isIssued: true),
@@ -1473,7 +1355,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildDatePickerField(
+                child: DatePickerField(
                   label: 'Expires Date',
                   value: _licenseExpiresDate,
                   onTap: () => _pickDate(isIssued: false),
@@ -1482,54 +1364,16 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isUploadingLicense ? null : _uploadLicense,
-                  icon: _isUploadingLicense
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined, size: 18),
-                  label: Text(
-                    _isUploadingLicense ? 'Uploading...' : 'Upload License',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _isUploadingLicense
-                    ? null
-                    : () => setState(() {
-                          _newLicenseFile = null;
-                          _licenseNumberController.clear();
-                          _licenseIssuedDate = null;
-                          _licenseExpiresDate = null;
-                        }),
-                icon: Icon(
-                  Icons.cancel_outlined,
-                  color: Colors.grey.shade500,
-                  size: 22,
-                ),
-                tooltip: 'Cancel',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-            ],
+          UploadActionRow(
+            isUploading: _isUploadingLicense,
+            label: 'Upload License',
+            onUpload: _uploadLicense,
+            onCancel: () => setState(() {
+              _newLicenseFile = null;
+              _licenseNumberController.clear();
+              _licenseIssuedDate = null;
+              _licenseExpiresDate = null;
+            }),
           ),
         ] else
           SizedBox(
@@ -1552,54 +1396,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  Widget _buildDatePickerField({
-    required String label,
-    required DateTime? value,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          isDense: true,
-        ),
-        child: Text(
-          value != null
-              ? '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}'
-              : 'Select date',
-          style: TextStyle(
-            fontSize: 14,
-            color: value != null ? AppTheme.textDark : Colors.grey,
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _pickDate({required bool isIssued}) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: isIssued
-          ? (_licenseIssuedDate ?? now)
-          : (_licenseExpiresDate ?? now),
+      initialDate:
+          isIssued ? (_licenseIssuedDate ?? now) : (_licenseExpiresDate ?? now),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppTheme.primaryBlue,
-            ),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(primary: AppTheme.primaryBlue),
+        ),
+        child: child!,
+      ),
     );
     if (picked == null) return;
     setState(() {
@@ -1636,8 +1446,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
     setState(() => _isUploadingLicense = true);
 
-    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
-    final result = await updateUseCase(
+    final result = await ref.read(updateWorkerProfileUseCaseProvider)(
       UpdateWorkerProfileParams(
         editedFields: {
           'licenseNumber': _licenseNumberController.text,
@@ -1653,15 +1462,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     setState(() => _isUploadingLicense = false);
 
     result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload license: ${failure.message}'),
-            backgroundColor: AppTheme.errorRed,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      },
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload license: ${failure.message}'),
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      ),
       (_) {
         setState(() {
           _newLicenseFile = null;
@@ -1681,7 +1488,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  // ── Certificates section ────────────────────────────────────────────────────
+  // ── Certificates section ──────────────────────────────────────────────────
 
   Widget _buildCertificatesSection(WorkerProfile? profile) {
     return ProfileSectionCard(
@@ -1689,56 +1496,18 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       icon: Icons.workspace_premium_outlined,
       iconGradient: const [Color(0xFFE65100), Color(0xFFFF9800)],
       children: [
-        // Existing certificates
         if (profile != null && profile.certificates.isNotEmpty) ...[
-          ...profile.certificates.map((cert) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: cert.fileUrl != null
-                    ? () => _previewDocument(
-                          cert.fileUrl!,
-                          cert.description ?? 'Certificate',
-                        )
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.workspace_premium_outlined,
-                        size: 18,
-                        color: Colors.orange.shade700,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          cert.description ?? 'Certificate',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                      ),
-                      if (cert.fileUrl != null)
-                        Icon(
-                          Icons.visibility_outlined,
-                          size: 18,
-                          color: Colors.orange.shade400,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
+          ...profile.certificates.map(
+            (cert) => CertificateCard(
+              certificate: cert,
+              onPreview: cert.fileUrl != null
+                  ? () => _previewDocument(
+                        cert.fileUrl!,
+                        cert.description ?? 'Certificate',
+                      )
+                  : null,
+            ),
+          ),
           const SizedBox(height: 4),
         ],
         if (_newCertificateFile != null) ...[
@@ -1746,7 +1515,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Icon(Icons.attach_file_outlined, size: 20, color: AppTheme.primaryBlue),
+                const Icon(Icons.attach_file_outlined,
+                    size: 20, color: AppTheme.primaryBlue),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1763,7 +1533,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                       ),
                       const Text(
                         'Tap upload to save',
-                        style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue),
+                        style: TextStyle(
+                            fontSize: 11, color: AppTheme.primaryBlue),
                       ),
                     ],
                   ),
@@ -1771,49 +1542,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               ],
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isUploadingCertificate ? null : _uploadCertificate,
-                  icon: _isUploadingCertificate
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined, size: 18),
-                  label: Text(
-                    _isUploadingCertificate ? 'Uploading...' : 'Upload Certificate',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _isUploadingCertificate
-                    ? null
-                    : () => setState(() => _newCertificateFile = null),
-                icon: Icon(
-                  Icons.cancel_outlined,
-                  color: Colors.grey.shade500,
-                  size: 22,
-                ),
-                tooltip: 'Cancel',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-            ],
+          UploadActionRow(
+            isUploading: _isUploadingCertificate,
+            label: 'Upload Certificate',
+            onUpload: _uploadCertificate,
+            onCancel: () => setState(() => _newCertificateFile = null),
           ),
         ] else
           SizedBox(
@@ -1846,11 +1579,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
   Future<void> _uploadCertificate() async {
     if (_newCertificateFile == null) return;
-
     setState(() => _isUploadingCertificate = true);
 
-    final updateUseCase = ref.read(updateWorkerProfileUseCaseProvider);
-    final result = await updateUseCase(
+    final result = await ref.read(updateWorkerProfileUseCaseProvider)(
       UpdateWorkerProfileParams(
         editedFields: {},
         section: ProfileSection.certificates,
@@ -1862,15 +1593,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     setState(() => _isUploadingCertificate = false);
 
     result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload certificate: ${failure.message}'),
-            backgroundColor: AppTheme.errorRed,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      },
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload certificate: ${failure.message}'),
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      ),
       (_) {
         setState(() => _newCertificateFile = null);
         ref.invalidate(cachedWorkerProfileProvider);
@@ -1894,36 +1623,36 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         title: 'Preferences',
         icon: Icons.work_outline,
         iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
-        trailing: _sectionEditActions(ProfileSection.preferences, profile),
+        trailing: _sectionActions(ProfileSection.preferences, profile),
         children: [
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Can you lift up to',
             icon: Icons.fitness_center_outlined,
             chips: profile?.liftCapacity != null
                 ? [profile!.liftCapacity!]
                 : [],
           ),
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Availability',
             icon: Icons.schedule_outlined,
             chips: profile?.availabilities ?? [],
           ),
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Available Time',
             icon: Icons.access_time_outlined,
             chips: profile?.availabilityTimes ?? [],
           ),
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Available Days',
             icon: Icons.calendar_today_outlined,
             chips: profile?.availabilityDays ?? [],
           ),
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Skills',
             icon: Icons.stars_outlined,
             chips: profile?.skills ?? [],
           ),
-          _buildChipDisplayRow(
+          ChipDisplayRow(
             label: 'Languages',
             icon: Icons.language_outlined,
             chips: profile?.languages ?? [],
@@ -1936,19 +1665,18 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'Preferences',
       icon: Icons.work_outline,
       iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
-      trailing: _sectionEditActions(ProfileSection.preferences, profile),
+      trailing: _sectionActions(ProfileSection.preferences, profile),
       children: [
-        _buildChipSelector(
+        ChipSelector(
           label: 'Can you lift up to',
           asyncValue: ref.watch(liftingCapacitiesProvider),
           selectedIds: _editLiftId != null ? {_editLiftId!} : {},
           singleSelect: true,
-          onToggle: (id, selected) => setState(() {
-            _editLiftId = selected ? id : null;
-          }),
+          onToggle: (id, selected) =>
+              setState(() => _editLiftId = selected ? id : null),
         ),
         const SizedBox(height: 12),
-        _buildChipSelector(
+        ChipSelector(
           label: 'Availability',
           asyncValue: ref.watch(availabilityListProvider),
           selectedIds: _editAvailabilityIds,
@@ -1962,7 +1690,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           }),
         ),
         const SizedBox(height: 12),
-        _buildChipSelector(
+        ChipSelector(
           label: 'Available Time',
           asyncValue: ref.watch(availabilityTimeListProvider),
           selectedIds: _editAvailabilityTimeIds,
@@ -1976,7 +1704,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           }),
         ),
         const SizedBox(height: 12),
-        _buildChipSelector(
+        ChipSelector(
           label: 'Available Days',
           asyncValue: ref.watch(daysOfWeekProvider),
           selectedIds: _editAvailabilityDayIds,
@@ -2026,7 +1754,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       title: 'Emergency Information',
       icon: Icons.emergency_outlined,
       iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
-      trailing: _sectionEditActions(ProfileSection.emergency, profile),
+      trailing: _sectionActions(ProfileSection.emergency, profile),
       children: [
         ProfileInfoRow(
           label: 'Do you have any health problems / allergies?',
@@ -2049,7 +1777,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           label: 'Name',
           value: profile != null
               ? '${profile.contactEmergencyName ?? ''} ${profile.contactEmergencyLastName ?? ''}'
-                    .trim()
+                  .trim()
               : 'N/A',
           icon: Icons.person_outline,
           isEditing: isEditing,
@@ -2075,410 +1803,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  /// Formats a raw phone number string using the ### ### #### mask.
-  String _formatPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return 'N/A';
-    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return 'N/A';
-    final buffer = StringBuffer();
-    for (var i = 0; i < digits.length && i < 10; i++) {
-      if (i == 3 || i == 6) buffer.write(' ');
-      buffer.write(digits[i]);
-    }
-    return buffer.toString();
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  Widget _buildChipDisplayRow({
-    required String label,
-    required IconData icon,
-    required List<String> chips,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: AppTheme.primaryBlue),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                chips.isEmpty
-                    ? Text(
-                        'N/A',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textDark,
-                        ),
-                      )
-                    : Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: chips
-                            .map(
-                              (c) => Chip(
-                                label: Text(
-                                  c,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.primaryBlue,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                backgroundColor: AppTheme.primaryBlue
-                                    .withValues(alpha: 0.1),
-                                side: BorderSide(
-                                  color: AppTheme.primaryBlue.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 0,
-                                ),
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            )
-                            .toList(),
-                      ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChipSelector({
-    required String label,
-    required AsyncValue<dynamic> asyncValue,
-    required Set<String> selectedIds,
-    required bool singleSelect,
-    required void Function(String id, bool selected) onToggle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 6),
-        asyncValue.when(
-          data: (items) {
-            final list = items as List;
-            return Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: list.map((item) {
-                final id = (item.id as String?) ?? '';
-                final value = item.value != null
-                    ? item.value as String
-                    : item.toString();
-                final isSelected = selectedIds.contains(id);
-                return FilterChip(
-                  label: Text(value, style: const TextStyle(fontSize: 12)),
-                  selected: isSelected,
-                  onSelected: (s) => onToggle(id, s),
-                  selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
-                  checkmarkColor: AppTheme.primaryBlue,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? AppTheme.primaryBlue
-                        : AppTheme.textDark,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppTheme.primaryBlue
-                        : Colors.grey.shade300,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 0,
-                  ),
-                );
-              }).toList(),
-            );
-          },
-          loading: () => const SizedBox(
-            height: 24,
-            width: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          error: (_, _) => Text(
-            'Failed to load options',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDocumentFileRow({
-    required String label,
-    required String? fileName,
-    required String? fileUrl,
-    required bool isMarkedForDeletion,
-    required PickedFileData? pendingFile,
-    required VoidCallback onDelete,
-    required VoidCallback onUndo,
-    required String docType,
-    required VoidCallback onClearPick,
-    required ProfileSection editingSection,
-  }) {
-    final isEditingDocs = _editingSection == editingSection;
-    final hasFile = fileName != null && fileName.isNotEmpty;
-    final hasPending = pendingFile != null;
-    final hasUrl = fileUrl != null && fileUrl.isNotEmpty;
-
-    if (!isEditingDocs) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.attach_file_outlined,
-              size: 20,
-              color: AppTheme.primaryBlue,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    hasFile ? label.replaceAll(' (File)', '') : 'Not uploaded',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: hasFile ? AppTheme.textDark : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (hasUrl)
-              IconButton(
-                onPressed: () => _previewDocument(fileUrl, label),
-                icon: const Icon(Icons.visibility_outlined, size: 20),
-                color: AppTheme.primaryBlue,
-                tooltip: 'Preview',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-          ],
-        ),
-      );
-    }
-
-    final String displayName;
-    final TextStyle nameStyle;
-    final String? statusText;
-
-    if (hasPending) {
-      displayName = pendingFile.name;
-      nameStyle = const TextStyle(fontSize: 14, color: AppTheme.primaryBlue);
-      statusText = hasFile ? 'Will replace on save' : 'Will upload on save';
-    } else if (isMarkedForDeletion) {
-      displayName = fileName!;
-      nameStyle = const TextStyle(
-        fontSize: 14,
-        color: AppTheme.errorRed,
-        decoration: TextDecoration.lineThrough,
-      );
-      statusText = 'Will be removed on save';
-    } else {
-      displayName = hasFile ? fileName : 'Not uploaded';
-      nameStyle = TextStyle(
-        fontSize: 14,
-        color: hasFile ? AppTheme.textDark : Colors.grey,
-      );
-      statusText = null;
-    }
-
-    Widget actions;
-    if (hasPending || isMarkedForDeletion) {
-      actions = TextButton.icon(
-        onPressed: hasPending ? onClearPick : onUndo,
-        icon: const Icon(Icons.undo, size: 16),
-        label: const Text('Undo'),
-        style: TextButton.styleFrom(
-          foregroundColor: AppTheme.primaryBlue,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-        ),
-      );
-    } else if (hasFile) {
-      actions = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline, size: 20),
-            color: AppTheme.errorRed,
-            tooltip: 'Remove',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          ),
-          IconButton(
-            onPressed: () => _pickFileFor(docType),
-            icon: const Icon(Icons.swap_horiz, size: 20),
-            color: AppTheme.primaryBlue,
-            tooltip: 'Replace',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          ),
-        ],
-      );
-    } else {
-      actions = IconButton(
-        onPressed: () => _pickFileFor(docType),
-        icon: const Icon(Icons.upload_file, size: 20),
-        color: AppTheme.primaryBlue,
-        tooltip: 'Upload',
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-      child: Row(
-        children: [
-          const Icon(Icons.attach_file_outlined, size: 18, color: Colors.grey),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(displayName, style: nameStyle),
-                if (statusText != null)
-                  Text(
-                    statusText,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: hasPending
-                          ? AppTheme.primaryBlue
-                          : AppTheme.errorRed,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton(
-              onPressed: () => _showLogoutDialog(),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.secondaryRed,
-                side: const BorderSide(color: AppTheme.secondaryRed, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.logout, size: 22),
-                  SizedBox(width: 12),
-                  Text(
-                    'Logout',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton(
-              onPressed: null,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.errorRed,
-                side: const BorderSide(color: AppTheme.errorRed, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.delete_forever, size: 22),
-                  SizedBox(width: 12),
-                  Text(
-                    'Delete Account',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // ── Logout ────────────────────────────────────────────────────────────────
 
   void _showLogoutDialog() async {
     final shouldLogout = await showDialog<bool>(
@@ -2515,60 +1840,5 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
     await notifier.logout();
     if (mounted) context.go(AppRoutes.welcome);
-  }
-}
-
-class _DocumentPreviewPage extends StatefulWidget {
-  final String url;
-  final String title;
-  final String? token;
-
-  const _DocumentPreviewPage({
-    required this.url,
-    required this.title,
-    this.token,
-  });
-
-  @override
-  State<_DocumentPreviewPage> createState() => _DocumentPreviewPageState();
-}
-
-class _DocumentPreviewPageState extends State<_DocumentPreviewPage> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) => setState(() => _isLoading = false),
-        ),
-      )
-      ..loadRequest(
-        Uri.parse(widget.url),
-        headers: widget.token != null
-            ? {'Authorization': 'Bearer ${widget.token}'}
-            : {},
-      );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: AppTheme.primaryBlue,
-        foregroundColor: Colors.white,
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
-        ],
-      ),
-    );
   }
 }
