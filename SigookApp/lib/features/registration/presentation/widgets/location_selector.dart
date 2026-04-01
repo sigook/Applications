@@ -64,7 +64,6 @@ class _LocationSelectorState extends ConsumerState<LocationSelector> {
               final country = Country(
                 id: catalogItem.id,
                 value: catalogItem.value,
-                code: null,
               );
               widget.onCountryChanged(country);
               widget.onProvinceChanged(null);
