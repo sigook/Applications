@@ -2,7 +2,7 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <location-address :model="worker.location" @isLoading="(value) => isLoading = value" />
+      <location-address :model.sync="worker.location" @isLoading="(value) => isLoading = value" />
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <phone-input :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
           @formattedPhone="(phone) => worker.mobileNumber = phone" />
