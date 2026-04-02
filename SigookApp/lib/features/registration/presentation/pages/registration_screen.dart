@@ -134,82 +134,52 @@ class _RegistrationFormScreenState
           body: SafeArea(
             child: Column(
               children: [
-                // ── Back button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
-                    child: IconButton(
-                      onPressed: () => context.go(AppRoutes.welcome),
-                      icon: const Icon(Icons.arrow_back),
-                      style:
-                          IconButton.styleFrom(backgroundColor: Colors.white),
+                // ── Scrollable content: back button + step indicator + form
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Back button
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            onPressed: () => context.go(AppRoutes.welcome),
+                            icon: const Icon(Icons.arrow_back),
+                            style: IconButton.styleFrom(
+                                backgroundColor: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Step indicator
+                        RegistrationStepIndicator(
+                          currentStep: formState.currentStep,
+                          completedSteps: [
+                            form.isBasicInfoComplete,
+                            form.isPreferencesInfoComplete,
+                            form.isDocumentsInfoComplete,
+                            form.isAccountInfoComplete,
+                          ],
+                          onStepTapped: (step) {
+                            ref
+                                .read(registrationFormStateProvider.notifier)
+                                .goToStep(step);
+                            WidgetsBinding.instance
+                                .addPostFrameCallback((_) => _scrollToTop());
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // Form content
+                        _buildStepContent(formState.currentStep),
+                      ],
                     ),
                   ),
                 ),
 
-                // ── Step indicator
-                RegistrationStepIndicator(
-                  currentStep: formState.currentStep,
-                  completedSteps: [
-                    form.isBasicInfoComplete,
-                    form.isPreferencesInfoComplete,
-                    form.isDocumentsInfoComplete,
-                    form.isAccountInfoComplete,
-                  ],
-                  onStepTapped: (step) {
-                    ref
-                        .read(registrationFormStateProvider.notifier)
-                        .goToStep(step);
-                    WidgetsBinding.instance
-                        .addPostFrameCallback((_) => _scrollToTop());
-                  },
-                ),
-
-                // ── Scrollable step content
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                    child: _buildStepContent(formState.currentStep),
-                  ),
-                ),
-
-                // ── Action buttons
-                _buildActionButtons(formState, form),
-
-                // ── Sign in link
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: TextStyle(
-                            color: Colors.grey.shade600, fontSize: 15),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          ref.read(authViewModelProvider.notifier).signIn();
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            color: AppTheme.primaryBlue,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // ── Fixed bottom: action buttons + sign-in link
+                _buildActionButtons(formState, form, ref),
               ],
             ),
           ),
@@ -237,11 +207,11 @@ class _RegistrationFormScreenState
     }
   }
 
-  Widget _buildActionButtons(dynamic formState, dynamic form) {
+  Widget _buildActionButtons(dynamic formState, dynamic form, WidgetRef ref) {
     final isLastStep = formState.currentStep == _lastStepIndex;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceGrey,
         boxShadow: [
@@ -252,63 +222,96 @@ class _RegistrationFormScreenState
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (formState.currentStep > 0) ...[
-            OutlinedButton(
-              onPressed: formState.isSubmitting
-                  ? null
-                  : () {
-                      ref
-                          .read(registrationFormStateProvider.notifier)
-                          .previousStep();
-                      WidgetsBinding.instance
-                          .addPostFrameCallback((_) => _scrollToTop());
-                    },
-              style: OutlinedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              ),
-              child: const Text('Back'),
-            ),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: ElevatedButton(
-              onPressed: formState.isSubmitting
-                  ? null
-                  : () {
-                      if (_canContinue(formState.currentStep, form)) {
-                        if (formState.currentStep < _lastStepIndex) {
+          Row(
+            children: [
+              if (formState.currentStep > 0) ...[
+                OutlinedButton(
+                  onPressed: formState.isSubmitting
+                      ? null
+                      : () {
                           ref
                               .read(registrationFormStateProvider.notifier)
-                              .nextStep();
+                              .previousStep();
                           WidgetsBinding.instance
                               .addPostFrameCallback((_) => _scrollToTop());
-                        } else {
-                          _submitForm(context, ref);
-                        }
-                      } else {
-                        _showValidationError(context, formState.currentStep);
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
+                  ),
+                  child: const Text('Back'),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: formState.isSubmitting
+                      ? null
+                      : () {
+                          if (_canContinue(formState.currentStep, form)) {
+                            if (formState.currentStep < _lastStepIndex) {
+                              ref
+                                  .read(registrationFormStateProvider.notifier)
+                                  .nextStep();
+                              WidgetsBinding.instance
+                                  .addPostFrameCallback((_) => _scrollToTop());
+                            } else {
+                              _submitForm(context, ref);
+                            }
+                          } else {
+                            _showValidationError(context, formState.currentStep);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                  ),
+                  child: formState.isSubmitting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Text(isLastStep ? 'Submit' : 'Continue'),
+                ),
               ),
-              child: formState.isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white,
-                        ),
-                      ),
-                    )
-                  : Text(isLastStep ? 'Submit' : 'Continue'),
-            ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Already have an account? ',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+              ),
+              TextButton(
+                onPressed: () {
+                  ref.read(authViewModelProvider.notifier).signIn();
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    color: AppTheme.primaryBlue,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -370,14 +373,7 @@ class _RegistrationFormScreenState
 
     if (result == 'Success') {
       notifier.setSuccess('Registration submitted successfully!');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration submitted successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      context.go(AppRoutes.jobs);
+      context.go(AppRoutes.registrationConfirmation);
     } else {
       notifier.setError(result);
       ScaffoldMessenger.of(context).showSnackBar(

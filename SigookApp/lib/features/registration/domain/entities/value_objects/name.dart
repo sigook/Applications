@@ -12,7 +12,7 @@ class Name extends Equatable {
   bool get isValid {
     if (value.isEmpty) return false;
     if (value.length < minLength || value.length > maxLength) return false;
-    return RegExp(r'^[a-zA-Z\s]+$').hasMatch(value);
+    return RegExp(r"^[\p{L}\s\-']+$", unicode: true).hasMatch(value);
   }
 
   String? get errorMessage {
@@ -23,8 +23,8 @@ class Name extends Equatable {
     if (value.length > maxLength) {
       return 'Name must be less than $maxLength characters';
     }
-    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-      return 'Name can only contain letters and spaces';
+    if (!RegExp(r"^[\p{L}\s\-']+$", unicode: true).hasMatch(value)) {
+      return 'Name can only contain letters, spaces, hyphens, or apostrophes';
     }
     return null;
   }

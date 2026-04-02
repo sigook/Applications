@@ -84,7 +84,7 @@ class RegistrationStepIndicator extends StatelessWidget {
 
   Widget _buildDot(int index) {
     final isActive = index == currentStep;
-    final isCompleted = index != currentStep && completedSteps[index];
+    final isCompleted = index < currentStep && completedSteps[index];
 
     final double dotSize = isActive ? 36.0 : 28.0;
 

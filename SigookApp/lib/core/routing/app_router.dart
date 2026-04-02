@@ -11,12 +11,14 @@ import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_policy_page.dart';
 import '../../features/legal/presentation/pages/terms_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/registration/presentation/pages/registration_confirmation_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
   static const String welcome = '/welcome';
   static const String signIn = '/sign-in';
   static const String registration = '/registration';
+  static const String registrationConfirmation = '/registration-confirmation';
   static const String tokenInfo = '/token-info';
   static const String jobs = '/jobs';
   static const String jobDetails = '/jobs/details';
@@ -104,6 +106,17 @@ class AppRouter {
             ).chain(CurveTween(curve: curve));
             var offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.registrationConfirmation,
+        name: 'registrationConfirmation',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const RegistrationConfirmationPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
           },
         ),
       ),
