@@ -67,7 +67,7 @@ class _JobPageState extends ConsumerState<JobPage> {
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
           backgroundColor: AppTheme.primaryBlue,
-          title: const Text('Job Details'),
+          title: const NavbarLogo(),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -78,7 +78,7 @@ class _JobPageState extends ConsumerState<JobPage> {
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
           backgroundColor: AppTheme.primaryBlue,
-          title: const Text('Job Details'),
+          title: const NavbarLogo(),
         ),
         body: Center(
           child: Column(

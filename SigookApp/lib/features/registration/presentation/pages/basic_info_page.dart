@@ -165,11 +165,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       }
     });
 
-    if (basicInfo.isValid) {
-      ref
-          .read(registrationViewModelProvider.notifier)
-          .updateBasicInfo(basicInfo);
-    }
+    ref.read(registrationViewModelProvider.notifier).updateBasicInfo(basicInfo);
   }
 
   void _markTouched(String fieldName) {
@@ -264,17 +260,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               ),
               const SizedBox(height: 32),
 
-              ProfilePhotoPicker(
-                errorText: 'Profile photo is required',
-                showError:
-                    _shouldShowError('profilePhoto') &&
-                    !(ref
-                            .watch(registrationViewModelProvider)
-                            .basicInfo
-                            ?.profilePhoto
-                            .hasPhoto ??
-                        false),
-              ),
+              const ProfilePhotoPicker(),
               const SizedBox(height: 32),
               CustomTextField(
                 label: 'First Name',
@@ -282,7 +268,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 controller: _firstNameController,
                 errorText: _firstNameError,
                 isRequired: true,
-                onChanged: (value) {},
+                onChanged: (_) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('firstName');
                 },
@@ -294,7 +280,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 controller: _lastNameController,
                 errorText: _lastNameError,
                 isRequired: true,
-                onChanged: (value) {},
+                onChanged: (_) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('lastName');
                 },
@@ -379,7 +365,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 errorText: _addressError,
                 isRequired: true,
                 maxLines: 2,
-                onChanged: (value) {},
+                onChanged: (_) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('address');
                 },
@@ -394,6 +380,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 errorText: _zipCodeError,
                 isRequired: true,
                 keyboardType: TextInputType.text,
+                maxLength: 6,
                 onChanged: (value) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('zipCode');
@@ -463,6 +450,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                   }
                 },
                 selectedColor: AppTheme.primaryBlue,
+                checkmarkColor: Colors.white,
                 labelStyle: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

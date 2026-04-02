@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/documents_info.dart';
 import '../../domain/entities/uploaded_file.dart';
@@ -18,6 +19,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   IdentificationDocument? _identification1;
   IdentificationDocument? _identification2;
   UploadedFile? _resume;
+  bool _isPickingResume = false;
 
   @override
   void initState() {
@@ -33,6 +35,51 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
         setState(() {});
       }
     });
+  }
+
+  Future<void> _pickResume() async {
+    setState(() => _isPickingResume = true);
+    try {
+      final filePickerService = ref.read(filePickerServiceProvider);
+      final result = await filePickerService.pickFile(
+        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png'],
+        maxFileSizeMB: 10,
+      );
+      if (!mounted) return;
+      if (result.isSuccess) {
+        setState(() {
+          _resume = UploadedFile(
+            fileName: result.file!.name,
+            description: '',
+            filePath: result.file!.path,
+          );
+          _isPickingResume = false;
+        });
+        _validateAndSave();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Resume uploaded: ${result.file!.name}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (result.isError) {
+        setState(() => _isPickingResume = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Failed to pick file'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        setState(() => _isPickingResume = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isPickingResume = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking file: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   void _validateAndSave() {
@@ -244,35 +291,8 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                 description: 'Upload your resume (optional)',
                 icon: Icons.work,
                 files: _resume != null ? [_resume!.fileName] : [],
-                onUpload: () {
-                  _showFileUploadModal(
-                    title: 'Upload Resume',
-                    description: 'Upload your resume document',
-                    onFileUploaded:
-                        (
-                          fileName,
-                          identificationType,
-                          identificationNumber,
-                          filePath,
-                          fileSize,
-                        ) {
-                          setState(() {
-                            _resume = UploadedFile(
-                              fileName: fileName,
-                              description: '',
-                              filePath: filePath,
-                            );
-                          });
-                          _validateAndSave();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Resume uploaded: $fileName'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        },
-                  );
-                },
+                isLoading: _isPickingResume,
+                onUpload: _pickResume,
                 onRemove: (index) {
                   setState(() {
                     _resume = null;
@@ -303,6 +323,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     required Function(int index) onRemove,
     String? errorText,
     bool required = false,
+    bool isLoading = false,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -395,8 +416,14 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
           ],
 
           ElevatedButton.icon(
-            onPressed: onUpload,
-            icon: const Icon(Icons.upload_file, size: 20),
+            onPressed: isLoading ? null : onUpload,
+            icon: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Icon(Icons.upload_file, size: 20),
             label: Text(files.isEmpty ? 'Upload File' : 'Upload Another'),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 44),
