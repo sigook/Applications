@@ -27,7 +27,7 @@
           </a>
         </template>
         <b-autocomplete :data="filteredProvinces" :placeholder="$t('Select')" v-model="province" open-on-focus
-          name="province" v-validate="'required'" @select="onProvinceSelected"></b-autocomplete>
+          name="province" v-validate="'required'" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
       </b-field>
     </div>
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -37,7 +37,7 @@
           {{ $t('City') }} <span class="has-text-danger">*</span>
         </template>
         <b-autocomplete :data="filteredCities" ref="autoCompleteCities" :placeholder="$t('Select')" v-model="city"
-          open-on-focus name="city" v-validate="'required'" selectable-footer @select="onCitySelected"
+          open-on-focus name="city" v-validate="'required'" :loading="loadingCities" selectable-footer @select="onCitySelected"
           @select-footer="addCity">
           <template v-if="isAgency" #footer>
             <a><span> Add new... </span></a>
@@ -97,6 +97,8 @@ export default {
       cities: [],
       city: '',
       citySelected: null,
+      loadingProvinces: false,
+      loadingCities: false,
       showProvinceSettingsModal: false,
     };
   },
@@ -148,22 +150,22 @@ export default {
       if (!country || !country.id) {
         return;
       }
-      this.$emit("isLoading", true);
+      this.loadingProvinces = true;
       this.$store
         .dispatch("getProvinces", country.id)
         .then((r) => {
           this.provinces = r;
-          this.$emit("isLoading", false);
+          this.loadingProvinces = false;
         });
     },
     getCityByProvince(province) {
       if (!province || !province.id) {
         return
       }
-      this.$emit("isLoading", true);
+      this.loadingCities = true;
       this.$store.dispatch("getCities", province.id).then((response) => {
         this.cities = response;
-        this.$emit("isLoading", false);
+        this.loadingCities = false;
       });
     },
     addCity() {
@@ -228,6 +230,12 @@ export default {
         this.localModel = JSON.parse(JSON.stringify(newVal));
       },
       deep: true
+    },
+    'localModel.address'() {
+      this.$emit('update:model', this.localModel);
+    },
+    'localModel.postalCode'() {
+      this.$emit('update:model', this.localModel);
     },
     province(newVal) {
       if (this.provinceSelected && this.provinceSelected.value !== newVal) {
