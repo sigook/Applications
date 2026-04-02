@@ -89,6 +89,26 @@ flutter precache --ios
 flutter pub get
 
 # ---------------------------------------
+# pod install with retry (handles transient GitHub/CDN 502 errors)
+# ---------------------------------------
+pod_install_with_retry() {
+  local attempt=1
+  local max_attempts=3
+  until (cd "$PROJECT_PATH/ios" && pod install) ; do
+    if [ $attempt -ge $max_attempts ]; then
+      echo "❌ pod install failed after $max_attempts attempts"
+      exit 1
+    fi
+    echo "⚠️  pod install failed (attempt $attempt/$max_attempts), retrying in 15s..."
+    attempt=$((attempt + 1))
+    sleep 15
+  done
+  echo "✅ pod install succeeded (attempt $attempt)"
+}
+
+pod_install_with_retry
+
+# ---------------------------------------
 # Build versioning
 # ---------------------------------------
 VERSION_NAME="$(date +%Y).$(date +%-m).$(date +%-d)"

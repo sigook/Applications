@@ -56,10 +56,7 @@ class AnalyticsServiceImpl implements AnalyticsService {
   }) async {
     await logEvent(
       name: 'screen_view',
-      parameters: {
-        'screen_name': screenName,
-        if (screenClass != null) 'screen_class': screenClass,
-      },
+      parameters: {'screen_name': screenName, 'screen_class': ?screenClass},
     );
   }
 
@@ -89,26 +86,17 @@ class AnalyticsServiceImpl implements AnalyticsService {
 
   @override
   Future<void> logLogin({String? method}) async {
-    await logEvent(
-      name: 'login',
-      parameters: {if (method != null) 'method': method},
-    );
+    await logEvent(name: 'login', parameters: {'method': ?method});
   }
 
   @override
   Future<void> logSignUp({String? method}) async {
-    await logEvent(
-      name: 'sign_up',
-      parameters: {if (method != null) 'method': method},
-    );
+    await logEvent(name: 'sign_up', parameters: {'method': ?method});
   }
 
   @override
   Future<void> logSearch({String? searchTerm}) async {
-    await logEvent(
-      name: 'search',
-      parameters: {if (searchTerm != null) 'search_term': searchTerm},
-    );
+    await logEvent(name: 'search', parameters: {'search_term': ?searchTerm});
   }
 
   @override
@@ -164,10 +152,7 @@ class JobAnalyticsEvents {
   }) async {
     await analytics.logEvent(
       name: 'job_search',
-      parameters: {
-        'search_query': query,
-        if (resultsCount != null) 'results_count': resultsCount,
-      },
+      parameters: {'search_query': query, 'results_count': ?resultsCount},
     );
   }
 }

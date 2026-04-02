@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 
 class LegalSection {
   final String title;
@@ -26,14 +27,12 @@ class LegalPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
       appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.white,
-        foregroundColor: AppTheme.textDark,
-        iconTheme: const IconThemeData(color: AppTheme.textDark),
+        title: const NavbarLogo(),
+        backgroundColor: AppTheme.primaryBlue,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
       ),

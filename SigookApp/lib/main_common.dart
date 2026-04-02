@@ -12,7 +12,7 @@ import 'features/profile/presentation/providers/cached_worker_profile_provider.d
 
 Future<void> mainCommon() async {
   try {
-    debugPrint('📱 Starting app initialization...');
+    debugPrint('📱  Starting app initialization...');
 
     EnvironmentConfig.printConfigSource();
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/config/environment.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/navbar_logo.dart';
 
 class LogoutWebviewPage extends StatefulWidget {
   final String? idToken;
@@ -73,10 +74,7 @@ class _LogoutWebviewPageState extends State<LogoutWebviewPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: AppTheme.primaryBlue,
-        title: const Text(
-          'Signing out…',
-          style: TextStyle(color: Colors.white, fontSize: 18),
-        ),
+        title: const NavbarLogo(),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),

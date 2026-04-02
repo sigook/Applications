@@ -343,7 +343,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```bash
 flutter analyze                # Check for static errors
 flutter test                   # Run unit tests
-flutter run --flavor staging -t lib/main_staging.dart  # Manual test
+flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart  # Manual test
 ```
 
 ## Reusable Core Widgets
@@ -402,6 +402,22 @@ CacheException           →  CacheFailure
 
 ### Debugging with VS Code
 
+#### Fix "Dart-only workspace" error
+
+If VS Code shows **"Unable to launch Flutter project in a Dart-only workspace"**, the Dart extension cannot locate the Flutter SDK. Create `.vscode/settings.json` with your Flutter SDK path:
+
+```json
+{
+  "dart.flutterSdkPath": "C:\\dev\\flutter"
+}
+```
+
+Find your path with `where flutter` (Windows) or `which flutter` (Mac/Linux) — use the directory above `bin/`. This file is gitignored so each developer sets their own.
+
+---
+
+#### Launch configurations
+
 Pre-configured launch configurations:
 
 - **Development (Staging)** - Default development with staging environment
@@ -422,11 +438,14 @@ See `.vscode/README.md` for detailed configuration.
 ### Build Flavors
 
 ```bash
-# Staging
-flutter run --flavor staging -t lib/main_staging.dart
+# Staging (debug run)
+flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart
 
-# Production
-flutter build apk --flavor production -t lib/main_production.dart --release
+# Local (uses production flavor pointing to local backend)
+flutter run --dart-define-from-file=.env.local --flavor production -t lib/main_local.dart
+
+# Production release
+flutter build apk --dart-define-from-file=.env.production --flavor production -t lib/main_production.dart --release
 ```
 
 See `BUILD_FLAVORS_GUIDE.md` for complete setup instructions.
