@@ -373,14 +373,7 @@ class _RegistrationFormScreenState
 
     if (result == 'Success') {
       notifier.setSuccess('Registration submitted successfully!');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration submitted successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      context.go(AppRoutes.jobs);
+      context.go(AppRoutes.registrationConfirmation);
     } else {
       notifier.setError(result);
       ScaffoldMessenger.of(context).showSnackBar(
