@@ -46,6 +46,10 @@ post_install do |installer|
       # Fix deployment target warnings - set minimum iOS version to 13.0
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
 
+      # Disable static analyzer on Pod targets to suppress third-party Objective-C warnings
+      # These warnings come from plugin source code we don't control (geolocator, file_picker, etc.)
+      config.build_settings['RUN_CLANG_STATIC_ANALYZER'] = 'NO'
+
       # CRITICAL: Disable code signing for all Pod targets
       # This prevents "does not support provisioning profiles" errors during CI/CD builds
       # Only the main Runner target should be signed, not the Pods
