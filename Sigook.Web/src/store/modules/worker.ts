@@ -3,56 +3,25 @@ import { WorkerProfile, WorkerBasicInfo } from "@/types/worker";
 
 interface WorkerState {
   workerComments: any;
-  workerProfiles: any;
   workerBasic: WorkerBasicInfo;
   workerProfile: Partial<WorkerProfile>;
   workerProfileImage: string;
   workerName: string;
-  profileSelected: any;
 }
 
 export default {
   namespaced: true,
   state: {
     workerComments: {},
-    workerProfiles: {},
-    workerBasic: {
-      approvedToWork: true,
-      hasSocialInsurance: true,
-      hasSocialInsuranceFile: true,
-      hasIdentificationType1File: true,
-      hasIdentificationNumber1: true,
-      hasIdentificationType2File: true,
-      hasIdentificationNumber2: true,
-      hasResume: true,
-    },
     workerProfile: {},
-    workerProfileImage: "",
-    workerName: "",
-    profileSelected: {}
   } as WorkerState,
   mutations: {
     setWokerComments(state: WorkerState, data: any) {
       state.workerComments = data;
     },
-    setWorkerProfiles(state: WorkerState, data: any) {
-      state.workerProfiles = data;
-    },
     setWorkerProfile(state: WorkerState, data: any) {
       state.workerProfile = data;
     },
-    setWorkerBasicInfo(state: WorkerState, data: any) {
-      state.workerBasic = data;
-    },
-    setWorkerProfileImage(state: WorkerState, data: string) {
-      state.workerProfileImage = data;
-    },
-    setWorkerName(state: WorkerState, data: string) {
-      state.workerName = data;
-    },
-    setProfileSelected(state: WorkerState, data: any) {
-      state.profileSelected = data;
-    }
   },
   actions: {
     getJobs(context: any, filter: any): Promise<any> {
@@ -139,42 +108,11 @@ export default {
           .catch((error: any) => reject(error.response));
       });
     },
-    getProfiles(context: any): Promise<any> {
+    getMyProfile(context: any): Promise<any> {
       return new Promise((resolve, reject) => {
-        http.get("/api/WorkerProfile")
-          .then((response: any) => {
-            context.commit("setWorkerProfiles", response.data);
-            resolve(response.data);
-          })
-          .catch((error: any) => {
-            reject(error.response);
-          });
-      });
-    },
-    getProfile(context: any, id: string): Promise<any> {
-      return new Promise((resolve, reject) => {
-        http.get("/api/WorkerProfile/" + id)
+        http.get("/api/WorkerProfile/me")
           .then((response: any) => {
             context.commit("setWorkerProfile", response.data);
-            context.commit("setWorkerProfileImage", response.data.profileImage.pathFile);
-            context.commit("setWorkerName", response.data.firstName + " " + response.data.lastName);
-            resolve(response.data);
-          })
-          .catch((error: any) => {
-            reject(error.response);
-          });
-      });
-    },
-    getProfileBasicInfo(context: any, id: string): Promise<any> {
-      return new Promise((resolve, reject) => {
-        http
-          .get("/api/WorkerProfile/" + id + "/BasicInfo")
-          .then((response: any) => {
-            context.commit("setWorkerBasicInfo", response.data);
-            if (response.data.profileImage) {
-              context.commit("setWorkerProfileImage", response.data.profileImage.pathFile);
-            }
-            context.commit("setWorkerName", response.data.firstName + " " + response.data.lastName);
             resolve(response.data);
           })
           .catch((error: any) => {

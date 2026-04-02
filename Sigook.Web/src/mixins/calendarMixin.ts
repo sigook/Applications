@@ -85,21 +85,8 @@ const calendarMixin = {
   created() {
     const vm = this as any;
     vm.today = dayjs().toDate();
-    if (vm.status) {
-      switch (vm.status) {
-        case vm.$statusFilled:
-        case vm.$statusCancelled:
-          vm.selectDate = dayjs(vm.startDate).toDate();
-          vm.getCurrentMonth();
-          return;
-        default:
-          vm.selectDate = vm.today;
-          vm.getTodayMonth();
-          return;
-      }
-    } else {
-      vm.getTodayMonth();
-    }
+    vm.selectDate = vm.today;
+    vm.getTodayMonth();
   },
   filters: {
     onlyMonth(value: string | Date): string {

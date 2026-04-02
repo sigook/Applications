@@ -68,6 +68,7 @@ export default {
       isLoading: false,
       worker: {},
       disabledDates: null,
+      genders: [],
     }
   },
   methods: {
@@ -102,12 +103,7 @@ export default {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response).subtract(18, 'years').toDate();
     });
-    await this.$store.dispatch('getGenders');
-  },
-  computed: {
-    genders() {
-      return this.$store.state.catalog.genders;
-    }
+    this.genders = await this.$store.dispatch('getGenders');
   }
 }
 </script>

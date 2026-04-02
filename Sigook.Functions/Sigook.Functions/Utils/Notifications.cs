@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Sigook.Functions.Models;
 using System.Net.Http.Headers;
@@ -6,10 +7,10 @@ namespace Sigook.Functions.Utils
 {
     public static class Notifications
     {
-        public static async Task<string> SendTeamsNotification(this HttpClient client, TeamsMessage message)
+        public static async Task<string> SendTeamsNotification(this HttpClient client, TeamsMessage message, IConfiguration configuration)
         {
-            string url = Environment.GetEnvironmentVariable("TeamsWebhook");
-            if (string.IsNullOrEmpty(url)) return "TeamsWebhook environment variable is not set";
+            string url = configuration["TeamsWebhook"];
+            if (string.IsNullOrEmpty(url)) return "TeamsWebhook configuration is not set";
             string json = JsonConvert.SerializeObject(message);
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);

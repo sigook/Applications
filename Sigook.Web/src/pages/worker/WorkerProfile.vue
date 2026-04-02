@@ -32,15 +32,15 @@
           <span>Personal Details</span>
           <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
         </template>
-        <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" />
+        <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" @updateProfile="updateProfile()" />
       </b-tab-item>
 
       <b-tab-item label="Work Experience" value="WorkExperience">
-        <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" />
+        <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" @updateProfile="updateProfile()" />
       </b-tab-item>
 
       <b-tab-item label="Preferences" value="Preferences">
-        <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" />
+        <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" @updateProfile="updateProfile()" />
       </b-tab-item>
 
       <b-tab-item label="Comments" value="Comments">
@@ -56,9 +56,6 @@
 </template>
 
 <script lang="ts">
-import switchLocaleMixin from "../../mixins/switchLocaleMixin";
-import confirmationAlert from "../../mixins/confirmationAlert";
-
 export default {
   components: {
     PersonalDetails: () => import("../../components/worker/ProfilePersonal.vue"),
@@ -70,31 +67,12 @@ export default {
   },
   data() {
     return {
-      dropdownAgency: false,
       currentTab: "PersonalDetails",
       visitedTabs: ["PersonalDetails"],
-      isLoading: true,
-      dropdownOptions: false,
-      lang: this.$validator.dictionary.locale,
+      isLoading: false,
     };
   },
   methods: {
-    changeProfile(profile) {
-      this.dropdownAgency = false;
-      if (profile !== this.profileSelected) {
-        this.isLoading = true;
-        this.$store.commit("worker/setProfileSelected", profile);
-        this.$store.dispatch("worker/getProfile", profile.id)
-          .then((response) => {
-            this.getProvinces(response.location.province.id);
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            this.showAlertError(error);
-            this.isLoading = false;
-          });
-      }
-    },
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);
@@ -104,10 +82,22 @@ export default {
         query: { tab: tab },
       });
     },
+    getProfile() {
+        this.isLoading = true;
+        this.$store
+          .dispatch("worker/getMyProfile")
+          .then(() => {
+            this.isLoading = false;
+          })
+          .catch((error) => {
+            this.isLoading = false;
+            this.showAlertError(error);
+          });
+    },
     updateProfile() {
       this.isLoading = true;
       this.$store
-        .dispatch("worker/getProfile", this.workerProfile.id)
+        .dispatch("worker/getMyProfile")
         .then(() => {
           this.isLoading = false;
         })
@@ -118,12 +108,6 @@ export default {
     },
   },
   computed: {
-    profileSelected() {
-      return this.$store.state.worker.profileSelected;
-    },
-    workerProfiles() {
-      return this.$store.state.worker.workerProfiles;
-    },
     workerProfile() {
       return this.$store.state.worker.workerProfile;
     },
@@ -136,7 +120,6 @@ export default {
         || !this.workerProfile.resume;
     },
   },
-  mixins: [switchLocaleMixin, confirmationAlert],
   created() {
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
@@ -144,23 +127,6 @@ export default {
         this.visitedTabs.push(this.$route.query.tab);
       }
     }
-    this.$store.dispatch("worker/getProfiles")
-      .then((response) => {
-        this.$store.commit("worker/setProfileSelected", response[0]);
-        this.$store.dispatch("worker/getProfile", response[0].id)
-          .then((response) => {
-            this.getProvinces(response.location.province.id);
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            this.showAlertError(error);
-            this.isLoading = false;
-          });
-      })
-      .catch((error) => {
-        this.showAlertError(error);
-        this.isLoading = false;
-      });
   },
 };
 </script>

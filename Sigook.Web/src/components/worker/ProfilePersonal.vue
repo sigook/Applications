@@ -6,7 +6,7 @@
       <contact-information id="contactinformation" :worker="worker" @updateProfile="() => updateProfile()" />
       <social-insurance id="socialinsurance" :class="{ 'missing': !worker.socialInsurance }" :worker="worker"
         @updateProfile="() => updateProfile()" />
-      <documents id="documents" :class="{ 'missing': !worker.identificationType1File || !worker.identificationType2File }"
+      <documents id="documents" :class="{ 'missing': !worker.identificationType1File && !worker.identificationType2File }"
         :worker="worker" @updateProfile="() => updateProfile()" />
       <resume id="resume" :class="{ 'missing': !worker.resume }" :worker="worker"
         @updateProfile="() => updateProfile()" />
@@ -23,7 +23,6 @@
 <script lang="ts">
 export default {
   props: ['worker'],
-  inject: ['$validator'],
   data() {
     return {
       isLoading: false
@@ -41,16 +40,11 @@ export default {
   },
   methods: {
     updateProfile() {
-      this.isLoading = true;
-      this.$store.dispatch('worker/getProfile', this.worker.id)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
+      this.$emit('updateProfile');
     }
+  },
+  created() {
+    console.log(this.worker);
   }
 }
 </script>
