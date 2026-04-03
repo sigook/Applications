@@ -101,6 +101,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { getIdentificationTypes } from "@/api/catalogApi";
 
 export default {
   props: ["data"],
@@ -119,7 +120,7 @@ export default {
   },
   mixins: [toastMixin, multipartUploadMixin],
   async created() {
-    this.identificationTypes = await this.$store.dispatch("getIdentificationTypes");
+    this.identificationTypes = await getIdentificationTypes();
     if (this.data != null) {
       this.worker = { ...this.data };
     }

@@ -20,6 +20,7 @@
 </template>
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
+import { getAvailability } from "@/api/catalogApi";
 export default {
   props: ['data'],
   data() {
@@ -47,7 +48,7 @@ export default {
     }
   },
   async created() {
-    this.availabilities = await this.$store.dispatch('getAvailability');
+    this.availabilities = await getAvailability();
     if (this.data != null) {
       this.worker.availabilities = this.data.availabilities;
     }

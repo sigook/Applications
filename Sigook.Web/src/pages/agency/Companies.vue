@@ -147,7 +147,7 @@
               </modal-notes>
             </div>
           </b-table-column>
-          <b-table-column field="companyStatus" label="Status" width="250px" :searchable="!isMobile">
+          <b-table-column field="companyStatus" label="Status" :searchable="!isMobile">
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
                 field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">

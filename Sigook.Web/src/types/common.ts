@@ -25,49 +25,66 @@ export interface Location {
   longitude: number | null;
 }
 
-export interface City {
+export interface Country {
   id: string;
-  name: string;
-  provinceId: string;
+  value: string;
+  code: string;
+}
+
+export interface ProvinceSettings {
+  paidHolidays: boolean | null;
+  overtimeStartsAfter: number | null;
 }
 
 export interface Province {
   id: string;
-  name: string;
+  value: string;
   code: string;
-  countryId: string;
+  country: Country;
+  settings: ProvinceSettings | null;
 }
 
-export interface Country {
+export interface City {
   id: string;
-  name: string;
+  value: string;
   code: string;
+  province: Province;
 }
 
 export interface FileReference {
   pathFile: string;
 }
 
-export interface CatalogItem {
-  id: string;
-  name: string;
+// Matches API BaseModel<T> { Id, Value }
+export interface CatalogItem<T = string> {
+  id: T;
+  value: string;
 }
 
 export type Gender = CatalogItem;
 export type IdentificationType = CatalogItem;
-export type Skill = CatalogItem;
+export type Availability = CatalogItem;
+export type AvailabilityTime = CatalogItem;
+export type Day = CatalogItem;
+export type Lift = CatalogItem;
 export type Language = CatalogItem;
-export type JobPosition = CatalogItem;
 export type WsibGroup = CatalogItem;
 export type Industry = CatalogItem;
 export type CompanyStatusCatalog = CatalogItem;
 export type CancellationReason = CatalogItem;
 
-export interface TaxCategory {
+export type TaxCategory = CatalogItem<number>;
+
+// Matches API JobPositionDetailModel
+export interface JobPosition {
   id: string;
-  name: string;
-  federalClaim: number;
-  provincialClaim: number;
+  value: string;
+  industry: string;
+}
+
+// Matches API skill endpoint { skill: string }
+export interface Skill {
+  skill: string;
 }
 
 export type Currency = 'CAD' | 'USD';

@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-
+import { getIndustries } from "@/api/catalogApi";
 
 export default {
   props: ['companyData'],
@@ -106,7 +106,7 @@ export default {
     }
   },
   async created() {
-    this.industries = await this.$store.dispatch('getCompanyIndustry');
+    this.industries = await getIndustries();
     setTimeout(() => {
       this.$refs.industryComponent.setSelected(this.localCompanyData.industry.industry);
     });

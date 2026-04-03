@@ -74,17 +74,18 @@
             </b-button>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <floating-menu class="text-center">
-              <template v-slot:options>
-                <button class="floating-menu-item" v-if="props.row.candidateId"
-                  @click="convertToWorker(props.row.candidateId)">
-                  Convert to Worker
-                </button>
-                <button class="floating-menu-item" @click="deleteAgencyRequestApplicant(props.row)">
-                  Delete
-                </button>
+            <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+              <template #trigger>
+                <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-            </floating-menu>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="convertToWorker(props.row.candidateId)">
+                Convert to Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="deleteAgencyRequestApplicant(props.row)">
+                Delete
+              </b-dropdown-item>
+            </b-dropdown>
           </b-table-column>
         </template>
       </b-table>
@@ -126,8 +127,7 @@ export default {
   mixins: [phoneMaskMixin],
   components: {
     manageTabs: () => import("./ManageApplicantsModal.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots.vue")
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
   },
   methods: {
     onPageChange(params) {

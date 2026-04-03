@@ -31,6 +31,7 @@
 
 <script lang="ts">
 import download from '../../mixins/downloadFileMixin';
+import { fetchInvoicePdf } from "@/api/downloadApi";
 
 export default {
   data() {
@@ -65,7 +66,7 @@ export default {
     },
     downloadInvoicePdf(item) {
       this.isLoading = true;
-      this.$store.dispatch("downloadInvoicePdf", { invoiceId: item.id })
+      fetchInvoicePdf(item.id)
         .then((response) => {
           this.isLoading = false;
           this.downloadPDF(response, "Invoice_" + item.numberId);

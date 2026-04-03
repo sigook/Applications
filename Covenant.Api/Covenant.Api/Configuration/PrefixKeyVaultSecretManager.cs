@@ -1,17 +1,11 @@
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Configuration;
 
 namespace Covenant.Api.Configuration;
 
-public class PrefixKeyVaultSecretManager : KeyVaultSecretManager
+public class PrefixKeyVaultSecretManager(string prefix) : KeyVaultSecretManager
 {
-    private readonly string _prefix;
-
-    public PrefixKeyVaultSecretManager(string prefix)
-    {
-        _prefix = $"{prefix}--";
-    }
+    private readonly string _prefix = $"{prefix}--";
 
     public override bool Load(SecretProperties properties)
     {

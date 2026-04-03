@@ -4,7 +4,6 @@ import createPersistedState from 'vuex-persistedstate';
 
 // modules
 import AgencyModule from './modules/agency';
-import Catalog from './modules/catalog';
 import CompanyModule from './modules/company';
 import WorkerModule from './modules/worker';
 import SecurityModule from './modules/security';
@@ -41,7 +40,6 @@ export default new Vuex.Store<RootState>({
   modules: {
     security: SecurityModule,
     agency: AgencyModule,
-    catalog: Catalog,
     company: CompanyModule,
     worker: WorkerModule,
     shared: Shared

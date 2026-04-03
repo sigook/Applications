@@ -19,6 +19,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getSkills } from "@/api/catalogApi";
 export default {
   props: ['data'],
   data() {
@@ -52,7 +53,7 @@ export default {
     },
     getSkills() {
       this.isLoading = true;
-      this.$store.dispatch('getSkills').then(response => {
+      getSkills().then(response => {
         this.isLoading = false;
         this.skills = response;
         this.filteredSkills = this.skills;

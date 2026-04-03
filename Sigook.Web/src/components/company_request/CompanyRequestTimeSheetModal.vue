@@ -59,6 +59,7 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { maximumHoursPerDay } from "@/constants/catalog";
 
 export default {
   props: ['editableDay', 'worker'],
@@ -113,9 +114,10 @@ export default {
   },
   computed: {
     maximumDailyHours() {
-      if (this.$store.state.catalog.maximumHoursPerDay) {
+      const maxHours = maximumHoursPerDay;
+      if (maxHours) {
         const maximum = new Date();
-        maximum.setHours(this.$store.state.catalog.maximumHoursPerDay);
+        maximum.setHours(maxHours);
         maximum.setMinutes(0);
         maximum.setSeconds(0);
         return maximum;

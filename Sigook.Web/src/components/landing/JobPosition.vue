@@ -64,6 +64,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getLandingJobPositions } from "@/api/websiteApi";
+
 export default {
   props: ['solutionType'],
   data() {
@@ -81,7 +83,7 @@ export default {
   },
   methods: {
     async loadInfo(positionType) {
-      const positions = await this.$store.dispatch('getLandingJobPositions');
+      const positions = await getLandingJobPositions();
       const position = positions[this.solutionType].find(p => p.id === positionType);
       if (position) {
         this.currentPosition = position;

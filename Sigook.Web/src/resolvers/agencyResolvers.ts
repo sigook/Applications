@@ -1,8 +1,9 @@
 import { Route } from 'vue-router';
 import store from "@/store";
+import { getCompanyStatus, getIndustries } from "@/api/catalogApi";
 
 export const loadAgencyCompaniesResolver = async (to: Route, from: Route, next: (...args: any[]) => void) => {
-    (to.meta as Record<string, any>)['companyStatuses'] = await store.dispatch('getCompanyStatus');
+    (to.meta as Record<string, any>)['companyStatuses'] = await getCompanyStatus();
     next();
 }
 
@@ -16,8 +17,8 @@ export const loadAgencyRequestToUpdateResolver = async (to: Route, from: Route, 
 }
 
 export const loadCompanyToUpdateResolver = async (to: Route, from: Route, next: (...args: any[]) => void) => {
-    (to.meta as Record<string, any>)['companyStatuses'] = await store.dispatch("getCompanyStatus");
-    (to.meta as Record<string, any>)['industryList'] = await store.dispatch("getCompanyIndustry");
+    (to.meta as Record<string, any>)['companyStatuses'] = await getCompanyStatus();
+    (to.meta as Record<string, any>)['industryList'] = await getIndustries();
     (to.meta as Record<string, any>)['company'] = await store.dispatch("agency/getCompany", to.params.companyProfileId);
     (to.meta as Record<string, any>)['agencyPersonnel'] = await store.dispatch("agency/getAgencyPersonnel");
     next();

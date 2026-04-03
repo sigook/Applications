@@ -146,6 +146,7 @@
 
 
 <script lang="ts">
+import { getJobs } from "@/api/websiteApi";
 
 export default {
   data() {
@@ -165,7 +166,7 @@ export default {
   },
   async created() {
     this.isLoading = true;
-    this.jobs = await this.$store.dispatch("getJobs", this.$route.query);
+    this.jobs = await getJobs(this.$route.query);
 
     const jobIdFromQuery = this.$route.query.jobId;
     if (jobIdFromQuery) {
@@ -198,7 +199,7 @@ export default {
     },
     async searchJob(jobSearch) {
       this.isLoading = true;
-      this.jobs = await this.$store.dispatch("getJobs", jobSearch);
+      this.jobs = await getJobs(jobSearch);
       this.isLoading = false;
     },
     applyNow() {

@@ -27,6 +27,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getJobPositions } from "@/api/catalogApi";
 export default {
   props: ["profileId"],
   data() {
@@ -67,7 +68,7 @@ export default {
   },
   async created() {
     this.isLoading = true;
-    this.jobPositionList = await this.$store.dispatch('getJobPositions');
+    this.jobPositionList = await getJobPositions();
     this.isLoading = false;
   },
   computed: {

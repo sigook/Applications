@@ -19,6 +19,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getCities } from "@/api/locationApi";
 export default {
   props: ['data'],
   data() {
@@ -46,7 +47,7 @@ export default {
     },
     getCities() {
       this.isLoading = true;
-      this.$store.dispatch('getCities', this.data.location.city.province.id)
+      getCities(this.data.location.city.province.id)
         .then(result => {
           this.isLoading = false;
           this.citiesLocations = result;

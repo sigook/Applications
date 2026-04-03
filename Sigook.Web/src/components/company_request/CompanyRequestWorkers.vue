@@ -13,7 +13,7 @@
             class="img-30 img-rounded" />
           <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
         </b-table-column>
-        <b-table-column field="numberId" width="100" label="ID" sortable searchable>
+        <b-table-column field="numberId" label="ID" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
               @keypress.native="onInputEntered"></b-input>
@@ -43,7 +43,7 @@
             {{ props.row.startWorking | dateMonth }}
           </template>
         </b-table-column>
-        <b-table-column field="status" label="Status" width="250px" sortable searchable>
+        <b-table-column field="status" label="Status" sortable searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
               field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">

@@ -60,6 +60,8 @@
 </template>
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getGenders } from "@/api/catalogApi";
+import { residencyList } from "@/constants/catalog";
 
 export default {
   props: ['candidateId'],
@@ -67,7 +69,8 @@ export default {
     return {
       isLoading: false,
       candidate: {},
-      showPostalCode: false
+      showPostalCode: false,
+      genderList: []
     }
   },
   methods: {
@@ -108,8 +111,9 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getGenders')
-      .then(() => {
+    getGenders()
+      .then((result) => {
+        this.genderList = result;
         this.getAgencyCandidate();
       })
       .catch(error => {
@@ -119,10 +123,10 @@ export default {
   mixins: [billingAdminMixin],
   computed: {
     genders() {
-      return this.$store.state.catalog.genders;
+      return this.genderList;
     },
     residencyList() {
-      return this.$store.state.catalog.residencyList
+      return residencyList;
     },
     hasDnuPermission() {
       if (!this.candidate.dnu) {

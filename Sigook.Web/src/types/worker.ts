@@ -110,6 +110,21 @@ export interface WorkerLocationPreference {
   cityId: string;
 }
 
+export interface WorkerExperienceForm {
+  id: string | null;
+  companyName: string;
+  title: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  currentJob: boolean;
+  description: string;
+}
+
+export interface WorkerDocumentFile {
+  id: string | null;
+  fileName: string;
+}
+
 export interface WorkerFilter {
   page: number;
   pageSize: number;

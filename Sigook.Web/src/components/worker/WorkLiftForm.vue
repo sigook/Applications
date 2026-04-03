@@ -22,6 +22,7 @@
   </div>
 </template>
 <script lang="ts">
+import { fetchLifts } from "@/api/catalogApi";
 
 export default {
   props: ['data'],
@@ -55,7 +56,7 @@ export default {
     }
   },
   async created() {
-    this.lifts = await this.$store.dispatch('getLifts');
+    this.lifts = await fetchLifts();
     if (this.data != null) {
       this.worker.lift = Object.assign({}, this.data.lift);
     }
