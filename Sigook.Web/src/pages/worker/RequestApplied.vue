@@ -27,10 +27,10 @@
           </aside>
         </div>
       </b-tab-item>
-      <b-tab-item label="Punch Card" value="Punch Card">
+      <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
         <punch-card v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet" />
       </b-tab-item>
-      <b-tab-item label="Time Sheet" value="Time Sheet">
+      <b-tab-item v-if="request.punchCardOptionEnabled" label="Time Sheet" value="Time Sheet">
         <time-sheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
       </b-tab-item>
     </b-tabs>

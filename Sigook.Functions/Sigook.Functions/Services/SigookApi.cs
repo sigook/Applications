@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Sigook.Functions.Models;
 using Sigook.Functions.Utils;
@@ -8,19 +9,21 @@ namespace Sigook.Functions.Services
     public class SigookApi : ISigookApi
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public SigookApi(IHttpClientFactory httpClientFactory)
+        public SigookApi(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         public async Task<PaginatedList<WorkerContactInfoModel>> GetWorkers(int pageIndex, Guid agencyId)
         {
-            var baseUrl = Environment.GetEnvironmentVariable("SigookUrlWorkersAvailableToApply")
+            var baseUrl = _configuration["SigookUrlWorkersAvailableToApply"]
                 ?? "https://staging.api.sigook.ca/api/Worker/AvailableToInvite";
 
             var client = _httpClientFactory.CreateClient("Api");
-            var token = await client.GetToken();
+            var token = await client.GetToken(_configuration);
 
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{baseUrl}?PageSize=100&PageIndex={pageIndex}&AgencyId={agencyId}");

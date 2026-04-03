@@ -11,9 +11,21 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Azure.Identity;
 using Microsoft.IdentityModel.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Azure Key Vault configuration
+var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+    var env = builder.Environment.IsProduction() ? "production" : "staging";
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(keyVaultUrl),
+        new DefaultAzureCredential(),
+        new PrefixKeyVaultSecretManager($"{env}-ids"));
+}
 
 builder.WebHost
     .UseSetting("detailedErrors", "true")
@@ -30,10 +42,6 @@ builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddCors(options => options.AddPolicy("default", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!builder.Environment.IsDevelopment())
-{
-    connectionString = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
-}
 builder.Services.AddDbContext<CovenantContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddIdentity<CovenantUser, CovenantRole>(options =>
 {
@@ -44,7 +52,7 @@ builder.Services.AddIdentity<CovenantUser, CovenantRole>(options =>
     options.Password.RequireLowercase = false;
 }).AddEntityFrameworkStores<CovenantContext>().AddDefaultTokenProviders();
 
-var issuerUri = Environment.GetEnvironmentVariable("IssuerUri") ?? builder.Configuration.GetValue<string>("IssuerUri") ?? "https://accounts.com";
+var issuerUri = builder.Configuration.GetValue<string>("IssuerUri") ?? "https://accounts.com";
 var identityBuilder = builder.Services.AddIdentityServer(options => options.IssuerUri = issuerUri)
     .AddDeveloperSigningCredential()
     .AddConfigurationStore(options => options.ConfigureDbContext = b => b.UseNpgsql(connectionString))

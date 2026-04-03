@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sigook.Functions.Models;
 using Sigook.Functions.Utils;
@@ -10,11 +11,13 @@ public class ScheduleTasks
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ScheduleTasks> _logger;
+    private readonly IConfiguration _configuration;
 
-    public ScheduleTasks(IHttpClientFactory httpClientFactory, ILogger<ScheduleTasks> logger)
+    public ScheduleTasks(IHttpClientFactory httpClientFactory, ILogger<ScheduleTasks> logger, IConfiguration configuration)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _configuration = configuration;
     }
 
     [Function(nameof(NotificationSinExpiration))]
@@ -31,17 +34,17 @@ public class ScheduleTasks
         TeamsMessage message;
         try
         {
-            string baseApiUrl = Environment.GetEnvironmentVariable("ScheduleTasks_ApiUrl");
+            string baseApiUrl = _configuration["ScheduleTasks_ApiUrl"];
             if (string.IsNullOrEmpty(baseApiUrl))
             {
                 _logger.LogError("ScheduleTasks_ApiUrl is not configured");
-                message = TeamsMessage.CreateError("API url is missing", "ScheduleTasks_ApiUrl environment variable is not set");
+                message = TeamsMessage.CreateError("API url is missing", "ScheduleTasks_ApiUrl is not set");
             }
             else
             {
                 var url = $"{baseApiUrl}{action}";
                 var apiClient = _httpClientFactory.CreateClient("Api");
-                var token = await apiClient.GetToken();
+                var token = await apiClient.GetToken(_configuration);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -69,7 +72,7 @@ public class ScheduleTasks
         }
 
         var teamsClient = _httpClientFactory.CreateClient("Teams");
-        var notificationResult = await teamsClient.SendTeamsNotification(message);
+        var notificationResult = await teamsClient.SendTeamsNotification(message, _configuration);
         if (!string.IsNullOrEmpty(notificationResult))
         {
             _logger.LogWarning("Teams notification failed for {Action}: {Result}", action, notificationResult);

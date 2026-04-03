@@ -13,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final Widget? suffixIcon;
   final bool isRequired;
+  final int? maxLength;
 
   const CustomTextField({
     super.key,
@@ -28,6 +29,7 @@ class CustomTextField extends StatelessWidget {
     this.enabled = true,
     this.suffixIcon,
     this.isRequired = false,
+    this.maxLength,
   });
 
   @override
@@ -58,6 +60,7 @@ class CustomTextField extends StatelessWidget {
             obscureText: obscureText,
             keyboardType: keyboardType,
             maxLines: maxLines,
+            maxLength: maxLength,
             enabled: enabled,
             decoration: InputDecoration(
               hintText: hint,

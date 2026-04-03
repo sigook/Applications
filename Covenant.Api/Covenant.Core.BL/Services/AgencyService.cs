@@ -581,7 +581,7 @@ public class AgencyService : IAgencyService
 
     public async Task<Result> CreateHoliday(WorkerProfileHolidayModel model)
     {
-        var workerProfile = await workerRepository.GetWorkerProfileDetail(model.WorkerProfileId);
+        var workerProfile = await workerRepository.GetWorkerProfileDetail(wp => wp.Id == model.WorkerProfileId);
         var countryCode = workerProfile.Location.City.Province.Country.Code;
         await catalogRepository.CreateHolidayIfNotExist(countryCode, model.Date);
         await catalogRepository.SaveChangesAsync();

@@ -99,15 +99,10 @@ export default {
       });
     },
     async getWorkerInfo() {
-      await this.$store.dispatch("worker/getProfiles").then((response) => {
-        const defaultProfile = response[0];
-        this.$store.dispatch("worker/getProfileBasicInfo", defaultProfile.id)
-          .then(() => {
-            this.currentUser.fullName = this.$store.state.worker.workerName;
-            this.currentUser.profileImage = this.$store.state.worker.workerProfileImage;
-            this.profileUrl = "/worker-profile";
-          });
-        this.$store.commit("worker/setWorkerBasicInfo", defaultProfile);
+      await this.$store.dispatch("worker/getMyProfile").then((data) => {
+        this.currentUser.fullName = `${data.firstName} ${data.lastName}`;
+        this.currentUser.profileImage = data.workerProfileImage;
+        this.profileUrl = "/worker-profile";
       });
     },
     switchAgency(agency) {

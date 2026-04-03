@@ -16,10 +16,22 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using Azure.Identity;
 using System.Globalization;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Azure Key Vault configuration
+var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+    var env = builder.Environment.IsProduction() ? "production" : "staging";
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(keyVaultUrl),
+        new DefaultAzureCredential(),
+        new PrefixKeyVaultSecretManager($"{env}-api"));
+}
 
 // Configure logging early to capture startup errors
 builder.Logging.ClearProviders();
@@ -123,10 +135,6 @@ builder.Services.AddAuthentication("Bearer")
 
 logger.LogInformation("Configuring database connection...");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!builder.Environment.IsDevelopment())
-{
-    connectionString = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
-}
 
 if (string.IsNullOrEmpty(connectionString))
 {

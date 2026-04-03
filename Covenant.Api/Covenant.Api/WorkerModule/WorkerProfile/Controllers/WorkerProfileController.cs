@@ -38,18 +38,18 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
-        [HttpGet("{profileId}")]
-        public async Task<ActionResult> GetById([FromServices] IWorkerRepository repository, Guid profileId)
+        [HttpGet("me")]
+        public async Task<ActionResult> GetMyProfile([FromServices] IWorkerRepository repository)
         {
-            var model = await repository.GetWorkerProfileDetail(profileId);
+            var model = await repository.GetWorkerProfileDetail(wp => wp.WorkerId == User.GetUserId());
             if (model is null) return NotFound();
             return Ok(model);
         }
 
-        [HttpGet("{profileId}/BasicInfo")]
-        public async Task<ActionResult> GetBasicInfo([FromServices] IWorkerRepository repository, Guid profileId)
+        [HttpGet("{profileId}")]
+        public async Task<ActionResult> GetById([FromServices] IWorkerRepository repository, Guid profileId)
         {
-            WorkerProfileBasicInfoModel model = await repository.GetWorkerProfileBasicInfo(profileId);
+            var model = await repository.GetWorkerProfileDetail(wp => wp.Id == profileId);
             if (model is null) return NotFound();
             return Ok(model);
         }

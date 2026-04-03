@@ -73,8 +73,7 @@ class BasicInfo extends Equatable {
         address.isNotEmpty &&
         address.length >= 5 &&
         zipCode.value.isNotEmpty &&
-        mobileNumber.isValid &&
-        profilePhoto.hasPhoto;
+        mobileNumber.isValid;
   }
 
   String? get countryError => country == null ? 'Country is required' : null;

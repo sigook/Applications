@@ -46,15 +46,7 @@ export default {
   },
   methods: {
     updateProfile() {
-      this.isLoading = true;
-      this.$store.dispatch('worker/getProfile', this.worker.id)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
+      this.$emit('updateProfile');
     }
   }
 }

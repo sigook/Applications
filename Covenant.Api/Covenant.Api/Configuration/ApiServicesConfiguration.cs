@@ -186,11 +186,6 @@ public static class ApiServicesConfiguration
     {
         var accountingStorageConnection = builder.Configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = builder.Configuration.GetConnectionString("FileStorageConnection");
-        if (!builder.Environment.IsDevelopment())
-        {
-            accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
-            fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
-        }
 
         // Use empty strings as fallback to prevent null reference exceptions
         // The health checks will report if configuration is missing
@@ -212,10 +207,6 @@ public static class ApiServicesConfiguration
     public static IServiceCollection AddAzureServiceBusConsumer(this IServiceCollection services, WebApplicationBuilder builder)
     {
         var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBusConnection");
-        if (!builder.Environment.IsDevelopment())
-        {
-            serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
-        }
 
         // Only register Service Bus consumers if connection string is configured
         // The health checks will report if configuration is missing
@@ -238,14 +229,6 @@ public static class ApiServicesConfiguration
         var accountingStorageConnection = configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = configuration.GetConnectionString("FileStorageConnection");
         var serviceBusConnection = configuration.GetConnectionString("ServiceBusConnection");
-
-        if (!environment.IsDevelopment())
-        {
-            databaseConnection = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
-            accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
-            fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
-            serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
-        }
 
         var healthChecksBuilder = services.AddHealthChecks();
 
