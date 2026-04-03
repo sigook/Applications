@@ -98,7 +98,7 @@
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 import timeSheetCompany from "@/mixins/companyTimeSheetReportMixin"
-import { useCatalog } from "@/composables/useCatalog";
+import { maximumHoursPerDay } from "@/constants/catalog";
 
 dayjs.extend(duration);
 
@@ -122,7 +122,7 @@ export default {
   mixins: [timeSheetCompany],
   computed: {
     maximumDailyHours() {
-      return useCatalog().maximumHoursPerDay;
+      return maximumHoursPerDay;
     }
   },
   methods: {

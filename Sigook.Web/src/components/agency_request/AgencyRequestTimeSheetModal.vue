@@ -137,7 +137,7 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
-import { useCatalog } from "@/composables/useCatalog";
+import { maximumHoursPerDay } from "@/constants/catalog";
 
 export default {
   props: ['editableDay', 'worker'],
@@ -205,7 +205,7 @@ export default {
   },
   computed: {
     maximumDailyHours() {
-      const maxHours = useCatalog().maximumHoursPerDay;
+      const maxHours = maximumHoursPerDay;
       if (maxHours) {
         const maximum = new Date();
         maximum.setHours(maxHours);
@@ -216,7 +216,7 @@ export default {
       return this.maximumMissing;
     },
     maximumDailyDecimal() {
-      return useCatalog().maximumHoursPerDay;
+      return maximumHoursPerDay;
     }
   }
 }

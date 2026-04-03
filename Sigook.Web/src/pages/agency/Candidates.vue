@@ -220,7 +220,7 @@
 import download from "@/mixins/downloadFileMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 import phoneFormat from "@/mixins/phoneFormatMixin";
-import { useCatalog } from "@/composables/useCatalog";
+import { residencyList } from "@/constants/catalog";
 
 export default {
   data() {
@@ -482,7 +482,7 @@ export default {
   },
   computed: {
     residencyList() {
-      return useCatalog().residencyList;
+      return residencyList;
     },
     agencies() {
       return this.$store.state.agency.personnelAgencies;

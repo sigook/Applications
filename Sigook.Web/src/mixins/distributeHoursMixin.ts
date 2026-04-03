@@ -1,4 +1,4 @@
-import { useCatalog } from '@/composables/useCatalog';
+import { maximumHoursPerDay } from '@/constants/catalog';
 
 interface WeekDay {
   totalHoursApproved?: number;
@@ -61,7 +61,7 @@ const distributeHoursMixin = {
   },
   computed: {
     maximumDailyHours(): number {
-      return useCatalog().maximumHoursPerDay;
+      return maximumHoursPerDay;
     }
   }
 };

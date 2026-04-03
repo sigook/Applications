@@ -88,7 +88,7 @@
 <script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
 import { getGenders } from "@/api/catalogApi";
-import { useCatalog } from "@/composables/useCatalog";
+import { residencyList, sourceList } from "@/constants/catalog";
 
 export default {
   data() {
@@ -158,10 +158,10 @@ export default {
   },
   computed: {
     residencyList() {
-      return useCatalog().residencyList;
+      return residencyList;
     },
     sourceList() {
-      return useCatalog().sourceList;
+      return sourceList;
     }
   }
 }

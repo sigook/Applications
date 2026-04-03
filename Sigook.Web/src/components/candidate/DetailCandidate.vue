@@ -61,7 +61,7 @@
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 import { getGenders } from "@/api/catalogApi";
-import { useCatalog } from "@/composables/useCatalog";
+import { residencyList } from "@/constants/catalog";
 
 export default {
   props: ['candidateId'],
@@ -126,7 +126,7 @@ export default {
       return this.genderList;
     },
     residencyList() {
-      return useCatalog().residencyList;
+      return residencyList;
     },
     hasDnuPermission() {
       if (!this.candidate.dnu) {
