@@ -60,6 +60,7 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { getGenders } from "@/api/catalogApi";
 
 export default {
   props: ['data'],
@@ -103,7 +104,7 @@ export default {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response).subtract(18, 'years').toDate();
     });
-    this.genders = await this.$store.dispatch('getGenders');
+    this.genders = await getGenders();
   }
 }
 </script>

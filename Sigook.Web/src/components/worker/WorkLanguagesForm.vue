@@ -18,6 +18,7 @@
   </div>
 </template>
 <script lang="ts">
+import { fetchLanguages } from "@/api/catalogApi";
 export default {
   props: ['data'],
   data() {
@@ -50,7 +51,7 @@ export default {
     }
   },
   async created() {
-    this.languages = await this.$store.dispatch('getLanguages');
+    this.languages = await fetchLanguages();
     this.filteredLanguages = this.languages;
     if (this.data != null) {
       this.worker.languages = this.data.languages;

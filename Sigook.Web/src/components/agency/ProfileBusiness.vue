@@ -64,6 +64,7 @@
 </template>
 
 <script lang="ts">
+import { getWsibGroups } from "@/api/catalogApi";
 export default {
   data() {
     return {
@@ -105,7 +106,7 @@ export default {
   },
   created() {
     this.isLoading = true;
-    this.$store.dispatch("getWsibGroups")
+    getWsibGroups()
       .then((response) => {
         this.isLoading = false;
         this.wsibGroups = response;

@@ -1,30 +1,30 @@
-interface CatalogItem {
-  id?: number;
-  value?: string;
-  skill?: string;
-}
+import {
+  getGenders, getIdentificationTypes, getAvailability, getAvailabilityTimes,
+  getDays, fetchLifts, fetchLanguages, getSkills
+} from '@/api/catalogApi';
+import type { Gender, IdentificationType, Availability, AvailabilityTime, Day, Lift, Language, Skill } from '@/types/common';
 
 export default {
   data() {
     return {
       isLoading: false,
-      skills: [] as CatalogItem[],
-      languages: [] as CatalogItem[],
+      skills: [] as Skill[],
+      languages: [] as Language[],
       allDaysSelected: false,
-      filteredSkills: [] as CatalogItem[],
-      filteredLanguages: [] as CatalogItem[],
-      genders: [] as CatalogItem[],
-      identificationTypes: [] as CatalogItem[],
-      availabilities: [] as CatalogItem[],
-      availabilityTimes: [] as CatalogItem[],
-      days: [] as CatalogItem[],
-      lifts: [] as CatalogItem[],
+      filteredSkills: [] as Skill[],
+      filteredLanguages: [] as Language[],
+      genders: [] as Gender[],
+      identificationTypes: [] as IdentificationType[],
+      availabilities: [] as Availability[],
+      availabilityTimes: [] as AvailabilityTime[],
+      days: [] as Day[],
+      lifts: [] as Lift[],
       worker: {
-        availabilities: [] as CatalogItem[],
-        availabilityTimes: [] as CatalogItem[],
-        availabilityDays: [] as CatalogItem[],
-        skills: [] as CatalogItem[],
-        languages: [] as CatalogItem[],
+        availabilities: [] as Availability[],
+        availabilityTimes: [] as AvailabilityTime[],
+        availabilityDays: [] as Day[],
+        skills: [] as Skill[],
+        languages: [] as Language[],
         location: {} as Record<string, any>,
         identificationType1File: null as any,
         identificationType1: null as any,
@@ -40,14 +40,14 @@ export default {
   async created() {
     const vm = this as any;
     vm.isLoading = true;
-    vm.genders = await vm.$store.dispatch('getGenders');
-    vm.identificationTypes = await vm.$store.dispatch('getIdentificationTypes');
-    vm.availabilities = await vm.$store.dispatch('getAvailability');
-    vm.availabilityTimes = await vm.$store.dispatch('getAvailabilityTimes');
-    vm.days = await vm.$store.dispatch('getDays');
-    vm.lifts = await vm.$store.dispatch('getLifts');
-    vm.languages = await vm.$store.dispatch('getLanguages');
-    vm.skills = await vm.$store.dispatch('getSkills');
+    vm.genders = await getGenders();
+    vm.identificationTypes = await getIdentificationTypes();
+    vm.availabilities = await getAvailability();
+    vm.availabilityTimes = await getAvailabilityTimes();
+    vm.days = await getDays();
+    vm.lifts = await fetchLifts();
+    vm.languages = await fetchLanguages();
+    vm.skills = await getSkills();
     vm.filteredSkills = vm.skills;
     vm.filteredLanguages = vm.languages;
     vm.isLoading = false;
@@ -84,7 +84,7 @@ export default {
     getFilteredSkills(text: string): void {
       const vm = this as any;
       if (text) {
-        vm.filteredSkills = vm.skills.filter((option: CatalogItem) =>
+        vm.filteredSkills = vm.skills.filter((option: Skill) =>
           option.skill?.toLowerCase().includes(text.toLowerCase())
         );
       } else {
@@ -94,7 +94,7 @@ export default {
     getFilteredLanguages(text: string): void {
       const vm = this as any;
       if (text) {
-        vm.filteredLanguages = vm.languages.filter((option: CatalogItem) =>
+        vm.filteredLanguages = vm.languages.filter((option: Language) =>
           option.value?.toLowerCase().includes(text.toLowerCase())
         );
       } else {

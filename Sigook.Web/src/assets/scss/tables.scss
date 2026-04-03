@@ -165,6 +165,29 @@ table.bordered-cells {
   display: inline-block;
 }
 
+// Reusable b-table styles
+.b-table .table {
+  table-layout: auto;
+  width: 100%;
+
+  td,
+  th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  td .taginput .taginput-container {
+    flex-wrap: wrap;
+
+    .tag {
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
 @media (max-width: 767px) {
   .table-rounding {
     &:nth-of-type(1) {

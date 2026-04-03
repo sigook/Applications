@@ -1,4 +1,4 @@
-# Covenant.Web — Vue 3 Agency Portal
+# Covenant.Web — Vue 3 Marketing Website (Public-Facing)
 
 ## Code Navigation
 

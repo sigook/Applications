@@ -1,5 +1,6 @@
 import toastMixin from "./toastMixin";
 import downloadFileMixin from "./downloadFileMixin";
+import { fetchQRCode } from '@/api/requestApi';
 
 export default {
   data() {
@@ -12,7 +13,7 @@ export default {
   methods: {
     getQRCode(workerCardId: string): void {
       (this as any).isLoading = true;
-      (this as any).$store.dispatch("getQRCode", workerCardId)
+      fetchQRCode(workerCardId)
         .then((response: Blob) => {
           (this as any).isLoading = false;
           (this as any).createImage(response);

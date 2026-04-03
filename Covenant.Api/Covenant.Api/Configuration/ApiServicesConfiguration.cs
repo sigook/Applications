@@ -222,7 +222,7 @@ public static class ApiServicesConfiguration
         return services;
     }
 
-    public static void AddCovenantHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static IServiceCollection AddCovenantHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         // Get all connection strings
         var databaseConnection = configuration.GetConnectionString("DefaultConnection");
@@ -236,20 +236,20 @@ public static class ApiServicesConfiguration
         healthChecksBuilder.AddTypeActivatedCheck<DatabaseConfigurationHealthCheck>(
             "config-database",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready", "live" },
-            args: new object[] { databaseConnection! });
+            tags: ["config", "ready", "live"],
+            args: [databaseConnection!]);
 
         healthChecksBuilder.AddTypeActivatedCheck<AzureStorageConfigurationHealthCheck>(
             "config-azure-storage",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready" },
-            args: new object[] { accountingStorageConnection!, fileStorageConnection! });
+            tags: ["config", "ready"],
+            args: [accountingStorageConnection!, fileStorageConnection!]);
 
         healthChecksBuilder.AddTypeActivatedCheck<ServiceBusConfigurationHealthCheck>(
             "config-service-bus",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready" },
-            args: new object[] { serviceBusConnection! });
+            tags: ["config", "ready"],
+            args: [serviceBusConnection!]);
 
         // Connectivity checks - these check if services are accessible (only if configured)
         if (!string.IsNullOrEmpty(databaseConnection))
@@ -257,23 +257,25 @@ public static class ApiServicesConfiguration
             healthChecksBuilder.AddDbContextCheck<Infrastructure.Context.CovenantContext>(
                 "database-connectivity",
                 HealthStatus.Unhealthy,
-                tags: new[] { "connectivity", "ready", "live" });
+                tags: ["connectivity", "ready", "live"]);
         }
 
         // Always add connectivity checks (they now handle null connection strings gracefully)
         healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",
             new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
 
         healthChecksBuilder.AddCheck("azure-storage-files-connectivity",
             new AzureStorageHealthCheck(fileStorageConnection, "Files"),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
 
         healthChecksBuilder.AddCheck("azure-service-bus-connectivity",
             new AzureServiceBusHealthCheck(serviceBusConnection),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
+
+        return services;
     }
 }

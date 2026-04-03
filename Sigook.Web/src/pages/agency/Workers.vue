@@ -30,7 +30,7 @@
             <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image" class="img-30" />
             <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
           </b-table-column>
-          <b-table-column field="numberId" width="100" label="ID" sortable searchable>
+          <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -39,7 +39,7 @@
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
             </template>
           </b-table-column>
-          <b-table-column field="externalId" width="120" label="External ID" sortable searchable>
+          <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -123,7 +123,7 @@
               </div>
             </template>
           </b-table-column>
-          <b-table-column field="isCurrentlyWorking" width="250px" label="Details" searchable>
+          <b-table-column field="isCurrentlyWorking" label="Details" searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="featuresSelected" autocomplete :data="features" open-on-focus
                 field="value" icon="label" placeholder="Select Feature" @input="onFeatureChange">
@@ -139,19 +139,20 @@
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <floating-menu class="text-center">
-              <template slot="options">
-                <button class="floating-menu-item" @click="$router.push(`/agency-workers/worker/${props.row.id}`)">
-                  <span>Edit</span>
-                </button>
-                <button class="floating-menu-item" v-if="!props.row.approvedToWork" @click="deleteWorker(props.row)">
-                  <span>Approve to work</span>
-                </button>
-                <button class="floating-menu-item" v-if="props.row.approvedToWork" @click="confirmDelete(props.row)">
-                  <span>Reject to work</span>
-                </button>
+            <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+              <template #trigger>
+                <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-            </floating-menu>
+              <b-dropdown-item aria-role="listitem" @click="$router.push(`/agency-workers/worker/${props.row.id}`)">
+                Edit
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="!props.row.approvedToWork" @click="deleteWorker(props.row)">
+                Approve to work
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.approvedToWork" @click="confirmDelete(props.row)">
+                Reject to work
+              </b-dropdown-item>
+            </b-dropdown>
           </b-table-column>
         </template>
       </b-table>
@@ -180,7 +181,6 @@ export default {
     }
   },
   components: {
-    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
     Export: () => import("@/components/Export.vue")
   },
   mixins: [workerFeaturesMixin, phoneMaskMixin],
@@ -307,17 +307,6 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-::v-deep .b-table .table {
-  table-layout: fixed;
-  width: 100%;
-}
-
-::v-deep .b-table .table td,
-::v-deep .b-table .table th {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .skills-inline {
   display: flex;
   flex-wrap: wrap;

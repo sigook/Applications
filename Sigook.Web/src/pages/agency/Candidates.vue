@@ -30,7 +30,7 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="name" label="Name" sortable searchable width="400px">
+          <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-field grouped>
                 <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" expanded
@@ -88,7 +88,7 @@
                 @onDelete="(item) => deleteCandidateSkill(props.row.id, item)" />
             </template>
           </b-table-column>
-          <b-table-column field="requests" label="Order ID" width="200px" searchable>
+          <b-table-column field="requests" label="Order ID" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -157,7 +157,7 @@
               </modal-notes>
             </div>
           </b-table-column>
-          <b-table-column field="residencyStatus" label="Status" width="250px" sortable searchable>
+          <b-table-column field="residencyStatus" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyList" open-on-focus
                 field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
@@ -170,23 +170,24 @@
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <floating-menu class="text-center">
-              <template v-slot:options>
-                <button class="floating-menu-item" @click="showCandidateDetail(props.row.id)">
-                  Edit
-                </button>
-                <button class="floating-menu-item" @click="showDocumentsCandidate(props.row.id)">
-                  Documents
-                </button>
-                <button class="floating-menu-item" :disabled="!props.row.email || props.row.dnu"
-                  @click="convertToWorker(props.row.id)">
-                  Convert to Worker
-                </button>
-                <button class="floating-menu-item" @click="deleteCandidate(props.row.id)">
-                  Delete
-                </button>
+            <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+              <template #trigger>
+                <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-            </floating-menu>
+              <b-dropdown-item aria-role="listitem" @click="showCandidateDetail(props.row.id)">
+                Edit
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="showDocumentsCandidate(props.row.id)">
+                Documents
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" :disabled="!props.row.email || props.row.dnu"
+                @click="convertToWorker(props.row.id)">
+                Convert to Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="deleteCandidate(props.row.id)">
+                Delete
+              </b-dropdown-item>
+            </b-dropdown>
           </b-table-column>
         </template>
       </b-table>
@@ -219,6 +220,7 @@
 import download from "@/mixins/downloadFileMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
 import phoneFormat from "@/mixins/phoneFormatMixin";
+import { useCatalog } from "@/composables/useCatalog";
 
 export default {
   data() {
@@ -249,7 +251,6 @@ export default {
     ModalDocuments: () => import("@/components/candidate/ModalDocuments.vue"),
     ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
     SkillsForm: () => import("@/components/FormSkillAdd.vue"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
     CandidateRequest: () => import("@/components/candidate/ModalCandidateRequests.vue"),
     BulkData: () => import("@/components/agency/BulkData.vue"),
     Export: () => import("@/components/Export.vue")
@@ -481,7 +482,7 @@ export default {
   },
   computed: {
     residencyList() {
-      return this.$store.state.catalog.residencyList;
+      return useCatalog().residencyList;
     },
     agencies() {
       return this.$store.state.agency.personnelAgencies;
@@ -489,26 +490,3 @@ export default {
   }
 };
 </script>
-<style lang="scss" scoped>
-::v-deep .b-table .table {
-  table-layout: auto;
-  width: 100%;
-}
-
-::v-deep .b-table .table td,
-::v-deep .b-table .table th {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-::v-deep .b-table .table td .taginput .taginput-container {
-  flex-wrap: wrap;
-}
-
-::v-deep .b-table .table td .taginput .taginput-container .tag {
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-</style>

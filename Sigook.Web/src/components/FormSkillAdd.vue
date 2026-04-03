@@ -7,6 +7,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getSkills } from "@/api/catalogApi";
 export default {
   props: ['existingSkills'],
   data() {
@@ -46,7 +47,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getSkills')
+    getSkills()
       .then(response => {
         this.skills = response;
         this.filteredSkills = this.skills;

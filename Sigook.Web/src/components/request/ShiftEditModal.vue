@@ -12,6 +12,7 @@
   </div>
 </template>
 <script lang="ts">
+import { fetchRequestShift } from "@/api/requestApi";
 export default {
   data() {
     return {
@@ -29,7 +30,7 @@ export default {
   methods: {
     getRequestShift() {
       this.isLoading = true;
-      this.$store.dispatch('getRequestShift', this.requestId)
+      fetchRequestShift(this.requestId)
         .then(response => {
           this.isLoading = false;
           console.log(response);

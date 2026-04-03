@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { getSkills } from "@/api/catalogApi";
 
 export default {
   data() {
@@ -37,7 +38,7 @@ export default {
   },
   async created() {
     this.isLoading = true;
-    this.skills = await this.$store.dispatch('getSkills');
+    this.skills = await getSkills();
     this.isLoading = false;
   },
   methods: {

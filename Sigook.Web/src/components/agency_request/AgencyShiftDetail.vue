@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { fetchRequestShift } from "@/api/requestApi";
 export default {
     props: ['displayShift', 'requestId'],
     data() {
@@ -28,7 +29,7 @@ export default {
             if (!this.showDetail){
                 this.isLoading = true;
                 this.showDetail = true;
-                this.$store.dispatch('getRequestShift', this.requestId)
+                fetchRequestShift(this.requestId)
                         .then(response => {
                             this.isLoading = false;
                             this.shift = response;

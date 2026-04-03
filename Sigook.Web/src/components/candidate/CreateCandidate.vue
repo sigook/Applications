@@ -87,6 +87,8 @@
 </template>
 <script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
+import { getGenders } from "@/api/catalogApi";
+import { useCatalog } from "@/composables/useCatalog";
 
 export default {
   data() {
@@ -152,14 +154,14 @@ export default {
     }
   },
   async created() {
-    this.genders = await this.$store.dispatch('getGenders')
+    this.genders = await getGenders()
   },
   computed: {
     residencyList() {
-      return this.$store.state.catalog.residencyList
+      return useCatalog().residencyList;
     },
     sourceList() {
-      return this.$store.state.catalog.sourceList
+      return useCatalog().sourceList;
     }
   }
 }

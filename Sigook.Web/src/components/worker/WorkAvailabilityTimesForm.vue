@@ -20,6 +20,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAvailabilityTimes } from "@/api/catalogApi";
 
 export default {
   props: ['data'],
@@ -47,7 +48,7 @@ export default {
     }
   },
   async created() {
-    this.availabilityTimes = await this.$store.dispatch('getAvailabilityTimes');
+    this.availabilityTimes = await getAvailabilityTimes();
     if (this.data != null) {
       this.worker.availabilityTimes = this.data.availabilityTimes;
     }

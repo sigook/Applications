@@ -27,6 +27,7 @@
 
 <script lang="ts">
 import Oidc from "oidc-client";
+import axios from "axios";
 
 export default {
   name: "app",
@@ -69,7 +70,7 @@ export default {
   methods: {
     getAppVersion() {
       const item = localStorage.getItem("versionApp");
-      this.$store.dispatch("getLasVersion")
+      axios.get("/version.json").then(r => r.data)
         .then((response) => {
           if (item === "null" || item === null) {
             localStorage.setItem("versionApp", response.version);

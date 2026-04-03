@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useJobsStore } from '@/stores/jobs'
+import { useJobs } from '@/composables/useJobs'
 
 // Definimos la estructura de los filtros
 interface SearchFilters {
@@ -71,15 +71,14 @@ const filters = reactive<SearchFilters>({
 
 const router = useRouter()
 
-// Store de jobs para llamar a la API
-const jobsStore = useJobsStore()
+const { fetchJobs } = useJobs()
 
 const handleSearch = () => {
   // Limpiar el querystring (especialmente jobId)
   router.replace({ query: {} })
 
-  // Llamamos directamente al store con los filtros
-  jobsStore.fetchJobs({
+  // Llamamos al composable con los filtros
+  fetchJobs({
     jobTitle: filters.jobTitle || undefined,
     location: filters.location || undefined
   })

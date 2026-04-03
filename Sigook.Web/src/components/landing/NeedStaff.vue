@@ -24,6 +24,7 @@
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin";
 import recaptchaMixin from "@/mixins/recaptchaMixin";
+import { submitContactForm } from "@/api/websiteApi";
 
 export default {
   props: ['cssClass', 'isLoading'],
@@ -48,7 +49,7 @@ export default {
       } else {
         this.$emit('onLoading', true);
         this.formError = null;
-        this.$store.dispatch('sendForm', this.contact)
+        submitContactForm(this.contact)
           .then(() => {
             this.resetContactForm();
             this.$emit('onLoading', false);

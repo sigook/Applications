@@ -21,7 +21,7 @@
           <br />
           <i class="fz-1">To: {{ props.row.end | dateMonth }}</i>
         </b-table-column>
-        <b-table-column field="items" v-slot="props" width="350px">
+        <b-table-column field="items" v-slot="props">
           <table class="no-border-bottom">
             <thead>
               <tr>

@@ -70,6 +70,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getTaxCategories } from "@/api/catalogApi";
 
 export default {
   props: ['worker'],
@@ -177,7 +178,7 @@ export default {
     }
   },
   async created() {
-    this.taxCategories = await this.$store.dispatch('getTaxCategories');
+    this.taxCategories = await getTaxCategories();
     this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.localWorker.id);
   },
   computed: {
