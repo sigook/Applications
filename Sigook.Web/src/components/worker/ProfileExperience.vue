@@ -25,6 +25,7 @@
 <script lang="ts">
 import utilsWorkerMixin from '@/mixins/utilsWorkerMixin';
 export default {
+  props: ['worker'],
   data() {
     return {
       disableStartDate: null,
@@ -45,15 +46,7 @@ export default {
     },
     updateExperience() {
       this.modalWorkExperience = false;
-      this.isLoading = true;
-      this.$store.dispatch('worker/getProfile', this.worker.id)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
+      this.$emit('updateProfile');
     }
   },
   components: {
@@ -64,11 +57,6 @@ export default {
     this.$store.dispatch('getCurrentDate').then(response => {
       this.disableStartDate = response;
     })
-  },
-  computed: {
-    worker() {
-      return this.$store.state.worker.workerProfile;
-    }
   }
 }
 </script>

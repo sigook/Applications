@@ -1,4 +1,5 @@
 using IdentityModel.Client;
+using Microsoft.Extensions.Configuration;
 using Sigook.Functions.Models;
 
 namespace Sigook.Functions.Utils
@@ -7,7 +8,7 @@ namespace Sigook.Functions.Utils
     {
         private static TokenExpiryTime _authData;
 
-        public static async Task<string> GetToken(this HttpClient client)
+        public static async Task<string> GetToken(this HttpClient client, IConfiguration configuration)
         {
             if (_authData != null)
             {
@@ -18,9 +19,9 @@ namespace Sigook.Functions.Utils
             TokenResponse tokenResponse = await client.RequestClientCredentialsTokenAsync(
                 new ClientCredentialsTokenRequest
                 {
-                    Address = Environment.GetEnvironmentVariable("ScheduleTasks_AccountsUrl"),
-                    ClientId = Environment.GetEnvironmentVariable("ScheduleTasks_ClientId"),
-                    ClientSecret = Environment.GetEnvironmentVariable("ScheduleTasks_ClientSecret"),
+                    Address = configuration["ScheduleTasks_AccountsUrl"],
+                    ClientId = configuration["ScheduleTasks_ClientId"],
+                    ClientSecret = configuration["ScheduleTasks_ClientSecret"],
                     Scope = "api1"
                 });
             _authData = new TokenExpiryTime(tokenResponse.AccessToken, DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn));

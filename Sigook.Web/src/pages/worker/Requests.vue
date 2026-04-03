@@ -125,7 +125,7 @@ export default {
   },
   computed: {
     currentUser() {
-      return this.$store.state.worker.workerBasic;
+      return this.$store.state.worker.workerProfile;
     },
     hasMissingDocuments() {
       if (!this.currentUser.hasSocialInsurance || !this.currentUser.hasSocialInsuranceFile) {

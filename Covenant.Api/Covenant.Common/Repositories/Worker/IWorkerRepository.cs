@@ -15,7 +15,7 @@ public interface IWorkerRepository
     Task<List<WorkerProfileAgencyListModel>> GetProfiles(Guid workerId);
     Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
-    Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Guid profileId);
+    Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);
     IEnumerable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);
     Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm);
