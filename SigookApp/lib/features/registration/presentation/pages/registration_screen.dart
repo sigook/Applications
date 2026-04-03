@@ -130,6 +130,7 @@ class _RegistrationFormScreenState
     return Stack(
       children: [
         Scaffold(
+          resizeToAvoidBottomInset: false,
           backgroundColor: AppTheme.surfaceGrey,
           body: SafeArea(
             child: Column(
@@ -138,7 +139,12 @@ class _RegistrationFormScreenState
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      8,
+                      16,
+                      16 + MediaQuery.of(context).viewInsets.bottom,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [

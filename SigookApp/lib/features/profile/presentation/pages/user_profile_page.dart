@@ -92,17 +92,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
   // Phone mask formatters
   final _mobileMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
   final _phoneMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
   final _emergencyPhoneMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
@@ -252,8 +252,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         };
       case ProfileSection.contact:
         editedFields = {
-          'mobileNumber': _mobileMaskFormatter.getUnmaskedText(),
-          'phone': _phoneMaskFormatter.getUnmaskedText(),
+          'mobileNumber': _mobileNumberController.text,
+          'phone': _phoneController.text,
           'address': _addressController.text,
           'postalCode': _postalCodeController.text,
           if (_editCity?.id != null) 'cityId': _editCity!.id!,
@@ -293,8 +293,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         editedFields = {
           'contactEmergencyName': _emergencyNameController.text,
           'contactEmergencyLastName': _emergencyLastNameController.text,
-          'contactEmergencyPhone': _emergencyPhoneMaskFormatter
-              .getUnmaskedText(),
+          'contactEmergencyPhone': _emergencyPhoneController.text,
         };
       case ProfileSection.resume:
         editedFields = {};
@@ -2075,14 +2074,15 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     );
   }
 
-  /// Formats a raw phone number string using the ### ### #### mask.
+  /// Formats a raw phone number string using the ### ###-#### mask.
   String _formatPhone(String? phone) {
     if (phone == null || phone.isEmpty) return 'N/A';
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty) return 'N/A';
     final buffer = StringBuffer();
     for (var i = 0; i < digits.length && i < 10; i++) {
-      if (i == 3 || i == 6) buffer.write(' ');
+      if (i == 3) buffer.write(' ');
+      if (i == 6) buffer.write('-');
       buffer.write(digits[i]);
     }
     return buffer.toString();
