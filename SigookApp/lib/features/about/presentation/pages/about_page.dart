@@ -48,6 +48,7 @@ class _AboutPageState extends State<AboutPage> {
           ),
         ],
       ),
+      // test
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -79,16 +80,11 @@ class _HeroSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       child: Column(
         children: [
-          Image.asset(
-            'assets/images/logo/sigook-logo.png',
-            width: 160,
-          ),
+          Image.asset('assets/images/logo/sigook-logo.png', width: 160),
           const SizedBox(height: 16),
           Text(
             'SIGOOK® Work Factory',
-            style: AppTheme.heading2.copyWith(
-              color: AppTheme.primaryBlue,
-            ),
+            style: AppTheme.heading2.copyWith(color: AppTheme.primaryBlue),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -181,7 +177,8 @@ class _ServicesSection extends StatelessWidget {
     _ServiceItem(
       icon: Icons.access_time_rounded,
       title: 'Temporary',
-      description: 'Short-term placements to cover seasonal or project-based needs.',
+      description:
+          'Short-term placements to cover seasonal or project-based needs.',
       color: Color(0xFF1565C0),
     ),
     _ServiceItem(
@@ -228,9 +225,7 @@ class _ServicesSection extends StatelessWidget {
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 1.1,
-            children: _services
-                .map((s) => _ServiceCard(service: s))
-                .toList(),
+            children: _services.map((s) => _ServiceCard(service: s)).toList(),
           ),
         ],
       ),
@@ -314,7 +309,10 @@ class _IndustriesSection extends StatelessWidget {
     _IndustryItem(icon: Icons.factory_rounded, label: 'Light Industry'),
     _IndustryItem(icon: Icons.business_center_rounded, label: 'Clerical'),
     _IndustryItem(icon: Icons.construction_rounded, label: 'Skilled Trades'),
-    _IndustryItem(icon: Icons.computer_rounded, label: 'Information Technology'),
+    _IndustryItem(
+      icon: Icons.computer_rounded,
+      label: 'Information Technology',
+    ),
   ];
 
   @override
@@ -348,9 +346,7 @@ class _IndustriesSection extends StatelessWidget {
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: _industries
-                  .map((i) => _IndustryChip(item: i))
-                  .toList(),
+              children: _industries.map((i) => _IndustryChip(item: i)).toList(),
             ),
           ],
         ),
@@ -378,9 +374,7 @@ class _IndustryChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.primaryBlue.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: AppTheme.primaryBlue.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -463,10 +457,7 @@ class _JobCategoriesSection extends StatelessWidget {
                 children: [
                   _CategoryRow(item: cat),
                   if (index < _categories.length - 1)
-                    Divider(
-                      height: 24,
-                      color: Colors.grey.shade100,
-                    ),
+                    Divider(height: 24, color: Colors.grey.shade100),
                 ],
               );
             }),
