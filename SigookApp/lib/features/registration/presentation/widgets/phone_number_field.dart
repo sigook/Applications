@@ -37,7 +37,7 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   void initState() {
     super.initState();
     _maskFormatter = MaskTextInputFormatter(
-      mask: '### ### ####',
+      mask: '### ###-####',
       filter: {"#": RegExp(r'[0-9]')},
       type: MaskAutoCompletionType.lazy,
     );
@@ -76,13 +76,12 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
   }
 
   void _onChanged(String value) {
-    final digitsOnly = _maskFormatter.getUnmaskedText();
-    widget.onChanged(digitsOnly);
+    widget.onChanged(_controller.text);
   }
 
   String _getPlaceholder() {
     if (widget.hint != null) return widget.hint!;
-    return '555 123 4567';
+    return '555 123-4567';
   }
 
   String _getCountryPrefix() {

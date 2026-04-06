@@ -1,0 +1,23 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "SigookStorageAccount": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ENVIRONMENT": "Development",
+    "KeyVault:Url": "https://sigook.vault.azure.net/",
+    "ScheduleTasks_AccountsUrl": "https://localhost:44381/connect/token",
+    "ScheduleTasks_ClientId": "",
+    "ScheduleTasks_ClientSecret": "",
+    "ScheduleTasks_ApiUrl": "https://localhost:44307/api/ScheduleTasks/",
+    "SendGridApiKey": "",
+    "NewJobTemplateId": "d-4bf3a224275f4d6fb24f4f2a7e326daa",
+    "NewApplicantTemplateId": "d-0ea177072a3146a2985cbd184e1f0b51",
+    "FromEmailAddress": "it@covenantgroupl.com",
+    "TestingEmailAddress": "it@covenantgroupl.com",
+    "UnsubscribeUrl": "http://localhost:3001/email-preferences?u=w&id={{workerId}}&t=10",
+    "ApplyOnlineUrl": "http://localhost:3001/worker-apply?r={{requestId}}&w={{workerId}}",
+    "SigookUrlWorkersAvailableToApply": "https://localhost:44307/api/Worker/AvailableToInvite",
+    "TeamsWebhook": ""
+  }
+}
