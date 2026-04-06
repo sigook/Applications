@@ -36,7 +36,7 @@
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
               @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-              @input="onStartWorkingSelected">
+              @input="onStartWorkingSelected" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -46,7 +46,7 @@
         <b-table-column field="status" label="Status" sortable searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+              field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
             </b-taginput>
           </template>
           <template v-slot="props">
@@ -70,7 +70,7 @@
             <div class="modal-container modal-light small-container border-radius">
               <button @click="modalRejectWorker = false" class="cross-icon">{{ $t('Close') }}</button>
               <edit-textarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
-                class="sm-edit-textarea" @updateContent="(data) => rejectCompanyRequestWorker(data)" />
+                class="sm-edit-textarea" @updateContent="(data) => onRejectWorker(data)" />
             </div>
           </div>
         </div>
@@ -81,6 +81,7 @@
 </template>
 
 <script lang="ts">
+import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 
 export default {
   data() {
@@ -150,7 +151,7 @@ export default {
     },
     getWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('company/getRequestWorkers', this.serverParams)
+      getRequestWorkers(this.serverParams)
         .then((response) => {
           this.rows = response.items.map(i => ({ ...i, actions: null }));
           this.totalItems = response.totalItems;
@@ -165,20 +166,17 @@ export default {
       this.currentWorker = worker;
       this.modalRejectWorker = true;
     },
-    rejectCompanyRequestWorker(comments) {
+    onRejectWorker(comments) {
       this.modalRejectWorker = false;
       this.isLoading = true;
-      this.$store.dispatch('company/rejectCompanyRequestWorker', {
-        requestId: this.serverParams.requestId,
-        workerId: this.currentWorker.workerId,
-        model: { comments: comments }
-      }).then(() => {
-        this.isLoading = false;
-        this.getWorkers();
-      }).catch(error => {
-        this.isLoading = false;
-        this.showAlertError(error.data);
-      })
+      rejectCompanyRequestWorker(this.serverParams.requestId, this.currentWorker.workerId, { comments })
+        .then(() => {
+          this.isLoading = false;
+          this.getWorkers();
+        }).catch(error => {
+          this.isLoading = false;
+          this.showAlertError(error.data);
+        })
     }
   },
   created() {

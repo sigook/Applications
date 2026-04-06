@@ -88,7 +88,7 @@
           <b-timepicker v-model="clockInTime" hour-format="24" :max-time="maxClockInTime" append-to-body>
           </b-timepicker>
         </b-field>
-        <b-button type="is-primary" @click="companyTimeSheetClockIn">Save</b-button>
+        <b-button type="is-primary" @click="onClockIn">Save</b-button>
       </div>
     </b-modal>
   </div>
@@ -99,6 +99,12 @@ import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 import timeSheetCompany from "@/mixins/companyTimeSheetReportMixin"
 import { maximumHoursPerDay } from "@/constants/catalog";
+import {
+  getCompanyWorkerTimeSheetByDate,
+  postCompanyWorkerTimeSheet,
+  deleteCompanyWorkerTimeSheet,
+  companyTimeSheetClockIn,
+} from '@/api/companyApi';
 
 dayjs.extend(duration);
 
@@ -128,7 +134,7 @@ export default {
   methods: {
     getAgencyWorkerTimeSheetByDate() {
       this.isLoading = true;
-      this.$store.dispatch("company/getCompanyWorkerTimeSheetByDate", { requestId: this.requestId, workerId: this.workerId, date: { startDate: this.startDate, endDate: this.endDate } })
+      getCompanyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })
         .then(response => {
           this.isLoading = false;
           this.data = response
@@ -150,11 +156,11 @@ export default {
     isToday(date) {
       return dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')
     },
-    companyTimeSheetClockIn() {
+    onClockIn() {
       if (!this.clockInTime) return;
       this.isLoading = true;
       let model = { "clockIn": dayjs(this.clockInTime).format("HH:mm:ss") }
-      this.$store.dispatch('company/companyTimeSheetClockIn', { requestId: this.requestId, workerId: this.workerId, model: model })
+      companyTimeSheetClockIn(this.requestId, this.workerId, model)
         .then(() => {
           this.isLoading = false;
           this.showClockIn = false;
@@ -190,7 +196,7 @@ export default {
         bonusOrOthersDescription: item.bonusOrOthersDescription,
         comments: item.comments
       };
-      this.$store.dispatch("company/postCompanyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, model: model })
+      postCompanyWorkerTimeSheet(this.requestId, this.workerId, model)
         .then(() => {
           this.isLoading = false;
           this.getAgencyWorkerTimeSheetByDate();
@@ -209,7 +215,7 @@ export default {
     },
     deleteCompanyWorkerTimeSheet(item) {
       this.isLoading = true;
-      this.$store.dispatch("company/deleteCompanyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, id: item.id })
+      deleteCompanyWorkerTimeSheet(this.requestId, this.workerId, item.id)
         .then(() => {
           this.isLoading = false;
           item.id = null;

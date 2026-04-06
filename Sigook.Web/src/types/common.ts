@@ -1,10 +1,11 @@
 // Common types shared across the application
 
-export interface PaginatedResponse<T> {
+// Matches API PaginatedList<T>
+export interface PaginatedList<T> {
   items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
+  pageIndex: number;
+  totalPages: number;
+  totalItems: number;
 }
 
 export interface PaginationFilter {
@@ -116,4 +117,9 @@ export enum LanguageProficiency {
   Intermediate = 'Intermediate',
   Advanced = 'Advanced',
   Native = 'Native',
+}
+
+export interface UnsubscribeRequest {
+  userId: string;
+  typeId: string;
 }

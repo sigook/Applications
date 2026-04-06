@@ -68,7 +68,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected">
+                @input="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">{{ props.row.createdAt | dateMonth }}</template>
@@ -91,7 +91,7 @@
           <b-table-column field="isCurrentlyWorking" label="Details" searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="featuresSelected" autocomplete :data="features" open-on-focus
-                field="value" icon="label" placeholder="Select Details" @input="onFeatureChange">
+                field="value" icon="label" placeholder="Select Details" @input="onFeatureChange" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

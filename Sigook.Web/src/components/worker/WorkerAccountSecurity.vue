@@ -20,7 +20,7 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-button type="is-primary" @click="changeEmail">Save</b-button>
+          <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
         </div>
       </div>
     </section>
@@ -63,6 +63,8 @@
 </template>
 
 <script lang="ts">
+import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
+
 export default {
   data() {
     return {
@@ -73,11 +75,11 @@ export default {
     }
   },
   methods: {
-    changeEmail() {
+    onChangeEmail() {
       this.$validator.validateAll().then((result) => {
         if (result) {
           this.isLoading = true;
-          this.$store.dispatch("changeEmail", { newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
+          changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
             .then(() => {
               this.isLoading = false;
               this.showAlertSuccess("Updated");
@@ -98,7 +100,7 @@ export default {
         type: 'is-danger',
         hasIcon: true,
         onConfirm: () => {
-          this.deactivateAccount();
+          this.onDeactivateAccount();
         }
       });
     },
@@ -122,9 +124,9 @@ export default {
           this.isLoading = false;
         })
     },
-    deactivateAccount() {
+    onDeactivateAccount() {
       this.isLoading = true;
-      this.$store.dispatch('deactivateAccount')
+      deactivateAccount()
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
@@ -139,7 +141,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getEmail')
+    getEmail()
       .then(response => {
         this.userEmail = response.email;
         this.isLoading = false;

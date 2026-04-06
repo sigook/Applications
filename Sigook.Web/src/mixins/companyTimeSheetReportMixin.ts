@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { updateCompanyRequestWorkerTimeSheet } from "@/api/companyApi";
 
 interface TimeSheetItem {
   id: string;
@@ -31,7 +32,7 @@ export default {
         deductionsOthersDescription: item.deductionsOthersDescription,
         bonusOrOthersDescription: item.bonusOrOthersDescription,
       };
-      vm.$store.dispatch('company/updateCompanyRequestWorkerTimeSheet', { requestId, workerId, id: item.id, model })
+      updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
         .then(() => {
           vm.isLoading = false;
           vm.updateCell();

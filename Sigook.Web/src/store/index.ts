@@ -7,7 +7,6 @@ import AgencyModule from './modules/agency';
 import CompanyModule from './modules/company';
 import WorkerModule from './modules/worker';
 import SecurityModule from './modules/security';
-import Shared from './modules/shared';
 
 Vue.use(Vuex);
 
@@ -42,7 +41,6 @@ export default new Vuex.Store<RootState>({
     agency: AgencyModule,
     company: CompanyModule,
     worker: WorkerModule,
-    shared: Shared
   },
   actions: {
     getCurrentDate(context: any): Promise<Date> {

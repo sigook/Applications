@@ -69,7 +69,7 @@
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="lastUpdateDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
               @icon-right-click="onLastUpdateCleared" range v-model="lastUpdateDatesSelected"
-              @input="onLastUpdateSelected">
+              @input="onLastUpdateSelected" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -84,7 +84,8 @@
           <template v-slot:searchable>
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="startAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onStartAtCleared" range v-model="startAtDatesSelected" @input="onStartAtSelected">
+              @icon-right-click="onStartAtCleared" range v-model="startAtDatesSelected" @input="onStartAtSelected"
+              append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -169,7 +170,7 @@
         <b-table-column field="status" label="Status" searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @input="onStatusChange">
+              field="value" icon="label" placeholder="Select Status" @input="onStatusChange" append-to-body>
             </b-taginput>
           </template>
           <template v-slot="props">

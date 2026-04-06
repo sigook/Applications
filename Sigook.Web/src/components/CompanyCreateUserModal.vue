@@ -44,6 +44,7 @@
 
 
 <script lang="ts">
+import { createCompanyUser } from '@/api/companyApi';
 
 export default {
   props: ['companyId'],
@@ -66,17 +67,17 @@ export default {
     validateForm() {
       this.$validator.validateAll().then((result) => {
         if (result) {
-          this.createUser()
+          this.onCreateUser()
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       });
     },
-    createUser() {
+    onCreateUser() {
       this.isLoading = true;
       const action = this.companyId ?
         this.$store.dispatch('agency/createCompanyProfileUser', { user: this.user, companyId: this.companyId }) :
-        this.$store.dispatch('company/createCompanyUser', this.user);
+        createCompanyUser(this.user);
       action
         .then(() => {
           this.isLoading = false;

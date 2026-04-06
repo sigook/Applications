@@ -1,5 +1,4 @@
 import mgr from "../../security/securityService";
-import http from "../../security/apiService";
 import { UserProfile } from "../../types/security";
 
 export interface SecurityState {
@@ -64,27 +63,6 @@ const securityModule = {
           .catch((error: any) => reject(error));
       });
     },
-    changeEmail(_context: any, model: any): Promise<any> {
-      return new Promise((resolve, reject) => {
-        http.post("/api/Account/ChangeEmail", model)
-          .then((response: any) => resolve(response.data))
-          .catch((error: any) => reject(error.response));
-      });
-    },
-    getEmail(): Promise<any> {
-      return new Promise((resolve, reject) => {
-        http.get("/api/Account/GetEmail")
-          .then((response: any) => resolve(response.data))
-          .catch((error: any) => reject(error.response));
-      });
-    },
-    deactivateAccount(): Promise<any> {
-      return new Promise((resolve, reject) => {
-        http.patch("/identity")
-          .then((response: any) => resolve(response.data))
-          .catch((error: any) => reject(error.response));
-      });
-    }
   },
 };
 
