@@ -3,7 +3,6 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
-using Covenant.Common.Repositories.Agency;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,18 +15,15 @@ public class AccountingPayStubV4Controller : AccountingBaseController
     public const string RouteName = "api/v4/Accounting/PayStub";
 
     private readonly IPayStubRepository _payStubRepository;
-    private readonly IAgencyRepository _agencyRepository;
     private readonly IAccountingService accountingService;
     private readonly IPayStubService payStubService;
 
     public AccountingPayStubV4Controller(
         IPayStubRepository payStubRepository,
-        IAgencyRepository agencyRepository,
         IAccountingService accountingService,
         IPayStubService payStubService)
     {
         _payStubRepository = payStubRepository;
-        _agencyRepository = agencyRepository;
         this.accountingService = accountingService;
         this.payStubService = payStubService;
     }
@@ -40,7 +36,7 @@ public class AccountingPayStubV4Controller : AccountingBaseController
         var result = await payStubService.CreateManualPayStub(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         var id = result.Value.Id;
-        return CreatedAtAction(nameof(GetById), new { id = id }, new { });
+        return CreatedAtAction(nameof(GetById), new { id }, new { });
     }
 
     [HttpGet("{id:guid}")]
