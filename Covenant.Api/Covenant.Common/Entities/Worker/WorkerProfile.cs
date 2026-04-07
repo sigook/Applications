@@ -90,15 +90,15 @@ public class WorkerProfile :
     public Lift Lift { get; set; }
     public List<WorkerProfileOtherDocument> OtherDocuments { get; set; } = [];
     public List<WorkerProfileNote> Notes { get; set; } = [];
-    public ICollection<WorkerProfileAvailability> Availabilities { get; set; } = [];
-    public ICollection<WorkerProfileAvailabilityTime> AvailabilityTimes { get; set; } = [];
-    public ICollection<WorkerProfileAvailabilityDay> AvailabilityDays { get; set; } = [];
-    public ICollection<WorkerProfileLocationPreference> LocationPreferences { get; set; } = [];
-    public ICollection<WorkerProfileLanguage> Languages { get; set; } = [];
-    public ICollection<WorkerProfileSkill> Skills { get; set; } = [];
-    public ICollection<WorkerProfileLicense> Licenses { get; set; } = [];
-    public ICollection<WorkerProfileCertificate> Certificates { get; set; } = [];
-    public ICollection<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
+    public List<WorkerProfileAvailability> Availabilities { get; set; } = [];
+    public List<WorkerProfileAvailabilityTime> AvailabilityTimes { get; set; } = [];
+    public List<WorkerProfileAvailabilityDay> AvailabilityDays { get; set; } = [];
+    public List<WorkerProfileLocationPreference> LocationPreferences { get; set; } = [];
+    public List<WorkerProfileLanguage> Languages { get; set; } = [];
+    public List<WorkerProfileSkill> Skills { get; set; } = [];
+    public List<WorkerProfileLicense> Licenses { get; set; } = [];
+    public List<WorkerProfileCertificate> Certificates { get; set; } = [];
+    public List<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
 
     public event EventHandler<CovenantFile> OnNewDocumentAdded;
 
@@ -619,7 +619,7 @@ public class WorkerProfile :
         (string.IsNullOrWhiteSpace(SecondLastName) ? string.Empty : $" {SecondLastName}");
 
 
-    private static void IfIsNotInRemove<T>(ICollection<T> list, Func<T, bool> filter)
+    private static void IfIsNotInRemove<T>(List<T> list, Func<T, bool> filter)
     {
         for (int i = list.Count - 1; i >= 0; i--)
         {

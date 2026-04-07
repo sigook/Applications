@@ -26,8 +26,8 @@ public class PayStub
     public decimal TotalDeductions { get; set; }
     public decimal TotalPaid { get; set; }
     public DateTime CreatedAt { get; set; }
-    public IEnumerable<PayStubItem> Items { get; set; } = [];
-    public IEnumerable<PayStubWageDetail> WageDetails { get; set; } = [];
-    public IEnumerable<PayStubPublicHoliday> Holidays { get; set; } = [];
-    public IEnumerable<PayStubOtherDeduction> OtherDeductions { get; set; } = [];
+    public List<PayStubItem> Items { get; set; } = [];
+    public List<PayStubWageDetail> WageDetails { get; set; } = [];
+    public List<PayStubPublicHoliday> Holidays { get; set; } = [];
+    public List<PayStubOtherDeduction> OtherDeductions { get; set; } = [];
 }

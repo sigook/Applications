@@ -133,7 +133,6 @@ public class PayStubBuilder :
         var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound().Add(reimbursement);
         var paymentDate = GetPaymentDate();
         var regularWage = _items.GetRegularWage();
-        _items = [.. _items, .. _reimbursements];
         var payStub = new PayStub
         {
             Id = Guid.NewGuid(),
@@ -156,10 +155,10 @@ public class PayStubBuilder :
             TotalPaid = totalPaid,
             CreatedAt = _createdAt,
             WeekEnding = _workEnd.GetWeekEndingCurrentWeek(),
-            Items = _items,
-            WageDetails = _wageDetails,
-            Holidays = _holidaysToPay,
-            OtherDeductions = _otherDeductions
+            Items = [.. _items, .. _reimbursements],
+            WageDetails = [.. _wageDetails],
+            Holidays = [.. _holidaysToPay],
+            OtherDeductions = [.. _otherDeductions]
         };
         return Result.Ok(payStub);
     }

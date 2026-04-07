@@ -170,7 +170,7 @@ public class PayStubService : IPayStubService
             CreatedAt = DateTime.Now,
             WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
             Items = payStubItems,
-            OtherDeductions = otherDeductions,
+            OtherDeductions = [.. otherDeductions],
         };
 
         // Step 10: Save
