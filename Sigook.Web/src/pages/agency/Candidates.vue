@@ -121,7 +121,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected">
+                @input="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -160,7 +160,7 @@
           <b-table-column field="residencyStatus" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyList" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

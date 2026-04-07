@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts">
+import { getCompanyUser, deleteCompanyUser } from '@/api/companyApi';
 
 export default {
   name: "CompanyUsers",
@@ -57,7 +58,7 @@ export default {
   },
   methods: {
     async getUsers() {
-      this.users = await this.$store.dispatch('company/getCompanyUser');
+      this.users = await getCompanyUser();
       this.users = this.users.map(r => ({ ...r, actions: null }));
     },
     deleteUser(id) {
@@ -65,7 +66,7 @@ export default {
         .then(response => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch('company/deleteCompanyUser', id)
+            deleteCompanyUser(id)
               .then(async () => {
                 await this.getUsers(this.initialPage);
                 this.isLoading = false;

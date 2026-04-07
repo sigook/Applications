@@ -17,3 +17,12 @@ export enum UserRole {
   Worker = 'worker',
   CompanyUser = 'company.user',
 }
+
+export interface ChangeEmailRequest {
+  newEmail: string;
+  confirmNewEmail: string;
+}
+
+export interface GetEmailResponse {
+  email: string;
+}

@@ -50,7 +50,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="filteredStatuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @typing="filterStatuses" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @typing="filterStatuses" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

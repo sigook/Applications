@@ -78,6 +78,7 @@
 
 <script lang="ts">
 import toast from "@/mixins/toastMixin";
+import { getRequests } from '@/api/companyApi';
 
 export default {
   components: {
@@ -140,8 +141,8 @@ export default {
     },
     getCompanyRequests() {
       this.isLoading = true;
-      this.$store.dispatch('company/updateCompanyRequestFilter', this.serverParams);
-      this.$store.dispatch('company/getRequests', this.serverParams)
+      this.$store.commit('company/setCompanyRequestFilter', this.serverParams);
+      getRequests(this.serverParams)
         .then((requests) => {
           this.rows = requests.items;
           this.totalItems = requests.totalItems;

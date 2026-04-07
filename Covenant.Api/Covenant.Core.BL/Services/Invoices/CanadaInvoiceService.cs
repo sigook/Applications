@@ -80,14 +80,14 @@ public class CanadaInvoiceService : BaseInvoiceService
     {
         // 1. Get timesheets
         var timesheets = await timeSheetRepository.GetTimeSheetForCreatingInvoice(agencyIds, model);
-        if (!timesheets.Any() && !model.DirectHiring)
+        if (timesheets.Count == 0 && !model.DirectHiring)
         {
             return Result.Fail<Invoice>("No approved timesheets found for the selected period");
         }
 
         // 2. Get holidays for the period
         var holidays = new List<DateTime>();
-        if (timesheets.Any())
+        if (timesheets.Count != 0)
         {
             var from = timesheets.Min(ts => ts.Date);
             var to = timesheets.Max(ts => ts.Date);

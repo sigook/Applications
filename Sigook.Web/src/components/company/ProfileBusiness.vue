@@ -56,6 +56,7 @@
 
 <script lang="ts">
 import { getIndustries } from "@/api/catalogApi";
+import { updateProfile } from "@/api/companyApi";
 
 export default {
   props: ['companyData'],
@@ -93,7 +94,7 @@ export default {
       if (mainFormValid && phoneValid && faxValid) {
         this.isLoading = true;
         this.$emit('update:companyData', this.localCompanyData);
-        this.$store.dispatch('company/updateProfile', { id: this.localCompanyData.id, company: this.localCompanyData })
+        updateProfile(this.localCompanyData.id, this.localCompanyData)
           .then(() => {
             this.isLoading = false;
             this.showAlertSuccess('Profile updated');

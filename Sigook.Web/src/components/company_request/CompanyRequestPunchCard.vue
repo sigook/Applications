@@ -46,7 +46,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -64,6 +64,7 @@
 </template>
 <script lang="ts">
 import download from '@/mixins/downloadFileMixin';
+import { getRequestWorkers } from '@/api/companyApi';
 
 export default {
   props: ['request'],
@@ -121,7 +122,7 @@ export default {
     },
     getWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('company/getRequestWorkers', this.serverParams)
+      getRequestWorkers(this.serverParams)
         .then((response) => {
           this.rows = response.items;
           this.totalItems = response.totalItems;
