@@ -20,6 +20,7 @@
 </template>
 <script lang="ts">
 import { getCities } from "@/api/locationApi";
+import { createWorkerLocationPreferences } from '@/api/workerApi';
 export default {
   props: ['data'],
   data() {
@@ -35,7 +36,7 @@ export default {
   methods: {
     createWorkerLocationPreferences() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerLocationPreferences', { profileId: this.data.id, model: this.worker.locationPreferences })
+      createWorkerLocationPreferences(this.data.id, this.worker.locationPreferences)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);

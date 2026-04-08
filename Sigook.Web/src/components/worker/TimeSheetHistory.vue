@@ -53,6 +53,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
+
 export default {
   props: ['workerId'],
   data() {
@@ -77,7 +79,7 @@ export default {
     },
     getWorkerProfileTimeSheetHistory() {
       this.isLoading = true;
-      this.$store.dispatch('worker/getWorkerProfileTimeSheetHistory', this.serverParams)
+      getWorkerProfileTimeSheetHistory(this.serverParams)
         .then(response => {
           this.isLoading = false;
           this.rows = response.items.map(c => ({ ...c, actions: null }));
@@ -89,7 +91,7 @@ export default {
         })
     },
     getAccumulated(row) {
-      this.$store.dispatch('worker/getWorkerProfileTimeSheetHistoryAccumulated', { profileId: this.workerId, rowNumber: row.rowNumber })
+      getWorkerProfileTimeSheetHistoryAccumulated(this.workerId, row.rowNumber)
         .then((response) => this.rowDetail = response)
         .catch((error) => this.showAlertError(error));
     },

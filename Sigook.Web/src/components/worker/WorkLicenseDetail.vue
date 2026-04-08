@@ -59,6 +59,7 @@
 
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
+import { deleteWorkerLicenses } from '@/api/workerApi';
 export default {
   props: ["worker"],
   data() {
@@ -88,7 +89,7 @@ export default {
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("worker/deleteWorkerLicenses", { profileId: this.localWorker.id, licenseId: license.id })
+            deleteWorkerLicenses(this.localWorker.id, license.id)
               .then(() => {
                 this.isLoading = false;
                 this.localWorker.licenses = this.localWorker.licenses.filter(d => d.license.id !== license.id);

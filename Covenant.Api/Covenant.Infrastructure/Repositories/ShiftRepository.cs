@@ -1,6 +1,6 @@
 ﻿using Covenant.Common.Entities;
 using Covenant.Common.Repositories;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 
 namespace Covenant.Infrastructure.Repositories
 {

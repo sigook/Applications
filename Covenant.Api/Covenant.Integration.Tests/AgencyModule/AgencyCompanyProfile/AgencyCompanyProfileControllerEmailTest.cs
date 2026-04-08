@@ -12,7 +12,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Company;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

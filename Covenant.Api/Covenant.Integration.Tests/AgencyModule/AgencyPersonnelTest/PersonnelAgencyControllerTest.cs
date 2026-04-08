@@ -5,7 +5,7 @@ using Covenant.Common.Entities.Agency;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;

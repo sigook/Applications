@@ -6,7 +6,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Company.Models;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Company;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

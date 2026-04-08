@@ -9,7 +9,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Request;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

@@ -7,7 +7,7 @@ using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;

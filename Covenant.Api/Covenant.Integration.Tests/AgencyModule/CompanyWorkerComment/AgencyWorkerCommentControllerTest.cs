@@ -6,7 +6,7 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

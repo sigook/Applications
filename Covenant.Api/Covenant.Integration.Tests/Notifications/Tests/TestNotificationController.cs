@@ -2,7 +2,7 @@ using Covenant.Common.Entities.Notification;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Notification;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;

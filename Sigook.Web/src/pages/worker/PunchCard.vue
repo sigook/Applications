@@ -43,6 +43,7 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
+import { workerRegisterTime, getClockType } from '@/api/workerApi';
 
 export default {
   props: ['requestId', 'timesheet'],
@@ -62,11 +63,7 @@ export default {
     },
     registerHour() {
       this.isLoading = true;
-      return this.$store.dispatch('worker/workerRegisterTime', {
-        requestId: this.requestId,
-        latitude: this.position.coords.latitude,
-        longitude: this.position.coords.longitude
-      }).then(async () => {
+      return workerRegisterTime(this.requestId, this.position.coords.latitude, this.position.coords.longitude).then(async () => {
         this.$parent.getTimeSheet();
         const clockType = await this.getClockType();
         this.isEntryTime = clockType === 1;
@@ -107,10 +104,7 @@ export default {
       }
     },
     async getClockType() {
-      return (await this.$store.dispatch('worker/getClockType', {
-        requestId: this.requestId,
-        date: dayjs(this.dateSelected).format('YYYY-MM-DD')
-      }));
+      return (await getClockType(this.requestId, dayjs(this.dateSelected).format('YYYY-MM-DD')));
     }
   },
   async created() {

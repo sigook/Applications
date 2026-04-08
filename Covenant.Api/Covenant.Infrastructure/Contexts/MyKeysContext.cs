@@ -1,15 +1,14 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Covenant.Infrastructure.Context
-{
-	public class MyKeysContext : DbContext, IDataProtectionKeyContext
-	{
-		public MyKeysContext(DbContextOptions<MyKeysContext> options) 
-			: base(options) 
-		{ 
-		}
+namespace Covenant.Infrastructure.Contexts;
 
-		public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+public class MyKeysContext : DbContext, IDataProtectionKeyContext
+{
+	public MyKeysContext(DbContextOptions<MyKeysContext> options) 
+		: base(options) 
+	{ 
 	}
+
+	public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 }

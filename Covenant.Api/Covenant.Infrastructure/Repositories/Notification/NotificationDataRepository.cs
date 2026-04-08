@@ -1,6 +1,6 @@
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Notification;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories.Notification

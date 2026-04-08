@@ -4,7 +4,7 @@ using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Accounting.Subcontractor;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories.Accounting;

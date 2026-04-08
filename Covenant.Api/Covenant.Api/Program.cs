@@ -6,7 +6,7 @@ using Covenant.Api.Configuration;
 using Covenant.Api.Middlewares;
 using Covenant.Common.Resources;
 using Covenant.Documents;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using FluentValidation;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.DataProtection;
@@ -19,6 +19,7 @@ using Microsoft.OpenApi.Models;
 using Azure.Identity;
 using System.Globalization;
 using System.Reflection;
+using Covenant.Infrastructure.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 

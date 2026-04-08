@@ -5,7 +5,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Candidate;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

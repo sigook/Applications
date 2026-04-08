@@ -8,7 +8,8 @@ using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -210,7 +211,8 @@ public class TimeSheetRepository : ITimeSheetRepository
                         MaxHoursWeek = timeLimits.MaxHoursWeek,
                         OverTime = rates.OverTime,
                         NightShift = rates.NightShift,
-                        Holiday = rates.Holiday
+                        Holiday = rates.Holiday,
+                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
                     };
         var result = await query.ToListAsync();
         return result;
@@ -264,7 +266,8 @@ public class TimeSheetRepository : ITimeSheetRepository
                         ts.Reimbursements,
                         ts.ReimbursementsDescription)
                     {
-                        TypeOfWork = jp == null ? cpj.OtherJobPosition : jp.Value
+                        TypeOfWork = jp == null ? cpj.OtherJobPosition : jp.Value,
+                        CountryCode = r.JobLocation.City.Province.Country.Code
                     };
         var result = await query.ToListAsync();
         return result;

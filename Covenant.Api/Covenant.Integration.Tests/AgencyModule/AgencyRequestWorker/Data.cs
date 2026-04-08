@@ -4,7 +4,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Utils;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker

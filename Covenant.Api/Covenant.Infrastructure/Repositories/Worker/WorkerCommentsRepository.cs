@@ -4,7 +4,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

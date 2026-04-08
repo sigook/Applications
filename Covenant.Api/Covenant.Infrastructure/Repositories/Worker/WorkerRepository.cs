@@ -8,7 +8,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

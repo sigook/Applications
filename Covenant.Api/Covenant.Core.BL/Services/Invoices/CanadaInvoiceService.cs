@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -91,7 +92,8 @@ public class CanadaInvoiceService : BaseInvoiceService
         {
             var from = timesheets.Min(ts => ts.Date);
             var to = timesheets.Max(ts => ts.Date);
-            var holidaysData = await GetHolidaysForPeriod(from, to);
+            var countryCode = timesheets.FirstOrDefault().CountryCode;
+            var holidaysData = await GetHolidaysForPeriod(from, to, countryCode);
             holidays.AddRange(holidaysData);
         }
         

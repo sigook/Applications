@@ -1,7 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories

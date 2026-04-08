@@ -8,7 +8,7 @@ using Covenant.Common.Models.Agency;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
