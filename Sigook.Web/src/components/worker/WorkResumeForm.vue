@@ -32,6 +32,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createWorkerResume } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -89,7 +90,7 @@ export default {
           const fn = this.resume.fileName;
           formData.append(fn, this.fileObjects.resume, fn);
         }
-        await this.$store.dispatch('worker/createWorkerResume', { profileId: this.data.id, formData });
+        await createWorkerResume(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         this.showAlertError(error);

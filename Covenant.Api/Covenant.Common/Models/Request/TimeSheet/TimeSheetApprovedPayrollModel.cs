@@ -76,6 +76,7 @@ namespace Covenant.Common.Models.Request.TimeSheet
         public decimal Reimbursements { get; set; }
         public string ReimbursementsDescription { get; set; }
         public string TypeOfWork { get; set; }
+        public string CountryCode { get; set; }
 
         public static IEnumerable<IGrouping<double, TimeSheetApprovedPayrollModel>> GroupTimeSheetByWeek(IEnumerable<TimeSheetApprovedPayrollModel> timeSheet) =>
             timeSheet.GroupBy(m => m.Week).OrderBy(m => m.Key).ToList();

@@ -1,6 +1,6 @@
 ﻿using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Services

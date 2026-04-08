@@ -39,6 +39,7 @@
 <script lang="ts">
 import pubSub from '../../mixins/pubSub';
 import multipartUploadMixin from '../../mixins/multipartUploadMixin';
+import { createWorkerImage } from '@/api/workerApi';
 export default {
   props: ['data'],
   mixins: [pubSub, multipartUploadMixin],
@@ -75,10 +76,7 @@ export default {
         const formData = new FormData();
         formData.append(generatedFileName, fileToUpload, generatedFileName);
 
-        await this.$store.dispatch('worker/createWorkerImage', {
-          profileId: this.data.id,
-          formData
-        });
+        await createWorkerImage(this.data.id, formData);
 
         this.isLoading = false;
         this.showEditModal = false;

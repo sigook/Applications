@@ -11,7 +11,7 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Candidate;
 using Covenant.Infrastructure.Repositories.Request;
 using Covenant.Infrastructure.Repositories.Worker;

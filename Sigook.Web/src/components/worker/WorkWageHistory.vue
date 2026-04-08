@@ -72,6 +72,7 @@
 </template>
 
 <script lang="ts">
+import { getWorkerProfileWageHistory, getWorkerProfileWageHistoryAccumulated } from '@/api/workerApi';
 
 export default {
   props: ["workerId"],
@@ -97,7 +98,7 @@ export default {
     },
     getWorkerProfileWageHistory() {
       this.isLoading = true;
-      this.$store.dispatch("worker/getWorkerProfileWageHistory", this.serverParams)
+      getWorkerProfileWageHistory(this.serverParams)
         .then((response) => {
           this.isLoading = false;
           this.rows = response.items.map(c => ({ ...c, actions: null }));
@@ -117,7 +118,7 @@ export default {
       return total;
     },
     getAccumulated(row) {
-      this.$store.dispatch('worker/getWorkerProfileWageHistoryAccumulated', { profileId: this.workerId, rowNumber: row.rowNumber })
+      getWorkerProfileWageHistoryAccumulated(this.workerId, row.rowNumber)
         .then((response) => this.rowDetail = response)
         .catch((error) => this.showAlertError(error));
     },

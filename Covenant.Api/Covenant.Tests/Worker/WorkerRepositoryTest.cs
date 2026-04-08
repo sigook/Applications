@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

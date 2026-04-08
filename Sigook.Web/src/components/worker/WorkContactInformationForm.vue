@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts">
+import { createWorkerContactInformation } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -44,7 +45,7 @@ export default {
     },
     createWorkerContactInformation() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerContactInformation', { profileId: this.worker.id, model: this.worker })
+      createWorkerContactInformation(this.worker.id, this.worker)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);

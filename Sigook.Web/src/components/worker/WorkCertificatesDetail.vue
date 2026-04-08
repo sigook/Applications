@@ -53,6 +53,7 @@
 
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
+import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
 export default {
   props: ['worker'],
   mixins: [toastMixin],
@@ -82,7 +83,7 @@ export default {
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("worker/deleteWorkerCertificates", { profileId: this.localWorker.id, certificateId: certificate.id })
+            deleteWorkerCertificates(this.localWorker.id, certificate.id)
               .then(() => {
                 this.isLoading = false;
                 this.localWorker.certificates = this.localWorker.certificates.filter(d => d.id !== certificate.id);
@@ -99,7 +100,7 @@ export default {
         });
     },
     deleteCertificate(certificateArr) {
-      this.$store.dispatch('worker/createWorkerCertificates', { profileId: this.localWorker.id, model: certificateArr })
+      createWorkerCertificates(this.localWorker.id, certificateArr)
         .then(() => {
           this.isLoading = false;
           this.$emit('updateProfile', true);

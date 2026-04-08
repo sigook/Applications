@@ -102,6 +102,7 @@
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 import { getIdentificationTypes } from "@/api/catalogApi";
+import { createWorkerDocuments } from '@/api/workerApi';
 
 export default {
   props: ["data"],
@@ -189,7 +190,7 @@ export default {
           const fn = this.worker.identificationType2File.fileName;
           formData.append(fn, this.fileObjects.identificationType2, fn);
         }
-        await this.$store.dispatch('worker/createWorkerDocuments', { profileId: this.worker.id, formData });
+        await createWorkerDocuments(this.worker.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         this.showAlertError(error);

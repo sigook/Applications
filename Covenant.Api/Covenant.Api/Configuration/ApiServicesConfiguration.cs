@@ -23,6 +23,7 @@ using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Invoices;
 using Covenant.Core.BL.Services.Shared;
 using Covenant.Deductions.Services;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
 using Covenant.Infrastructure.Repositories;
@@ -254,7 +255,7 @@ public static class ApiServicesConfiguration
         // Connectivity checks - these check if services are accessible (only if configured)
         if (!string.IsNullOrEmpty(databaseConnection))
         {
-            healthChecksBuilder.AddDbContextCheck<Infrastructure.Context.CovenantContext>(
+            healthChecksBuilder.AddDbContextCheck<CovenantContext>(
                 "database-connectivity",
                 HealthStatus.Unhealthy,
                 tags: ["connectivity", "ready", "live"]);

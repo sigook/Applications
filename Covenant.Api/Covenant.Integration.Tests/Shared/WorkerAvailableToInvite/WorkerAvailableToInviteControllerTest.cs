@@ -3,7 +3,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Repositories.Worker;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;

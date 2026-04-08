@@ -6,7 +6,7 @@ using Covenant.Common.Utils.Extensions;
 using Covenant.Common.Models.Deductions;
 using Covenant.Common.Repositories;
 using Covenant.Deductions.Services;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
 using Covenant.Integration.Tests.Configuration;

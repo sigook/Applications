@@ -45,6 +45,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createWorkerOtherDocuments } from '@/api/workerApi';
 
 export default {
   props: ["data"],
@@ -97,7 +98,7 @@ export default {
           const fn = this.otherDocument.fileName;
           formData.append(fn, this.fileObjects.otherDocument, fn);
         }
-        await this.$store.dispatch('worker/createWorkerOtherDocuments', { profileId: this.data.id, formData });
+        await createWorkerOtherDocuments(this.data.id, formData);
         this.$emit('closeAndUpdate', true);
       } catch (error) {
         this.showAlertError(error);

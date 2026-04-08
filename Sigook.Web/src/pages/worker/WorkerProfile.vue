@@ -56,6 +56,8 @@
 </template>
 
 <script lang="ts">
+import { getMyProfile } from '@/api/workerApi';
+
 export default {
   components: {
     PersonalDetails: () => import("../../components/worker/ProfilePersonal.vue"),
@@ -84,9 +86,9 @@ export default {
     },
     getProfile() {
         this.isLoading = true;
-        this.$store
-          .dispatch("worker/getMyProfile")
-          .then(() => {
+        getMyProfile()
+          .then((data) => {
+            this.$store.commit('worker/setWorkerProfile', data);
             this.isLoading = false;
           })
           .catch((error) => {
@@ -96,9 +98,9 @@ export default {
     },
     updateProfile() {
       this.isLoading = true;
-      this.$store
-        .dispatch("worker/getMyProfile")
-        .then(() => {
+      getMyProfile()
+        .then((data) => {
+          this.$store.commit('worker/setWorkerProfile', data);
           this.isLoading = false;
         })
         .catch((error) => {

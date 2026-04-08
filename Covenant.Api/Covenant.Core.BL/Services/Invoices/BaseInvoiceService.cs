@@ -102,7 +102,7 @@ public abstract class BaseInvoiceService
     /// <summary>
     /// Gets holidays for a given period
     /// </summary>
-    protected async Task<List<DateTime>> GetHolidaysForPeriod(DateTime? from, DateTime? to)
+    protected async Task<List<DateTime>> GetHolidaysForPeriod(DateTime? from, DateTime? to, string countryCode)
     {
         if (!from.HasValue || !to.HasValue)
             return new List<DateTime>();
@@ -112,12 +112,12 @@ public abstract class BaseInvoiceService
 
         while (currentDate <= to.Value)
         {
-            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(currentDate);
+            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(currentDate, countryCode);
             holidays.AddRange(holidaysInWeek);
             currentDate = currentDate.AddDays(7);
         }
 
-        return holidays.Distinct().ToList();
+        return [.. holidays.Distinct()];
     }
 
     /// <summary>
@@ -289,7 +289,7 @@ public abstract class BaseInvoiceService
     protected async Task CreateSubcontractorReportsAsync(IEnumerable<Guid> agencyIds, Guid companyId)
     {
         var timesheets = await timeSheetRepository.GetTimeSheetForCreatingReportsSubcontractor(agencyIds, companyId);
-        if (!timesheets.Any()) return;
+        if (timesheets.Count == 0) return;
 
         // Group by worker and week
         var workerWeekGroups = timesheets
@@ -301,7 +301,10 @@ public abstract class BaseInvoiceService
             var workerProfileId = first.WorkerProfileId;
 
             TimeSpan accumulatedRegularHours = TimeSpan.Zero;
-            var holidays = await GetHolidaysForPeriod(group.Min(t => t.Date), group.Max(t => t.Date));
+            var from = group.Min(t => t.Date);
+            var to = group.Max(t => t.Date);
+            var countryCode = first.CountryCode;
+            var holidays = await GetHolidaysForPeriod(from, to, countryCode);
 
             // Create a WageDetail for each timesheet (not just one per week)
             var wageDetails = new List<ReportSubcontractorWageDetail>();

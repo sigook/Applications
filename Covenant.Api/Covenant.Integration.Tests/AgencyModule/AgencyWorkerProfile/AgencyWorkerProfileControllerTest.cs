@@ -13,7 +13,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;

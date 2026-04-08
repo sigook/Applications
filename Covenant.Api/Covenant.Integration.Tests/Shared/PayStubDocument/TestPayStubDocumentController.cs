@@ -12,7 +12,7 @@ using Covenant.Common.Models.Pdf;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Deductions.Services;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;

@@ -2,7 +2,7 @@
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Worker;
 using Covenant.Documents;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;

@@ -147,6 +147,7 @@
 <script lang="ts">
 import statusWorkerMixin from "@/mixins/statusWorkerMixin";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getCommentsWorker } from '@/api/workerApi';
 
 export default {
   data() {
@@ -158,7 +159,8 @@ export default {
       modalWorkExperience: false,
       currentTab: "profile",
       visitedTabs: ["profile"],
-      worker: null
+      worker: null,
+      comments: {}
     };
   },
   mixins: [statusWorkerMixin, billingAdminMixin],
@@ -214,12 +216,13 @@ export default {
     },
     updateComments() {
       this.isLoading = true;
-      this.$store.dispatch("worker/getCommentsWorker", {
+      getCommentsWorker({
         workerId: this.worker.workerId,
         size: this.commentSize,
         pageIndex: this.commentPageIndex,
       })
-        .then(() => {
+        .then((data) => {
+          this.comments = data;
           this.isLoading = false;
         });
     },
@@ -290,9 +293,6 @@ export default {
     },
   },
   computed: {
-    comments() {
-      return this.$store.state.worker.workerComments;
-    },
     hasDnuPermission() {
       if (!this.worker.dnu) {
         return false;

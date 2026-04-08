@@ -23,6 +23,7 @@
 </template>
 <script lang="ts">
 import { fetchLifts } from "@/api/catalogApi";
+import { createWorkerOther } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -40,7 +41,7 @@ export default {
       this.$validator.validateAll().then((isValid) => {
         if (isValid) {
           this.isLoading = true;
-          this.$store.dispatch('worker/createWorkerOther', { profileId: this.data.id, model: this.worker })
+          createWorkerOther(this.data.id, this.worker)
             .then(() => {
               this.isLoading = false;
               this.$emit('closeModal', true);

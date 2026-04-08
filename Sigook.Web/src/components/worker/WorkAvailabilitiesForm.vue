@@ -21,6 +21,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import { getAvailability } from "@/api/catalogApi";
+import { createWorkerAvailabilities } from '@/api/workerApi';
 export default {
   props: ['data'],
   data() {
@@ -36,7 +37,7 @@ export default {
   methods: {
     createWorkerAvailabilities() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerAvailabilities', { profileId: this.data.id, model: this.worker.availabilities })
+      createWorkerAvailabilities(this.data.id, this.worker.availabilities)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);

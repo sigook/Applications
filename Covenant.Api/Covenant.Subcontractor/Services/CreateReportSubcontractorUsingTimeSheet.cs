@@ -50,7 +50,7 @@ public class CreateReportSubcontractorUsingTimeSheet
                 {
                     List<(ITimeSheetTotal tst, TotalDailyWage totalDailyWage)> totals = timeSheet.TotalizatorParams()
                         .GetPayStubTotals(_rates, _timeLimits.MaxHoursWeek, first.OvertimeStartsAfter);
-                    IReadOnlyCollection<DateTime> holidaysInWeek = await _catalogRepository.GetHolidaysInWeek(timeSheet.First().Date);
+                    IReadOnlyCollection<DateTime> holidaysInWeek = await _catalogRepository.GetHolidaysInWeek(timeSheet.First().Date, null);
                     var publicHolidays = new List<ReportSubcontractorPublicHoliday>();
                     if (holidaysInWeek != null && holidaysInWeek.Any())
                     {

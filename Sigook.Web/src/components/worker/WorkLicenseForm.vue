@@ -66,6 +66,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createWorkerLicenses } from '@/api/workerApi';
 
 export default {
   props: ["data"],
@@ -126,7 +127,7 @@ export default {
           const fn = this.licenseModal.license.fileName;
           formData.append(fn, this.fileObjects.license, fn);
         }
-        await this.$store.dispatch('worker/createWorkerLicenses', { profileId: this.data.id, formData });
+        await createWorkerLicenses(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         this.showAlertError(error);

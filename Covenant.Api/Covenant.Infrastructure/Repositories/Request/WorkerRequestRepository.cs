@@ -5,7 +5,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

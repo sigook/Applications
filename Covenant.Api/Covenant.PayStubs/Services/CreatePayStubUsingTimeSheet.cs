@@ -87,7 +87,7 @@ public class CreatePayStubUsingTimeSheet
             var totalizatorParams = timeSheet.TotalizatorParams();
             var payStubTotals = totalizatorParams.GetPayStubTotals(_rates, _timeLimits.MaxHoursWeek, first.OvertimeStartsAfter);
             totals.AddRange(payStubTotals);
-            var holidaysInWeek = await _catalogRepository.GetHolidaysInWeek(timeSheet.First().Date);
+            var holidaysInWeek = await _catalogRepository.GetHolidaysInWeek(timeSheet.First().Date, null);
             if (holidaysInWeek is null || !holidaysInWeek.Any()) continue;
             var rPublicHolidays = await _payStubPublicHolidays.GetWorkerPublicHolidays(holidaysInWeek, workerProfileId);
             if (!rPublicHolidays) return Result.Fail<PayStub>(rPublicHolidays.Errors);

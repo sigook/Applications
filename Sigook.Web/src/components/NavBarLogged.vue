@@ -57,6 +57,7 @@
 <script lang="ts">
 import menu from "@/security/menu";
 import roles from "@/security/roles";
+import { getMyProfile } from '@/api/workerApi';
 
 export default {
   data() {
@@ -99,7 +100,7 @@ export default {
       });
     },
     async getWorkerInfo() {
-      await this.$store.dispatch("worker/getMyProfile").then((data) => {
+      await getMyProfile().then((data) => {
         this.currentUser.fullName = `${data.firstName} ${data.lastName}`;
         this.currentUser.profileImage = data.workerProfileImage;
         this.profileUrl = "/worker-profile";

@@ -69,6 +69,7 @@
 </template>
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
+import { deleteWorkerOtherDocuments } from '@/api/workerApi';
 export default {
   props: ["worker", 'justWhmis'],
   data() {
@@ -88,7 +89,7 @@ export default {
       this.showAlertConfirm("Are you sure", "You want to delete this document").then((response) => {
         if (response) {
           this.isLoading = true;
-          this.$store.dispatch("worker/deleteWorkerOtherDocuments", { profileId: this.worker.id, otherDocumentId: document.id })
+          deleteWorkerOtherDocuments(this.worker.id, document.id)
             .then(() => {
               this.isLoading = false;
               this.$emit('updateProfile', true);

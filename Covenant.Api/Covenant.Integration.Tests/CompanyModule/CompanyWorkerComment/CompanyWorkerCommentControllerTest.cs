@@ -8,7 +8,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Company;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;

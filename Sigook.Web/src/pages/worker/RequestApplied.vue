@@ -38,6 +38,7 @@
 </template>
 
 <script lang="ts">
+import { getWorkerRequest, workerGetTimeSheet } from '@/api/workerApi';
 
 export default {
   components: {
@@ -62,8 +63,7 @@ export default {
       }
     },
     getWorkerRequest() {
-      this.$store
-        .dispatch("worker/getWorkerRequest", this.$route.params.id)
+      getWorkerRequest(this.$route.params.id)
         .then((response) => {
           this.isLoading = false;
           this.request = response;
@@ -74,8 +74,7 @@ export default {
         });
     },
     getTimeSheet() {
-      this.$store
-        .dispatch("worker/workerGetTimeSheet", this.request.id)
+      workerGetTimeSheet(this.request.id)
         .then((response) => {
           this.isLoading = false;
           this.timesheet = response;

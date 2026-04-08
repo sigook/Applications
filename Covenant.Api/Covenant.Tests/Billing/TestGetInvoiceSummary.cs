@@ -3,7 +3,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

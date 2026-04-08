@@ -2,7 +2,6 @@
 {
     public static class CovenantConstants
     {
-        public const string DefaultRegion = "CA";
         public const string ExcelMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         public const string CompanyId = "companyId";
         public const string AgencyId = "agencyId";
@@ -98,6 +97,12 @@
         {
             public const int TwentyDays = 20;
             public const double LimitForWorkerWorkedHours = 44 * 4;
+        }
+
+        public static class Country
+        {
+            public const string CanadaCode = "CA";
+            public const string UnitedStatesCode = "US";
         }
     }
 }

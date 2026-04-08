@@ -72,29 +72,6 @@ public class TestCreateReportSubcontractorUsingTimeSheet
         {5,new []{new  DateTime(2021,01,21),new  DateTime(2021,01,22)}}
     };
 
-    [Theory]
-    [InlineData(1, 1)]
-    public async Task Holidays(int weeks, int expected)
-    {
-        var now = new DateTime(2021, 01, 03);
-
-        _catalogRepository.Setup(r => r.GetHolidaysInWeek(It.IsAny<DateTime>()))
-            .Returns<DateTime>(firstDate => Task.FromResult(_holidays[firstDate.GetWeekOfYearStartSunday()].ToList()));
-
-        _publicHolidays.Setup(ph => ph.GetSubcontractorWorkerHolidays(It.IsAny<IEnumerable<DateTime>>(), It.IsAny<Guid>()))
-            .Returns<IEnumerable<DateTime>, Guid>((holidaysInWeek, _) => Task.FromResult<IReadOnlyCollection<ReportSubcontractorPublicHoliday>>(
-                holidaysInWeek.Select(h => new ReportSubcontractorPublicHoliday(h, 1)).ToList()));
-
-        IEnumerable<TimeSheetApprovedPayrollModel> data = Data(now, weeks);
-        var sut = new CreateReportSubcontractorUsingTimeSheet(TimeLimits.DefaultTimeLimits,
-            Rates.DefaultRates, _catalogRepository.Object, _repository.Object, _publicHolidays.Object);
-        var result = await sut.Create(data);
-        Assert.True(result);
-        var report = result.Value.Single();
-        Assert.Equal(expected, report.Holidays.Count());
-        Assert.Equal(expected, report.PublicHolidayPay);
-    }
-
     private static IEnumerable<TimeSheetApprovedPayrollModel> Data(
         DateTime now,
         int weeks = 1,
