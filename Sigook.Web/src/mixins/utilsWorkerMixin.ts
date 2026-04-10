@@ -1,41 +1,21 @@
-interface Experience {
-  id: string | null;
-  companyName: string;
-  title: string;
-  startDate: Date | null;
-  endDate: Date | null;
-  currentJob: boolean;
-  description: string;
-}
-
-interface FileReference {
-  id: string | null;
-  fileName: string;
-}
-
-interface Tag {
-  id: string | null;
-  value: string;
-}
+import { getSkills, fetchLanguages } from '@/api/catalogApi';
+import type { Skill, Language } from '@/types/common';
+import type { WorkerExperienceForm, WorkerDocumentFile } from '@/types/worker';
 
 export default {
   data() {
     return {
-      experiences: [] as Experience[],
-      licenses: [] as FileReference[],
-      certificates: [] as FileReference[],
-      resume: null as FileReference | null,
-      filteredSkills: [] as Tag[],
-      filteredLanguages: [] as Tag[]
+      experiences: [] as WorkerExperienceForm[],
+      licenses: [] as WorkerDocumentFile[],
+      certificates: [] as WorkerDocumentFile[],
+      resume: null as WorkerDocumentFile | null,
+      filteredSkills: [] as Skill[],
+      filteredLanguages: [] as Language[]
     };
   },
   methods: {
     addTag(newTag: string): void {
-      const tag: Tag = {
-        id: null,
-        value: newTag
-      };
-      (this as any).filteredSkills.push(tag);
+      (this as any).filteredSkills.push({ skill: newTag });
     },
     validateExperience(index: number): Promise<boolean> {
       const vm = this as any;
@@ -96,14 +76,14 @@ export default {
       (this as any).certificates.splice(index, 1);
     },
     verifyAllCurrentJob(index: number): void {
-      (this as any).experiences.forEach((item: Experience, indexItem: number) => {
+      (this as any).experiences.forEach((item: WorkerExperienceForm, indexItem: number) => {
         if (index !== indexItem) {
           item.currentJob = false;
         }
       });
     },
     disableEndDate(index: number): void {
-      (this as any).experiences.forEach((item: Experience, indexItem: number) => {
+      (this as any).experiences.forEach((item: WorkerExperienceForm, indexItem: number) => {
         if (index === indexItem) {
           if (item.currentJob) {
             item.endDate = null;
@@ -126,7 +106,7 @@ export default {
   },
   async created() {
     const vm = this as any;
-    vm.filteredSkills = await vm.$store.dispatch('getSkills');
-    vm.filteredLanguages = await vm.$store.dispatch('getLanguages');
+    vm.filteredSkills = await getSkills();
+    vm.filteredLanguages = await fetchLanguages();
   }
 };

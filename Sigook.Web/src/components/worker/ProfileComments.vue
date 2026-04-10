@@ -10,6 +10,8 @@
 
 
 <script lang="ts">
+import { getCommentsWorker } from '@/api/workerApi';
+
 export default {
   props: ['worker'],
   data() {
@@ -26,8 +28,9 @@ export default {
   methods: {
     updateComments() {
       this.isLoading = true;
-      this.$store.dispatch('worker/getCommentsWorker', { workerId: this.worker.workerId, size: this.commentSize, pageIndex: this.commentPageIndex })
-        .then(() => {
+      getCommentsWorker({ workerId: this.worker.workerId, size: this.commentSize, pageIndex: this.commentPageIndex })
+        .then((data) => {
+          this.comments = data;
           this.isLoading = false;
         });
 

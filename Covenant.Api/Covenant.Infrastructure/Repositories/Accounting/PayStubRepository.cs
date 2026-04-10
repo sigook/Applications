@@ -6,7 +6,7 @@ using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

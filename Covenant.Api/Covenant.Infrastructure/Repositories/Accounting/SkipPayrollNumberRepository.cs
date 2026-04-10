@@ -3,7 +3,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Repositories.Accounting;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories.Accounting;

@@ -45,6 +45,7 @@
 
 <script lang="ts">
 import CvnAddress from "@/components/Address.vue";
+import { createProfileLocation } from '@/api/companyApi';
 
 export default {
   components: { CvnAddress },
@@ -86,7 +87,7 @@ export default {
     },
     createCompanyLocation() {
       this.isLoading = true;
-      this.$store.dispatch('company/createProfileLocation', { model: this.location })
+      createProfileLocation(this.location)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created');

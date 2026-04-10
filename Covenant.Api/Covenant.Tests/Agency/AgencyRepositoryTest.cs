@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Agency;
 using Covenant.Tests.Utils;
 using Microsoft.EntityFrameworkCore;

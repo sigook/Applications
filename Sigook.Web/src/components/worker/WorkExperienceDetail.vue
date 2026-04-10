@@ -30,6 +30,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import toastMixin from "../../mixins/toastMixin";
+import { deleteWorkerWorkExperience } from '@/api/workerApi';
 export default {
     props: ['workerId', 'item'],
     data() {
@@ -51,7 +52,7 @@ export default {
             })
         },
         deleteWorkerWorkExperience(){
-            this.$store.dispatch('worker/deleteWorkerWorkExperience', {profileId: this.workerId, id: this.item.id})
+            deleteWorkerWorkExperience(this.workerId, this.item.id)
             .then(() => {
                 this.$emit("getWorker", true)
             })

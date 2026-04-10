@@ -2,7 +2,7 @@
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories
@@ -133,11 +133,15 @@ namespace Covenant.Infrastructure.Repositories
 
         public Task<bool> IsHoliday(DateTime date, string countryCode) => _context.Holiday.AnyAsync(c => c.Date.Date == date.Date && c.CountryCode == countryCode);
 
-        public virtual Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek) =>
-            _context.Holiday.Where(holiday =>
-                PostgresFunctions.date_trunc("week", holiday.Date + TimeSpan.FromDays(1)) - TimeSpan.FromHours(1) ==
-                PostgresFunctions.date_trunc("week", firstDateOfTheWeek.Date + TimeSpan.FromDays(1)) - TimeSpan.FromHours(1)
+        public virtual Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek, string countryCode)
+        {
+            var endOfWeek = firstDateOfTheWeek.Date.AddDays(7);
+            return _context.Holiday.Where(holiday =>
+                holiday.Date >= firstDateOfTheWeek.Date &&
+                holiday.Date < endOfWeek &&
+                holiday.CountryCode == countryCode
             ).Select(h => h.Date).ToListAsync();
+        }
 
         public Task SaveChangesAsync() => _context.SaveChangesAsync();
 

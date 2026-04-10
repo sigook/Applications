@@ -59,6 +59,8 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { maximumHoursPerDay } from "@/constants/catalog";
+import { validateHoursTimeSheet } from "@/api/companyApi";
 
 export default {
   props: ['editableDay', 'worker'],
@@ -99,7 +101,7 @@ export default {
         missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),
         missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss"),
       };
-      this.$store.dispatch('company/validateHoursTimeSheet', { requestId: this.$route.params.id, workerId: this.worker.workerId, id: item.id, model: model })
+      validateHoursTimeSheet(this.$route.params.id, this.worker.workerId, item.id, model)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Updated');
@@ -113,9 +115,10 @@ export default {
   },
   computed: {
     maximumDailyHours() {
-      if (this.$store.state.catalog.maximumHoursPerDay) {
+      const maxHours = maximumHoursPerDay;
+      if (maxHours) {
         const maximum = new Date();
-        maximum.setHours(this.$store.state.catalog.maximumHoursPerDay);
+        maximum.setHours(maxHours);
         maximum.setMinutes(0);
         maximum.setSeconds(0);
         return maximum;

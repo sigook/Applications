@@ -31,6 +31,8 @@
 
 <script lang="ts">
 import download from '../../mixins/downloadFileMixin';
+import { fetchInvoicePdf } from "@/api/downloadApi";
+import { getCompanyInvoice } from "@/api/companyApi";
 
 export default {
   data() {
@@ -50,9 +52,9 @@ export default {
     }
   },
   methods: {
-    getCompanyInvoice() {
+    onGetCompanyInvoice() {
       this.isLoading = true;
-      this.$store.dispatch('company/getCompanyInvoice', this.serverParams)
+      getCompanyInvoice(this.serverParams)
         .then(response => {
           this.rows = response.items;
           this.totalItems = response.totalItems;
@@ -65,7 +67,7 @@ export default {
     },
     downloadInvoicePdf(item) {
       this.isLoading = true;
-      this.$store.dispatch("downloadInvoicePdf", { invoiceId: item.id })
+      fetchInvoicePdf(item.id)
         .then((response) => {
           this.isLoading = false;
           this.downloadPDF(response, "Invoice_" + item.numberId);
@@ -95,7 +97,7 @@ export default {
   },
   mixins: [download],
   created() {
-    this.getCompanyInvoice();
+    this.onGetCompanyInvoice();
   },
 }
 

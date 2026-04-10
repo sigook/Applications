@@ -56,6 +56,7 @@
 </template>
 
 <script lang="ts">
+import { createWorkerWorkExperience, editWorkerWorkExperience } from '@/api/workerApi';
 export default {
   props: ['workerId', 'data'],
   data() {
@@ -88,7 +89,7 @@ export default {
     },
     createWorkerWorkExperience() {
       this.isLoading = true;
-      this.$store.dispatch("worker/createWorkerWorkExperience", { id: this.workerId, model: this.workExperience })
+      createWorkerWorkExperience(this.workerId, this.workExperience)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateExperience");
@@ -100,7 +101,7 @@ export default {
     },
     editWorkerWorkExperience() {
       this.isLoading = true;
-      this.$store.dispatch("worker/editWorkerWorkExperience", { profileId: this.workerId, id: this.data.id, model: this.workExperience })
+      editWorkerWorkExperience(this.workerId, this.data.id, this.workExperience)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateExperience");

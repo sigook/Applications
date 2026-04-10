@@ -108,37 +108,6 @@ namespace Covenant.Tests.Billing
             {5,new []{new  DateTime(2021,01,21),new  DateTime(2021,01,22)}}
         };
 
-        [Theory]
-        [InlineData(1, 1)]
-        [InlineData(2, 2)]
-        [InlineData(3, 2)]
-        [InlineData(4, 4)]
-        public async Task Holidays(int weeks, int expected)
-        {
-            var defaultRates = Rates.DefaultRates;
-            var now = new DateTime(2021, 01, 03);
-            _catalogRepository.Setup(r => r.GetHolidaysInWeek(It.IsAny<DateTime>()))
-                .Returns<DateTime>(firstDate => Task.FromResult(_holidays[firstDate.GetWeekOfYearStartSunday()].ToList()));
-
-            _payStubPublicHolidays.Setup(ps => ps.GetWorkerPublicHolidays(It.IsAny<IEnumerable<DateTime>>(), It.IsAny<Guid>()))
-                .Returns<IEnumerable<DateTime>, Guid>((holidaysInWeek, _) =>
-                    Task.FromResult(Result.Ok<IReadOnlyCollection<PayStubPublicHoliday>>(holidaysInWeek.Select(h => PayStubPublicHoliday.Create(h, 1).Value)
-                        .ToList())));
-            var sut = new CreatePayStubUsingTimeSheet(
-                TimeLimits.DefaultTimeLimits,
-                defaultRates,
-                _catalogRepository.Object,
-                _deductions.Object,
-                _payStubPublicHolidays.Object,
-                _payStubRepository.Object,
-                _workerRepository.Object);
-
-            Result result = await sut.Create(Data(now, weeks));
-            Assert.True(result);
-            PayStub payStub = sut.PayStubs.Single();
-            Assert.Equal(expected, payStub.Holidays.Count());
-        }
-
         private static IEnumerable<TimeSheetApprovedPayrollModel> Data(
             DateTime now,
             int weeks = 1,

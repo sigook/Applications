@@ -23,6 +23,7 @@ using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Invoices;
 using Covenant.Core.BL.Services.Shared;
 using Covenant.Deductions.Services;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
 using Covenant.Infrastructure.Repositories;
@@ -186,11 +187,6 @@ public static class ApiServicesConfiguration
     {
         var accountingStorageConnection = builder.Configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = builder.Configuration.GetConnectionString("FileStorageConnection");
-        if (!builder.Environment.IsDevelopment())
-        {
-            accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
-            fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
-        }
 
         // Use empty strings as fallback to prevent null reference exceptions
         // The health checks will report if configuration is missing
@@ -212,10 +208,6 @@ public static class ApiServicesConfiguration
     public static IServiceCollection AddAzureServiceBusConsumer(this IServiceCollection services, WebApplicationBuilder builder)
     {
         var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBusConnection");
-        if (!builder.Environment.IsDevelopment())
-        {
-            serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
-        }
 
         // Only register Service Bus consumers if connection string is configured
         // The health checks will report if configuration is missing
@@ -231,7 +223,7 @@ public static class ApiServicesConfiguration
         return services;
     }
 
-    public static void AddCovenantHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static IServiceCollection AddCovenantHealthChecks(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         // Get all connection strings
         var databaseConnection = configuration.GetConnectionString("DefaultConnection");
@@ -239,58 +231,52 @@ public static class ApiServicesConfiguration
         var fileStorageConnection = configuration.GetConnectionString("FileStorageConnection");
         var serviceBusConnection = configuration.GetConnectionString("ServiceBusConnection");
 
-        if (!environment.IsDevelopment())
-        {
-            databaseConnection = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
-            accountingStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AccountingStorageConnection");
-            fileStorageConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_FileStorageConnection");
-            serviceBusConnection = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_ServiceBusConnection");
-        }
-
         var healthChecksBuilder = services.AddHealthChecks();
 
         // Configuration validation checks - these check if configuration exists
         healthChecksBuilder.AddTypeActivatedCheck<DatabaseConfigurationHealthCheck>(
             "config-database",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready", "live" },
-            args: new object[] { databaseConnection! });
+            tags: ["config", "ready", "live"],
+            args: [databaseConnection!]);
 
         healthChecksBuilder.AddTypeActivatedCheck<AzureStorageConfigurationHealthCheck>(
             "config-azure-storage",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready" },
-            args: new object[] { accountingStorageConnection!, fileStorageConnection! });
+            tags: ["config", "ready"],
+            args: [accountingStorageConnection!, fileStorageConnection!]);
 
         healthChecksBuilder.AddTypeActivatedCheck<ServiceBusConfigurationHealthCheck>(
             "config-service-bus",
             HealthStatus.Unhealthy,
-            tags: new[] { "config", "ready" },
-            args: new object[] { serviceBusConnection! });
+            tags: ["config", "ready"],
+            args: [serviceBusConnection!]);
 
         // Connectivity checks - these check if services are accessible (only if configured)
         if (!string.IsNullOrEmpty(databaseConnection))
         {
-            healthChecksBuilder.AddDbContextCheck<Infrastructure.Context.CovenantContext>(
+            healthChecksBuilder.AddDbContextCheck<CovenantContext>(
                 "database-connectivity",
                 HealthStatus.Unhealthy,
-                tags: new[] { "connectivity", "ready", "live" });
+                tags: ["connectivity", "ready", "live"]);
         }
 
         // Always add connectivity checks (they now handle null connection strings gracefully)
         healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",
             new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
 
         healthChecksBuilder.AddCheck("azure-storage-files-connectivity",
             new AzureStorageHealthCheck(fileStorageConnection, "Files"),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
 
         healthChecksBuilder.AddCheck("azure-service-bus-connectivity",
             new AzureServiceBusHealthCheck(serviceBusConnection),
             HealthStatus.Unhealthy,
-            tags: new[] { "connectivity", "ready" });
+            tags: ["connectivity", "ready"]);
+
+        return services;
     }
 }

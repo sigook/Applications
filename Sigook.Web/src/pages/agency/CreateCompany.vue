@@ -139,6 +139,7 @@
 import pubSub from "../../mixins/pubSub";
 import confirmationAlert from "../../mixins/confirmationAlert";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getIndustries, getCompanyStatus, addIndustry } from "@/api/catalogApi";
 
 export default {
   data() {
@@ -192,8 +193,8 @@ export default {
         this.salesRepresentative = `${record.name} - ${record.email}`;
       }
     } else {
-      this.industryOptions = await this.$store.dispatch('getCompanyIndustry');
-      this.statuses = await this.$store.dispatch('getCompanyStatus');
+      this.industryOptions = await getIndustries();
+      this.statuses = await getCompanyStatus();
       this.salesRepresentatives = await this.$store.dispatch("agency/getAgencyPersonnel")
     }
     this.isLoading = false;
@@ -265,7 +266,7 @@ export default {
         confirmText: 'Add',
         onConfirm: async (value, dialog) => {
           const payload = { value };
-          const newIndustry = await this.$store.dispatch('addIndustry', payload);
+          const newIndustry = await addIndustry(payload);
           this.industryOptions.push(newIndustry);
           this.$refs.autoCompleteIndustries.setSelected(newIndustry);
           dialog.close();

@@ -20,6 +20,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getAvailabilityTimes } from "@/api/catalogApi";
+import { createWorkerAvailabilityTimes } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -35,7 +37,7 @@ export default {
   methods: {
     createWorkerAvailabilityTimes() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerAvailabilityTimes', { profileId: this.data.id, model: this.worker.availabilityTimes })
+      createWorkerAvailabilityTimes(this.data.id, this.worker.availabilityTimes)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -47,7 +49,7 @@ export default {
     }
   },
   async created() {
-    this.availabilityTimes = await this.$store.dispatch('getAvailabilityTimes');
+    this.availabilityTimes = await getAvailabilityTimes();
     if (this.data != null) {
       this.worker.availabilityTimes = this.data.availabilityTimes;
     }

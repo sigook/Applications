@@ -27,10 +27,10 @@
           </aside>
         </div>
       </b-tab-item>
-      <b-tab-item label="Punch Card" value="Punch Card">
+      <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
         <punch-card v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet" />
       </b-tab-item>
-      <b-tab-item label="Time Sheet" value="Time Sheet">
+      <b-tab-item v-if="request.punchCardOptionEnabled" label="Time Sheet" value="Time Sheet">
         <time-sheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
       </b-tab-item>
     </b-tabs>
@@ -38,6 +38,7 @@
 </template>
 
 <script lang="ts">
+import { getWorkerRequest, workerGetTimeSheet } from '@/api/workerApi';
 
 export default {
   components: {
@@ -62,8 +63,7 @@ export default {
       }
     },
     getWorkerRequest() {
-      this.$store
-        .dispatch("worker/getWorkerRequest", this.$route.params.id)
+      getWorkerRequest(this.$route.params.id)
         .then((response) => {
           this.isLoading = false;
           this.request = response;
@@ -74,8 +74,7 @@ export default {
         });
     },
     getTimeSheet() {
-      this.$store
-        .dispatch("worker/workerGetTimeSheet", this.request.id)
+      workerGetTimeSheet(this.request.id)
         .then((response) => {
           this.isLoading = false;
           this.timesheet = response;

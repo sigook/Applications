@@ -1,27 +1,47 @@
-import { storeToRefs } from 'pinia'
-import { useJobsStore } from '@/stores/jobs'
+import { ref, computed } from 'vue'
+import { jobService } from '@/services/jobService'
+import type { Job, JobFilters } from '@/services/types/job.types'
 
-/**
- * Composable for using jobs functionality
- * Provides reactive access to jobs store state and actions
- */
+// Shared state at module level (accessible across components, like useToast pattern)
+const jobs = ref<Job[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
+
 export function useJobs() {
-  const store = useJobsStore()
+  const hasJobs = computed(() => jobs.value.length > 0)
+  const jobsCount = computed(() => jobs.value.length)
 
-  // Convert store state to refs for reactivity
-  const { jobs, loading, error, hasJobs, jobsCount } = storeToRefs(store)
+  async function fetchJobs(filters?: JobFilters) {
+    loading.value = true
+    error.value = null
+
+    try {
+      jobs.value = await jobService.getJobs(filters)
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch jobs. Please try again later.'
+      jobs.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function clearJobs() {
+    jobs.value = []
+    error.value = null
+  }
+
+  function clearError() {
+    error.value = null
+  }
 
   return {
-    // State
     jobs,
     loading,
     error,
-    // Getters
     hasJobs,
     jobsCount,
-    // Actions
-    fetchJobs: store.fetchJobs,
-    clearJobs: store.clearJobs,
-    clearError: store.clearError,
+    fetchJobs,
+    clearJobs,
+    clearError,
   }
 }

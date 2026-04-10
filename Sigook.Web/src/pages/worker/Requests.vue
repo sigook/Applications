@@ -80,6 +80,8 @@
 </template>
 
 <script lang="ts">
+import { getJobs } from '@/api/workerApi';
+
 export default {
   data() {
     return {
@@ -114,7 +116,7 @@ export default {
     },
     getWorkerRequests() {
       this.isLoading = true;
-      this.$store.dispatch("worker/getJobs", this.serverParams)
+      getJobs(this.serverParams)
         .then((response) => {
           this.rows = response.items;
           this.totalItems = response.totalItems;
@@ -125,7 +127,7 @@ export default {
   },
   computed: {
     currentUser() {
-      return this.$store.state.worker.workerBasic;
+      return this.$store.state.worker.workerProfile;
     },
     hasMissingDocuments() {
       if (!this.currentUser.hasSocialInsurance || !this.currentUser.hasSocialInsuranceFile) {

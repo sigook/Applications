@@ -15,13 +15,14 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-button type="is-primary" @click="changeEmail">Save</b-button>
+        <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { changeEmail, getEmail } from '@/api/accountApi';
 
 export default {
   data() {
@@ -32,10 +33,10 @@ export default {
     }
   },
   methods: {
-    changeEmail() {
+    onChangeEmail() {
       this.$validator.validateAll().then((result) => {
         if (result) {
-          this.$store.dispatch("changeEmail", { newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
+          changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
             .then(() => {
               this.isLoading = false;
               this.showAlertSuccess("Updated");
@@ -49,7 +50,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getEmail')
+    getEmail()
       .then(response => {
         this.userEmail = response.email;
         this.isLoading = false;
@@ -58,7 +59,6 @@ export default {
         this.showAlertError(error);
         this.isLoading = false;
       })
-
   }
 }
 </script>

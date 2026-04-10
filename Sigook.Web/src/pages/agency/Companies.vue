@@ -101,7 +101,7 @@
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected"></b-datepicker>
+                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -117,7 +117,7 @@
                 <b-datepicker placeholder="Updated At" size="is-small" :mobile-native="false"
                   :icon-right="updatedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="updatedAtDatesSelected" icon-right-clickable @icon-right-click="onUpdatedAtCleared"
-                  @input="onUpdatedAtSelected">
+                  @input="onUpdatedAtSelected" append-to-body>
                 </b-datepicker>
               </b-field>
             </template>
@@ -147,10 +147,10 @@
               </modal-notes>
             </div>
           </b-table-column>
-          <b-table-column field="companyStatus" label="Status" width="250px" :searchable="!isMobile">
+          <b-table-column field="companyStatus" label="Status" :searchable="!isMobile">
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

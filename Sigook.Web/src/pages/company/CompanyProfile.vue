@@ -47,6 +47,7 @@
 <script lang="ts">
 import confirmationAlert from "@/mixins/confirmationAlert";
 import switchLocaleMixin from "@/mixins/switchLocaleMixin";
+import { getProfile, updateProfile } from '@/api/companyApi';
 
 export default {
   components: {
@@ -61,6 +62,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      companyProfile: null,
       currentTab: "BusinessInformation",
       visitedTabs: ["BusinessInformation"],
       isDisabled: true,
@@ -85,7 +87,7 @@ export default {
     saveProfile() {
       this.isLoading = true;
       const id = this.companyProfile.id;
-      this.$store.dispatch("company/updateProfile", { id: id, company: this.companyProfile })
+      updateProfile(id, this.companyProfile)
         .then(() => {
           this.unsavedChanges = false;
           this.isDisabled = true;
@@ -112,10 +114,13 @@ export default {
       this.changeForm = false;
       this.unsavedChanges = false;
     },
-    getProfile() {
+    onGetProfile() {
       this.isLoading = true;
-      this.$store.dispatch("company/getProfile")
-        .then(() => (this.isLoading = false))
+      getProfile()
+        .then((data) => {
+          this.companyProfile = data;
+          this.isLoading = false;
+        })
         .catch((error) => {
           this.showAlertError(error.data);
           this.isLoading = false;
@@ -129,12 +134,7 @@ export default {
         this.visitedTabs.push(this.$route.query.tab);
       }
     }
-    this.getProfile();
-  },
-  computed: {
-    companyProfile() {
-      return this.$store.state.company.companyProfile;
-    },
+    this.onGetProfile();
   },
   mixins: [switchLocaleMixin, confirmationAlert],
 };

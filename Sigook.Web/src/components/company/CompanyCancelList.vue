@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { getReasonCancellationRequest } from "@/api/catalogApi";
 export default {
   data() {
     return {
@@ -35,7 +36,7 @@ export default {
     }
   },
   async created() {
-    this.cancellationList = await this.$store.dispatch('getReasonCancellationRequest');
+    this.cancellationList = await getReasonCancellationRequest();
     this.isLoading = false;
   },
   methods: {

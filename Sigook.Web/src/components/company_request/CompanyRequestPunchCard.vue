@@ -19,7 +19,7 @@
             <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image" class="img-30" />
             <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
           </b-table-column>
-          <b-table-column field="numberId" width="100" label="ID" sortable searchable>
+          <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -43,10 +43,10 @@
           <b-table-column field="totalHoursWorker" label="Total Hours" sortable v-slot="props">
             {{ props.row.totalHoursWorker | hour }}
           </b-table-column>
-          <b-table-column field="status" label="Status" width="250px" sortable searchable>
+          <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -64,6 +64,7 @@
 </template>
 <script lang="ts">
 import download from '@/mixins/downloadFileMixin';
+import { getRequestWorkers } from '@/api/companyApi';
 
 export default {
   props: ['request'],
@@ -121,7 +122,7 @@ export default {
     },
     getWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('company/getRequestWorkers', this.serverParams)
+      getRequestWorkers(this.serverParams)
         .then((response) => {
           this.rows = response.items;
           this.totalItems = response.totalItems;

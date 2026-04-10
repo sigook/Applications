@@ -19,6 +19,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getSkills } from "@/api/catalogApi";
+import { createWorkerSkills } from '@/api/workerApi';
 export default {
   props: ['data'],
   data() {
@@ -33,7 +35,7 @@ export default {
     createWorkerSkills() {
       this.isLoading = true;
       const skillsToInsert = this.selectedSkills.map(skill => skill.skill);
-      this.$store.dispatch('worker/createWorkerSkills', { profileId: this.data.id, model: skillsToInsert })
+      createWorkerSkills(this.data.id, skillsToInsert)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -52,7 +54,7 @@ export default {
     },
     getSkills() {
       this.isLoading = true;
-      this.$store.dispatch('getSkills').then(response => {
+      getSkills().then(response => {
         this.isLoading = false;
         this.skills = response;
         this.filteredSkills = this.skills;

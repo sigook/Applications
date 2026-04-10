@@ -99,6 +99,7 @@
 </template>
 
 <script lang="ts">
+import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/api/companyApi';
 
 export default {
   props: ['companyData', 'isDisabled'],
@@ -115,10 +116,10 @@ export default {
   },
   methods: {
     async getContactPersons() {
-      this.contactPeople = await this.$store.dispatch('company/contactPeople');
+      this.contactPeople = await getContactPeople();
     },
     async removeLine(id) {
-      await this.$store.dispatch('company/deleteContactPerson', id);
+      await deleteContactPerson(id);
       await this.getContactPersons();
     },
     async validateForm() {
@@ -127,7 +128,7 @@ export default {
       const mainFormValid = await this.$validator.validateAll();
       if (mainFormValid && phoneValid && officeValid) {
         this.isLoading = true;
-        this.$store.dispatch('company/saveContactPerson', this.contact)
+        saveContactPerson(this.contact)
           .then(async () => {
             this.isLoading = false;
             await this.getContactPersons();

@@ -5,7 +5,7 @@ using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;

@@ -69,6 +69,7 @@
 </template>
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getJobPositions } from "@/api/catalogApi";
 export default {
   props: ['currentPosition', 'profileId'],
   data() {
@@ -153,7 +154,7 @@ export default {
   },
   async created() {
     this.isLoading = true;
-    this.jobPositionList = await this.$store.dispatch('getJobPositions')
+    this.jobPositionList = await getJobPositions()
     if (this.currentPosition && this.currentPosition.id) {
       this.getAgencyCompanyJobPositionById(this.currentPosition.id);
     }

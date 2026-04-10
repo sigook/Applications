@@ -67,7 +67,7 @@ public class AgencyWorkerProfileController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var detail = await _workerRepository.GetWorkerProfileDetail(id);
+        var detail = await _workerRepository.GetWorkerProfileDetail(wp => wp.Id == id);
         if (detail is null) return NotFound();
         return Ok(detail);
     }

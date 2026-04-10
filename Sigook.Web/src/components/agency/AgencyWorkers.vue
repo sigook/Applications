@@ -22,7 +22,7 @@
               class="img-30 img-rounded" />
             <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
           </b-table-column>
-          <b-table-column field="numberId" width="100" label="ID" sortable searchable>
+          <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -31,7 +31,7 @@
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
             </template>
           </b-table-column>
-          <b-table-column field="externalId" width="120" label="External ID" sortable searchable>
+          <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -72,7 +72,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-                @input="onStartWorkingSelected">
+                @input="onStartWorkingSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -89,7 +89,7 @@
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected"></b-datepicker>
+                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -105,7 +105,7 @@
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
-                  @input="onRejectedAtSelected"></b-datepicker>
+                  @input="onRejectedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -128,10 +128,10 @@
               </modal-notes>
             </div>
           </b-table-column>
-          <b-table-column field="status" label="Status" width="250px" sortable searchable>
+          <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected">
+                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

@@ -1,4 +1,4 @@
-# Sigook.Web — Vue 2 Agency Portal (Legacy)
+# Sigook.Web — Vue 2 Agency Portal (Main Platform)
 
 ## Code Navigation
 

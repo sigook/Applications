@@ -27,6 +27,7 @@ export interface WorkerProfile {
   isSubcontractor: boolean;
   isContractor: boolean;
   workerProfileTaxCategoryId: string | null;
+  workerProfileImage: string | null;
   createdAt: string;
   updatedAt: string | null;
   skills: WorkerSkill[];
@@ -110,6 +111,21 @@ export interface WorkerLocationPreference {
   cityId: string;
 }
 
+export interface WorkerExperienceForm {
+  id: string | null;
+  companyName: string;
+  title: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  currentJob: boolean;
+  description: string;
+}
+
+export interface WorkerDocumentFile {
+  id: string | null;
+  fileName: string;
+}
+
 export interface WorkerFilter {
   page: number;
   pageSize: number;
@@ -120,4 +136,57 @@ export interface WorkerFilter {
   cityId?: string | null;
   sortBy?: string;
   sortDesc?: boolean;
+}
+
+// Worker Request types
+export interface WorkerRequestFilter {
+  page: number;
+  pageSize: number;
+  searchTerm?: string;
+  sortBy?: string;
+  sortDesc?: boolean;
+}
+
+export interface WorkerRequestApplyModel {
+  comments?: string;
+}
+
+export interface WorkerRegisterTimeModel {
+  latitude: number;
+  longitude: number;
+}
+
+export interface WorkerCommentFilter {
+  workerId: string;
+  size: number;
+  pageIndex: number;
+}
+
+export interface WorkerCommentList {
+  items: WorkerComment[];
+  totalItems: number;
+}
+
+export interface WorkerComment {
+  id: string;
+  comment: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+// Worker Profile History types
+export interface WageHistoryFilter {
+  profileId: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TimeSheetHistoryFilter {
+  profileId: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ClockTypeResult {
+  clockType: string;
 }

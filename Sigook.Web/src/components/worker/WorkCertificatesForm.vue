@@ -45,6 +45,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createWorkerCertificates } from '@/api/workerApi';
 
 export default {
   props: ["data"],
@@ -99,7 +100,7 @@ export default {
           const fn = this.certificate.fileName;
           formData.append(fn, this.fileObjects.certificate, fn);
         }
-        await this.$store.dispatch('worker/createWorkerCertificates', { profileId: this.data.id, formData });
+        await createWorkerCertificates(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         this.showAlertError(error);

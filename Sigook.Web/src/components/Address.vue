@@ -78,6 +78,7 @@
 import roles from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getCountries, getProvinces, getCities, createCity } from "@/api/locationApi";
 
 export default {
   mixins: [billingAdminMixin],
@@ -141,7 +142,7 @@ export default {
     },
     getCountries() {
       this.$emit("isLoading", true);
-      this.$store.dispatch("getCountries").then((r) => {
+      getCountries().then((r) => {
         this.countries = r;
         this.$emit("isLoading", false);
       });
@@ -151,8 +152,7 @@ export default {
         return;
       }
       this.loadingProvinces = true;
-      this.$store
-        .dispatch("getProvinces", country.id)
+      getProvinces(country.id)
         .then((r) => {
           this.provinces = r;
           this.loadingProvinces = false;
@@ -163,7 +163,7 @@ export default {
         return
       }
       this.loadingCities = true;
-      this.$store.dispatch("getCities", province.id).then((response) => {
+      getCities(province.id).then((response) => {
         this.cities = response;
         this.loadingCities = false;
       });
@@ -185,7 +185,7 @@ export default {
               id: this.provinceSelected.id
             }
           };
-          const newCity = await this.$store.dispatch('addCity', payload);
+          const newCity = await createCity(payload);
           this.cities.push(newCity);
           this.$refs.autoCompleteCities.setSelected(newCity);
           dialog.close();

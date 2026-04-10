@@ -55,6 +55,7 @@
 <script lang="ts">
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createWorkerSin } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -112,7 +113,7 @@ export default {
           const fn = this.sin.socialInsuranceFile.fileName;
           formData.append(fn, this.fileObjects.sinFile, fn);
         }
-        await this.$store.dispatch('worker/createWorkerSin', { profileId: this.data.id, formData });
+        await createWorkerSin(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         this.showAlertError(error);

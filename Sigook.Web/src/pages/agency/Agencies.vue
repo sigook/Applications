@@ -53,7 +53,7 @@
           <b-table-column field="agencyType" label="Type" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="$agencyTypes" open-on-focus
-                field="label" icon="label" placeholder="Select Type" @input="onAgencyTypeSelected">
+                field="label" icon="label" placeholder="Select Type" @input="onAgencyTypeSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

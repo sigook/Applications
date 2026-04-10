@@ -170,7 +170,7 @@ public class PayStubService : IPayStubService
             CreatedAt = DateTime.Now,
             WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
             Items = payStubItems,
-            OtherDeductions = otherDeductions,
+            OtherDeductions = [.. otherDeductions],
         };
 
         // Step 10: Save
@@ -203,6 +203,7 @@ public class PayStubService : IPayStubService
         var workerProfileId = timesheets.First().WorkerProfileId;
         var typeOfWork = timesheets.First().TypeOfWork;
         var overtimeStartsAfter = timesheets.First().OvertimeStartsAfter;
+        var countryCode = timesheets.First().CountryCode;
 
         // Step 3: Process timesheets by week and request to calculate hours and wages
         var allWageDetails = new List<PayStubWageDetail>();
@@ -312,7 +313,7 @@ public class PayStubService : IPayStubService
 
             // Step 3.3: Get public holidays for this week
             var firstDateInWeek = week.First().Date;
-            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(firstDateInWeek);
+            var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(firstDateInWeek, countryCode);
             if (holidaysInWeek != null && holidaysInWeek.Any())
             {
                 foreach (var holiday in holidaysInWeek)

@@ -4,7 +4,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;

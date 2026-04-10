@@ -181,6 +181,8 @@
 <script lang="ts">
 import updateMixin from "@/mixins/uploadFiles";
 import multipartUploadMixin from "@/mixins/multipartUploadMixin";
+import { getCountries } from "@/api/locationApi";
+import { submitCandidate } from "@/api/websiteApi";
 
 export default {
   props: ['jobToApply'],
@@ -203,7 +205,7 @@ export default {
     }
   },
   async created() {
-    this.countries = await this.$store.dispatch("getCountries");
+    this.countries = await getCountries();
   },
   methods: {
     goToPreviousStep() {
@@ -288,7 +290,7 @@ export default {
           formData.append('data', JSON.stringify(candidateData));
         }
 
-        await this.$store.dispatch('createCandidate', formData);
+        await submitCandidate(formData);
         this.$emit('candidateCreated');
         this.isLoading = false;
       }

@@ -61,6 +61,8 @@
 </template>
 
 <script lang="ts">
+import { getWorkerRequestHistory } from '@/api/workerApi';
+
 export default {
   data() {
     return {
@@ -78,7 +80,7 @@ export default {
   methods: {
     getWorkerRequestHistory() {
       this.isLoading = true;
-      this.$store.dispatch("worker/getWorkerRequestHistory", this.serverParams)
+      getWorkerRequestHistory(this.serverParams)
         .then((response) => {
           this.rows = response.items;
           this.totalItems = response.totalItems;

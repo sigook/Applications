@@ -53,6 +53,7 @@
   </div>
 </template>
 <script lang="ts">
+import { createWorkerEmergencyInformation } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -74,7 +75,7 @@ export default {
     },
     createWorkerEmergencyInformation() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerEmergencyInformation', { profileId: this.data.id, model: this.worker })
+      createWorkerEmergencyInformation(this.data.id, this.worker)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);

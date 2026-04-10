@@ -148,6 +148,7 @@
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin";
 import recaptchaMixin from "@/mixins/recaptchaMixin";
+import { submitContactForm } from "@/api/websiteApi";
 
 export default {
   mixins: [phoneFormat, phoneMaskMixin, recaptchaMixin],
@@ -179,7 +180,7 @@ export default {
       } else {
         this.isLoading = true;
         this.formError = null;
-        this.$store.dispatch('sendForm', this.contact)
+        submitContactForm(this.contact)
           .then(() => {
             this.resetContactForm();
             this.isLoading = false;

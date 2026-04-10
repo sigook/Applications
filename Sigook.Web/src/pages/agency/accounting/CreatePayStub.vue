@@ -169,11 +169,13 @@ const itemTypeOptions = [
   { type: PayStubItemType.Overtime, label: 'Overtime Hours' },
   { type: PayStubItemType.Missing, label: 'Missing Hours' },
   { type: PayStubItemType.MissingOvertime, label: 'Missing Overtime Hours' },
-  { type: PayStubItemType.StatutoryWorkedHoliday, label: 'Statutory Worked Holiday Pay' },
+  { type: PayStubItemType.StatutoryHoliday, label: 'Statutory Holiday Pay' },
   { type: PayStubItemType.Vacations, label: 'Vacations' },
   { type: PayStubItemType.Other, label: 'Bonus/Others' },
   { type: PayStubItemType.Reimbursement, label: 'Reimbursement' }
 ];
+
+const multipleAllowedTypes = [PayStubItemType.Other, PayStubItemType.Reimbursement];
 
 export default {
   data() {
@@ -260,7 +262,11 @@ export default {
         .filter(i => i !== currentItem && i.type !== null)
         .map(i => i.type);
       return itemTypeOptions
-        .filter(opt => !selectedTypes.includes(opt.type) || opt.type === currentItem.type)
+        .filter(opt =>
+          multipleAllowedTypes.includes(opt.type) ||
+          !selectedTypes.includes(opt.type) ||
+          opt.type === currentItem.type
+        )
         .map(opt => ({
           ...opt,
           disabled: opt.type === PayStubItemType.Vacations && this.payStub.payVacations
@@ -310,7 +316,9 @@ export default {
   computed: {
     availableItemTypes() {
       const selectedTypes = this.items.filter(i => i.type !== null).map(i => i.type);
-      return itemTypeOptions.filter(opt => !selectedTypes.includes(opt.type));
+      return itemTypeOptions.filter(opt =>
+        multipleAllowedTypes.includes(opt.type) || !selectedTypes.includes(opt.type)
+      );
     }
   }
 }

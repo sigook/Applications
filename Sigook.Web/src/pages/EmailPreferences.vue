@@ -6,13 +6,15 @@
     <div>
       <button v-on:click="redirectToHome" type="button" class="background-btn create-btn btn-radius">Cancel
       </button>
-      <button v-on:click="unsubscribe" type="button" class="background-btn create-btn red-button btn-radius">Yes
+      <button v-on:click="onUnsubscribe" type="button" class="background-btn create-btn red-button btn-radius">Yes
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { unsubscribe } from '@/api/sharedApi';
+
 export default {
   name: "EmailPreferences",
   data() {
@@ -22,7 +24,7 @@ export default {
     }
   },
   methods: {
-    unsubscribe() {
+    async onUnsubscribe() {
 
       let typeOfUser = this.$route.query.u;
       let userId = this.$route.query.id;
@@ -41,17 +43,16 @@ export default {
       }
 
       this.isLoading = true;
-      this.$store.dispatch('shared/unsubscribe', {userId: userId, typeId: subscriptionType})
-          .then(() => {
-            this.isLoading = false;
-            window.sessionStorage.setItem(key, '1');
-            this.redirectToHome();
-          })
-          .catch(error => {
-            this.isLoading = false;
-            this.errorMessage = this.getErrorMessage(error);
-            window.sessionStorage.setItem(key, '1');
-          });
+      try {
+        await unsubscribe({ userId: userId as string, typeId: subscriptionType as string });
+        this.isLoading = false;
+        window.sessionStorage.setItem(key, '1');
+        this.redirectToHome();
+      } catch (error) {
+        this.isLoading = false;
+        this.errorMessage = this.getErrorMessage(error);
+        window.sessionStorage.setItem(key, '1');
+      }
     },
     redirectToHome() {
       window.location.href = "/";

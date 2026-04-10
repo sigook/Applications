@@ -11,7 +11,7 @@ using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;

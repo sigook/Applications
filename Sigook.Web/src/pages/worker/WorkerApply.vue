@@ -15,6 +15,7 @@
 
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { workerRequestApply } from '@/api/workerApi';
 
 export default {
   name: "WorkerApply",
@@ -45,11 +46,7 @@ export default {
       }
 
       this.isLoading = true;
-      this.$store.dispatch("worker/workerRequestApply", {
-          workerId,
-          requestId,
-          model: {},
-        })
+      workerRequestApply(workerId, requestId, {})
         .then(() => {
           this.isLoading = false;
           this.successMessage = this.defaultSuccessMessage;

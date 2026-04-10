@@ -69,6 +69,8 @@
 
 <script lang="ts">
 import toast from "../../mixins/toastMixin";
+import { getWorkerRequest, getWorkerRequestHistoryDetail, workerRequestApplySelf } from '@/api/workerApi';
+
 export default {
   data() {
     return {
@@ -85,8 +87,7 @@ export default {
   mixins: [toast],
   methods: {
     getWorkerHistoryRequest() {
-      this.$store
-        .dispatch("worker/getWorkerRequestHistoryDetail", this.$route.params.id)
+      getWorkerRequestHistoryDetail(this.$route.params.id)
         .then((response) => {
           this.isLoading = false;
           this.request = response;
@@ -96,8 +97,7 @@ export default {
         });
     },
     getWorkerRequest() {
-      this.$store
-        .dispatch("worker/getWorkerRequest", this.$route.params.id)
+      getWorkerRequest(this.$route.params.id)
         .then((response) => {
           this.isLoading = false;
           this.request = response;
@@ -111,11 +111,7 @@ export default {
       let model = {
         comments: comment,
       };
-      this.$store
-        .dispatch("worker/WorkerRequestApply", {
-          requestId: this.request.id,
-          model: model,
-        })
+      workerRequestApplySelf(this.request.id, model)
         .then(() => {
           this.isLoading = false;
           this.$router.push({

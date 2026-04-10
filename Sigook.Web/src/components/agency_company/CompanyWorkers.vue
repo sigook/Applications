@@ -14,7 +14,7 @@
             <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image" class="img-30" />
             <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
           </b-table-column>
-          <b-table-column field="numberId" width="100" label="ID" sortable searchable>
+          <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -68,12 +68,12 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected">
+                @input="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">{{ props.row.createdAt | dateMonth }}</template>
           </b-table-column>
-          <b-table-column field="skills" width="800px" label="Skills" sortable searchable>
+          <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress.native="onInputEntered"></b-input>
@@ -88,10 +88,10 @@
               <span v-else class="op3 is-inline-block v-middle pr-0">Skill</span>
             </template>
           </b-table-column>
-          <b-table-column field="isCurrentlyWorking" width="250px" label="Details" searchable>
+          <b-table-column field="isCurrentlyWorking" label="Details" searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="featuresSelected" autocomplete :data="features" open-on-focus
-                field="value" icon="label" placeholder="Select Details" @input="onFeatureChange">
+                field="value" icon="label" placeholder="Select Details" @input="onFeatureChange" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

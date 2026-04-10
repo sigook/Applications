@@ -60,6 +60,8 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { getGenders } from "@/api/catalogApi";
+import { createWorkerBasicInformation } from '@/api/workerApi';
 
 export default {
   props: ['data'],
@@ -68,6 +70,7 @@ export default {
       isLoading: false,
       worker: {},
       disabledDates: null,
+      genders: [],
     }
   },
   methods: {
@@ -82,7 +85,7 @@ export default {
     },
     createWorkerBasicInformation() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerBasicInformation', { profileId: this.worker.id, model: this.worker })
+      createWorkerBasicInformation(this.worker.id, this.worker)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -102,12 +105,7 @@ export default {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response).subtract(18, 'years').toDate();
     });
-    await this.$store.dispatch('getGenders');
-  },
-  computed: {
-    genders() {
-      return this.$store.state.catalog.genders;
-    }
+    this.genders = await getGenders();
   }
 }
 </script>

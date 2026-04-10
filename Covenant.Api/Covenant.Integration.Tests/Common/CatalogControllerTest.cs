@@ -3,7 +3,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Test.Utils.Configuration;

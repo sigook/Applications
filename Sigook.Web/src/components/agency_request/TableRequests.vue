@@ -69,7 +69,7 @@
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="lastUpdateDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
               @icon-right-click="onLastUpdateCleared" range v-model="lastUpdateDatesSelected"
-              @input="onLastUpdateSelected">
+              @input="onLastUpdateSelected" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -84,7 +84,8 @@
           <template v-slot:searchable>
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="startAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onStartAtCleared" range v-model="startAtDatesSelected" @input="onStartAtSelected">
+              @icon-right-click="onStartAtCleared" range v-model="startAtDatesSelected" @input="onStartAtSelected"
+              append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -166,10 +167,10 @@
             </modal-notes>
           </div>
         </b-table-column>
-        <b-table-column field="status" label="Status" width="250px" searchable>
+        <b-table-column field="status" label="Status" searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @input="onStatusChange">
+              field="value" icon="label" placeholder="Select Status" @input="onStatusChange" append-to-body>
             </b-taginput>
           </template>
           <template v-slot="props">
@@ -185,23 +186,19 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <floating-menu class="text-center">
-            <template v-slot:options>
-              <button class="floating-menu-item" @click="goToDetail(props.row.id)">
-                <span>Detail</span>
-              </button>
-              <router-link :to="{ path: '/agency-request/' + props.row.id, query: { tab: 'Applicants' } }">
-                <button class="floating-menu-item">
-                  <span>Applicants</span>
-                </button>
-              </router-link>
-              <router-link :to="{ path: '/agency-request/' + props.row.id, query: { tab: 'Workers' } }">
-                <button class="floating-menu-item">
-                  <span>Workers</span>
-                </button>
-              </router-link>
+          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+            <template #trigger>
+              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
-          </floating-menu>
+            <b-dropdown-item aria-role="listitem"
+              @click="$router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Applicants' } })">
+              Applicants
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem"
+              @click="$router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Workers' } })">
+              Workers
+            </b-dropdown-item>
+          </b-dropdown>
         </b-table-column>
       </template>
     </b-table>
@@ -274,7 +271,6 @@ export default {
   },
   mixins: [billingAdminMixin],
   components: {
-    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
     ModalNotes: () => import("../notes/ModalNotes.vue"),
     PersonnelList: () => import("../../components/agency_request/PersonnelListModal.vue"),
     AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue"),

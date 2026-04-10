@@ -8,7 +8,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -71,9 +71,9 @@ public class WorkerRepository : IWorkerRepository
             .Include(c => c.WorkerProfileTaxCategory)
             .FirstOrDefaultAsync();
 
-    public Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Guid profileId)
+    public Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition)
     {
-        return (from wp in _context.WorkerProfile.Where(wp => wp.Id == profileId)
+        return (from wp in _context.WorkerProfile.Where(condition)
                 join u in _context.User on wp.WorkerId equals u.Id
                 join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into temp13
                 from cf in temp13.DefaultIfEmpty()
@@ -372,7 +372,7 @@ public class WorkerRepository : IWorkerRepository
             .Include(wp => wp.Notes)
             .AsQueryable();
         var workerRequest = _context.WorkerRequest.Include(wr => wr.Request)
-            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status == RequestStatus.Open);
+            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status != RequestStatus.Cancelled);
         if (filter.SortBy == GetWorkersProfileSortBy.RequestId)
             workerRequest = workerRequest.AddOrderBy(filter, wr => wr.Request.NumberId);
         if (filter.CompanyProfileId.HasValue)

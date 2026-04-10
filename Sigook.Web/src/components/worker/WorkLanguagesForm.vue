@@ -18,6 +18,8 @@
   </div>
 </template>
 <script lang="ts">
+import { fetchLanguages } from "@/api/catalogApi";
+import { createWorkerLanguages } from '@/api/workerApi';
 export default {
   props: ['data'],
   data() {
@@ -33,7 +35,7 @@ export default {
   methods: {
     createWorkerLanguages() {
       this.isLoading = true;
-      this.$store.dispatch('worker/createWorkerLanguages', { profileId: this.data.id, model: this.worker.languages })
+      createWorkerLanguages(this.data.id, this.worker.languages)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -50,7 +52,7 @@ export default {
     }
   },
   async created() {
-    this.languages = await this.$store.dispatch('getLanguages');
+    this.languages = await fetchLanguages();
     this.filteredLanguages = this.languages;
     if (this.data != null) {
       this.worker.languages = this.data.languages;

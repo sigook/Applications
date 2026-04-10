@@ -8,7 +8,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Pdf;
 using Covenant.Common.Repositories.Company;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Repositories.Company;
 using Covenant.Infrastructure.Services;

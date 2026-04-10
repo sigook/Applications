@@ -101,17 +101,17 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
   // Phone mask formatters
   final _mobileMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
   final _phoneMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
   final _emergencyPhoneMaskFormatter = MaskTextInputFormatter(
-    mask: '### ### ####',
+    mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
@@ -176,16 +176,15 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     _middleNameController.text = profile?.middleName ?? '';
     _lastNameController.text = profile?.lastName ?? '';
     _secondLastNameController.text = profile?.secondLastName ?? '';
-    _mobileNumberController.text =
-        _mobileMaskFormatter.maskText(profile?.mobileNumber ?? '');
-    _phoneController.text =
-        _phoneMaskFormatter.maskText(profile?.phone ?? '');
+    _mobileNumberController.text = _mobileMaskFormatter.maskText(
+      profile?.mobileNumber ?? '',
+    );
+    _phoneController.text = _phoneMaskFormatter.maskText(profile?.phone ?? '');
     _emailController.text = profile?.email ?? '';
     _addressController.text = profile?.address ?? '';
     _postalCodeController.text = profile?.postalCode ?? '';
     _emergencyNameController.text = profile?.contactEmergencyName ?? '';
-    _emergencyLastNameController.text =
-        profile?.contactEmergencyLastName ?? '';
+    _emergencyLastNameController.text = profile?.contactEmergencyLastName ?? '';
     _emergencyPhoneController.text = _emergencyPhoneMaskFormatter.maskText(
       profile?.contactEmergencyPhone ?? '',
     );
@@ -262,8 +261,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         };
       case ProfileSection.contact:
         editedFields = {
-          'mobileNumber': _mobileMaskFormatter.getUnmaskedText(),
-          'phone': _phoneMaskFormatter.getUnmaskedText(),
+          'mobileNumber': _mobileNumberController.text,
+          'phone': _phoneController.text,
           'address': _addressController.text,
           'postalCode': _postalCodeController.text,
           if (_editCity?.id != null) 'cityId': _editCity!.id!,
@@ -303,8 +302,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         editedFields = {
           'contactEmergencyName': _emergencyNameController.text,
           'contactEmergencyLastName': _emergencyLastNameController.text,
-          'contactEmergencyPhone':
-              _emergencyPhoneMaskFormatter.getUnmaskedText(),
+          'contactEmergencyPhone': _emergencyPhoneMaskFormatter
+              .getUnmaskedText(),
         };
       case ProfileSection.resume:
         editedFields = {};
@@ -315,8 +314,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       case ProfileSection.licenses:
         editedFields = {
           'licenseNumber': _licenseNumberController.text,
-          'licenseIssued':
-              _licenseIssuedDate?.toUtc().toIso8601String() ?? '',
+          'licenseIssued': _licenseIssuedDate?.toUtc().toIso8601String() ?? '',
           'licenseExpires':
               _licenseExpiresDate?.toUtc().toIso8601String() ?? '',
         };
@@ -337,9 +335,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           final items = catalogAsync.asData?.value as List<dynamic>? ?? [];
           return selectedIds
               .map((id) {
-                final match = items
-                    .cast<dynamic>()
-                    .where((item) => (item.id as String?) == id);
+                final match = items.cast<dynamic>().where(
+                  (item) => (item.id as String?) == id,
+                );
                 if (match.isEmpty) return null;
                 final item = match.first;
                 final value = item.value != null
@@ -371,12 +369,13 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
         Map<String, String>? liftMap;
         if (_editLiftId != null) {
-          final liftItems = ref.read(liftingCapacitiesProvider).asData?.value
+          final liftItems =
+              ref.read(liftingCapacitiesProvider).asData?.value
                   as List<dynamic>? ??
               [];
-          final liftMatch = liftItems
-              .cast<dynamic>()
-              .where((item) => (item.id as String?) == _editLiftId);
+          final liftMatch = liftItems.cast<dynamic>().where(
+            (item) => (item.id as String?) == _editLiftId,
+          );
           if (liftMatch.isNotEmpty) {
             final item = liftMatch.first;
             final value = item.value != null
@@ -488,14 +487,20 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       if (docType == 'id1File') {
         _pendingId1Type = type;
         _pendingId1Number = number;
-        _replaceId1File =
-            PickedFileData(name: fileName, path: filePath, size: fileSize);
+        _replaceId1File = PickedFileData(
+          name: fileName,
+          path: filePath,
+          size: fileSize,
+        );
         _deleteId1File = false;
       } else {
         _pendingId2Type = type;
         _pendingId2Number = number;
-        _replaceId2File =
-            PickedFileData(name: fileName, path: filePath, size: fileSize);
+        _replaceId2File = PickedFileData(
+          name: fileName,
+          path: filePath,
+          size: fileSize,
+        );
         _deleteId2File = false;
       }
     });
@@ -527,7 +532,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   Text(
                     pendingFile.name,
                     style: const TextStyle(
-                        fontSize: 13, color: AppTheme.primaryBlue),
+                      fontSize: 13,
+                      color: AppTheme.primaryBlue,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const Text(
@@ -555,12 +562,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       child: OutlinedButton.icon(
         onPressed: () => _showDocumentUploadModal(docType),
         icon: const Icon(Icons.add, size: 18),
-        label:
-            Text(docType == 'id1File' ? 'Add Document 1' : 'Add Document 2'),
+        label: Text(docType == 'id1File' ? 'Add Document 1' : 'Add Document 2'),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppTheme.primaryBlue,
-          side: BorderSide(
-              color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
+          side: BorderSide(color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
         ),
       ),
     );
@@ -627,11 +632,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   builder: (context) {
                     final settings = context
                         .dependOnInheritedWidgetOfExactType<
-                            FlexibleSpaceBarSettings>();
+                          FlexibleSpaceBarSettings
+                        >();
                     final t = settings != null
                         ? ((settings.currentExtent - settings.minExtent) /
-                                (settings.maxExtent - settings.minExtent))
-                            .clamp(0.0, 1.0)
+                                  (settings.maxExtent - settings.minExtent))
+                              .clamp(0.0, 1.0)
                         : 1.0;
                     return ProfileHeader(
                       name: profile?.fullName ?? 'User',
@@ -721,9 +727,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         const SizedBox(height: 12),
         _buildEmergencyInfoSection(profile),
         const SizedBox(height: 12),
-        ProfileActionButtons(
-          onLogout: _showLogoutDialog,
-        ),
+        ProfileActionButtons(onLogout: _showLogoutDialog),
         const SizedBox(height: 16),
         if (_appVersion.isNotEmpty)
           Padding(
@@ -731,8 +735,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             child: Center(
               child: Text(
                 _appVersion,
-                style:
-                    TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ),
           ),
@@ -992,9 +995,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           onClearPick: () => setState(() => _replaceSinFile = null),
           onPreview: profile?.socialInsuranceFileUrl != null
               ? () => _previewDocument(
-                    profile!.socialInsuranceFileUrl!,
-                    'SIN File',
-                  )
+                  profile!.socialInsuranceFileUrl!,
+                  'SIN File',
+                )
               : null,
         ),
       ],
@@ -1035,9 +1038,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             onClearPick: () => setState(() => _replaceId1File = null),
             onPreview: profile.identificationType1FileUrl != null
                 ? () => _previewDocument(
-                      profile.identificationType1FileUrl!,
-                      '${profile.identificationType1} File',
-                    )
+                    profile.identificationType1FileUrl!,
+                    '${profile.identificationType1} File',
+                  )
                 : null,
           ),
         ],
@@ -1067,9 +1070,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             onClearPick: () => setState(() => _replaceId2File = null),
             onPreview: profile.identificationType2FileUrl != null
                 ? () => _previewDocument(
-                      profile.identificationType2FileUrl!,
-                      '${profile.identificationType2} File',
-                    )
+                    profile.identificationType2FileUrl!,
+                    '${profile.identificationType2} File',
+                  )
                 : null,
           ),
         ],
@@ -1278,9 +1281,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               license: license,
               onPreview: license.fileUrl != null
                   ? () => _previewDocument(
-                        license.fileUrl!,
-                        license.description ?? 'License',
-                      )
+                      license.fileUrl!,
+                      license.description ?? 'License',
+                    )
                   : null,
             ),
           ),
@@ -1303,8 +1306,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
-                const Icon(Icons.attach_file_outlined,
-                    size: 20, color: AppTheme.primaryBlue),
+                const Icon(
+                  Icons.attach_file_outlined,
+                  size: 20,
+                  color: AppTheme.primaryBlue,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1322,7 +1328,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                       const Text(
                         'Tap upload to save',
                         style: TextStyle(
-                            fontSize: 11, color: AppTheme.primaryBlue),
+                          fontSize: 11,
+                          color: AppTheme.primaryBlue,
+                        ),
                       ),
                     ],
                   ),
@@ -1334,12 +1342,14 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             controller: _licenseNumberController,
             decoration: InputDecoration(
               labelText: 'License Number',
-              prefixIcon:
-                  const Icon(Icons.numbers_outlined, size: 20),
+              prefixIcon: const Icon(Icons.numbers_outlined, size: 20),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
+                horizontal: 16,
+                vertical: 12,
+              ),
               isDense: true,
             ),
           ),
@@ -1400,8 +1410,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate:
-          isIssued ? (_licenseIssuedDate ?? now) : (_licenseExpiresDate ?? now),
+      initialDate: isIssued
+          ? (_licenseIssuedDate ?? now)
+          : (_licenseExpiresDate ?? now),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
@@ -1502,9 +1513,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               certificate: cert,
               onPreview: cert.fileUrl != null
                   ? () => _previewDocument(
-                        cert.fileUrl!,
-                        cert.description ?? 'Certificate',
-                      )
+                      cert.fileUrl!,
+                      cert.description ?? 'Certificate',
+                    )
                   : null,
             ),
           ),
@@ -1515,8 +1526,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                const Icon(Icons.attach_file_outlined,
-                    size: 20, color: AppTheme.primaryBlue),
+                const Icon(
+                  Icons.attach_file_outlined,
+                  size: 20,
+                  color: AppTheme.primaryBlue,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1534,7 +1548,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                       const Text(
                         'Tap upload to save',
                         style: TextStyle(
-                            fontSize: 11, color: AppTheme.primaryBlue),
+                          fontSize: 11,
+                          color: AppTheme.primaryBlue,
+                        ),
                       ),
                     ],
                   ),
@@ -1777,7 +1793,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           label: 'Name',
           value: profile != null
               ? '${profile.contactEmergencyName ?? ''} ${profile.contactEmergencyLastName ?? ''}'
-                  .trim()
+                    .trim()
               : 'N/A',
           icon: Icons.person_outline,
           isEditing: isEditing,

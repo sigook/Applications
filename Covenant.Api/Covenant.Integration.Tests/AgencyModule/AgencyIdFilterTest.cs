@@ -4,7 +4,7 @@ using Covenant.Api.Utils;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
-using Covenant.Infrastructure.Context;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc;
