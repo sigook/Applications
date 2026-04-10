@@ -30,6 +30,7 @@
   </div>
 </template>
 <script lang="ts">
+import { searchAgencyRequestApplicants } from "@/api/agencyRequestApi";
 export default {
   data() {
     return {
@@ -55,10 +56,7 @@ export default {
     },
     searchApplicants(text) {
       this.isLoadingList = true;
-      this.$store.dispatch("agency/searchApplicants", {
-        requestId: this.requestId,
-        searchTerm: text
-      })
+      searchAgencyRequestApplicants(this.requestId, text)
         .then(response => {
           this.isLoadingList = false;
           this.applicants = response;

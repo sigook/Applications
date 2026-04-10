@@ -165,3 +165,80 @@ export interface InvoiceFilter {
   startDate?: string | null;
   endDate?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Agency PayStub list / filters
+// ---------------------------------------------------------------------------
+
+export interface AgencyPayStubFilter {
+  pageIndex?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  isDescending?: boolean;
+  sortBy?: number;
+  weekEndingFrom?: string | null;
+  weekEndingTo?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AgencyPayStubListItem {
+  id: string;
+  payStubNumber: number;
+  workerFullName?: string;
+  weekEnding?: string;
+  totalNet?: number;
+  [key: string]: unknown;
+}
+
+export interface SkipPayrollNumberItem {
+  id: string;
+  value: number;
+  reason?: string;
+  [key: string]: unknown;
+}
+
+export interface SubcontractorPayrollFilter {
+  weekEnding?: string;
+  [key: string]: unknown;
+}
+
+// ---------------------------------------------------------------------------
+// Agency Invoice list / filters / payloads
+// ---------------------------------------------------------------------------
+
+export interface AgencyInvoiceFilter {
+  pageIndex?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  isDescending?: boolean;
+  sortBy?: number;
+  weekEndingFrom?: string | null;
+  weekEndingTo?: string | null;
+  companyId?: string;
+  [key: string]: unknown;
+}
+
+export interface AgencyInvoiceListItem {
+  id: string;
+  numberId: number;
+  invoiceNumber?: string;
+  weekEnding?: string | null;
+  totalNet?: number;
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
+export interface DeleteInvoicePayload {
+  invoiceId: string;
+  verificationCode: string;
+  reason?: string;
+  [key: string]: unknown;
+}
+
+export interface SendInvoiceEmailPayload {
+  invoiceId: string;
+  recipients: string[];
+  subject: string;
+  body: string;
+  attachments: File[];
+}

@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 export default {
     props: ['displayShift', 'roleId', 'companyId'],
     data() {
@@ -28,7 +29,7 @@ export default {
             if (!this.showDetail){
                 this.isLoading = true;
                 this.showDetail = true;
-                this.$store.dispatch('agency/getAgencyCompanyJobPositionById', {profileId: this.companyId, id: this.roleId})
+                getAgencyCompanyJobPositionById(this.companyId, this.roleId)
                         .then(response => {
                             this.isLoading = false;
                             this.shift = response.shift;

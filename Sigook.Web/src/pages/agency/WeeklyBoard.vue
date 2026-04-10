@@ -128,7 +128,7 @@
             <pagination :total-pages="data.totalPages"
                         :index-page="data.pageIndex"
                         :size-page="this.size"
-                        @changePage="(index) => getAgencyRequestBoard(index)">
+                        @changePage="(index) => loadBoard(index)">
             </pagination>
         </div>
     </div>
@@ -136,7 +136,18 @@
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
 import dayjs from "dayjs";
+import { getAgencyRequestBoard } from "@/api/agencyRequestApi";
+import {
+  getAgencyRequestWorkerNotes,
+  createAgencyRequestWorkerNote,
+  updateAgencyRequestWorkerNote,
+  deleteAgencyRequestWorkerNote,
+} from "@/api/agencyNoteApi";
+import { WorkerRequestStatus } from "@/constants/enums";
 export default {
+    computed: {
+        WorkerRequestStatus: () => WorkerRequestStatus,
+    },
     data() {
         return {
             size: 30,
@@ -144,10 +155,10 @@ export default {
             data: null,
             isLoading: false,
             momentFormat: 'YYYY-MM-DD',
-            getNotes: "agency/getAgencyRequestWorkerNote",
-            createNote: "agency/createAgencyRequestWorkerNote",
-            deleteNote: "agency/deleteAgencyRequestWorkerNote",
-            updateNote: "agency/updateAgencyRequestWorkerNote",
+            getNotes: ({ requestId, userId, pagination }: any) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
+            createNote: ({ requestId, userId, model }: any) => createAgencyRequestWorkerNote(requestId, userId, model),
+            updateNote: ({ requestId, userId, id, model }: any) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
+            deleteNote: ({ requestId, userId, id }: any) => deleteAgencyRequestWorkerNote(requestId, userId, id),
         }
     },
     mixins: [toastMixin],
@@ -157,9 +168,9 @@ export default {
         AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue")
     },
     methods: {
-        getAgencyRequestBoard(index){
+        loadBoard(index){
             this.isLoading = true;
-            this.$store.dispatch('agency/getAgencyRequestBoard', {pagination: {page: index, size: this.size}})
+            getAgencyRequestBoard({page: index, size: this.size})
             .then(response => {
                 this.data = response;
                 this.isLoading = false;
@@ -178,7 +189,7 @@ export default {
             return true;
         },
         workerColor(worker){
-            if (worker.workerRequestStatus === this.$statusReject){
+            if (worker.workerRequestStatus === WorkerRequestStatus.Rejected){
                 return 'Rejected'
             } else if (worker.isSubcontractor) {
                 return 'Blue'
@@ -198,7 +209,7 @@ export default {
         },
     },
     created() {
-        this.getAgencyRequestBoard(this.currentPage);
+        this.loadBoard(this.currentPage);
     }
 }
 </script>

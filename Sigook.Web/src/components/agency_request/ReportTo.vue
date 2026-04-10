@@ -11,7 +11,7 @@
           class="content-flex-between align-center mb-0 hover-actions fz-14">
           <span class="d-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
           <button v-if="canEdit" class="btn-icon-sm btn-icon-reject valign-middle actions"
-            @click="deleteAgencyRequestReportTo(item)">DELETE</button>
+            @click="removeReportTo(item)">DELETE</button>
         </li>
       </ul>
     </div>
@@ -23,8 +23,8 @@
             <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
               <button @click="showModal = false" type="button" class="cross-icon">close</button>
               <contact-list :requestId="requestId" :companyId="companyId" :activeUsers="data.items"
-                @removeContact="(item) => deleteAgencyRequestReportTo(item)"
-                @selectContact="(item) => postAgencyRequestReportTo(item)" />
+                @removeContact="(item) => removeReportTo(item)"
+                @selectContact="(item) => addReportTo(item)" />
             </div>
           </div>
         </div>
@@ -35,6 +35,12 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import {
+  getAgencyRequestReportTo,
+  postAgencyRequestReportTo,
+  deleteAgencyRequestReportTo,
+} from "@/api/agencyRequestApi";
+
 export default {
   props: ['requestId', 'companyId', 'canEdit'],
   mixins: [toastMixin],
@@ -49,8 +55,8 @@ export default {
     ContactList: () => import("./ContactListModal.vue")
   },
   methods: {
-    getAgencyRequestReportTo() {
-      this.$store.dispatch('agency/getAgencyRequestReportTo', this.requestId)
+    loadReportTo() {
+      getAgencyRequestReportTo(this.requestId)
         .then(response => {
           this.data = response;
         })
@@ -62,9 +68,9 @@ export default {
       this.data.items.push(item)
       this.showModal = false;
     },
-    postAgencyRequestReportTo(item) {
+    addReportTo(item) {
       this.isLoading = true;
-      this.$store.dispatch('agency/postAgencyRequestReportTo', { requestId: this.requestId, contactPersonId: item.id })
+      postAgencyRequestReportTo(this.requestId, item.id)
         .then(() => {
           this.isLoading = false;
           this.updateContactList(item)
@@ -74,10 +80,10 @@ export default {
           this.showAlertError(error)
         })
     },
-    deleteAgencyRequestReportTo(item) {
+    removeReportTo(item) {
       let index = this.data.items.findIndex(x => x.id === item.id);
       this.isLoading = true;
-      this.$store.dispatch('agency/deleteAgencyRequestReportTo', { requestId: this.requestId, contactPersonId: item.id })
+      deleteAgencyRequestReportTo(this.requestId, item.id)
         .then(() => {
           this.isLoading = false;
           this.data.items.splice(index, 1)
@@ -90,7 +96,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyRequestReportTo();
+    this.loadReportTo();
   }
 }
 </script>

@@ -1,16 +1,16 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Payment.Bambora
 {
     public class BamboraPaymentRequestProfile
     {
-        [JsonProperty(PropertyName = "customer_code")]
+        [JsonPropertyName("customer_code")]
         public string CustomerCode { get; set; }
 
-        [JsonProperty(PropertyName = "card_id")]
+        [JsonPropertyName("card_id")]
         public int CardId { get; set; }
 
-        [JsonProperty(PropertyName = "complete")]
+        [JsonPropertyName("complete")]
         public bool Complete { get; set; }
 
         public BamboraPaymentRequestProfile()

@@ -116,11 +116,11 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Duration Term">
             <b-select v-model="request.durationTerm" expanded>
-              <option :value="this.$longTerm">
-                {{ this.$longTerm | splitCapital }}
+              <option :value="DurationTerm.LongTerm">
+                {{ DurationTermLabels[DurationTerm.LongTerm] }}
               </option>
-              <option :value="this.$shortTerm">
-                {{ this.$shortTerm | splitCapital }}
+              <option :value="DurationTerm.ShortTerm">
+                {{ DurationTermLabels[DurationTerm.ShortTerm] }}
               </option>
             </b-select>
           </b-field>
@@ -128,17 +128,17 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Employment Type">
             <b-select v-model="request.employmentType" expanded>
-              <option :value="this.$fullTime">
-                {{ this.$fullTime | splitCapital }}
+              <option :value="EmploymentType.FullTime">
+                {{ EmploymentTypeLabels[EmploymentType.FullTime] }}
               </option>
-              <option :value="this.$partTime">
-                {{ this.$partTime | splitCapital }}
+              <option :value="EmploymentType.PartTime">
+                {{ EmploymentTypeLabels[EmploymentType.PartTime] }}
               </option>
-              <option :value="this.$contractor">
-                {{ this.$contractor | splitCapital }}
+              <option :value="EmploymentType.Contractor">
+                {{ EmploymentTypeLabels[EmploymentType.Contractor] }}
               </option>
-              <option :value="this.$temporary">
-                {{ this.$temporary | splitCapital }}
+              <option :value="EmploymentType.Temporary">
+                {{ EmploymentTypeLabels[EmploymentType.Temporary] }}
               </option>
             </b-select>
           </b-field>
@@ -150,7 +150,7 @@
             </b-datepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === this.$shortTerm">
+        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
             <b-datepicker v-model="request.finishAt" name="from" :min-date="request.startAt" :max-date="finishDate">
             </b-datepicker>
@@ -173,6 +173,12 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import confirmationAlert from "@/mixins/confirmationAlert";
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentType,
+  EmploymentTypeLabels,
+} from "@/constants/enums";
 
 export default {
   components: {
@@ -310,6 +316,10 @@ export default {
     },
   },
   computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentType: () => EmploymentType,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
     filteredCompanyJobPositions() {
       const jobPositions = this.companyJobPositions
         .filter(cjp => cjp.value.toLowerCase().includes(this.jobPosition.toLowerCase()));

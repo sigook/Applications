@@ -111,6 +111,7 @@
 <script lang="ts">
 import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { getAgencyWorkers } from "@/api/agencyWorkerApi";
 
 export default {
   props: ['company'],
@@ -181,7 +182,7 @@ export default {
     },
     getAgencyCompanyWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getWorkers', this.serverParams)
+      getAgencyWorkers(this.serverParams)
         .then(response => {
           this.rows = response.items;
           this.totalItems = response.totalItems;

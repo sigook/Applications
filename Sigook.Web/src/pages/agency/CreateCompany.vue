@@ -140,6 +140,8 @@ import pubSub from "../../mixins/pubSub";
 import confirmationAlert from "../../mixins/confirmationAlert";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 import { getIndustries, getCompanyStatus, addIndustry } from "@/api/catalogApi";
+import { getAgencyPersonnel } from "@/api/agencyApi";
+import { createAgencyCompany, updateAgencyCompany } from "@/api/agencyCompanyApi";
 
 export default {
   data() {
@@ -195,7 +197,7 @@ export default {
     } else {
       this.industryOptions = await getIndustries();
       this.statuses = await getCompanyStatus();
-      this.salesRepresentatives = await this.$store.dispatch("agency/getAgencyPersonnel")
+      this.salesRepresentatives = await getAgencyPersonnel();
     }
     this.isLoading = false;
   },
@@ -205,35 +207,35 @@ export default {
       this.$validator.validateAll().then((result) => {
         if (result) {
           if (this.isUpdate) {
-            this.updateCompany();
+            this.submitUpdateCompany();
           } else {
-            this.createCompany();
+            this.submitCreateCompany();
           }
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createCompany() {
+    submitCreateCompany() {
       this.isLoading = true;
-      this.$store.dispatch("agency/createCompany", this.company)
+      createAgencyCompany(this.company)
         .then((response) => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("CompanyCreated"));
-          this.$router.push("/agency-companies/company/" + response.data.id);
+          this.$router.push("/agency-companies/company/" + response.id);
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error.data);
         });
     },
-    updateCompany() {
+    submitUpdateCompany() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateCompany", { companyId: this.company.companyProfileId, company: this.company })
-        .then((response) => {
+      updateAgencyCompany(this.company.companyProfileId, this.company)
+        .then(() => {
           this.isLoading = false;
           this.showAlertSuccess("Company updated");
-          this.$router.push("/agency-companies/company/" + response.data.id);
+          this.$router.push("/agency-companies/company/" + this.company.companyProfileId);
         })
         .catch((error) => {
           this.isLoading = false;

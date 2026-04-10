@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Covenant.Common.Models
+﻿namespace Covenant.Common.Models
 {
     public class Pagination
     {
@@ -10,7 +8,6 @@ namespace Covenant.Common.Models
 
         public virtual bool IsDescending { get; set; }
 
-        [JsonProperty]
         public int PageIndex
         {
             get => _pageIndex <= 0 ? 1 : _pageIndex;

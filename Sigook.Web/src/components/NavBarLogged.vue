@@ -58,6 +58,7 @@
 import menu from "@/security/menu";
 import roles from "@/security/roles";
 import { getMyProfile } from '@/api/workerApi';
+import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 
 export default {
   data() {
@@ -80,8 +81,10 @@ export default {
       this.lang = this.$validator.dictionary.locale;
     },
     async getAgencyInfo() {
-      await this.$store.dispatch("agency/getAgencyProfile");
-      await this.$store.dispatch("agency/getPersonnelAgency");
+      const agency = await getAgencyProfile();
+      this.$store.commit("agency/setAgency", agency);
+      const personnelAgencies = await getPersonnelAgencies();
+      this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
       this.profileUrl = "/agency-profile";
     },
     async getCompanyInfo() {
@@ -108,7 +111,7 @@ export default {
     },
     switchAgency(agency) {
       if (agency.isPrimary) return;
-      this.$store.dispatch("agency/putPersonnelAgency", agency.id)
+      switchPersonnelAgency(agency.id)
         .then(async () => {
           this.$router.push('/agency-requests');
           await this.getAgencyInfo();

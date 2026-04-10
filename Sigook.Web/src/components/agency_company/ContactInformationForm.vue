@@ -45,6 +45,7 @@
 </template>
 
 <script lang="ts">
+import { updateAgencyCompanyContactInformation } from "@/api/agencyCompanyApi";
 export default {
   name: 'ContactInformationForm',
   props: ["model"],
@@ -67,15 +68,15 @@ export default {
       const phoneValid = await this.$refs.phoneComponent.validatePhone();
       const faxValid = await this.$refs.faxComponent.validatePhone();
       if (mainFormValid && phoneValid && faxValid) {
-          this.updateAgencyCompanyContactInformation();
+          this.saveContactInformation();
           return;
       } else {
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       }
     },
-    updateAgencyCompanyContactInformation() {
+    saveContactInformation() {
       this.$emit('update:model', this.localModel);
-      this.$store.dispatch('agency/updateAgencyCompanyContactInformation', { profileId: this.localModel.id, model: this.localModel })
+      updateAgencyCompanyContactInformation(this.localModel.id, this.localModel)
         .then(() => {
           this.$emit('save');
           this.showAlertSuccess("Updated")

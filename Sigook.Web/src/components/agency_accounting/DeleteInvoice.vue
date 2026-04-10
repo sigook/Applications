@@ -25,10 +25,16 @@
       :message="errors.first('verificationCode')">
       <b-input v-model="verificationCode" v-validate="'required'" name="verificationCode" />
     </b-field>
-    <b-button @click="deleteInvoice" type="is-danger">Delete</b-button>
+    <b-button @click="submitDeleteInvoice" type="is-danger">Delete</b-button>
   </div>
 </template>
 <script lang="ts">
+import {
+  getPayStubsByInvoice,
+  sendInvoiceVerificationCode,
+  deleteAgencyInvoice,
+} from "@/api/agencyInvoiceApi";
+
 export default {
   props: ["invoice"],
   data() {
@@ -40,15 +46,15 @@ export default {
     }
   },
   methods: {
-    async getPayStubs() {
-      this.rows = await this.$store.dispatch("agency/getPayStubsByInvoice", this.invoice.id);
+    async loadPayStubs() {
+      this.rows = await getPayStubsByInvoice(this.invoice.id);
     },
     async requestVerificationCode() {
-      await this.$store.dispatch("agency/getVerificationCode", this.invoice.id);
+      await sendInvoiceVerificationCode(this.invoice.id);
     },
-    async deleteInvoice() {
+    async submitDeleteInvoice() {
       this.isLoading = true;
-      await this.$store.dispatch("agency/deleteInvoice", {
+      await deleteAgencyInvoice({
         invoiceId: this.invoice.id,
         verificationCode: this.verificationCode,
         payStubs: this.selectedPayStubs.map(payStub => payStub.payStubId)
@@ -61,7 +67,7 @@ export default {
     }
   },
   async created() {
-    await this.getPayStubs();
+    await this.loadPayStubs();
     await this.requestVerificationCode();
     this.isLoading = false;
   }

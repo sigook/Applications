@@ -4,26 +4,33 @@ using Covenant.Common.Models.Notification;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json;
 
-namespace Covenant.Infrastructure.Services
+namespace Covenant.Infrastructure.Services;
+
+public class PushNotifications : IPushNotifications
 {
-    public class PushNotifications : IPushNotifications
+    private readonly PushNotificationConfiguration pushNotificationConfiguration;
+    private readonly ILogger<PushNotifications> logger;
+
+    public PushNotifications(
+        IOptions<PushNotificationConfiguration> options,
+        ILogger<PushNotifications> logger)
     {
-        private readonly PushNotificationConfiguration pushNotificationConfiguration;
+        pushNotificationConfiguration = options.Value;
+        this.logger = logger;
+    }
 
-        public PushNotifications(IOptions<PushNotificationConfiguration> options)
-        {
-            pushNotificationConfiguration = options.Value;
-        }
-
-        public async Task SendNotification(NotificationModel model)
+    public async Task SendNotification(NotificationModel model)
+    {
+        try
         {
             var defaultApp = FirebaseApp.DefaultInstance;
             if (defaultApp is null)
             {
-                var json = JsonConvert.SerializeObject(pushNotificationConfiguration);
+                var json = JsonSerializer.Serialize(pushNotificationConfiguration);
                 defaultApp = FirebaseApp.Create(new AppOptions { Credential = GoogleCredential.FromJson(json) });
             }
             var message = new Message
@@ -34,6 +41,10 @@ namespace Covenant.Infrastructure.Services
             };
             var messaging = FirebaseMessaging.GetMessaging(defaultApp);
             await messaging.SendAsync(message);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "PsuhNotification Error");
         }
     }
 }

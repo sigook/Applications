@@ -17,8 +17,8 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Moq.Protected;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
@@ -81,7 +81,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
                     .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                     .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent(JsonConvert.SerializeObject(new
+                        Content = new StringContent(JsonSerializer.Serialize(new
                         {
                             access_token = "Test",
                         }))

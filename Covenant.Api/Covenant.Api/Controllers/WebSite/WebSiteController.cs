@@ -11,7 +11,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Covenant.Api.Controllers.WebSite;
 
@@ -104,7 +104,7 @@ public class WebSiteController : ControllerBase
     public async Task<IActionResult> CreateCandidate()
     {
         var dataField = HttpContext.Request.Form["data"];
-        var candidate = JsonConvert.DeserializeObject<CandidateViewModel>(dataField);
+        var candidate = JsonSerializer.Deserialize<CandidateViewModel>(dataField);
         if (HttpContext.Request.Form.Files.Count > 0)
         {
             var resumeFile = HttpContext.Request.Form.Files[0];

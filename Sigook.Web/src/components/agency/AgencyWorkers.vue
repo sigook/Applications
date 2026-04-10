@@ -7,7 +7,7 @@
           {{ $t("AgencyManageWorkers") }}
         </b-button>
         <b-button type="is-ghost" icon-right="file-excel"
-          @click="getWorkersReportDocument">Export</b-button>
+          @click="downloadWorkersReportDocument">Export</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
@@ -121,9 +121,9 @@
               <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
             </b-tag>
             <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="'agency/getAgencyRequestWorkerNote'"
-                :on-create="'agency/createAgencyRequestWorkerNote'" :on-update="'agency/updateAgencyRequestWorkerNote'"
-                :on-delete="'agency/deleteAgencyRequestWorkerNote'"
+              <modal-notes :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId" :on-get="getNotes"
+                :on-create="createNote" :on-update="updateNote"
+                :on-delete="deleteNote"
                 @onUpdateNote="(val) => onUpdateNote(props.row, val.size)">
               </modal-notes>
             </div>
@@ -163,7 +163,7 @@
 
     <b-modal v-model="modalStartWorking" width="415px">
       <datepicker-modal v-if="currentWorker" :startWorking.sync="currentWorker.startWorking"
-        @onSelectCalendar="(date) => updateAgencyRequestWorkerStartDate(date)" />
+        @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>
   </div>
 </template>
@@ -171,6 +171,18 @@
 <script lang="ts">
 import download from "@/mixins/downloadFileMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import {
+  getAgencyRequestsWorkers,
+  rejectAgencyRequestWorker,
+  updateAgencyRequestWorkerStartDate,
+} from "@/api/agencyRequestApi";
+import { getWorkersReportDocument } from "@/api/agencyReportApi";
+import {
+  getAgencyRequestWorkerNotes,
+  createAgencyRequestWorkerNote,
+  updateAgencyRequestWorkerNote,
+  deleteAgencyRequestWorkerNote,
+} from "@/api/agencyNoteApi";
 
 export default {
   props: ["request", "id", "showTitle"],
@@ -191,6 +203,10 @@ export default {
       currentWorker: null,
       modalRejectWorker: false,
       modalStartWorking: false,
+      getNotes: ({ requestId, userId, pagination }: any) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
+      createNote: ({ requestId, userId, model }: any) => createAgencyRequestWorkerNote(requestId, userId, model),
+      updateNote: ({ requestId, userId, id, model }: any) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
+      deleteNote: ({ requestId, userId, id }: any) => deleteAgencyRequestWorkerNote(requestId, userId, id),
       serverParams: {
         sortBy: 2,
         requestId: this.id || this.$route.params.id,
@@ -202,7 +218,7 @@ export default {
   },
   mixins: [phoneMaskMixin, download],
   created() {
-    this.getWorkers();
+    this.loadRequestWorkers();
   },
   components: {
     WorkersList: () => import("./AgencyWorkersList.vue"),
@@ -228,7 +244,7 @@ export default {
     },
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -255,21 +271,21 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getWorkers();
+        this.loadRequestWorkers();
       }
     },
     onStatusSelected() {
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onStartWorkingSelected() {
       this.serverParams.startWorkingFrom = this.startWorkingDatesSelected[0];
       this.serverParams.startWorkingTo = this.startWorkingDatesSelected[1];
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onStartWorkingCleared() {
       this.startWorkingDatesSelected = [];
@@ -278,7 +294,7 @@ export default {
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onCreatedAtCleared() {
       this.createdAtDatesSelected = [];
@@ -287,15 +303,15 @@ export default {
     onRejectedAtSelected() {
       this.serverParams.rejectedAtFrom = this.rejectedAtDatesSelected[0];
       this.serverParams.rejectedAtTo = this.rejectedAtDatesSelected[1];
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onRejectedAtCleared() {
       this.rejectedAtDatesSelected = [];
       this.onRejectedAtSelected();
     },
-    getWorkers() {
+    loadRequestWorkers() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyRequestsWorkers", this.serverParams)
+      getAgencyRequestsWorkers(this.serverParams)
         .then((response) => {
           this.rows = response.items.map(i => ({ ...i, actions: null }));
           this.totalItems = response.totalItems;
@@ -313,13 +329,9 @@ export default {
     rejectWorker(comments) {
       this.modalRejectWorker = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/rejectAgencyRequestWorker", {
-        requestId: this.serverParams.requestId,
-        workerId: this.currentWorker.workerId,
-        model: { comments: comments }
-      }).then(() => {
+      rejectAgencyRequestWorker(this.serverParams.requestId, this.currentWorker.workerId, { comments: comments }).then(() => {
         this.isLoading = false;
-        this.getWorkers();
+        this.loadRequestWorkers();
         this.$emit('refreshRequest');
       }).catch((error) => {
         this.isLoading = false;
@@ -337,25 +349,20 @@ export default {
       this.currentWorker = worker;
       this.modalStartWorking = true;
     },
-    updateAgencyRequestWorkerStartDate(date) {
+    onUpdateRequestWorkerStartDate(date) {
       this.modalStartWorking = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyRequestWorkerStartDate", {
-        requestId: this.serverParams.requestId,
-        id: this.currentWorker.id,
-        model: { startWorking: date },
-      }).then(() => {
+      updateAgencyRequestWorkerStartDate(this.serverParams.requestId, this.currentWorker.id, { startWorking: date }).then(() => {
         this.isLoading = false;
-        this.getWorkers();
+        this.loadRequestWorkers();
       }).catch((error) => {
         this.isLoading = false;
         this.showAlertError(error.data);
       });
     },
-    getWorkersReportDocument() {
+    downloadWorkersReportDocument() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/getWorkersReportDocument", this.serverParams.requestId)
+      getWorkersReportDocument(this.serverParams.requestId)
         .then((response) => {
           this.isLoading = false;
           this.downloadFile(response, `WorkersReport_${this.serverParams.requestId}`);
@@ -367,7 +374,7 @@ export default {
     },
     onWorkerBooked() {
       this.modalManageWorkers = false;
-      this.getWorkers();
+      this.loadRequestWorkers();
       // Emit event to refresh request status (Open/Filled state may have changed)
       this.$emit('refreshRequest');
     }

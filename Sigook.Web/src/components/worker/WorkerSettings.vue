@@ -71,6 +71,16 @@
 </template>
 <script lang="ts">
 import { getTaxCategories } from "@/api/catalogApi";
+import {
+  updateWorkerProfileExternalId,
+  updateAgencyWorkerContractor,
+  updateAgencyWorkerSubContractor,
+  updateWorkerProfileTaxCategory,
+  updateWorkerProfileTaxRate,
+  addNewHoliday,
+  getAgencyWorkerProfileHolidays,
+  addUpdateAgencyWorkerProfileHolidays,
+} from "@/api/agencyWorkerApi";
 
 export default {
   props: ['worker'],
@@ -94,7 +104,7 @@ export default {
   methods: {
     updateExternalId() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileExternalId', this.localWorker)
+      updateWorkerProfileExternalId(this.localWorker)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:worker', this.localWorker);
@@ -105,7 +115,7 @@ export default {
     },
     updateIsContractor() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerContractor", this.localWorker.id)
+      updateAgencyWorkerContractor(this.localWorker.id)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:worker', this.localWorker);
@@ -117,7 +127,7 @@ export default {
     },
     updateIsSubContractor() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerSubContractor", this.localWorker.id)
+      updateAgencyWorkerSubContractor(this.localWorker.id)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:worker', this.localWorker);
@@ -129,7 +139,7 @@ export default {
     },
     updateTaxCategory() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileTaxCategory', this.localWorker)
+      updateWorkerProfileTaxCategory(this.localWorker)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:worker', this.localWorker);
@@ -140,7 +150,7 @@ export default {
     },
     updateTaxRate() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateWorkerProfileTaxRate', this.localWorker)
+      updateWorkerProfileTaxRate(this.localWorker)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:worker', this.localWorker);
@@ -159,8 +169,8 @@ export default {
         closeOnConfirm: false,
         confirmText: 'Add',
         onConfirm: async (value, dialog) => {
-          await this.$store.dispatch('agency/addNewHoliday', { workerProfileId: this.localWorker.id, date: value });
-          this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.localWorker.id);
+          await addNewHoliday({ workerProfileId: this.localWorker.id, date: value });
+          this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
           dialog.close();
         }
       })
@@ -170,16 +180,13 @@ export default {
     },
     async addUpdateWorkerHoliday() {
       this.isLoading = true;
-      await this.$store.dispatch('agency/addUpdateAgencyWorkerProfileHolidays', {
-        workerProfileId: this.localWorker.id,
-        data: this.workerHolidaySelected
-      });
+      await addUpdateAgencyWorkerProfileHolidays(this.localWorker.id, this.workerHolidaySelected);
       this.isLoading = false;
     }
   },
   async created() {
     this.taxCategories = await getTaxCategories();
-    this.workerHolidays = await this.$store.dispatch('agency/getAgencyWorkerProfileHolidays', this.localWorker.id);
+    this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
   },
   computed: {
     selectableDates() {

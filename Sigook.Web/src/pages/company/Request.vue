@@ -13,9 +13,9 @@
         </h2>
       </div>
       <div>
-        <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top capitailized fw-700 is-inline-block" :class="request.status">
-          {{ $t(request.status) }}
+        <div v-if="request.status"
+          class="option-request-top capitailized fw-700 is-inline-block" :class="RequestStatusLabels[request.status]">
+          {{ $t(RequestStatusLabels[request.status]) }}
         </div>
         <floating-menu class="is-inline-block" v-if="canEdit">
           <template slot="options">
@@ -76,6 +76,7 @@
 <script lang="ts">
 import confirmationAlert from "../../mixins/confirmationAlert";
 import directHiringMixin from "../../mixins/directHiringMixin";
+import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 
 export default {
   data() {
@@ -185,13 +186,15 @@ export default {
     }
   },
   computed: {
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     canEdit() {
-      return this.request.status === this.$statusOpen ||
-             this.request.status === this.$statusFilled;
+      return this.request.status === RequestStatus.Open ||
+             this.request.status === RequestStatus.Filled;
     },
     canCancel() {
       // Can only cancel orders in Open status without workers
-      return this.request.status === this.$statusOpen &&
+      return this.request.status === RequestStatus.Open &&
              (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
     },
   },

@@ -36,7 +36,7 @@ import download from "@/mixins/downloadFileMixin";
 
 export default {
   name: 'BulkData',
-  props: ['storeAction', 'errorFileName', 'title', 'fileLabel'],
+  props: ['uploadFn', 'errorFileName', 'title', 'fileLabel'],
   data() {
     return {
       isLoading: false,
@@ -49,7 +49,7 @@ export default {
   methods: {
     bulkUpload() {
       this.isLoading = true;
-      this.$store.dispatch(this.storeAction, { agencyId: this.agencySelected, file: this.bulkFile })
+      this.uploadFn(this.agencySelected, this.bulkFile)
         .then((file) => {
           if (file.size > 0) {
             this.fileError = file;

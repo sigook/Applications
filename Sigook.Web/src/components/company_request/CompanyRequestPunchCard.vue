@@ -5,7 +5,7 @@
     <div>
       <b-field grouped position="is-right">
         <b-button size="is-small" type="is-ghost" icon-right="file-excel"
-          @click="getRequestTimeSheetDocument">Export</b-button>
+          @click="downloadTimeSheetDocument">Export</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
@@ -65,6 +65,7 @@
 <script lang="ts">
 import download from '@/mixins/downloadFileMixin';
 import { getRequestWorkers } from '@/api/companyApi';
+import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
 
 export default {
   props: ['request'],
@@ -133,9 +134,9 @@ export default {
           this.isLoading = false;
         })
     },
-    getRequestTimeSheetDocument() {
+    downloadTimeSheetDocument() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getRequestTimeSheetDocument', this.serverParams.requestId)
+      getRequestTimeSheetDocument(this.serverParams.requestId)
         .then(response => {
           this.isLoading = false;
           this.downloadFile(response, `TimeSheet_${this.serverParams.requestId}`);

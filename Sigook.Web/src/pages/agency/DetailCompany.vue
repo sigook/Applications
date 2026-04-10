@@ -61,6 +61,7 @@
 
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
 
 export default {
   data() {
@@ -98,9 +99,8 @@ export default {
         },
       });
     },
-    getCompany() {
-      this.$store
-        .dispatch("agency/getCompany", this.$route.params.id)
+    loadCompany() {
+      getAgencyCompany(this.$route.params.id)
         .then((response) => {
           this.company = response;
           this.isLoading = false;
@@ -113,10 +113,7 @@ export default {
     updateLogo(newLogo) {
       this.showUpdateLogo = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyCompanyProfileLogo", {
-        profileId: this.company.id,
-        model: newLogo,
-      })
+      updateAgencyCompanyProfileLogo(this.company.id, newLogo)
         .then(() => {
           this.isLoading = false;
           this.company.logo.pathFile = this.company.logo.pathFile.replace(
@@ -132,7 +129,7 @@ export default {
     },
   },
   created() {
-    this.getCompany();
+    this.loadCompany();
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
       if (!this.visitedTabs.includes(this.$route.query.tab)) {

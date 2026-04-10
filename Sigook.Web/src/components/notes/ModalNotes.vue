@@ -76,7 +76,7 @@ export default {
   methods: {
     getNotes(index) {
       this.isLoading = true;
-      this.$store.dispatch(this.onGet, {
+      this.onGet({
         userId: this.userId,
         requestId: this.requestId,
         pagination: { page: index, size: this.size }
@@ -92,7 +92,7 @@ export default {
     },
     addNote(newNote) {
       this.isLoading = true;
-      this.$store.dispatch(this.onCreate, {
+      this.onCreate({
         userId: this.userId,
         requestId: this.requestId,
         model: newNote
@@ -115,7 +115,7 @@ export default {
     },
     deleteNote(id, index) {
       this.isLoading = true;
-      this.$store.dispatch(this.onDelete, {
+      this.onDelete({
         userId: this.userId,
         requestId: this.requestId,
         id: id
@@ -144,7 +144,7 @@ export default {
     },
     updateNote(model) {
       this.isLoading = true;
-      this.$store.dispatch(this.onUpdate, {
+      this.onUpdate({
         userId: this.userId,
         requestId: this.requestId,
         id: this.editNoteModel.id,

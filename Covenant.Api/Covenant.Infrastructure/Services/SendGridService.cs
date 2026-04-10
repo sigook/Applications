@@ -4,7 +4,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Net.Http.Headers;
@@ -55,10 +55,12 @@ public class SendGridService : ISendGridService
         var response = await client.GetAsync("templates?generations=dynamic");
         if (!response.IsSuccessStatusCode) return Result.Fail<string>("It is not possible to get the templates");
         var content = await response.Content.ReadAsStringAsync();
-        var json = JObject.Parse(content);
-        var template = json["templates"].FirstOrDefault(t => t["name"].ToString() == templateName);
-        if (template == null) return Result.Fail<string>($"{templateName} was not found");
-        var templateId = template["id"].ToString();
+        using var doc = JsonDocument.Parse(content);
+        var template = doc.RootElement.GetProperty("templates")
+            .EnumerateArray()
+            .FirstOrDefault(t => t.GetProperty("name").GetString() == templateName);
+        if (template.ValueKind == JsonValueKind.Undefined) return Result.Fail<string>($"{templateName} was not found");
+        var templateId = template.GetProperty("id").GetString();
         return Result.Ok(templateId);
     }
 }

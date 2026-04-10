@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models
 {
     public class Target
     {
-        [JsonProperty("os")]
+        [JsonPropertyName("os")]
         public string Os { get; set; } = "default";
 
-        [JsonProperty("uri")]
+        [JsonPropertyName("uri")]
         public string Uri { get; set; } = "https://covenant.sigook.ca";
     }
 }

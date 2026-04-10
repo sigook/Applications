@@ -142,6 +142,7 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
 
 export default {
   props: ["workerId", "workerName", "requestId"],
@@ -166,7 +167,7 @@ export default {
   methods: {
     showTimeSheet() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId })
+      getAgencyWorkerTimeSheet(this.requestId, this.workerId)
         .then(response => {
           this.isLoading = false;
           this.rows = response;
@@ -188,7 +189,7 @@ export default {
         missingHours: dayjs(this.newDate.missingHours).format('HH:mm:ss'),
         missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss')
       }
-      this.$store.dispatch("agency/postAgencyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, model: payload })
+      postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created');

@@ -68,6 +68,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgenciesList } from "@/api/agencyApi";
 
 export default {
   data() {
@@ -122,7 +123,7 @@ export default {
     getAgencies() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyListFilter", this.serverParams);
-      this.$store.dispatch('agency/getAgencies', this.serverParams)
+      getAgenciesList(this.serverParams)
         .then(agencies => {
           this.rows = agencies.items;
           this.totalItems = agencies.totalItems;

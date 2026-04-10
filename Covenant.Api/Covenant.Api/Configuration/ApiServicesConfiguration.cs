@@ -22,7 +22,6 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Invoices;
 using Covenant.Core.BL.Services.Shared;
-using Covenant.Deductions.Services;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
@@ -37,9 +36,6 @@ using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;
 using Covenant.Infrastructure.Services.Handlers;
 using Covenant.Infrastructure.Services.Storage;
-using Covenant.PayStubs.Services;
-using Covenant.PayStubs.Services.Impl;
-using Covenant.Subcontractor.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -111,11 +107,6 @@ public static class ApiServicesConfiguration
 
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
-        services.AddScoped<IPayrollDeductionsAndContributionsCalculator, PayrollDeductionsAndContributionsCalculator>();
-        services.AddScoped<IPayStubPublicHolidays, PayStubPublicHolidays>();
-        services.AddScoped<ISubContractorPublicHolidays, SubContractorPublicHolidays>();
-        services.AddScoped<CreatePayStubUsingTimeSheet>();
-        services.AddScoped<CreateReportSubcontractorUsingTimeSheet>();
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();
         services.AddScoped<FederalTaxTablesLoader>();
         services.AddScoped<ProvincialTaxTablesLoader>();

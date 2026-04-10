@@ -51,6 +51,7 @@
 <script lang="ts">
 import confirmationAlert from "../../mixins/confirmationAlert";
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
+import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
 
 export default {
   data() {
@@ -79,8 +80,10 @@ export default {
       }
     }
     this.isLoading = true;
-    await this.$store.dispatch("agency/getAgencyProfile");
-    await this.$store.dispatch("agency/getPersonnelAgency");
+    const agency = await getAgencyProfile();
+    this.$store.commit("agency/setAgency", agency);
+    const personnelAgencies = await getPersonnelAgencies();
+    this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
     this.isLoading = false;
   },
   methods: {
@@ -99,7 +102,7 @@ export default {
     },
     saveProfile() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgency", this.agency)
+      updateAgency(this.agency)
         .then(() => {
           this.isDisabled = true;
           this.unsavedChanges = false;

@@ -23,7 +23,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Covenant.Core.BL.Services
 {
@@ -90,7 +90,7 @@ namespace Covenant.Core.BL.Services
         public async Task<Result<Guid>> CreateWorker(int? orderId)
         {
             var dataField = httpContextAccessor.HttpContext.Request.Form["data"];
-            var model = JsonConvert.DeserializeObject<WorkerProfileCreateModel>(dataField);
+            var model = JsonSerializer.Deserialize<WorkerProfileCreateModel>(dataField);
             var validationResult = await workerProfileValidator.ValidateAsync(model);
             if (!validationResult.IsValid) return Result.Fail<Guid>(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
 
@@ -234,7 +234,7 @@ namespace Covenant.Core.BL.Services
 
         private async Task<Result<IEnumerable<string>>> HandleIdentification(WorkerProfile entity, IFormCollection form, Guid profileId)
         {
-            var model = JsonConvert.DeserializeObject<DocumentsInformationModel>(form["data"]);
+            var model = JsonSerializer.Deserialize<DocumentsInformationModel>(form["data"]);
             foreach (var number in new[] { model?.IdentificationNumber1, model?.IdentificationNumber2 })
             {
                 if (!string.IsNullOrEmpty(number) && await workerRepository.InfoIsAlreadyTaken(x => x.Id != profileId && (x.IdentificationNumber1 == number || x.IdentificationNumber2 == number)))
@@ -251,7 +251,7 @@ namespace Covenant.Core.BL.Services
 
         private static Result<IEnumerable<string>> HandleLicenses(WorkerProfile entity, IFormCollection form)
         {
-            var model = JsonConvert.DeserializeObject<List<WorkerProfileLicenseModel>>(form["data"]);
+            var model = JsonSerializer.Deserialize<List<WorkerProfileLicenseModel>>(form["data"]);
             var result = entity.PatchLicenses(model);
             if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
             return Result.Ok<IEnumerable<string>>(model.Select(l => l.License?.FileName));
@@ -259,7 +259,7 @@ namespace Covenant.Core.BL.Services
 
         private static Result<IEnumerable<string>> HandleCertificates(WorkerProfile entity, IFormCollection form)
         {
-            var model = JsonConvert.DeserializeObject<List<CovenantFileModel>>(form["data"]);
+            var model = JsonSerializer.Deserialize<List<CovenantFileModel>>(form["data"]);
             var result = entity.PatchCertificates(model);
             if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
             return Result.Ok<IEnumerable<string>>(model.Select(c => c.FileName));
@@ -267,7 +267,7 @@ namespace Covenant.Core.BL.Services
 
         private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
         {
-            var model = JsonConvert.DeserializeObject<CovenantFileModel>(form["data"]);
+            var model = JsonSerializer.Deserialize<CovenantFileModel>(form["data"]);
             var result = entity.PatchResume(model);
             if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
             return Result.Ok<IEnumerable<string>>(new[] { model?.FileName });
@@ -275,7 +275,7 @@ namespace Covenant.Core.BL.Services
 
         private static Result<IEnumerable<string>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
         {
-            var model = JsonConvert.DeserializeObject<CovenantFileModel>(form["data"]);
+            var model = JsonSerializer.Deserialize<CovenantFileModel>(form["data"]);
             var fileResult = CovenantFile.Create(model);
             if (!fileResult) return Result.Fail<IEnumerable<string>>(fileResult.Errors);
             var docResult = WorkerProfileOtherDocument.Create(entity.Id, fileResult.Value);
@@ -286,7 +286,7 @@ namespace Covenant.Core.BL.Services
 
         private static Result<IEnumerable<string>> HandleSocialInsurance(WorkerProfile entity, IFormCollection form)
         {
-            var model = JsonConvert.DeserializeObject<SinInformationModel>(form["data"]);
+            var model = JsonSerializer.Deserialize<SinInformationModel>(form["data"]);
             var result = entity.PatchSinInformation(model);
             if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
             return Result.Ok<IEnumerable<string>>(new[] { model.SocialInsuranceFile?.FileName });

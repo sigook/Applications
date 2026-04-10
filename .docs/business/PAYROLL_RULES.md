@@ -1,26 +1,26 @@
-# Payroll Rules - Covenant/Sigook Platform (Canadá)
+# Payroll Rules - Covenant/Sigook Platform (Canada)
 
 ## 🇨🇦 Canadian Payroll System
 
-El sistema de nómina de Covenant está diseñado para cumplir con las regulaciones fiscales canadienses, incluyendo CPP, EI, e impuestos federales y provinciales.
+Covenant's payroll system is designed to comply with Canadian tax regulations, including CPP, EI, and federal and provincial taxes.
 
-**Ubicación del código:**
-- `Covenant.Api/Covenant.PayStubs/` - Generación de pay stubs
-- `Covenant.Api/Covenant.Deductions/` - Cálculos de deducciones
-- `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` - Orquestación
+**Code location:**
+- `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` — Pay stub generation orchestration
+- `Covenant.Api/Covenant.Infrastructure/Deductions/` — Deduction calculations and tax tables
+- `Covenant.Api/Covenant.Common/Entities/Accounting/PayStub/` — PayStub entities
 
 ---
 
-## 💰 Earnings (Ingresos)
+## 💰 Earnings
 
 ### 1. Regular Wage
 
-**Cálculo:**
+**Calculation:**
 ```
 RegularWage = RegularHours × WorkerRate
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 40 hours × $18.50/hr = $740.00
 ```
@@ -29,17 +29,17 @@ RegularWage = RegularHours × WorkerRate
 
 ### 2. Overtime Wage
 
-**Regla Federal (Canadá):**
+**Federal Rule (Canada):**
 - Overtime starts after **44 hours per week**
 - Week = Sunday to Saturday
 - Rate = WorkerRate × 1.5 (time and a half)
 
-**Cálculo:**
+**Calculation:**
 ```
 OvertimeWage = OvertimeHours × (WorkerRate × OvertimeRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 48 hours worked in a week:
 - RegularHours: 44 hours × $18.50 = $814.00
@@ -47,26 +47,26 @@ OvertimeWage = OvertimeHours × (WorkerRate × OvertimeRate)
 Total Wage: $925.00
 ```
 
-**Nota Provincial:**
-- Algunas provincias tienen diferentes thresholds:
-  - **BC:** Overtime after 8 hrs/día o 40 hrs/semana
-  - **QC:** Overtime after 40 hrs/semana
-  - **ON:** Overtime after 44 hrs/semana (federal standard)
+**Provincial Notes:**
+- Some provinces have different thresholds:
+  - **BC:** Overtime after 8 hrs/day or 40 hrs/week
+  - **QC:** Overtime after 40 hrs/week
+  - **ON:** Overtime after 44 hrs/week (federal standard)
 
 ---
 
 ### 3. Night Shift Premium
 
-**Regla:**
+**Rule:**
 - Hours between **11:00 PM - 7:00 AM**
 - Typically 10-15% premium
 
-**Cálculo:**
+**Calculation:**
 ```
 NightShiftWage = NightShiftHours × (WorkerRate × NightShiftRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 NightShiftRate = 1.15 (15% premium)
 8 hours × ($18.50 × 1.15) = 8 × $21.28 = $170.24
@@ -76,7 +76,7 @@ NightShiftRate = 1.15 (15% premium)
 
 ### 4. Holiday Pay
 
-**Regla:**
+**Rule:**
 - Statutory holidays in Canada
 - Typically 1.5x - 2x rate
 
@@ -90,12 +90,12 @@ NightShiftRate = 1.15 (15% premium)
 - Boxing Day
 - Provincial holidays (varies)
 
-**Cálculo:**
+**Calculation:**
 ```
 HolidayWage = HolidayHours × (WorkerRate × HolidayRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 HolidayRate = 1.5
 8 hours × ($18.50 × 1.5) = 8 × $27.75 = $222.00
@@ -105,50 +105,50 @@ HolidayRate = 1.5
 
 ### 5. Vacation Pay
 
-**Regla Federal (Canadá):**
+**Federal Rule (Canada):**
 - **Minimum 4%** of gross wages
 - After 5 years: 6% (varies by province)
 - Accrued but not necessarily paid each period
 
-**Cálculo:**
+**Calculation:**
 ```
 Vacations = GrossPayment × 0.04
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 GrossPayment: $1,000
 Vacations: $1,000 × 0.04 = $40.00
 ```
 
-**Importante:**
-- Vacations se suman a TotalEarnings
-- Se usan para calcular deducciones (base imponible)
+**Important:**
+- Vacations are added to TotalEarnings
+- They are used to calculate deductions (taxable base)
 
 ---
 
 ### 6. Public Holiday Pay
 
-**Regla:**
-- If worker is entitled to the holiday but works
+**Rule:**
+- If the worker is entitled to the holiday but works
 - Additional pay beyond the holiday premium
 
-**Ejemplo:**
-- Worker works Christmas (holiday)
-- Gets regular pay + holiday premium (1.5x) + public holiday pay
+**Example:**
+- Worker works on Christmas (holiday)
+- Receives regular pay + holiday premium (1.5x) + public holiday pay
 
 ---
 
 ### 7. Gross Payment & Total Earnings
 
-**Cálculo:**
+**Calculation:**
 ```
 GrossPayment = RegularWage + OvertimeWage + NightShiftWage + HolidayWage
 
 TotalEarnings = GrossPayment + Vacations + PublicHolidayPay
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 RegularWage:      $740.00
 OvertimeWage:     $111.00
@@ -164,7 +164,7 @@ TotalEarnings:    $885.04
 
 ---
 
-## 📉 Deductions (Deducciones)
+## 📉 Deductions
 
 ### 1. CPP - Canada Pension Plan
 
@@ -174,7 +174,7 @@ TotalEarnings:    $885.04
 - **Maximum Pensionable Earnings:** $68,500 per year
 - **Maximum Contribution:** $3,867.50 per year
 
-**Cálculo:**
+**Calculation:**
 
 **Annual:**
 ```
@@ -202,7 +202,7 @@ MonthlyExemption = $3,500 / 12 = $291.67
 MonthlyCPP = max(0, (MonthlyEarnings - $291.67) × 0.0595)
 ```
 
-**Ejemplo (Weekly):**
+**Example (Weekly):**
 ```
 GrossPayment: $1,000
 CPP = ($1,000 - $67.31) × 0.0595
@@ -210,14 +210,14 @@ CPP = $932.69 × 0.0595
 CPP = $55.50
 ```
 
-**Excepciones:**
+**Exceptions:**
 - No CPP for workers under 18
 - No CPP for workers over 70
 - No CPP for self-employed (handled separately)
 
-**Implementación:**
+**Implementation:**
 ```csharp
-// Covenant.Deductions/CppCalculator.cs
+// Covenant.Infrastructure/Deductions/CppCalculator.cs
 public decimal Calculate(decimal earnings, PayFrequency frequency)
 {
     var exemption = GetExemption(frequency);
@@ -236,7 +236,7 @@ public decimal Calculate(decimal earnings, PayFrequency frequency)
 - **Maximum Insurable Earnings:** $63,200 per year
 - **Maximum Contribution:** $1,049.12 per year
 
-**Cálculo:**
+**Calculation:**
 
 **Per Pay Period:**
 ```
@@ -249,19 +249,19 @@ MaxWeeklyInsurable = $63,200 / 52 = $1,215.38
 WeeklyEI = min(Earnings, $1,215.38) × 0.0166
 ```
 
-**Ejemplo (Weekly):**
+**Example (Weekly):**
 ```
 GrossPayment: $1,000
 EI = $1,000 × 0.0166 = $16.60
 ```
 
-**Excepciones:**
+**Exceptions:**
 - No EI for self-employed (contractors)
 - No EI for certain types of employment (family business)
 
-**Implementación:**
+**Implementation:**
 ```csharp
-// Covenant.Deductions/EiCalculator.cs
+// Covenant.Infrastructure/Deductions/EiCalculator.cs
 public decimal Calculate(decimal earnings, PayFrequency frequency)
 {
     var maxInsurable = GetMaxInsurable(frequency);
@@ -289,12 +289,12 @@ public decimal Calculate(decimal earnings, PayFrequency frequency)
 
 **Claim Codes:**
 - **Code 1:** Basic personal amount (~$15,705)
-- **Code 2-10:** Additional amounts (spouse, dependents, etc)
+- **Code 2-10:** Additional amounts (spouse, dependents, etc.)
 
-**Cálculo:**
+**Calculation:**
 
-El sistema usa **lookup tables** basadas en:
-- Annual income estimated
+The system uses **lookup tables** based on:
+- Annual estimated income
 - Claim code
 - Pay frequency
 
@@ -304,7 +304,7 @@ El sistema usa **lookup tables** basadas en:
 - `FederalTaxSemiMonthly`
 - `FederalTaxMonthly`
 
-**Ejemplo (Weekly, Code 1):**
+**Example (Weekly, Code 1):**
 ```
 GrossPayment: $1,000/week
 Annual estimated: $1,000 × 52 = $52,000
@@ -315,9 +315,9 @@ Lookup FederalTaxWeekly table:
 - Tax: ~$120.50/week
 ```
 
-**Implementación:**
+**Implementation:**
 ```csharp
-// Covenant.Deductions/FederalTaxCalculator.cs
+// Covenant.Infrastructure/Deductions/FederalTaxCalculator.cs
 public decimal Calculate(
     decimal earnings,
     PayFrequency frequency,
@@ -366,15 +366,15 @@ public decimal Calculate(
 - BC: ~$12,580
 - QC: ~$17,183
 
-**Cálculo:**
+**Calculation:**
 
-Similar to federal, uses **lookup tables per province**:
+Similar to federal, using **lookup tables per province**:
 - `ProvincialTaxWeekly[ON]`
 - `ProvincialTaxWeekly[BC]`
 - `ProvincialTaxWeekly[QC]`
 - etc.
 
-**Ejemplo (Ontario, Weekly, Code 1):**
+**Example (Ontario, Weekly, Code 1):**
 ```
 GrossPayment: $1,000/week
 Province: Ontario
@@ -386,9 +386,9 @@ Lookup ProvincialTaxWeekly[ON] table:
 - Tax: ~$45.20/week
 ```
 
-**Implementación:**
+**Implementation:**
 ```csharp
-// Covenant.Deductions/ProvincialTaxCalculator.cs
+// Covenant.Infrastructure/Deductions/ProvincialTaxCalculator.cs
 public decimal Calculate(
     decimal earnings,
     PayFrequency frequency,
@@ -415,7 +415,7 @@ public decimal Calculate(
 - Health insurance premiums
 - Wage garnishments (court orders)
 
-**Cálculo:**
+**Calculation:**
 ```
 OtherDeductions = sum of all optional deductions
 ```
@@ -424,14 +424,14 @@ OtherDeductions = sum of all optional deductions
 
 ### 6. Total Deductions & Net Pay
 
-**Cálculo:**
+**Calculation:**
 ```
 TotalDeductions = CPP + EI + FederalTax + ProvincialTax + OtherDeductions
 
 TotalPaid (Net Pay) = TotalEarnings - TotalDeductions
 ```
 
-**Ejemplo Completo (Ontario, Weekly):**
+**Complete Example (Ontario, Weekly):**
 ```
 EARNINGS:
 ─────────────────────────
@@ -461,26 +461,26 @@ NET PAY:               $649.11
 
 ## 🧮 Pay Frequencies
 
-El sistema soporta múltiples frecuencias de pago:
+The system supports multiple pay frequencies:
 
-### Weekly (Semanal)
+### Weekly
 - 52 pay periods per year
 - Most common in staffing
 
-### Bi-Weekly (Quincenal)
+### Bi-Weekly
 - 26 pay periods per year
 - Every 2 weeks
 
-### Semi-Monthly (Semi-mensual)
+### Semi-Monthly
 - 24 pay periods per year
 - Twice per month (1st and 15th)
 
-### Monthly (Mensual)
+### Monthly
 - 12 pay periods per year
 
-**Importante:**
-- Tax tables son diferentes para cada frequency
-- Exemptions (CPP, EI) se prorratan según frequency
+**Important:**
+- Tax tables are different for each frequency
+- Exemptions (CPP, EI) are prorated by frequency
 
 ---
 
@@ -558,9 +558,9 @@ Net Pay: $1,000
 ### Workers with Multiple Jobs
 
 **Consideration:**
-- CPP and EI max contributions are annual
-- System tracks YTD to avoid over-deduction
-- If worker reaches max, stop deducting
+- CPP and EI maximum contributions are annual
+- The system tracks YTD to avoid over-deduction
+- If a worker reaches the maximum, stop deducting
 
 ---
 
@@ -568,7 +568,7 @@ Net Pay: $1,000
 
 **Consideration:**
 - Pro-rated annual amounts
-- First pay period may have adjustments
+- The first pay period may have adjustments
 
 ---
 
@@ -576,7 +576,7 @@ Net Pay: $1,000
 
 **January 1st:**
 - Reset CPP and EI YTD counters
-- Update tax tables for new year
+- Update tax tables for the new year
 - New tax brackets and rates
 - New basic personal amounts
 
@@ -589,7 +589,7 @@ Net Pay: $1,000
 ## 📊 Tax Tables Maintenance
 
 **Location:**
-- `Covenant.Deductions/Tables/`
+- `Covenant.Infrastructure/Deductions/Tables/`
 
 **Tables to Update Annually:**
 1. `CppWeekly.cs`, `CppBiWeekly.cs`, etc.
@@ -612,9 +612,9 @@ Net Pay: $1,000
 - Maintain audit trail of all calculations
 
 **Reporting:**
-- T4 slips (annual) - employees
-- T4A slips (annual) - subcontractors
-- ROE (Record of Employment) when worker leaves
+- T4 slips (annual) — employees
+- T4A slips (annual) — subcontractors
+- ROE (Record of Employment) when a worker leaves
 - Remittances to CRA (monthly or quarterly)
 
 **Penalties for Non-Compliance:**
@@ -652,6 +652,6 @@ public void Calculate_Weekly_Standard()
 ```
 
 **Validation:**
-- Use CRA online calculator to verify
+- Use the CRA online calculator to verify
 - Compare with payroll service providers (ADP, Ceridian)
-- Test edge cases (max contributions, low income, etc)
+- Test edge cases (max contributions, low income, etc.)

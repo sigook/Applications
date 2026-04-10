@@ -1,10 +1,10 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Location
 {
     public class GeocodeResult
     {
-        [JsonProperty("formatted_address")]
+        [JsonPropertyName("formatted_address")]
         public string FormattedAddress { get; set; }
         public GeocodeGeometry Geometry { get; set; }
     }

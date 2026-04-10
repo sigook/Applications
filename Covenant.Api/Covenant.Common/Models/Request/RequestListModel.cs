@@ -18,7 +18,6 @@ public class RequestListModel
     public string AgencyLogo { get; set; }
     public string Logo { get; set; }
     public RequestStatus RequestStatus { get; set; }
-    public string Status { get; set; }
     public bool IsAsap { get; set; }
     public string WorkerApprovedToWork { get; set; }
     public DateTime StartWorking { get; set; }

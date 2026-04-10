@@ -77,6 +77,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
 
 export default {
   props: ['request'],
@@ -110,7 +111,7 @@ export default {
   methods: {
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -128,11 +129,11 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getWorkers();
+        this.loadRequestWorkers();
       }
     },
     filterStatuses(text) {
@@ -146,11 +147,11 @@ export default {
         !this.statusesSelected.some(ss => ss.id === s.id)
       );
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
-    getWorkers() {
+    loadRequestWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyRequestsWorkers', this.serverParams)
+      getAgencyRequestsWorkers(this.serverParams)
         .then(response => {
           this.rows = response.items.map(i => ({ ...i, actions: null }));
           this.totalItems = response.totalItems;
@@ -174,7 +175,7 @@ export default {
   },
   created() {
     this.filteredStatuses = this.statuses;
-    this.getWorkers();
+    this.loadRequestWorkers();
   },
   computed: {
     getTimeSheetUrl() {

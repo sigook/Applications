@@ -45,6 +45,7 @@
 <script lang="ts">
 import pubSub from "@/mixins/pubSub";
 import updateMixin from "../../mixins/uploadFiles";
+import { createAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 
 export default {
   props: ["profileId"],
@@ -66,18 +67,15 @@ export default {
     validateForm() {
       this.$validator.validateAll().then((result) => {
         if (result) {
-          this.createAgencyCompanyDocument();
+          this.submitDocument();
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createAgencyCompanyDocument() {
+    submitDocument() {
       this.isLoading = true;
-      this.$store.dispatch("agency/createAgencyCompanyDocument", {
-          profileId: this.profileId,
-          model: this.model,
-        })
+      createAgencyCompanyDocument(this.profileId, this.model)
         .then((response) => {
           this.isLoading = false;
           let newDocument = {

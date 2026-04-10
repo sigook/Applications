@@ -70,6 +70,7 @@
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 import { getJobPositions } from "@/api/catalogApi";
+import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 export default {
   props: ['currentPosition', 'profileId'],
   data() {
@@ -106,17 +107,17 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         if (this.currentPosition) {
-          this.updateAgencyCompanyJobPosition(this.currentPosition.id);
+          this.updateJobPosition(this.currentPosition.id);
         } else {
-          this.createAgencyCompanyJobPosition();
+          this.createJobPosition();
         }
       } else {
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       }
     },
-    createAgencyCompanyJobPosition() {
+    createJobPosition() {
       this.isLoading = true;
-      this.$store.dispatch('agency/createAgencyCompanyJobPosition', { profileId: this.profileId, model: this.model })
+      createAgencyCompanyJobPosition(this.profileId, this.model)
         .then(() => {
           this.isLoading = false;
           this.$emit('updateContent');
@@ -126,9 +127,9 @@ export default {
           this.showAlertError(error)
         })
     },
-    updateAgencyCompanyJobPosition(id) {
+    updateJobPosition(id) {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyCompanyJobPosition', { profileId: this.profileId, id: id, model: this.model })
+      updateAgencyCompanyJobPosition(this.profileId, id, this.model)
         .then(() => {
           this.isLoading = false;
           this.$emit('updateContent');
@@ -138,9 +139,9 @@ export default {
           this.showAlertError(error)
         })
     },
-    getAgencyCompanyJobPositionById(id) {
+    loadJobPositionById(id) {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyCompanyJobPositionById', { profileId: this.profileId, id: id })
+      getAgencyCompanyJobPositionById(this.profileId, id)
         .then(response => {
           this.model = response;
           this.jobPosition = response.value;
@@ -156,7 +157,7 @@ export default {
     this.isLoading = true;
     this.jobPositionList = await getJobPositions()
     if (this.currentPosition && this.currentPosition.id) {
-      this.getAgencyCompanyJobPositionById(this.currentPosition.id);
+      this.loadJobPositionById(this.currentPosition.id);
     }
     this.isLoading = false;
   },

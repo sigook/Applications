@@ -52,6 +52,8 @@
 
 <script lang="ts">
 import roles from "@/security/roles";
+import { agencyCommentWorker } from "@/api/agencyWorkerApi";
+import { companyCommentWorker } from "@/api/companyApi";
 
 export default {
   data() {
@@ -91,18 +93,18 @@ export default {
         switch (userRoles[i]) {
           case roles.agency:
           case roles.agencyPersonnel:
-            this.sendComment('agency/agencyCommentWorker');
+            this.sendComment(agencyCommentWorker);
             return;
           case roles.company:
           case roles.companyUser:
-            this.sendComment('company/companyCommentWorker');
+            this.sendComment(companyCommentWorker);
             return;
         }
       }
     },
-    sendComment(url) {
+    sendComment(commentFn) {
       this.isLoading = true;
-      this.$store.dispatch(url, { id: this.userId, comment: this.commentary })
+      commentFn(this.userId, this.commentary)
         .then(() => {
           this.$emit('newComment', true);
           this.isLoading = false;

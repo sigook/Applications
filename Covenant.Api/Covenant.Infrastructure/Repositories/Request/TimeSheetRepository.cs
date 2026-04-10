@@ -9,7 +9,6 @@ using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

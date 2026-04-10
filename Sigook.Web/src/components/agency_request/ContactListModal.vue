@@ -21,6 +21,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
+
 export default {
   props: ['requestId', 'companyId', 'activeUsers'],
   data() {
@@ -30,9 +32,9 @@ export default {
     }
   },
   methods: {
-    getAgencyCompanyContactPerson() {
+    loadContactPersons() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyCompanyContactPerson', this.companyId)
+      getAgencyCompanyContactPerson(this.companyId)
         .then(response => {
           this.isLoading = false;
           this.data = response;
@@ -60,7 +62,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyCompanyContactPerson()
+    this.loadContactPersons()
   }
 }
 </script>

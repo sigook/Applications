@@ -149,6 +149,8 @@
 </template>
 <script lang="ts">
 import dayjs from 'dayjs';
+import { getAgencyWorkersDropdown } from "@/api/agencyWorkerApi";
+import { createAgencyPayStub } from "@/api/agencyPayStubApi";
 
 const PayStubItemType = {
   Regular: 0,
@@ -199,7 +201,7 @@ export default {
   methods: {
     onWorkerInput(text) {
       if (text.length >= 3) {
-        this.getAllWorkers(text);
+        this.searchWorkers(text);
       } else {
         this.workers = [];
       }
@@ -208,9 +210,9 @@ export default {
       this.payStub.workBegins = dayjs(this.datesSelected[0]).format('YYYY-MM-DD');
       this.payStub.workEnd = dayjs(this.datesSelected[1]).format('YYYY-MM-DD');
     },
-    getAllWorkers(text) {
+    searchWorkers(text) {
       this.isLoadingList = true;
-      this.$store.dispatch("agency/getAllWorkers", { searchTerm: text })
+      getAgencyWorkersDropdown({ searchTerm: text })
         .then(response => {
           this.isLoadingList = false;
           this.workers = response;
@@ -293,7 +295,7 @@ export default {
           otherDeductions: this.discount ? this.discount.amount : 0,
           otherDeductionsDescription: this.discount ? this.discount.description : null
         };
-        this.$store.dispatch("agency/createPayStub", payload)
+        createAgencyPayStub(payload)
           .then(() => {
             this.isLoading = false;
             this.showAlertSuccess('PayStub created successfully');

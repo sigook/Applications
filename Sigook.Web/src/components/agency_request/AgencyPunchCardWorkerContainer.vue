@@ -55,7 +55,7 @@
                         <p v-if="!currentTimeSheetUsage.invoiceNumber && !currentTimeSheetUsage.payStubNumber"> . </p>
                       </div>
                     </template>
-                    <b-button type="is-ghost" @click="getTimesheetUsages(slotProps.item)"
+                    <b-button type="is-ghost" @click="loadTimeSheetUsages(slotProps.item)"
                       icon-right="paperclip"></b-button>
                   </b-tooltip>
                 </div>
@@ -104,6 +104,12 @@ import timeSheetReportMixin from "@/mixins/agencyTimeSheetReportMixin";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
+import {
+  getAgencyWorkerTimeSheetByDate,
+  postAgencyWorkerTimeSheet,
+  deleteAgencyWorkerTimeSheet,
+  getAgencyTimeSheetUsages,
+} from "@/api/agencyTimeSheetApi";
 
 dayjs.extend(duration);
 
@@ -131,9 +137,9 @@ export default {
     }
   },
   methods: {
-    getAgencyWorkerTimeSheetByDate() {
+    loadTimeSheets() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyWorkerTimeSheetByDate", { requestId: this.requestId, workerId: this.workerId, date: { startDate: this.startDate, endDate: this.endDate } })
+      getAgencyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })
         .then(response => {
           this.isLoading = false;
           this.data = response;
@@ -146,10 +152,10 @@ export default {
     onMonthChange(startDate, endDate) {
       this.startDate = startDate;
       this.endDate = endDate;
-      this.getAgencyWorkerTimeSheetByDate()
+      this.loadTimeSheets()
     },
     updateCell() {
-      this.getAgencyWorkerTimeSheetByDate();
+      this.loadTimeSheets();
       this.showModalPunchCard = false;
     },
     validatePost(model) {
@@ -172,10 +178,10 @@ export default {
         deductionsOthers: item.deductionsOthers
       };
       this.isLoading = true;
-      this.$store.dispatch("agency/postAgencyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, model: model })
+      postAgencyWorkerTimeSheet(this.requestId, this.workerId, model)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyWorkerTimeSheetByDate();
+          this.loadTimeSheets();
         }).catch(error => {
           this.isLoading = false;
           this.showAlertError(error);
@@ -183,13 +189,13 @@ export default {
     },
     deleteWorkerTimSheet(item) {
       this.isLoading = true;
-      this.$store.dispatch("agency/deleteWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, id: item.id })
+      deleteAgencyWorkerTimeSheet(this.requestId, this.workerId, item.id)
         .then(() => {
           this.isLoading = false;
           item.id = null;
           item.totalHoursApproved = null;
           item.timeIn = null;
-          this.getAgencyWorkerTimeSheetByDate();
+          this.loadTimeSheets();
         }).catch(error => {
           this.isLoading = false;
           this.showAlertError(error);
@@ -205,10 +211,10 @@ export default {
       date.setSeconds(0);
       return date
     },
-    getTimesheetUsages(item) {
+    loadTimeSheetUsages(item) {
       this.isLoading = true;
-      this.$store.dispatch('agency/getTimesheetUsages', { requestId: this.requestId, workerId: this.workerId, id: item.id })
-        .then(response => {
+      getAgencyTimeSheetUsages(this.requestId, this.workerId, item.id)
+        .then((response: any) => {
           this.isLoading = false;
           this.currentTimeSheetUsage = {
             invoiceNumber: response.invoiceNumber,

@@ -22,7 +22,7 @@ public static class TestStartupExtensions
     public static void AddDefaultTestConfiguration(this IServiceCollection services)
     {
         services.AddRepositories().AddServices().AddAdapters();
-        services.AddControllersWithViews().AddNewtonsoftJson();
+        services.AddControllersWithViews();
         services.Configure<ApiBehaviorOptions>(opt =>
         {
             opt.SuppressConsumesConstraintForFormFileParameters = true;

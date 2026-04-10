@@ -20,10 +20,9 @@ namespace Covenant.Common.Models.Request
         public string Entrance { get; set; }
         public string CompanyFullName { get; set; }
         public Guid CompanyProfileId { get; set; }
-        public string Status { get; set; }
         public RequestStatus RequestStatus { get; set; }
-        public string DurationTerm { get; set; }
-        public string EmploymentType { get; set; }
+        public DurationTerm DurationTerm { get; set; }
+        public EmploymentType EmploymentType { get; set; }
         public int WorkersQuantity { get; set; }
         public int WorkersQuantityWorking { get; set; }
         public bool IsAsap { get; set; }
