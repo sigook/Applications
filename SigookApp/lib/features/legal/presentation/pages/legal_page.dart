@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 
 class LegalSection {
   final String title;
