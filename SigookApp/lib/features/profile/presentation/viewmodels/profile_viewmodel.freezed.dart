@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProfileState {
 
- bool get isLoading; bool get isEditing; String? get error; WorkerProfile? get profile;
+ bool get isSaving; ProfileSection? get editingSection;/// Non-null when a save failed — consumed by ref.listen in the page.
+ String? get saveError;/// Flips to true after a successful save — consumed by ref.listen in the page.
+ bool get justSaved;
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $ProfileStateCopyWith<ProfileState> get copyWith => _$ProfileStateCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isEditing, isEditing) || other.isEditing == isEditing)&&(identical(other.error, error) || other.error == error)&&(identical(other.profile, profile) || other.profile == profile));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileState&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.editingSection, editingSection) || other.editingSection == editingSection)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,isEditing,error,profile);
+int get hashCode => Object.hash(runtimeType,isSaving,editingSection,saveError,justSaved);
 
 @override
 String toString() {
-  return 'ProfileState(isLoading: $isLoading, isEditing: $isEditing, error: $error, profile: $profile)';
+  return 'ProfileState(isSaving: $isSaving, editingSection: $editingSection, saveError: $saveError, justSaved: $justSaved)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $ProfileStateCopyWith<$Res>  {
   factory $ProfileStateCopyWith(ProfileState value, $Res Function(ProfileState) _then) = _$ProfileStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, bool isEditing, String? error, WorkerProfile? profile
+ bool isSaving, ProfileSection? editingSection, String? saveError, bool justSaved
 });
 
 
@@ -62,13 +64,13 @@ class _$ProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? isEditing = null,Object? error = freezed,Object? profile = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isSaving = null,Object? editingSection = freezed,Object? saveError = freezed,Object? justSaved = null,}) {
   return _then(_self.copyWith(
-isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,isEditing: null == isEditing ? _self.isEditing : isEditing // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String?,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
-as WorkerProfile?,
+isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
+as bool,editingSection: freezed == editingSection ? _self.editingSection : editingSection // ignore: cast_nullable_to_non_nullable
+as ProfileSection?,saveError: freezed == saveError ? _self.saveError : saveError // ignore: cast_nullable_to_non_nullable
+as String?,justSaved: null == justSaved ? _self.justSaved : justSaved // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -153,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  bool isEditing,  String? error,  WorkerProfile? profile)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isSaving,  ProfileSection? editingSection,  String? saveError,  bool justSaved)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileState() when $default != null:
-return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case _:
+return $default(_that.isSaving,_that.editingSection,_that.saveError,_that.justSaved);case _:
   return orElse();
 
 }
@@ -174,10 +176,10 @@ return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  bool isEditing,  String? error,  WorkerProfile? profile)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isSaving,  ProfileSection? editingSection,  String? saveError,  bool justSaved)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileState():
-return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case _:
+return $default(_that.isSaving,_that.editingSection,_that.saveError,_that.justSaved);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +196,10 @@ return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  bool isEditing,  String? error,  WorkerProfile? profile)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isSaving,  ProfileSection? editingSection,  String? saveError,  bool justSaved)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileState() when $default != null:
-return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case _:
+return $default(_that.isSaving,_that.editingSection,_that.saveError,_that.justSaved);case _:
   return null;
 
 }
@@ -209,13 +211,15 @@ return $default(_that.isLoading,_that.isEditing,_that.error,_that.profile);case 
 
 
 class _ProfileState implements ProfileState {
-  const _ProfileState({this.isLoading = false, this.isEditing = false, this.error, this.profile});
+  const _ProfileState({this.isSaving = false, this.editingSection, this.saveError, this.justSaved = false});
   
 
-@override@JsonKey() final  bool isLoading;
-@override@JsonKey() final  bool isEditing;
-@override final  String? error;
-@override final  WorkerProfile? profile;
+@override@JsonKey() final  bool isSaving;
+@override final  ProfileSection? editingSection;
+/// Non-null when a save failed — consumed by ref.listen in the page.
+@override final  String? saveError;
+/// Flips to true after a successful save — consumed by ref.listen in the page.
+@override@JsonKey() final  bool justSaved;
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
@@ -227,16 +231,16 @@ _$ProfileStateCopyWith<_ProfileState> get copyWith => __$ProfileStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isEditing, isEditing) || other.isEditing == isEditing)&&(identical(other.error, error) || other.error == error)&&(identical(other.profile, profile) || other.profile == profile));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileState&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.editingSection, editingSection) || other.editingSection == editingSection)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,isEditing,error,profile);
+int get hashCode => Object.hash(runtimeType,isSaving,editingSection,saveError,justSaved);
 
 @override
 String toString() {
-  return 'ProfileState(isLoading: $isLoading, isEditing: $isEditing, error: $error, profile: $profile)';
+  return 'ProfileState(isSaving: $isSaving, editingSection: $editingSection, saveError: $saveError, justSaved: $justSaved)';
 }
 
 
@@ -247,7 +251,7 @@ abstract mixin class _$ProfileStateCopyWith<$Res> implements $ProfileStateCopyWi
   factory _$ProfileStateCopyWith(_ProfileState value, $Res Function(_ProfileState) _then) = __$ProfileStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, bool isEditing, String? error, WorkerProfile? profile
+ bool isSaving, ProfileSection? editingSection, String? saveError, bool justSaved
 });
 
 
@@ -264,13 +268,13 @@ class __$ProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of ProfileState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? isEditing = null,Object? error = freezed,Object? profile = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isSaving = null,Object? editingSection = freezed,Object? saveError = freezed,Object? justSaved = null,}) {
   return _then(_ProfileState(
-isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,isEditing: null == isEditing ? _self.isEditing : isEditing // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String?,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
-as WorkerProfile?,
+isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
+as bool,editingSection: freezed == editingSection ? _self.editingSection : editingSection // ignore: cast_nullable_to_non_nullable
+as ProfileSection?,saveError: freezed == saveError ? _self.saveError : saveError // ignore: cast_nullable_to_non_nullable
+as String?,justSaved: null == justSaved ? _self.justSaved : justSaved // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
