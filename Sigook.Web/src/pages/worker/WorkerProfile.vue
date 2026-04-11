@@ -129,6 +129,7 @@ export default {
         this.visitedTabs.push(this.$route.query.tab);
       }
     }
+    this.getProfile();
   },
 };
 </script>

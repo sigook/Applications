@@ -5,9 +5,11 @@ namespace Covenant.Common.Utils.Extensions;
 
 public static class HttpClientExtensions
 {
+    private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
+
     public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string url, T data)
     {
-        string dataAsString = JsonSerializer.Serialize(data);
+        string dataAsString = JsonSerializer.Serialize(data, Options);
         var content = new StringContent(dataAsString);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         return httpClient.PostAsync(url, content);
@@ -15,7 +17,7 @@ public static class HttpClientExtensions
 
     public static Task<HttpResponseMessage> PutAsJsonAsync<T>(this HttpClient httpClient, string url, T data)
     {
-        string dataAsString = JsonSerializer.Serialize(data);
+        string dataAsString = JsonSerializer.Serialize(data, Options);
         var content = new StringContent(dataAsString);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         return httpClient.PutAsync(url, content);
@@ -24,6 +26,6 @@ public static class HttpClientExtensions
     public static async Task<T> ReadAsJsonAsync<T>(this HttpContent content)
     {
         string dataAsString = await content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<T>(dataAsString);
+        return JsonSerializer.Deserialize<T>(dataAsString, Options);
     }
 }

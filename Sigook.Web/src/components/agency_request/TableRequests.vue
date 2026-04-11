@@ -517,12 +517,3 @@ export default {
   }
 };
 </script>
-<style lang="scss">
-tr {
-  cursor: pointer;
-}
-
-td {
-  vertical-align: middle !important;
-}
-</style>

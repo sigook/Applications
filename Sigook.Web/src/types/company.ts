@@ -1,4 +1,5 @@
 import { Location } from './common';
+import { RequestStatus } from '@/constants/enums';
 
 export enum CompanyStatus {
   Lead = 'Lead',
@@ -201,7 +202,7 @@ export interface CompanyRequestListItem {
   displayShift: string;
   workersQuantity: number;
   workersQuantityWorking: number;
-  status: string;
+  requestStatus: RequestStatus;
   isAsap: boolean;
   isDirectHiring: boolean;
   createdAt: string;
@@ -227,7 +228,8 @@ export interface CompanyRequestWorker {
   id: string;
   workerId: string;
   name: string;
-  status: string;
+  workerRequestStatus: number;
+  status?: string;
   profileImage: string;
   isSubcontractor: boolean;
   totalHoursApproved: number;

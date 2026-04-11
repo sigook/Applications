@@ -59,6 +59,7 @@ import menu from "@/security/menu";
 import roles from "@/security/roles";
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
+import { getCompanyProfile } from '@/api/companyApi';
 
 export default {
   data() {
@@ -88,12 +89,10 @@ export default {
       this.profileUrl = "/agency-profile";
     },
     async getCompanyInfo() {
-      await this.$store.dispatch("company/getProfile").then((response) => {
-        this.currentUser.fullName = response.businessName;
-        this.currentUser.profileImage = response.logo.pathFile;
-        this.profileUrl = "/company-profile";
-        this.$store.commit("company/setCompanyIsActive", response.active);
-      });
+      const response = await getCompanyProfile();
+      this.currentUser.fullName = response.businessName;
+      this.currentUser.profileImage = response.logo?.pathFile ?? null;
+      this.profileUrl = "/company-profile";
     },
     async getCompanyUserInfo() {
       await this.$store.dispatch("getUser").then((r) => {

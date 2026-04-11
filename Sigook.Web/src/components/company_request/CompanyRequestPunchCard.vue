@@ -50,7 +50,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <b-tag rounded :type="props.row.workerRequestStatus === 3 ? 'is-success' : 'is-danger'">{{ props.row.workerRequestStatus === 3 ? 'Booked' : 'Rejected' }}</b-tag>
             </template>
           </b-table-column>
         </template>
@@ -66,6 +66,7 @@
 import download from '@/mixins/downloadFileMixin';
 import { getRequestWorkers } from '@/api/companyApi';
 import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
+import { WorkerRequestStatusLabels } from "@/constants/enums";
 
 export default {
   props: ['request'],
@@ -125,7 +126,10 @@ export default {
       this.isLoading = true;
       getRequestWorkers(this.serverParams)
         .then((response) => {
-          this.rows = response.items;
+          this.rows = response.items.map(i => ({
+            ...i,
+            status: WorkerRequestStatusLabels[i.workerRequestStatus],
+          }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

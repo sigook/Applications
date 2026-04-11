@@ -141,7 +141,7 @@
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-field>
-              <b-tooltip label="Reject" type="is-dark" position="is-top">
+              <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-danger" outlined rounded icon-right="close"
                   v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
               </b-tooltip>
@@ -176,6 +176,7 @@ import {
   rejectAgencyRequestWorker,
   updateAgencyRequestWorkerStartDate,
 } from "@/api/agencyRequestApi";
+import { WorkerRequestStatusLabels } from "@/constants/enums";
 import { getWorkersReportDocument } from "@/api/agencyReportApi";
 import {
   getAgencyRequestWorkerNotes,
@@ -313,7 +314,11 @@ export default {
       this.isLoading = true;
       getAgencyRequestsWorkers(this.serverParams)
         .then((response) => {
-          this.rows = response.items.map(i => ({ ...i, actions: null }));
+          this.rows = response.items.map(i => ({
+            ...i,
+            status: WorkerRequestStatusLabels[i.workerRequestStatus],
+            actions: null,
+          }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

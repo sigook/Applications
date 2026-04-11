@@ -392,6 +392,7 @@ export interface AgencyRequestWorker {
   id: string;
   workerId: string;
   fullName?: string;
+  workerRequestStatus: number;
   status?: string;
   startWorking?: string;
   [key: string]: unknown;

@@ -21,7 +21,7 @@ import type {
 } from '@/types/company';
 
 // Profile
-export function getProfile(): Promise<CompanyProfileDetail> {
+export function getCompanyProfile(): Promise<CompanyProfileDetail> {
   return http.get('/api/CompanyProfile').then(r => r.data);
 }
 

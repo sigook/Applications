@@ -71,7 +71,7 @@
                             <agency-shift class="pl-0 fz-2 d-block"
                                           :requestId="item.requestId"
                                           :displayShift="item.displayShift" />
-                            <span class="fz-2 d-block">{{item.durationTerm | splitCapital}}</span>
+                            <span class="fz-2 d-block">{{ DurationTermLabels[item.durationTerm] }}</span>
                         </td>
                         <td>{{item.workerRate | currency}}</td>
                         <td>
@@ -92,8 +92,8 @@
                         <td>
                             <div class="capitalize is-inline-block v-middle w-100 text-right">
 
-                                <b-tooltip :label="$t(item.requestStatus)" type="is-dark">
-                                    <div class="dot-status" :class="'status-' + item.requestStatus.toLowerCase()"></div>
+                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark">
+                                    <div class="dot-status" :class="'status-' + RequestStatusLabels[item.requestStatus].toLowerCase()"></div>
                                 </b-tooltip>
 
                             </div>
@@ -143,10 +143,12 @@ import {
   updateAgencyRequestWorkerNote,
   deleteAgencyRequestWorkerNote,
 } from "@/api/agencyNoteApi";
-import { WorkerRequestStatus } from "@/constants/enums";
+import { WorkerRequestStatus, DurationTermLabels, RequestStatusLabels } from "@/constants/enums";
 export default {
     computed: {
         WorkerRequestStatus: () => WorkerRequestStatus,
+        DurationTermLabels: () => DurationTermLabels,
+        RequestStatusLabels: () => RequestStatusLabels,
     },
     data() {
         return {
