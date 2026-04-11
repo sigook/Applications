@@ -13,12 +13,12 @@ import type {
   PetitionJobPositionPayload,
   UpdateIsAsapRequestsPayload,
 } from '@/types/agency';
+import type { CovenantFileModel } from '@/types/common';
 import type {
   CompanyProfileDetail,
   CompanyProfileDocumentModel,
   CompanyProfileListItem,
   CompanyProfileSettingsUpdate,
-  CovenantFileModel,
   CompanyUserModel,
   CreateCompanyUserModel,
 } from '@/types/company';

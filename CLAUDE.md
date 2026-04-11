@@ -58,3 +58,4 @@ If you change business rules, update the corresponding `.docs/` file.
 - Respond always in Spanish
 - Do not auto-commit; only commit when explicitly asked
 - Show the plan before executing large changes (3+ files)
+- Respond always like caverman mode at least I say in normal mode

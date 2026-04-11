@@ -14,46 +14,69 @@ export interface PaginationFilter {
   searchTerm?: string;
 }
 
-export interface Location {
-  id: string;
-  fullAddress: string;
-  streetNumber: string;
-  streetName: string;
-  unit: string;
-  cityId: string;
-  postalCode: string;
-  latitude: number | null;
-  longitude: number | null;
-}
-
+// Matches backend CountryModel.
 export interface Country {
   id: string;
   value: string;
   code: string;
 }
 
+// Matches backend ProvinceSettingsModel.
 export interface ProvinceSettings {
   paidHolidays: boolean | null;
   overtimeStartsAfter: number | null;
 }
 
+// Matches backend ProvinceModel (Covenant.Common.Models.Location.ProvinceModel).
 export interface Province {
   id: string;
   value: string;
-  code: string;
-  country: Country;
-  settings: ProvinceSettings | null;
+  code?: string;
+  country?: Country | null;
+  settings?: ProvinceSettings | null;
 }
 
+// Matches backend CityModel (Covenant.Common.Models.Location.CityModel).
 export interface City {
   id: string;
   value: string;
-  code: string;
-  province: Province;
+  code?: string;
+  province?: Province | null;
 }
 
 export interface FileReference {
   pathFile: string;
+}
+
+// Matches backend CovenantFileModel (Covenant.Common.Models.CovenantFileModel).
+// Used for logos, identification files, resumes, etc.
+export interface CovenantFileModel {
+  id?: string;
+  pathFile?: string;
+  fileName?: string;
+  description?: string;
+  canDownload?: boolean;
+}
+
+// Matches backend LocationModel (Covenant.Common.Models.Location.LocationModel).
+// Base location payload used by agencies/companies.
+export interface LocationModel {
+  id?: string;
+  address?: string;
+  city?: City | null;
+  postalCode?: string;
+  isBilling?: boolean;
+}
+
+// Matches backend LocationDetailModel. Extends LocationModel with geocoding
+// and entrance/intersection fields.
+export interface LocationDetailModel extends LocationModel {
+  entrance?: string;
+  mainIntersection?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  formattedAddress?: string;
+  isUSA?: boolean;
 }
 
 // Matches API BaseModel<T> { Id, Value }
@@ -124,10 +147,13 @@ export interface UnsubscribeRequest {
   typeId: string;
 }
 
+// Mirrors backend UserNotificationListModel / UserNotificationUpdateModel.
+// GET returns the full list shape; PUT only needs id + the notification flags.
 export interface UserNotificationItem {
-  id: string;
-  name: string;
+  id: number;
+  title?: string;
+  description?: string;
   emailNotification: boolean;
-  pushNotification?: boolean;
-  [key: string]: unknown;
+  pushNotification: boolean;
+  smsNotification?: boolean;
 }
