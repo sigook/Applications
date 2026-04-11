@@ -1,5 +1,5 @@
 import http from '@/security/apiService';
-import type { TimeSheetListItem, TimeSheetModel } from '@/types/company';
+import type { TimeSheetListItem, TimeSheetModel, TimeSheetUsagesModel } from '@/types/company';
 
 // Get all timesheets for a worker on a request
 export function getAgencyWorkerTimeSheet(requestId: string, workerId: string): Promise<TimeSheetListItem[]> {
@@ -38,7 +38,7 @@ export function deleteAgencyWorkerTimeSheet(requestId: string, workerId: string,
   return http.delete(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`).then(() => {});
 }
 
-export function getAgencyTimeSheetUsages(requestId: string, workerId: string, id: string): Promise<Record<string, unknown>[]> {
+export function getAgencyTimeSheetUsages(requestId: string, workerId: string, id: string): Promise<TimeSheetUsagesModel> {
   return http
     .get(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}/Usages`)
     .then(r => r.data);

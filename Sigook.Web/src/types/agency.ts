@@ -1,4 +1,13 @@
-import { Location, City, Province } from './common';
+import type {
+  CatalogItem,
+  City,
+  CovenantFileModel,
+  LocationDetailModel,
+  LocationModel,
+  PaginatedList,
+  Province,
+  WsibGroup,
+} from './common';
 
 export enum AgencyType {
   Master = 1,
@@ -28,7 +37,7 @@ export interface AgencyLocation {
   agencyId: string;
   name: string;
   locationId: string;
-  location?: Location;
+  location?: LocationDetailModel;
   isBillingAddress: boolean;
   isActive: boolean;
 }
@@ -95,13 +104,18 @@ export interface AgencyDetail {
   masterAgency?: boolean;
 }
 
+// Mirrors backend AgencyContactInformationModel (Covenant.Common.Models.Agency).
 export interface AgencyContactInformation {
   id?: string;
+  title?: string;
   firstName?: string;
+  middleName?: string;
   lastName?: string;
-  email?: string;
-  phoneNumber?: string;
   position?: string;
+  mobileNumber?: string;
+  officeNumber?: string;
+  officeNumberExt?: number | null;
+  email?: string;
 }
 
 // Used by ProfileBilling.vue and the /api/Agency/Location endpoint.
@@ -136,13 +150,22 @@ export interface PersonnelAgencyItem {
   isPrimary: boolean;
 }
 
-// Used by CreateAgency.vue (POST /api/Agency)
+// Body for POST /api/Agency. Mirrors backend AgencyModel
+// (Covenant.Common.Models.Agency.AgencyModel).
 export interface CreateAgencyModel {
+  id?: string;
   fullName: string;
-  email: string;
+  hstNumber?: string;
+  businessNumber?: string;
+  webPage?: string;
   phonePrincipal?: string;
+  phonePrincipalExt?: number | null;
+  logo?: CovenantFileModel | null;
+  email: string;
   agencyType?: AgencyType;
-  [key: string]: unknown;
+  wsibGroup?: WsibGroup[];
+  locations?: LocationDetailModel[];
+  contactInformation?: AgencyContactInformation[];
 }
 
 // ---------------------------------------------------------------------------
@@ -150,16 +173,25 @@ export interface CreateAgencyModel {
 // ---------------------------------------------------------------------------
 
 // Filter for paginated worker list (agency view)
+// Mirrors backend GetWorkerProfileFilter (Covenant.Common.Models.Worker)
 export interface AgencyWorkerFilter {
   pageIndex?: number;
   pageSize?: number;
-  searchTerm?: string;
-  features?: string[];
-  createdAtFrom?: string | null;
-  createdAtTo?: string | null;
   isDescending?: boolean;
   sortBy?: number;
-  [key: string]: unknown;
+  fullName?: string;
+  phone?: string;
+  numberId?: number | string;
+  externalId?: string;
+  requestId?: string;
+  location?: string;
+  skills?: string;
+  features?: number[];
+  createdAtFrom?: string | null;
+  createdAtTo?: string | null;
+  companyProfileId?: string;
+  approvedToWork?: boolean;
+  isSubcontractor?: boolean | null;
 }
 
 // Item returned by GET /api/AgencyWorkerProfile (paginated list)
@@ -191,22 +223,23 @@ export interface UpdateWorkerEmailModel {
   newEmail: string;
 }
 
-// Tax/external id payloads — they reuse the worker entity itself
+// Tax / external id update payload.
+// The callers pass the full `WorkerProfile` object; the backend reads only the
+// field relevant to each endpoint from `WorkerProfileDetailModel`.
 export interface UpdateWorkerProfileFieldsPayload {
   id: string;
-  externalId?: string;
-  workerProfileTaxCategoryId?: string;
-  taxRate?: number;
-  [key: string]: unknown;
+  externalId?: string | null;
+  workerProfileTaxCategoryId?: string | null;
+  taxRate?: number | null;
 }
 
-// Holidays
+// Holiday assigned to a worker profile.
+// Mirrors backend WorkerProfileHolidayModel (Covenant.Common.Models.Worker).
 export interface AgencyWorkerHoliday {
-  id?: string;
+  workerProfileId?: string;
+  holidayId?: string;
   date: string;
-  name?: string;
-  hours?: number;
-  [key: string]: unknown;
+  statPaidWorker?: number;
 }
 
 export interface AddNewHolidayPayload {
@@ -214,33 +247,56 @@ export interface AddNewHolidayPayload {
   date: string;
 }
 
-// Request history (item returned for the Worker → Requests tab)
+// Request history item returned for the Worker → Requests tab.
+// Mirrors backend RequestListModel (Covenant.Common.Models.Request).
 export interface AgencyWorkerRequestHistoryItem {
   id: string;
-  jobPosition?: string;
-  startDate?: string;
-  endDate?: string;
-  status?: string;
-  [key: string]: unknown;
+  numberId: number;
+  jobTitle: string;
+  companyFullName: string;
+  agencyFullName?: string;
+  agencyLogo?: string;
+  logo?: string;
+  location: string;
+  entrance?: string;
+  createdAt: string;
+  finishAt?: string | null;
+  startWorking: string;
+  finishWorking: string;
+  workersQuantity: number;
+  workersQuantityWorking: number;
+  displayShift?: string;
+  isAsap: boolean;
+  isDirectHiring: boolean;
+  workerApprovedToWork?: string;
+  status: string;
+  companyId: string;
 }
 
 // ---------------------------------------------------------------------------
 // Agency-managed company (agency back-office actions on companies)
 // ---------------------------------------------------------------------------
 
+// Filter for GET /api/v2/AgencyCompanyProfile. Mirrors backend GetCompanyForAgencyFilter.
 export interface AgencyCompanyFilter {
   pageIndex?: number;
   pageSize?: number;
-  searchTerm?: string;
-  companyStatus?: string;
-  industryId?: string;
   isDescending?: boolean;
   sortBy?: number;
+  businessInfo?: string;
+  contactInfo?: string;
+  industry?: string;
+  createdBy?: string;
   createdAtFrom?: string | null;
   createdAtTo?: string | null;
-  [key: string]: unknown;
+  updatedBy?: string;
+  updatedAtFrom?: string | null;
+  updatedAtTo?: string | null;
+  companyStatuses?: string[];
+  salesRepresentative?: string;
 }
 
+// Item returned by GET /api/v2/AgencyCompanyProfile.
 export interface AgencyCompanyListItem {
   id: string;
   fullName: string;
@@ -251,43 +307,45 @@ export interface AgencyCompanyListItem {
   createdAt?: string;
 }
 
+// Contact person attached to a company.
+// Mirrors backend CompanyProfileContactPersonModel.
 export interface AgencyCompanyContactPerson {
   id?: string;
+  companyProfileId?: string;
+  title?: string;
   firstName: string;
   middleName?: string;
   lastName: string;
-  email: string;
   position?: string;
   mobileNumber?: string;
   officeNumber?: string;
   officeNumberExt?: number | null;
-  isPrimaryContact?: boolean;
-  [key: string]: unknown;
+  email: string;
 }
 
-export interface AgencyCompanyLocationModel {
-  id?: string;
-  address?: string;
-  city?: { id: string; value: string };
-  province?: { id: string; value: string; code: string };
-  postalCode?: string;
-  isBilling?: boolean;
-  formattedAddress?: string;
-  [key: string]: unknown;
+// Company profile location.
+// Mirrors backend CompanyProfileLocationDetailModel (extends LocationDetailModel).
+export interface AgencyCompanyLocationModel extends LocationDetailModel {
+  province?: Province;
 }
 
+// Company job position rate.
+// Mirrors backend CompanyProfileJobPositionRateModel.
 export interface AgencyCompanyJobPosition {
   id?: string;
   companyProfileId?: string;
-  jobTitle?: string;
+  jobPosition?: CatalogItem | null;
+  rate?: number;
+  asapRate?: number | null;
+  otherJobPosition?: string;
   workerRate?: number;
-  agencyRate?: number;
-  nightShiftRate?: number | null;
-  holidayRate?: number | null;
-  overtimeRate?: number | null;
-  currency?: string;
-  isActive?: boolean;
-  [key: string]: unknown;
+  workerRateMin?: number | null;
+  workerRateMax?: number | null;
+  description?: string;
+  createdAt?: string | null;
+  createdBy?: string;
+  value?: string;
+  displayShift?: string;
 }
 
 export interface VaccinationRequiredModel {
@@ -295,27 +353,18 @@ export interface VaccinationRequiredModel {
   vaccinationRequiredComments?: string;
 }
 
+// Body for PUT /api/CompanyProfile/{id}/InvoiceNotes.
+// Mirrors backend CompanyProfileInvoiceNotesModel.
 export interface InvoiceNotesModel {
-  notes?: string;
-  [key: string]: unknown;
+  htmlNotes?: string;
 }
 
+// Recipient for company invoices.
+// Mirrors backend CompanyProfileInvoiceRecipientModel.
 export interface InvoiceRecipientModel {
   id?: string;
-  email: string;
   name?: string;
-  [key: string]: unknown;
-}
-
-export interface CompanyProfileUserPayload {
-  companyId: string;
-  user?: Record<string, unknown>;
-  userId?: string;
-}
-
-export interface CompanySettingsPayload {
-  companyId: string;
-  settings: Record<string, unknown>;
+  email: string;
 }
 
 export interface BulkUploadPayload {
@@ -323,103 +372,291 @@ export interface BulkUploadPayload {
   file: File;
 }
 
-export interface CompanyProvinceWithTaxes {
-  id: string;
-  province: string;
+// Response item of GET /api/v2/AgencyCompanyProfile/{id}/company-provinces-taxes.
+// Mirrors backend ProvinceModel (with settings/country populated).
+export interface CompanyProvinceWithTaxes extends Province {
   taxes?: { name: string; rate: number }[];
-  [key: string]: unknown;
 }
 
 // ---------------------------------------------------------------------------
 // Agency requests (job orders)
 // ---------------------------------------------------------------------------
 
+// Filter for the paginated list of agency requests (job orders).
+// Mirrors backend GetRequestForAgencyFilter (Covenant.Common.Models.Request).
 export interface AgencyRequestFilter {
   pageIndex?: number;
   pageSize?: number;
-  searchTerm?: string;
-  status?: string | number;
   isDescending?: boolean;
   sortBy?: number;
-  startAt?: string | null;
-  endAt?: string | null;
+  numberId?: number | string;
+  companyFullName?: string;
+  location?: string;
+  jobTitle?: string;
+  displayRecruiters?: string;
+  statuses?: number[];
+  onlyMine?: boolean;
+  recruiter?: string;
+  salesRepresentative?: string;
+  lastUpdateFrom?: string | null;
+  lastUpdateTo?: string | null;
+  startAtFrom?: string | null;
+  startAtTo?: string | null;
+  rateFrom?: number | string | null;
+  rateTo?: number | string | null;
   companyId?: string;
-  jobPositionId?: string;
-  [key: string]: unknown;
+  agencyId?: string;
+  filter?: string;
 }
 
+// Item returned by GET /api/AgencyRequest. Mirrors AgencyRequestListModel.
 export interface AgencyRequestListItem {
   id: string;
-  numberId?: number;
-  jobTitle?: string;
-  status?: string;
-  isAsap?: boolean;
-  workersQuantity?: number;
-  workersQuantityWorking?: number;
-  startAt?: string;
-  endAt?: string;
-  [key: string]: unknown;
+  agencyId: string;
+  numberId: number;
+  jobTitle: string;
+  billingTitle?: string;
+  createdAt: string;
+  updatedAt?: string | null;
+  finishAt?: string | null;
+  startAt?: string | null;
+  address?: string;
+  city?: string;
+  provinceName?: string;
+  postalCode?: string;
+  entrance?: string;
+  companyFullName?: string;
+  companyProfileId: string;
+  requestStatus: number;
+  durationTerm: number;
+  employmentType: number;
+  workersQuantity: number;
+  workersQuantityWorking: number;
+  isAsap: boolean;
+  workerRate?: number | null;
+  workerSalary?: number | null;
+  displayRecruiters?: string;
+  displayShift?: string;
+  salesRepresentative?: string;
+  notesCount: number;
+  vaccinationRequired: boolean;
+  punchCardOptionEnabled: boolean;
+  hasPermissionToSeeInternalOrders: boolean;
+  location: string;
+  locationAddress: string;
 }
 
+// Detail returned by GET /api/AgencyRequest/{id}. Mirrors AgencyRequestDetailModel.
 export interface AgencyRequestDetail {
   id: string;
-  numberId?: number;
-  jobTitle?: string;
-  workersQuantity?: number;
-  status?: string;
-  isAsap?: boolean;
-  punchCardVisibilityStatusInApp?: boolean;
-  durationBreak?: string;
-  [key: string]: unknown;
+  numberId: number;
+  jobTitle: string;
+  billingTitle?: string;
+  companyLogo?: string;
+  fullName?: string;
+  companyProfileId: string;
+  description?: string;
+  requirements?: string;
+  responsibilities?: string;
+  jobLocation?: LocationDetailModel | null;
+  workersQuantity: number;
+  workersQuantityWorking: number;
+  jobPositionId?: string | null;
+  jobPosition?: string;
+  holidayIsPaid: boolean;
+  breakIsPaid: boolean;
+  status: string;
+  cancellationDetail?: string;
+  createdAt: string;
+  createdBy?: string;
+  startAt?: string | null;
+  finishAt?: string | null;
+  invitationSentItAt?: string | null;
+  durationBreak: string;
+  incentive?: number | null;
+  incentiveDescription?: string;
+  agencyRate?: number | null;
+  workerRate?: number | null;
+  workerSalary?: number | null;
+  durationTerm: number;
+  employmentType: number;
+  displayRecruiters?: string;
+  displayShift?: string;
+  isAsap: boolean;
+  vaccinationRequired?: boolean | null;
+  punchCardOptionEnabled: boolean;
+  internalRequirements?: string;
+  salesRepresentativeId?: string | null;
+  companyUserIds?: string[];
 }
 
+// Payload for POST/PUT /api/AgencyRequest.
+// Mirrors backend RequestCreateModel.
+export interface CreateAgencyRequestModel {
+  jobTitle: string;
+  billingTitle?: string;
+  workersQuantity: number;
+  description?: string;
+  durationBreak: string;
+  breakIsPaid: boolean;
+  incentive?: number | null;
+  incentiveDescription?: string;
+  requirements?: string;
+  internalRequirements?: string;
+  responsibilities?: string;
+  isAsap: boolean;
+  jobIsOnBranchOffice: boolean;
+  anotherLocation?: LocationDetailModel | null;
+  locationId?: string | null;
+  jobPositionRateId?: string | null;
+  durationTerm: number;
+  employmentType: number;
+  companyProfileId: string;
+  agencyId: string;
+  startAt: string;
+  finishAt?: string | null;
+  shift?: RequestShiftModel | null;
+  punchCardOptionEnabled: boolean;
+  workerSalary?: number | null;
+  salesRepresentativeId?: string | null;
+  companyUserIds?: string[];
+}
+
+// Payload for PUT /api/AgencyRequest/{id}/Shift. Mirrors backend ShiftModel.
+export interface RequestShiftModel {
+  sunday?: boolean | null;
+  monday?: boolean | null;
+  tuesday?: boolean | null;
+  wednesday?: boolean | null;
+  thursday?: boolean | null;
+  friday?: boolean | null;
+  saturday?: boolean | null;
+  sundayStart?: string | null;
+  sundayFinish?: string | null;
+  mondayStart?: string | null;
+  mondayFinish?: string | null;
+  tuesdayStart?: string | null;
+  tuesdayFinish?: string | null;
+  wednesdayStart?: string | null;
+  wednesdayFinish?: string | null;
+  thursdayStart?: string | null;
+  thursdayFinish?: string | null;
+  fridayStart?: string | null;
+  fridayFinish?: string | null;
+  saturdayStart?: string | null;
+  saturdayFinish?: string | null;
+  comments?: string;
+}
+
+// Payload for PUT /api/AgencyRequest/{id}/Cancel. Mirrors RequestCancellationDetailModel.
 export interface CancelRequestPayload {
   cancellationReasonId: string;
   otherCancellationReason?: string;
 }
 
+// Filter for GET /api/AgencyRequest/{requestId}/Worker.
+// Mirrors backend GetWorkersRequestFilter.
 export interface AgencyRequestWorkerFilter {
   requestId: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
   sortBy?: number;
-  searchTerm?: string;
-  [key: string]: unknown;
+  numberId?: number | string;
+  name?: string;
+  phone?: string;
+  socialInsurance?: string;
+  externalId?: string;
+  createdBy?: string;
+  rejectedBy?: string;
+  statuses?: number[];
+  startWorkingFrom?: string | null;
+  startWorkingTo?: string | null;
+  createdAtFrom?: string | null;
+  createdAtTo?: string | null;
+  rejectedAtFrom?: string | null;
+  rejectedAtTo?: string | null;
 }
 
+// Worker assigned to a request. Mirrors backend AgencyWorkerRequestModel.
 export interface AgencyRequestWorker {
   id: string;
+  numberId: number;
+  requestId: string;
   workerId: string;
-  fullName?: string;
+  workerProfileId: string;
+  name: string;
   workerRequestStatus: number;
-  status?: string;
-  startWorking?: string;
-  [key: string]: unknown;
+  rejectComments?: string;
+  rejectedBy?: string;
+  rejectedAt?: string | null;
+  profileImage?: string;
+  address?: string;
+  approvedToWork: boolean;
+  isSubcontractor: boolean;
+  socialInsurance?: string;
+  dueDate?: string | null;
+  socialInsuranceExpire: boolean;
+  mobileNumber?: string;
+  notesCount: number;
+  startWorking?: string | null;
+  createdBy?: string;
+  createdAt: string;
+  totalHoursApproved: number;
+  totalHoursWorker: number;
+  externalId?: string;
 }
 
+// Body for POST /api/AgencyRequest/{id}/Worker/{workerId}/Book and
+// PUT /api/AgencyRequest/{id}/Worker/{id}. Mirrors AgencyBookWorkerModel.
 export interface BookWorkerModel {
-  startDate: string;
-  [key: string]: unknown;
+  startWorking: string;
 }
 
+// Body for PUT /api/AgencyRequest/{id}/Worker/{id}/Reject. Mirrors CommentsModel.
 export interface RejectWorkerModel {
   comments?: string;
-  [key: string]: unknown;
 }
 
+// Filter for GET /api/AgencyRequest/{requestId}/Applicant.
+// Mirrors backend GetRequestApplicantFilter (+ requestId used client-side to route).
 export interface AgencyRequestApplicantFilter {
   requestId: string;
   pageIndex?: number;
   pageSize?: number;
-  [key: string]: unknown;
+  isDescending?: boolean;
+  sortBy?: number;
+  name?: string;
+  phone?: string;
+  createdBy?: string;
+  createdAtFrom?: string | null;
+  createdAtTo?: string | null;
 }
 
+// Body for POST /api/AgencyRequest/{requestId}/Applicant. Mirrors RequestApplicantModel.
+export interface CreateRequestApplicantModel {
+  workerProfileId?: string | null;
+  candidateId?: string | null;
+  comments?: string;
+}
+
+// Item returned for an applicant. Mirrors RequestApplicantDetailModel.
 export interface AgencyRequestApplicant {
   id: string;
-  workerId?: string;
-  fullName?: string;
-  [key: string]: unknown;
+  workerProfileId?: string | null;
+  candidateId?: string | null;
+  workerId?: string | null;
+  name?: string;
+  phoneNumber?: string;
+  email?: string;
+  comments?: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
+// Body for PUT /api/AgencyRequest/{requestId}/Applicant/{id}. Mirrors CommentsModel.
+export interface UpdateApplicantCommentsPayload {
+  comments?: string;
 }
 
 export interface AgencyRequestRecruiterModel {
@@ -427,14 +664,24 @@ export interface AgencyRequestRecruiterModel {
 }
 
 export interface AgencyRequestSkillModel {
+  id?: string | null;
   skill: string;
 }
 
+// Contact person attached to a request (RequestedBy / ReportTo endpoints).
+// Mirrors backend RequestContactPersonModel.
 export interface AgencyRequestPersonItem {
   id: string;
+  title?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+}
+
+// Recruiter attached to a request. Mirrors RequestRecruiterDetailModel.
+export interface AgencyRequestRecruiterItem {
+  recruiterId: string;
   email?: string;
-  name?: string;
-  [key: string]: unknown;
 }
 
 // POST /api/AgencyCompanyProfile/{profileId}/JobPosition/Petition
@@ -460,13 +707,14 @@ export interface NoteModel {
   color?: string;
 }
 
+// Note item returned by any GET /api/.../Note endpoint.
+// Mirrors backend NoteModel (Covenant.Common.Models.NoteModel).
 export interface NoteItem {
   id: string;
   note: string;
   color?: string;
   createdAt?: string;
   createdBy?: string;
-  [key: string]: unknown;
 }
 
 export interface NotePagination {
@@ -474,21 +722,78 @@ export interface NotePagination {
   size: number;
 }
 
-export interface CreateNoteResponse {
-  id: string;
-  createdAt?: string;
-  createdBy?: string;
-  [key: string]: unknown;
-}
+// Response returned by POST /api/.../Note. Same shape as NoteModel / NoteItem.
+export type CreateNoteResponse = NoteItem;
 
 // ---------------------------------------------------------------------------
 // Agency reports
 // ---------------------------------------------------------------------------
 
+// Filter used by agency accounting reports endpoints.
+// Mirrors backend HoursWorkedFilter (+ the weekly-payroll `weekEnding` shortcut).
 export interface AgencyReportFilter {
-  weekEnding?: string;
+  pageIndex?: number;
+  pageSize?: number;
+  isDescending?: boolean;
   startDate?: string;
   endDate?: string;
   companyId?: string;
-  [key: string]: unknown;
+  jobPositionRateId?: string;
+  weekEnding?: string;
+}
+
+// Response shape of GET /api/agency/accounting/reports/hours-worked.
+// Mirrors backend HoursWorkedResume.
+export interface HoursWorkedResume {
+  totalRegularHours: number;
+  totalOvertimeHours: number;
+  totalHolidayHours: number;
+  totalNightHours: number;
+  totalHours: number;
+  totalPayRegular: number;
+  totalPayOvertime: number;
+  totalPayHoliday: number;
+  totalPayNight: number;
+  totalPay: number;
+  detail: HoursWorkedResponseItem[];
+}
+
+// Loose detail row inside HoursWorkedResume.detail (backend HoursWorkedResponse).
+export interface HoursWorkedResponseItem {
+  workerFullName?: string;
+  jobTitle?: string;
+  totalHours?: number;
+  totalPay?: number;
+  regularHours?: number;
+  overtimeHours?: number;
+  holidayHours?: number;
+  nightHours?: number;
+}
+
+// Item returned by GET /api/agency/accounting/reports/{companyId}/job-positions.
+// Mirrors backend CompanyProfileJobPositionRateModel.
+export interface AgencyReportJobPositionItem {
+  id?: string;
+  companyProfileId?: string;
+  jobPosition?: { id: string; value: string } | null;
+  rate: number;
+  asapRate?: number | null;
+  otherJobPosition?: string;
+  workerRate: number;
+  workerRateMin?: number | null;
+  workerRateMax?: number | null;
+  description?: string;
+  createdAt?: string | null;
+  createdBy?: string;
+  value?: string;
+  displayShift?: string;
+}
+
+// Payment report row returned by GET /api/agency/accounting/reports/payments.
+// Mirrors backend WeeklyPayrollModel.
+export interface WeeklyPayrollItem {
+  totalNet: number;
+  weekEnding: string;
+  numberOfPayStubs: number;
+  displayWeekEnding: string;
 }

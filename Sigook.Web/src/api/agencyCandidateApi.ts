@@ -3,6 +3,7 @@ import type { PaginatedList } from '@/types/common';
 import type {
   Candidate,
   CandidateDocument,
+  CreateCandidateDocumentPayload,
   AgencyCandidateFilter,
   CreateCandidateModel,
   CandidatePhoneNumberModel,
@@ -25,7 +26,7 @@ export function createAgencyCandidate(model: CreateCandidateModel): Promise<{ id
   return http.post('/api/AgencyCandidate', model).then(r => r.data);
 }
 
-export function updateAgencyCandidate(candidateId: string, model: Partial<Candidate>): Promise<void> {
+export function updateAgencyCandidate(candidateId: string, model: CreateCandidateModel): Promise<void> {
   return http.put(`/api/AgencyCandidate/${candidateId}`, model).then(() => {});
 }
 
@@ -69,11 +70,11 @@ export function deleteCandidateSkill(candidateId: string, skillId: string): Prom
 // Documents
 // ---------------------------------------------------------------------------
 
-export function getCandidateDocuments(candidateId: string): Promise<CandidateDocument[]> {
+export function getCandidateDocuments(candidateId: string): Promise<PaginatedList<CandidateDocument>> {
   return http.get(`/api/AgencyCandidate/${candidateId}/Document`).then(r => r.data);
 }
 
-export function addCandidateDocument(candidateId: string, model: Record<string, unknown> | FormData): Promise<{ id: string }> {
+export function addCandidateDocument(candidateId: string, model: CreateCandidateDocumentPayload): Promise<CandidateDocument> {
   return http.post(`/api/AgencyCandidate/${candidateId}/Document`, model).then(r => r.data);
 }
 

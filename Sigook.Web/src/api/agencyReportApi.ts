@@ -1,8 +1,17 @@
 import http from '@/security/apiService';
-import type { AgencyReportFilter } from '@/types/agency';
+import type { PaginatedList } from '@/types/common';
+import type {
+  AgencyReportFilter,
+  AgencyReportJobPositionItem,
+  HoursWorkedResume,
+  WeeklyPayrollItem,
+} from '@/types/agency';
+
+// Query-string values passed to the generic blob report downloader.
+export type ReportQueryParams = Record<string, string | number | boolean | null | undefined>;
 
 // Generic blob report downloader (used by Export.vue and Companies.vue)
-export function downloadAgencyReport(url: string, filter: Record<string, unknown>): Promise<Blob> {
+export function downloadAgencyReport(url: string, filter: ReportQueryParams): Promise<Blob> {
   return http.get(url, { params: { ...filter }, responseType: 'blob' }).then(r => r.data);
 }
 
@@ -17,14 +26,14 @@ export function getWorkersReportDocument(requestId: string): Promise<Blob> {
 }
 
 // Job positions hours worked report (data, not blob)
-export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyId: string }): Promise<Record<string, unknown>[]> {
+export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyId: string }): Promise<AgencyReportJobPositionItem[]> {
   return http
     .get(`/api/agency/accounting/reports/${filter.companyId}/job-positions`, { params: { ...filter } })
     .then(r => r.data);
 }
 
 // Hours worked report (data, not blob)
-export function getHoursWorkedReport(filter: AgencyReportFilter): Promise<Record<string, unknown>> {
+export function getHoursWorkedReport(filter: AgencyReportFilter): Promise<HoursWorkedResume> {
   return http.get('/api/agency/accounting/reports/hours-worked', { params: { ...filter } }).then(r => r.data);
 }
 
@@ -43,7 +52,7 @@ export function getCraPayrollReport(filter: AgencyReportFilter): Promise<Blob> {
 }
 
 // Payment report (data, not blob)
-export function getPaymentReport(filter: AgencyReportFilter): Promise<Record<string, unknown>> {
+export function getPaymentReport(filter: AgencyReportFilter): Promise<PaginatedList<WeeklyPayrollItem>> {
   return http.get('/api/agency/accounting/reports/payments', { params: { ...filter } }).then(r => r.data);
 }
 

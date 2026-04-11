@@ -1,9 +1,11 @@
 import http from '@/security/apiService';
-import type { PaginatedList } from '@/types/common';
 import type {
   AgencyInvoiceFilter,
-  AgencyInvoiceListItem,
+  AgencyInvoiceListResponse,
+  InvoiceSummaryModel,
+  CreateAgencyInvoiceModel,
   DeleteInvoicePayload,
+  PayStubDeleteWarningItem,
   SendInvoiceEmailPayload,
 } from '@/types/accounting';
 
@@ -11,16 +13,16 @@ import type {
 // Invoices CRUD
 // ---------------------------------------------------------------------------
 
-export function getAgencyInvoices(filter: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
+export function getAgencyInvoices(filter: AgencyInvoiceFilter): Promise<AgencyInvoiceListResponse> {
   return http.get('/api/agency/accounting/Invoices', { params: { ...filter } }).then(r => r.data);
 }
 
-export function previewAgencyInvoice(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+export function previewAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<InvoiceSummaryModel> {
   return http.post('/api/agency/accounting/Invoices/Preview', payload).then(r => r.data);
 }
 
-export function createAgencyInvoice(payload: Record<string, unknown>): Promise<{ id: string }> {
-  return http.post('/api/agency/accounting/Invoices', payload).then(r => r.data);
+export function createAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<void> {
+  return http.post('/api/agency/accounting/Invoices', payload).then(() => {});
 }
 
 export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void> {
@@ -41,7 +43,7 @@ export function sendInvoiceVerificationCode(invoiceId: string): Promise<void> {
   return http.post(`/api/v4/Accounting/Invoice/${invoiceId}/SendVerificationCode`).then(() => {});
 }
 
-export function getPayStubsByInvoice(invoiceId: string): Promise<Record<string, unknown>[]> {
+export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWarningItem[]> {
   return http.get(`/api/v4/Accounting/Invoice/${invoiceId}/PayStub`).then(r => r.data);
 }
 

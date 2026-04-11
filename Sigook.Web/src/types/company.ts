@@ -1,4 +1,4 @@
-import { Location } from './common';
+import type { CovenantFileModel, LocationDetailModel } from './common';
 import { RequestStatus } from '@/constants/enums';
 
 export enum CompanyStatus {
@@ -36,7 +36,7 @@ export interface CompanyProfileLocation {
   companyProfileId: string;
   name: string;
   locationId: string;
-  location?: Location;
+  location?: LocationDetailModel;
   isActive: boolean;
 }
 
@@ -112,14 +112,6 @@ export interface CompanyProfileDetail {
   industry: CompanyProfileIndustryDetail;
   salesRepresentativeId: string | null;
   overtimeStartsAfter: number;
-}
-
-export interface CovenantFileModel {
-  id: string;
-  pathFile: string;
-  fileName: string;
-  description: string;
-  canDownload: boolean;
 }
 
 // Matches CompanyProfileDocumentModel (extends CovenantFileModel)
@@ -276,6 +268,13 @@ export interface TimeSheetModel {
   missingRateAgency?: number;
   reimbursements?: number;
   reimbursementsDescription?: string;
+}
+
+// Response shape of GET /api/v2/AgencyRequest/{}/Worker/{}/TimeSheet/{}/Usages.
+// Mirrors backend TimeSheetUsagesModel — single object, not an array.
+export interface TimeSheetUsagesModel {
+  invoiceNumber?: number | null;
+  payStubNumber?: string | null;
 }
 
 export interface ClockInModel {

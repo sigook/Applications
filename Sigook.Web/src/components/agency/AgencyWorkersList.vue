@@ -71,7 +71,7 @@ export default {
         confirmText: 'Book',
         onConfirm: async (value, dialog) => {
           this.isLoading = true;
-          await bookAgencyRequestWorker(this.requestId, this.workerId, { startDate: value }).then(() => {
+          await bookAgencyRequestWorker(this.requestId, this.workerId, { startWorking: value }).then(() => {
             this.isLoading = false;
             this.showAlertSuccess(this.$t('Booked'));
             this.$emit('workerBooked');

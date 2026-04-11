@@ -3,8 +3,12 @@ import type { PaginatedList } from '@/types/common';
 import type {
   AgencyPayStubFilter,
   AgencyPayStubListItem,
+  CreatePayStubPayload,
+  CreateSkipPayrollNumberPayload,
+  PayrollSubContractorListItem,
   SkipPayrollNumberItem,
   SubcontractorPayrollFilter,
+  WorkerReadyForPayStubModel,
 } from '@/types/accounting';
 
 // ---------------------------------------------------------------------------
@@ -29,27 +33,27 @@ export function sendPayStubEmail(payStubId: string): Promise<void> {
   return http.post(`/api/v4/Accounting/PayStub/${payStubId}/Document/Email`).then(() => {});
 }
 
-export function createAgencyPayStub(payload: Record<string, unknown>): Promise<{ id: string }> {
-  return http.post('/api/v4/accounting/PayStub', payload).then(r => r.data);
+export function createAgencyPayStub(payload: CreatePayStubPayload): Promise<void> {
+  return http.post('/api/v4/accounting/PayStub', payload).then(() => {});
 }
 
 // ---------------------------------------------------------------------------
 // Generation
 // ---------------------------------------------------------------------------
 
-export function getWorkersReadyForPayStub(): Promise<Record<string, unknown>[]> {
+export function getWorkersReadyForPayStub(): Promise<WorkerReadyForPayStubModel[]> {
   return http.get('/api/agency/accounting/PayStubs/WorkersReadyForPayStub').then(r => r.data);
 }
 
-export function generatePayStubs(workerIds: string[]): Promise<Record<string, unknown>> {
-  return http.post('/api/agency/accounting/PayStubs/generate', workerIds).then(r => r.data);
+export function generatePayStubs(workerIds: string[]): Promise<void> {
+  return http.post('/api/agency/accounting/PayStubs/generate', workerIds).then(() => {});
 }
 
 // ---------------------------------------------------------------------------
 // Subcontractors report
 // ---------------------------------------------------------------------------
 
-export function getPayrollSubcontractors(filter: SubcontractorPayrollFilter): Promise<Record<string, unknown>[]> {
+export function getPayrollSubcontractors(filter: SubcontractorPayrollFilter): Promise<PaginatedList<PayrollSubContractorListItem>> {
   return http.get('/api/agency/accounting/reports/subcontractors', { params: { ...filter } }).then(r => r.data);
 }
 
@@ -70,6 +74,6 @@ export function getSkipPayrollNumbers(filter: { searchTerm?: string }): Promise<
   return http.get('/api/agency/accounting/PayStubs/skip-payroll-number', { params: { ...filter } }).then(r => r.data);
 }
 
-export function addSkipPayrollNumber(payload: { value: number; reason?: string }): Promise<{ id: string }> {
-  return http.post('/api/agency/accounting/PayStubs/skip-payroll-number', payload).then(r => r.data);
+export function addSkipPayrollNumber(payload: CreateSkipPayrollNumberPayload): Promise<void> {
+  return http.post('/api/agency/accounting/PayStubs/skip-payroll-number', payload).then(() => {});
 }
