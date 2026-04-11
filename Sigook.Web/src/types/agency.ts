@@ -342,6 +342,7 @@ export interface AgencyCompanyJobPosition {
   workerRateMin?: number | null;
   workerRateMax?: number | null;
   description?: string;
+  shift?: RequestShiftModel | null;
   createdAt?: string | null;
   createdBy?: string;
   value?: string;
@@ -768,25 +769,6 @@ export interface HoursWorkedResponseItem {
   overtimeHours?: number;
   holidayHours?: number;
   nightHours?: number;
-}
-
-// Item returned by GET /api/agency/accounting/reports/{companyId}/job-positions.
-// Mirrors backend CompanyProfileJobPositionRateModel.
-export interface AgencyReportJobPositionItem {
-  id?: string;
-  companyProfileId?: string;
-  jobPosition?: { id: string; value: string } | null;
-  rate: number;
-  asapRate?: number | null;
-  otherJobPosition?: string;
-  workerRate: number;
-  workerRateMin?: number | null;
-  workerRateMax?: number | null;
-  description?: string;
-  createdAt?: string | null;
-  createdBy?: string;
-  value?: string;
-  displayShift?: string;
 }
 
 // Payment report row returned by GET /api/agency/accounting/reports/payments.

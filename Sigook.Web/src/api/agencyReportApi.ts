@@ -2,7 +2,7 @@ import http from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
 import type {
   AgencyReportFilter,
-  AgencyReportJobPositionItem,
+  AgencyCompanyJobPosition,
   HoursWorkedResume,
   WeeklyPayrollItem,
 } from '@/types/agency';
@@ -26,7 +26,7 @@ export function getWorkersReportDocument(requestId: string): Promise<Blob> {
 }
 
 // Job positions hours worked report (data, not blob)
-export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyId: string }): Promise<AgencyReportJobPositionItem[]> {
+export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyId: string }): Promise<AgencyCompanyJobPosition[]> {
   return http
     .get(`/api/agency/accounting/reports/${filter.companyId}/job-positions`, { params: { ...filter } })
     .then(r => r.data);
