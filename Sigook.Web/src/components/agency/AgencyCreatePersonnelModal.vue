@@ -27,6 +27,7 @@
 
 
 <script lang="ts">
+import { createAgencyPersonnel } from "@/api/agencyApi";
 
 export default {
   name: "CompanyUsersForm",
@@ -51,7 +52,7 @@ export default {
     },
     createUser() {
       this.isLoading = true;
-      this.$store.dispatch('agency/createAgencyPersonnel', this.user)
+      createAgencyPersonnel(this.user)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateUsers")

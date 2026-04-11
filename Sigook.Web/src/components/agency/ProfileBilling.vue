@@ -41,7 +41,12 @@
 </template>
 
 <script lang="ts">
-
+import {
+  getAgencyLocations,
+  createAgencyLocation,
+  updateAgencyLocation,
+  deleteAgencyLocation,
+} from "@/api/agencyApi";
 import AddressComponent from "@/components/Address.vue";
 
 export default {
@@ -68,7 +73,7 @@ export default {
     },
     updateLocation(location) {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyLocation", { id: location.id, model: location })
+      updateAgencyLocation(location.id, location)
         .then(() => {
           this.isLoading = false;
           this.hideModal();
@@ -80,7 +85,7 @@ export default {
     },
     createLocation(location) {
       this.isLoading = true;
-      this.$store.dispatch("agency/createAgencyLocation", location).then(r => {
+      createAgencyLocation(location).then(r => {
         location.id = r.id;
         location.formattedAddress = this.getFormattedAddress(location);
         this.locations.push(location);
@@ -93,7 +98,7 @@ export default {
     },
     getLocations() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyLocation", this.profileId).then(r => {
+      getAgencyLocations().then(r => {
         this.locations = r;
         this.isLoading = false;
       });
@@ -103,7 +108,7 @@ export default {
         .then(r => {
           if (!r) return;
           this.isLoading = true;
-          this.$store.dispatch("agency/deleteAgencyLocation", location.id)
+          deleteAgencyLocation(location.id)
             .then(() => {
               this.isLoading = false;
               this.locations.splice(index, 1);

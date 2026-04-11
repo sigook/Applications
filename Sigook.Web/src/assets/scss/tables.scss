@@ -170,6 +170,14 @@ table.bordered-cells {
   table-layout: auto;
   width: 100%;
 
+  tr {
+    cursor: pointer;
+  }
+
+  td {
+    vertical-align: middle !important;
+  }
+
   td,
   th {
     overflow: hidden;

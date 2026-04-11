@@ -6,13 +6,14 @@
         <shift-form v-if="shift" :current-shift="shift" :is-update="true" @updateModel="(val) => shift = val" />
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="updateAgencyRequestShift(shift)">Save</b-button>
+        <b-button type="is-primary" @click="saveShift(shift)">Save</b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { fetchRequestShift } from "@/api/requestApi";
+import { updateAgencyRequestShift } from "@/api/agencyRequestApi";
 export default {
   data() {
     return {
@@ -41,10 +42,10 @@ export default {
           this.showAlertError(error);
         })
     },
-    updateAgencyRequestShift(model) {
+    saveShift(model) {
       console.log(model);
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyRequestShift', { requestId: this.requestId, model })
+      updateAgencyRequestShift(this.requestId, model)
         .then(response => {
           this.isLoading = false;
           this.$emit("onUpdateShift", response.displayShift)

@@ -45,6 +45,7 @@
 
 <script lang="ts">
 import { createCompanyUser } from '@/api/companyApi';
+import { createCompanyProfileUser } from '@/api/agencyCompanyApi';
 
 export default {
   props: ['companyId'],
@@ -76,7 +77,7 @@ export default {
     onCreateUser() {
       this.isLoading = true;
       const action = this.companyId ?
-        this.$store.dispatch('agency/createCompanyProfileUser', { user: this.user, companyId: this.companyId }) :
+        createCompanyProfileUser(this.companyId, this.user) :
         createCompanyUser(this.user);
       action
         .then(() => {

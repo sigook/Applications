@@ -100,7 +100,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(updateUrl);
             CompanyRequestDetailModel detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
-            Assert.Equal(RequestStatus.Cancelled.ToString(), detail.Status);
+            Assert.Equal(RequestStatus.Cancelled, detail.Status);
         }
 
         [Fact]
@@ -248,8 +248,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                 Assert.Equal(model.Incentive, detail.Incentive);
                 Assert.Equal(model.IncentiveDescription, detail.IncentiveDescription);
                 Assert.Equal(model.Requirements, detail.Requirements);
-                Assert.NotNull(detail.Status);
-                Assert.NotNull(detail.DurationTerm);
                 Assert.NotEqual(default, detail.CreatedAt.Date);
                 Assert.NotNull(detail.DisplayShift);
                 Assert.Equal(model.StartAt, detail.StartAt);

@@ -17,7 +17,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Resources;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Covenant.Core.BL.Services
 {
@@ -373,7 +373,7 @@ namespace Covenant.Core.BL.Services
             var client = new QueueClient(connectionString, "invitation-to-apply");
             if (await client.ExistsAsync())
             {
-                var stringModel = JsonConvert.SerializeObject(model);
+                var stringModel = JsonSerializer.Serialize(model);
                 var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(stringModel);
                 var message = Convert.ToBase64String(plainTextBytes);
                 await client.SendMessageAsync(message);

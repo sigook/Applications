@@ -47,6 +47,7 @@
   </div>
 </template>
 <script lang="ts">
+import { createAgency } from "@/api/agencyApi";
 
 export default {
   data() {
@@ -65,16 +66,16 @@ export default {
       const mainFormValid = await this.$validator.validateAll();
       const phoneValid = await this.$refs.phoneComponent.validatePhone();
       if (mainFormValid && phoneValid) {
-        this.createAgency();
+        this.submitAgency();
         return;
       } else {
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       }
     },
-    createAgency() {
+    submitAgency() {
       this.isLoading = true;
       this.agency.phonePrincipal = this.phoneNumber;
-      this.$store.dispatch('agency/createAgency', this.agency)
+      createAgency(this.agency)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess("Agency created successfully");

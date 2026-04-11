@@ -85,6 +85,7 @@
 </template>
 
 <script lang="ts">
+import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 export default {
   props: ['currentContact', 'profileId'],
   data() {
@@ -112,18 +113,18 @@ export default {
       this.$validator.validateAll().then((result) => {
         if (result) {
           if (this.contactPerson.id) {
-            this.updateAgencyCompanyContactPerson(this.contactPerson.id);
+            this.updateContactPerson(this.contactPerson.id);
           } else {
-            this.createAgencyCompanyContactPerson();
+            this.createContactPerson();
           }
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       });
     },
-    createAgencyCompanyContactPerson() {
+    createContactPerson() {
       this.isLoading = true;
-      this.$store.dispatch('agency/createAgencyCompanyContactPerson', { profileId: this.profileId, model: this.contactPerson })
+      createAgencyCompanyContactPerson(this.profileId, this.contactPerson)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created')
@@ -134,9 +135,9 @@ export default {
           this.showAlertError(error)
         })
     },
-    updateAgencyCompanyContactPerson(id) {
+    updateContactPerson(id) {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyCompanyContactPerson', { profileId: this.profileId, personId: id, model: this.contactPerson })
+      updateAgencyCompanyContactPerson(this.profileId, id, this.contactPerson)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Updated')

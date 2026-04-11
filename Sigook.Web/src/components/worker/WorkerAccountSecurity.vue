@@ -35,7 +35,7 @@
             <span>{{ item.description }}</span>
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <b-switch v-model="item.emailNotification" @input="updateUserNotification(item)">
+            <b-switch v-model="item.emailNotification" @input="saveNotification(item)">
               {{ item.emailNotification ? $t('Yes') : $t('No') }}
             </b-switch>
           </div>
@@ -64,6 +64,7 @@
 
 <script lang="ts">
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
+import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
 
 export default {
   data() {
@@ -104,8 +105,8 @@ export default {
         }
       });
     },
-    getUserNotification() {
-      this.$store.dispatch('agency/getUserNotification')
+    loadNotifications() {
+      getUserNotifications()
         .then(response => {
           this.notifications = response;
         })
@@ -113,9 +114,9 @@ export default {
           this.showAlertError(error);
         })
     },
-    updateUserNotification(item) {
+    saveNotification(item) {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateUserNotification', item)
+      updateUserNotification(item)
         .then(() => {
           this.isLoading = false;
         })
@@ -150,7 +151,7 @@ export default {
         this.showAlertError(error);
         this.isLoading = false;
       });
-    this.getUserNotification();
+    this.loadNotifications();
   }
 }
 </script>

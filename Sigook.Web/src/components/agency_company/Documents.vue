@@ -24,7 +24,7 @@
               <div class="actions text-right">
                 <b-tooltip label="Delete" type="is-dark" position="is-top">
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
-                    @click="deleteAgencyCompanyDocument(document.id, index)">
+                    @click="onDeleteDocument(document.id, index)">
                     {{ $t("Delete") }}
                   </button>
                 </b-tooltip>
@@ -42,7 +42,7 @@
         <button @click="showModal = true" class="sm-save-button">Add</button>
 
         <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="this.size"
-          @changePage="(index) => getAgencyCompanyDocument(index)">
+          @changePage="(index) => loadDocuments(index)">
         </pagination>
       </div>
     </transition>
@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 export default {
   data() {
     return {
@@ -85,17 +86,14 @@ export default {
     onShowDocuments() {
       if (!this.showDocuments) {
         this.showDocuments = true;
-        this.getAgencyCompanyDocument(this.currentPage);
+        this.loadDocuments(this.currentPage);
       } else {
         this.showDocuments = false;
       }
     },
-    getAgencyCompanyDocument(index) {
+    loadDocuments(index) {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyCompanyDocument", {
-        profileId: this.profileId,
-        pagination: { size: this.size, page: index },
-      })
+      getAgencyCompanyDocument(this.profileId, { size: this.size, page: index })
         .then((response) => {
           this.isLoading = false;
           this.data = response;
@@ -107,18 +105,14 @@ export default {
     },
     onCreateDocument() {
       this.showModal = false;
-      this.getAgencyCompanyDocument(this.currentPage);
+      this.loadDocuments(this.currentPage);
     },
-    deleteAgencyCompanyDocument(id, index) {
+    onDeleteDocument(id, index) {
       this.showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store
-              .dispatch("agency/deleteAgencyCompanyDocument", {
-                profileId: this.profileId,
-                id: id,
-              })
+            deleteAgencyCompanyDocument(this.profileId, id)
               .then(() => {
                 this.isLoading = false;
                 this.showAlertSuccess("Deleted");

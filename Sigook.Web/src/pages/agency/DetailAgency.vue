@@ -21,6 +21,8 @@
 </template>
 
 <script lang="ts">
+import { getAgency } from "@/api/agencyApi";
+
 export default {
   data() {
     return {
@@ -45,9 +47,9 @@ export default {
         },
       });
     },
-    getAgency() {
+    loadAgency() {
       this.isLoading = false;
-      this.$store.dispatch("agency/getAgency", this.$route.params.id)
+      getAgency(this.$route.params.id)
         .then((agency) => {
           this.agency = agency;
           this.isLoading = false;
@@ -59,7 +61,7 @@ export default {
     },
   },
   created() {
-    this.getAgency();
+    this.loadAgency();
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
       if (!this.visitedTabs.includes(this.$route.query.tab)) {

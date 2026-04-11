@@ -65,6 +65,7 @@
 
 <script lang="ts">
 import { getWsibGroups } from "@/api/catalogApi";
+import { updateAgency } from "@/api/agencyApi";
 export default {
   data() {
     return {
@@ -93,7 +94,7 @@ export default {
       if (phoneValid && faxValid && valid) {
         this.isLoading = true;
         this.$emit('update:agencyData', this.localAgencyData);
-        this.$store.dispatch("agency/updateAgency", this.localAgencyData)
+        updateAgency(this.localAgencyData)
           .then(() => {
             this.isLoading = false;
             this.showAlertSuccess(this.$t("Updated"));

@@ -34,7 +34,7 @@
           <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
             @click="openEditModal(props.row)"></b-button>
           <b-button type="is-danger" outlined rounded icon-right="delete"
-            @click="deleteAgencyCompanyContactPerson(props.row.id)"></b-button>
+            @click="onDeleteContactPerson(props.row.id)"></b-button>
         </b-table-column>
       </template>
     </b-table>
@@ -46,6 +46,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
 export default {
   data() {
@@ -58,9 +59,9 @@ export default {
     }
   },
   methods: {
-    async getAgencyCompanyContactPerson() {
+    async loadContactPersons() {
       this.isLoading = true;
-      await this.$store.dispatch('agency/getAgencyCompanyContactPerson', this.profileId)
+      await getAgencyCompanyContactPerson(this.profileId)
         .then(response => {
           this.isLoading = false;
           this.data = response;
@@ -79,18 +80,18 @@ export default {
       this.showModal = false;
     },
     async onUpdateModal() {
-      await this.getAgencyCompanyContactPerson();
+      await this.loadContactPersons();
       this.closeModal();
     },
-    deleteAgencyCompanyContactPerson(id) {
+    onDeleteContactPerson(id) {
       this.showAlertConfirm("Are you sure", "You want to delete this contact")
         .then(response => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch('agency/deleteAgencyCompanyContactPerson', { profileId: this.profileId, personId: id })
+            deleteAgencyCompanyContactPerson(this.profileId, id)
               .then(async () => {
                 this.showAlertSuccess('Deleted')
-                await this.getAgencyCompanyContactPerson();
+                await this.loadContactPersons();
                 this.isLoading = false;
               })
               .catch(error => {
@@ -104,7 +105,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyCompanyContactPerson();
+    this.loadContactPersons();
   },
   components: {
     ContactForm: () => import("./ContactPersonForm.vue")

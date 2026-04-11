@@ -90,16 +90,16 @@
           </template>
           <template v-slot="props">
             {{ props.row.startAt | dateMonth }}
-            <span v-if="props.row.durationTerm !== $longTerm">
+            <span v-if="props.row.durationTerm !== DurationTerm.LongTerm">
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <span
-              v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+              v-if="(props.row.requestStatus === RequestStatus.Filled || props.row.requestStatus === RequestStatus.Cancelled) && props.row.durationTerm === DurationTerm.LongTerm">
               - {{ props.row.finishAt | dateMonth }}
             </span>
             <agency-shift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
             <i class="fz-2 d-block">
-              {{ props.row.durationTerm | splitCapital }} - {{ props.row.employmentType | splitCapital }}
+              {{ DurationTermLabels[props.row.durationTerm] }} - {{ EmploymentTypeLabels[props.row.employmentType] }}
             </i>
           </template>
         </b-table-column>
@@ -160,9 +160,9 @@
             </b-tag>
           </div>
           <div v-if="props.row.showNotes" class="notes-tooltip">
-            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="'agency/getAgencyRequestNote'"
-              :on-create="'agency/createAgencyRequestNote'" :on-update="'agency/updateAgencyRequestNote'"
-              :on-delete="'agency/deleteAgencyRequestNote'" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
+            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getNotes"
+              :on-create="createNote" :on-update="updateNote"
+              :on-delete="deleteNote" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
               @close="onNote(props.row, false)">
             </modal-notes>
           </div>
@@ -175,9 +175,9 @@
           </template>
           <template v-slot="props">
             <div class="text-center">
-              <b-tooltip :label="$t(props.row.status)" type="is-dark">
+              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark">
                 <div class="status-dot-container">
-                  <img v-if="props.row.status === $statusFilled" src="../../assets/images/check_white.png" alt="check"
+                  <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
                     class="request-check" />
                   <div class="dot-status" :class="getStatusClass(props.row)"></div>
                 </div>
@@ -231,6 +231,21 @@
 </template>
 <script lang="ts">
 import billingAdminMixin from '@/mixins/billingAdminMixin'
+import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
+import { getAgencyRequests } from "@/api/agencyRequestApi";
+import {
+  getAgencyRequestNotes,
+  createAgencyRequestNote,
+  updateAgencyRequestNote,
+  deleteAgencyRequestNote,
+} from "@/api/agencyNoteApi";
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentTypeLabels,
+  RequestStatus,
+  RequestStatusLabels,
+} from "@/constants/enums";
 
 export default {
   props: ["totalItems", "companyId", "agencyId", "config"],
@@ -249,6 +264,10 @@ export default {
       recruiters: null,
       currentRequest: null,
       currentIndex: null,
+      getNotes: ({ userId, pagination }: any) => getAgencyRequestNotes(userId, pagination),
+      createNote: ({ userId, model }: any) => createAgencyRequestNote(userId, model),
+      updateNote: ({ userId, id, model }: any) => updateAgencyRequestNote(userId, id, model),
+      deleteNote: ({ userId, id }: any) => deleteAgencyRequestNote(userId, id),
       statuses: [
         { id: 1, value: this.$statusDisplayOpen },
         { id: 3, value: this.$statusDisplayFilled },
@@ -302,7 +321,7 @@ export default {
     },
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -335,16 +354,16 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onStatusChange() {
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onLastUpdateSelected() {
       this.serverParams.lastUpdateFrom = this.lastUpdateDatesSelected[0];
       this.serverParams.lastUpdateTo = this.lastUpdateDatesSelected[1];
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onLastUpdateCleared() {
       this.lastUpdateDatesSelected = [];
@@ -353,7 +372,7 @@ export default {
     onStartAtSelected() {
       this.serverParams.startAtFrom = this.startAtDatesSelected[0];
       this.serverParams.startAtTo = this.startAtDatesSelected[1];
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onStartAtCleared() {
       this.startAtDatesSelected = [];
@@ -361,7 +380,7 @@ export default {
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getAgencyRequests();
+        this.loadRequests();
       }
     },
     onNote(row, status) {
@@ -382,32 +401,32 @@ export default {
     },
     onUpdateRecruiter() {
       this.showRecruitersModal = false;
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     canEdit(status) {
       return (
-        status === this.$statusOpen ||
-        status === this.$statusFilled
+        status === RequestStatus.Open ||
+        status === RequestStatus.Filled
       );
     },
     getStatusClass(row) {
-      if (row.status === this.$statusOpen &&
+      if (row.requestStatus === RequestStatus.Open &&
         row.workersQuantityWorking > 0 &&
         row.workersQuantityWorking < row.workersQuantity) {
         return 'status-inprogress';
       }
-      return 'status-' + row.status.toLowerCase();
+      return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
     },
     updateWorkers(item) {
       this.rows[this.currentIndex].workersQuantityWorking = item;
     },
-    getAgencyRequests() {
+    loadRequests() {
       this.checkedRows = [];
       this.$emit("onDataLoading", true);
       if (!this.companyId && !this.agencyId) {
         this.$store.dispatch("agency/updateAgencyRequestFilter", this.serverParams);
       }
-      this.$store.dispatch("agency/getAgencyRequests", this.serverParams)
+      getAgencyRequests(this.serverParams)
         .then((requests) => {
           this.rows = requests.items.map(i => ({ ...i, actions: null }));
           this.$emit('update:totalItems', requests.totalItems);
@@ -425,10 +444,10 @@ export default {
         ids: this.checkedRows.map(cr => cr.id),
         isAsap: this.quickActions.isAsap
       };
-      this.$store.dispatch('agency/updateIsAsapRequests', payload)
+      updateIsAsapRequests(payload)
         .then(() => {
           this.showQuickActions = false;
-          this.getAgencyRequests();
+          this.loadRequests();
         }).catch((error) => {
           this.showQuickActions = false;
           this.showAlertError(error);
@@ -463,9 +482,14 @@ export default {
         this.serverParams.agencyId = this.agencyId;
       }
     }
-    this.getAgencyRequests();
+    this.loadRequests();
   },
   computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     tableConfig() {
       return { ...this.defaultConfig, ...this.config };
     },
@@ -488,17 +512,8 @@ export default {
   },
   watch: {
     'serverParams.onlyMine': function () {
-      this.getAgencyRequests();
+      this.loadRequests();
     }
   }
 };
 </script>
-<style lang="scss">
-tr {
-  cursor: pointer;
-}
-
-td {
-  vertical-align: middle !important;
-}
-</style>

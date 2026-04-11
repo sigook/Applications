@@ -5,17 +5,19 @@
 **Staging:** `https://sigook-api-staging.azurewebsites.net/api`
 **Production:** `https://sigook-api.azurewebsites.net/api`
 
+> Routes are declared via `RouteName` constants on each controller. Folders live under `Covenant.Api/{Module}Module/{Resource}/Controllers/`. The list below shows the actual route templates used in code, not theoretical paths.
+
 ---
 
 ## 🔐 Authentication
 
-Todos los endpoints requieren autenticación mediante **Bearer token** (excepto registration y public endpoints).
+All endpoints require authentication via **Bearer token** (except registration and public endpoints).
 
 ```http
 Authorization: Bearer {access_token}
 ```
 
-**Obtener token:**
+**Get a token:**
 - Via IdentityServer4 (OpenID Connect)
 - Staging: `https://sigook-accounts-staging.azurewebsites.net`
 - Production: `https://sigook-accounts.azurewebsites.net`
@@ -34,7 +36,7 @@ GET /api/AgencyRequest
 **Query Parameters:**
 - `page` (int): Page number (default: 1)
 - `pageSize` (int): Items per page (default: 20)
-- `status` (RequestStatus): Filter by status
+- `status` (RequestStatus): Filter by status (`Open`, `Filled`, `Cancelled`)
 - `companyProfileId` (guid): Filter by company
 - `searchTerm` (string): Search in job title/description
 
@@ -48,8 +50,7 @@ GET /api/AgencyRequest
       "companyName": "ABC Logistics",
       "workersQuantity": 5,
       "workersQuantityWorking": 2,
-      "status": "InProcess",
-      "isOpen": true,
+      "status": "Open",
       "startAt": "2026-02-01T00:00:00Z",
       "location": "Toronto, ON"
     }
@@ -76,15 +77,13 @@ GET /api/AgencyRequest/{id}
   "requirements": "Requirements...",
   "workersQuantity": 5,
   "workersQuantityWorking": 2,
-  "status": "InProcess",
-  "isOpen": true,
+  "status": "Open",
   "startAt": "2026-02-01T00:00:00Z",
   "finishAt": null,
   "durationTerm": "LongTerm",
   "employmentType": "FullTime",
   "workerRate": 18.50,
   "agencyRate": 25.00,
-  "currency": "CAD",
   "shift": {
     "start": "07:00:00",
     "end": "15:00:00",
@@ -141,7 +140,7 @@ POST /api/AgencyRequest
 }
 ```
 
-**Response:** `201 Created` with Request object
+**Response:** `201 Created` with the Request object
 
 ---
 
@@ -150,7 +149,7 @@ POST /api/AgencyRequest
 PUT /api/AgencyRequest/{id}
 ```
 
-**Request Body:** Same as Create
+**Request Body:** Same as Create.
 
 ---
 
@@ -158,6 +157,8 @@ PUT /api/AgencyRequest/{id}
 ```http
 PUT /api/AgencyRequest/{id}/Cancel
 ```
+
+Only valid when the request is `Open` and has zero booked workers.
 
 **Response:** `204 No Content`
 
@@ -184,7 +185,7 @@ POST /api/AgencyRequest/{id}/SendInvitation
 }
 ```
 
-**Response:** `200 OK` - Push notifications sent
+**Response:** `200 OK` — Push notifications sent
 
 ---
 
@@ -220,9 +221,7 @@ GET /api/AgencyWorkerProfile
       "hasVehicle": true
     }
   ],
-  "totalCount": 150,
-  "pageNumber": 1,
-  "pageSize": 20
+  "totalCount": 150
 }
 ```
 
@@ -233,7 +232,7 @@ GET /api/AgencyWorkerProfile
 GET /api/AgencyWorkerProfile/{id}
 ```
 
-**Response:** Complete WorkerProfile with all sections
+**Response:** Complete WorkerProfile with all sections.
 
 ---
 
@@ -244,9 +243,7 @@ PUT /api/AgencyWorkerProfile/{id}/ApproveToWork
 
 **Request Body:**
 ```json
-{
-  "approvedToWork": true
-}
+{ "approvedToWork": true }
 ```
 
 **Response:** `204 No Content`
@@ -270,27 +267,28 @@ PUT /api/AgencyWorkerProfile/{id}/Dnu
 
 ### Agency Worker Assignment
 
+Worker assignments are nested under the request: `api/AgencyRequest/{requestId}/Worker`.
+
 #### Assign Worker to Request
 ```http
-POST /api/AgencyRequestWorker
+POST /api/AgencyRequest/{requestId}/Worker
 ```
 
 **Request Body:**
 ```json
 {
-  "requestId": "guid",
   "workerProfileId": "guid",
   "startWorking": "2026-02-01T00:00:00Z"
 }
 ```
 
-**Response:** `201 Created` with WorkerRequest object
+**Response:** `201 Created` with the WorkerRequest object.
 
 ---
 
 #### Remove Worker from Request
 ```http
-DELETE /api/AgencyRequestWorker/{id}
+DELETE /api/AgencyRequest/{requestId}/Worker/{workerRequestId}
 ```
 
 **Response:** `204 No Content`
@@ -299,15 +297,17 @@ DELETE /api/AgencyRequestWorker/{id}
 
 ### Agency Timesheet Management
 
+Timesheets are nested under the request worker:
+`api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet`.
+
 #### Create Timesheet (Manual)
 ```http
-POST /api/AgencyRequestTimeSheet
+POST /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet
 ```
 
 **Request Body:**
 ```json
 {
-  "workerRequestId": "guid",
   "date": "2026-02-01",
   "hours": 8.5,
   "isHoliday": false,
@@ -315,13 +315,13 @@ POST /api/AgencyRequestTimeSheet
 }
 ```
 
-**Response:** `201 Created` with TimeSheet object (pre-approved)
+**Response:** `201 Created` with the TimeSheet object (pre-approved).
 
 ---
 
 #### Approve Timesheet
 ```http
-PUT /api/AgencyRequestTimeSheet/{id}/Approve
+PUT /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}/Approve
 ```
 
 **Request Body:**
@@ -343,6 +343,8 @@ PUT /api/AgencyRequestTimeSheet/{id}/Approve
 GET /api/AgencyCompanyProfile
 ```
 
+(There is also a `v2` route: `GET /api/v2/AgencyCompanyProfile`.)
+
 **Query Parameters:**
 - `page`, `pageSize`
 - `status` (CompanyStatus)
@@ -362,9 +364,7 @@ GET /api/AgencyCompanyProfile
       "activeRequestsCount": 5
     }
   ],
-  "totalCount": 25,
-  "pageNumber": 1,
-  "pageSize": 20
+  "totalCount": 25
 }
 ```
 
@@ -375,7 +375,7 @@ GET /api/AgencyCompanyProfile
 GET /api/AgencyCompanyProfile/{id}
 ```
 
-**Response:** Complete CompanyProfile with locations, rates, contacts
+**Response:** Complete CompanyProfile with locations, rates, contacts.
 
 ---
 
@@ -413,7 +413,7 @@ PUT /api/AgencyCompanyProfile/{id}
 GET /api/AgencyCandidate
 ```
 
-**Response:** List of Candidates (pre-workers without User)
+**Response:** List of Candidates (pre-workers without a User).
 
 ---
 
@@ -433,6 +433,9 @@ POST /api/AgencyCandidate
 }
 ```
 
+Candidate sub-resources (notes, documents, skills, phone numbers) live under
+`api/AgencyCandidate/{candidateId}/{Resource}`.
+
 ---
 
 ## 🏢 COMPANY MODULE
@@ -448,7 +451,7 @@ GET /api/CompanyRequest
 - `page`, `pageSize`
 - `status` (RequestStatus)
 
-**Response:** Similar to Agency Request list (filtered by company)
+**Response:** Similar to the Agency request list, scoped to the authenticated company.
 
 ---
 
@@ -457,7 +460,7 @@ GET /api/CompanyRequest
 POST /api/CompanyRequest
 ```
 
-**Request Body:** Same as Agency Create Request
+**Request Body:** Same as the Agency Create Request.
 
 ---
 
@@ -482,10 +485,6 @@ PUT /api/CompanyRequest/{id}
 GET /api/CompanyProfile
 ```
 
-**Response:** CompanyProfile of authenticated user
-
----
-
 #### Update Profile
 ```http
 PUT /api/CompanyProfile
@@ -495,19 +494,12 @@ PUT /api/CompanyProfile
 
 ### Company Locations
 
-#### List Locations
 ```http
-GET /api/CompanyLocation
-```
-
----
-
-#### Add Location
-```http
+GET  /api/CompanyLocation
 POST /api/CompanyLocation
 ```
 
-**Request Body:**
+**Create body:**
 ```json
 {
   "name": "Toronto Warehouse",
@@ -519,37 +511,12 @@ POST /api/CompanyLocation
 
 ### Company Job Positions
 
-#### List Job Positions
 ```http
-GET /api/CompanyJobPosition
-```
-
-**Response:**
-```json
-{
-  "items": [
-    {
-      "id": "guid",
-      "jobTitle": "Warehouse Worker",
-      "workerRate": 18.50,
-      "agencyRate": 25.00,
-      "overtimeRate": 1.5,
-      "nightShiftRate": 1.15,
-      "holidayRate": 1.5,
-      "currency": "CAD"
-    }
-  ]
-}
-```
-
----
-
-#### Add Job Position
-```http
+GET  /api/CompanyJobPosition
 POST /api/CompanyJobPosition
 ```
 
-**Request Body:**
+**Create body:**
 ```json
 {
   "jobTitle": "Warehouse Worker",
@@ -568,36 +535,16 @@ POST /api/CompanyJobPosition
 
 #### View Assigned Workers
 ```http
-GET /api/CompanyRequestWorker/{requestId}
+GET /api/CompanyRequest/{requestId}/Worker
 ```
-
-**Response:**
-```json
-{
-  "requestId": "guid",
-  "workers": [
-    {
-      "id": "guid",
-      "firstName": "John",
-      "lastName": "Doe",
-      "startWorking": "2026-02-01T00:00:00Z",
-      "status": "Booked"
-    }
-  ]
-}
-```
-
----
 
 #### View Timesheets
 ```http
-GET /api/CompanyRequestWorkerTimeSheet/{requestId}
+GET /api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet
 ```
 
 **Query Parameters:**
 - `weekEnding` (date): Filter by week
-
-**Response:** List of TimeSheets for request
 
 ---
 
@@ -610,7 +557,7 @@ GET /api/CompanyRequestWorkerTimeSheet/{requestId}
 GET /api/WorkerProfile
 ```
 
-**Response:** List of WorkerProfiles for authenticated user
+**Response:** List of WorkerProfiles for the authenticated user.
 
 ---
 
@@ -629,59 +576,9 @@ id_document_1: {file}
 id_document_2: {file}
 ```
 
-**registration_form JSON:**
-```json
-{
-  "basicInfo": {
-    "firstName": "John",
-    "lastName": "Doe",
-    "birthDay": "1990-01-01",
-    "genderId": "guid",
-    "hasVehicle": true
-  },
-  "contactInfo": {
-    "mobileNumber": "+1-416-555-0400",
-    "phone": "+1-416-555-0401",
-    "locationId": "guid"
-  },
-  "personalInfo": {
-    "socialInsurance": "123-456-789",
-    "socialInsuranceDueDate": "2030-01-01",
-    "identificationNumber1": "A1234567",
-    "identificationType1": "guid",
-    "identificationNumber2": "D1234567890",
-    "identificationType2": "guid"
-  },
-  "professionalInfo": {
-    "skills": ["guid1", "guid2"],
-    "languages": [
-      {
-        "languageId": "guid",
-        "proficiency": "Advanced"
-      }
-    ]
-  },
-  "availabilityInfo": {
-    "availabilityType": "FullTime",
-    "availabilities": [
-      {
-        "dayOfWeek": "Monday",
-        "startTime": "07:00:00",
-        "endTime": "15:00:00"
-      }
-    ]
-  },
-  "preferencesInfo": {
-    "locationPreferences": ["guid1", "guid2"]
-  },
-  "accountInfo": {
-    "email": "john@example.com",
-    "password": "SecurePassword123!"
-  }
-}
-```
+See `.docs/business/WORKFLOWS.md` for the full registration JSON shape.
 
-**Response:** `201 Created` with WorkerProfile ID
+**Response:** `201 Created` with the WorkerProfile ID.
 
 ---
 
@@ -690,26 +587,9 @@ id_document_2: {file}
 GET /api/WorkerProfile/{id}
 ```
 
----
-
-#### Update Basic Info
+#### Update Profile sections
 ```http
-PUT /api/WorkerProfile/{id}/BasicInfo
-```
-
----
-
-#### Update Contact Info
-```http
-PUT /api/WorkerProfile/{id}/ContactInfo
-```
-
----
-
-#### Update Documents
-```http
-PUT /api/WorkerProfile/{id}/Documents
-Content-Type: multipart/form-data
+PUT /api/WorkerProfile/{profileId}    (and section-specific sub-routes)
 ```
 
 ---
@@ -723,34 +603,9 @@ GET /api/WorkerRequest/Available
 
 **Query Parameters:**
 - `page`, `pageSize`
-- `cityId` (guid): Filter by city
-- `jobTitle` (string): Search by title
-- `minRate` (decimal): Minimum rate
-
-**Response:**
-```json
-{
-  "items": [
-    {
-      "id": "guid",
-      "jobTitle": "Warehouse Worker",
-      "companyName": "ABC Logistics",
-      "location": "Toronto, ON",
-      "workerRate": 18.50,
-      "currency": "CAD",
-      "shift": "7:00 AM - 3:00 PM",
-      "startAt": "2026-02-01T00:00:00Z",
-      "durationTerm": "LongTerm",
-      "isAsap": false,
-      "workersNeeded": 5,
-      "workersBooked": 2
-    }
-  ],
-  "totalCount": 47,
-  "pageNumber": 1,
-  "pageSize": 20
-}
-```
+- `cityId` (guid)
+- `jobTitle` (string)
+- `minRate` (decimal)
 
 ---
 
@@ -761,12 +616,10 @@ POST /api/WorkerRequest/Apply
 
 **Request Body:**
 ```json
-{
-  "requestId": "guid"
-}
+{ "requestId": "guid" }
 ```
 
-**Response:** `201 Created` - WorkerRequest created with status=Booked
+**Response:** `201 Created` — WorkerRequest created with `Status = Booked`.
 
 ---
 
@@ -775,66 +628,36 @@ POST /api/WorkerRequest/Apply
 GET /api/WorkerRequest/MyRequests
 ```
 
-**Response:**
-```json
-{
-  "items": [
-    {
-      "id": "guid",
-      "requestId": "guid",
-      "jobTitle": "Warehouse Worker",
-      "companyName": "ABC Logistics",
-      "status": "Booked",
-      "startWorking": "2026-02-01T00:00:00Z",
-      "location": "Toronto, ON",
-      "shift": "7:00 AM - 3:00 PM"
-    }
-  ]
-}
-```
-
 ---
 
 ### Worker Timesheets
 
-#### Clock In
+The worker timesheet controller is mounted at
+`api/WorkerRequest/{requestId}/TimeSheet`.
+
+#### Clock In / Clock Out
 ```http
-POST /api/WorkerRequestTimeSheet/ClockIn
+POST /api/WorkerRequest/{requestId}/TimeSheet
 ```
 
-**Request Body:**
+**Request Body (clock in):**
 ```json
 {
-  "workerRequestId": "guid",
   "clockIn": "2026-02-01T07:05:23Z",
   "isHoliday": false
 }
 ```
 
-**Response:** `201 Created` - TimeSheet created
-
----
-
-#### Clock Out
-```http
-POST /api/WorkerRequestTimeSheet/ClockOut
-```
-
-**Request Body:**
+**Request Body (clock out):**
 ```json
 {
-  "workerRequestId": "guid",
   "clockOut": "2026-02-01T15:08:12Z"
 }
 ```
 
-**Response:** `200 OK` - TimeSheet updated
-
----
-
 #### Get My Timesheets
 ```http
-GET /api/WorkerRequestTimeSheet/{requestId}
+GET /api/WorkerRequest/{requestId}/TimeSheet
 ```
 
 **Query Parameters:**
@@ -867,6 +690,8 @@ GET /api/WorkerRequestTimeSheet/{requestId}
 
 ### PayStub Management
 
+Routes live under `api/v4/Accounting/PayStub`.
+
 #### Create PayStub
 ```http
 POST /api/v4/Accounting/PayStub
@@ -881,7 +706,7 @@ POST /api/v4/Accounting/PayStub
 }
 ```
 
-**Response:** `201 Created` - PayStub object
+**Response:** `201 Created` — PayStub object.
 
 ---
 
@@ -913,16 +738,7 @@ GET /api/v4/Accounting/PayStub/{id}
     "provincialTax": 45.20,
     "totalDeductions": 241.80
   },
-  "totalPaid": 839.80,
-  "items": [
-    {
-      "date": "2026-02-01",
-      "hours": "08:00:00",
-      "rate": 18.50,
-      "amount": 148.00,
-      "type": "Regular"
-    }
-  ]
+  "totalPaid": 839.80
 }
 ```
 
@@ -939,14 +755,16 @@ DELETE /api/v4/Accounting/PayStub/{id}
 
 #### Download PayStub PDF
 ```http
-GET /api/v4/Accounting/PayStubDocument/{id}
+GET /api/v4/Accounting/PayStub/{payStubId}/Document
 ```
 
-**Response:** PDF file stream
+**Response:** PDF file stream.
 
 ---
 
 ### Invoice Management
+
+Routes live under `api/v4/Accounting/Invoice`.
 
 #### Create Invoice
 ```http
@@ -962,7 +780,7 @@ POST /api/v4/Accounting/Invoice
 }
 ```
 
-**Response:** `201 Created` - Invoice object
+**Response:** `201 Created` — Invoice object.
 
 ---
 
@@ -975,27 +793,6 @@ GET /api/v4/Accounting/Invoice
 - `page`, `pageSize`
 - `companyProfileId` (guid)
 - `startDate`, `endDate` (date)
-
-**Response:**
-```json
-{
-  "items": [
-    {
-      "id": "guid",
-      "invoiceNumber": "AI-0001-26",
-      "companyName": "ABC Logistics",
-      "weekEnding": "2026-02-07",
-      "subTotal": 4500.00,
-      "hst": 608.40,
-      "totalNet": 5288.40,
-      "createdAt": "2026-02-08T00:00:00Z"
-    }
-  ],
-  "totalCount": 120,
-  "pageNumber": 1,
-  "pageSize": 20
-}
-```
 
 ---
 
@@ -1043,47 +840,33 @@ GET /api/v4/Accounting/Invoice/{id}
 
 #### Download Invoice PDF
 ```http
-GET /api/v4/Accounting/InvoiceDocument/{id}
+GET /api/v4/Accounting/Invoice/{invoiceId}/Document
 ```
 
-**Response:** PDF file stream
+**Response:** PDF file stream.
 
 ---
 
-### Accounting Reports
-
-#### Payroll Report
+#### List PayStubs included in an Invoice
 ```http
-GET /api/v4/Accounting/Reports/Payroll
+GET /api/v4/Accounting/Invoice/{invoiceId}/PayStub
 ```
-
-**Query Parameters:**
-- `startDate`, `endDate` (date)
-- `agencyId` (guid)
-
-**Response:** Excel file stream
 
 ---
 
-#### Payments Report
+### Deductions Calculators
+
+Direct calculator endpoints:
+
 ```http
-GET /api/v4/Accounting/Reports/Payments
+api/Accounting/Deduction/Cpp
+api/Accounting/Deduction/FederalTax
+api/Accounting/Deduction/ProvincialTax
 ```
-
-**Response:** Excel file stream
 
 ---
 
-#### Subcontractor Report
-```http
-GET /api/v4/Accounting/Reports/Subcontractors
-```
-
-**Response:** Excel file stream
-
----
-
-## 📚 CATALOG/SHARED Endpoints
+## 📚 CATALOG / SHARED Endpoints
 
 ### Catalogs
 
@@ -1102,10 +885,7 @@ GET /api/Catalog/IdentificationTypes
 ```json
 {
   "items": [
-    {
-      "id": "guid",
-      "name": "Item Name"
-    }
+    { "id": "guid", "name": "Item Name" }
   ]
 }
 ```
@@ -1118,8 +898,6 @@ GET /api/Catalog/IdentificationTypes
 ```http
 GET /api/Location/{id}
 ```
-
----
 
 #### Create Location
 ```http
@@ -1137,7 +915,7 @@ POST /api/Location
 }
 ```
 
-**Response:** `201 Created` - Location with geocoded lat/lng
+**Response:** `201 Created` — Location with geocoded lat/lng.
 
 ---
 
@@ -1162,12 +940,12 @@ POST /api/Location
 
 ### HTTP Status Codes
 
-- `200 OK` - Success
-- `201 Created` - Resource created
-- `204 No Content` - Success with no response body
-- `400 Bad Request` - Validation error
-- `401 Unauthorized` - Authentication required
-- `403 Forbidden` - Insufficient permissions
-- `404 Not Found` - Resource not found
-- `409 Conflict` - Business rule violation
-- `500 Internal Server Error` - Server error
+- `200 OK` — Success
+- `201 Created` — Resource created
+- `204 No Content` — Success with no response body
+- `400 Bad Request` — Validation error
+- `401 Unauthorized` — Authentication required
+- `403 Forbidden` — Insufficient permissions
+- `404 Not Found` — Resource not found
+- `409 Conflict` — Business rule violation
+- `500 Internal Server Error` — Server error

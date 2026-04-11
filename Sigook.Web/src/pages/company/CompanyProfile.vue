@@ -47,7 +47,7 @@
 <script lang="ts">
 import confirmationAlert from "@/mixins/confirmationAlert";
 import switchLocaleMixin from "@/mixins/switchLocaleMixin";
-import { getProfile, updateProfile } from '@/api/companyApi';
+import { getCompanyProfile, updateProfile } from '@/api/companyApi';
 
 export default {
   components: {
@@ -116,7 +116,7 @@ export default {
     },
     onGetProfile() {
       this.isLoading = true;
-      getProfile()
+      getCompanyProfile()
         .then((data) => {
           this.companyProfile = data;
           this.isLoading = false;

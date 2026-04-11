@@ -138,6 +138,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import { maximumHoursPerDay } from "@/constants/catalog";
+import { updateAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
 
 export default {
   props: ['editableDay', 'worker'],
@@ -190,7 +191,7 @@ export default {
         reimbursements: item.reimbursements || 0,
         reimbursementsDescription: item.reimbursementsDescription || ''
       };
-      this.$store.dispatch('agency/updateWorkerTimeSheet', { requestId: this.$route.params.id, workerId: this.worker.workerId, id: item.id, model: model })
+      updateAgencyWorkerTimeSheet(this.$route.params.id, this.worker.workerId, item.id, model)
         .then(() => {
           this.isLoading = false;
           this.$emit('update:editableDay', this.localEditableDay);

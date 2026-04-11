@@ -1,16 +1,11 @@
-﻿using Newtonsoft.Json;
-
-namespace Covenant.Common.Models
+﻿namespace Covenant.Common.Models
 {
     public abstract class PaginatedList
     {
-        [JsonProperty]
         public int PageIndex { get; set; }
 
-        [JsonProperty]
         public int TotalPages { get; set; }
 
-        [JsonProperty]
         public int TotalItems { get; set; }
     }
 

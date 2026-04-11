@@ -63,7 +63,7 @@ export default {
         let milliseconds = Math.abs(new Date(date).getTime() - (this as any).now.getTime());
         let days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
         return days <= 7;
-      } catch (e) {
+      } catch {
         return false;
       }
     }

@@ -24,6 +24,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAllAgencyRequests, postAgencyRequestApplicant } from "@/api/agencyRequestApi";
 export default {
   props: ['candidateId'],
   data() {
@@ -40,11 +41,11 @@ export default {
   methods: {
     onInputEntered(value) {
       this.serverParams.filter = value;
-      this.getAgencyRequests();
+      this.loadRequests();
     },
-    getAgencyRequests() {
+    loadRequests() {
       this.isLoadingList = true;
-      this.$store.dispatch("agency/getAllAgencyRequests", this.serverParams)
+      getAllAgencyRequests(this.serverParams)
         .then((response) => {
           this.isLoadingList = false;
           this.rows = response;
@@ -56,11 +57,7 @@ export default {
     },
     saveRequestApplicant() {
       this.isLoading = true;
-      const payload = {
-        requestId: this.optionSelected.id,
-        model: { candidateId: this.candidateId }
-      }
-      this.$store.dispatch('agency/postAgencyRequestApplicant', payload)
+      postAgencyRequestApplicant(this.optionSelected.id, { candidateId: this.candidateId })
         .then(() => {
           this.isLoading = false;
           this.$emit('onSelectRequest');

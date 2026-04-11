@@ -136,13 +136,13 @@
           </b-table-column>
           <b-table-column field="notesCount" label="Notes" :visible="!isMobile" v-slot="props">
             <div @click="onNote(props.row, true)">
-              <b-tag size="is-small" icon="note-multiple" rounded>
+              <b-tag icon="note-multiple" rounded>
                 <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
               </b-tag>
             </div>
             <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="'agency/getAgencyCompanyNote'"
-                :on-create="'agency/createAgencyCompanyNote'" :on-delete="'agency/deleteAgencyCompanyNote'"
+              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCompanyNotes"
+                :on-create="createCompanyNote" :on-delete="deleteCompanyNote"
                 @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
               </modal-notes>
             </div>
@@ -164,7 +164,7 @@
     </div>
 
     <b-modal v-model="addFile" @close="addFile = false" width="500px">
-      <bulk-data :store-action="'agency/bulkCompanies'" :error-file-name="'BulkCompaniesError'"
+      <bulk-data :upload-fn="bulkAgencyCompanies" :error-file-name="'BulkCompaniesError'"
         :title="'Bulk Companies'" :file-label="'Companies File'" @close="addFile = false" />
     </b-modal>
   </div>
@@ -173,6 +173,9 @@
 
 import download from "@/mixins/downloadFileMixin";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getAgencyCompanies, bulkAgencyCompanies } from "@/api/agencyCompanyApi";
+import { downloadAgencyReport } from "@/api/agencyReportApi";
+import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from "@/api/agencyNoteApi";
 export default {
   components: {
     Export: () => import("@/components/Export.vue"),
@@ -190,6 +193,10 @@ export default {
       updatedAtDatesSelected: [],
       rows: [],
       addFile: false,
+      bulkAgencyCompanies,
+      getCompanyNotes: ({ userId, pagination }: any) => getAgencyCompanyNotes(userId, pagination),
+      createCompanyNote: ({ userId, model }: any) => createAgencyCompanyNote(userId, model),
+      deleteCompanyNote: ({ userId, id }: any) => deleteAgencyCompanyNote(userId, id),
       serverParams: {
         sortBy: 3,
         isDescending: true,
@@ -210,12 +217,12 @@ export default {
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
-    this.getCompanies();
+    this.loadCompanies();
   },
   methods: {
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getCompanies();
+      this.loadCompanies();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -236,15 +243,15 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getCompanies();
+      this.loadCompanies();
     },
     onStatusSelected() {
       this.serverParams.companyStatuses = this.statusesSelected.map(ss => ss.id);
-      this.getCompanies();
+      this.loadCompanies();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getCompanies();
+        this.loadCompanies();
       }
     },
     onCreatedAtCleared() {
@@ -254,7 +261,7 @@ export default {
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getCompanies();
+      this.loadCompanies();
     },
     onUpdatedAtCleared() {
       this.updatedAtDatesSelected = [];
@@ -263,7 +270,7 @@ export default {
     onUpdatedAtSelected() {
       this.serverParams.updatedAtFrom = this.updatedAtDatesSelected[0];
       this.serverParams.updatedAtTo = this.updatedAtDatesSelected[1];
-      this.getCompanies();
+      this.loadCompanies();
     },
     onCellClick(row, column) {
       switch (column._props.field) {
@@ -280,20 +287,17 @@ export default {
     },
     exportWithDetails() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyReport", {
-        filter: this.serverParams,
-        url: "/api/v2/AgencyCompanyProfile/FileWithDetails"
-      })
+      downloadAgencyReport("/api/v2/AgencyCompanyProfile/FileWithDetails", this.serverParams)
         .then(file => {
           this.isLoading = false;
           this.downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
         })
         .catch(() => this.isLoading = false);
     },
-    getCompanies() {
+    loadCompanies() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyCompanyProfileFilter", this.serverParams);
-      this.$store.dispatch('agency/getCompanies', this.serverParams)
+      getAgencyCompanies(this.serverParams)
         .then(companies => {
           this.rows = companies.items;
           this.totalItems = companies.totalItems;

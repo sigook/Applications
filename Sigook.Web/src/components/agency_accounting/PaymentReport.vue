@@ -21,7 +21,7 @@
             <b-table-column field="actions" v-slot="props">
               <b-tooltip label="Download" type="is-dark" position="is-top">
                 <b-button type="is-success" outlined rounded icon-right="file-excel"
-                  :loading="props.row.reportDownloading" @click="downloadWeeklyPayrollReport(props.row)">
+                  :loading="props.row.reportDownloading" @click="onDownloadWeeklyPayrollReport(props.row)">
                 </b-button>
               </b-tooltip>
             </b-table-column>
@@ -33,6 +33,7 @@
 </template>
 <script lang="ts">
 import download from '@/mixins/downloadFileMixin';
+import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
 
 export default {
   data() {
@@ -57,9 +58,9 @@ export default {
     },
     getReport() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getPaymentReport', this.serverParams)
-        .then(response => {
-          this.rows = response.items.map(i => ({ ...i, actions: null, reportDownloading: false }));
+      getPaymentReport(this.serverParams)
+        .then((response: any) => {
+          this.rows = response.items.map((i: any) => ({ ...i, actions: null, reportDownloading: false }));
           console.log(response);
           this.totalItems = response.totalItems;
           this.isLoading = false;
@@ -69,9 +70,9 @@ export default {
           this.showAlertError(error);
         });
     },
-    downloadWeeklyPayrollReport(row) {
+    onDownloadWeeklyPayrollReport(row) {
       row.reportDownloading = true;
-      this.$store.dispatch('agency/downloadWeeklyPayrollReport', row.displayWeekEnding)
+      downloadWeeklyPayrollReport(row.displayWeekEnding)
         .then(response => {
           row.reportDownloading = false;
           this.downloadFile(response, `Payment_${row.displayWeekEnding}`);

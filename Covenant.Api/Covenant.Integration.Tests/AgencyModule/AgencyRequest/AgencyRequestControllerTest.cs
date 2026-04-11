@@ -70,8 +70,8 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.Location, entity.JobLocation.FormattedAddress);
         Assert.Equal(model.Entrance, entity.JobLocation.Entrance);
         Assert.Equal(model.CompanyFullName, Data.FakeCompany.FullName);
-        Assert.Equal(model.Status, entity.Status.ToString());
-        Assert.Equal(model.DurationTerm, entity.DurationTerm.ToString());
+        Assert.Equal(model.RequestStatus, entity.Status);
+        Assert.Equal(model.DurationTerm, entity.DurationTerm);
         Assert.Equal(model.WorkersQuantity, entity.WorkersQuantity);
         Assert.Equal(model.WorkersQuantityWorking, entity.WorkersQuantityWorking);
         Assert.Equal(model.IsAsap, entity.IsAsap);
@@ -95,14 +95,14 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.Id, workerRequest.Id);
         Assert.Equal(model.StartWorking, workerRequest.StartWorking);
         Assert.Equal(model.WeekStartWorking, workerRequest.WeekStartWorking);
-        Assert.Equal(model.WorkerRequestStatus, workerRequest.WorkerRequestStatus.ToString());
+        Assert.Equal(model.WorkerRequestStatus, workerRequest.WorkerRequestStatus);
         Assert.Equal(model.RejectComments, workerRequest.RejectComments);
         Assert.Equal(model.RequestId, entity.Id);
         Assert.Equal(model.NumberId, entity.NumberId);
-        Assert.Equal(model.RequestStatus, entity.Status.ToString());
+        Assert.Equal(model.RequestStatus, entity.Status);
         Assert.Equal(model.JobTitle, entity.JobTitle);
         Assert.Equal(model.WorkerRate, entity.WorkerRate);
-        Assert.Equal(model.DurationTerm, entity.DurationTerm.ToString());
+        Assert.Equal(model.DurationTerm, entity.DurationTerm);
         Assert.Equal(model.DisplayRecruiters, entity.DisplayRecruiters);
         Assert.Equal(model.Entrance, entity.JobLocation.Entrance);
         Assert.Equal(model.Location, entity.JobLocation.FormattedAddress);
@@ -143,7 +143,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.JobPosition, Data.FakeRequest.JobPositionRate.JobPosition?.Value ?? Data.FakeRequest.JobPositionRate.OtherJobPosition);
         Assert.Equal(model.HolidayIsPaid, Data.FakeRequest.HolidayIsPaid);
         Assert.Equal(model.BreakIsPaid, Data.FakeRequest.BreakIsPaid);
-        Assert.Equal(model.Status, Data.FakeRequest.Status.ToString());
+        Assert.Equal(model.Status, Data.FakeRequest.Status);
         Assert.Equal(model.CreatedAt, Data.FakeRequest.CreatedAt);
         Assert.Equal(model.CreatedBy, Data.FakeRequest.CreatedBy);
         Assert.Equal(model.FinishAt, Data.FakeRequest.FinishAt);
@@ -154,7 +154,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.IncentiveDescription, Data.FakeRequest.IncentiveDescription);
         Assert.Equal(model.AgencyRate, Data.FakeRequest.AgencyRate);
         Assert.Equal(model.WorkerRate, Data.FakeRequest.WorkerRate);
-        Assert.Equal(model.DurationTerm, Data.FakeRequest.DurationTerm.ToString());
+        Assert.Equal(model.DurationTerm, Data.FakeRequest.DurationTerm);
         Assert.Equal(model.DisplayShift, Data.FakeRequest.Shift.DisplayShift);
         Assert.Equal(model.VaccinationRequired, Data.FakeCompany.VaccinationRequired);
     }

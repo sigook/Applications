@@ -1,15 +1,15 @@
 # Workflows - Covenant/Sigook Platform
 
-## 🔄 Flujos Completos Paso a Paso
+## 🔄 End-to-End Flows
 
-Este documento detalla los workflows principales del sistema con cada paso técnico.
+This document details the main system workflows with each technical step.
 
 ---
 
 ## 1️⃣ Worker Registration Flow
 
 ### Overview
-Worker se registra desde Flutter app, Agency aprueba, Worker puede trabajar.
+Worker registers from the Flutter app, the Agency approves, and the Worker can start working.
 
 ### Actors
 - **Worker** (via Flutter app)
@@ -20,7 +20,7 @@ Worker se registra desde Flutter app, Agency aprueba, Worker puede trabajar.
 
 ### Step-by-Step
 
-#### PASO 1: Worker inicia registro en app
+#### STEP 1: Worker starts registration in the app
 
 **Actor:** Worker (Flutter app)
 
@@ -53,7 +53,7 @@ GET /api/Catalog/Languages
 
 ---
 
-#### PASO 2: Worker completa formulario
+#### STEP 2: Worker fills out the form
 
 **Actor:** Worker (Flutter app)
 
@@ -76,7 +76,7 @@ class RegistrationViewModel extends StateNotifier<RegistrationState> {
 
 ---
 
-#### PASO 3: Worker submits registration
+#### STEP 3: Worker submits registration
 
 **Actor:** Worker (Flutter app)
 
@@ -153,7 +153,7 @@ Form Data:
 
 ---
 
-#### PASO 4: Backend processes registration
+#### STEP 4: Backend processes the registration
 
 **Actor:** System (Covenant.Api)
 
@@ -318,13 +318,13 @@ await _teamsWebhookService.SendAsync(
 
 ---
 
-#### PASO 5: Agency reviews worker profile
+#### STEP 5: Agency reviews the worker profile
 
 **Actor:** Agency (Web app)
 
 **Agency navigates to:**
 ```
-/agency/workers → List of all workers
+/agency/workers      → List of all workers
 /agency/workers/{id} → Worker detail
 ```
 
@@ -337,7 +337,7 @@ await _teamsWebhookService.SendAsync(
 
 ---
 
-#### PASO 6: Agency approves worker
+#### STEP 6: Agency approves the worker
 
 **Actor:** Agency (Web app)
 
@@ -374,7 +374,7 @@ await _emailService.SendAsync(
 
 ---
 
-#### PASO 7: Worker can now apply to jobs
+#### STEP 7: Worker can now apply to jobs
 
 **Actor:** Worker (Flutter app)
 
@@ -398,7 +398,7 @@ Company creates job order → Agency assigns workers or Workers apply → Assign
 
 ---
 
-### PASO 1: Company creates Request
+### STEP 1: Company creates a Request
 
 **Actor:** Company (Web app)
 
@@ -440,16 +440,15 @@ if (request.JobTitle.Length > 500)
 var jobPositionRate = await _jobPositionRateRepository
     .GetByIdAsync(request.JobPositionRateId);
 
-// Create Request
+// Create Request (initial Status = Open)
 var jobRequest = new Request
 {
     AgencyId = company.AgencyId,
-    CompanyProfileId = company.Id,
+    CompanyId = company.Id,
     JobTitle = request.JobTitle,
     Description = request.Description,
     Requirements = request.Requirements,
     WorkersQuantity = request.WorkersQuantity,
-    WorkersQuantityWorking = 0,
     StartAt = request.StartAt,
     FinishAt = request.FinishAt,
     IsAsap = request.IsAsap,
@@ -459,16 +458,11 @@ var jobRequest = new Request
     JobPositionRateId = request.JobPositionRateId,
     WorkerRate = jobPositionRate.WorkerRate,
     AgencyRate = jobPositionRate.AgencyRate,
-    Currency = jobPositionRate.Currency,
-    ShiftStart = request.ShiftStart,
-    ShiftEnd = request.ShiftEnd,
-    DurationBreak = request.DurationBreak,
     Incentive = request.Incentive,
     IncentiveDescription = request.IncentiveDescription,
-    RequestStatus = RequestStatus.Requested,
-    IsOpen = true,
     CreatedAt = DateTime.UtcNow
 };
+// Status defaults to RequestStatus.Open
 
 await _requestRepository.AddAsync(jobRequest);
 
@@ -481,7 +475,7 @@ await _teamsWebhookService.SendAsync(
 
 ---
 
-### PASO 2A: Agency assigns workers (Proactive)
+### STEP 2A: Agency assigns workers (Proactive)
 
 **Actor:** Agency (Web app)
 
@@ -490,11 +484,10 @@ await _teamsWebhookService.SendAsync(
 GET /api/AgencyWorkerProfile?approvedToWork=true&skillIds=guid1,guid2&cityId=guid
 ```
 
-**Agency assigns worker:**
+**Agency assigns a worker:**
 ```http
-POST /api/AgencyRequestWorker
+POST /api/AgencyRequest/{requestId}/Worker
 {
-  "requestId": "guid",
   "workerProfileId": "guid",
   "startWorking": "2026-02-01T00:00:00Z"
 }
@@ -509,35 +502,14 @@ if (!worker.ApprovedToWork)
 if (worker.Dnu)
     throw new BusinessException("Worker marked as Do Not Use");
 
-if (!worker.CanBeBook())
-    throw new BusinessException("Worker missing required documents");
-
 if (request.WorkersQuantityWorking >= request.WorkersQuantity)
     throw new BusinessException("Request already filled");
 
-// Check if already assigned
-var existing = await _workerRequestRepository
-    .GetByRequestAndWorkerAsync(request.Id, worker.Id);
-if (existing != null && existing.Status == WorkerRequestStatus.Booked)
-    throw new BusinessException("Worker already assigned");
+// AddWorker handles state transitions automatically
+var result = request.AddWorker(worker.Id, startWorking);
+if (!result.IsSuccess) throw new BusinessException(result.Error);
 
-// Create WorkerRequest
-var workerRequest = new WorkerRequest
-{
-    RequestId = request.Id,
-    WorkerProfileId = worker.Id,
-    Status = WorkerRequestStatus.Booked,
-    StartWorking = startWorking,
-    WeekStartWorking = GetWeekNumber(startWorking),
-    CreatedAt = DateTime.UtcNow
-};
-
-await _workerRequestRepository.AddAsync(workerRequest);
-
-// Update Request
-request.WorkersQuantityWorking++;
-if (request.RequestStatus == RequestStatus.Requested)
-    request.RequestStatus = RequestStatus.InProcess;
+// If capacity is reached, request.Status becomes Filled
 await _requestRepository.UpdateAsync(request);
 
 // Notify worker
@@ -551,7 +523,7 @@ await _pushNotificationService.SendAsync(
 
 ---
 
-### PASO 2B: Worker applies (Reactive)
+### STEP 2B: Worker applies (Reactive)
 
 **Actor:** Worker (Flutter app)
 
@@ -568,26 +540,28 @@ POST /api/WorkerRequest/Apply
 }
 ```
 
-**Backend:** (Similar to Agency assign, but gets workerId from authenticated user)
+**Backend:** (Similar to Agency assign, but the workerId is taken from the authenticated user)
 
 ---
 
-### PASO 3: Request gets filled
+### STEP 3: Request gets filled
 
-**Backend (automatic):**
+**Backend (automatic in `Request.AddWorker`):**
 ```csharp
 // After each worker assignment
-if (request.WorkersQuantityWorking >= request.WorkersQuantity)
+if (WorkersQuantityWorking >= WorkersQuantity)
 {
-    request.IsOpen = false; // Stop accepting applications
-
-    // Notify company
-    await _emailService.SendAsync(
-        to: company.Email,
-        subject: $"Request filled: {request.JobTitle}",
-        body: $"All {request.WorkersQuantity} workers have been assigned."
-    );
+    Status = RequestStatus.Filled;
 }
+```
+
+After the request transitions to `Filled`, the company can be notified:
+```csharp
+await _emailService.SendAsync(
+    to: company.Email,
+    subject: $"Request filled: {request.JobTitle}",
+    body: $"All {request.WorkersQuantity} workers have been assigned."
+);
 ```
 
 ---
@@ -599,17 +573,16 @@ Worker clocks in/out daily → Agency approves → System calculates totals.
 
 ---
 
-### PASO 1: Worker clocks in
+### STEP 1: Worker clocks in
 
 **Actor:** Worker (Flutter app)
 
-**Action:** Worker taps "Clock In" button on job
+**Action:** Worker taps "Clock In" button on the job
 
 **API Call:**
 ```http
-POST /api/WorkerRequestTimeSheet/ClockIn
+POST /api/WorkerRequest/{requestId}/TimeSheet
 {
-  "workerRequestId": "guid",
   "clockIn": "2026-02-01T07:05:23Z",
   "latitude": 43.6532,
   "longitude": -79.3832,
@@ -668,7 +641,7 @@ await _timeSheetLocationRepository.AddAsync(new TimeSheetLocation
 
 ---
 
-### PASO 2: Worker clocks out
+### STEP 2: Worker clocks out
 
 **Actor:** Worker (Flutter app)
 
@@ -676,9 +649,8 @@ await _timeSheetLocationRepository.AddAsync(new TimeSheetLocation
 
 **API Call:**
 ```http
-POST /api/WorkerRequestTimeSheet/ClockOut
+POST /api/WorkerRequest/{requestId}/TimeSheet
 {
-  "workerRequestId": "guid",
   "clockOut": "2026-02-01T15:08:12Z",
   "latitude": 43.6532,
   "longitude": -79.3832
@@ -740,18 +712,18 @@ await _timeSheetLocationRepository.AddAsync(new TimeSheetLocation
 
 ---
 
-### PASO 3: Agency approves timesheet
+### STEP 3: Agency approves the timesheet
 
 **Actor:** Agency (Web app)
 
 **Agency reviews timesheets:**
 ```http
-GET /api/AgencyRequestTimeSheet/{requestId}?date=2026-02-01
+GET /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet?date=2026-02-01
 ```
 
 **Agency approves:**
 ```http
-PUT /api/AgencyRequestTimeSheet/{timesheetId}/Approve
+PUT /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet/{timesheetId}/Approve
 {
   "timeInApproved": "2026-02-01T07:00:00Z",
   "timeOutApproved": "2026-02-01T15:00:00Z"
@@ -786,11 +758,11 @@ await _pushNotificationService.SendAsync(
 
 ---
 
-### PASO 4: System calculates TimeSheetTotal
+### STEP 4: System calculates TimeSheetTotal
 
 **Actor:** System (automatic after approval)
 
-**See:** `.docs/business/TIMESHEET_RULES.md` for detailed calculation logic
+**See:** `.docs/business/TIMESHEET_RULES.md` for the detailed calculation logic
 
 **Summary:**
 ```csharp
@@ -813,13 +785,13 @@ await _timeSheetTotalRepository.AddAsync(total);
 ## 4️⃣ Payroll Processing Flow
 
 ### Overview
-Agency generates pay stubs for period → System calculates deductions → PDF generated → Worker receives.
+Agency generates pay stubs for the period → System calculates deductions → PDF generated → Worker is notified.
 
-**See:** `.docs/business/PAYROLL_RULES.md` for detailed payroll calculations
+**See:** `.docs/business/PAYROLL_RULES.md` and `.docs/business/PAYSTUB_GENERATION.md` for detailed payroll calculations.
 
 ---
 
-### PASO 1: Agency initiates payroll
+### STEP 1: Agency initiates payroll
 
 **Actor:** Agency (Web app)
 
@@ -841,11 +813,11 @@ POST /api/v4/Accounting/PayStub
 
 ---
 
-### PASO 2: System calculates earnings
+### STEP 2: System calculates earnings
 
 **Backend:**
 ```csharp
-// Get all approved timesheets for period
+// Get all approved timesheets for the period
 var timesheets = await _timeSheetRepository
     .GetForPayrollAsync(workerProfileId, weekEnding);
 
@@ -859,20 +831,20 @@ foreach (var ts in timesheets)
     var total = ts.Total;
     var rate = ts.WorkerRequest.Request.WorkerRate;
 
-    regularWage += (decimal)total.RegularHours.TotalHours * rate;
-    overtimeWage += (decimal)total.OvertimeHours.TotalHours * (rate * 1.5m);
+    regularWage    += (decimal)total.RegularHours.TotalHours    * rate;
+    overtimeWage   += (decimal)total.OvertimeHours.TotalHours   * (rate * 1.5m);
     nightShiftWage += (decimal)total.NightShiftHours.TotalHours * (rate * 1.15m);
-    holidayWage += (decimal)total.HolidayHours.TotalHours * (rate * 1.5m);
+    holidayWage    += (decimal)total.HolidayHours.TotalHours    * (rate * 1.5m);
 }
 
-var grossPayment = regularWage + overtimeWage + nightShiftWage + holidayWage;
-var vacations = grossPayment * 0.04m; // 4% Canada
+var grossPayment  = regularWage + overtimeWage + nightShiftWage + holidayWage;
+var vacations     = grossPayment * 0.04m; // 4% Canada
 var totalEarnings = grossPayment + vacations;
 ```
 
 ---
 
-### PASO 3: System calculates deductions
+### STEP 3: System calculates deductions
 
 **Backend:**
 ```csharp
@@ -909,7 +881,7 @@ var totalPaid = totalEarnings - totalDeductions;
 
 ---
 
-### PASO 4: Create PayStub entity
+### STEP 4: Create the PayStub entity
 
 **Backend:**
 ```csharp
@@ -945,26 +917,11 @@ var payStub = new PayStub
 };
 
 await _payStubRepository.AddAsync(payStub);
-
-// Add items (daily breakdown)
-foreach (var ts in timesheets)
-{
-    var item = new PayStubItem
-    {
-        PayStubId = payStub.Id,
-        Date = ts.Date,
-        Hours = ts.Total.TotalHours,
-        Rate = ts.WorkerRequest.Request.WorkerRate,
-        Amount = (decimal)ts.Total.RegularHours.TotalHours * rate,
-        Type = "Regular"
-    };
-    await _payStubItemRepository.AddAsync(item);
-}
 ```
 
 ---
 
-### PASO 5: Generate PDF
+### STEP 5: Generate PDF
 
 **Backend:**
 ```csharp
@@ -984,7 +941,7 @@ await _payStubRepository.UpdateAsync(payStub);
 
 ---
 
-### PASO 6: Notify worker
+### STEP 6: Notify the worker
 
 **Backend:**
 ```csharp
@@ -1017,13 +974,13 @@ await _pushNotificationService.SendAsync(
 ## 5️⃣ Invoicing Flow
 
 ### Overview
-Agency generates invoice for company for period → System calculates totals with markup → PDF generated → Company receives.
+Agency generates an invoice for a company for the period → System calculates totals with markup → PDF generated → Company is notified.
 
-**See:** `.docs/business/BILLING_RULES.md` for detailed billing calculations
+**See:** `.docs/business/BILLING_RULES.md` for detailed billing calculations.
 
 ---
 
-### PASO 1: Agency initiates invoice
+### STEP 1: Agency initiates the invoice
 
 **Actor:** Agency (Web app)
 
@@ -1044,7 +1001,7 @@ POST /api/v4/Accounting/Invoice
 
 ---
 
-### PASO 2: System calculates invoice totals
+### STEP 2: System calculates invoice totals
 
 **Backend:**
 ```csharp
@@ -1072,15 +1029,15 @@ foreach (var workerRequestId in workerRequestIds)
     foreach (var ts in timesheets)
     {
         var total = ts.Total;
-        regularHours += total.RegularHours;
-        overtimeHours += total.OvertimeHours;
+        regularHours    += total.RegularHours;
+        overtimeHours   += total.OvertimeHours;
         nightShiftHours += total.NightShiftHours;
-        holidayHours += total.HolidayHours;
+        holidayHours    += total.HolidayHours;
 
-        regularAmount += (decimal)total.RegularHours.TotalHours * rate;
-        overtimeAmount += (decimal)total.OvertimeHours.TotalHours * (rate * 1.5m);
+        regularAmount    += (decimal)total.RegularHours.TotalHours    * rate;
+        overtimeAmount   += (decimal)total.OvertimeHours.TotalHours   * (rate * 1.5m);
         nightShiftAmount += (decimal)total.NightShiftHours.TotalHours * (rate * 1.15m);
-        holidayAmount += (decimal)total.HolidayHours.TotalHours * (rate * 1.5m);
+        holidayAmount    += (decimal)total.HolidayHours.TotalHours    * (rate * 1.5m);
     }
 
     var invoiceTotal = new InvoiceTotal
@@ -1111,7 +1068,7 @@ var totalNet = subTotal + vacations + hst;
 
 ---
 
-### PASO 3: Create Invoice entity
+### STEP 3: Create the Invoice entity
 
 **Backend:**
 ```csharp
@@ -1147,7 +1104,7 @@ foreach (var total in invoiceTotals)
 
 ---
 
-### PASO 4: Generate PDF and send
+### STEP 4: Generate PDF and send
 
 **Backend:**
 ```csharp

@@ -1,3 +1,4 @@
+using Covenant.Common.Enums;
 using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Common.Models.Request
@@ -7,16 +8,16 @@ namespace Covenant.Common.Models.Request
         public Guid Id { get; set; }
         public DateTime? StartWorking { get; set; }
         public DateTime? WeekStartWorking { get; set; }
-        public string WorkerRequestStatus { get; set; }
+        public WorkerRequestStatus WorkerRequestStatus { get; set; }
         public string RejectComments { get; set; }
         public DateTime? RejectedAt { get; set; }
         public Guid RequestId { get; set; }
         public int NumberId { get; set; }
-        public string RequestStatus { get; set; }
+        public RequestStatus RequestStatus { get; set; }
         public string JobTitle { get; set; }
         public decimal? WorkerRate { get; set; }
         public decimal? WorkerSalary { get; set; }
-        public string DurationTerm { get; set; }
+        public DurationTerm DurationTerm { get; set; }
         public string DisplayRecruiters { get; set; }
         public string Location { get; set; }
         public string Entrance { get; set; }

@@ -60,21 +60,4 @@ public class SendGridService : IEmailService
             logger?.LogError("Error sending emails error: {Error}", await emailResponse.Body.ReadAsStringAsync());
         }
     }
-
-    public async Task SendEmail(EmailModel model, ILogger logger)
-    {
-        var tos = model.Tos.Select(t => new EmailAddress(t)).ToList();
-        if (!hostEnvironment.IsProduction())
-        {
-            tos = [new EmailAddress(sendGridSettings.TestingEmailAddress, "Testing Recipient")];
-        }
-        var fromEmail = new EmailAddress(sendGridSettings.FromEmailAddress);
-        SendGridMessage msg = MailHelper.CreateSingleTemplateEmailToMultipleRecipients(fromEmail, tos, sendGridSettings.NewApplicantTemplateId, model.Data);
-        msg.SetSandBoxMode(!hostEnvironment.IsProduction());
-        Response emailResponse = await _sendGridClient.SendEmailAsync(msg);
-        if (!emailResponse.IsSuccessStatusCode)
-        {
-            logger?.LogError("Error sending emails error: {Error}", await emailResponse.Body.ReadAsStringAsync());
-        }
-    }
 }

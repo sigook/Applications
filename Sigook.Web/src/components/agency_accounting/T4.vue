@@ -17,6 +17,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import download from "@/mixins/downloadFileMixin";
+import { getT4Report } from "@/api/agencyReportApi";
 
 export default {
   mixins: [download],
@@ -36,7 +37,7 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoading = true;
-        this.$store.dispatch('agency/getT4Report', this.serverParams)
+        getT4Report(this.serverParams)
           .then(response => {
             this.isLoading = false;
             this.downloadFile(response, `T4_${this.serverParams.startDate}_${this.serverParams.endDate}`);

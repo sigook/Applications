@@ -16,8 +16,8 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Moq.Protected;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
@@ -47,7 +47,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
                     .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                     .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent(JsonConvert.SerializeObject(new IdModel(Startup.NewUserId)))
+                        Content = new StringContent(JsonSerializer.Serialize(new IdModel(Startup.NewUserId)))
                     }).Verifiable();
                     var client = new HttpClient(mockMessageHandler.Object)
                     {
@@ -144,7 +144,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
                         .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                         .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
                         {
-                            Content = new StringContent(JsonConvert.SerializeObject(true))
+                            Content = new StringContent(JsonSerializer.Serialize(true))
                         }).Verifiable();
                     var client = new HttpClient(mockMessageHandler.Object)
                     {

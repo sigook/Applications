@@ -40,6 +40,7 @@
 
 import validationEmail from '../../mixins/validationEmail';
 import toastMixin from "../../mixins/toastMixin";
+import { updateAgencyCompanyEmail } from "@/api/agencyCompanyApi";
 
 export default {
   name: "DialogCompanyUpdateEmail",
@@ -64,10 +65,7 @@ export default {
     },
     updateEmail() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyCompanyEmail', {
-        companyProfileId: this.companyProfileId,
-        model: { newEmail: this.newEmail }
-      }).then(() => {
+      updateAgencyCompanyEmail(this.companyProfileId, { newEmail: this.newEmail }).then(() => {
         this.isLoading = false;
         this.$emit('closeModal', true, this.newEmail);
       })

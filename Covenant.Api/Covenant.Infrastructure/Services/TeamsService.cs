@@ -5,8 +5,8 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Notification;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services;
 
@@ -72,7 +72,7 @@ public class TeamsService : ITeamsService
             {
                 return Result.Fail("TeamsAccountingWebhook url not found");
             }
-            string json = JsonConvert.SerializeObject(notification);
+            string json = JsonSerializer.Serialize(notification);
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpClient client = _clientFactory.CreateClient();

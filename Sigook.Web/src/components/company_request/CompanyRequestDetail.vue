@@ -13,7 +13,7 @@
         </div>
         <div class="item">
           <span class="fw-700">Term</span>
-          <p>{{ request.durationTerm | splitCapital }}</p>
+          <p>{{ DurationTermLabels[request.durationTerm] }}</p>
         </div>
         <div class="item worker-options">
           <span class="fw-700">Workers</span>
@@ -72,11 +72,16 @@
   </div>
 </template>
 <script lang="ts">
+import { DurationTermLabels } from "@/constants/enums";
+
 export default {
   props: ["request"],
   components: {
     Location: () => import("../request/RequestLocation.vue"),
     AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
+  },
+  computed: {
+    DurationTermLabels: () => DurationTermLabels,
   },
 };
 </script>

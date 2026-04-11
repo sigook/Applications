@@ -23,7 +23,7 @@
                                          :on-create="createNote"
                                          :on-update="updateNote"
                                          :on-delete="deleteNote"
-                                         @onUpdateNote="() => getAgencyRequestFirstNote()">
+                                         @onUpdateNote="() => loadFirstNotes()">
                             </modal-notes>
                         </div>
                     </div>
@@ -35,16 +35,23 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import {
+  getAgencyRequestNotes,
+  createAgencyRequestNote,
+  updateAgencyRequestNote,
+  deleteAgencyRequestNote,
+} from "@/api/agencyNoteApi";
+
 export default {
     props: ['canEdit', 'requestId'],
     data() {
         return {
             showModalNotes: false,
             profileId: this.requestId,
-            getNotes: 'agency/getAgencyRequestNote',
-            createNote: 'agency/createAgencyRequestNote',
-            updateNote: 'agency/updateAgencyRequestNote',
-            deleteNote: 'agency/deleteAgencyRequestNote',
+            getNotes: ({ userId, pagination }: any) => getAgencyRequestNotes(userId, pagination),
+            createNote: ({ userId, model }: any) => createAgencyRequestNote(userId, model),
+            updateNote: ({ userId, id, model }: any) => updateAgencyRequestNote(userId, id, model),
+            deleteNote: ({ userId, id }: any) => deleteAgencyRequestNote(userId, id),
             notesList: null
         }
     },
@@ -53,8 +60,8 @@ export default {
         ModalNotes: () => import("../notes/ModalNotes.vue")
     },
     methods: {
-        getAgencyRequestFirstNote(){
-            this.$store.dispatch(this.getNotes, {userId: this.profileId, pagination: {page: 1, size: 1}})
+        loadFirstNotes(){
+            getAgencyRequestNotes(this.profileId, {page: 1, size: 1})
                     .then(response => {
                         this.notesList = response;
                     })
@@ -64,11 +71,11 @@ export default {
         },
         onCloseModalNotes(){
             this.showModalNotes = false;
-            this.getAgencyRequestFirstNote();
+            this.loadFirstNotes();
         }
     },
     created() {
-        this.getAgencyRequestFirstNote();
+        this.loadFirstNotes();
     }
 }
 </script>

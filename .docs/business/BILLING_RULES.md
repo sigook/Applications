@@ -1,14 +1,14 @@
-# Billing Rules - Covenant/Sigook Platform (Canadá)
+# Billing Rules - Covenant/Sigook Platform (Canada)
 
 ## 💰 Invoice Generation System
 
-El sistema de facturación de Covenant cobra a las empresas (Companies) por los servicios de staffing, aplicando rates, premiums, y taxes apropiados.
+Covenant's invoicing system charges Companies for staffing services, applying rates, premiums, and taxes appropriately.
 
-**Ubicación del código:**
-- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` - Lógica de facturación (BaseInvoiceService, CanadaInvoiceService, UsaInvoiceService)
-- `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` - Orquestación
-- `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/` - Entidades de invoice
-- `Covenant.Api/Covenant.Documents/` - Generación de PDFs
+**Code location:**
+- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` — Invoicing logic (BaseInvoiceService, CanadaInvoiceService, UsaInvoiceService)
+- `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` — Orchestration
+- `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/` — Invoice entities
+- `Covenant.Api/Covenant.Documents/` — PDF generation
 
 ---
 
@@ -16,23 +16,23 @@ El sistema de facturación de Covenant cobra a las empresas (Companies) por los 
 
 ### Agency Rate vs Worker Rate
 
-**Concepto fundamental:**
+**Core concept:**
 ```
-AgencyRate = Lo que la Agency cobra a la Company
-WorkerRate = Lo que la Agency paga al Worker
-Markup = AgencyRate - WorkerRate (profit de la Agency)
+AgencyRate = What the Agency charges the Company
+WorkerRate = What the Agency pays the Worker
+Markup    = AgencyRate - WorkerRate (Agency's profit)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 AgencyRate: $25.00/hr
 WorkerRate: $18.50/hr
-Markup: $6.50/hr (26% profit margin)
+Markup:     $6.50/hr (26% profit margin)
 ```
 
-**Definido en:**
-- `CompanyProfileJobPositionRate` (tabla)
-- Por cada job position en cada company
+**Defined in:**
+- `CompanyProfileJobPositionRate` (table)
+- Per job position, per company
 
 ---
 
@@ -43,7 +43,7 @@ Markup: $6.50/hr (26% profit margin)
 RegularAmount = RegularHours × AgencyRate
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 40 hours × $25.00/hr = $1,000.00
 ```
@@ -54,16 +54,16 @@ RegularAmount = RegularHours × AgencyRate
 
 #### 1. Overtime Rate
 
-**Regla:**
+**Rule:**
 - Typically 1.5x (time and a half)
-- Definido en `CompanyProfileJobPositionRate.OvertimeRate`
+- Defined in `CompanyProfileJobPositionRate.OvertimeRate`
 
-**Cálculo:**
+**Calculation:**
 ```
 OvertimeAmount = OvertimeHours × (AgencyRate × OvertimeRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 OvertimeRate = 1.5
 4 hours × ($25.00 × 1.5) = 4 × $37.50 = $150.00
@@ -73,41 +73,41 @@ OvertimeRate = 1.5
 
 #### 2. Night Shift Premium
 
-**Regla:**
+**Rule:**
 - Additional premium for night hours (11 PM - 7 AM)
 - Typically 1.0 - 1.2 (0% - 20% extra)
-- Definido en `CompanyProfileJobPositionRate.NightShiftRate`
+- Defined in `CompanyProfileJobPositionRate.NightShiftRate`
 
-**Cálculo:**
+**Calculation:**
 ```
 NightShiftAmount = NightShiftHours × (AgencyRate × NightShiftRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 NightShiftRate = 1.15 (15% premium)
 8 hours × ($25.00 × 1.15) = 8 × $28.75 = $230.00
 ```
 
-**Nota:**
-- Some companies charge flat premium per hour instead of multiplier
-- Some don't charge night shift premium at all (NightShiftRate = 1.0)
+**Note:**
+- Some companies charge a flat per-hour premium instead of a multiplier
+- Some don't charge a night shift premium at all (NightShiftRate = 1.0)
 
 ---
 
 #### 3. Holiday Rate
 
-**Regla:**
+**Rule:**
 - Statutory holidays
 - Typically 1.5x - 2.0x
-- Definido en `CompanyProfileJobPositionRate.HolidayRate`
+- Defined in `CompanyProfileJobPositionRate.HolidayRate`
 
-**Cálculo:**
+**Calculation:**
 ```
 HolidayAmount = HolidayHours × (AgencyRate × HolidayRate)
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 HolidayRate = 1.5
 8 hours × ($25.00 × 1.5) = 8 × $37.50 = $300.00
@@ -117,19 +117,19 @@ HolidayRate = 1.5
 
 ### Vacation Rate
 
-**Regla Federal (Canadá):**
+**Federal Rule (Canada):**
 - **Mandatory 4%** of total wages
 - Added to invoice
-- Definido en `Invoice.VacationsRate`
+- Defined in `Invoice.VacationsRate`
 
-**Cálculo:**
+**Calculation:**
 ```
 Vacations = SubTotal × VacationsRate
 ```
 
-**Ejemplo:**
+**Example:**
 ```
-SubTotal: $4,500.00
+SubTotal:  $4,500.00
 Vacations: $4,500.00 × 0.04 = $180.00
 ```
 
@@ -158,14 +158,14 @@ Vacations: $4,500.00 × 0.04 = $180.00
    WorkerTotal = RegularAmount + OvertimeAmount + NightShiftAmount + HolidayAmount
 ```
 
-**Ejemplo (Worker: John Doe):**
+**Example (Worker: John Doe):**
 ```
-Regular: 40h × $25.00 = $1,000.00
-Overtime: 4h × $37.50 = $  150.00
-Night: 0h = $    0.00
-Holiday: 0h = $    0.00
+Regular:  40h × $25.00 = $1,000.00
+Overtime:  4h × $37.50 = $  150.00
+Night:     0h          = $    0.00
+Holiday:   0h          = $    0.00
 ────────────────────────────────
-Worker Total: $1,150.00
+Worker Total:           $1,150.00
 ```
 
 ---
@@ -174,7 +174,7 @@ Worker Total: $1,150.00
 
 **Step 1: SubTotal**
 ```
-SubTotal = Suma de todos los WorkerTotal
+SubTotal = sum of all WorkerTotal
 ```
 
 **Step 2: Vacations**
@@ -189,12 +189,12 @@ BonusAmount = SubTotal × BonusRate
 
 **Step 4: Discounts (if applicable)**
 ```
-DiscountAmount = suma de todos los descuentos
+DiscountAmount = sum of all discounts
 ```
 
 **Step 5: Additional Items (if applicable)**
 ```
-AdditionalItemsAmount = suma de items adicionales
+AdditionalItemsAmount = sum of additional items
 ```
 
 **Step 6: Taxable Amount**
@@ -264,9 +264,9 @@ TOTAL NET:                          $5,288.40
 | Manitoba (MB)         | GST + PST      | 12%    | 5% GST + 7% PST              |
 | Saskatchewan (SK)     | GST + PST      | 11%    | 5% GST + 6% PST              |
 
-**Determinado por:**
+**Determined by:**
 - Company billing address province
-- Almacenado en `Invoice.HstRate`
+- Stored in `Invoice.HstRate`
 
 ---
 
@@ -279,7 +279,7 @@ TOTAL NET:                          $5,288.40
 - Educational services
 
 **For Staffing Services:**
-- **Not exempt** - Fully taxable at HST/GST rate
+- **Not exempt** — Fully taxable at HST/GST rate
 
 ---
 
@@ -287,17 +287,17 @@ TOTAL NET:                          $5,288.40
 
 ### Bonus Charges
 
-**Purpose:** Special bonuses o incentivos
+**Purpose:** Special bonuses or incentives
 
-**Cálculo:**
+**Calculation:**
 ```
 BonusAmount = SubTotal × BonusRate
 ```
 
-**Ejemplo:**
+**Example:**
 ```
-SubTotal: $4,500.00
-BonusRate: 0.05 (5%)
+SubTotal:    $4,500.00
+BonusRate:   0.05 (5%)
 BonusAmount: $4,500.00 × 0.05 = $225.00
 ```
 
@@ -305,9 +305,9 @@ BonusAmount: $4,500.00 × 0.05 = $225.00
 
 ### Additional Items
 
-**Purpose:** Custom line items (equipment rental, transportation, etc)
+**Purpose:** Custom line items (equipment rental, transportation, etc.)
 
-**Estructura:**
+**Structure:**
 ```csharp
 public class InvoiceAdditionalItem
 {
@@ -316,21 +316,21 @@ public class InvoiceAdditionalItem
 }
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 Description: "Equipment Rental - Forklift"
 Amount: $500.00
 ```
 
-**Se suma al Taxable Amount.**
+**Added to the Taxable Amount.**
 
 ---
 
 ### Discounts
 
-**Purpose:** Descuentos por volumen, promociones, ajustes
+**Purpose:** Volume discounts, promotions, adjustments
 
-**Estructura:**
+**Structure:**
 ```csharp
 public class InvoiceDiscount
 {
@@ -339,13 +339,13 @@ public class InvoiceDiscount
 }
 ```
 
-**Ejemplo:**
+**Example:**
 ```
 Description: "Volume Discount (>100 hours)"
 Amount: -$200.00
 ```
 
-**Se resta del Taxable Amount.**
+**Subtracted from the Taxable Amount.**
 
 ---
 
@@ -363,8 +363,8 @@ Amount: -$200.00
 - End of month
 - Covers all work in the month
 
-**Definido por:**
-- Agreement entre Agency y Company
+**Defined by:**
+- Agreement between Agency and Company
 - Configurable per company
 
 ---
@@ -414,7 +414,7 @@ AI-0123-26  (123rd invoice of 2026)
 
 **4. Payment Terms:**
 - Payment due date
-- Payment methods accepted
+- Accepted payment methods
 - Late payment policy
 
 **5. Notes:**
@@ -429,8 +429,8 @@ AI-0123-26  (123rd invoice of 2026)
 **Scenario:** Company has locations in multiple provinces
 
 **Rule:**
-- Apply tax rate based on **work location** (where service performed)
-- Not billing address
+- Apply tax rate based on **work location** (where the service was performed)
+- Not the billing address
 
 **Example:**
 ```
@@ -457,12 +457,12 @@ Generate separate invoices or split tax calculations.
 
 ### Subcontractor Billing
 
-**Scenario:** Worker is subcontractor (not employee)
+**Scenario:** Worker is a subcontractor (not an employee)
 
 **Differences:**
 - No vacation pay (4%)
 - Different tax treatment
-- May invoice agency directly
+- May invoice the agency directly
 
 **Invoice structure:**
 - SubTotal only (no vacations)
@@ -477,7 +477,7 @@ Generate separate invoices or split tax calculations.
 
 **Similar to subcontractors:**
 - No vacation pay
-- Invoice structure simplified
+- Simplified invoice structure
 
 ---
 
@@ -518,7 +518,7 @@ public enum ChargeStatus
 }
 ```
 
-**Invoice.ChargeStatus** tracks payment status.
+**Invoice.ChargeStatus** tracks the payment status.
 
 ---
 
@@ -529,7 +529,7 @@ public enum ChargeStatus
 **Available Reports:**
 
 **1. Invoice Summary Report (Excel):**
-- All invoices for period
+- All invoices for a period
 - Company, Date, Amount, Status
 
 **2. Accounts Receivable Report:**
@@ -609,8 +609,8 @@ public void Calculate_Invoice_Standard()
 - Audit requirement for CRA
 
 **Handling Errors:**
-- If invoice deleted, mark as void (don't reuse number)
-- Use `SkipInvoiceNumber` flag if needed
+- If an invoice is deleted, mark it as void (don't reuse the number)
+- Use the `SkipInvoiceNumber` flag if needed
 
 ---
 
@@ -657,22 +657,22 @@ Attachments: invoice.pdf
 
 ### Critical Validations
 
-**1. Cannot create invoice if:**
-- No approved timesheets for period
-- Company is Blocked status
+**1. Cannot create an invoice if:**
+- No approved timesheets for the period
+- Company status is Blocked
 - No job position rate defined
 
-**2. Invoice must have:**
+**2. An invoice must have:**
 - At least one worker with hours
 - Valid HST rate (based on province)
 - Sequential invoice number
 
-**3. Cannot edit invoice after:**
+**3. Cannot edit an invoice after:**
 - Payment received
 - 30 days elapsed (configurable)
 
-**4. Cannot delete invoice:**
-- Use void flag instead
+**4. Cannot delete an invoice:**
+- Use the void flag instead
 - Maintain audit trail
 
 ---
@@ -682,7 +682,7 @@ Attachments: invoice.pdf
 ### For Agencies
 
 1. **Review timesheets before invoicing**
-   - Ensure all hours approved
+   - Ensure all hours are approved
    - Check for anomalies
 
 2. **Generate invoices promptly**

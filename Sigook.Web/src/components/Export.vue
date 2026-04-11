@@ -15,13 +15,14 @@
 </template>
 <script lang="ts">
 import download from "@/mixins/downloadFileMixin";
+import { downloadAgencyReport } from "@/api/agencyReportApi";
 export default {
   props: ["url", "params", "fileName"],
   mixins: [download],
   methods: {
     downloadReport() {
       this.$emit("onDataLoading", true);
-      this.$store.dispatch("agency/getAgencyReport", { filter: this.params, url: this.url })
+      downloadAgencyReport(this.url, this.params)
         .then(file => {
           this.$emit("onDataLoading", false);
           this.downloadFile(file, `${this.fileName}_${new Date().toLocaleDateString()}`)

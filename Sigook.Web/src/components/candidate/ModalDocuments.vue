@@ -24,7 +24,7 @@
           </span>
         </div>
         <button type="button" class="sm-btn fz-1 background-btn orange-button" :disabled="isDisabled"
-          @click="addCandidateDocument(candidateId)">
+          @click="submitDocument()">
           Add
         </button>
       </div>
@@ -36,7 +36,7 @@
               {{ document.description }}
             </a>
             <button class="btn-icon-sm btn-icon-delete" type="button"
-              @click="deleteCandidateDocument(document.id, index)"></button>
+              @click="onDeleteDocument(document.id, index)"></button>
           </li>
         </ul>
         <div class="padding-5 color-gray-light" v-else>
@@ -50,6 +50,7 @@
 import toast from "../../mixins/toastMixin";
 import pubSub from "@/mixins/pubSub";
 import updateMixin from "../../mixins/uploadFiles";
+import { getCandidateDocuments, addCandidateDocument, deleteCandidateDocument } from "@/api/agencyCandidateApi";
 
 export default {
   props: ["candidateId"],
@@ -70,13 +71,12 @@ export default {
     UploadFile: () => import("../../components/UploadFiles.vue"),
   },
   created() {
-    this.getCandidateDocuments();
+    this.loadDocuments();
   },
   methods: {
-    getCandidateDocuments() {
+    loadDocuments() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/getCandidateDocuments", this.candidateId)
+      getCandidateDocuments(this.candidateId)
         .then((response) => {
           this.isLoading = false;
           this.documents = response;
@@ -99,18 +99,14 @@ export default {
         description: "",
       };
     },
-    addCandidateDocument() {
+    submitDocument() {
       this.$validator.validateAll().then((result) => {
         if (result && this.newDocument.fileName) {
           this.isLoading = true;
-          this.$store
-            .dispatch("agency/addCandidateDocument", {
-              candidateId: this.candidateId,
-              model: this.newDocument,
-            })
+          addCandidateDocument(this.candidateId, this.newDocument)
             .then(() => {
               this.isLoading = false;
-              this.getCandidateDocuments();
+              this.loadDocuments();
               this.cleanInput();
             })
             .catch((error) => {
@@ -122,13 +118,9 @@ export default {
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    deleteCandidateDocument(id, index) {
+    onDeleteDocument(id, index) {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/deleteCandidateDocument", {
-          candidateId: this.candidateId,
-          id: id,
-        })
+      deleteCandidateDocument(this.candidateId, id)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess("Deleted");

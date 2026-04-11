@@ -1,4 +1,5 @@
 import { Location } from './common';
+import { RequestStatus } from '@/constants/enums';
 
 export enum CompanyStatus {
   Lead = 'Lead',
@@ -121,6 +122,48 @@ export interface CovenantFileModel {
   canDownload: boolean;
 }
 
+// Matches CompanyProfileDocumentModel (extends CovenantFileModel)
+// Used by POST /api/AgencyCompanyProfile/{profileId}/Document and list responses
+export interface CompanyProfileDocumentModel {
+  id?: string;
+  fileName: string;
+  description?: string;
+  pathFile?: string;
+  canDownload?: boolean;
+  documentType?: string | number;
+}
+
+// Matches CompanyProfileListModel — returned by GetCompaniesWithRequests
+export interface CompanyProfileListItem {
+  id: string;
+  logo: string;
+  fullName: string;
+  businessName: string;
+  numberId: number;
+  locations: string[];
+  active: boolean;
+  companyId: string;
+  agencyId: string;
+  industry: string;
+  companyStatus: CompanyStatus;
+  contactName: string;
+  contactRole: string;
+  phone: string;
+  email: string;
+  website: string;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+}
+
+// PATCH /api/V2/AgencyCompanyProfile/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeOrders}
+// Matches CompanyProfileSettingsUpdateModel — .NET binds only the fields it needs
+export interface CompanyProfileSettingsUpdate {
+  requiresPermissionToSeeOrders?: boolean;
+  overtimeStartsAfter?: number;
+  paidHolidays?: boolean;
+}
+
 export interface CompanyProfileIndustryDetail {
   id: string;
   industry: string;
@@ -159,7 +202,7 @@ export interface CompanyRequestListItem {
   displayShift: string;
   workersQuantity: number;
   workersQuantityWorking: number;
-  status: string;
+  requestStatus: RequestStatus;
   isAsap: boolean;
   isDirectHiring: boolean;
   createdAt: string;
@@ -185,7 +228,8 @@ export interface CompanyRequestWorker {
   id: string;
   workerId: string;
   name: string;
-  status: string;
+  workerRequestStatus: number;
+  status?: string;
   profileImage: string;
   isSubcontractor: boolean;
   totalHoursApproved: number;

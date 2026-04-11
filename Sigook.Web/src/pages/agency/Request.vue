@@ -28,7 +28,7 @@
         </div>
         <div v-if="request.status && request.status !== 'None'"
           class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
-          {{ $t(request.status) }}
+          {{ $t(RequestStatusLabels[request.status]) }}
         </div>
         <floating-menu class="is-inline-block" v-if="request.canEdit">
           <template slot="options">
@@ -39,7 +39,7 @@
             <button class="floating-menu-item" v-on:click="showShiftModal = true">
               <span>Edit Shift</span>
             </button>
-            <template v-if="request.status === $statusOpen">
+            <template v-if="request.status === RequestStatus.Open">
               <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
                 <span>Send an email invitation</span>
               </button>
@@ -56,7 +56,7 @@
         </floating-menu>
         <floating-menu class="is-inline-block" v-if="!request.canEdit">
           <template slot="options">
-            <button class="floating-menu-item" v-on:click="agencyRequestOpen(request.id)">
+            <button class="floating-menu-item" v-on:click="onOpenRequest(request.id)">
               <span>Reopen</span>
             </button>
           </template>
@@ -81,7 +81,7 @@
     <div v-if="request">
 
       <b-modal v-model="cancelRequestModal" width="500px">
-        <cancel-list @sendReason="(reason) => cancelRequest(reason)"></cancel-list>
+        <cancel-list @sendReason="(reason) => onCancelRequest(reason)"></cancel-list>
       </b-modal>
 
        <b-modal v-model="showShiftModal" width="800px">
@@ -93,6 +93,13 @@
 
 <script lang="ts">
 import directHiringMixin from "../../mixins/directHiringMixin";
+import {
+  getAgencyRequest,
+  cancelAgencyRequest,
+  agencyRequestOpen,
+  agencyRequestSendInvitation,
+} from "@/api/agencyRequestApi";
+import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 
 export default {
   data() {
@@ -135,17 +142,17 @@ export default {
       });
     },
     canEditRequest(request) {
-      return request.status === this.$statusOpen ||
-             request.status === this.$statusFilled;
+      return request.status === RequestStatus.Open ||
+             request.status === RequestStatus.Filled;
     },
     canCancelRequest(request) {
       // Can only cancel orders in Open status without workers
-      return request.status === this.$statusOpen &&
+      return request.status === RequestStatus.Open &&
              (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
     },
-    getAgencyRequest() {
+    loadRequest() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyRequest", this.$route.params.id)
+      getAgencyRequest(this.$route.params.id)
         .then((response) => {
           const updatedRequest = Object.assign({}, response, {
             canEdit: this.canEditRequest(response),
@@ -160,11 +167,10 @@ export default {
           this.showAlertError(error);
         });
     },
-    cancelRequest(reason) {
+    onCancelRequest(reason) {
       this.cancelRequestModal = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/cancelRequest", {
-        id: this.request.id,
+      cancelAgencyRequest(this.request.id, {
         cancellationReasonId: reason.reasonId,
         otherCancellationReason: reason.otherMessage,
       })
@@ -192,12 +198,12 @@ export default {
       this.request.displayShift = shift;
       this.showShiftModal = false;
     },
-    agencyRequestOpen(id) {
+    onOpenRequest(id) {
       this.isLoading = true;
-      this.$store.dispatch("agency/agencyRequestOpen", id)
+      agencyRequestOpen(id)
         .then(() => {
           this.isLoading = false;
-          this.request.status = this.$statusOpen;
+          this.request.status = RequestStatus.Open;
           this.request.canEdit = this.canEditRequest(this.request);
           this.request.canCancel = this.canCancelRequest(this.request);
         })
@@ -208,7 +214,7 @@ export default {
     },
     setCanSendInvitation(request) {
       // Cannot send invitations to Filled orders
-      if (request.status === this.$statusFilled) {
+      if (request.status === RequestStatus.Filled) {
         this.canSendInvitation = false;
         return;
       }
@@ -229,16 +235,15 @@ export default {
       });
     },
     onRefreshRequest() {
-      console.log('🔄 Refresh request event received, calling getAgencyRequest()');
       // Refresh the entire request from the API to get updated status
-      this.getAgencyRequest();
+      this.loadRequest();
     },
     sendInvitation(id) {
       this.showAlertConfirm(this.$t("AreYouSure"), this.warningMessage).then(
         (response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("agency/agencyRequestSendInvitation", id)
+            agencyRequestSendInvitation(id)
               .then(() => {
                 this.canSendInvitation = false;
                 this.isLoading = false;
@@ -255,17 +260,17 @@ export default {
     getStatusColorClass(request) {
       // Return text color class matching TableRequests visual style
       // Show blue color (like InProgress) for Open orders with workers but not full
-      if (request.status === this.$statusOpen &&
+      if (request.status === RequestStatus.Open &&
           request.workersQuantityWorking > 0 &&
           request.workersQuantityWorking < request.workersQuantity) {
         return 'Book'; // Blue color (similar to InProgress)
       }
-      // Return standard status color classes
-      return request.status; // Open (orange), Filled (green), Cancelled (red)
+      // Return standard status color classes by name (Open/Filled/Cancelled)
+      return RequestStatusLabels[request.status];
     }
   },
   created() {
-    this.getAgencyRequest();
+    this.loadRequest();
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
       if (!this.visitedTabs.includes(this.$route.query.tab)) {
@@ -274,6 +279,8 @@ export default {
     }
   },
   computed: {
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     billingTitle() {
       if (this.request.billingTitle && this.request.jobTitle !== this.request.billingTitle) {
         return `${this.request.billingTitle}`;

@@ -46,6 +46,7 @@
 <script lang="ts">
 import CvnAddress from "@/components/Address.vue";
 import { createProfileLocation } from '@/api/companyApi';
+import { createAgencyCompanyLocation, updateAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 
 export default {
   components: { CvnAddress },
@@ -63,18 +64,18 @@ export default {
       this.$validator.validateAll().then((result) => {
         if (result) {
           if (this.location.id) {
-            this.updateAgencyCompanyLocation(this.location.id);
+            this.updateLocation(this.location.id);
           } else {
-            this.createAgencyCompanyLocation();
+            this.createLocation();
           }
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       });
     },
-    createAgencyCompanyLocation() {
+    createLocation() {
       this.isLoading = true;
-      this.$store.dispatch('agency/createAgencyCompanyLocation', { profileId: this.profileId, model: this.location })
+      createAgencyCompanyLocation(this.profileId, this.location)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created');
@@ -97,9 +98,9 @@ export default {
           this.showAlertError(error)
         })
     },
-    updateAgencyCompanyLocation(id) {
+    updateLocation(id) {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyCompanyLocation', { profileId: this.profileId, locationId: id, model: this.location })
+      updateAgencyCompanyLocation(this.profileId, id, this.location)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Updated');

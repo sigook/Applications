@@ -163,6 +163,7 @@
 
 import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
 import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { getAgencyWorkers, updateApprovedToWork } from "@/api/agencyWorkerApi";
 
 export default {
   data() {
@@ -187,7 +188,7 @@ export default {
   methods: {
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getWorkers();
+      this.loadWorkers();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -211,7 +212,7 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
+      this.loadWorkers();
     },
     onCellClick(row, column) {
       switch (column._props.field) {
@@ -225,13 +226,13 @@ export default {
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getWorkers();
+        this.loadWorkers();
       }
     },
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getWorkers();
+      this.loadWorkers();
     },
     onCreatedAtCleared() {
       this.createdAtDatesSelected = [];
@@ -239,7 +240,7 @@ export default {
     },
     onFeatureChange() {
       this.serverParams.features = this.featuresSelected.map(fs => fs.id);
-      this.getWorkers();
+      this.loadWorkers();
     },
     goToApplicants(item) {
       this.$router.push({
@@ -247,10 +248,10 @@ export default {
         query: { tab: 'Applicants' }
       });
     },
-    getWorkers() {
+    loadWorkers() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyWorkerProfileFilter", this.serverParams);
-      this.$store.dispatch('agency/getWorkers', this.serverParams)
+      getAgencyWorkers(this.serverParams)
         .then(workers => {
           this.rows = workers.items.map(w => ({ ...w, actions: null }));
           this.totalItems = workers.totalItems;
@@ -262,17 +263,16 @@ export default {
     },
     deleteWorker(worker) {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/updateApprovedToWork", worker.id)
+      updateApprovedToWork(worker.id)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("Updated"));
-          this.getWorkers();
+          this.loadWorkers();
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
-          this.getWorkers();
+          this.loadWorkers();
         });
     },
     confirmDelete(worker) {
@@ -302,7 +302,7 @@ export default {
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
-    this.getWorkers();
+    this.loadWorkers();
   },
 }
 </script>

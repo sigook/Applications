@@ -28,7 +28,7 @@
                             <modal-notes :user-id="this.workerId"
                                          :on-get="getNotes"
                                          :on-create="createNote"
-                                         @onUpdateNote="() => getAgencyWorkerProfileNote()">
+                                         @onUpdateNote="() => loadNotes(pageIndex)">
                             </modal-notes>
                         </div>
                     </div>
@@ -39,6 +39,7 @@
 </template>
 <script lang="ts">
     import toast from '../../mixins/toastMixin';
+    import { getWorkerProfileNotes, createWorkerProfileNote } from '@/api/agencyNoteApi';
     export default {
         data(){
             return {
@@ -48,8 +49,8 @@
                 pageSize: 8,
                 pageIndex: 1,
                 isLoading: false,
-                getNotes: 'agency/getAgencyWorkerProfileNote',
-                createNote: 'agency/createAgencyWorkerProfileNote',
+                getNotes: ({ userId, pagination }: any) => getWorkerProfileNotes(userId, pagination),
+                createNote: ({ userId, model }: any) => createWorkerProfileNote(userId, model),
                 updateNote: null,
                 deleteNote: null,
             }
@@ -59,9 +60,9 @@
             ModalNotes: () => import("../notes/ModalNotes.vue")
         },
         methods: {
-            getAgencyWorkerProfileNote(index){
+            loadNotes(index){
                 this.isLoading = true
-                this.$store.dispatch(this.getNotes, {userId: this.workerId, pagination: {page: index, size: this.pageSize}})
+                getWorkerProfileNotes(this.workerId, {page: index, size: this.pageSize})
                         .then(response => {
                             this.isLoading = false
                             this.notesList = response;
@@ -73,11 +74,11 @@
             },
             onCloseModalNotes(){
                 this.showModalNotes = false;
-                this.getAgencyWorkerProfileNote(this.pageIndex);
+                this.loadNotes(this.pageIndex);
             }
         },
         created(){
-            this.getAgencyWorkerProfileNote(this.pageIndex);
+            this.loadNotes(this.pageIndex);
         }
     }
 </script>

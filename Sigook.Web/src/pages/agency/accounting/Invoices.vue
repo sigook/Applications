@@ -77,7 +77,7 @@
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top">
                 <b-button type="is-success" outlined rounded icon-right="file-pdf" class="mr-2"
-                  @click="downloadInvoicePdf(props.row)">
+                  @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip label="Send Email" type="is-dark" position="is-top">
@@ -107,6 +107,7 @@
 
 <script lang="ts">
 import download from "@/mixins/downloadFileMixin";
+import { getAgencyInvoices, downloadInvoicePdf } from "@/api/agencyInvoiceApi";
 
 export default {
   components: {
@@ -141,12 +142,12 @@ export default {
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
-    this.getInvoices();
+    this.loadInvoices();
   },
   methods: {
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getInvoices();
+      this.loadInvoices();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -164,28 +165,28 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getInvoices();
+      this.loadInvoices();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getInvoices();
+        this.loadInvoices();
       }
     },
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getInvoices();
+      this.loadInvoices();
     },
     onCreatedAtCleared() {
       this.createdAtDatesSelected = [];
       this.onCreatedAtSelected();
     },
-    getInvoices() {
+    loadInvoices() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyInvoiceFilter", this.serverParams);
-      this.$store.dispatch("agency/getInvoices", this.serverParams)
-        .then((response) => {
-          this.rows = response.detail.items.map(i => ({ ...i, actions: null }));
+      getAgencyInvoices(this.serverParams)
+        .then((response: any) => {
+          this.rows = response.detail.items.map((i: any) => ({ ...i, actions: null }));
           this.totalItems = response.detail.totalItems;
           this.total = response.total;
           this.isLoading = false;
@@ -195,9 +196,9 @@ export default {
           this.showAlertError(error.data);
         });
     },
-    downloadInvoicePdf(invoice) {
+    onDownloadInvoicePdf(invoice) {
       this.isLoading = true;
-      this.$store.dispatch("agency/downloadInvoicePdf", invoice.id)
+      downloadInvoicePdf(invoice.id)
         .then(response => {
           this.isLoading = false;
           this.downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
@@ -213,7 +214,7 @@ export default {
     },
     onSendInvoiceEmail() {
       this.showSendEmailModal = false;
-      this.getInvoices();
+      this.loadInvoices();
     },
     deleteInvoice(invoice) {
       this.currentInvoice = invoice;
@@ -221,7 +222,7 @@ export default {
     },
     onDeleteInvoice() {
       this.showDeleteModal = false;
-      this.getInvoices();
+      this.loadInvoices();
     }
   }
 };

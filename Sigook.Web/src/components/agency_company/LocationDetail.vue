@@ -17,7 +17,7 @@
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-button type="is-danger" outlined rounded icon-right="delete"
-          @click="deleteAgencyCompanyLocation(props.row.id, props.row.index)"></b-button>
+          @click="onDeleteLocation(props.row.id, props.row.index)"></b-button>
       </b-table-column>
     </b-table>
     <div class="locations-aside-map" v-if="data && data[0]">
@@ -34,6 +34,7 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyCompanyLocation, deleteAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 export default {
   data() {
     return {
@@ -62,12 +63,12 @@ export default {
         row.postalCode.toLowerCase().includes(lowerSearchTerm)
       );
     },
-    async getAgencyCompanyLocation() {
-      this.data = await this.$store.dispatch('agency/getAgencyCompanyLocation', this.profileId);
+    async loadCompanyLocations() {
+      this.data = await getAgencyCompanyLocation(this.profileId);
       this.data = this.data.map(d => ({ ...d, actions: null }));
     },
     async onUpdateModal() {
-      await this.getAgencyCompanyLocation();
+      await this.loadCompanyLocations();
       this.closeModal();
     },
     closeModal() {
@@ -78,12 +79,12 @@ export default {
       this.currentLocation = item;
       this.showModal = true;
     },
-    deleteAgencyCompanyLocation(id, index) {
+    onDeleteLocation(id, index) {
       this.showAlertConfirm("Are you sure", "You want to delete this location")
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch('agency/deleteAgencyCompanyLocation', { profileId: this.profileId, locationId: id })
+            deleteAgencyCompanyLocation(this.profileId, id)
               .then(() => {
                 this.isLoading = false;
                 this.showAlertSuccess('Deleted')
@@ -100,7 +101,7 @@ export default {
     }
   },
   async created() {
-    await this.getAgencyCompanyLocation();
+    await this.loadCompanyLocations();
   },
   components: {
     LocationForm: () => import("./LocationForm.vue")

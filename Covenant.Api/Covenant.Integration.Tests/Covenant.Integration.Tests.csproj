@@ -108,6 +108,7 @@
 
     <ItemGroup>
       <Folder Include="Properties" />
+      <Folder Include="Shared\PayStubDocument\" />
     </ItemGroup>
 
 </Project>

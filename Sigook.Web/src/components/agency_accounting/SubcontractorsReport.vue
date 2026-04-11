@@ -30,6 +30,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import download from "@/mixins/downloadFileMixin";
+import { getPayrollSubcontractors, downloadSubcontractorReport } from "@/api/agencyPayStubApi";
 
 export default {
   data() {
@@ -49,13 +50,13 @@ export default {
   methods: {
     onPageChange(page) {
       this.serverParams.pageIndex = page;
-      this.getPayrollSubcontractors();
+      this.loadSubcontractors();
     },
-    getPayrollSubcontractors() {
+    loadSubcontractors() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getPayrollSubcontractors", this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map(item => ({ ...item, actions: null, reportDownloading: false }));
+      getPayrollSubcontractors(this.serverParams)
+        .then((response: any) => {
+          this.rows = response.items.map((item: any) => ({ ...item, actions: null, reportDownloading: false }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
@@ -67,7 +68,7 @@ export default {
     downloadSubcontractor(subcontractor) {
       const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
       subcontractor.reportDownloading = true;
-      this.$store.dispatch("agency/downloadSubcontractorReport", weekEnding)
+      downloadSubcontractorReport(weekEnding)
         .then(response => {
           subcontractor.reportDownloading = false;
           this.downloadFile(response, `Subcontractor_${weekEnding}`);
@@ -79,7 +80,7 @@ export default {
     }
   },
   created() {
-    this.getPayrollSubcontractors();
+    this.loadSubcontractors();
   }
 };
 </script>

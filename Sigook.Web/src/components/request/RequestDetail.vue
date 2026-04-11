@@ -9,24 +9,24 @@
       </div>
       <div class="item">
         <span class="fw-700">Term</span>
-        <p>{{ request.durationTerm | splitCapital }}</p>
+        <p>{{ DurationTermLabels[request.durationTerm] }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Employment Type</span>
-        <p>{{ request.employmentType | splitCapital }}</p>
+        <p>{{ EmploymentTypeLabels[request.employmentType] }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Start
           <span
-            v-if="((request.status === $statusFilled || request.status === $statusCancelled) && request.durationTerm === $longTerm) || request.durationTerm === $shortTerm">
+            v-if="((request.status === RequestStatus.Filled || request.status === RequestStatus.Cancelled) && request.durationTerm === DurationTerm.LongTerm) || request.durationTerm === DurationTerm.ShortTerm">
             / Finish</span>
         </span>
         <p>
           {{ request.startAt | dateMonth }}
-          <span class="fz-0" v-if="request.durationTerm !== $longTerm">
+          <span class="fz-0" v-if="request.durationTerm !== DurationTerm.LongTerm">
             / {{ request.finishAt | dateMonth }}</span>
           <span class="fz-0"
-            v-if="(request.status === $statusFilled || request.status === $statusCancelled) && request.durationTerm === $longTerm">
+            v-if="(request.status === RequestStatus.Filled || request.status === RequestStatus.Cancelled) && request.durationTerm === DurationTerm.LongTerm">
             / {{ request.finishAt | dateMonth }}
           </span>
         </p>
@@ -36,11 +36,11 @@
         <p class="hover-actions">
           <span class="mr-1 fz-0">{{ request.workersQuantityWorking }} /
             {{ request.workersQuantity }}</span>
-          <button v-if="request.canEdit" @click="increaseWorkersQuantityByOne()"
+          <button v-if="request.canEdit" @click="onIncreaseWorkersQuantity()"
             class="btn-icon-sm btn-icon-circle-plus bg-transparent relative actions">
             add
           </button>
-          <button @click="reduceWorkersQuantityByOne"
+          <button @click="onReduceWorkersQuantity"
             class="btn-icon-sm btn-icon-circle-minus bg-transparent relative actions"
             v-if="request.canEdit && request.workersQuantityWorking < request.workersQuantity && request.workersQuantity !== 1">
             reduce
@@ -50,13 +50,13 @@
       <div class="item">
         <span class="fw-700">Is Asap</span>
         <p>
-          <b-checkbox v-model="localRequest.isAsap" @input="updateAgencyRequestIsAsap()"></b-checkbox>
+          <b-checkbox v-model="localRequest.isAsap" @input="onToggleIsAsap()"></b-checkbox>
         </p>
       </div>
       <div class="item">
         <span class="fw-700">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @input="updatePunchCardIsVisibleInApp()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @input="onTogglePunchCardVisibility()"></b-checkbox>
         </p>
       </div>
       <div class="item">
@@ -122,8 +122,26 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import {
+  increaseWorkersQuantityByOne,
+  reduceWorkersQuantityByOne,
+  updateAgencyRequestIsAsap,
+  updateAgencyPunchCardVisibilityStatusInApp,
+} from "@/api/agencyRequestApi";
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentTypeLabels,
+  RequestStatus,
+} from "@/constants/enums";
 export default {
   props: ["request"],
+  computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
+    RequestStatus: () => RequestStatus,
+  },
   data() {
     return {
       isLoading: false,
@@ -144,10 +162,9 @@ export default {
     AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
   },
   methods: {
-    increaseWorkersQuantityByOne() {
+    onIncreaseWorkersQuantity() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/increaseWorkersQuantityByOne", this.request.id)
+      increaseWorkersQuantityByOne(this.request.id)
         .then(() => {
           this.isLoading = false;
           // Emit event to refresh request data from API to get updated status
@@ -158,10 +175,9 @@ export default {
           this.showAlertError(error);
         });
     },
-    reduceWorkersQuantityByOne() {
+    onReduceWorkersQuantity() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/reduceWorkersQuantityByOne", this.request.id)
+      reduceWorkersQuantityByOne(this.request.id)
         .then(() => {
           this.isLoading = false;
           // Emit event to refresh request data from API to get updated status
@@ -172,10 +188,9 @@ export default {
           this.showAlertError(error);
         });
     },
-    updateAgencyRequestIsAsap() {
+    onToggleIsAsap() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/updateAgencyRequestIsAsap", this.request.id)
+      updateAgencyRequestIsAsap(this.request.id)
         .then(() => {
           this.isLoading = false;
         })
@@ -184,13 +199,9 @@ export default {
           this.showAlertError(error);
         });
     },
-    updatePunchCardIsVisibleInApp() {
+    onTogglePunchCardVisibility() {
       this.isLoading = true;
-      this.$store
-        .dispatch(
-          "agency/updateAgencyPunchCardVisibilityStatusInApp",
-          this.request.id
-        )
+      updateAgencyPunchCardVisibilityStatusInApp(this.request.id)
         .then(() => {
           this.isLoading = false;
         })

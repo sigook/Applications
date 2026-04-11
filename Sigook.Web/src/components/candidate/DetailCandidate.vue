@@ -62,6 +62,7 @@
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 import { getGenders } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
+import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
 
 export default {
   props: ['candidateId'],
@@ -74,9 +75,9 @@ export default {
     }
   },
   methods: {
-    getAgencyCandidate() {
+    loadCandidate() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyCandidate', this.candidateId)
+      getAgencyCandidate(this.candidateId)
         .then(response => {
           this.isLoading = false;
           this.candidate = response
@@ -90,15 +91,15 @@ export default {
     validateForm() {
       this.$validator.validateAll().then((result) => {
         if (result) {
-          this.updateCandidate();
+          this.submitCandidate();
           return;
         }
         this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
       });
     },
-    updateCandidate() {
+    submitCandidate() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateCandidate', { candidateId: this.candidateId, model: this.candidate })
+      updateAgencyCandidate(this.candidateId, this.candidate)
         .then(() => {
           this.isLoading = false
           this.showAlertSuccess('Updated');
@@ -114,7 +115,7 @@ export default {
     getGenders()
       .then((result) => {
         this.genderList = result;
-        this.getAgencyCandidate();
+        this.loadCandidate();
       })
       .catch(error => {
         this.showAlertError(error);

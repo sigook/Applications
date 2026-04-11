@@ -2,12 +2,11 @@
 
 ## ⏱️ Timesheet System Overview
 
-El sistema de timesheets rastrea las horas trabajadas por cada worker, con funcionalidad de punch card (clock in/out) y aprobación por la agencia.
+The timesheet system tracks hours worked by each worker, with punch card functionality (clock in/out) and approval by the agency.
 
-**Ubicación del código:**
+**Code location:**
 - `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
-- `Covenant.Api/Covenant.TimeSheetTotal/` - Cálculos de horas
-- `Covenant.Common/Entities/Request/TimeSheet.cs`
+- `Covenant.Api/Covenant.Common/Entities/Request/TimeSheet.cs`
 
 ---
 
@@ -54,18 +53,18 @@ public class TimeSheet
 ### 1. Clock Times (Raw Punch Card)
 
 **ClockIn / ClockOut:**
-- Actual timestamp when worker clocks in/out
+- Actual timestamp when the worker clocks in/out
 - Includes full date and time with seconds
 - Example: `2026-02-01T07:05:23Z`
 
 **ClockInRounded / ClockOutRounded:**
-- Rounded to nearest 15 minutes (configurable)
+- Rounded to the nearest 15 minutes (configurable)
 - Used for payroll fairness
 - Example: `2026-02-01T07:00:00Z` (7:05 → 7:00)
 
 **Rounding Rules:**
 ```
-0-7 minutes → Round down
+0-7 minutes  → Round down
 8-22 minutes → Round to 15
 23-37 minutes → Round to 30
 38-52 minutes → Round to 45
@@ -93,7 +92,7 @@ ClockInRounded: 2026-02-01T07:00:00Z
 ClockOutRounded: 2026-02-01T15:00:00Z
 
 Normalized:
-TimeIn: 2026-02-01T00:00:00Z (midnight)
+TimeIn:  2026-02-01T00:00:00Z (midnight)
 TimeOut: 2026-02-01T08:00:00Z (8 hours from midnight)
 
 Duration = TimeOut - TimeIn = 8 hours
@@ -127,16 +126,15 @@ TimeOutApproved: 2026-02-01T14:30:00Z
 
 #### Clock In
 ```http
-POST /api/WorkerRequestTimeSheet/ClockIn
+POST /api/WorkerRequest/{requestId}/TimeSheet
 {
-  "workerRequestId": "guid",
   "clockIn": "2026-02-01T07:05:23Z",
   "isHoliday": false
 }
 ```
 
 **Backend Process:**
-1. Validate worker is assigned to request
+1. Validate worker is assigned to the request
 2. Validate no existing timesheet for today
 3. Create TimeSheet:
    ```
@@ -151,17 +149,16 @@ POST /api/WorkerRequestTimeSheet/ClockIn
 
 #### Clock Out
 ```http
-POST /api/WorkerRequestTimeSheet/ClockOut
+POST /api/WorkerRequest/{requestId}/TimeSheet
 {
-  "workerRequestId": "guid",
   "clockOut": "2026-02-01T15:08:12Z"
 }
 ```
 
 **Backend Process:**
 1. Find TimeSheet for today
-2. Validate has ClockIn
-3. Validate minimum 3 minutes since ClockIn
+2. Validate it has ClockIn
+3. Validate at least 3 minutes since ClockIn
 4. Update TimeSheet:
    ```
    ClockOut = 2026-02-01T15:08:12Z
@@ -170,8 +167,8 @@ POST /api/WorkerRequestTimeSheet/ClockOut
    ```
 
 **Validations:**
-- Cannot clock in twice same day
-- Cannot clock out without clock in
+- Cannot clock in twice on the same day
+- Cannot clock out without clocking in
 - Cannot clock out within 3 minutes of clock in
 - Maximum 23:59 hours per day
 
@@ -180,9 +177,8 @@ POST /api/WorkerRequestTimeSheet/ClockOut
 ### Method 2: Agency Manual Entry
 
 ```http
-POST /api/AgencyRequestTimeSheet
+POST /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet
 {
-  "workerRequestId": "guid",
   "date": "2026-02-01",
   "hours": 8.5,
   "isHoliday": false,
@@ -213,7 +209,7 @@ POST /api/AgencyRequestTimeSheet
 ### Agency Approves Timesheet
 
 ```http
-PUT /api/AgencyRequestTimeSheet/{id}/Approve
+PUT /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}/Approve
 {
   "timeInApproved": "2026-02-01T07:00:00Z",
   "timeOutApproved": "2026-02-01T15:00:00Z"
@@ -221,7 +217,7 @@ PUT /api/AgencyRequestTimeSheet/{id}/Approve
 ```
 
 **Validations:**
-- TimeInApproved and TimeOutApproved must be same date
+- TimeInApproved and TimeOutApproved must be the same date
 - TimeInApproved <= TimeOutApproved
 - TimeInApproved.Date must equal TimeSheet.Date
 - Hours < 24
@@ -229,7 +225,7 @@ PUT /api/AgencyRequestTimeSheet/{id}/Approve
 **Effect:**
 - Sets TimeInApproved and TimeOutApproved
 - Triggers TimeSheetTotal calculation
-- Makes timesheet ready for payroll/billing
+- Makes the timesheet ready for payroll/billing
 
 ---
 
@@ -243,7 +239,7 @@ PUT /api/AgencyRequestTimeSheet/{id}/Approve
 - Night shift hours
 - Holiday hours
 
-**Ubicación:** `Covenant.Api/Covenant.TimeSheetTotal/TimeSheetTotalCalculator.cs`
+**Location:** `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs` (calculation logic)
 
 ---
 
@@ -269,7 +265,7 @@ TotalHours: 08:00:00
 **Purpose:** Track total hours worked in the week (Sunday-Saturday) to determine when overtime starts.
 
 ```
-AccumulateWeekHours = Sum of TotalHours for all timesheets in same week
+AccumulateWeekHours = Sum of TotalHours for all timesheets in the same week
 ```
 
 **Week Definition:**
@@ -279,12 +275,12 @@ AccumulateWeekHours = Sum of TotalHours for all timesheets in same week
 **Example:**
 ```
 Week of Feb 1-7, 2026:
-Monday (Feb 2): 8h → AccumulateWeekHours = 8h
-Tuesday (Feb 3): 8h → AccumulateWeekHours = 16h
+Monday (Feb 2):    8h → AccumulateWeekHours = 8h
+Tuesday (Feb 3):   8h → AccumulateWeekHours = 16h
 Wednesday (Feb 4): 8h → AccumulateWeekHours = 24h
-Thursday (Feb 5): 8h → AccumulateWeekHours = 32h
-Friday (Feb 6): 8h → AccumulateWeekHours = 40h
-Saturday (Feb 7): 8h → AccumulateWeekHours = 48h
+Thursday (Feb 5):  8h → AccumulateWeekHours = 32h
+Friday (Feb 6):    8h → AccumulateWeekHours = 40h
+Saturday (Feb 7):  8h → AccumulateWeekHours = 48h
 ```
 
 ---
@@ -295,7 +291,7 @@ Saturday (Feb 7): 8h → AccumulateWeekHours = 48h
 - Overtime starts after **44 hours per week**
 - Some provinces differ (see variations below)
 
-**Cálculo:**
+**Calculation:**
 ```csharp
 if (AccumulateWeekHours <= 44)
 {
@@ -360,7 +356,7 @@ OvertimeHours: 8h
 - Hours between **11:00 PM (23:00) and 7:00 AM (07:00)**
 - Can overlap with regular or overtime hours
 
-**Cálculo:**
+**Calculation:**
 ```csharp
 NightShiftHours = 0
 
@@ -394,7 +390,7 @@ TimeOutApproved: 03:00 (next day)
 NightShiftHours: 4h (23:00-03:00)
 ```
 
-**Note:** Night shift hours are billed/paid separately with premium rate.
+**Note:** Night shift hours are billed/paid separately with a premium rate.
 
 ---
 
@@ -404,7 +400,7 @@ NightShiftHours: 4h (23:00-03:00)
 - If `IsHoliday = true`, **all hours** are holiday hours
 - Statutory holidays in Canada (varies by province)
 
-**Cálculo:**
+**Calculation:**
 ```csharp
 if (IsHoliday)
 {
@@ -458,10 +454,10 @@ IsHoliday: false
 TotalHours: 8h
 
 AccumulateWeekHours (before this day): 40h
-AccumulateWeekHours (including): 48h
+AccumulateWeekHours (including):       48h
 
 Regular vs Overtime:
-  Since crosses 44h threshold:
+  Crosses 44h threshold:
   RegularHours: 4h (44 - 40)
   OvertimeHours: 4h (8 - 4)
 
@@ -475,11 +471,11 @@ Holiday:
   HolidayHours: 0h
 
 Result:
-  TotalHours: 08:00:00
-  RegularHours: 04:00:00
-  OvertimeHours: 04:00:00
-  NightShiftHours: 00:00:00
-  HolidayHours: 00:00:00
+  TotalHours:          08:00:00
+  RegularHours:        04:00:00
+  OvertimeHours:       04:00:00
+  NightShiftHours:     00:00:00
+  HolidayHours:        00:00:00
   AccumulateWeekHours: 48:00:00
 ```
 
@@ -490,13 +486,13 @@ Result:
 ### TimeSheet Creation
 
 **1. Date Restrictions:**
-- Cannot create timesheet more than 1 year in the past
+- Cannot create a timesheet more than 1 year in the past
 - Date must be >= WorkerRequest.StartWorking
 - Cannot create future timesheets (configurable)
 
 **2. Duplicate Prevention:**
 - Only one timesheet per Worker + Date
-- Enforced at database level (unique constraint)
+- Enforced at the database level (unique constraint)
 
 **3. Hours Limits:**
 - Minimum: 0.25 hours (15 minutes)
@@ -509,7 +505,7 @@ Result:
 
 **Clock In:**
 - Cannot clock in if already clocked in today
-- Cannot clock in for dates in the past (must be today)
+- Cannot clock in for past dates (must be today)
 - GPS location optional (for verification)
 
 **Clock Out:**
@@ -519,28 +515,28 @@ Result:
 - After 5 minutes, ClockOut is locked
 
 **Break Handling:**
-- Breaks not automatically deducted
+- Breaks are not automatically deducted
 - Agency can adjust approved times to account for breaks
-- Or use `DeductionsOthers` field
+- Or use the `DeductionsOthers` field
 
 ---
 
 ### Approval Rules
 
 **1. Time Validation:**
-- TimeInApproved and TimeOutApproved must be same date
+- TimeInApproved and TimeOutApproved must be the same date
 - TimeInApproved must be <= TimeOutApproved
 - TimeInApproved.Date must equal TimeSheet.Date
 - Total approved hours must be < 24
 
 **2. Authorization:**
 - Only Agency users can approve
-- Cannot approve own timesheets (if agency user is also worker)
+- Cannot approve own timesheets (if agency user is also a worker)
 
 **3. Locking:**
-- Once timesheet used in PayStub, cannot modify
-- Once timesheet used in Invoice, cannot modify
-- Must void PayStub/Invoice first
+- Once a timesheet is used in a PayStub, it cannot be modified
+- Once a timesheet is used in an Invoice, it cannot be modified
+- The PayStub/Invoice must be voided first
 
 ---
 
@@ -576,22 +572,22 @@ Result:
 
 ### Overtime Rules by Province
 
-| Province | Overtime Threshold | Notes |
-|----------|-------------------|-------|
-| Federal  | 44 hrs/week       | Standard |
-| ON       | 44 hrs/week       | Same as federal |
-| BC       | 8 hrs/day OR 40 hrs/week | Daily threshold |
-| QC       | 40 hrs/week       | Lower than federal |
-| AB       | 44 hrs/week OR 8 hrs/day | Both thresholds |
-| SK       | 40 hrs/week       | |
-| MB       | 40 hrs/week OR 8 hrs/day | |
-| NB       | 44 hrs/week       | |
-| NS       | 48 hrs/week       | Higher threshold |
-| PEI      | 48 hrs/week       | |
-| NL       | 40 hrs/week       | |
+| Province | Overtime Threshold       | Notes              |
+|----------|--------------------------|--------------------|
+| Federal  | 44 hrs/week              | Standard           |
+| ON       | 44 hrs/week              | Same as federal    |
+| BC       | 8 hrs/day OR 40 hrs/week | Daily threshold    |
+| QC       | 40 hrs/week              | Lower than federal |
+| AB       | 44 hrs/week OR 8 hrs/day | Both thresholds    |
+| SK       | 40 hrs/week              |                    |
+| MB       | 40 hrs/week OR 8 hrs/day |                    |
+| NB       | 44 hrs/week              |                    |
+| NS       | 48 hrs/week              | Higher threshold   |
+| PEI      | 48 hrs/week              |                    |
+| NL       | 40 hrs/week              |                    |
 
 **Implementation:**
-- Currently uses federal standard (44 hrs/week)
+- Currently uses the federal standard (44 hrs/week)
 - Provincial rules can be added via configuration
 - Configurable per CompanyProfile or Request
 
@@ -602,7 +598,7 @@ Result:
 ### Manual Corrections
 
 **Agency can:**
-1. Create timesheet manually (if worker forgot to clock)
+1. Create a timesheet manually (if the worker forgot to clock)
 2. Adjust approved times (different from clock times)
 3. Add comments explaining changes
 
@@ -620,15 +616,15 @@ Comment: "Worker left early - verified with supervisor"
 ### Financial Adjustments
 
 **DeductionsOthers:**
-- Deduct amount from pay
+- Deduct an amount from pay
 - Example: Broken equipment, advances
 
 **BonusOrOthers:**
-- Add amount to pay
+- Add an amount to pay
 - Example: Performance bonus, tips
 
 **Reimbursements:**
-- Add amount to pay (non-taxable)
+- Add an amount to pay (non-taxable)
 - Example: Mileage, meals, tools
 
 **Applied in PayStub calculation:**
@@ -749,11 +745,11 @@ Expected:
    - Don't forget to clock out
 
 2. **Report issues immediately**
-   - If forgot to clock, notify agency same day
+   - If you forgot to clock, notify the agency the same day
    - Easier to correct fresh memories
 
 3. **Review timesheets**
-   - Check approved hours match worked hours
+   - Check that approved hours match worked hours
    - Dispute if incorrect
 
 ---
@@ -769,8 +765,8 @@ Expected:
    - Delays affect payroll
 
 3. **Document adjustments**
-   - Always add comment when adjusting times
-   - Audit trail important
+   - Always add a comment when adjusting times
+   - Audit trail is important
 
 4. **Verify unusual hours**
    - Very long shifts (>12h)

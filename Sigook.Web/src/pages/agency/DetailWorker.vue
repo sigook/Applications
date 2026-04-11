@@ -4,7 +4,7 @@
 
     <section class="wrapper-worker-top mb-0">
       <div>
-        <image-detail class="d-inline-block v-top" :data="worker" @updateProfile="() => getWorker()" />
+        <image-detail class="d-inline-block v-top" :data="worker" @updateProfile="() => loadWorker()" />
         <div class="d-inline-block pl-4 v-top">
           <h2 class="fz1 fw-700">
             <span class="fw-400" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
@@ -23,7 +23,7 @@
       <div>
         <floating-menu class="is-inline-block">
           <template slot="options">
-            <button class="floating-menu-item" v-if="!worker.approvedToWork" @click="updateApprovedToWork(worker)">
+            <button class="floating-menu-item" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
               <span>Approve to work</span>
             </button>
             <button class="floating-menu-item" v-if="worker.approvedToWork" @click="confirmDelete(worker)">
@@ -38,50 +38,50 @@
         <div v-if="visitedTabs.includes('profile')" class="wrapper-request">
         <div class="container-flex">
           <section class="col-md-9 col-sm-12">
-            <basic-information :worker="worker" @updateProfile="() => getWorker()" />
+            <basic-information :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <social-insurance :worker="worker" @updateProfile="() => getWorker()" />
+            <social-insurance :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <documents :worker="worker" @updateProfile="() => getWorker()" />
-            <resume :worker="worker" @updateProfile="() => getWorker()" />
+            <documents :worker="worker" @updateProfile="() => loadWorker()" />
+            <resume :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <contact-information :worker="worker" @updateProfile="() => getWorker()" />
-            <email-detail class="mb-5" :worker="worker" @updateProfile="() => getWorker()" />
+            <contact-information :worker="worker" @updateProfile="() => loadWorker()" />
+            <email-detail class="mb-5" :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <emergency-information :worker="worker" @updateProfile="() => getWorker()" />
+            <emergency-information :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
             <section class="worker-information">
               <h3>{{ $t("WorkerWorkInformation") }}</h3>
-              <availability :worker="worker" @updateProfile="() => getWorker()" />
-              <availability-times :worker="worker" @updateProfile="() => getWorker()" />
-              <availability-days :worker="worker" @updateProfile="() => getWorker()" />
-              <location-preferences :worker="worker" @updateProfile="() => getWorker()" />
-              <lift :worker="worker" @updateProfile="() => getWorker()" />
-              <languages :worker="worker" @updateProfile="() => getWorker()" />
+              <availability :worker="worker" @updateProfile="() => loadWorker()" />
+              <availability-times :worker="worker" @updateProfile="() => loadWorker()" />
+              <availability-days :worker="worker" @updateProfile="() => loadWorker()" />
+              <location-preferences :worker="worker" @updateProfile="() => loadWorker()" />
+              <lift :worker="worker" @updateProfile="() => loadWorker()" />
+              <languages :worker="worker" @updateProfile="() => loadWorker()" />
             </section>
 
             <span class="padding-top" id="skills" />
-            <skills :worker="worker" @updateProfile="() => getWorker()" />
+            <skills :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <b-checkbox v-model="worker.dnu" @input="updateAgencyWorkerProfileDNU"
+            <b-checkbox v-model="worker.dnu" @input="toggleWorkerProfileDNU"
               :disabled="hasDnuPermission">
               {{ $t("DNU") }}
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses :worker.sync="worker" @updateProfile="() => getWorker()" />
+            <licenses :worker.sync="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <certificates :worker.sync="worker" @updateProfile="() => getWorker()" />
+            <certificates :worker.sync="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray"></span>
-            <other-documents :worker="worker" @updateProfile="() => getWorker()" />
+            <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
@@ -94,7 +94,7 @@
               <ul>
                 <li v-for="(item, index) in worker.jobExperiences" v-bind:class="{ active: currentJobEx === index }"
                   v-on:click="currentJobEx = index" v-bind:key="'jobExperiences' + index">
-                  <work-experience-detail :item="item" :workerId="worker.id" @getWorker="() => getWorker()" />
+                  <work-experience-detail :item="item" :workerId="worker.id" @getWorker="() => loadWorker()" />
                 </li>
               </ul>
 
@@ -148,6 +148,7 @@
 import statusWorkerMixin from "@/mixins/statusWorkerMixin";
 import billingAdminMixin from "@/mixins/billingAdminMixin";
 import { getCommentsWorker } from '@/api/workerApi';
+import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
 
 export default {
   data() {
@@ -194,7 +195,7 @@ export default {
     otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue"),
   },
   async created() {
-    this.getWorker();
+    this.loadWorker();
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
       if (!this.visitedTabs.includes(this.$route.query.tab)) {
@@ -228,15 +229,15 @@ export default {
     },
     updateExperience() {
       this.modalWorkExperience = false;
-      this.getWorker();
+      this.loadWorker();
     },
     changePageComments(page) {
       this.commentPageIndex = page;
       this.updateComments();
     },
-    getWorker() {
+    loadWorker() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getWorker", this.$route.params.id)
+      getAgencyWorker(this.$route.params.id)
         .then((worker) => {
           this.isLoading = false;
           this.worker = worker;
@@ -247,18 +248,18 @@ export default {
           this.isLoading = false;
         });
     },
-    updateAgencyWorkerProfileDNU() {
+    toggleWorkerProfileDNU() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerProfileDNU", this.worker.id)
+      updateAgencyWorkerProfileDNU(this.worker.id)
         .then(() => {
           this.showAlertSuccess(this.$t("Updated"));
           this.isLoading = false;
-          this.getWorker();
+          this.loadWorker();
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
-          this.getWorker();
+          this.loadWorker();
         });
     },
     confirmDelete(worker) {
@@ -270,25 +271,25 @@ export default {
       )
         .then((response) => {
           if (response) {
-            this.updateApprovedToWork(worker);
+            this.onUpdateApprovedToWork(worker);
           }
         })
         .catch((error) => {
           this.showAlertError(error);
         });
     },
-    updateApprovedToWork(worker) {
+    onUpdateApprovedToWork(worker) {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateApprovedToWork", worker.id)
+      updateApprovedToWork(worker.id)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("Updated"));
-          this.getWorker();
+          this.loadWorker();
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
-          this.getWorker();
+          this.loadWorker();
         });
     },
   },

@@ -13,13 +13,14 @@
                     :total-pages="data.totalPages"
                     :index-page="data.pageIndex"
                     :size-page="this.size"
-                    @changePage="(index) => getAgencyWorkerProfileRequestHistory(index)">
+                    @changePage="(index) => loadRequestHistory(index)">
         </pagination>
     </div>
 </template>
 
 <script lang="ts">
     import toast from '../../mixins/toastMixin';
+    import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
     export default {
         props: ['workerId'],
         mixins: [toast],
@@ -32,9 +33,9 @@
             }
         },
         methods: {
-            getAgencyWorkerProfileRequestHistory(page){
+            loadRequestHistory(page){
                 this.isLoading = true;
-                this.$store.dispatch('agency/getAgencyWorkerProfileRequestHistory', {pagination: {size: this.size, page: page}, workerId: this.workerId})
+                getAgencyWorkerProfileRequestHistory(this.workerId, {size: this.size, page: page})
                 .then(response => {
                     this.data = response;
                     this.isLoading = false;
@@ -46,7 +47,7 @@
             }
         },
         created() {
-            this.getAgencyWorkerProfileRequestHistory(this.currentPage)
+            this.loadRequestHistory(this.currentPage)
         },
         components: {
             Pagination: () => import("../../components/Paginator.vue"),

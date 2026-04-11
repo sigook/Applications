@@ -10,7 +10,7 @@
         <li v-for="(item) in data.items" :key="item.id"
           class="content-flex-between align-center mb-0 hover-actions fz-14">
           <span class="d-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
-          <button class="btn-icon-sm btn-icon-reject valign-middle actions" @click="deleteAgencyRequestRequestedBy(item)"
+          <button class="btn-icon-sm btn-icon-reject valign-middle actions" @click="removeRequestedBy(item)"
             v-if="canEdit">DELETE</button>
         </li>
       </ul>
@@ -23,8 +23,8 @@
             <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
               <button @click="showModal = false" type="button" class="cross-icon">close</button>
               <contact-list :requestId="requestId" :companyId="companyId" :activeUsers="data.items"
-                @removeContact="(item) => deleteAgencyRequestRequestedBy(item)"
-                @selectContact="(item) => postAgencyRequestRequestedBy(item)" />
+                @removeContact="(item) => removeRequestedBy(item)"
+                @selectContact="(item) => addRequestedBy(item)" />
             </div>
           </div>
         </div>
@@ -35,6 +35,12 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import {
+  getAgencyRequestRequestedBy,
+  postAgencyRequestRequestedBy,
+  deleteAgencyRequestRequestedBy,
+} from "@/api/agencyRequestApi";
+
 export default {
   props: ['requestId', 'companyId', 'activeUsers', 'canEdit'],
   mixins: [toastMixin],
@@ -49,8 +55,8 @@ export default {
     ContactList: () => import("./ContactListModal.vue")
   },
   methods: {
-    getAgencyRequestRequestedBy() {
-      this.$store.dispatch('agency/getAgencyRequestRequestedBy', this.requestId)
+    loadRequestedBy() {
+      getAgencyRequestRequestedBy(this.requestId)
         .then(response => {
           this.data = response;
         })
@@ -62,9 +68,9 @@ export default {
       this.data.items.push(item)
       this.showModal = false;
     },
-    postAgencyRequestRequestedBy(item) {
+    addRequestedBy(item) {
       this.isLoading = true;
-      this.$store.dispatch('agency/postAgencyRequestRequestedBy', { requestId: this.requestId, contactPersonId: item.id })
+      postAgencyRequestRequestedBy(this.requestId, item.id)
         .then(() => {
           this.isLoading = false;
           this.updateContactList(item)
@@ -74,10 +80,10 @@ export default {
           this.showAlertError(error)
         })
     },
-    deleteAgencyRequestRequestedBy(item) {
+    removeRequestedBy(item) {
       let index = this.data.items.findIndex(x => x.id === item.id);
       this.isLoading = true;
-      this.$store.dispatch('agency/deleteAgencyRequestRequestedBy', { requestId: this.requestId, contactPersonId: item.id })
+      deleteAgencyRequestRequestedBy(this.requestId, item.id)
         .then(() => {
           this.isLoading = false;
           this.showModal = false;
@@ -90,7 +96,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyRequestRequestedBy();
+    this.loadRequestedBy();
   }
 }
 </script>

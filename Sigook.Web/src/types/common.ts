@@ -123,3 +123,11 @@ export interface UnsubscribeRequest {
   userId: string;
   typeId: string;
 }
+
+export interface UserNotificationItem {
+  id: string;
+  name: string;
+  emailNotification: boolean;
+  pushNotification?: boolean;
+  [key: string]: unknown;
+}

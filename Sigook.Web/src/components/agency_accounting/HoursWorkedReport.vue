@@ -29,9 +29,9 @@
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="getReport">Generate</b-button>
+        <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
-      <div class="col-12 col-padding">
+      <div v-if="reportGenerated" class="col-12 col-padding">
         <export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </export>
@@ -97,6 +97,8 @@
 </template>
 <script lang="ts">
 import dayjs from 'dayjs';
+import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
+import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
 
 export default {
   components: {
@@ -115,38 +117,39 @@ export default {
       pageIndex: 1,
       pageSize: 30,
       serverParams: {},
+      reportGenerated: false,
       report: {
         rows: []
       }
     }
   },
   async created() {
-    await this.getCompanies();
+    await this.loadCompanies();
   },
   methods: {
-    async getCompanies() {
+    async loadCompanies() {
       this.isLoading = true;
-      this.companies = await this.$store.dispatch('agency/getAgencyCompanyProfileWithRequests');
+      this.companies = await getAgencyCompanyProfileWithRequests();
       this.isLoading = false;
     },
     async onDatesSelected() {
       this.serverParams.startDate = dayjs(this.datesSelected[0]).format('YYYY-MM-DD');
       this.serverParams.endDate = dayjs(this.datesSelected[1]).format('YYYY-MM-DD');
-      await this.getJobPositionsHoursWorked();
+      await this.loadJobPositions();
     },
     async selectCompany(company) {
       if (company) {
         this.serverParams.companyId = company.companyId;
-        await this.getJobPositionsHoursWorked();
+        await this.loadJobPositions();
       } else {
         this.serverParams.companyId = null;
         this.jobPositions = [];
       }
     },
-    async getJobPositionsHoursWorked() {
+    async loadJobPositions() {
       if (this.serverParams.companyId && this.datesSelected.length === 2) {
         this.isLoadingJobPositions = true;
-        this.jobPositions = await this.$store.dispatch('agency/getJobPositionsHoursWorked', this.serverParams);
+        this.jobPositions = await getJobPositionsHoursWorked(this.serverParams);
         this.isLoadingJobPositions = false;
       }
     },
@@ -161,13 +164,14 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoadingReport = true;
-        this.$store.dispatch('agency/getHoursWorkedReport', this.serverParams)
-          .then(response => {
+        getHoursWorkedReport(this.serverParams)
+          .then((response: any) => {
             this.isLoadingReport = false;
             this.report = {
               ...response,
               rows: response.detail,
             }
+            this.reportGenerated = true;
           }).catch(error => {
             this.isLoadingReport = false;
             this.showAlertError(error);

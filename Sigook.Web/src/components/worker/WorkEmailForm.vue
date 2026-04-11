@@ -32,6 +32,7 @@
   </div>
 </template>
 <script lang="ts">
+import { updateAgencyWorkerEmail } from "@/api/agencyWorkerApi";
 
 export default {
   props: ['data'],
@@ -55,7 +56,7 @@ export default {
     },
     updateWorkerEmail() {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateAgencyWorkerEmail', { workerProfileId: this.worker.id, model: { newEmail: this.newEmail } })
+      updateAgencyWorkerEmail(this.worker.id, { newEmail: this.newEmail })
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);

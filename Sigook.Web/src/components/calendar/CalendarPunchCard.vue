@@ -89,6 +89,7 @@
 import calendarMixin from "@/mixins/calendarMixin";
 import distributeHours from "@/mixins/distributeHoursMixin";
 import dayjs from "dayjs";
+import { WorkerRequestStatus } from "@/constants/enums";
 export default {
   props: ["highlights", "workerId", "requestId", "startDate", "status", "worker"],
   mixins: [distributeHours, calendarMixin],
@@ -113,7 +114,7 @@ export default {
       this.$emit("onMonthChange", { startDate: start, endDate: end })
     },
     isAvailableToUpdateWorker(date) {
-      if (this.worker && this.worker.status === this.$statusReject && this.worker.rejectedAt) {
+      if (this.worker && this.worker.workerRequestStatus === WorkerRequestStatus.Rejected && this.worker.rejectedAt) {
         let start = dayjs(this.startDate).subtract(1, 'day');
         let oneMonth = dayjs(this.worker.rejectedAt).add(1, 'month');
         if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
@@ -153,6 +154,7 @@ export default {
     }
   },
   computed: {
+    WorkerRequestStatus: () => WorkerRequestStatus,
     isMobile() {
       return this.windowWidth <= 768;
     },

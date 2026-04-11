@@ -5,7 +5,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services
 {
@@ -36,7 +36,7 @@ namespace Covenant.Infrastructure.Services
                 var client = httpClientFactory.CreateClient();
                 var response = await client.GetAsync($"{configuration.Url}?address={address}&key={configuration.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<GeocodeResponse>(content);
+                var result = JsonSerializer.Deserialize<GeocodeResponse>(content);
                 if (result.Status.Equals("OK", StringComparison.InvariantCultureIgnoreCase) && result.Results.Any())
                 {
                     return result.Results[0].Geometry.Location;

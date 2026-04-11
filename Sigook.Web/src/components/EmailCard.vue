@@ -22,7 +22,7 @@
       <button v-if="!disabled" @click="validateUpdate(localItem, index)">
         <img src="../assets/images/checked-accent.png" alt="edit">
       </button>
-      <button @click="deleteCompanyInvoiceRecipient(localItem, index)">
+      <button @click="onDeleteInvoiceRecipient(localItem, index)">
         <img src="../assets/images/delete-icon.png" alt="edit">
       </button>
     </div>
@@ -30,6 +30,7 @@
 </template>
 
 <script lang="ts">
+import { deleteCompanyInvoiceRecipient, updateCompanyInvoiceRecipient } from "@/api/agencyCompanyApi";
 export default {
   props: ['index', 'item'],
   inject: ['$validator'],
@@ -49,9 +50,9 @@ export default {
     }
   },
   methods: {
-    deleteCompanyInvoiceRecipient(item, index) {
+    onDeleteInvoiceRecipient(item, index) {
       this.isLoading = true;
-      this.$store.dispatch('agency/deleteCompanyInvoiceRecipient', { companyProfileId: this.$route.params.id, id: item.id })
+      deleteCompanyInvoiceRecipient(this.$route.params.id, item.id)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateDataEmailList", index)
@@ -77,13 +78,13 @@ export default {
         });
 
         if (valid) {
-          this.updateCompanyInvoiceRecipient(item);
+          this.onUpdateInvoiceRecipient(item);
         }
       });
     },
-    updateCompanyInvoiceRecipient(item) {
+    onUpdateInvoiceRecipient(item) {
       this.isLoading = true;
-      this.$store.dispatch('agency/updateCompanyInvoiceRecipient', { companyProfileId: this.$route.params.id, id: item.id, model: { name: item.name, email: item.email } })
+      updateCompanyInvoiceRecipient(this.$route.params.id, item.id, { name: item.name, email: item.email })
         .then(() => {
           this.disabled = true;
           this.isLoading = false;

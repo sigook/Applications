@@ -13,9 +13,9 @@
         </h2>
       </div>
       <div>
-        <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top capitailized fw-700 is-inline-block" :class="request.status">
-          {{ $t(request.status) }}
+        <div v-if="request.status"
+          class="option-request-top capitailized fw-700 is-inline-block" :class="RequestStatusLabels[request.status]">
+          {{ $t(RequestStatusLabels[request.status]) }}
         </div>
         <floating-menu class="is-inline-block" v-if="canEdit">
           <template slot="options">
@@ -76,6 +76,8 @@
 <script lang="ts">
 import confirmationAlert from "../../mixins/confirmationAlert";
 import directHiringMixin from "../../mixins/directHiringMixin";
+import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
+import { getRequest, cancelRequest, editRequest, requestAnotherWorker } from "@/api/companyApi";
 
 export default {
   data() {
@@ -102,12 +104,7 @@ export default {
     cancelRequest(reason) {
       this.modalValidation = false;
       this.isLoading = true;
-      this.$store
-        .dispatch("company/cancelRequest", {
-          id: this.request.id,
-          cancellationReasonId: reason.reasonId,
-          otherCancellationReason: reason.otherMessage,
-        })
+      cancelRequest(this.request.id, reason.reasonId, reason.otherMessage)
         .then(() => {
           this.isLoading = false;
           this.unsavedChanges = false;
@@ -120,7 +117,7 @@ export default {
         });
     },
     getData() {
-      this.$store.dispatch("company/getRequest", this.$route.params.id)
+      getRequest(this.$route.params.id)
         .then((response) => {
           this.isLoading = false;
           this.request = response;
@@ -136,7 +133,7 @@ export default {
     requestAnotherWorker(comment) {
       this.modalValidationRequestAnotherWorker = false;
       this.isLoading = true;
-      this.$store.dispatch("company/RequestAnotherWorker", { requestId: this.$route.params.id, comment: { comments: comment } })
+      requestAnotherWorker(this.$route.params.id, { comments: comment })
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("Requested"));
@@ -150,7 +147,7 @@ export default {
       this.$validator.validateAll().then((result) => {
         if (result) {
           this.isLoading = true;
-          this.$store.dispatch("company/editRequest", { id: this.$route.params.id, model: { requirements: data } })
+          editRequest(this.$route.params.id, { requirements: data })
             .then(() => {
               this.isLoading = false;
               this.showAlertSuccess(this.$t("Updated"));
@@ -185,13 +182,15 @@ export default {
     }
   },
   computed: {
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     canEdit() {
-      return this.request.status === this.$statusOpen ||
-             this.request.status === this.$statusFilled;
+      return this.request.status === RequestStatus.Open ||
+             this.request.status === RequestStatus.Filled;
     },
     canCancel() {
       // Can only cancel orders in Open status without workers
-      return this.request.status === this.$statusOpen &&
+      return this.request.status === RequestStatus.Open &&
              (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
     },
   },

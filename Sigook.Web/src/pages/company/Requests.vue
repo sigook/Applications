@@ -11,7 +11,7 @@
     </div>
     <div>
       <b-field grouped position="is-right">
-        <b-button size="is-small" tag="router-link" to="/create-request">Create Request</b-button>
+        <b-button tag="router-link" to="/create-request" icon-left="plus">Create Request</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
@@ -67,8 +67,16 @@
               {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
             </template>
           </b-table-column>
-          <b-table-column field="status" label="Status" v-slot="props">
-            <b-tag type="is-primary" rounded>{{ $t(props.row.status) }}</b-tag>
+          <b-table-column field="requestStatus" label="Status" v-slot="props">
+            <div class="text-center">
+              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark" append-to-body>
+                <div class="status-dot-container">
+                  <img v-if="props.row.requestStatus === RequestStatus.Filled"
+                    src="../../assets/images/check_white.png" alt="check" class="request-check" />
+                  <div class="dot-status" :class="getStatusClass(props.row)"></div>
+                </div>
+              </b-tooltip>
+            </div>
           </b-table-column>
         </template>
       </b-table>
@@ -79,6 +87,7 @@
 <script lang="ts">
 import toast from "@/mixins/toastMixin";
 import { getRequests } from '@/api/companyApi';
+import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 
 export default {
   components: {
@@ -91,7 +100,7 @@ export default {
       rows: [],
       serverParams: {
         sortBy: 0,
-        isDescending: false,
+        isDescending: true,
         pageIndex: 1,
         pageSize: 30
       }
@@ -139,6 +148,14 @@ export default {
         this.getCompanyRequests();
       }
     },
+    getStatusClass(row) {
+      if (row.requestStatus === RequestStatus.Open &&
+        row.workersQuantityWorking > 0 &&
+        row.workersQuantityWorking < row.workersQuantity) {
+        return 'status-inprogress';
+      }
+      return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
+    },
     getCompanyRequests() {
       this.isLoading = true;
       this.$store.commit('company/setCompanyRequestFilter', this.serverParams);
@@ -160,6 +177,8 @@ export default {
     this.getCompanyRequests();
   },
   computed: {
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     totalQuantityWorking() {
       if (this.rows.length > 0) {
         return this.rows
@@ -179,8 +198,3 @@ export default {
   },
 };
 </script>
-<style lang="scss">
-tr {
-  cursor: pointer;
-}
-</style>

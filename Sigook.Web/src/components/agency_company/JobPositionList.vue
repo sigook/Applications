@@ -42,7 +42,7 @@
             <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
               @click="openEditModal(props.row)"></b-button>
             <b-button type="is-danger" outlined rounded icon-right="delete"
-              @click="deleteAgencyCompanyJobPosition(props.row.id)"></b-button>
+              @click="onDeleteJobPosition(props.row.id)"></b-button>
           </b-table-column>
         </template>
         <template #detail="props">
@@ -65,6 +65,7 @@
 </template>
 <script lang="ts">
 import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 
 export default {
   data() {
@@ -87,9 +88,9 @@ export default {
     RolesShift: () => import("../agency_company/RolesShiftDetail.vue"),
   },
   methods: {
-    async getAgencyCompanyJobPosition() {
+    async loadJobPositions() {
       this.isLoading = true;
-      this.rows = await this.$store.dispatch("agency/getAgencyCompanyJobPositions", this.profileId);
+      this.rows = await getAgencyCompanyJobPositions(this.profileId);
       this.rows = this.rows.map(i => ({ ...i, actions: null }));
       this.isLoading = false;
     },
@@ -99,22 +100,22 @@ export default {
     },
     async onUpdateModal() {
       this.closeVueModal();
-      await this.getAgencyCompanyJobPosition();
+      await this.loadJobPositions();
     },
     closeVueModal() {
       this.showModal = false;
       this.currentPosition = null;
     },
-    deleteAgencyCompanyJobPosition(id) {
+    onDeleteJobPosition(id) {
       this.showAlertConfirm("Are you sure", "You want to delete this position")
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("agency/deleteAgencyCompanyJobPosition", { profileId: this.profileId, id: id })
+            deleteAgencyCompanyJobPosition(this.profileId, id)
               .then(async () => {
                 this.isLoading = false;
                 this.showAlertSuccess("Deleted");
-                await this.getAgencyCompanyJobPosition();
+                await this.loadJobPositions();
               })
               .catch((error) => {
                 this.isLoading = false;
@@ -128,7 +129,7 @@ export default {
     },
   },
   async created() {
-    await this.getAgencyCompanyJobPosition();
+    await this.loadJobPositions();
   },
 };
 </script>
