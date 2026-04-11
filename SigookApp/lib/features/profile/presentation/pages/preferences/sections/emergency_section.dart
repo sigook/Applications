@@ -1,39 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/utils/phone_formatter.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
-import '../../../../domain/entities/worker_profile.dart';
-import '../../../../domain/usecases/update_worker_profile.dart';
+import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
+import '../../../../emergency/presentation/viewmodels/emergency_viewmodel.dart';
+import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/section_edit_actions.dart';
 
-class EmergencySectionCard extends StatefulWidget {
-  final WorkerProfile? profile;
-  final ProfileSection? editingSection;
-  final bool isSaving;
-  final VoidCallback? onEdit;
-  final Future<void> Function(
-    ProfileSection section,
-    Map<String, String> fields,
-  ) onSave;
-  final VoidCallback onCancel;
-
-  const EmergencySectionCard({
-    super.key,
-    required this.profile,
-    required this.editingSection,
-    required this.isSaving,
-    required this.onEdit,
-    required this.onSave,
-    required this.onCancel,
-  });
+class EmergencySectionCard extends ConsumerStatefulWidget {
+  const EmergencySectionCard({super.key});
 
   @override
-  State<EmergencySectionCard> createState() => _EmergencySectionCardState();
+  ConsumerState<EmergencySectionCard> createState() =>
+      _EmergencySectionCardState();
 }
 
-class _EmergencySectionCardState extends State<EmergencySectionCard> {
+class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
   final _emergencyPhoneMaskFormatter = MaskTextInputFormatter(
     mask: '### ###-####',
     filter: {'#': RegExp(r'[0-9]')},
@@ -43,21 +28,6 @@ class _EmergencySectionCardState extends State<EmergencySectionCard> {
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  bool get _isEditing => widget.editingSection == ProfileSection.emergency;
-
-  @override
-  void didUpdateWidget(EmergencySectionCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final wasEditing = oldWidget.editingSection == ProfileSection.emergency;
-    if (!wasEditing && _isEditing) {
-      _nameController.text = widget.profile?.contactEmergencyName ?? '';
-      _lastNameController.text = widget.profile?.contactEmergencyLastName ?? '';
-      _phoneController.text = _emergencyPhoneMaskFormatter.maskText(
-        widget.profile?.contactEmergencyPhone ?? '',
-      );
-    }
-  }
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -66,25 +36,55 @@ class _EmergencySectionCardState extends State<EmergencySectionCard> {
     super.dispose();
   }
 
+  void _populateFields() {
+    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    _nameController.text = profile?.contactEmergencyName ?? '';
+    _lastNameController.text = profile?.contactEmergencyLastName ?? '';
+    _phoneController.text = _emergencyPhoneMaskFormatter.maskText(
+      profile?.contactEmergencyPhone ?? '',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profile = widget.profile;
+    final vm = ref.watch(emergencyViewModelProvider);
+    final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
+
+    ref.listen(
+      emergencyViewModelProvider.select((s) => s.isEditing),
+      (prev, next) {
+        if (prev == false && next == true) _populateFields();
+      },
+    );
+
+    ref.listen<EmergencyState>(emergencyViewModelProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.justSaved && !(prev?.justSaved ?? false)) {
+        showProfileSuccess(context, 'Changes saved successfully!');
+      }
+      if (next.saveError != null && next.saveError != prev?.saveError) {
+        showProfileError(context, next.saveError!);
+      }
+    });
 
     return ProfileSectionCard(
       title: 'Emergency Information',
       icon: Icons.emergency_outlined,
       iconGradient: const [Color(0xFFF44336), Color(0xFFE57373)],
       trailing: SectionEditActions(
-        isEditingThis: _isEditing,
-        isAnyEditing: widget.editingSection != null,
-        isSaving: widget.isSaving,
-        onEdit: widget.onEdit,
-        onCancel: widget.onCancel,
-        onSave: () => widget.onSave(ProfileSection.emergency, {
-          'contactEmergencyName': _nameController.text,
-          'contactEmergencyLastName': _lastNameController.text,
-          'contactEmergencyPhone': _phoneController.text,
-        }),
+        isEditingThis: vm.isEditing,
+        isAnyEditing: false,
+        isSaving: vm.isSaving,
+        onEdit: profile != null
+            ? ref.read(emergencyViewModelProvider.notifier).startEditing
+            : null,
+        onCancel: ref.read(emergencyViewModelProvider.notifier).cancelEditing,
+        onSave: () =>
+            ref.read(emergencyViewModelProvider.notifier).save({
+              'contactEmergencyName': _nameController.text,
+              'contactEmergencyLastName': _lastNameController.text,
+              'contactEmergencyPhone': _phoneController.text,
+            }),
       ),
       children: [
         ProfileInfoRow(
@@ -111,10 +111,10 @@ class _EmergencySectionCardState extends State<EmergencySectionCard> {
                     .trim()
               : 'N/A',
           icon: Icons.person_outline,
-          isEditing: _isEditing,
-          controller: _isEditing ? _nameController : null,
+          isEditing: vm.isEditing,
+          controller: vm.isEditing ? _nameController : null,
         ),
-        if (_isEditing)
+        if (vm.isEditing)
           ProfileInfoRow(
             label: 'Last Name',
             value: profile?.contactEmergencyLastName ?? '',
@@ -126,9 +126,9 @@ class _EmergencySectionCardState extends State<EmergencySectionCard> {
           label: 'Phone',
           value: formatPhone(profile?.contactEmergencyPhone),
           icon: Icons.phone_callback_outlined,
-          isEditing: _isEditing,
-          controller: _isEditing ? _phoneController : null,
-          inputFormatters: _isEditing ? [_emergencyPhoneMaskFormatter] : null,
+          isEditing: vm.isEditing,
+          controller: vm.isEditing ? _phoneController : null,
+          inputFormatters: vm.isEditing ? [_emergencyPhoneMaskFormatter] : null,
         ),
       ],
     );

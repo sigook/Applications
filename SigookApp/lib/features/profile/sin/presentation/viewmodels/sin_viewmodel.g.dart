@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'profile_viewmodel.dart';
+part of 'sin_viewmodel.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'profile_viewmodel.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ProfileViewModel)
-const profileViewModelProvider = ProfileViewModelProvider._();
+@ProviderFor(SinViewModel)
+const sinViewModelProvider = SinViewModelProvider._();
 
-final class ProfileViewModelProvider
-    extends $NotifierProvider<ProfileViewModel, ProfileState> {
-  const ProfileViewModelProvider._()
+final class SinViewModelProvider
+    extends $NotifierProvider<SinViewModel, SinState> {
+  const SinViewModelProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'profileViewModelProvider',
+        name: r'sinViewModelProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$profileViewModelHash();
+  String debugGetCreateSourceHash() => _$sinViewModelHash();
 
   @$internal
   @override
-  ProfileViewModel create() => ProfileViewModel();
+  SinViewModel create() => SinViewModel();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ProfileState value) {
+  Override overrideWithValue(SinState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<ProfileState>(value),
+      providerOverride: $SyncValueProvider<SinState>(value),
     );
   }
 }
 
-String _$profileViewModelHash() => r'fd5edbe7e8611adf2c20f319bfaf94f23ed75d19';
+String _$sinViewModelHash() => r'8024b5550d90cdbeda1cd785e7b941639ca08da2';
 
-abstract class _$ProfileViewModel extends $Notifier<ProfileState> {
-  ProfileState build();
+abstract class _$SinViewModel extends $Notifier<SinState> {
+  SinState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<ProfileState, ProfileState>;
+    final ref = this.ref as $Ref<SinState, SinState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<ProfileState, ProfileState>,
-              ProfileState,
+              AnyNotifier<SinState, SinState>,
+              SinState,
               Object?,
               Object?
             >;

@@ -8,17 +8,14 @@ import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/inputs/date_picker_field.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../../../../domain/entities/worker_profile.dart';
-import '../../../../domain/usecases/update_worker_profile.dart';
-import '../../../viewmodels/profile_viewmodel.dart';
+import '../../../../licenses/presentation/viewmodels/licenses_viewmodel.dart';
+import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/license_card.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 
 class LicensesSectionCard extends ConsumerStatefulWidget {
-  final WorkerProfile? profile;
-
-  const LicensesSectionCard({super.key, required this.profile});
+  const LicensesSectionCard({super.key});
 
   @override
   ConsumerState<LicensesSectionCard> createState() =>
@@ -27,7 +24,6 @@ class LicensesSectionCard extends ConsumerStatefulWidget {
 
 class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
   PickedFileData? _pendingFile;
-  bool _isUploading = false;
   final _licenseNumberController = TextEditingController();
   DateTime? _issuedDate;
   DateTime? _expiresDate;
@@ -89,32 +85,12 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
       showProfileError(context, 'Please fill in all license fields');
       return;
     }
-    setState(() => _isUploading = true);
-
-    final error = await ref.read(profileViewModelProvider.notifier).uploadFile(
-      ProfileSection.licenses,
-      {
-        'licenseNumber': _licenseNumberController.text,
-        'licenseIssued': _issuedDate!.toUtc().toIso8601String(),
-        'licenseExpires': _expiresDate!.toUtc().toIso8601String(),
-      },
-      {'licenseFile': _pendingFile!.path},
+    await ref.read(licensesViewModelProvider.notifier).upload(
+      filePath: _pendingFile!.path,
+      number: _licenseNumberController.text,
+      issued: _issuedDate!.toUtc().toIso8601String(),
+      expires: _expiresDate!.toUtc().toIso8601String(),
     );
-
-    if (!mounted) return;
-    setState(() => _isUploading = false);
-
-    if (error != null) {
-      showProfileError(context, 'Failed to upload license: $error');
-    } else {
-      setState(() {
-        _pendingFile = null;
-        _licenseNumberController.clear();
-        _issuedDate = null;
-        _expiresDate = null;
-      });
-      showProfileSuccess(context, 'License uploaded successfully!');
-    }
   }
 
   void _cancel() {
@@ -128,7 +104,25 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = widget.profile;
+    final vm = ref.watch(licensesViewModelProvider);
+    final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
+
+    ref.listen<LicensesState>(licensesViewModelProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.justUploaded && !(prev?.justUploaded ?? false)) {
+        setState(() {
+          _pendingFile = null;
+          _licenseNumberController.clear();
+          _issuedDate = null;
+          _expiresDate = null;
+        });
+        showProfileSuccess(context, 'License uploaded successfully!');
+      }
+      if (next.uploadError != null && next.uploadError != prev?.uploadError) {
+        showProfileError(
+            context, 'Failed to upload license: ${next.uploadError}');
+      }
+    });
 
     return ProfileSectionCard(
       title: 'Licenses',
@@ -205,7 +199,7 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
           ),
           const SizedBox(height: 12),
           UploadActionRow(
-            isUploading: _isUploading,
+            isUploading: vm.isUploading,
             label: 'Upload License',
             onUpload: _upload,
             onCancel: _cancel,

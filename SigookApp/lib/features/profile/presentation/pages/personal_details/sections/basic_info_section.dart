@@ -1,64 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
-import '../../../../domain/entities/worker_profile.dart';
-import '../../../../domain/usecases/update_worker_profile.dart';
+import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
+import '../../../../personal_details/presentation/viewmodels/personal_details_viewmodel.dart';
+import '../../../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/has_vehicle_row.dart';
 import '../../../widgets/section_edit_actions.dart';
 
-class BasicInfoSectionCard extends StatefulWidget {
-  final WorkerProfile? profile;
-  final ProfileSection? editingSection;
-  final bool isSaving;
-  final VoidCallback? onEdit;
-  final Future<void> Function(
-    ProfileSection section,
-    Map<String, String> fields,
-  ) onSave;
-  final VoidCallback onCancel;
-
-  const BasicInfoSectionCard({
-    super.key,
-    required this.profile,
-    required this.editingSection,
-    required this.isSaving,
-    required this.onEdit,
-    required this.onSave,
-    required this.onCancel,
-  });
+class BasicInfoSectionCard extends ConsumerStatefulWidget {
+  const BasicInfoSectionCard({super.key});
 
   @override
-  State<BasicInfoSectionCard> createState() => _BasicInfoSectionCardState();
+  ConsumerState<BasicInfoSectionCard> createState() =>
+      _BasicInfoSectionCardState();
 }
 
-class _BasicInfoSectionCardState extends State<BasicInfoSectionCard> {
+class _BasicInfoSectionCardState extends ConsumerState<BasicInfoSectionCard> {
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _secondLastNameController = TextEditingController();
-  late bool _hasVehicle;
-
-  bool get _isEditing => widget.editingSection == ProfileSection.personal;
-
-  @override
-  void initState() {
-    super.initState();
-    _hasVehicle = widget.profile?.hasVehicle ?? false;
-  }
-
-  @override
-  void didUpdateWidget(BasicInfoSectionCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final wasEditing = oldWidget.editingSection == ProfileSection.personal;
-    if (!wasEditing && _isEditing) {
-      _firstNameController.text = widget.profile?.firstName ?? '';
-      _middleNameController.text = widget.profile?.middleName ?? '';
-      _lastNameController.text = widget.profile?.lastName ?? '';
-      _secondLastNameController.text = widget.profile?.secondLastName ?? '';
-      _hasVehicle = widget.profile?.hasVehicle ?? false;
-    }
-  }
+  late bool _hasVehicle = false;
 
   @override
   void dispose() {
@@ -69,30 +33,61 @@ class _BasicInfoSectionCardState extends State<BasicInfoSectionCard> {
     super.dispose();
   }
 
+  void _populateFields() {
+    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    _firstNameController.text = profile?.firstName ?? '';
+    _middleNameController.text = profile?.middleName ?? '';
+    _lastNameController.text = profile?.lastName ?? '';
+    _secondLastNameController.text = profile?.secondLastName ?? '';
+    setState(() => _hasVehicle = profile?.hasVehicle ?? false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profile = widget.profile;
+    final vm = ref.watch(personalDetailsViewModelProvider);
+    final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
+
+    ref.listen(
+      personalDetailsViewModelProvider.select((s) => s.isEditing),
+      (prev, next) {
+        if (prev == false && next == true) _populateFields();
+      },
+    );
+
+    ref.listen(personalDetailsViewModelProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.justSaved && !(prev?.justSaved ?? false)) {
+        showProfileSuccess(context, 'Changes saved successfully!');
+      }
+      if (next.saveError != null && next.saveError != prev?.saveError) {
+        showProfileError(context, next.saveError!);
+      }
+    });
 
     return ProfileSectionCard(
       title: 'Basic Information',
       icon: Icons.person_outline,
       iconGradient: const [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
       trailing: SectionEditActions(
-        isEditingThis: _isEditing,
-        isAnyEditing: widget.editingSection != null,
-        isSaving: widget.isSaving,
-        onEdit: widget.onEdit,
-        onCancel: widget.onCancel,
-        onSave: () => widget.onSave(ProfileSection.personal, {
-          'firstName': _firstNameController.text,
-          'middleName': _middleNameController.text,
-          'lastName': _lastNameController.text,
-          'secondLastName': _secondLastNameController.text,
-          'hasVehicle': _hasVehicle.toString(),
-        }),
+        isEditingThis: vm.isEditing,
+        isAnyEditing: false,
+        isSaving: vm.isSaving,
+        onEdit: profile != null
+            ? ref.read(personalDetailsViewModelProvider.notifier).startEditing
+            : null,
+        onCancel:
+            ref.read(personalDetailsViewModelProvider.notifier).cancelEditing,
+        onSave: () =>
+            ref.read(personalDetailsViewModelProvider.notifier).save({
+              'firstName': _firstNameController.text,
+              'middleName': _middleNameController.text,
+              'lastName': _lastNameController.text,
+              'secondLastName': _secondLastNameController.text,
+              'hasVehicle': _hasVehicle.toString(),
+            }),
       ),
       children: [
-        if (!_isEditing)
+        if (!vm.isEditing)
           ProfileInfoRow(
             label: 'Full Name',
             value: profile?.fullName.isNotEmpty == true
@@ -140,7 +135,7 @@ class _BasicInfoSectionCardState extends State<BasicInfoSectionCard> {
           value: profile?.gender ?? 'N/A',
           icon: Icons.wc_outlined,
         ),
-        if (!_isEditing)
+        if (!vm.isEditing)
           ProfileInfoRow(
             label: 'Do you have your own vehicle?',
             value: profile?.hasVehicle == true ? 'Yes' : 'No',

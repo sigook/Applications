@@ -4,33 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/chip_display_row.dart';
+import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
-import '../../../../domain/entities/worker_profile.dart';
-import '../../../../domain/usecases/update_worker_profile.dart';
+import '../../../../preferences/presentation/viewmodels/preferences_viewmodel.dart';
+import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/chip_selector.dart';
 import '../../../widgets/searchable_toggle_list.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class PreferencesSectionCard extends ConsumerStatefulWidget {
-  final WorkerProfile? profile;
-  final ProfileSection? editingSection;
-  final bool isSaving;
-  final VoidCallback? onEdit;
-  final Future<void> Function(
-    ProfileSection section,
-    Map<String, String> fields,
-  ) onSave;
-  final VoidCallback onCancel;
-
-  const PreferencesSectionCard({
-    super.key,
-    required this.profile,
-    required this.editingSection,
-    required this.isSaving,
-    required this.onEdit,
-    required this.onSave,
-    required this.onCancel,
-  });
+  const PreferencesSectionCard({super.key});
 
   @override
   ConsumerState<PreferencesSectionCard> createState() =>
@@ -46,21 +29,16 @@ class _PreferencesSectionCardState
   Set<String> _languageIds = {};
   Set<String> _skillIds = {};
 
-  bool get _isEditing => widget.editingSection == ProfileSection.preferences;
-
-  @override
-  void didUpdateWidget(PreferencesSectionCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final wasEditing = oldWidget.editingSection == ProfileSection.preferences;
-    if (!wasEditing && _isEditing) {
-      final p = widget.profile;
-      _availabilityIds = Set.from(p?.availabilityIds ?? []);
-      _availabilityTimeIds = Set.from(p?.availabilityTimeIds ?? []);
-      _availabilityDayIds = Set.from(p?.availabilityDayIds ?? []);
-      _liftId = p?.liftId;
-      _languageIds = Set.from(p?.languageIds ?? []);
-      _skillIds = Set.from(p?.skills ?? []);
-    }
+  void _populateFields() {
+    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    setState(() {
+      _availabilityIds = Set.from(profile?.availabilityIds ?? []);
+      _availabilityTimeIds = Set.from(profile?.availabilityTimeIds ?? []);
+      _availabilityDayIds = Set.from(profile?.availabilityDayIds ?? []);
+      _liftId = profile?.liftId;
+      _languageIds = Set.from(profile?.languageIds ?? []);
+      _skillIds = Set.from(profile?.skills ?? []);
+    });
   }
 
   void _toggle(Set<String> set, String id, bool selected) {
@@ -131,27 +109,48 @@ class _PreferencesSectionCardState
     };
   }
 
-  SectionEditActions _actions({required bool isEditing}) => SectionEditActions(
-        isEditingThis: isEditing,
-        isAnyEditing: widget.editingSection != null,
-        isSaving: widget.isSaving,
-        onEdit: widget.onEdit,
-        onCancel: widget.onCancel,
-        onSave: isEditing
-            ? () => widget.onSave(ProfileSection.preferences, _buildFields())
-            : () {},
-      );
-
   @override
   Widget build(BuildContext context) {
-    final profile = widget.profile;
+    final vm = ref.watch(preferencesViewModelProvider);
+    final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
 
-    if (!_isEditing) {
+    ref.listen(
+      preferencesViewModelProvider.select((s) => s.isEditing),
+      (prev, next) {
+        if (prev == false && next == true) _populateFields();
+      },
+    );
+
+    ref.listen<PreferencesState>(preferencesViewModelProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.justSaved && !(prev?.justSaved ?? false)) {
+        showProfileSuccess(context, 'Changes saved successfully!');
+      }
+      if (next.saveError != null && next.saveError != prev?.saveError) {
+        showProfileError(context, next.saveError!);
+      }
+    });
+
+    final actions = SectionEditActions(
+      isEditingThis: vm.isEditing,
+      isAnyEditing: false,
+      isSaving: vm.isSaving,
+      onEdit: profile != null
+          ? ref.read(preferencesViewModelProvider.notifier).startEditing
+          : null,
+      onCancel:
+          ref.read(preferencesViewModelProvider.notifier).cancelEditing,
+      onSave: () => ref
+          .read(preferencesViewModelProvider.notifier)
+          .save(_buildFields()),
+    );
+
+    if (!vm.isEditing) {
       return ProfileSectionCard(
         title: 'Preferences',
         icon: Icons.work_outline,
         iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
-        trailing: _actions(isEditing: false),
+        trailing: actions,
         children: [
           ChipDisplayRow(
             label: 'Can you lift up to',
@@ -191,7 +190,7 @@ class _PreferencesSectionCardState
       title: 'Preferences',
       icon: Icons.work_outline,
       iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
-      trailing: _actions(isEditing: true),
+      trailing: actions,
       children: [
         ChipSelector(
           label: 'Can you lift up to',

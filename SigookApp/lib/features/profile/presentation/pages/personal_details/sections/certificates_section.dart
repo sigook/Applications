@@ -7,17 +7,14 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../../../../domain/entities/worker_profile.dart';
-import '../../../../domain/usecases/update_worker_profile.dart';
-import '../../../viewmodels/profile_viewmodel.dart';
+import '../../../../certificates/presentation/viewmodels/certificates_viewmodel.dart';
+import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/certificate_card.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 
 class CertificatesSectionCard extends ConsumerStatefulWidget {
-  final WorkerProfile? profile;
-
-  const CertificatesSectionCard({super.key, required this.profile});
+  const CertificatesSectionCard({super.key});
 
   @override
   ConsumerState<CertificatesSectionCard> createState() =>
@@ -27,7 +24,6 @@ class CertificatesSectionCard extends ConsumerStatefulWidget {
 class _CertificatesSectionCardState
     extends ConsumerState<CertificatesSectionCard> {
   PickedFileData? _pendingFile;
-  bool _isUploading = false;
 
   void _previewDocument(String url, String title) {
     final token = ref.read(authViewModelProvider).token?.accessToken;
@@ -49,28 +45,27 @@ class _CertificatesSectionCardState
 
   Future<void> _upload() async {
     if (_pendingFile == null) return;
-    setState(() => _isUploading = true);
-
-    final error = await ref.read(profileViewModelProvider.notifier).uploadFile(
-      ProfileSection.certificates,
-      {},
-      {'certificateFile': _pendingFile!.path},
-    );
-
-    if (!mounted) return;
-    setState(() => _isUploading = false);
-
-    if (error != null) {
-      showProfileError(context, 'Failed to upload certificate: $error');
-    } else {
-      setState(() => _pendingFile = null);
-      showProfileSuccess(context, 'Certificate uploaded successfully!');
-    }
+    await ref
+        .read(certificatesViewModelProvider.notifier)
+        .upload(_pendingFile!.path);
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = widget.profile;
+    final vm = ref.watch(certificatesViewModelProvider);
+    final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
+
+    ref.listen<CertificatesState>(certificatesViewModelProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.justUploaded && !(prev?.justUploaded ?? false)) {
+        setState(() => _pendingFile = null);
+        showProfileSuccess(context, 'Certificate uploaded successfully!');
+      }
+      if (next.uploadError != null && next.uploadError != prev?.uploadError) {
+        showProfileError(
+            context, 'Failed to upload certificate: ${next.uploadError}');
+      }
+    });
 
     return ProfileSectionCard(
       title: 'Certificates',
@@ -99,7 +94,7 @@ class _CertificatesSectionCardState
             ),
           ),
           UploadActionRow(
-            isUploading: _isUploading,
+            isUploading: vm.isUploading,
             label: 'Upload Certificate',
             onUpload: _upload,
             onCancel: () => setState(() => _pendingFile = null),
