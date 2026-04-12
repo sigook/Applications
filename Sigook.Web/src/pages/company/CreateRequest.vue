@@ -172,7 +172,7 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import confirmationAlert from "@/mixins/confirmationAlert";
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import {
   DurationTerm,
   DurationTermLabels,
@@ -215,9 +215,10 @@ export default {
       jobLocation: '',
       locationSelected: null,
       showLocationModal: false,
+      unsavedChanges: false,
     };
   },
-  mixins: [confirmationAlert],
+  beforeRouteLeave: confirmationGuard,
   async created() {
     this.locations = await getLocations();
     this.companyJobPositions = await getCompanyJobPositions();

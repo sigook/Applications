@@ -11,7 +11,7 @@
         <h2 class="capitalize fz1 fw-700">
           <span class="fw-400 fz-1" v-if="company.numberId">{{ company.numberId }} |
           </span>
-          {{ company.businessName | lowercase }}
+          {{ lowercase(company.businessName) }}
         </h2>
       </div>
 
@@ -30,10 +30,10 @@
 
     <b-tabs v-model="currentTab" @input="changeTab" v-if="company">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :company.sync="company" class="p-2" />
+        <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Settings" value="Settings" v-if="isPayrollManager">
-        <settings v-if="visitedTabs.includes('Settings')" :company.sync="company" class="p-2" />
+        <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
         <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />
@@ -60,10 +60,14 @@
 </template>
 
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
+import { lowercase } from '@/utils/filters';
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   data() {
     return {
       currentTab: "Detail",
@@ -86,8 +90,8 @@ export default {
     FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
     CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo.vue")
   },
-  mixins: [billingAdminMixin],
   methods: {
+    lowercase,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);

@@ -4,19 +4,19 @@
       <div class="col-12 col-padding">
         <b-table :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
           backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-          :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
+          v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
           </template>
           <template>
             <b-table-column field="weekEnding" label="Payment Date" v-slot="props">
-              {{ props.row.weekEnding | date }}
+              {{ date(props.row.weekEnding) }}
             </b-table-column>
             <b-table-column field="numberOfPayStubs" label="PayStubs" v-slot="props">
               {{ props.row.numberOfPayStubs }}
             </b-table-column>
             <b-table-column field="totalNet" label="Total Net" v-slot="props">
-              {{ props.row.totalNet | currency }}
+              {{ currency(props.row.totalNet) }}
             </b-table-column>
             <b-table-column field="actions" v-slot="props">
               <b-tooltip label="Download" type="is-dark" position="is-top">
@@ -32,7 +32,8 @@
   </div>
 </template>
 <script lang="ts">
-import download from '@/mixins/downloadFileMixin';
+import { downloadFile } from '@/utils/downloadFile';
+import { date, currency } from '@/utils/filters';
 import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
 
 export default {
@@ -47,11 +48,13 @@ export default {
       }
     }
   },
-  mixins: [download],
   created() {
     this.getReport();
   },
   methods: {
+    downloadFile,
+    date,
+    currency,
     onPageChange(page) {
       this.serverParams.pageIndex = page;
       this.getReport();
@@ -59,9 +62,8 @@ export default {
     getReport() {
       this.isLoading = true;
       getPaymentReport(this.serverParams)
-        .then((response: any) => {
-          this.rows = response.items.map((i: any) => ({ ...i, actions: null, reportDownloading: false }));
-          console.log(response);
+        .then((response) => {
+          this.rows = response.items.map((i) => ({ ...i, actions: null, reportDownloading: false }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

@@ -6,7 +6,7 @@
         @onDataLoading="(value) => isLoading = value"></export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-        detail-transition="fade" default-sort="name" :current-page.sync="serverParams.pageIndex"
+        detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -42,10 +42,10 @@
             </template>
           </b-table-column>
           <b-table-column field="totalHoursApproved" label="Approved Hours" sortable v-slot="props">
-            {{ props.row.totalHoursApproved | hour }}
+            {{ hour(props.row.totalHoursApproved) }}
           </b-table-column>
           <b-table-column field="totalHoursWorker" label="Total Hours" sortable v-slot="props">
-            {{ props.row.totalHoursWorker | hour }}
+            {{ hour(props.row.totalHoursWorker) }}
           </b-table-column>
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
@@ -77,6 +77,7 @@
   </div>
 </template>
 <script lang="ts">
+import { hour } from '@/utils/filters';
 import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
 
 export default {
@@ -109,6 +110,7 @@ export default {
     Export: () => import("@/components/Export.vue"),
   },
   methods: {
+    hour,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadRequestWorkers();

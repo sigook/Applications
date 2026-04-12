@@ -17,7 +17,7 @@
             <div v-if="document.canDownload" class="button-right">
               <a :href="document.pathFile" target="_blank" download>
                 <p class="fw-400">
-                  {{ document.fileName | filename }}
+                  {{ filename(document.fileName) }}
                   <span class="download-button"></span>
                 </p>
               </a>
@@ -30,7 +30,7 @@
                 </b-tooltip>
               </div>
             </div>
-            <p v-else class="fw-400">{{ document.fileName | filename }}</p>
+            <p v-else class="fw-400">{{ filename(document.fileName) }}</p>
             <div class="fz-1">
               <p>
                 <strong class="fw-400">{{ document.description }}</strong>
@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { filename } from "@/utils/filters";
 import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 export default {
   data() {
@@ -83,6 +84,7 @@ export default {
     Pagination: () => import("../../components/Paginator.vue"),
   },
   methods: {
+    filename,
     onShowDocuments() {
       if (!this.showDocuments) {
         this.showDocuments = true;

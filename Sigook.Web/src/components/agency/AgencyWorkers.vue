@@ -11,7 +11,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick" @mouseleave="hideNotes">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -62,7 +62,7 @@
             <template v-slot="props">
               <div v-if="props.row.socialInsurance">
                 {{ props.row.socialInsurance }}
-                <i class="fz-2 block">{{ props.row.dueDate | dateMonth }}</i>
+                <i class="fz-2 block">{{ dateMonth(props.row.dueDate) }}</i>
               </div>
               <span v-else class="op3">SIN/SNN</span>
             </template>
@@ -77,7 +77,7 @@
             </template>
             <template v-slot="props">
               <b-button type="is-ghost" icon-right="pencil" @click="onShowModalStartWorking(props.row)">
-                {{ props.row.startWorking | dateMonth }}
+                {{ dateMonth(props.row.startWorking) }}
               </b-button>
             </template>
           </b-table-column>
@@ -93,8 +93,8 @@
               </b-field>
             </template>
             <template v-slot="props">
-              {{ props.row.createdBy | emailName }}
-              <i class="fz-2 block">{{ props.row.createdAt | dateMonth }}</i>
+              {{ emailName(props.row.createdBy) }}
+              <i class="fz-2 block">{{ dateMonth(props.row.createdAt) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="rejectedBy" label="Rejected By" sortable searchable>
@@ -110,8 +110,8 @@
             </template>
             <template v-slot="props">
               <div v-if="props.row.rejectedBy">
-                {{ props.row.rejectedBy | emailName }}
-                <i class="fz-2 block">{{ props.row.rejectedAt | dateMonth }}</i>
+                {{ emailName(props.row.rejectedBy) }}
+                <i class="fz-2 block">{{ dateMonth(props.row.rejectedAt) }}</i>
               </div>
               <span v-else class="op3">Rejected by</span>
             </template>
@@ -162,15 +162,15 @@
     </b-modal>
 
     <b-modal v-model="modalStartWorking" width="415px">
-      <datepicker-modal v-if="currentWorker" :startWorking.sync="currentWorker.startWorking"
+      <datepicker-modal v-if="currentWorker" v-model:startWorking="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>
   </div>
 </template>
 
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { downloadFile } from "@/utils/downloadFile";
+import { phoneMask as mask } from '@/constants/phoneMask';
 import {
   getAgencyRequestsWorkers,
   rejectAgencyRequestWorker,
@@ -178,17 +178,20 @@ import {
 } from "@/api/agencyRequestApi";
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 import { getWorkersReportDocument } from "@/api/agencyReportApi";
+import { dateMonth, emailName } from '@/utils/filters';
 import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
   deleteAgencyRequestWorkerNote,
 } from "@/api/agencyNoteApi";
+import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
 
 export default {
   props: ["request", "id", "showTitle"],
   data() {
     return {
+      mask,
       isLoading: true,
       totalItems: 0,
       rows: [],
@@ -204,10 +207,10 @@ export default {
       currentWorker: null,
       modalRejectWorker: false,
       modalStartWorking: false,
-      getNotes: ({ requestId, userId, pagination }: any) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
-      createNote: ({ requestId, userId, model }: any) => createAgencyRequestWorkerNote(requestId, userId, model),
-      updateNote: ({ requestId, userId, id, model }: any) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-      deleteNote: ({ requestId, userId, id }: any) => deleteAgencyRequestWorkerNote(requestId, userId, id),
+      getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
+      createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
+      updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
+      deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id),
       serverParams: {
         sortBy: 2,
         requestId: this.id || this.$route.params.id,
@@ -217,7 +220,6 @@ export default {
       }
     };
   },
-  mixins: [phoneMaskMixin, download],
   created() {
     this.loadRequestWorkers();
   },
@@ -228,6 +230,9 @@ export default {
     DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue"),
   },
   methods: {
+    downloadFile,
+    dateMonth,
+    emailName,
     onCellClick(row, column, rowIndex) {
       switch (column._props.field) {
         case 'startWorking':
@@ -318,6 +323,7 @@ export default {
             ...i,
             status: WorkerRequestStatusLabels[i.workerRequestStatus],
             actions: null,
+            showNotes: false,
           }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
@@ -344,11 +350,11 @@ export default {
       });
     },
     showNotes(index) {
-      this.$set(this.rows[index], "showNotes", true);
+      this.rows[index].showNotes = true;
     },
     hideNotes(row) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", false);
+      this.rows[index].showNotes = false;
     },
     onShowModalStartWorking(worker) {
       this.currentWorker = worker;

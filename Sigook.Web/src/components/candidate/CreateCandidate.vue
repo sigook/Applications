@@ -86,7 +86,7 @@
   </div>
 </template>
 <script lang="ts">
-import updateMixin from "@/mixins/uploadFiles";
+import { uploadFile } from "@/utils/fileUpload";
 import { getGenders } from "@/api/catalogApi";
 import { residencyList, sourceList } from "@/constants/catalog";
 import { createAgencyCandidate } from "@/api/agencyCandidateApi";
@@ -115,7 +115,6 @@ export default {
       file: null
     }
   },
-  mixins: [updateMixin],
   components: {
     phoneInput: () => import("@/components/PhoneInput.vue")
   },
@@ -149,7 +148,7 @@ export default {
     },
     async uploadResume(file) {
       this.isLoading = true;
-      const response = await this.uploadFile(file, 'document', 'Resume_');
+      const response = await uploadFile(file, 'document', 'Resume_');
       this.candidate.fileName = response;
       this.isLoading = false;
     }

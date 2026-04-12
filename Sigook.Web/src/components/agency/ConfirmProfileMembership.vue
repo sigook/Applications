@@ -10,23 +10,23 @@
                             <table class="table" style="width: 100%">
                                 <tr>
                                     <th>Membership Price</th>
-                                    <td>{{costDetail.membershipPrice | currencyCad}}</td>
+                                    <td>{{currencyCad(costDetail.membershipPrice)}}</td>
                                 </tr>
                                 <tr v-if="costDetail.credits > 0">
                                     <th>Credits</th>
-                                    <td>{{costDetail.credits | currencyCad}}</td>
+                                    <td>{{currencyCad(costDetail.credits)}}</td>
                                 </tr>
                                 <tr>
                                     <th>Subtotal</th>
-                                    <td>{{costDetail.subTotal | currencyCad}}</td>
+                                    <td>{{currencyCad(costDetail.subTotal)}}</td>
                                 </tr>
                                 <tr>
                                     <th>HST</th>
-                                    <td>{{costDetail.hst | currencyCad}}</td>
+                                    <td>{{currencyCad(costDetail.hst)}}</td>
                                 </tr>
                                 <tr>
                                     <th>Total</th>
-                                    <th>{{costDetail.total | currencyCad}}</th>
+                                    <th>{{currencyCad(costDetail.total)}}</th>
                                 </tr>
                             </table>
                             <hr/>
@@ -42,10 +42,13 @@
 </template>
 
 <script lang="ts">
+    import { currencyCad } from '@/utils/filters';
+
     export default {
         name: "ConfirmProfileMembership",
         props: ["costDetail"],
         methods:{
+            currencyCad,
             close(confirm){
                 this.$emit("close-modal", confirm);
             },

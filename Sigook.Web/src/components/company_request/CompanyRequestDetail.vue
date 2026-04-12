@@ -5,11 +5,11 @@
       <div class="highlight-content space-between">
         <div class="item">
           <span class="fw-700">Created</span>
-          <p>{{ request.createdAt | dateFromNow }}</p>
+          <p>{{ dateFromNow(request.createdAt) }}</p>
         </div>
         <div class="item">
           <span class="fw-700">Rate / Salary</span>
-          <p>{{ (request.agencyRate || request.workerSalary) | currency }}</p>
+          <p>{{ currency(request.agencyRate || request.workerSalary) }}</p>
         </div>
         <div class="item">
           <span class="fw-700">Term</span>
@@ -54,7 +54,7 @@
       <!-- Incentive -->
       <section class="mt-5" v-if="request.incentive">
         <span class="fw-700 is-inline-block mb-2">Plus </span>
-        <span class="fw-400 ml-2"> {{ request.incentive | currency }}</span>
+        <span class="fw-400 ml-2"> {{ currency(request.incentive) }}</span>
         <pre class="long-description">{{ request.incentiveDescription }} </pre>
       </section>
 
@@ -72,6 +72,7 @@
   </div>
 </template>
 <script lang="ts">
+import { dateFromNow, currency } from '@/utils/filters';
 import { DurationTermLabels } from "@/constants/enums";
 
 export default {
@@ -79,6 +80,10 @@ export default {
   components: {
     Location: () => import("../request/RequestLocation.vue"),
     AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
+  },
+  methods: {
+    dateFromNow,
+    currency,
   },
   computed: {
     DurationTermLabels: () => DurationTermLabels,

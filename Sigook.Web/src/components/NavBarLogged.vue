@@ -33,7 +33,7 @@
             <svg v-else width="40" height="40">
               <circle cx="20" cy="20" r="20" fill="#aeaeae" />
               <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="20px" font-family="Arial" dy=".3em">
-                {{ currentUser.fu  | avatarLetters }}
+                {{ avatarLetters(currentUser.fu) }}
               </text>
             </svg>
           </template>
@@ -55,6 +55,7 @@
 
 
 <script lang="ts">
+import { avatarLetters } from '@/utils/filters';
 import menu from "@/security/menu";
 import roles from "@/security/roles";
 import { getMyProfile } from '@/api/workerApi';
@@ -71,6 +72,7 @@ export default {
     };
   },
   methods: {
+    avatarLetters,
     logout() {
       this.isLoading = true
       this.$store.dispatch("signOut")

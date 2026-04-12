@@ -9,7 +9,7 @@
         </upload-image>
 
         <div v-if="agency.locations">
-          <h1 class="capitalize">{{ agency.fullName | lowercase }}</h1>
+          <h1 class="capitalize">{{ lowercase(agency.fullName) }}</h1>
           <p class="icon-before-location icon-before uppercase" v-if="agency.locations[0]">
             {{ agency.locations[0].address }}
             {{ agency.locations[0].city.value }}
@@ -21,7 +21,7 @@
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
         <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
@@ -29,7 +29,7 @@
         </b-tab-item>
 
         <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
@@ -49,9 +49,10 @@
 </template>
 
 <script lang="ts">
-import confirmationAlert from "../../mixins/confirmationAlert";
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
+import { lowercase } from '@/utils/filters';
 
 export default {
   data() {
@@ -61,6 +62,7 @@ export default {
       visitedTabs: ["BusinessInformation"],
       isDisabled: true,
       lang: this.$validator.dictionary.locale,
+      unsavedChanges: false,
     };
   },
   components: {
@@ -87,6 +89,7 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    lowercase,
     editProfile() {
       this.isDisabled = false;
     },
@@ -129,7 +132,8 @@ export default {
       return this.$store.state.agency.agency;
     }
   },
-  mixins: [confirmationAlert, switchLocaleMixin],
+  mixins: [switchLocaleMixin],
+  beforeRouteLeave: confirmationGuard,
 };
 </script>
 

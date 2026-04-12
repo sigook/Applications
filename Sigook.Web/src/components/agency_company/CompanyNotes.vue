@@ -12,8 +12,8 @@
             <span :style="{ backgroundColor: item.color }" class="note-color-icon"
               :class="{ 'border': item.color === '#fefefe' }"></span>
             {{ item.note }}
-            <br><i class="fz-2" v-if="item.createdBy">By: {{ item.createdBy | emailName }} | </i>
-            <i class="fz-2" v-if="item.createdAt">{{ item.createdAt | dateFromNow }}</i>
+            <br><i class="fz-2" v-if="item.createdBy">By: {{ emailName(item.createdBy) }} | </i>
+            <i class="fz-2" v-if="item.createdAt">{{ dateFromNow(item.createdAt) }}</i>
           </p>
         </li>
       </ul>
@@ -39,22 +39,24 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { emailName, dateFromNow } from "@/utils/filters";
 import {
   getAgencyCompanyNotes,
   createAgencyCompanyNote,
   updateAgencyCompanyNote,
   deleteAgencyCompanyNote,
 } from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 
 export default {
   data() {
     return {
       showModalNotes: false,
       profileId: this.$route.params.id,
-      getNotes: ({ userId, pagination }: any) => getAgencyCompanyNotes(userId, pagination),
-      createNote: ({ userId, model }: any) => createAgencyCompanyNote(userId, model),
-      updateNote: ({ userId, id, model }: any) => updateAgencyCompanyNote(userId, id, model),
-      deleteNote: ({ userId, id }: any) => deleteAgencyCompanyNote(userId, id),
+      getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination),
+      createNote: ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model),
+      updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyCompanyNote(userId, id, model),
+      deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id),
       notesList: null
     }
   },
@@ -63,6 +65,8 @@ export default {
     ModalNotes: () => import("../notes/ModalNotes.vue")
   },
   methods: {
+    emailName,
+    dateFromNow,
     loadFirstNotes() {
       getAgencyCompanyNotes(this.profileId, { page: 1, size: 3 })
         .then(response => {

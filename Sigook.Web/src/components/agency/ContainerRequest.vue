@@ -19,14 +19,14 @@
           <b>Id:</b> {{ data.numberId }}
 
           <i class="icon-time margin-left"></i>
-          {{ data.createdAt | dateFromNow }}
+          {{ dateFromNow(data.createdAt) }}
 
           <i class="icon-workers"></i>
           <span class="color-green fw-400">{{ data.workersQuantityWorking }} / {{ data.workersQuantity }}</span>
 
           <i v-if="showFinishAt(data.finishAt)" class="icon-time margin-left"></i>
           <span v-if="showFinishAt(data.finishAt)" v-bind:class="{'color-danger fw-400' : showFinishWarning(data.finishAt)}">
-            Finish: {{data.finishAt | dateFromNow }}
+            Finish: {{dateFromNow(data.finishAt) }}
           </span>
         </div>
 
@@ -39,6 +39,8 @@
 </template>
 
 <script lang="ts">
+import { dateFromNow } from '@/utils/filters';
+
 export default {
   props: ['data'],
   data() {
@@ -47,6 +49,7 @@ export default {
     }
   },
   methods: {
+    dateFromNow,
     showFinishAt(date){
       try {
         if (!date) return false;

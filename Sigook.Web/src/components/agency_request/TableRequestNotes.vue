@@ -4,8 +4,8 @@
             <p class="fw-400 fz-14">
                 <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
                 {{ item.note }}
-                <br><i class="fz-2" v-if="item.createdBy">By: {{item.createdBy | emailName}} | </i>
-                <i class="fz-2" v-if="item.createdAt">{{item.createdAt | dateFromNow}}</i>
+                <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
+                <i class="fz-2" v-if="item.createdAt">{{dateFromNow(item.createdAt)}}</i>
             </p>
         </div>
 
@@ -34,6 +34,7 @@
     </div>
 </template>
 <script lang="ts">
+import { emailName, dateFromNow } from '@/utils/filters';
 import toastMixin from "@/mixins/toastMixin";
 import {
   getAgencyRequestNotes,
@@ -41,6 +42,7 @@ import {
   updateAgencyRequestNote,
   deleteAgencyRequestNote,
 } from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 
 export default {
     props: ['canEdit', 'requestId'],
@@ -48,10 +50,10 @@ export default {
         return {
             showModalNotes: false,
             profileId: this.requestId,
-            getNotes: ({ userId, pagination }: any) => getAgencyRequestNotes(userId, pagination),
-            createNote: ({ userId, model }: any) => createAgencyRequestNote(userId, model),
-            updateNote: ({ userId, id, model }: any) => updateAgencyRequestNote(userId, id, model),
-            deleteNote: ({ userId, id }: any) => deleteAgencyRequestNote(userId, id),
+            getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
+            createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
+            updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
+            deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
             notesList: null
         }
     },
@@ -60,6 +62,8 @@ export default {
         ModalNotes: () => import("../notes/ModalNotes.vue")
     },
     methods: {
+        emailName,
+        dateFromNow,
         loadFirstNotes(){
             getAgencyRequestNotes(this.profileId, {page: 1, size: 1})
                     .then(response => {

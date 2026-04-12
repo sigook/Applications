@@ -9,7 +9,7 @@
           role</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
-        pagination-rounded :per-page="pageSize" detail-transition="fade" :current-page.sync="pageIndex"
+        pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -19,20 +19,20 @@
             {{ props.row.value }}
           </b-table-column>
           <b-table-column field="rate" label="Agency Rate" :visible="isPayrollManager" v-slot="props">
-            {{ props.row.rate | currency }}
+            {{ currency(props.row.rate) }}
           </b-table-column>
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
-            {{ props.row.workerRate | currency }}
+            {{ currency(props.row.workerRate) }}
             <div class="is-inline-block">
               <b-tooltip label="Max" type="is-dark">
-                <span v-if="props.row.workerRateMax">- {{ props.row.workerRateMax | currency }}
+                <span v-if="props.row.workerRateMax">- {{ currency(props.row.workerRateMax) }}
                 </span>
               </b-tooltip>
             </div>
           </b-table-column>
           <b-table-column field="createdAt" label="Created" v-slot="props">
-            {{ props.row.createdBy | emailName }}
-            <i class="fz-2 block">{{ props.row.createdAt | dateMonth }}</i>
+            {{ emailName(props.row.createdBy) }}
+            <i class="fz-2 block">{{ dateMonth(props.row.createdAt) }}</i>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
             <roles-shift v-if="props.row.displayShift" :displayShift="props.row.displayShift" :roleId="props.row.id"
@@ -64,10 +64,14 @@
   </div>
 </template>
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   data() {
     return {
       isLoading: true,
@@ -81,13 +85,15 @@ export default {
       showModalRole: false,
     };
   },
-  mixins: [billingAdminMixin],
   components: {
     PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
     RequestPositionForm: () => import("../../components/agency_company/RequestJobPositionForm.vue"),
     RolesShift: () => import("../agency_company/RolesShiftDetail.vue"),
   },
   methods: {
+    currency,
+    emailName,
+    dateMonth,
     async loadJobPositions() {
       this.isLoading = true;
       this.rows = await getAgencyCompanyJobPositions(this.profileId);

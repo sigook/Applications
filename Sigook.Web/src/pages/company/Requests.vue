@@ -15,7 +15,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -41,7 +41,7 @@
             </template>
             <template v-slot="props">
               {{ props.row.jobTitle }}
-              <i class="fz-2 block">{{ props.row.createdAt | dateFromNow }}</i>
+              <i class="fz-2 block">{{ dateFromNow(props.row.createdAt) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="location" label="Location" searchable>
@@ -88,6 +88,7 @@
 import toast from "@/mixins/toastMixin";
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
+import { dateFromNow } from '@/utils/filters';
 
 export default {
   components: {
@@ -108,6 +109,7 @@ export default {
   },
   mixins: [toast],
   methods: {
+    dateFromNow,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getCompanyRequests();

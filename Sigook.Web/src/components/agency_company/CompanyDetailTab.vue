@@ -118,7 +118,7 @@
       </div>
 
       <i class="fz-1 op5" v-if="company.createdAt">
-        Created: {{ company.createdAt | date }}
+        Created: {{ date(company.createdAt) }}
       </i>
     </section>
 
@@ -135,7 +135,8 @@
 </template>
 
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { date } from "@/utils/filters";
 import {
   getInvoiceNotes,
   postInvoiceNotes,
@@ -145,6 +146,9 @@ import {
 } from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ["company"],
   data() {
     return {
@@ -182,7 +186,6 @@ export default {
     Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
     EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
   },
-  mixins: [billingAdminMixin],
   watch: {
     company: {
       handler(newVal) {
@@ -192,6 +195,7 @@ export default {
     }
   },
   methods: {
+    date,
     showNotesEditor() {
       if (this.showEditor) {
         this.showEditor = false;

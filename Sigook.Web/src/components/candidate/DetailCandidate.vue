@@ -59,12 +59,15 @@
   </div>
 </template>
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getGenders } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ['candidateId'],
   data() {
     return {
@@ -121,7 +124,6 @@ export default {
         this.showAlertError(error);
       })
   },
-  mixins: [billingAdminMixin],
   computed: {
     genders() {
       return this.genderList;

@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
-      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
+      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -15,10 +15,10 @@
         <i class="fz-2 block"> {{ props.row.jobTitle }}</i>
       </b-table-column>
       <b-table-column field="date" label="Date" v-slot="props">
-        {{ props.row.date | dateMonth }} <i v-if="props.row.isHoliday" class="holiday-text">Holiday</i>
+        {{ dateMonth(props.row.date) }} <i v-if="props.row.isHoliday" class="holiday-text">Holiday</i>
       </b-table-column>
       <b-table-column field="regularHours" label="Regular" v-slot="props">
-        {{ props.row.regularHours | hour }}
+        {{ hour(props.row.regularHours) }}
       </b-table-column>
       <b-table-column field="holidayHours" label="Holiday" v-slot="props">
         {{ props.row.holidayHours }}
@@ -33,7 +33,7 @@
         {{ props.row.missingHoursOvertime }}
       </b-table-column>
       <b-table-column field="totalHours" label="Total" v-slot="props">
-        {{ props.row.totalHours | hour }}
+        {{ hour(props.row.totalHours) }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
@@ -53,6 +53,7 @@
   </div>
 </template>
 <script lang="ts">
+import { dateMonth, hour } from '@/utils/filters';
 import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
 
 export default {
@@ -73,6 +74,8 @@ export default {
     }
   },
   methods: {
+    dateMonth,
+    hour,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkerProfileTimeSheetHistory();

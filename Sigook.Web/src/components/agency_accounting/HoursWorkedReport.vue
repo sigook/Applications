@@ -36,7 +36,7 @@
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </export>
         <b-table :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
-          :current-page.sync="pageIndex" pagination-rounded>
+          v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
           </template>
@@ -48,31 +48,31 @@
               {{ props.row.jobPosition }}
             </b-table-column>
             <b-table-column field="billRate" label="Bill Rate" v-slot="props">
-              {{ props.row.billRate | currency }}
+              {{ currency(props.row.billRate) }}
             </b-table-column>
             <b-table-column field="regularHoursWorked" label="Regular Hours" v-slot="props">
               {{ props.row.regularHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayRegularRate" label="Total Pay Regular Rate" v-slot="props">
-              {{ props.row.totalPayRegularRate | currency }}
+              {{ currency(props.row.totalPayRegularRate) }}
             </b-table-column>
             <b-table-column field="overtimeHoursWorked" label="Overtime Hours" v-slot="props">
               {{ props.row.overtimeHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayOvertimeRate" label="Total Pay Overtime Rate" v-slot="props">
-              {{ props.row.totalPayOvertimeRate | currency }}
+              {{ currency(props.row.totalPayOvertimeRate) }}
             </b-table-column>
             <b-table-column field="holidayHoursWorked" label="Holiday Hours" v-slot="props">
               {{ props.row.holidayHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayHolidayRate" label="Total Pay Holiday Rate" v-slot="props">
-              {{ props.row.totalPayHolidayRate | currency }}
+              {{ currency(props.row.totalPayHolidayRate) }}
             </b-table-column>
             <b-table-column field="totalHoursWorked" label="Total Hours" v-slot="props">
               {{ props.row.totalHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayRate" label="Total Pay Rate" v-slot="props">
-              {{ props.row.totalPayRate | currency }}
+              {{ currency(props.row.totalPayRate) }}
             </b-table-column>
           </template>
           <template v-slot:footer>
@@ -81,13 +81,13 @@
               <th></th>
               <th></th>
               <th>{{ report.totalRegularHours }}</th>
-              <th>{{ report.totalPayRegular | currency }}</th>
+              <th>{{ currency(report.totalPayRegular) }}</th>
               <th>{{ report.totalOvertimeHours }}</th>
-              <th>{{ report.totalPayOvertime | currency }}</th>
+              <th>{{ currency(report.totalPayOvertime) }}</th>
               <th>{{ report.totalHolidayHours }}</th>
-              <th>{{ report.totalPayHoliday | currency }}</th>
+              <th>{{ currency(report.totalPayHoliday) }}</th>
               <th>{{ report.totalHours }}</th>
-              <th>{{ report.totalPay | currency }}</th>
+              <th>{{ currency(report.totalPay) }}</th>
             </template>
           </template>
         </b-table>
@@ -97,6 +97,7 @@
 </template>
 <script lang="ts">
 import dayjs from 'dayjs';
+import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
 import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
 
@@ -127,6 +128,7 @@ export default {
     await this.loadCompanies();
   },
   methods: {
+    currency,
     async loadCompanies() {
       this.isLoading = true;
       this.companies = await getAgencyCompanyProfileWithRequests();
@@ -165,7 +167,7 @@ export default {
       if (result) {
         this.isLoadingReport = true;
         getHoursWorkedReport(this.serverParams)
-          .then((response: any) => {
+          .then((response) => {
             this.isLoadingReport = false;
             this.report = {
               ...response,

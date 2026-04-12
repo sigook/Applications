@@ -86,6 +86,7 @@
       "vue/no-mutating-props": "warn",
       "vue/multi-word-component-names": "off",
       "vue/no-reserved-component-names": "off",
+      "vue/no-v-model-argument": "off",
       "no-irregular-whitespace": "warn",
       "no-undef": "warn"
     },

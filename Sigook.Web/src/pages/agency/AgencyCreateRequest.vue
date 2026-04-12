@@ -239,7 +239,7 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyPersonnel } from "@/api/agencyApi";
 import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from "@/api/agencyCompanyApi";
 import { postAgencyRequest, updateAgencyRequest } from "@/api/agencyRequestApi";
@@ -251,12 +251,14 @@ import {
 } from "@/constants/enums";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   components: {
     PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
     RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm.vue"),
     LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
-  mixins: [billingAdminMixin],
   name: "AgencyCreateRequest",
   data() {
     const maxBreak = new Date();

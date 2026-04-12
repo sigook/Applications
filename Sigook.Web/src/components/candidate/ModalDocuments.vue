@@ -8,7 +8,7 @@
             Document
             <span class="sign-required"></span>
             <div class="input-file-edited input-block" v-if="newDocument.fileName">
-              <span>{{ newDocument.fileName | filename }}</span>
+              <span>{{ filename(newDocument.fileName) }}</span>
               <button v-if="newDocument.fileName" @click="deleteDocument" class="button cross-button" type="button" />
             </div>
             <upload-file v-else id="documentButton" class="input-block inline-100"
@@ -47,14 +47,18 @@
   </div>
 </template>
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toast from "../../mixins/toastMixin";
-import pubSub from "@/mixins/pubSub";
-import updateMixin from "../../mixins/uploadFiles";
+import { usePubSub } from "@/composables/usePubSub";
+import { deleteFile } from "@/utils/fileUpload";
 import { getCandidateDocuments, addCandidateDocument, deleteCandidateDocument } from "@/api/agencyCandidateApi";
 
 export default {
+  setup() {
+    return { ...usePubSub() };
+  },
   props: ["candidateId"],
-  mixins: [toast, pubSub, updateMixin],
+  mixins: [toast],
   data() {
     return {
       showInput: true,
@@ -74,6 +78,7 @@ export default {
     this.loadDocuments();
   },
   methods: {
+    filename,
     loadDocuments() {
       this.isLoading = true;
       getCandidateDocuments(this.candidateId)
@@ -90,8 +95,10 @@ export default {
       this.newDocument.fileName = file;
     },
     deleteDocument() {
-      this.deleteFile(this.newDocument.fileName)
-        .then(() => this.newDocument.fileName = null);
+      this.isLoading = true;
+      deleteFile(this.newDocument.fileName)
+        .then(() => { this.newDocument.fileName = null; })
+        .finally(() => { this.isLoading = false; });
     },
     cleanInput() {
       this.newDocument = {

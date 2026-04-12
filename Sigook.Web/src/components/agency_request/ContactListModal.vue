@@ -37,7 +37,7 @@ export default {
       getAgencyCompanyContactPerson(this.companyId)
         .then(response => {
           this.isLoading = false;
-          this.data = response;
+          this.data = response.map(item => ({ ...item, active: false }));
           this.updateContacts();
         })
         .catch(error => {
@@ -47,9 +47,9 @@ export default {
     },
     updateContacts() {
       for (let i = 0; i < this.activeUsers.length; i++) {
-        for (let j = 0; j < this.data.items.length; j++) {
-          if (this.activeUsers[i].id === this.data.items[j].id) {
-            this.$set(this.data.items[j], 'active', true);
+        for (let j = 0; j < this.data.length; j++) {
+          if (this.activeUsers[i].id === this.data[j].id) {
+            this.data[j].active = true;
           }
         }
       }

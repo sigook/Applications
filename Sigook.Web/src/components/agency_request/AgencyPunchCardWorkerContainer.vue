@@ -9,23 +9,23 @@
             <div class="col-12 col-padding">
               <div v-if="slotProps.item.clockIn">
                 <b-tag type="is-info is-light">
-                  <strong>Clock in:</strong> {{ slotProps.item.clockIn | dateHHmm }}
+                  <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
                   <template v-if="slotProps.item.clockOut">
-                    <strong> to </strong>{{ slotProps.item.clockOut | dateHHmm }}
+                    <strong> to </strong>{{ dateHHmm(slotProps.item.clockOut) }}
                   </template>
                 </b-tag>
               </div>
               <b-tag type="is-success is-light">
-                <strong>Hours:</strong> {{ slotProps.item.totalHours | hour }}
+                <strong>Hours:</strong> {{ hour(slotProps.item.totalHours) }}
               </b-tag>
               <div v-if="slotProps.item.missingHours">
                 <b-tag type="is-success is-light">
-                  <strong>Missing Hours:</strong> {{ slotProps.item.missingHours | hour }}
+                  <strong>Missing Hours:</strong> {{ hour(slotProps.item.missingHours) }}
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHoursApproved">
                 <b-tag type="is-success is-light">
-                  <strong>Hours Approved:</strong> {{ slotProps.item.totalHoursApproved | hour }}
+                  <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
@@ -89,7 +89,7 @@
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" :editable-day.sync="editableDay"
+      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" v-model:editable-day="editableDay"
         @updateData="updateCell" />
     </b-modal>
 
@@ -100,7 +100,8 @@
   </div>
 </template>
 <script lang="ts">
-import timeSheetReportMixin from "@/mixins/agencyTimeSheetReportMixin";
+import { dateHHmm, hour } from '@/utils/filters';
+import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
@@ -109,6 +110,7 @@ import {
   postAgencyWorkerTimeSheet,
   deleteAgencyWorkerTimeSheet,
   getAgencyTimeSheetUsages,
+  updateAgencyWorkerTimeSheet,
 } from "@/api/agencyTimeSheetApi";
 
 dayjs.extend(duration);
@@ -130,13 +132,28 @@ export default {
       showDetailPunchCard: false
     }
   },
-  mixins: [timeSheetReportMixin],
   computed: {
     maximumDailyHours() {
       return maximumHoursPerDay;
     }
   },
   methods: {
+    dateHHmm,
+    hour,
+    timeSheetFastApprove(item, requestId, workerId) {
+      this.isLoading = true;
+      const model = buildTimeSheetApproveModel(item);
+      updateAgencyWorkerTimeSheet(requestId, workerId, item.id, model)
+        .then(() => {
+          this.updateCell();
+        })
+        .catch((error) => {
+          this.showAlertError(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     loadTimeSheets() {
       this.isLoading = true;
       getAgencyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })
@@ -214,7 +231,7 @@ export default {
     loadTimeSheetUsages(item) {
       this.isLoading = true;
       getAgencyTimeSheetUsages(this.requestId, this.workerId, item.id)
-        .then((response: any) => {
+        .then((response) => {
           this.isLoading = false;
           this.currentTimeSheetUsage = {
             invoiceNumber: response.invoiceNumber,

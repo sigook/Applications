@@ -727,6 +727,59 @@ export interface NotePagination {
 export type CreateNoteResponse = NoteItem;
 
 // ---------------------------------------------------------------------------
+// Notes callback payloads — used by ModalNotes and similar note-manager widgets
+// that receive CRUD callbacks as props. Two variants:
+//   - Standard: scoped to a single owner (userId) — worker / candidate / company / request
+//   - RequestScoped: scoped to a worker within a specific request (requestId + userId)
+// ---------------------------------------------------------------------------
+
+export interface NotesFetchPayload {
+  userId: string;
+  pagination: NotePagination;
+}
+
+export interface NotesCreatePayload {
+  userId: string;
+  model: NoteModel;
+}
+
+export interface NotesUpdatePayload {
+  userId: string;
+  id: string;
+  model: NoteModel;
+}
+
+export interface NotesDeletePayload {
+  userId: string;
+  id: string;
+}
+
+export interface RequestNotesFetchPayload {
+  requestId: string;
+  userId: string;
+  pagination: NotePagination;
+}
+
+export interface RequestNotesCreatePayload {
+  requestId: string;
+  userId: string;
+  model: NoteModel;
+}
+
+export interface RequestNotesUpdatePayload {
+  requestId: string;
+  userId: string;
+  id: string;
+  model: NoteModel;
+}
+
+export interface RequestNotesDeletePayload {
+  requestId: string;
+  userId: string;
+  id: string;
+}
+
+// ---------------------------------------------------------------------------
 // Agency reports
 // ---------------------------------------------------------------------------
 

@@ -17,9 +17,9 @@
         <div class="container-actions">
             <div>
                 <b>Id:</b> {{ data.numberId }} |
-                <b>Start:</b> {{ data.startWorking | dateFilter }}
+                <b>Start:</b> {{ date(data.startWorking) }}
                 |
-                <b>Finish:</b> {{ data.finishWorking | dateFilter }}
+                <b>Finish:</b> {{ date(data.finishWorking) }}
             </div>
             <div class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
                 v-status="{ status: data.status }"> {{ $t(data.status) }}</div>
@@ -29,9 +29,13 @@
 </template>
 
 <script lang="ts">
+import { date } from '@/utils/filters';
 
 export default {
-    props: ['data']
+    props: ['data'],
+    methods: {
+        date,
+    }
 }
 </script>
 <style scoped>

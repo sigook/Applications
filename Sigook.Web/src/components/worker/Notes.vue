@@ -11,8 +11,8 @@
                     <p class="fw-400">
                         <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
                         {{ item.note }}
-                        <br><i class="fz-2" v-if="item.createdBy">By: {{item.createdBy | emailName}} | </i>
-                        <i class="fz-2" v-if="item.createdAt">{{item.createdAt | dateFromNow}}</i>
+                        <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
+                        <i class="fz-2" v-if="item.createdAt">{{dateFromNow(item.createdAt)}}</i>
                     </p>
                 </li>
             </ul>
@@ -38,8 +38,10 @@
     </div>
 </template>
 <script lang="ts">
+    import { emailName, dateFromNow } from '@/utils/filters';
     import toast from '../../mixins/toastMixin';
     import { getWorkerProfileNotes, createWorkerProfileNote } from '@/api/agencyNoteApi';
+    import type { NotesFetchPayload, NotesCreatePayload } from '@/types/agency';
     export default {
         data(){
             return {
@@ -49,8 +51,8 @@
                 pageSize: 8,
                 pageIndex: 1,
                 isLoading: false,
-                getNotes: ({ userId, pagination }: any) => getWorkerProfileNotes(userId, pagination),
-                createNote: ({ userId, model }: any) => createWorkerProfileNote(userId, model),
+                getNotes: ({ userId, pagination }: NotesFetchPayload) => getWorkerProfileNotes(userId, pagination),
+                createNote: ({ userId, model }: NotesCreatePayload) => createWorkerProfileNote(userId, model),
                 updateNote: null,
                 deleteNote: null,
             }
@@ -60,6 +62,8 @@
             ModalNotes: () => import("../notes/ModalNotes.vue")
         },
         methods: {
+            emailName,
+            dateFromNow,
             loadNotes(index){
                 this.isLoading = true
                 getWorkerProfileNotes(this.workerId, {page: index, size: this.pageSize})

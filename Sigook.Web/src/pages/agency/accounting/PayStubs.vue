@@ -27,7 +27,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -51,7 +51,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              {{ props.row.createdAt | dateMonth }}
+              {{ dateMonth(props.row.createdAt) }}
             </template>
           </b-table-column>
           <b-table-column field="workerFullName" label="Worker" sortable searchable>
@@ -76,7 +76,7 @@
           </b-table-column>
           <b-table-column field="totalPaid" label="Total Paid">
             <template v-slot="props">
-              {{ props.row.totalPaid | currency }}
+              {{ currency(props.row.totalPaid) }}
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
@@ -113,7 +113,8 @@
 </template>
 
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadPDF } from "@/utils/downloadFile";
+import { dateMonth, currency } from '@/utils/filters';
 import {
   getAgencyPayStubs,
   downloadPayStubPdf,
@@ -127,7 +128,6 @@ export default {
     GeneratePayStubs: () => import("@/components/agency_accounting/GeneratePayStubs.vue"),
     SkipPayrollNumber: () => import("@/components/agency_accounting/SkipPayrollNumber.vue")
   },
-  mixins: [download],
   data() {
     return {
       isLoading: true,
@@ -155,6 +155,9 @@ export default {
     this.loadPayStubs();
   },
   methods: {
+    downloadPDF,
+    dateMonth,
+    currency,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadPayStubs();
@@ -198,8 +201,8 @@ export default {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyPayStubFilter", this.serverParams);
       getAgencyPayStubs(this.serverParams)
-        .then((response: any) => {
-          this.rows = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+        .then((response) => {
+          this.rows = response.items.map((i) => ({ ...i, emailSending: false, actions: null }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

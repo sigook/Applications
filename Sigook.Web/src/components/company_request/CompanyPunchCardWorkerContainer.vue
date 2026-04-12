@@ -9,20 +9,20 @@
             <div class="col-8 col-padding">
               <div v-if="slotProps.item.clockIn" class="mb-2">
                 <b-tag type="is-info is-light">
-                  <strong>Clock in:</strong> {{ slotProps.item.clockIn | dateHHmm }}
+                  <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
                   <template v-if="slotProps.item.clockOut">
-                    <strong> to </strong>{{ slotProps.item.clockOut | dateHHmm }}
+                    <strong> to </strong>{{ dateHHmm(slotProps.item.clockOut) }}
                   </template>
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHours">
                 <b-tag type="is-success is-light">
-                  <strong>Hours:</strong> {{ slotProps.item.totalHours | hour }}
+                  <strong>Hours:</strong> {{ hour(slotProps.item.totalHours) }}
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHoursApproved">
                 <b-tag type="is-success is-light">
-                  <strong>Hours Approved:</strong> {{ slotProps.item.totalHoursApproved | hour }}
+                  <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
@@ -73,7 +73,7 @@
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
       <time-sheet-modal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
-        :editable-day.sync="editableDay" @updateData="updateCell" />
+        v-model:editable-day="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
@@ -95,15 +95,17 @@
 </template>
 
 <script lang="ts">
+import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
-import timeSheetCompany from "@/mixins/companyTimeSheetReportMixin"
+import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import {
   getCompanyWorkerTimeSheetByDate,
   postCompanyWorkerTimeSheet,
   deleteCompanyWorkerTimeSheet,
   companyTimeSheetClockIn,
+  updateCompanyRequestWorkerTimeSheet,
 } from '@/api/companyApi';
 
 dayjs.extend(duration);
@@ -125,13 +127,28 @@ export default {
       showDetailPunchCard: false
     }
   },
-  mixins: [timeSheetCompany],
   computed: {
     maximumDailyHours() {
       return maximumHoursPerDay;
     }
   },
   methods: {
+    dateHHmm,
+    hour,
+    timeSheetFastApprove(item, requestId, workerId) {
+      this.isLoading = true;
+      const model = buildTimeSheetApproveModel(item);
+      updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
+        .then(() => {
+          this.updateCell();
+        })
+        .catch((error) => {
+          this.showAlertError(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     getAgencyWorkerTimeSheetByDate() {
       this.isLoading = true;
       getCompanyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })

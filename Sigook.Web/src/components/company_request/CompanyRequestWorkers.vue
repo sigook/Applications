@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      :current-page.sync="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
+      v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -40,7 +40,7 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.startWorking | dateMonth }}
+            {{ dateMonth(props.row.startWorking) }}
           </template>
         </b-table-column>
         <b-table-column field="status" label="Status" sortable searchable>
@@ -81,6 +81,7 @@
 </template>
 
 <script lang="ts">
+import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from '@/constants/enums';
 
@@ -110,6 +111,7 @@ export default {
     EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
   },
   methods: {
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkers();

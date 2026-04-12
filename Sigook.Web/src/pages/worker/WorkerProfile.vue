@@ -10,9 +10,9 @@
         </div>
         <div>
           <h1 class="capitalize">
-            {{ workerProfile.firstName | lowercase }}
-            {{ workerProfile.middleName | lowercase }}
-            {{ workerProfile.lastName | lowercase }}
+            {{ lowercase(workerProfile.firstName) }}
+            {{ lowercase(workerProfile.middleName) }}
+            {{ lowercase(workerProfile.lastName) }}
           </h1>
           <p v-if="workerProfile.numberId">
             <b-icon icon="card-account-details-outline" size="is-small" />
@@ -57,6 +57,7 @@
 
 <script lang="ts">
 import { getMyProfile } from '@/api/workerApi';
+import { lowercase } from '@/utils/filters';
 
 export default {
   components: {
@@ -75,6 +76,7 @@ export default {
     };
   },
   methods: {
+    lowercase,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);

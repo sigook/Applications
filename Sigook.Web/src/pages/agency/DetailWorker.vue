@@ -10,10 +10,10 @@
             <span class="fw-400" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
               {{ worker.numberId }}
             </span>
-            {{ worker.firstName | lowercase }}
-            {{ worker.middleName | lowercase }}
-            {{ worker.lastName | lowercase }}
-            {{ worker.secondLastName | lowercase }}
+            {{ lowercase(worker.firstName) }}
+            {{ lowercase(worker.middleName) }}
+            {{ lowercase(worker.lastName) }}
+            {{ lowercase(worker.secondLastName) }}
             <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark">
               <b-icon icon="alert" size="is-small" type="is-danger"></b-icon>
             </b-tooltip>
@@ -75,10 +75,10 @@
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <licenses v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <certificates :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <certificates v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray"></span>
             <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
@@ -129,7 +129,7 @@
         </div>
       </b-tab-item>
       <b-tab-item label="Settings" value="workerSettings" v-if="isPayrollManager">
-        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker.sync="worker" />
+        <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
       </b-tab-item>
       <b-tab-item label="PayStubs" value="wageHistory" v-if="isPayrollManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
@@ -145,12 +145,16 @@
 </template>
 
 <script lang="ts">
-import statusWorkerMixin from "@/mixins/statusWorkerMixin";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
+import { lowercase } from '@/utils/filters';
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   data() {
     return {
       currentJobEx: 0,
@@ -164,7 +168,6 @@ export default {
       comments: {}
     };
   },
-  mixins: [statusWorkerMixin, billingAdminMixin],
   components: {
     imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
     Comments: () => import("../../components/Comments.vue"),
@@ -204,6 +207,8 @@ export default {
     }
   },
   methods: {
+    lowercase,
+    workerColor,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);

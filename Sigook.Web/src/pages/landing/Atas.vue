@@ -146,14 +146,15 @@
 
 <script lang="ts">
 import phoneFormat from "@/mixins/phoneFormatMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin";
-import recaptchaMixin from "@/mixins/recaptchaMixin";
+import { phoneMask as mask } from '@/constants/phoneMask';
+import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
 
 export default {
-  mixins: [phoneFormat, phoneMaskMixin, recaptchaMixin],
+  mixins: [phoneFormat],
   data() {
     return {
+      mask,
       isLoading: false,
       contact: {
         title: 'CONTACT ATAS SYSTEM ~ NOTIFICATION',
@@ -170,7 +171,11 @@ export default {
   created() {
     this.solutionType = this.$route.query.solutionType;
   },
+  computed: {
+    siteKey() { return recaptchaSiteKey; }
+  },
   methods: {
+    onRecaptchaResponse(result) { this.contact.captchaResponse = result; },
     async sendMessage() {
       const result = await this.$validator.validateAll();
       if (!result) {

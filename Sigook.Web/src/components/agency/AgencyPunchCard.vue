@@ -127,10 +127,10 @@
         </template>
         <template>
           <b-table-column field="day" label="Day" v-slot="props">
-            {{ props.row.day | date }}
+            {{ date(props.row.day) }}
           </b-table-column>
           <b-table-column field="timeIn" label="Start Time" v-slot="props">
-            {{ props.row.timeIn | time }}
+            {{ time(props.row.timeIn) }}
           </b-table-column>
           <b-table-column field="totalHoursApproved" label="Hours Approved" v-slot="props">
             <span class="big-decimal">{{ props.row.totalHoursApproved }}</span>
@@ -143,6 +143,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
+import { date, time } from '@/utils/filters';
 
 export default {
   props: ["workerId", "workerName", "requestId"],
@@ -165,6 +166,8 @@ export default {
     }
   },
   methods: {
+    date,
+    time,
     showTimeSheet() {
       this.isLoading = true;
       getAgencyWorkerTimeSheet(this.requestId, this.workerId)

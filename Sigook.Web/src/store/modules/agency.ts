@@ -1,21 +1,34 @@
 import Vue from "vue";
+import type { ActionContext } from "vuex";
+import type { RootState } from "@/store";
+import type {
+  AgencyProfile,
+  AgencyListFilter,
+  AgencyRequestFilter,
+  AgencyWorkerFilter,
+  AgencyCompanyFilter,
+} from "@/types/agency";
+import type { AgencyCandidateFilter } from "@/types/candidate";
+import type { AgencyInvoiceFilter, AgencyPayStubFilter } from "@/types/accounting";
 
 export interface AgencyState {
-  agency: any;
-  personnelAgencies: any[];
-  agencyRequestFilter: any;
-  agencyCandidateFilter: any;
-  agencyWorkerProfileFilter: any;
-  agencyCompanyProfileFilter: any;
-  agencyInvoiceFilter: any;
-  agencyPayStubFilter: any;
-  agencyListFilter: any;
+  agency: AgencyProfile | null;
+  personnelAgencies: AgencyProfile[];
+  agencyRequestFilter: AgencyRequestFilter | null;
+  agencyCandidateFilter: AgencyCandidateFilter | null;
+  agencyWorkerProfileFilter: AgencyWorkerFilter | null;
+  agencyCompanyProfileFilter: AgencyCompanyFilter | null;
+  agencyInvoiceFilter: AgencyInvoiceFilter | null;
+  agencyPayStubFilter: AgencyPayStubFilter | null;
+  agencyListFilter: AgencyListFilter | null;
 }
+
+type AgencyActionContext = ActionContext<AgencyState, RootState>;
 
 export default {
   namespaced: true,
   state: {
-    agency: {},
+    agency: null,
     personnelAgencies: [],
     agencyRequestFilter: null,
     agencyCandidateFilter: null,
@@ -26,59 +39,65 @@ export default {
     agencyListFilter: null,
   } as AgencyState,
   mutations: {
-    setAgency(state: AgencyState, data: any) {
+    setAgency(state: AgencyState, data: AgencyProfile) {
       state.agency = {
         ...data,
         agencies: data.agencies || (state.agency && state.agency.agencies) || [],
-        usaAgency: data.locations.some((l: any) => l.isUSA),
-        masterAgency: data.agencyType === (Vue.prototype as any).$agencyTypeMaster
+        // The backend flattens an `isUSA` flag onto each location in this specific
+        // endpoint's response — not part of the AgencyLocation shape used elsewhere.
+        usaAgency: data.locations.some(
+          (l) => (l as unknown as { isUSA?: boolean }).isUSA === true
+        ),
+        masterAgency: data.agencyType === (Vue.prototype as { $agencyTypeMaster?: number }).$agencyTypeMaster,
+      };
+    },
+    setPersonnelAgencies(state: AgencyState, data: AgencyProfile[]) {
+      if (state.agency) {
+        state.agency.agencies = data;
       }
     },
-    setPersonnelAgencies(state: AgencyState, data: any) {
-      state.agency.agencies = data;
-    },
-    setAgencyRequestFilter(state: AgencyState, data: any) {
+    setAgencyRequestFilter(state: AgencyState, data: AgencyRequestFilter | null) {
       state.agencyRequestFilter = data;
     },
-    setAgencyCandidateFilter(state: AgencyState, data: any) {
+    setAgencyCandidateFilter(state: AgencyState, data: AgencyCandidateFilter | null) {
       state.agencyCandidateFilter = data;
     },
-    setAgencyWorkerProfileFilter(state: AgencyState, data: any) {
+    setAgencyWorkerProfileFilter(state: AgencyState, data: AgencyWorkerFilter | null) {
       state.agencyWorkerProfileFilter = data;
     },
-    setAgencyCompanyProfileFilter(state: AgencyState, data: any) {
+    setAgencyCompanyProfileFilter(state: AgencyState, data: AgencyCompanyFilter | null) {
       state.agencyCompanyProfileFilter = data;
     },
-    setAgencyInvoiceFilter(state: AgencyState, data: any) {
+    setAgencyInvoiceFilter(state: AgencyState, data: AgencyInvoiceFilter | null) {
       state.agencyInvoiceFilter = data;
     },
-    setAgencyPayStubFilter(state: AgencyState, data: any) {
+    setAgencyPayStubFilter(state: AgencyState, data: AgencyPayStubFilter | null) {
       state.agencyPayStubFilter = data;
     },
-    setAgencyListFilter(state: AgencyState, data: any) {
+    setAgencyListFilter(state: AgencyState, data: AgencyListFilter | null) {
       state.agencyListFilter = data;
     },
   },
   actions: {
-    updateAgencyRequestFilter(context: any, data: any) {
+    updateAgencyRequestFilter(context: AgencyActionContext, data: AgencyRequestFilter | null) {
       context.commit("setAgencyRequestFilter", data);
     },
-    updateAgencyCandidateFilter(context: any, data: any) {
+    updateAgencyCandidateFilter(context: AgencyActionContext, data: AgencyCandidateFilter | null) {
       context.commit("setAgencyCandidateFilter", data);
     },
-    updateAgencyWorkerProfileFilter(context: any, data: any) {
+    updateAgencyWorkerProfileFilter(context: AgencyActionContext, data: AgencyWorkerFilter | null) {
       context.commit("setAgencyWorkerProfileFilter", data);
     },
-    updateAgencyCompanyProfileFilter(context: any, data: any) {
+    updateAgencyCompanyProfileFilter(context: AgencyActionContext, data: AgencyCompanyFilter | null) {
       context.commit("setAgencyCompanyProfileFilter", data);
     },
-    updateAgencyInvoiceFilter(context: any, data: any) {
+    updateAgencyInvoiceFilter(context: AgencyActionContext, data: AgencyInvoiceFilter | null) {
       context.commit("setAgencyInvoiceFilter", data);
     },
-    updateAgencyPayStubFilter(context: any, data: any) {
+    updateAgencyPayStubFilter(context: AgencyActionContext, data: AgencyPayStubFilter | null) {
       context.commit("setAgencyPayStubFilter", data);
     },
-    updateAgencyListFilter(context: any, data: any) {
+    updateAgencyListFilter(context: AgencyActionContext, data: AgencyListFilter | null) {
       context.commit("setAgencyListFilter", data);
     },
   },

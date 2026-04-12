@@ -20,7 +20,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -105,7 +105,7 @@
                 @input="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
-            <template v-slot="props">{{ props.row.createdAt | dateMonth }}</template>
+            <template v-slot="props">{{ dateMonth(props.row.createdAt) }}</template>
           </b-table-column>
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
@@ -161,13 +161,16 @@
 </template>
 <script lang="ts">
 
-import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { workerFeatures as features } from '@/constants/workerFeatures';
+import { phoneMask as mask } from '@/constants/phoneMask';
 import { getAgencyWorkers, updateApprovedToWork } from "@/api/agencyWorkerApi";
+import { dateMonth } from '@/utils/filters';
 
 export default {
   data() {
     return {
+      mask,
+      features,
       isLoading: true,
       totalItems: 0,
       createdAtDatesSelected: [],
@@ -184,8 +187,8 @@ export default {
   components: {
     Export: () => import("@/components/Export.vue")
   },
-  mixins: [workerFeaturesMixin, phoneMaskMixin],
   methods: {
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadWorkers();

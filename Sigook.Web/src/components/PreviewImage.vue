@@ -32,9 +32,7 @@
 </template>
 
 <script lang="ts">
-import updateMixin from '../mixins/uploadImageProfile';
-import updateFileMixin from "../mixins/uploadFiles";
-import compress from '../mixins/compressFiles';
+import { compressFile } from '@/utils/compressFile';
 
 export default {
   inject: ['$validator'],
@@ -58,11 +56,6 @@ export default {
   components: {
     cropImage: () => import("./CropImage.vue")
   },
-  mixins: [
-    updateMixin,
-    updateFileMixin,
-    compress
-  ],
   computed: {
     rules() {
       let oRules = {
@@ -77,6 +70,7 @@ export default {
     }
   },
   methods: {
+    compressFile,
     showCrop(evt) {
       if ((document as any).documentMode || /Edge/.test(navigator.userAgent)) {
         this.showImage(evt.target.files[0])

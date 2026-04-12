@@ -68,10 +68,13 @@
   </div>
 </template>
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getJobPositions } from "@/api/catalogApi";
 import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ['currentPosition', 'profileId'],
   data() {
     return {
@@ -91,7 +94,6 @@ export default {
       jobPosition: ''
     }
   },
-  mixins: [billingAdminMixin],
   components: {
     Shift: () => import("../request/ShiftsForm.vue")
   },

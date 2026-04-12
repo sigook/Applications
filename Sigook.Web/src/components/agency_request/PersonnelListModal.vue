@@ -33,7 +33,7 @@ export default {
       getAgencyPersonnel()
         .then((response) => {
           this.isLoading = false;
-          this.data = response;
+          this.data = response.map(item => ({ ...item, active: false, recruiterId: null }));
           this.updateRecruiters(this.recruiters);
         })
         .catch((error) => {
@@ -45,7 +45,7 @@ export default {
       for (let i = 0; i < items.length; i++) {
         for (let j = 0; j < this.data.length; j++) {
           if (items[i].toLowerCase() === this.data[j].name.toLowerCase()) {
-            this.$set(this.data[j], "active", true);
+            this.data[j].active = true;
           }
         }
       }
@@ -54,8 +54,8 @@ export default {
       this.isLoading = true;
       postAgencyRequestRecruiter(this.request.id, { recruiterId: item.id }).then(() => {
         this.isLoading = false;
-        this.$set(item, "active", true);
-        this.$set(item, "recruiterId", item.id);
+        item.active = true;
+        item.recruiterId = item.id;
         this.$emit("selectUser", item);
       }).catch((error) => {
         this.isLoading = false;

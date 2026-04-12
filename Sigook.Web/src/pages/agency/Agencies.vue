@@ -17,7 +17,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -58,7 +58,7 @@
             </template>
             <template v-slot="props">
               <b-tag size="is-medium" rounded>
-                {{ props.row.agencyType | agencyType }}
+                {{ agencyType(props.row.agencyType) }}
               </b-tag>
             </template>
           </b-table-column>
@@ -69,6 +69,7 @@
 </template>
 <script lang="ts">
 import { getAgenciesList } from "@/api/agencyApi";
+import { agencyType } from '@/utils/filters';
 
 export default {
   data() {
@@ -92,6 +93,7 @@ export default {
     this.getAgencies();
   },
   methods: {
+    agencyType,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getAgencies();

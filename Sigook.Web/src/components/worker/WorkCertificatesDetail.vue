@@ -14,7 +14,7 @@
 
         <div class="button-right">
           <a :href="item.pathFile" target="_blank" download>
-            <h4 class="fw-400">{{ item.fileName | filename }} <span class="download-button"></span></h4>
+            <h4 class="fw-400">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
           </a>
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top">
@@ -52,6 +52,7 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
 export default {
@@ -74,6 +75,7 @@ export default {
     }
   },
   methods: {
+    filename,
     closeModalEdit() {
       this.$emit('updateProfile', true);
       this.modalCertificate = false

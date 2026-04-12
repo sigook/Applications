@@ -7,7 +7,7 @@
         <span class="fw-100 fz-1">
           ({{ totalItems }})
         </span>
-        <b-tag size="is-medium"><b>{{ total | currency }}</b></b-tag>
+        <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
       </h2>
     </div>
     <div>
@@ -21,7 +21,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="invoiceNumber"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -45,7 +45,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              {{ props.row.createdAt | dateMonth }}
+              {{ dateMonth(props.row.createdAt) }}
             </template>
           </b-table-column>
           <b-table-column field="companyFullName" label="Company" sortable searchable>
@@ -70,7 +70,7 @@
           </b-table-column>
           <b-table-column field="totalNet" label="Total">
             <template v-slot="props">
-              {{ props.row.totalNet | currency }}
+              {{ currency(props.row.totalNet) }}
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
@@ -106,8 +106,9 @@
 </template>
 
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadPDF } from "@/utils/downloadFile";
 import { getAgencyInvoices, downloadInvoicePdf } from "@/api/agencyInvoiceApi";
+import { currency, dateMonth } from '@/utils/filters';
 
 export default {
   components: {
@@ -115,7 +116,6 @@ export default {
     DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice.vue"),
     SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue"),
   },
-  mixins: [download],
   data() {
     return {
       isLoading: true,
@@ -145,6 +145,9 @@ export default {
     this.loadInvoices();
   },
   methods: {
+    downloadPDF,
+    currency,
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadInvoices();
@@ -185,8 +188,8 @@ export default {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyInvoiceFilter", this.serverParams);
       getAgencyInvoices(this.serverParams)
-        .then((response: any) => {
-          this.rows = response.detail.items.map((i: any) => ({ ...i, actions: null }));
+        .then((response) => {
+          this.rows = response.detail.items.map((i) => ({ ...i, actions: null }));
           this.totalItems = response.detail.totalItems;
           this.total = response.total;
           this.isLoading = false;

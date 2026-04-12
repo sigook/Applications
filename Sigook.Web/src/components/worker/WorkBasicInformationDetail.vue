@@ -17,7 +17,7 @@
       <div>
         <span>{{ $t('WorkerBirthday') }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.birthDay | dateMonth }}</p>
+          <p class="fw-200 margin-0">{{ dateMonth(worker.birthDay) }}</p>
         </span>
       </div>
       <div>
@@ -43,6 +43,8 @@
 </template>
 
 <script lang="ts">
+import { dateMonth } from '@/utils/filters';
+
 export default {
   props: ['worker'],
   data() {
@@ -51,6 +53,7 @@ export default {
     }
   },
   methods: {
+    dateMonth,
     closeModalEdit() {
       this.$emit('updateProfile', true);
       this.modalBasicInformation = false

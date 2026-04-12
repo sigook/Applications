@@ -24,7 +24,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -125,7 +125,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.createdAt | dateMonth }}</span>
+              <span class="d-block">{{ dateMonth(props.row.createdAt) }}</span>
             </template>
           </b-table-column>
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
@@ -135,7 +135,7 @@
             </template>
             <template v-slot="props">
               <div class="capitalize is-inline-block v-middle pr-0" v-if="props.row.recruiter">
-                {{ props.row.recruiter | emailName }}
+                {{ emailName(props.row.recruiter) }}
               </div>
               <div v-else class="op3 is-inline-block v-middle pr-0">
                 Recruiter
@@ -217,8 +217,7 @@
   </div>
 </template>
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { phoneMask as mask } from '@/constants/phoneMask';
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import { residencyList } from "@/constants/catalog";
 import {
@@ -232,15 +231,18 @@ import {
   convertCandidateToWorker,
   bulkAgencyCandidates,
 } from "@/api/agencyCandidateApi";
+import { dateMonth, emailName } from '@/utils/filters';
 import {
   getCandidateNotes,
   createCandidateNote,
   deleteCandidateNote,
 } from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 
 export default {
   data() {
     return {
+      mask,
       isLoading: false,
       totalItems: 0,
       createdAtDatesSelected: [],
@@ -248,9 +250,9 @@ export default {
       createCandidate: false,
       addFile: false,
       bulkAgencyCandidates,
-      getCandidateNotes: ({ userId, pagination }: any) => getCandidateNotes(userId, pagination),
-      addCandidateNote: ({ userId, model }: any) => createCandidateNote(userId, model),
-      deleteCandidateNote: ({ userId, id }: any) => deleteCandidateNote(userId, id),
+      getCandidateNotes: ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination),
+      addCandidateNote: ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model),
+      deleteCandidateNote: ({ userId, id }: NotesDeletePayload) => deleteCandidateNote(userId, id),
       detailCandidate: false,
       detailId: null,
       showDocuments: false,
@@ -264,7 +266,7 @@ export default {
       }
     };
   },
-  mixins: [phoneMaskMixin, download, phoneFormat],
+  mixins: [phoneFormat],
   components: {
     CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
     DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
@@ -276,6 +278,8 @@ export default {
     Export: () => import("@/components/Export.vue")
   },
   methods: {
+    dateMonth,
+    emailName,
     onCellClick(row, column) {
       if (column._props.field === 'name' && row.hasDocuments) {
         this.showDocumentsCandidate(row.id);
@@ -338,7 +342,7 @@ export default {
       this.$store.dispatch("agency/updateAgencyCandidateFilter", this.serverParams);
       getAgencyCandidates(this.serverParams)
         .then(candidates => {
-          this.rows = candidates.items.map(c => ({ ...c, actions: null }));
+          this.rows = candidates.items.map(c => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
           this.totalItems = candidates.totalItems;
           this.isLoading = false;
         })
@@ -353,11 +357,11 @@ export default {
     },
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", status);
+      this.rows[index].showNotes = status;
     },
     onUpdateNote(row, size) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "notesCount", size);
+      this.rows[index].notesCount = size;
     },
     showDocumentsCandidate(id) {
       this.detailId = id;

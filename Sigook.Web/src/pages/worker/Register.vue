@@ -59,7 +59,7 @@
               </b-field>
             </div>
           </div>
-          <address-component ref="addressComponent" :model.sync="worker.location" @isLoading="(value) => isLoading = value"
+          <address-component ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -196,7 +196,7 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.identificationType1File.fileName | filename }}
+                            {{ filename(worker.identificationType1File.fileName) }}
                           </h4>
                         </div>
                       </div>
@@ -246,7 +246,7 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.identificationType2File.fileName | filename }}
+                            {{ filename(worker.identificationType2File.fileName) }}
                           </h4>
                         </div>
                       </div>
@@ -322,7 +322,7 @@
                         <div class="document-icon-title">
                           <b-icon icon="certificate" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ item.license.fileName | filename }}
+                            {{ filename(item.license.fileName) }}
                           </h4>
                         </div>
                       </div>
@@ -392,7 +392,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="card-account-details" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ item.fileName | filename }}</h4>
+                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
@@ -449,7 +449,7 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.resume.fileName | filename }}
+                            {{ filename(worker.resume.fileName) }}
                           </h4>
                         </div>
                       </div>
@@ -505,7 +505,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="folder-open" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ item.fileName | filename }}</h4>
+                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
@@ -612,12 +612,15 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import createWorkerMixin from "@/mixins/createWorkerMixin";
-import confirmationAlert from "../../mixins/confirmationAlert";
-import updateMixin from "../../mixins/uploadFiles";
+import { useCreateWorker } from "@/composables/useCreateWorker";
+import { filename } from '@/utils/filters';
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
+  setup() {
+    return { ...useCreateWorker() };
+  },
   components: {
     uploadImage: () => import("../../components/PreviewImage.vue"),
     addressComponent: () => import("../../components/Address.vue"),
@@ -626,6 +629,7 @@ export default {
   data() {
     return {
       activeStep: 0,
+      unsavedChanges: false,
       showWorkInformationTab: true,
       alphaNumericSpaces: /^[-_ a-zA-Z0-9]+$/,
       disableStartDate: null,
@@ -652,6 +656,7 @@ export default {
     };
   },
   methods: {
+    filename,
     async validateForm() {
       const step4Fields = ['email', 'password', 'confirmPassword'];
       if (!this.isLogin) {
@@ -897,12 +902,12 @@ export default {
     }
   },
   mixins: [
-    createWorkerMixin,
-    confirmationAlert,
-    updateMixin,
     multipartUploadMixin
   ],
-  created() {
+  beforeRouteLeave: confirmationGuard,
+  async created() {
+    await this.loadCatalogs();
+    this.isLoading = false;
     this.$store.dispatch("getCurrentDate").then((response) => {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response)

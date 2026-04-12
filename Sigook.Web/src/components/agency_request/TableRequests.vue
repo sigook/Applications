@@ -12,7 +12,7 @@
     </export>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      focuseable default-sort="updatedAt" :current-page.sync="serverParams.pageIndex" :checked-rows.sync="checkedRows"
+      focuseable default-sort="updatedAt" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -61,7 +61,7 @@
           <template v-slot="props">
             {{ props.row.jobTitle }}
             <i class="fz-2 block mb-0" v-if="props.row.billingTitle">{{ props.row.billingTitle }}</i>
-            <i class="fz-2 block">{{ props.row.createdAt | dateFromNow }}</i>
+            <i class="fz-2 block">{{ dateFromNow(props.row.createdAt) }}</i>
           </template>
         </b-table-column>
         <b-table-column field="updatedAt" label="Last Update" sortable searchable>
@@ -73,7 +73,7 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.updatedAt | dateMonth }}
+            {{ dateMonth(props.row.updatedAt) }}
           </template>
         </b-table-column>
         <b-table-column field="startAt" sortable searchable>
@@ -89,13 +89,13 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.startAt | dateMonth }}
+            {{ dateMonth(props.row.startAt) }}
             <span v-if="props.row.durationTerm !== DurationTerm.LongTerm">
-              - {{ props.row.finishAt | dateMonth }}
+              - {{ dateMonth(props.row.finishAt) }}
             </span>
             <span
               v-if="(props.row.requestStatus === RequestStatus.Filled || props.row.requestStatus === RequestStatus.Cancelled) && props.row.durationTerm === DurationTerm.LongTerm">
-              - {{ props.row.finishAt | dateMonth }}
+              - {{ dateMonth(props.row.finishAt) }}
             </span>
             <agency-shift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
             <i class="fz-2 d-block">
@@ -110,7 +110,7 @@
           </template>
           <template v-slot="props">
             <div v-if="props.row.displayRecruiters" class="capitalize is-inline-block v-middle">
-              {{ props.row.displayRecruiters | breakWord }}
+              {{ breakWord(props.row.displayRecruiters) }}
               <button v-if="tableConfig.showRecruiterModal" type="button"
                 class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
             </div>
@@ -141,7 +141,7 @@
             </b-field>
           </template>
           <template v-slot="props">
-            {{ (props.row.workerRate || props.row.workerSalary) | currency }}
+            {{ currency(props.row.workerRate || props.row.workerSalary) }}
           </template>
         </b-table-column>
         <b-table-column field="workersQuantityWorking" sortable>
@@ -230,7 +230,8 @@
   </div>
 </template>
 <script lang="ts">
-import billingAdminMixin from '@/mixins/billingAdminMixin'
+import { dateFromNow, dateMonth, breakWord, currency } from '@/utils/filters';
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
 import { getAgencyRequests } from "@/api/agencyRequestApi";
 import {
@@ -239,6 +240,7 @@ import {
   updateAgencyRequestNote,
   deleteAgencyRequestNote,
 } from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 import {
   DurationTerm,
   DurationTermLabels,
@@ -248,6 +250,9 @@ import {
 } from "@/constants/enums";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ["totalItems", "companyId", "agencyId", "config"],
   data() {
     return {
@@ -264,10 +269,10 @@ export default {
       recruiters: null,
       currentRequest: null,
       currentIndex: null,
-      getNotes: ({ userId, pagination }: any) => getAgencyRequestNotes(userId, pagination),
-      createNote: ({ userId, model }: any) => createAgencyRequestNote(userId, model),
-      updateNote: ({ userId, id, model }: any) => updateAgencyRequestNote(userId, id, model),
-      deleteNote: ({ userId, id }: any) => deleteAgencyRequestNote(userId, id),
+      getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
+      createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
+      updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
+      deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
       statuses: [
         { id: 1, value: this.$statusDisplayOpen },
         { id: 3, value: this.$statusDisplayFilled },
@@ -288,7 +293,6 @@ export default {
       quickActions: {}
     };
   },
-  mixins: [billingAdminMixin],
   components: {
     ModalNotes: () => import("../notes/ModalNotes.vue"),
     PersonnelList: () => import("../../components/agency_request/PersonnelListModal.vue"),
@@ -296,6 +300,10 @@ export default {
     Export: () => import("@/components/Export.vue")
   },
   methods: {
+    dateFromNow,
+    dateMonth,
+    breakWord,
+    currency,
     onCellClick(row, column, rowIndex) {
       switch (column._props.field) {
         case 'workersQuantityWorking':
@@ -385,11 +393,11 @@ export default {
     },
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", status);
+      this.rows[index].showNotes = status;
     },
     onUpdateNote(row, size) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "notesCount", size);
+      this.rows[index].notesCount = size;
     },
     onShowRecruitersModal(item, index) {
       this.currentRequest = item;
@@ -428,7 +436,7 @@ export default {
       }
       getAgencyRequests(this.serverParams)
         .then((requests) => {
-          this.rows = requests.items.map(i => ({ ...i, actions: null }));
+          this.rows = requests.items.map(i => ({ ...i, actions: null, showNotes: false, notesCount: i.notesCount || 0 }));
           this.$emit('update:totalItems', requests.totalItems);
           this.$emit("onDataLoading", false);
         })

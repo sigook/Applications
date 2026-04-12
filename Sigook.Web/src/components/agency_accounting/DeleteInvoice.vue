@@ -14,7 +14,7 @@
           change.</b>
       </p>
     </b-message>
-    <b-table v-if="rows.length > 0" :data="rows" :checked-rows.sync="selectedPayStubs" checkable>
+    <b-table v-if="rows.length > 0" :data="rows" v-model:checked-rows="selectedPayStubs" checkable>
       <template>
         <b-table-column field="payStubNumber" label="Pay Stub Number" v-slot="props">
           {{ props.row.payStubNumber }}

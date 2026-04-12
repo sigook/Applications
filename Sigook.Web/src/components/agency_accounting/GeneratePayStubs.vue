@@ -1,7 +1,7 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <b-table :data="rows" narrowed hoverable :mobile-cards="false" :checked-rows.sync="selectedWorkers" checkable>
+    <b-table :data="rows" narrowed hoverable :mobile-cards="false" v-model:checked-rows="selectedWorkers" checkable>
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>

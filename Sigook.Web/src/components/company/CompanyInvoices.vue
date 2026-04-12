@@ -4,7 +4,7 @@
     <div>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="invoiceNumberId"
-        :current-page.sync="serverParams.pageIndex">
+        v-model:current-page="serverParams.pageIndex">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -13,14 +13,14 @@
             <span>{{ props.row.invoiceNumber }}</span>
           </b-table-column>
           <b-table-column label="Created At" field="createdAt" v-slot="props">
-            <span>{{ props.row.createdAt | datetime }}</span>
+            <span>{{ datetime(props.row.createdAt) }}</span>
           </b-table-column>
           <b-table-column label="Week Ending" field="weekEnding" v-slot="props">
-            <span v-if="props.row.weekEnding">{{ props.row.weekEnding | date }}</span>
+            <span v-if="props.row.weekEnding">{{ date(props.row.weekEnding) }}</span>
             <span v-else>N/A</span>
           </b-table-column>
           <b-table-column label="Total" field="totalNet" v-slot="props">
-            <span>{{ props.row.totalNet | currency }}</span>
+            <span>{{ currency(props.row.totalNet) }}</span>
           </b-table-column>
         </template>
       </b-table>
@@ -30,7 +30,8 @@
 
 
 <script lang="ts">
-import download from '../../mixins/downloadFileMixin';
+import { datetime, date, currency } from '@/utils/filters';
+import { downloadPDF } from '@/utils/downloadFile';
 import { fetchInvoicePdf } from "@/api/downloadApi";
 import { getCompanyInvoice } from "@/api/companyApi";
 
@@ -52,6 +53,10 @@ export default {
     }
   },
   methods: {
+    downloadPDF,
+    datetime,
+    date,
+    currency,
     onGetCompanyInvoice() {
       this.isLoading = true;
       getCompanyInvoice(this.serverParams)
@@ -95,7 +100,6 @@ export default {
     },
 
   },
-  mixins: [download],
   created() {
     this.onGetCompanyInvoice();
   },
