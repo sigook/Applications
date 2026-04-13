@@ -19,6 +19,18 @@
   </div>
 </template>
 <script lang="ts">
+import {
+  updatePermissionToSeeOrders,
+  updatePaidHolidays,
+  updateOvertime,
+} from "@/api/agencyCompanyApi";
+
+const apiActions = {
+  updatePermissionToSeeOrders,
+  updatePaidHolidays,
+  updateOvertime,
+};
+
 export default {
   props: ["company"],
   data() {
@@ -39,7 +51,7 @@ export default {
     update(action) {
       this.isLoading = true;
       this.$emit('update:company', this.localCompany);
-      this.$store.dispatch(`agency/${action}`, { companyId: this.localCompany.id, settings: this.localCompany })
+      apiActions[action](this.localCompany.id, this.localCompany)
         .then(() => this.isLoading = false)
         .catch((error) => {
           this.showAlertError(error);

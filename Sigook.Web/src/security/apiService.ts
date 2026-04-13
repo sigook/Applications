@@ -53,13 +53,13 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
         alert('Oops something was wrong please try again later');
         if ((error.response?.config as any)?.responseType === 'blob') {
           const errorMsg = "An error occurred please try again, if the error persists try later one of our engineers will solve it soon";
-          return Promise.reject({ response: errorMsg });
+          return Promise.reject({ data: errorMsg });
         }
         break;
     }
   }
 
-  return Promise.reject(error);
+  return Promise.reject(error.response ?? { data: error.message });
 });
 
 export default http;

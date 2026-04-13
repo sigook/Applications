@@ -612,6 +612,7 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
+import { registerWorker } from "@/api/workerApi";
 import { useCreateWorker } from "@/composables/useCreateWorker";
 import { filename } from '@/utils/filters';
 import { confirmationGuard } from '@/utils/confirmationGuard';
@@ -737,9 +738,7 @@ export default {
 
       try {
         const formData = await this.createMultipartFormData(this.worker, this.fileObjects);
-        const action = this.isLogin ? `agency/createWorker` : `worker/registerWorker`
-
-        const id = await this.$store.dispatch(action, formData);
+        const id = await registerWorker(formData);
         this.isLoading = false;
         this.showAlertSuccess(this.$t("YourAccountHasBeenCreated"));
         const route = this.isLogin ? `/agency-workers/worker/${id}` : '/home'

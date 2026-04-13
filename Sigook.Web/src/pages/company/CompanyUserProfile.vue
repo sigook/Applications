@@ -44,6 +44,7 @@
 import CompanyUserUpdate from "@/components/company/CompanyUserUpdate.vue";
 import ProfileAccountInformation from "@/components/agency/ProfileAccountInformation.vue";
 import { avatarLetters } from '@/utils/filters';
+import { getCompanyUserDetail } from "@/api/companyApi";
 
 
 export default {
@@ -68,7 +69,7 @@ export default {
     },
     getCompanyUser() {
       this.isLoading = true;
-      this.$store.dispatch("company/getCompanyUserDetail")
+      getCompanyUserDetail()
         .then(companyUser => {
           this.companyUser = companyUser;
           this.isLoading = false;
