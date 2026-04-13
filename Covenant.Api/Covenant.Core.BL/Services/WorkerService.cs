@@ -10,6 +10,7 @@ using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Security;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
@@ -30,6 +31,7 @@ namespace Covenant.Core.BL.Services;
 public class WorkerService : IWorkerService
 {
     private readonly IWorkerRepository workerRepository;
+    private readonly IAgencyRepository agencyRepository;
     private readonly INotificationRepository notificationRepository;
     private readonly IRequestRepository requestRepository;
     private readonly IWorkerRequestRepository workerRequestRepository;
@@ -48,6 +50,7 @@ public class WorkerService : IWorkerService
 
     public WorkerService(
         IWorkerRepository workerRepository,
+        IAgencyRepository agencyRepository,
         IUserRepository userRepository,
         INotificationRepository notificationRepository,
         IRequestRepository requestRepository,
@@ -67,6 +70,7 @@ public class WorkerService : IWorkerService
         IDocumentService documentService)
     {
         this.workerRepository = workerRepository;
+        this.agencyRepository = agencyRepository;
         this.notificationRepository = notificationRepository;
         this.requestRepository = requestRepository;
         this.workerRequestRepository = workerRequestRepository;
@@ -86,27 +90,47 @@ public class WorkerService : IWorkerService
 
     public async Task<Result<Guid>> CreateWorker(int? orderId)
     {
-        var model = httpContextAccessor.HttpContext.Request.Form.DeserializeData<WorkerProfileCreateModel>();
+        var form = httpContextAccessor.HttpContext.Request.Form;
+        var model = form.DeserializeData<WorkerProfileCreateModel>();
         var validationResult = await workerProfileValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return Result.Fail<Guid>(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
 
-        var workerProfile = await workerAdapter.MapToWorkerProfile(model);
-        if (!workerProfile) return Result.Fail<Guid>(workerProfile.Errors);
-        var entity = workerProfile.Value;
+        var agencyId = identityServerService.GetAgencyId();
+        Common.Entities.Agency.Agency agency;
+        if (agencyId == Guid.Empty)
+        {
+            agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
+            if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
+        }
+        else
+        {
+            agency = await agencyRepository.GetAgency(agencyId);
+        }
+
+        var user = await identityServerService.CreateUser(new CreateUserModel
+        {
+            Email = model.Email,
+            Password = model.Password,
+            ConfirmPassword = model.ConfirmPassword,
+            UserType = UserType.Worker
+        });
+        if (!user) return Result.Fail<Guid>(user.Errors);
+
+        var entity = workerAdapter.MapToWorkerProfile(model, agency, user.Value);
 
         await workerRepository.Create(entity);
         await workerRepository.SaveChangesAsync();
+
+        await UploadWorkerFiles(form.Files, entity);
+
         var notification = TeamsNotificationModel.CreateSuccess($"SIGOOK.COM|{model.WorkerFullName}|{model.Email}", $"Worker created on Sigook");
-        notification.PotentialAction = new[]
-        {
+        notification.PotentialAction =
+        [
             new PotentialAction
             {
-                Targets = new []
-                {
-                    new Target()
-                }
+                Targets = [new Target()]
             }
-        };
+        ];
         await teamsNotification.SendNotification(teamsWebhookConfiguration.CandidateAndWorker, notification);
         await NotifyAgencyAndSubscribe(entity.Agency, entity);
         if (orderId.HasValue)
@@ -118,6 +142,27 @@ public class WorkerService : IWorkerService
             }
         }
         return Result.Ok(entity.Id);
+    }
+
+    private async Task UploadWorkerFiles(IFormFileCollection files, WorkerProfile entity)
+    {
+        var fileNames = new List<string>
+        {
+            entity.ProfileImage?.FileName,
+            entity.IdentificationType1File?.FileName,
+            entity.IdentificationType2File?.FileName,
+            entity.PoliceCheckBackGround?.FileName,
+            entity.Resume?.FileName
+        };
+        fileNames.AddRange(entity.Licenses.Select(l => l.License?.FileName));
+        fileNames.AddRange(entity.Certificates.Select(c => c.Certificate?.FileName));
+        fileNames.AddRange(entity.OtherDocuments.Select(d => d.Document?.FileName));
+
+        foreach (var fileName in fileNames.Where(n => !string.IsNullOrEmpty(n)))
+        {
+            var file = files[fileName];
+            if (file != null) await filesContainer.UploadAsync(file.OpenReadStream(), fileName);
+        }
     }
 
     public Task<Result> DeleteWorker(Guid workerProfileId)
