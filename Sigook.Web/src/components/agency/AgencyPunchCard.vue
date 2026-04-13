@@ -188,7 +188,7 @@ export default {
       const payload = {
         ...this.newDate,
         hours,
-        timeIn: dayjs(date + ' ' + hours).format('MM-DD-YYYYY HH:mm:ss'),
+        timeIn: dayjs(date + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
         missingHours: dayjs(this.newDate.missingHours).format('HH:mm:ss'),
         missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss')
       }

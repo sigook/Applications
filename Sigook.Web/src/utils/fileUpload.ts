@@ -1,5 +1,5 @@
 import http from '@/security/apiService';
-import type { AxiosError, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 
 interface UploadedFile {
   path: string;
@@ -20,7 +20,7 @@ export function uploadFile(evt: Event | File, type: string, name: string): Promi
         headers: { 'Content-Type': 'multipart/form-data' },
       })
         .then((response: AxiosResponse<UploadedFile[]>) => resolve(response.data[0].path))
-        .catch((error: AxiosError) => reject(error.response));
+        .catch((error: any) => reject(error));
     }
   });
 }

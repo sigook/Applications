@@ -29,7 +29,6 @@ namespace Covenant.Core.BL.Services;
 
 public class WorkerService : IWorkerService
 {
-    private readonly IAgencyRepository agencyRepository;
     private readonly IWorkerRepository workerRepository;
     private readonly INotificationRepository notificationRepository;
     private readonly IRequestRepository requestRepository;
@@ -48,7 +47,6 @@ public class WorkerService : IWorkerService
     private readonly IDocumentService documentService;
 
     public WorkerService(
-        IAgencyRepository agencyRepository,
         IWorkerRepository workerRepository,
         IUserRepository userRepository,
         INotificationRepository notificationRepository,
@@ -68,7 +66,6 @@ public class WorkerService : IWorkerService
         IFilesContainer filesContainer,
         IDocumentService documentService)
     {
-        this.agencyRepository = agencyRepository;
         this.workerRepository = workerRepository;
         this.notificationRepository = notificationRepository;
         this.requestRepository = requestRepository;
@@ -241,11 +238,11 @@ public class WorkerService : IWorkerService
         }
         var result = entity.PatchDocuments(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>(new[]
-        {
+        return Result.Ok<IEnumerable<string>>(
+        [
             model.IdentificationType1File?.FileName,
             model.IdentificationType2File?.FileName
-        });
+        ]);
     }
 
     private static Result<IEnumerable<string>> HandleLicenses(WorkerProfile entity, IFormCollection form)
@@ -253,7 +250,7 @@ public class WorkerService : IWorkerService
         var model = form.DeserializeData<List<WorkerProfileLicenseModel>>();
         var result = entity.PatchLicenses(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>(model.Select(l => l.License?.FileName));
+        return Result.Ok(model.Select(l => l.License?.FileName));
     }
 
     private static Result<IEnumerable<string>> HandleCertificates(WorkerProfile entity, IFormCollection form)
@@ -261,7 +258,7 @@ public class WorkerService : IWorkerService
         var model = form.DeserializeData<List<CovenantFileModel>>();
         var result = entity.PatchCertificates(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>(model.Select(c => c.FileName));
+        return Result.Ok(model.Select(c => c.FileName));
     }
 
     private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
@@ -269,7 +266,7 @@ public class WorkerService : IWorkerService
         var model = form.DeserializeData<CovenantFileModel>();
         var result = entity.PatchResume(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>(new[] { model?.FileName });
+        return Result.Ok<IEnumerable<string>>([model?.FileName]);
     }
 
     private static Result<IEnumerable<string>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
@@ -280,7 +277,7 @@ public class WorkerService : IWorkerService
         var docResult = WorkerProfileOtherDocument.Create(entity.Id, fileResult.Value);
         if (!docResult) return Result.Fail<IEnumerable<string>>(docResult.Errors);
         entity.OtherDocuments.Add(docResult.Value);
-        return Result.Ok<IEnumerable<string>>(new[] { model?.FileName });
+        return Result.Ok<IEnumerable<string>>([model?.FileName]);
     }
 
     private static Result<IEnumerable<string>> HandleSocialInsurance(WorkerProfile entity, IFormCollection form)
@@ -288,7 +285,7 @@ public class WorkerService : IWorkerService
         var model = form.DeserializeData<SinInformationModel>();
         var result = entity.PatchSinInformation(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>(new[] { model.SocialInsuranceFile?.FileName });
+        return Result.Ok<IEnumerable<string>>([model.SocialInsuranceFile?.FileName]);
     }
 
     private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)
