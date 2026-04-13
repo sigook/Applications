@@ -1,7 +1,7 @@
 <template>
   <div class="p-3 time-sheet-input">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> {{ localEditableDay.day | dateMonth }} </h2>
+    <h2 class="text-center main-title"> {{ dateMonth(localEditableDay.day) }} </h2>
     <div class="text-center">
       <div class="container-worker-report">
         <h3 class="fz-0">Worker Report</h3>
@@ -9,29 +9,29 @@
           <div class="pl-2 pr-2">
             <div>
               <span class="fz-2 fw-700 d-block">Clock In</span>
-              <span v-if="localEditableDay.clockIn">{{ localEditableDay.clockIn | dateHHmm }}</span>
+              <span v-if="localEditableDay.clockIn">{{ dateHHmm(localEditableDay.clockIn) }}</span>
               <span v-else class="fz-1">No reported</span>
             </div>
             <div class="mt-2" v-if="localEditableDay.clockInRounded">
               <span class="fz-2 fw-700 d-block">Rounded</span>
-              <span>{{ localEditableDay.clockInRounded | dateHHmm }}</span>
+              <span>{{ dateHHmm(localEditableDay.clockInRounded) }}</span>
             </div>
           </div>
           <div class="pl-2 pr-2">
             <div>
               <span class="fz-2 fw-700 d-block">Clock Out</span>
-              <span v-if="localEditableDay.clockOut">{{ localEditableDay.clockOut | dateHHmm }}</span>
+              <span v-if="localEditableDay.clockOut">{{ dateHHmm(localEditableDay.clockOut) }}</span>
               <span v-else class="fz-1">No reported</span>
             </div>
             <div class="mt-2" v-if="localEditableDay.clockInRounded">
               <span class="fz-2 fw-700 d-block">Rounded</span>
-              <span>{{ localEditableDay.clockOutRounded | dateHHmm }}</span>
+              <span>{{ dateHHmm(localEditableDay.clockOutRounded) }}</span>
             </div>
           </div>
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Hours</span>
             <span v-if="localEditableDay.clockOut && localEditableDay.totalHours">
-              {{ localEditableDay.totalHours | hour }}
+              {{ hour(localEditableDay.totalHours) }}
             </span>
             <span v-else class="fz-1">No reported</span>
           </div>
@@ -136,6 +136,7 @@
   </div>
 </template>
 <script lang="ts">
+import { dateMonth, dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import { updateAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
@@ -166,6 +167,9 @@ export default {
     // no-op
   },
   methods: {
+    dateMonth,
+    dateHHmm,
+    hour,
     validateHours(item) {
       this.$validator.validateAll().then((result) => {
         if (result) {

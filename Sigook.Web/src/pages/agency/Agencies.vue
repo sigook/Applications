@@ -58,7 +58,7 @@
             </template>
             <template v-slot="props">
               <b-tag size="is-medium" rounded>
-                {{ props.row.agencyType | agencyType }}
+                {{ agencyType(props.row.agencyType) }}
               </b-tag>
             </template>
           </b-table-column>
@@ -69,6 +69,7 @@
 </template>
 <script lang="ts">
 import { getAgenciesList } from "@/api/agencyApi";
+import { agencyType } from '@/utils/filters';
 
 export default {
   data() {
@@ -92,6 +93,7 @@ export default {
     this.getAgencies();
   },
   methods: {
+    agencyType,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getAgencies();

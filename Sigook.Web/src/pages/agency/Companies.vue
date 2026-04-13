@@ -105,7 +105,7 @@
               </b-field>
             </template>
             <template v-slot="props">
-              {{ props.row.createdAt | dateMonth }}
+              {{ dateMonth(props.row.createdAt) }}
               <p><i class="fz-2 block">{{ props.row.createdBy || 'Sigook' }}</i></p>
             </template>
           </b-table-column>
@@ -126,7 +126,7 @@
                 Existing client
               </div>
               <div v-else-if="props.row.updatedAt">
-                {{ props.row.updatedAt | dateMonth }}
+                {{ dateMonth(props.row.updatedAt) }}
                 <p><i class="fz-2 block">{{ props.row.updatedBy }}</i></p>
               </div>
               <div v-else>
@@ -171,18 +171,22 @@
 </template>
 <script lang="ts">
 
-import download from "@/mixins/downloadFileMixin";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { downloadFile } from "@/utils/downloadFile";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyCompanies, bulkAgencyCompanies } from "@/api/agencyCompanyApi";
 import { downloadAgencyReport } from "@/api/agencyReportApi";
 import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
+import { dateMonth } from '@/utils/filters';
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   components: {
     Export: () => import("@/components/Export.vue"),
     ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
     BulkData: () => import("@/components/agency/BulkData.vue"),
   },
-  mixins: [download, billingAdminMixin],
   data() {
     return {
       isLoading: true,
@@ -194,9 +198,9 @@ export default {
       rows: [],
       addFile: false,
       bulkAgencyCompanies,
-      getCompanyNotes: ({ userId, pagination }: any) => getAgencyCompanyNotes(userId, pagination),
-      createCompanyNote: ({ userId, model }: any) => createAgencyCompanyNote(userId, model),
-      deleteCompanyNote: ({ userId, id }: any) => deleteAgencyCompanyNote(userId, id),
+      getCompanyNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination),
+      createCompanyNote: ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model),
+      deleteCompanyNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id),
       serverParams: {
         sortBy: 3,
         isDescending: true,
@@ -220,6 +224,8 @@ export default {
     this.loadCompanies();
   },
   methods: {
+    downloadFile,
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadCompanies();
@@ -283,7 +289,7 @@ export default {
     },
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", status);
+      this.rows[index].showNotes = status;
     },
     exportWithDetails() {
       this.isLoading = true;
@@ -299,7 +305,7 @@ export default {
       this.$store.dispatch("agency/updateAgencyCompanyProfileFilter", this.serverParams);
       getAgencyCompanies(this.serverParams)
         .then(companies => {
-          this.rows = companies.items;
+          this.rows = companies.items.map(c => ({ ...c, showNotes: false }));
           this.totalItems = companies.totalItems;
           this.isLoading = false;
         })

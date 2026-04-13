@@ -7,7 +7,7 @@
         <h2 class="capitalize fz1 fw-700">
           <span class="fw-400 fz-1" v-if="agency.numberId">{{ agency.numberId }} |
           </span>
-          {{ agency.fullName | lowercase }}
+          {{ lowercase(agency.fullName) }}
         </h2>
       </div>
     </section>
@@ -22,6 +22,7 @@
 
 <script lang="ts">
 import { getAgency } from "@/api/agencyApi";
+import { lowercase } from '@/utils/filters';
 
 export default {
   data() {
@@ -36,6 +37,7 @@ export default {
     AgencyRequests: () => import("@/components/agency/AgencyRequests.vue"),
   },
   methods: {
+    lowercase,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);

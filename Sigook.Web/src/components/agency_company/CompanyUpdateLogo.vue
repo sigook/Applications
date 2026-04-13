@@ -31,11 +31,13 @@
 
 <script lang="ts">
 import UploadImage from "@/components/PreviewImage.vue";
-import pubSub from "@/mixins/pubSub";
+import { usePubSub } from "@/composables/usePubSub";
 
 export default {
   name: "CompanyUpdateLogo",
-  mixins: [pubSub],
+  setup() {
+    return { ...usePubSub() };
+  },
   components: { UploadImage },
   props: ["logo"],
   data() {

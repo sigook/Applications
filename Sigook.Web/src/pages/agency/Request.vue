@@ -24,7 +24,7 @@
       </div>
       <div>
         <div class="d-inline-block option-request-top">
-          {{ request.displayRecruiters | breakWord }}
+          {{ breakWord(request.displayRecruiters) }}
         </div>
         <div v-if="request.status && request.status !== 'None'"
           class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
@@ -46,7 +46,7 @@
               <button disabled v-else class="floating-menu-item" :title="warningMessage">
                 <span>Send an email invitation
                   <span class="fz-1">
-                    (Sent it {{ request.invitationSentItAt | dateFromNow }})</span></span>
+                    (Sent it {{ dateFromNow(request.invitationSentItAt) }})</span></span>
               </button>
             </template>
             <button class="floating-menu-item" v-if="request.canCancel" v-on:click="cancelRequestModal = true">
@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import directHiringMixin from "../../mixins/directHiringMixin";
+import { isDirectHiring } from '@/utils/directHiring';
 import {
   getAgencyRequest,
   cancelAgencyRequest,
@@ -100,6 +100,7 @@ import {
   agencyRequestSendInvitation,
 } from "@/api/agencyRequestApi";
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
+import { breakWord, dateFromNow } from '@/utils/filters';
 
 export default {
   data() {
@@ -128,8 +129,9 @@ export default {
     Applicants: () => import("@/components/agency_request/Applicants.vue"),
     ShiftModal: () => import("@/components/request/ShiftEditModal.vue"),
   },
-  mixins: [directHiringMixin],
   methods: {
+    breakWord,
+    dateFromNow,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);
@@ -158,7 +160,7 @@ export default {
             canEdit: this.canEditRequest(response),
             canCancel: this.canCancelRequest(response)
           });
-          this.$set(this, 'request', updatedRequest);
+          this.request = updatedRequest;
           this.setCanSendInvitation(this.request);
           this.isLoading = false;
         })
@@ -279,6 +281,9 @@ export default {
     }
   },
   computed: {
+    isDirectHiring() {
+      return isDirectHiring(this.request);
+    },
     RequestStatus: () => RequestStatus,
     RequestStatusLabels: () => RequestStatusLabels,
     billingTitle() {

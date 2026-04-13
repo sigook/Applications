@@ -32,7 +32,7 @@
   </div>
 </template>
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
 
 export default {
   name: 'BulkData',
@@ -45,8 +45,8 @@ export default {
       fileError: null,
     }
   },
-  mixins: [download],
   methods: {
+    downloadFile,
     bulkUpload() {
       this.isLoading = true;
       this.uploadFn(this.agencySelected, this.bulkFile)

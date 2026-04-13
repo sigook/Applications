@@ -5,15 +5,15 @@
     <div class="highlight-content" v-if="request">
       <div class="item">
         <span class="fw-700">Created</span>
-        <p>{{ request.createdAt | dateFromNow }}</p>
+        <p>{{ dateFromNow(request.createdAt) }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Rate / Salary</span>
-        <p>{{ (request.workerRate || request.workerSalary) | currency }}</p>
+        <p>{{ currency(request.workerRate || request.workerSalary) }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Term</span>
-        <p>{{ request.durationTerm | splitCapital }}</p>
+        <p>{{ splitCapital(request.durationTerm) }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Start
@@ -22,12 +22,12 @@
             / Finish</span>
         </span>
         <p>
-          {{ request.startAt | dateMonth }}
+          {{ dateMonth(request.startAt) }}
           <span class="fz-0" v-if="request.durationTerm !== $longTerm">
-            / {{ request.finishAt | dateMonth }}</span>
+            / {{ dateMonth(request.finishAt) }}</span>
           <span class="fz-0"
             v-if="(request.status === $statusFilled || request.status === $statusCancelled) && request.durationTerm === $longTerm">
-            / {{ request.finishAt | dateMonth }}
+            / {{ dateMonth(request.finishAt) }}
           </span>
         </p>
       </div>
@@ -60,12 +60,13 @@
     <!-- Incentive -->
     <section class="mt-5" v-if="request.incentive">
       <span class="fw-700 is-inline-block mb-2">Plus </span>
-      <span class="fw-400 ml-2"> {{ request.incentive | currency }}</span>
+      <span class="fw-400 ml-2"> {{ currency(request.incentive) }}</span>
       <pre class="long-description">{{ request.incentiveDescription }} </pre>
     </section>
   </div>
 </template>
 <script lang="ts">
+import { currency, dateFromNow, splitCapital, dateMonth } from '@/utils/filters';
 import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ["request"],
@@ -74,6 +75,12 @@ export default {
       isLoading: false,
     };
   },
-  mixins: [toastMixin]
+  mixins: [toastMixin],
+  methods: {
+    currency,
+    dateFromNow,
+    splitCapital,
+    dateMonth,
+  },
 };
 </script>

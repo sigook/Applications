@@ -10,11 +10,11 @@
             <span class="fw-400" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
               {{ worker.numberId }}
             </span>
-            {{ worker.firstName | lowercase }}
-            {{ worker.middleName | lowercase }}
-            {{ worker.lastName | lowercase }}
-            {{ worker.secondLastName | lowercase }}
-            <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark">
+            {{ lowercase(worker.firstName) }}
+            {{ lowercase(worker.middleName) }}
+            {{ lowercase(worker.lastName) }}
+            {{ lowercase(worker.secondLastName) }}
+            <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark" append-to-body>
               <b-icon icon="alert" size="is-small" type="is-danger"></b-icon>
             </b-tooltip>
           </h2>
@@ -145,12 +145,16 @@
 </template>
 
 <script lang="ts">
-import statusWorkerMixin from "@/mixins/statusWorkerMixin";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
+import { lowercase } from '@/utils/filters';
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   data() {
     return {
       currentJobEx: 0,
@@ -164,7 +168,6 @@ export default {
       comments: {}
     };
   },
-  mixins: [statusWorkerMixin, billingAdminMixin],
   components: {
     imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
     Comments: () => import("../../components/Comments.vue"),
@@ -204,6 +207,8 @@ export default {
     }
   },
   methods: {
+    lowercase,
+    workerColor,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);

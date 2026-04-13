@@ -45,7 +45,7 @@
                 <tbody v-for="(item, index) in data.items" :key="item.id">
                     <tr v-if="addBreak(index)">
                         <td colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">
-                            <div class="fz-14 fw-700 color-primary pt-3">Week {{item.weekStartWorking | dateMonth}}</div>
+                            <div class="fz-14 fw-700 color-primary pt-3">Week {{dateMonth(item.weekStartWorking)}}</div>
                         </td>
                     </tr>
                     <tr>
@@ -54,7 +54,7 @@
                                 {{item.numberId}}
                             </router-link>
                         </td>
-                        <td>{{item.startWorking | dateMonth}}</td>
+                        <td>{{dateMonth(item.startWorking)}}</td>
                         <td>
                             <router-link :to="'/agency-companies/company/' + item.companyProfileId">
                                 {{item.companyFullName}}
@@ -73,7 +73,7 @@
                                           :displayShift="item.displayShift" />
                             <span class="fz-2 d-block">{{ DurationTermLabels[item.durationTerm] }}</span>
                         </td>
-                        <td>{{item.workerRate | currency}}</td>
+                        <td>{{currency(item.workerRate)}}</td>
                         <td>
                             <router-link :to="'/agency-workers/worker/' + item.workerProfileId"
                                          :class="workerColor(item)">
@@ -81,18 +81,18 @@
                             </router-link>
                             <div class="pl-0 pt-0 line-height-1">
                                 <span class="fz-2" v-if="item.socialInsurance">SIN {{item.socialInsurance}}</span>
-                                <span v-if="item.socialInsuranceExpire" class="fz-2"> | {{item.dueDate | dateMonth}}</span>
+                                <span v-if="item.socialInsuranceExpire" class="fz-2"> | {{dateMonth(item.dueDate)}}</span>
                             </div>
                             <span class="fz-1 d-block" v-if="item.rejectComments">
                                 <span class="orange-dot"></span>
                                 {{item.rejectComments}}</span>
                         </td>
                         <td>{{item.mobileNumber}}</td>
-                        <td>{{item.displayRecruiters | breakWord}}</td>
+                        <td>{{breakWord(item.displayRecruiters)}}</td>
                         <td>
                             <div class="capitalize is-inline-block v-middle w-100 text-right">
 
-                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark">
+                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark" append-to-body>
                                     <div class="dot-status" :class="'status-' + RequestStatusLabels[item.requestStatus].toLowerCase()"></div>
                                 </b-tooltip>
 
@@ -143,7 +143,9 @@ import {
   updateAgencyRequestWorkerNote,
   deleteAgencyRequestWorkerNote,
 } from "@/api/agencyNoteApi";
+import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
 import { WorkerRequestStatus, DurationTermLabels, RequestStatusLabels } from "@/constants/enums";
+import { dateMonth, currency, breakWord } from '@/utils/filters';
 export default {
     computed: {
         WorkerRequestStatus: () => WorkerRequestStatus,
@@ -157,10 +159,10 @@ export default {
             data: null,
             isLoading: false,
             momentFormat: 'YYYY-MM-DD',
-            getNotes: ({ requestId, userId, pagination }: any) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
-            createNote: ({ requestId, userId, model }: any) => createAgencyRequestWorkerNote(requestId, userId, model),
-            updateNote: ({ requestId, userId, id, model }: any) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-            deleteNote: ({ requestId, userId, id }: any) => deleteAgencyRequestWorkerNote(requestId, userId, id),
+            getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
+            createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
+            updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
+            deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id),
         }
     },
     mixins: [toastMixin],
@@ -170,11 +172,14 @@ export default {
         AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue")
     },
     methods: {
+        dateMonth,
+        currency,
+        breakWord,
         loadBoard(index){
             this.isLoading = true;
             getAgencyRequestBoard({page: index, size: this.size})
             .then(response => {
-                this.data = response;
+                this.data = { ...response, items: response.items.map(i => ({ ...i, showNotes: false, mouseOver: false })) };
                 this.isLoading = false;
             })
             .catch(error => {
@@ -201,7 +206,7 @@ export default {
             if (!this.data.items[index].showNotes) {
                 this.data.items[index].mouseOver = true;
             }
-            this.$set(this.data.items[index], 'showNotes', true);
+            this.data.items[index].showNotes = true;
         },
         hideNotes(index) {
             if (this.data.items[index].showNotes) {

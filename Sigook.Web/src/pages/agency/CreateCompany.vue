@@ -136,14 +136,17 @@
 </template>
 
 <script lang="ts">
-import pubSub from "../../mixins/pubSub";
-import confirmationAlert from "../../mixins/confirmationAlert";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { confirmationGuard } from '@/utils/confirmationGuard';
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { usePubSub } from '@/composables/usePubSub';
 import { getIndustries, getCompanyStatus, addIndustry } from "@/api/catalogApi";
 import { getAgencyPersonnel } from "@/api/agencyApi";
 import { createAgencyCompany, updateAgencyCompany } from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin(), ...usePubSub() };
+  },
   data() {
     return {
       isLoading: true,
@@ -162,14 +165,11 @@ export default {
         requiresPermissionToSeeOrders: false,
       },
       submitted: false,
-      isUpdate: false
+      isUpdate: false,
+      unsavedChanges: false,
     };
   },
-  mixins: [
-    pubSub,
-    confirmationAlert,
-    billingAdminMixin
-  ],
+  beforeRouteLeave: confirmationGuard,
   components: {
     UploadImage: () => import("@/components/PreviewImage.vue"),
     phoneInput: () => import("@/components/PhoneInput.vue"),

@@ -11,17 +11,17 @@
         <table class="table-report-hours">
           <tr>
             <td>Day:</td>
-            <td>{{ dateSelected | date }}
+            <td>{{ date(dateSelected) }}
             </td>
           </tr>
           <tr v-if="timesheet.items && todayData">
             <td>Clock In:</td>
-            <td>{{ todayData.clockIn | time }}</td>
+            <td>{{ time(todayData.clockIn) }}</td>
           </tr>
 
           <tr v-if="todayData && todayData.clockOut !== null">
             <td>Clock out:</td>
-            <td>{{ todayData.clockOut | time }}</td>
+            <td>{{ time(todayData.clockOut) }}</td>
           </tr>
         </table>
         <div>
@@ -44,6 +44,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import { workerRegisterTime, getClockType } from '@/api/workerApi';
+import { date, time } from '@/utils/filters';
 
 export default {
   props: ['requestId', 'timesheet'],
@@ -58,6 +59,8 @@ export default {
     }
   },
   methods: {
+    date,
+    time,
     getTimeFromNow() {
       this.currentHour = dayjs(this.created).format('HH:mm:ss');
     },

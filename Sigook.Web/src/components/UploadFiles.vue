@@ -14,7 +14,7 @@
   </div>
 </template>
 <script lang="ts">
-import updateMixin from "@/mixins/uploadFiles";
+import { uploadFile } from "@/utils/fileUpload";
 
 export default {
   props: ["name", "format", "required", "id", "disabled"],
@@ -25,12 +25,11 @@ export default {
       selected: false,
     };
   },
-  mixins: [updateMixin],
   methods: {
     onSelectFile(evt) {
       this.isLoading = true;
       this.$emit("onUpload", true);
-      this.uploadFile(evt, this.format, this.name)
+      uploadFile(evt, this.format, this.name)
         .then((response) => {
           this.pathFile = response;
           this.cleanInput();

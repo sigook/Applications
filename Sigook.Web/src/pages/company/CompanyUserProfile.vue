@@ -10,7 +10,7 @@
           <svg width="100" height="100">
             <circle cx="50" cy="50" r="35" fill="#aeaeae" />
             <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="25px" font-family="Arial" dy=".3em">
-              {{ companyUser.email | avatarLetters }}
+              {{ avatarLetters(companyUser.email) }}
             </text>
           </svg>
           <span class="no-arrow"></span>
@@ -43,6 +43,7 @@
 
 import CompanyUserUpdate from "@/components/company/CompanyUserUpdate.vue";
 import ProfileAccountInformation from "@/components/agency/ProfileAccountInformation.vue";
+import { avatarLetters } from '@/utils/filters';
 
 
 export default {
@@ -61,6 +62,7 @@ export default {
     }
   },
   methods: {
+    avatarLetters,
     changeTab(newTab) {
       this.currentTab = newTab;
     },

@@ -41,7 +41,7 @@
             </template>
             <template v-slot="props">
               {{ props.row.jobTitle }}
-              <i class="fz-2 block">{{ props.row.createdAt | dateFromNow }}</i>
+              <i class="fz-2 block">{{ dateFromNow(props.row.createdAt) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="location" label="Location" searchable>
@@ -88,6 +88,7 @@
 import toast from "@/mixins/toastMixin";
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
+import { dateFromNow } from '@/utils/filters';
 
 export default {
   components: {
@@ -108,6 +109,7 @@ export default {
   },
   mixins: [toast],
   methods: {
+    dateFromNow,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getCompanyRequests();

@@ -13,9 +13,9 @@
           <p class="fw-200 margin-0">
             <b-button size="is-small" type="is-ghost" :icon-right="showSin ? 'eye-off' : 'eye'" @click="showSin = !showSin"></b-button>
             <i v-if="showSin">{{ worker.socialInsurance }}</i>
-            <i v-else>{{ worker.socialInsurance | sin }}</i> |
+            <i v-else>{{ sin(worker.socialInsurance) }}</i> |
             <i>{{ $t("WorkerDueDate") }}: </i>
-            <i v-if="worker.socialInsuranceExpire">{{ worker.dueDate | date }}</i>
+            <i v-if="worker.socialInsuranceExpire">{{ date(worker.dueDate) }}</i>
           </p>
         </span>
       </div>
@@ -23,7 +23,7 @@
         <span>{{ $t("File") }}</span>
         <span class="fw-200 margin-0">
           <a :href="worker.socialInsuranceFile.pathFile" download target="_blank">
-            {{ worker.socialInsuranceFile.fileName | filename }}
+            {{ filename(worker.socialInsuranceFile.fileName) }}
             <span class="download-button"></span>
           </a>
         </span>
@@ -36,6 +36,8 @@
 </template>
 
 <script lang="ts">
+import { sin, date, filename } from '@/utils/filters';
+
 export default {
   props: ['worker'],
   data() {
@@ -45,6 +47,9 @@ export default {
     }
   },
   methods: {
+    sin,
+    date,
+    filename,
     closeModalEdit() {
       this.$emit('updateProfile', true);
       this.modalSocialInsurance = false;

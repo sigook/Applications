@@ -7,7 +7,7 @@
       <contact-information v-if="company" :company="company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
-      <table class="table-detail">
+      <table class="table-detail" v-if="company">
         <tr v-if="company.industry">
           <td><span class="fw-700">Industry </span></td>
           <td>
@@ -30,12 +30,12 @@
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">About</span>
         <pre class="long-description">{{ company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">Internal Info</span>
         <pre class="long-description" v-html="company.internalInfo"></pre>
       </section>
@@ -117,8 +117,8 @@
         </div>
       </div>
 
-      <i class="fz-1 op5" v-if="company.createdAt">
-        Created: {{ company.createdAt | date }}
+      <i class="fz-1 op5" v-if="company && company.createdAt">
+        Created: {{ date(company.createdAt) }}
       </i>
     </section>
 
@@ -127,7 +127,7 @@
       <location />
     </aside>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px">
+    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
       <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
         :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
     </b-modal>
@@ -135,7 +135,8 @@
 </template>
 
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { date } from "@/utils/filters";
 import {
   getInvoiceNotes,
   postInvoiceNotes,
@@ -145,6 +146,9 @@ import {
 } from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ["company"],
   data() {
     return {
@@ -182,7 +186,6 @@ export default {
     Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
     EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
   },
-  mixins: [billingAdminMixin],
   watch: {
     company: {
       handler(newVal) {
@@ -192,6 +195,7 @@ export default {
     }
   },
   methods: {
+    date,
     showNotesEditor() {
       if (this.showEditor) {
         this.showEditor = false;

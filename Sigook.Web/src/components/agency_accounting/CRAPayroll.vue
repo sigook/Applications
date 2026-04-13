@@ -16,11 +16,10 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
 import { getCraPayrollReport } from "@/api/agencyReportApi";
 
 export default {
-  mixins: [download],
   data() {
     return {
       isLoading: false,
@@ -29,6 +28,7 @@ export default {
     }
   },
   methods: {
+    downloadFile,
     onDatesSelected() {
       this.serverParams.startDate = dayjs(this.createdAtDatesSelected[0]).format('YYYY-MM-DD');
       this.serverParams.endDate = dayjs(this.createdAtDatesSelected[1]).format('YYYY-MM-DD');

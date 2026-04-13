@@ -51,7 +51,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              {{ props.row.createdAt | dateMonth }}
+              {{ dateMonth(props.row.createdAt) }}
             </template>
           </b-table-column>
           <b-table-column field="workerFullName" label="Worker" sortable searchable>
@@ -76,23 +76,23 @@
           </b-table-column>
           <b-table-column field="totalPaid" label="Total Paid">
             <template v-slot="props">
-              {{ props.row.totalPaid | currency }}
+              {{ currency(props.row.totalPaid) }}
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top">
+              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-success" outlined rounded icon-right="file-pdf" class="mr-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top">
+              <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
                   class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top">
+              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeletePayStub(props.row)">
                 </b-button>
               </b-tooltip>
@@ -113,7 +113,8 @@
 </template>
 
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadPDF } from "@/utils/downloadFile";
+import { dateMonth, currency } from '@/utils/filters';
 import {
   getAgencyPayStubs,
   downloadPayStubPdf,
@@ -127,7 +128,6 @@ export default {
     GeneratePayStubs: () => import("@/components/agency_accounting/GeneratePayStubs.vue"),
     SkipPayrollNumber: () => import("@/components/agency_accounting/SkipPayrollNumber.vue")
   },
-  mixins: [download],
   data() {
     return {
       isLoading: true,
@@ -155,6 +155,9 @@ export default {
     this.loadPayStubs();
   },
   methods: {
+    downloadPDF,
+    dateMonth,
+    currency,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadPayStubs();
@@ -198,8 +201,8 @@ export default {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyPayStubFilter", this.serverParams);
       getAgencyPayStubs(this.serverParams)
-        .then((response: any) => {
-          this.rows = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+        .then((response) => {
+          this.rows = response.items.map((i) => ({ ...i, emailSending: false, actions: null }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

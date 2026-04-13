@@ -4,7 +4,7 @@
             <span class="fz-1 tag_primary_absolute" v-if="data.isCurrentlyWorking" >working</span>
             <img :src="data.profileImage">
             <div class="container-worker-inline-name">
-            <h3 class="fz1 fw-200 capitalize">{{data.name | lowercase}} {{data.lastName | lowercase}}</h3>
+            <h3 class="fz1 fw-200 capitalize">{{lowercase(data.name)}} {{lowercase(data.lastName)}}</h3>
             <span class="fz-1 fw-200 color-gray-light"
                       v-for="(item, index) in data.skills.slice(0, 2)" :key="index"> {{item}}
                 <span v-if="index === 0 && data.skills.length > 1 "> - </span>
@@ -33,6 +33,7 @@
 </template>
 
 <script lang="ts">
+    import { lowercase } from '@/utils/filters';
     export default {
         data() {
             return {}
@@ -42,6 +43,7 @@
             'showFull'
         ],
         methods: {
+            lowercase,
             sendToDetail() {
                 this.$router.push({
                     path: '/company-workers/worker/' + this.data.id,

@@ -1,12 +1,13 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { ActionContext } from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
+import type { UserProfile } from '@/types/security';
 
 // modules
-import AgencyModule from './modules/agency';
+import AgencyModule, { AgencyState } from './modules/agency';
 import CompanyModule from './modules/company';
 import WorkerModule from './modules/worker';
-import SecurityModule from './modules/security';
+import SecurityModule, { SecurityState } from './modules/security';
 
 Vue.use(Vuex);
 
@@ -14,16 +15,19 @@ export interface RootState {
   isMobile: boolean;
   language: string;
   currentDate: Date | null;
-  user: any | null;
+  user: UserProfile | null;
+  security: SecurityState;
+  agency: AgencyState;
 }
 
 export default new Vuex.Store<RootState>({
+  // Module states (security, agency, etc.) are populated by Vuex at runtime from the `modules` option.
   state: {
     isMobile: false,
     language: 'en',
     currentDate: null,
     user: null
-  },
+  } as RootState,
   mutations: {
     showMobile(state: RootState) {
       state.isMobile = true;
@@ -43,7 +47,7 @@ export default new Vuex.Store<RootState>({
     worker: WorkerModule,
   },
   actions: {
-    getCurrentDate(context: any): Promise<Date> {
+    getCurrentDate(context: ActionContext<RootState, RootState>): Promise<Date> {
       return new Promise((resolve) => {
         context.commit('setCurrentDate', new Date());
         resolve(new Date());

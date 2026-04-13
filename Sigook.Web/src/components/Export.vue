@@ -14,12 +14,12 @@
   </b-field>
 </template>
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
 import { downloadAgencyReport } from "@/api/agencyReportApi";
 export default {
   props: ["url", "params", "fileName"],
-  mixins: [download],
   methods: {
+    downloadFile,
     downloadReport() {
       this.$emit("onDataLoading", true);
       downloadAgencyReport(this.url, this.params)

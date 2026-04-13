@@ -1,10 +1,14 @@
+import type { ActionContext, Store } from "vuex";
 import mgr from "../../security/securityService";
 import { UserProfile } from "../../types/security";
+import type { RootState } from "@/store";
 
 export interface SecurityState {
   userRoles: string[];
   user?: UserProfile | null;
 }
+
+type SecurityActionContext = ActionContext<SecurityState, RootState>;
 
 const securityModule = {
   state: (): SecurityState => ({
@@ -25,7 +29,7 @@ const securityModule = {
     }
   },
   actions: {
-    getUser(this: any, context: any): Promise<UserProfile> {
+    getUser(this: Store<RootState>, context: SecurityActionContext): Promise<UserProfile> {
       return new Promise((resolve, reject) => {
         const user = this.state.security.user;
         if (user) {
@@ -37,7 +41,7 @@ const securityModule = {
               context.commit("setUser", userProfile);
               return resolve(userProfile);
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
               context.commit("setUser", null);
               return reject(error);
             });
@@ -47,20 +51,20 @@ const securityModule = {
     signIn(): void {
       mgr.signinRedirect().then();
     },
-    signOut(context: any): void {
+    signOut(context: SecurityActionContext): void {
       mgr.signoutRedirect().then(async () => {
         mgr.removeUser();
-        context.commit("setUser", null)
+        context.commit("setUser", null);
       });
     },
-    silentSignin(context: any): Promise<void> {
+    silentSignin(context: SecurityActionContext): Promise<void> {
       return new Promise((resolve, reject) => {
         mgr.signinSilent()
           .then((user) => {
             context.commit('setUser', user as unknown as UserProfile);
             resolve();
           })
-          .catch((error: any) => reject(error));
+          .catch((error: unknown) => reject(error));
       });
     },
   },

@@ -5,7 +5,7 @@
     <div class="col-12 col-padding highlight-content" v-if="request">
       <div class="item">
         <span class="fw-700">Rate / Salary</span>
-        <p>{{ (request.workerRate || request.workerSalary) | currency }}</p>
+        <p>{{ currency(request.workerRate || request.workerSalary) }}</p>
       </div>
       <div class="item">
         <span class="fw-700">Term</span>
@@ -22,12 +22,12 @@
             / Finish</span>
         </span>
         <p>
-          {{ request.startAt | dateMonth }}
+          {{ dateMonth(request.startAt) }}
           <span class="fz-0" v-if="request.durationTerm !== DurationTerm.LongTerm">
-            / {{ request.finishAt | dateMonth }}</span>
+            / {{ dateMonth(request.finishAt) }}</span>
           <span class="fz-0"
             v-if="(request.status === RequestStatus.Filled || request.status === RequestStatus.Cancelled) && request.durationTerm === DurationTerm.LongTerm">
-            / {{ request.finishAt | dateMonth }}
+            / {{ dateMonth(request.finishAt) }}
           </span>
         </p>
       </div>
@@ -107,7 +107,7 @@
     <!-- Incentive -->
     <section class="col-12 col-padding" v-if="request.incentive">
       <span class="fw-700 is-inline-block mb-2">Plus </span>
-      <span class="fw-400 ml-2"> {{ request.incentive | currency }}</span>
+      <span class="fw-400 ml-2"> {{ currency(request.incentive) }}</span>
       <pre class="long-description">{{ request.incentiveDescription }} </pre>
     </section>
 
@@ -121,6 +121,7 @@
   </div>
 </template>
 <script lang="ts">
+import { currency, dateMonth } from '@/utils/filters';
 import toastMixin from "@/mixins/toastMixin";
 import {
   increaseWorkersQuantityByOne,
@@ -162,6 +163,8 @@ export default {
     AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
   },
   methods: {
+    currency,
+    dateMonth,
     onIncreaseWorkersQuantity() {
       this.isLoading = true;
       increaseWorkersQuantityByOne(this.request.id)

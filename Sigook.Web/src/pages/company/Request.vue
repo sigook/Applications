@@ -74,8 +74,8 @@
 </template>
 
 <script lang="ts">
-import confirmationAlert from "../../mixins/confirmationAlert";
-import directHiringMixin from "../../mixins/directHiringMixin";
+import { confirmationGuard } from '@/utils/confirmationGuard';
+import { isDirectHiring } from '@/utils/directHiring';
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import { getRequest, cancelRequest, editRequest, requestAnotherWorker } from "@/api/companyApi";
 
@@ -89,6 +89,7 @@ export default {
       currentTab: "Detail",
       visitedTabs: ["Detail"],
       editContentModal: false,
+      unsavedChanges: false,
     };
   },
   components: {
@@ -99,7 +100,7 @@ export default {
     Workers: () => import("../../components/company_request/CompanyRequestWorkers.vue"),
     PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard.vue"),
   },
-  mixins: [confirmationAlert, directHiringMixin],
+  beforeRouteLeave: confirmationGuard,
   methods: {
     cancelRequest(reason) {
       this.modalValidation = false;
@@ -182,6 +183,9 @@ export default {
     }
   },
   computed: {
+    isDirectHiring() {
+      return isDirectHiring(this.request);
+    },
     RequestStatus: () => RequestStatus,
     RequestStatusLabels: () => RequestStatusLabels,
     canEdit() {

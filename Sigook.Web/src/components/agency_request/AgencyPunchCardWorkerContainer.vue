@@ -9,41 +9,41 @@
             <div class="col-12 col-padding">
               <div v-if="slotProps.item.clockIn">
                 <b-tag type="is-info is-light">
-                  <strong>Clock in:</strong> {{ slotProps.item.clockIn | dateHHmm }}
+                  <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
                   <template v-if="slotProps.item.clockOut">
-                    <strong> to </strong>{{ slotProps.item.clockOut | dateHHmm }}
+                    <strong> to </strong>{{ dateHHmm(slotProps.item.clockOut) }}
                   </template>
                 </b-tag>
               </div>
               <b-tag type="is-success is-light">
-                <strong>Hours:</strong> {{ slotProps.item.totalHours | hour }}
+                <strong>Hours:</strong> {{ hour(slotProps.item.totalHours) }}
               </b-tag>
               <div v-if="slotProps.item.missingHours">
                 <b-tag type="is-success is-light">
-                  <strong>Missing Hours:</strong> {{ slotProps.item.missingHours | hour }}
+                  <strong>Missing Hours:</strong> {{ hour(slotProps.item.missingHours) }}
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHoursApproved">
                 <b-tag type="is-success is-light">
-                  <strong>Hours Approved:</strong> {{ slotProps.item.totalHoursApproved | hour }}
+                  <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
-                <b-tooltip label="Detail" type="is-dark">
+                <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip label="Edit" type="is-dark">
+                <b-tooltip label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
-                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved">
+                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
                   </b-button>
                 </b-tooltip>
                 <div class="d-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
                   <b-tooltip :triggers="['click']" :auto-close="['outside', 'escape']" type="is-dark" size="is-medium"
-                    position="is-top" multilined>
+                    position="is-top" multilined append-to-body>
                     <template slot="content">
                       <div>
                         <p v-if="currentTimeSheetUsage.invoiceNumber"><b>Invoice:</b>
@@ -60,7 +60,7 @@
                   </b-tooltip>
                 </div>
                 <b-tooltip label="Delete" type="is-dark" position="is-bottom"
-                  v-if="slotProps.item.id && slotProps.item.canUpdate">
+                  v-if="slotProps.item.id && slotProps.item.canUpdate" append-to-body>
                   <b-button icon-right="delete" type="is-ghost"
                     @click="deleteWorkerTimSheet(slotProps.item)"></b-button>
                 </b-tooltip>
@@ -100,7 +100,8 @@
   </div>
 </template>
 <script lang="ts">
-import timeSheetReportMixin from "@/mixins/agencyTimeSheetReportMixin";
+import { dateHHmm, hour } from '@/utils/filters';
+import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
@@ -109,6 +110,7 @@ import {
   postAgencyWorkerTimeSheet,
   deleteAgencyWorkerTimeSheet,
   getAgencyTimeSheetUsages,
+  updateAgencyWorkerTimeSheet,
 } from "@/api/agencyTimeSheetApi";
 
 dayjs.extend(duration);
@@ -130,13 +132,28 @@ export default {
       showDetailPunchCard: false
     }
   },
-  mixins: [timeSheetReportMixin],
   computed: {
     maximumDailyHours() {
       return maximumHoursPerDay;
     }
   },
   methods: {
+    dateHHmm,
+    hour,
+    timeSheetFastApprove(item, requestId, workerId) {
+      this.isLoading = true;
+      const model = buildTimeSheetApproveModel(item);
+      updateAgencyWorkerTimeSheet(requestId, workerId, item.id, model)
+        .then(() => {
+          this.updateCell();
+        })
+        .catch((error) => {
+          this.showAlertError(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     loadTimeSheets() {
       this.isLoading = true;
       getAgencyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })
@@ -214,7 +231,7 @@ export default {
     loadTimeSheetUsages(item) {
       this.isLoading = true;
       getAgencyTimeSheetUsages(this.requestId, this.workerId, item.id)
-        .then((response: any) => {
+        .then((response) => {
           this.isLoading = false;
           this.currentTimeSheetUsage = {
             invoiceNumber: response.invoiceNumber,

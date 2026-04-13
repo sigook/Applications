@@ -37,12 +37,15 @@
   </div>
 </template>
 <script lang="ts">
-import pubSub from '../../mixins/pubSub';
 import multipartUploadMixin from '../../mixins/multipartUploadMixin';
+import { usePubSub } from '@/composables/usePubSub';
 import { createWorkerImage } from '@/api/workerApi';
 export default {
+  setup() {
+    return { ...usePubSub() };
+  },
   props: ['data'],
-  mixins: [pubSub, multipartUploadMixin],
+  mixins: [multipartUploadMixin],
   data() {
     return {
       showEditModal: false,

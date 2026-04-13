@@ -25,10 +25,10 @@
             <template v-slot="props">
               <span class="d-block">
                 {{ props.row.name }}
-                <b-tooltip label="Candidate" type="is-dark">
+                <b-tooltip label="Candidate" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.candidateId" icon="account-group" size="is-small"></b-icon>
                 </b-tooltip>
-                <b-tooltip label="Worker" type="is-dark">
+                <b-tooltip label="Worker" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
                 </b-tooltip>
               </span>
@@ -62,10 +62,10 @@
             </template>
             <template v-slot="props">
               <div class="capitalize" v-if="props.row.createdBy">
-                <p>{{ props.row.createdBy | emailName }}</p>
+                <p>{{ emailName(props.row.createdBy) }}</p>
               </div>
               <div v-else class="op3">Added by</div>
-              <i class="fz-2">{{ props.row.createdAt | dateMonth }}</i>
+              <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="comments" label="Comments" v-slot="props">
@@ -102,7 +102,8 @@
   </div>
 </template>
 <script lang="ts">
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { emailName, dateMonth } from '@/utils/filters';
+import { phoneMask as mask } from '@/constants/phoneMask';
 import {
   getAgencyRequestApplicant,
   postAgencyRequestApplicant,
@@ -115,6 +116,7 @@ export default {
   props: ["request"],
   data() {
     return {
+      mask,
       isLoading: false,
       currentItem: null,
       createdAtDatesSelected: [],
@@ -131,12 +133,13 @@ export default {
       }
     };
   },
-  mixins: [phoneMaskMixin],
   components: {
     manageTabs: () => import("./ManageApplicantsModal.vue"),
     EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
   },
   methods: {
+    emailName,
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.loadApplicants();

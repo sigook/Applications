@@ -15,10 +15,10 @@
         <i class="fz-2 block"> {{ props.row.jobTitle }}</i>
       </b-table-column>
       <b-table-column field="date" label="Date" v-slot="props">
-        {{ props.row.date | dateMonth }} <i v-if="props.row.isHoliday" class="holiday-text">Holiday</i>
+        {{ dateMonth(props.row.date) }} <i v-if="props.row.isHoliday" class="holiday-text">Holiday</i>
       </b-table-column>
       <b-table-column field="regularHours" label="Regular" v-slot="props">
-        {{ props.row.regularHours | hour }}
+        {{ hour(props.row.regularHours) }}
       </b-table-column>
       <b-table-column field="holidayHours" label="Holiday" v-slot="props">
         {{ props.row.holidayHours }}
@@ -33,11 +33,11 @@
         {{ props.row.missingHoursOvertime }}
       </b-table-column>
       <b-table-column field="totalHours" label="Total" v-slot="props">
-        {{ props.row.totalHours | hour }}
+        {{ hour(props.row.totalHours) }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
-          @open="getAccumulated(props.row)" @close="rowDetail = {}">
+          @open="getAccumulated(props.row)" @close="rowDetail = {}" append-to-body>
           <template v-slot:content>
             <div><strong>Regular: </strong>{{ rowDetail.regularHours }}</div>
             <div><strong>Holiday: </strong>{{ rowDetail.holidayHours }}</div>
@@ -53,6 +53,7 @@
   </div>
 </template>
 <script lang="ts">
+import { dateMonth, hour } from '@/utils/filters';
 import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
 
 export default {
@@ -73,6 +74,8 @@ export default {
     }
   },
   methods: {
+    dateMonth,
+    hour,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkerProfileTimeSheetHistory();

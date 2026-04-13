@@ -28,7 +28,7 @@
           <div v-if="worker.identificationType1File && worker.identificationType1File.fileName"
             class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
-            <span class="selected-file-name">{{ worker.identificationType1File.fileName | filename }}</span>
+            <span class="selected-file-name">{{ filename(worker.identificationType1File.fileName) }}</span>
             <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearFile1()"></b-button>
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedFile1 }">
@@ -68,7 +68,7 @@
           <div v-if="worker.identificationType2File && worker.identificationType2File.fileName"
             class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
-            <span class="selected-file-name">{{ worker.identificationType2File.fileName | filename }}</span>
+            <span class="selected-file-name">{{ filename(worker.identificationType2File.fileName) }}</span>
             <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearFile2()"></b-button>
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedFile2 }">
@@ -99,6 +99,7 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 import { getIdentificationTypes } from "@/api/catalogApi";
@@ -127,6 +128,7 @@ export default {
     }
   },
   methods: {
+    filename,
     handleFile1Selected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {

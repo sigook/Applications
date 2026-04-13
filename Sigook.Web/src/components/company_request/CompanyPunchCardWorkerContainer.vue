@@ -9,38 +9,38 @@
             <div class="col-8 col-padding">
               <div v-if="slotProps.item.clockIn" class="mb-2">
                 <b-tag type="is-info is-light">
-                  <strong>Clock in:</strong> {{ slotProps.item.clockIn | dateHHmm }}
+                  <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
                   <template v-if="slotProps.item.clockOut">
-                    <strong> to </strong>{{ slotProps.item.clockOut | dateHHmm }}
+                    <strong> to </strong>{{ dateHHmm(slotProps.item.clockOut) }}
                   </template>
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHours">
                 <b-tag type="is-success is-light">
-                  <strong>Hours:</strong> {{ slotProps.item.totalHours | hour }}
+                  <strong>Hours:</strong> {{ hour(slotProps.item.totalHours) }}
                 </b-tag>
               </div>
               <div v-if="slotProps.item.totalHoursApproved">
                 <b-tag type="is-success is-light">
-                  <strong>Hours Approved:</strong> {{ slotProps.item.totalHoursApproved | hour }}
+                  <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
-                <b-tooltip label="Detail" type="is-dark">
+                <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button v-if="slotProps.item.id && !slotProps.item.canUpdate" type="is-ghost"
                     @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip label="Edit" type="is-dark">
+                <b-tooltip label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
-                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved">
+                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
                   </b-button>
                 </b-tooltip>
                 <b-tooltip label="Delete" type="is-dark" position="is-bottom"
-                  v-if="slotProps.item.id && slotProps.item.canUpdate">
+                  v-if="slotProps.item.id && slotProps.item.canUpdate" append-to-body>
                   <b-button icon-right="delete" type="is-ghost"
                     @click="confirmDelete(slotProps.item)"></b-button>
                 </b-tooltip>
@@ -95,15 +95,17 @@
 </template>
 
 <script lang="ts">
+import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
-import timeSheetCompany from "@/mixins/companyTimeSheetReportMixin"
+import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import {
   getCompanyWorkerTimeSheetByDate,
   postCompanyWorkerTimeSheet,
   deleteCompanyWorkerTimeSheet,
   companyTimeSheetClockIn,
+  updateCompanyRequestWorkerTimeSheet,
 } from '@/api/companyApi';
 
 dayjs.extend(duration);
@@ -125,13 +127,28 @@ export default {
       showDetailPunchCard: false
     }
   },
-  mixins: [timeSheetCompany],
   computed: {
     maximumDailyHours() {
       return maximumHoursPerDay;
     }
   },
   methods: {
+    dateHHmm,
+    hour,
+    timeSheetFastApprove(item, requestId, workerId) {
+      this.isLoading = true;
+      const model = buildTimeSheetApproveModel(item);
+      updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
+        .then(() => {
+          this.updateCell();
+        })
+        .catch((error) => {
+          this.showAlertError(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     getAgencyWorkerTimeSheetByDate() {
       this.isLoading = true;
       getCompanyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })

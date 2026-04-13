@@ -9,7 +9,7 @@
           </template>
           <div v-if="certificate && certificate.fileName" class="selected-file-display">
             <b-icon icon="certificate" size="is-small"></b-icon>
-            <span class="selected-file-name">{{ certificate.fileName | filename }}</span>
+            <span class="selected-file-name">{{ filename(certificate.fileName) }}</span>
             <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearCertFile()"></b-button>
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedCertFile }">
@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 import { createWorkerCertificates } from '@/api/workerApi';
@@ -65,6 +66,7 @@ export default {
   },
   mixins: [toastMixin, multipartUploadMixin],
   methods: {
+    filename,
     handleCertFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {

@@ -50,19 +50,19 @@
               <p class="fw-600">(Start - End)</p>
             </template>
             <template v-slot="props">
-              {{ props.row.startAt | dateMonth }}
+              {{ dateMonth(props.row.startAt) }}
               <span v-if="props.row.durationTerm !== $longTerm">
-                - {{ props.row.finishAt | dateMonth }}
+                - {{ dateMonth(props.row.finishAt) }}
               </span>
               <span
                 v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
-                - {{ props.row.finishAt | dateMonth }}
+                - {{ dateMonth(props.row.finishAt) }}
               </span>
-              <i class="fz-2 block">{{ props.row.durationTerm | splitCapital }}</i>
+              <i class="fz-2 block">{{ splitCapital(props.row.durationTerm) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="workerRate" label="Rate / Salary" v-slot="props">
-            {{ props.row.workerRate | currency }}
+            {{ currency(props.row.workerRate) }}
           </b-table-column>
           <b-table-column field="workersQuantity" label="Spots" v-slot="props">
             {{ props.row.workersQuantity }}
@@ -81,6 +81,7 @@
 
 <script lang="ts">
 import { getJobs } from '@/api/workerApi';
+import { dateMonth, splitCapital, currency } from '@/utils/filters';
 
 export default {
   data() {
@@ -100,6 +101,9 @@ export default {
     this.getWorkerRequests();
   },
   methods: {
+    dateMonth,
+    splitCapital,
+    currency,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkerRequests();

@@ -10,7 +10,7 @@
         </upload-image>
         <div v-if="companyProfile">
           <h1 class="capitalize fz2">
-            {{ companyProfile.businessName | lowercase }}
+            {{ lowercase(companyProfile.businessName) }}
           </h1>
         </div>
       </div>
@@ -45,9 +45,10 @@
 </template>
 
 <script lang="ts">
-import confirmationAlert from "@/mixins/confirmationAlert";
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import switchLocaleMixin from "@/mixins/switchLocaleMixin";
 import { getCompanyProfile, updateProfile } from '@/api/companyApi';
+import { lowercase } from '@/utils/filters';
 
 export default {
   components: {
@@ -68,10 +69,12 @@ export default {
       isDisabled: true,
       validForm: "",
       changeForm: false,
-      lang: this.$validator.dictionary.locale
+      lang: this.$validator.dictionary.locale,
+      unsavedChanges: false,
     };
   },
   methods: {
+    lowercase,
     editProfile() {
       this.isDisabled = false;
     },
@@ -136,7 +139,8 @@ export default {
     }
     this.onGetProfile();
   },
-  mixins: [switchLocaleMixin, confirmationAlert],
+  mixins: [switchLocaleMixin],
+  beforeRouteLeave: confirmationGuard,
 };
 </script>
 
