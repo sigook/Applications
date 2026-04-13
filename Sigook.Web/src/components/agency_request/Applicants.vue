@@ -7,7 +7,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="createdBy"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -25,10 +25,10 @@
             <template v-slot="props">
               <span class="d-block">
                 {{ props.row.name }}
-                <b-tooltip label="Candidate" type="is-dark">
+                <b-tooltip label="Candidate" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.candidateId" icon="account-group" size="is-small"></b-icon>
                 </b-tooltip>
-                <b-tooltip label="Worker" type="is-dark">
+                <b-tooltip label="Worker" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
                 </b-tooltip>
               </span>

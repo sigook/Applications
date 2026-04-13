@@ -36,7 +36,7 @@
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </export>
         <b-table :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
-          v-model:current-page="pageIndex" pagination-rounded>
+          :current-page.sync="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
           </template>

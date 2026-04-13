@@ -12,7 +12,7 @@
     </export>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      focuseable default-sort="updatedAt" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
+      focuseable default-sort="updatedAt" :current-page.sync="serverParams.pageIndex" :checked-rows.sync="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -175,7 +175,7 @@
           </template>
           <template v-slot="props">
             <div class="text-center">
-              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark">
+              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
                     class="request-check" />

@@ -21,7 +21,7 @@
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
         <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:agency-data="agency" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
@@ -29,7 +29,7 @@
         </b-tab-item>
 
         <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" v-model:agency-data="agency" />
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Account Security')" value="AccountSecurity">

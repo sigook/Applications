@@ -11,7 +11,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick" @mouseleave="hideNotes">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -162,7 +162,7 @@
     </b-modal>
 
     <b-modal v-model="modalStartWorking" width="415px">
-      <datepicker-modal v-if="currentWorker" v-model:startWorking="currentWorker.startWorking"
+      <datepicker-modal v-if="currentWorker" :start-working.sync="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>
   </div>

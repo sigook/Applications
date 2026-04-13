@@ -22,7 +22,7 @@
                 </p>
               </a>
               <div class="actions text-right">
-                <b-tooltip label="Delete" type="is-dark" position="is-top">
+                <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
                     @click="onDeleteDocument(document.id, index)">
                     {{ $t("Delete") }}

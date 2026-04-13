@@ -33,7 +33,7 @@
             </h4>
           </a>
           <div class="actions text-right">
-            <b-tooltip label="Delete" type="is-dark" position="is-top">
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item)">
                 {{ $t("Delete") }}
               </button>

@@ -9,7 +9,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-        detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
+        detail-transition="fade" default-sort="name" :current-page.sync="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>

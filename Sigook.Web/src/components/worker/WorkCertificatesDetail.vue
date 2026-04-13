@@ -17,7 +17,7 @@
             <h4 class="fw-400">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
           </a>
           <div class="actions text-right">
-            <b-tooltip label="Delete" type="is-dark" position="is-top">
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button" @click="confirmDelete(item)">
                 {{ $t("Delete") }}
               </button>

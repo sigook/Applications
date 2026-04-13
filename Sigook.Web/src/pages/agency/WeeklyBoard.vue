@@ -92,7 +92,7 @@
                         <td>
                             <div class="capitalize is-inline-block v-middle w-100 text-right">
 
-                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark">
+                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark" append-to-body>
                                     <div class="dot-status" :class="'status-' + RequestStatusLabels[item.requestStatus].toLowerCase()"></div>
                                 </b-tooltip>
 

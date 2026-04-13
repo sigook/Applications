@@ -21,7 +21,7 @@
                 |
                 <b>Finish:</b> {{ date(data.finishWorking) }}
             </div>
-            <div class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
+            <div v-if="data.status" class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
                 v-status="{ status: data.status }"> {{ $t(data.status) }}</div>
         </div>
         <!--</router-link>-->

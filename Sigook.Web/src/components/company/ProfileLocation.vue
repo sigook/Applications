@@ -5,7 +5,7 @@
       <b-button type="is-ghost" icon-right="plus-circle" @click="addLocation">Add</b-button>
     </b-field>
     <b-table :data="locations" narrowed hoverable paginated pagination-rounded :per-page="pageSize"
-      v-model:current-page="pageIndex">
+      :current-page.sync="pageIndex">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -28,7 +28,7 @@
       </template>
     </b-table>
     <b-modal v-model="showModal" width="500px">
-      <address-component ref="addressComponent" v-model:model="locationBeingUpdate"
+      <address-component ref="addressComponent" :model.sync="locationBeingUpdate"
         :enableProvinceSettings="true"
         @isLoading="(value) => isLoading = value" />
       <div class="container-flex">

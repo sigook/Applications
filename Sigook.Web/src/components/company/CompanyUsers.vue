@@ -5,7 +5,7 @@
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
     <b-table :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="pageSize"
-      v-model:current-page="pageIndex">
+      :current-page.sync="pageIndex">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>

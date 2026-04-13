@@ -17,7 +17,7 @@
       </h2>
     </div>
     <div>
-      <table-requests @onDataLoading="(value) => isLoading = value" v-model:totalItems="totalItems" />
+      <table-requests @onDataLoading="(value) => isLoading = value" :total-items.sync="totalItems" />
     </div>
   </div>
 </template>

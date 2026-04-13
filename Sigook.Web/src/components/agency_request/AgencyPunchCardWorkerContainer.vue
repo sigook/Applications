@@ -29,21 +29,21 @@
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
-                <b-tooltip label="Detail" type="is-dark">
+                <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip label="Edit" type="is-dark">
+                <b-tooltip label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
-                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved">
+                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
                   </b-button>
                 </b-tooltip>
                 <div class="d-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
                   <b-tooltip :triggers="['click']" :auto-close="['outside', 'escape']" type="is-dark" size="is-medium"
-                    position="is-top" multilined>
+                    position="is-top" multilined append-to-body>
                     <template slot="content">
                       <div>
                         <p v-if="currentTimeSheetUsage.invoiceNumber"><b>Invoice:</b>
@@ -60,7 +60,7 @@
                   </b-tooltip>
                 </div>
                 <b-tooltip label="Delete" type="is-dark" position="is-bottom"
-                  v-if="slotProps.item.id && slotProps.item.canUpdate">
+                  v-if="slotProps.item.id && slotProps.item.canUpdate" append-to-body>
                   <b-button icon-right="delete" type="is-ghost"
                     @click="deleteWorkerTimSheet(slotProps.item)"></b-button>
                 </b-tooltip>
@@ -89,7 +89,7 @@
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" v-model:editable-day="editableDay"
+      <time-sheet-modal v-if="editableDay" :worker="{ workerId: workerId }" :editable-day.sync="editableDay"
         @updateData="updateCell" />
     </b-modal>
 

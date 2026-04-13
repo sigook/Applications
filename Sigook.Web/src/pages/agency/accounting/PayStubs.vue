@@ -27,7 +27,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -81,18 +81,18 @@
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top">
+              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-success" outlined rounded icon-right="file-pdf" class="mr-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top">
+              <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
                   class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top">
+              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeletePayStub(props.row)">
                 </b-button>
               </b-tooltip>

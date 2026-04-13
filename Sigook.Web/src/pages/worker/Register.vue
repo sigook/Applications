@@ -59,7 +59,7 @@
               </b-field>
             </div>
           </div>
-          <address-component ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
+          <address-component ref="addressComponent" :model.sync="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -201,7 +201,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType1File)">
                           </b-button>
@@ -251,7 +251,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType2File)">
                           </b-button>
@@ -327,7 +327,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteLicense(index)">
                           </b-button>
@@ -396,7 +396,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteCertificate(index)">
                           </b-button>
@@ -454,7 +454,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteResume()">
                           </b-button>
@@ -509,7 +509,7 @@
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteOtherDocument(index)">
                           </b-button>

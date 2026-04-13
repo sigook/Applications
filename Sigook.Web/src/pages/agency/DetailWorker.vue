@@ -14,7 +14,7 @@
             {{ lowercase(worker.middleName) }}
             {{ lowercase(worker.lastName) }}
             {{ lowercase(worker.secondLastName) }}
-            <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark">
+            <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark" append-to-body>
               <b-icon icon="alert" size="is-small" type="is-danger"></b-icon>
             </b-tooltip>
           </h2>
@@ -75,10 +75,10 @@
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses v-model:worker="worker" @updateProfile="() => loadWorker()" />
+            <licenses :worker.sync="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <certificates v-model:worker="worker" @updateProfile="() => loadWorker()" />
+            <certificates :worker.sync="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray"></span>
             <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
@@ -129,7 +129,7 @@
         </div>
       </b-tab-item>
       <b-tab-item label="Settings" value="workerSettings" v-if="isPayrollManager">
-        <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
+        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker.sync="worker" />
       </b-tab-item>
       <b-tab-item label="PayStubs" value="wageHistory" v-if="isPayrollManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />

@@ -17,7 +17,7 @@
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="companyProfile">
         <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:company-data="companyProfile" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data.sync="companyProfile" />
         </b-tab-item>
 
         <b-tab-item :label="$t('Contact Information')" value="ContactInformation">

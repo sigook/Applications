@@ -30,10 +30,10 @@
 
     <b-tabs v-model="currentTab" @input="changeTab" v-if="company">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
+        <detail v-if="visitedTabs.includes('Detail')" :company.sync="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Settings" value="Settings" v-if="isPayrollManager">
-        <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
+        <settings v-if="visitedTabs.includes('Settings')" :company.sync="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
         <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />

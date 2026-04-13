@@ -2,7 +2,7 @@
   <div>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
       backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
+      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -17,7 +17,7 @@
           {{ currency(props.row.totalNet) }}
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-tooltip label="Download Report" type="is-dark" position="is-top">
+          <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
             <b-button type="is-success" outlined rounded icon-right="file-excel" :loading="props.row.reportDownloading"
               @click="downloadSubcontractor(props.row)">
             </b-button>

@@ -28,7 +28,10 @@ type AgencyActionContext = ActionContext<AgencyState, RootState>;
 export default {
   namespaced: true,
   state: {
-    agency: null,
+    // Starts as an empty shell (not null) because multiple callers access
+    // `state.agency.agency.*` directly without null checks. Populated by setAgency
+    // once the user's profile loads.
+    agency: {} as AgencyProfile,
     personnelAgencies: [],
     agencyRequestFilter: null,
     agencyCandidateFilter: null,

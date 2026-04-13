@@ -9,7 +9,7 @@
           role</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
-        pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex"
+        pagination-rounded :per-page="pageSize" detail-transition="fade" :current-page.sync="pageIndex"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -24,7 +24,7 @@
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
             {{ currency(props.row.workerRate) }}
             <div class="is-inline-block">
-              <b-tooltip label="Max" type="is-dark">
+              <b-tooltip label="Max" type="is-dark" append-to-body>
                 <span v-if="props.row.workerRateMax">- {{ currency(props.row.workerRateMax) }}
                 </span>
               </b-tooltip>

@@ -21,7 +21,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="invoiceNumber"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -75,17 +75,17 @@
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top">
+              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-success" outlined rounded icon-right="file-pdf" class="mr-2"
                   @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Send Email" type="is-dark" position="is-top">
+              <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
                   @click="sendInvoiceEmail(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top">
+              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-danger" outlined rounded icon-right="delete" @click="deleteInvoice(props.row)">
                 </b-button>
               </b-tooltip>

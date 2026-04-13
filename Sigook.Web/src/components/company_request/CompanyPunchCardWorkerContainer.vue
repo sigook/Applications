@@ -26,21 +26,21 @@
                 </b-tag>
               </div>
               <div class="d-flex gap-2 justify-content-center align-items-center">
-                <b-tooltip label="Detail" type="is-dark">
+                <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button v-if="slotProps.item.id && !slotProps.item.canUpdate" type="is-ghost"
                     @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip label="Edit" type="is-dark">
+                <b-tooltip label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
-                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved">
+                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
                   </b-button>
                 </b-tooltip>
                 <b-tooltip label="Delete" type="is-dark" position="is-bottom"
-                  v-if="slotProps.item.id && slotProps.item.canUpdate">
+                  v-if="slotProps.item.id && slotProps.item.canUpdate" append-to-body>
                   <b-button icon-right="delete" type="is-ghost"
                     @click="confirmDelete(slotProps.item)"></b-button>
                 </b-tooltip>
@@ -73,7 +73,7 @@
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
       <time-sheet-modal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
-        v-model:editable-day="editableDay" @updateData="updateCell" />
+        :editable-day.sync="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->

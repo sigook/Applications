@@ -7,7 +7,7 @@
       <contact-information v-if="company" :company="company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
-      <table class="table-detail">
+      <table class="table-detail" v-if="company">
         <tr v-if="company.industry">
           <td><span class="fw-700">Industry </span></td>
           <td>
@@ -30,12 +30,12 @@
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">About</span>
         <pre class="long-description">{{ company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">Internal Info</span>
         <pre class="long-description" v-html="company.internalInfo"></pre>
       </section>
@@ -117,7 +117,7 @@
         </div>
       </div>
 
-      <i class="fz-1 op5" v-if="company.createdAt">
+      <i class="fz-1 op5" v-if="company && company.createdAt">
         Created: {{ date(company.createdAt) }}
       </i>
     </section>
@@ -127,7 +127,7 @@
       <location />
     </aside>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px">
+    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
       <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
         :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
     </b-modal>

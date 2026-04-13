@@ -33,7 +33,7 @@
           <h1 class="capitalize fz2">{{ companyUser.name }} {{ companyUser.lastname }}</h1>
         </div>
       </div>
-      <component v-bind:is="currentTabComponent" class="tab" v-model:user="companyUser"></component>
+      <component v-bind:is="currentTabComponent" class="tab" :user.sync="companyUser"></component>
     </div>
 
   </div>

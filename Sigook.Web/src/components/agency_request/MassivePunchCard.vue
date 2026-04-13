@@ -1,3 +1,4 @@
+
 <template>
   <div class="mt-1">
     <b-loading v-model="isLoading"></b-loading>
@@ -6,7 +7,7 @@
         @onDataLoading="(value) => isLoading = value"></export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-        detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
+        detail-transition="fade" default-sort="name" :current-page.sync="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -58,7 +59,7 @@
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-tooltip label="Punch Card" type="is-dark" position="is-top">
+            <b-tooltip label="Punch Card" type="is-dark" position="is-top" append-to-body>
               <b-button type="is-info" outlined rounded icon-right="timetable" class="mr-2"
                 @click="showModalPunchCard(props.row)"></b-button>
             </b-tooltip>

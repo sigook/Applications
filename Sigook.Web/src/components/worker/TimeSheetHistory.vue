@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
+      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -37,7 +37,7 @@
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
-          @open="getAccumulated(props.row)" @close="rowDetail = {}">
+          @open="getAccumulated(props.row)" @close="rowDetail = {}" append-to-body>
           <template v-slot:content>
             <div><strong>Regular: </strong>{{ rowDetail.regularHours }}</div>
             <div><strong>Holiday: </strong>{{ rowDetail.holidayHours }}</div>
