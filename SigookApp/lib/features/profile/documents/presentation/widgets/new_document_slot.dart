@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/services/file_picker_service.dart';
-import '../../../catalog/domain/entities/catalog_item.dart';
-import '../../../registration/presentation/widgets/file_upload_modal.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/services/file_picker_service.dart';
+import '../../../../catalog/domain/entities/catalog_item.dart';
+import '../../../../registration/presentation/widgets/file_upload_modal.dart';
 
 /// A slot for adding a new identity document when none is set by the agency.
 /// Shows a pending preview when [pendingType] and [pendingFile] are set,

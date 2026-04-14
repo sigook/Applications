@@ -1,16 +1,16 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
-import '../../../data/datasources/profile_remote_datasource.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
+import '../datasources/licenses_remote_datasource.dart';
 import '../../domain/repositories/licenses_repository.dart';
 
 class LicensesRepositoryImpl implements LicensesRepository {
-  final ProfileRemoteDataSource remoteDataSource;
+  final LicensesRemoteDataSource datasource;
   final NetworkInfo networkInfo;
 
   LicensesRepositoryImpl({
-    required this.remoteDataSource,
+    required this.datasource,
     required this.networkInfo,
   });
 
@@ -22,9 +22,9 @@ class LicensesRepositoryImpl implements LicensesRepository {
     required String expires,
   }) =>
       guardedProfileCall(networkInfo, () async {
-        final workerId = await remoteDataSource.getWorkerId();
-        await remoteDataSource.uploadWorkerLicense(
-          workerId,
+        final profile = await datasource.getWorkerProfile();
+        await datasource.uploadLicense(
+          profile.id,
           filePath: filePath,
           number: number,
           issued: issued,

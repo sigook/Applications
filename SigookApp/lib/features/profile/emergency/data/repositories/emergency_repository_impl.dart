@@ -1,24 +1,23 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
-import '../../../data/datasources/profile_remote_datasource.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
+import '../datasources/emergency_remote_datasource.dart';
 import '../../domain/repositories/emergency_repository.dart';
 
 class EmergencyRepositoryImpl implements EmergencyRepository {
-  final ProfileRemoteDataSource remoteDataSource;
+  final EmergencyRemoteDataSource datasource;
   final NetworkInfo networkInfo;
 
   EmergencyRepositoryImpl({
-    required this.remoteDataSource,
+    required this.datasource,
     required this.networkInfo,
   });
 
   @override
   Future<Either<Failure, void>> update(Map<String, String> fields) =>
       guardedProfileCall(networkInfo, () async {
-        final workerId = await remoteDataSource.getWorkerId();
-        final current = await remoteDataSource.getWorkerFullProfile(workerId);
+        final current = await datasource.getWorkerProfile();
         final updated = current.copyWith(
           contactEmergencyName:
               fields['contactEmergencyName'] ?? current.contactEmergencyName,
@@ -27,6 +26,6 @@ class EmergencyRepositoryImpl implements EmergencyRepository {
           contactEmergencyPhone:
               fields['contactEmergencyPhone'] ?? current.contactEmergencyPhone,
         );
-        await remoteDataSource.updateWorkerEmergencyInfo(workerId, updated);
+        await datasource.updateEmergencyInfo(current.id, updated);
       });
 }

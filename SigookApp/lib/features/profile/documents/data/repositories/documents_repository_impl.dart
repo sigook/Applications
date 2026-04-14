@@ -1,17 +1,17 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
-import '../../../data/datasources/profile_remote_datasource.dart';
 import '../../../data/models/worker_profile_model.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
+import '../datasources/documents_remote_datasource.dart';
 import '../../domain/repositories/documents_repository.dart';
 
 class DocumentsRepositoryImpl implements DocumentsRepository {
-  final ProfileRemoteDataSource remoteDataSource;
+  final DocumentsRemoteDataSource datasource;
   final NetworkInfo networkInfo;
 
   DocumentsRepositoryImpl({
-    required this.remoteDataSource,
+    required this.datasource,
     required this.networkInfo,
   });
 
@@ -25,8 +25,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
         final deleteId1File = mutableFields.remove('_deleteId1File') == 'true';
         final deleteId2File = mutableFields.remove('_deleteId2File') == 'true';
 
-        final workerId = await remoteDataSource.getWorkerId();
-        final current = await remoteDataSource.getWorkerFullProfile(workerId);
+        final current = await datasource.getWorkerProfile();
         final updated = current.copyWith(
           identificationNumber1: mutableFields['identificationNumber1'] ??
               current.identificationNumber1,
@@ -51,8 +50,8 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
           identificationType2File:
               deleteId2File ? null : current.identificationType2File,
         );
-        await remoteDataSource.updateWorkerDocuments(
-          workerId,
+        await datasource.updateDocuments(
+          current.id,
           updated,
           newFilePaths: filePaths,
         );

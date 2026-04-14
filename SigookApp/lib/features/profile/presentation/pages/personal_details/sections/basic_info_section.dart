@@ -6,7 +6,7 @@ import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../personal_details/presentation/viewmodels/personal_details_viewmodel.dart';
 import '../../../../../profile/presentation/providers/cached_worker_profile_provider.dart';
-import '../../../widgets/has_vehicle_row.dart';
+import '../../../../personal_details/presentation/widgets/has_vehicle_row.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class BasicInfoSectionCard extends ConsumerStatefulWidget {

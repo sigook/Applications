@@ -10,7 +10,7 @@ import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../licenses/presentation/viewmodels/licenses_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
-import '../../../widgets/license_card.dart';
+import '../../../../licenses/presentation/widgets/license_card.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 

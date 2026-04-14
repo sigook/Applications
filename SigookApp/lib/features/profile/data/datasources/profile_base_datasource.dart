@@ -4,16 +4,13 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/dio_error_interceptor.dart';
 import '../models/worker_profile_model.dart';
 
-abstract class ProfileRemoteDataSource {
-  Future<WorkerProfileModel> getWorkerProfile();
-}
+/// Base class for all profile section datasources.
+/// Provides [execute], [getWorkerProfile], and [basenameOf] shared helpers.
+/// Subclasses must declare [apiClient].
+abstract class ProfileBaseDatasource {
+  ApiClient get apiClient;
 
-class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
-  final ApiClient apiClient;
-
-  ProfileRemoteDataSourceImpl({required this.apiClient});
-
-  Future<T> _execute<T>(Future<T> Function() call) async {
+  Future<T> execute<T>(Future<T> Function() call) async {
     try {
       return await call();
     } on DioException catch (e) {
@@ -27,12 +24,16 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     }
   }
 
-  @override
+  /// Fetches the authenticated worker's full profile via GET /WorkerProfile/me.
+  /// Use [profile.id] wherever a workerId is needed for section endpoints.
   Future<WorkerProfileModel> getWorkerProfile() =>
-      _execute(() async {
+      execute(() async {
         final response = await apiClient.dio.get('/WorkerProfile/me');
         return WorkerProfileModel.fromJson(
           response.data as Map<String, dynamic>,
         );
       });
+
+  static String basenameOf(String path) =>
+      path.split(RegExp(r'[/\\]')).last;
 }

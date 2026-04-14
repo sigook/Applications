@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../../../../core/theme/app_theme.dart';
 
 /// Logout and Delete Account buttons shown at the bottom of the profile.
 class ProfileActionButtons extends StatelessWidget {

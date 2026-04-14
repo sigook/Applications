@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/profile_action_buttons.dart';
+import '../../../preferences/presentation/widgets/profile_action_buttons.dart';
 import 'sections/emergency_section.dart';
 import 'sections/preferences_section.dart';
 

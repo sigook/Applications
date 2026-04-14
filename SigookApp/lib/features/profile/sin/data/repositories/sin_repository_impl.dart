@@ -1,16 +1,16 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
-import '../../../data/datasources/profile_remote_datasource.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
+import '../datasources/sin_remote_datasource.dart';
 import '../../domain/repositories/sin_repository.dart';
 
 class SinRepositoryImpl implements SinRepository {
-  final ProfileRemoteDataSource remoteDataSource;
+  final SinRemoteDataSource datasource;
   final NetworkInfo networkInfo;
 
   SinRepositoryImpl({
-    required this.remoteDataSource,
+    required this.datasource,
     required this.networkInfo,
   });
 
@@ -23,16 +23,15 @@ class SinRepositoryImpl implements SinRepository {
         final mutableFields = Map<String, String>.from(fields);
         final deleteSinFile = mutableFields.remove('_deleteSinFile') == 'true';
 
-        final workerId = await remoteDataSource.getWorkerId();
-        final current = await remoteDataSource.getWorkerFullProfile(workerId);
+        final current = await datasource.getWorkerProfile();
         final updated = current.copyWith(
           socialInsurance:
               mutableFields['socialInsurance'] ?? current.socialInsurance,
           socialInsuranceFile:
               deleteSinFile ? null : current.socialInsuranceFile,
         );
-        await remoteDataSource.updateWorkerSinInfo(
-          workerId,
+        await datasource.updateSinInfo(
+          current.id,
           updated,
           sinFilePath: filePath,
         );

@@ -10,7 +10,7 @@ import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
-import '../widgets/profile_header.dart';
+import 'profile_header.dart';
 import 'personal_details/personal_details_tab.dart';
 import 'preferences/preferences_tab.dart';
 

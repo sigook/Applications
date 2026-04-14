@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/worker_profile.dart';
+import '../../../domain/entities/worker_profile.dart';
 
 /// Displays a single [WorkerLicense] as a tappable card.
 /// Tapping calls [onPreview] when a file URL is available.

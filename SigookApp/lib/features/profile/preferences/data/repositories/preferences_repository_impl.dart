@@ -3,23 +3,24 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
-import '../../../data/datasources/profile_remote_datasource.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
+import '../datasources/preferences_remote_datasource.dart';
 import '../../domain/repositories/preferences_repository.dart';
 
 class PreferencesRepositoryImpl implements PreferencesRepository {
-  final ProfileRemoteDataSource remoteDataSource;
+  final PreferencesRemoteDataSource datasource;
   final NetworkInfo networkInfo;
 
   PreferencesRepositoryImpl({
-    required this.remoteDataSource,
+    required this.datasource,
     required this.networkInfo,
   });
 
   @override
   Future<Either<Failure, void>> update(Map<String, String> fields) =>
       guardedProfileCall(networkInfo, () async {
-        final workerId = await remoteDataSource.getWorkerId();
+        final profile = await datasource.getWorkerProfile();
+        final workerId = profile.id;
 
         List<Map<String, String>> parseIdValueList(String key) {
           final raw = fields[key];
@@ -46,27 +47,19 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
         }
 
         await Future.wait([
-          remoteDataSource.updateAvailabilities(
-            workerId,
-            availabilities: availabilities,
-          ),
-          remoteDataSource.updateAvailabilityTimes(
-            workerId,
-            availabilityTimes: availabilityTimes,
-          ),
-          remoteDataSource.updateAvailabilityDays(
-            workerId,
-            availabilityDays: availabilityDays,
-          ),
-          remoteDataSource.updateSkills(workerId, skills: skills),
-          remoteDataSource.updateLanguages(workerId, languages: languages),
+          datasource.updateAvailabilities(workerId,
+              availabilities: availabilities),
+          datasource.updateAvailabilityTimes(workerId,
+              availabilityTimes: availabilityTimes),
+          datasource.updateAvailabilityDays(workerId,
+              availabilityDays: availabilityDays),
+          datasource.updateSkills(workerId, skills: skills),
+          datasource.updateLanguages(workerId, languages: languages),
           if (locationPreferences.isNotEmpty)
-            remoteDataSource.updateLocationPreferences(
-              workerId,
-              locationPreferences: locationPreferences,
-            ),
+            datasource.updateLocationPreferences(workerId,
+                locationPreferences: locationPreferences),
           if (lift != null)
-            remoteDataSource.updateOtherInformation(workerId, lift: lift),
+            datasource.updateOtherInformation(workerId, lift: lift),
         ]);
       });
 }

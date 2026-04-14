@@ -11,7 +11,7 @@ import '../../../../../catalog/domain/entities/catalog_item.dart';
 import '../../../../documents/presentation/viewmodels/documents_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/document_file_row.dart';
-import '../../../widgets/new_document_slot.dart';
+import '../../../../documents/presentation/widgets/new_document_slot.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class DocumentsSectionCard extends ConsumerStatefulWidget {

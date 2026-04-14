@@ -8,8 +8,8 @@ import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../../preferences/presentation/viewmodels/preferences_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
-import '../../../widgets/chip_selector.dart';
-import '../../../widgets/searchable_toggle_list.dart';
+import '../../../../preferences/presentation/widgets/chip_selector.dart';
+import '../../../../preferences/presentation/widgets/searchable_toggle_list.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class PreferencesSectionCard extends ConsumerStatefulWidget {

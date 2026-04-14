@@ -9,7 +9,7 @@ import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../certificates/presentation/viewmodels/certificates_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
-import '../../../widgets/certificate_card.dart';
+import '../../../../certificates/presentation/widgets/certificate_card.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 
