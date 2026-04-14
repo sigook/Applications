@@ -5,7 +5,6 @@ import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../domain/usecases/get_worker_profile.dart';
-import '../../domain/usecases/update_worker_profile.dart';
 
 final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>((
   ref,
@@ -24,8 +23,4 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 
 final getWorkerProfileUseCaseProvider = Provider<GetWorkerProfile>((ref) {
   return GetWorkerProfile(ref.read(profileRepositoryProvider));
-});
-
-final updateWorkerProfileUseCaseProvider = Provider<UpdateWorkerProfile>((ref) {
-  return UpdateWorkerProfile(ref.read(profileRepositoryProvider));
 });

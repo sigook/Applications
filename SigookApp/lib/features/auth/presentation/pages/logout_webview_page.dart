@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/config/environment.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 
 class LogoutWebviewPage extends StatefulWidget {
   final String? idToken;
