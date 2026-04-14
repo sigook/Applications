@@ -195,6 +195,25 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
+  Future<void> deactivateAccount() async {
+    final accessToken = state.token?.accessToken;
+    if (accessToken == null) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    final result = await ref
+        .read(authRepositoryProvider)
+        .deactivateAccount(accessToken);
+
+    if (!ref.mounted) return;
+
+    result.fold(
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
+      (_) => state = const AuthState(),
+    );
+  }
+
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, error: null);
 

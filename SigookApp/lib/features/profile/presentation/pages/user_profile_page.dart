@@ -46,6 +46,47 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     super.dispose();
   }
 
+  Future<void> _showDeleteAccountDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Deactivate Account'),
+        content: const Text(
+          'Are you sure you want to deactivate your account? '
+          'You will be logged out and your account will be marked as inactive.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryRed,
+            ),
+            child: const Text('Deactivate'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref.read(authViewModelProvider.notifier).deactivateAccount();
+
+    if (!mounted) return;
+
+    final error = ref.read(authViewModelProvider).error;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: AppTheme.errorRed),
+      );
+    } else {
+      context.go(AppRoutes.welcome);
+    }
+  }
+
   Future<void> _showLogoutDialog() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
@@ -169,6 +210,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               const PersonalDetailsTab(),
               PreferencesTab(
                 onLogout: _showLogoutDialog,
+                onDeleteAccount: _showDeleteAccountDialog,
                 appVersion: _appVersion,
               ),
             ],

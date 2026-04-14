@@ -5,11 +5,13 @@ import 'sections/preferences_section.dart';
 
 class PreferencesTab extends StatelessWidget {
   final VoidCallback onLogout;
+  final VoidCallback onDeleteAccount;
   final String appVersion;
 
   const PreferencesTab({
     super.key,
     required this.onLogout,
+    required this.onDeleteAccount,
     required this.appVersion,
   });
 
@@ -23,7 +25,7 @@ class PreferencesTab extends StatelessWidget {
         const SizedBox(height: 12),
         const EmergencySectionCard(),
         const SizedBox(height: 12),
-        ProfileActionButtons(onLogout: onLogout),
+        ProfileActionButtons(onLogout: onLogout, onDeleteAccount: onDeleteAccount),
         const SizedBox(height: 16),
         if (appVersion.isNotEmpty)
           Padding(
