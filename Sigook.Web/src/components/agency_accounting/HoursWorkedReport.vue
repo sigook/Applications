@@ -96,6 +96,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
@@ -171,15 +172,15 @@ export default {
             this.isLoadingReport = false;
             this.report = {
               ...response,
-              rows: response.detail,
+              rows: response.detail
             }
             this.reportGenerated = true;
           }).catch(error => {
             this.isLoadingReport = false;
-            this.showAlertError(error);
+            showAlertError(error);
           });
       }
-    },
+    }
   },
   computed: {
     filteredCompanies() {

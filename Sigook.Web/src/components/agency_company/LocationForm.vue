@@ -1,7 +1,7 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title">{{ $t("Location") }}</h2>
+    <h2 class="text-center main-title">{{ "Location" }}</h2>
 
     <div class="container-flex">
       <cvn-address :model.sync="location" :enableProvinceSettings="enableProvinceSettings" />
@@ -16,7 +16,7 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('mainIntersection') ? 'is-danger' : ''" :label="$t('MainIntersection')"
+        <b-field :type="errors.has('mainIntersection') ? 'is-danger' : ''" :label="'Main Intersection'"
           :message="errors.has('mainIntersection') ? errors.first('mainIntersection') : ''">
           <b-input type="text" v-model="location.mainIntersection" name="mainIntersection" v-validate="'max:1000'" />
         </b-field>
@@ -30,20 +30,21 @@
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-field>
           <b-checkbox v-model="location.isBilling">
-            {{ $t('UseAsBillingAddress') }}
+            {{ 'Use as billing address' }}
           </b-checkbox>
         </b-field>
       </div>
     </div>
     <div class="col-12 mt-5">
       <b-button type="is-primary" @click="validateForm">
-        {{ currentLocation ? $t('Save') : $t('Create') }}
+        {{ currentLocation ? 'Save' : 'Create' }}
       </b-button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import CvnAddress from "@/components/Address.vue";
 import { createProfileLocation } from '@/api/companyApi';
 import { createAgencyCompanyLocation, updateAgencyCompanyLocation } from "@/api/agencyCompanyApi";
@@ -70,7 +71,7 @@ export default {
           }
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     createLocation() {
@@ -78,12 +79,12 @@ export default {
       createAgencyCompanyLocation(this.profileId, this.location)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Created');
+          showAlertSuccess('Created');
           this.$emit('updateContent');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     createCompanyLocation() {
@@ -91,11 +92,11 @@ export default {
       createProfileLocation(this.location)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Created');
+          showAlertSuccess('Created');
           this.$emit('updateContent');
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     updateLocation(id) {
@@ -103,14 +104,14 @@ export default {
       updateAgencyCompanyLocation(this.profileId, id, this.location)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Updated');
+          showAlertSuccess('Updated');
           this.$emit('updateContent');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
-    },
+    }
   },
   created() {
     if (this.currentLocation) {

@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getCompanyUser, deleteCompanyUser } from '@/api/companyApi';
 
 export default {
@@ -62,7 +63,7 @@ export default {
       this.users = this.users.map(r => ({ ...r, actions: null }));
     },
     deleteUser(id) {
-      this.showAlertConfirm(this.$t('AreYouSure'), this.$t('YouWantToDeleteUser'))
+      showAlertConfirm('Are you sure?', 'You want to delete user.')
         .then(response => {
           if (response) {
             this.isLoading = true;
@@ -73,7 +74,7 @@ export default {
               })
               .catch(error => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               })
           }
         });

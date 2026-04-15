@@ -18,7 +18,7 @@
         </tr>
         <tr>
           <td>
-            <span class="fw-700">{{ $t("VaccinationRequired") }}</span>
+            <span class="fw-700">{{ "Vaccination Required" }}</span>
           </td>
           <td>
             {{ getLabelVaccinationRequired(localCompany.vaccinationRequired) }}
@@ -50,7 +50,7 @@
 
       <div class="mb-5">
         <div class="button-right">
-          <span class="fw-700">{{ $t("InvoiceNotes") }}</span>
+          <span class="fw-700">{{ "Invoice notes " }}</span>
           <button class="show-notes-btn" @click="showNotesEditor()">
             <img src="../../assets/images/right-arrow.svg" alt="edit" :class="{ open: showEditor }" />
           </button>
@@ -63,7 +63,7 @@
               <vue-editor v-model="editorContent" :editorToolbar="customToolbar"></vue-editor>
               <br />
               <button class="sm-save-button" v-if="editorContent" @click="saveInvoiceNotes()">
-                {{ $t("Save") }}
+                {{ "Save" }}
               </button>
             </div>
           </transition>
@@ -89,7 +89,7 @@
                 </li>
                 <li class="newRecipient">
                   <div class="container-card">
-                    <label>{{ $t("Name") }}:
+                    <label>{{ "Name" }}:
                       <input type="text" v-model="newRecipient.name" placeholder="Name" name="name"
                         v-validate="'required|max:50|min:3'" :class="{ 'is-danger': errors.has('name') }" />
                       <span v-show="errors.has('name')" class="help is-danger no-margin">
@@ -97,7 +97,7 @@
                       </span>
                     </label>
 
-                    <label>{{ $t("Email") }}:
+                    <label>{{ "Email" }}:
                       <input type="text" v-model="newRecipient.email" placeholder="Email" name="email"
                         v-validate="'required|max:50|min:6|email'" :class="{ 'is-danger': errors.has('email') }" />
                       <span v-show="errors.has('email')" class="help is-danger no-margin">
@@ -135,6 +135,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { date } from "@/utils/filters";
 import {
@@ -142,7 +143,7 @@ import {
   postInvoiceNotes,
   getCompanyInvoiceRecipients,
   postCompanyInvoiceRecipient,
-  updatePermissionToSeeOrders,
+  updatePermissionToSeeOrders
 } from "@/api/agencyCompanyApi";
 
 export default {
@@ -174,8 +175,8 @@ export default {
       companyRecipients: [],
       newRecipient: {
         name: "",
-        email: "",
-      },
+        email: ""
+      }
     };
   },
   components: {
@@ -216,7 +217,7 @@ export default {
           this.isLoading = false;
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -224,16 +225,16 @@ export default {
       // to check the size
       let result = this.editorContent.replace(/(<([^>]+)>)/gi, "");
       if (result.length > 500) {
-        this.showAlertError(this.$t("ErrorLong"));
+        showAlertError("Notes can't be greater that 500 characters.");
       } else {
         this.isLoading = true;
         postInvoiceNotes(this.$route.params.id, { htmlNotes: this.editorContent })
           .then(() => {
-            this.showAlertSuccess(this.$t("Updated"));
+            showAlertSuccess("Updated");
             this.isLoading = false;
           })
           .catch((error) => {
-            this.showAlertError(error);
+            showAlertError(error);
             this.isLoading = false;
           });
       }
@@ -248,7 +249,7 @@ export default {
             this.companyRecipients = response;
           })
           .catch((error) => {
-            this.showAlertError(error);
+            showAlertError(error);
             this.isLoading = false;
           });
       } else {
@@ -263,14 +264,14 @@ export default {
           this.companyRecipients.push({
             id: response.id,
             name: this.newRecipient.name,
-            email: this.newRecipient.email,
+            email: this.newRecipient.email
           });
           this.newRecipient = { name: "", email: "" };
           this.$validator.reset();
           this.isLoading = false;
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -308,10 +309,10 @@ export default {
       updatePermissionToSeeOrders(this.company.id, { requiresPermissionToSeeOrders: e.target.checked })
         .then(() => this.isLoading = false)
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
-    },
-  },
+    }
+  }
 };
 </script>

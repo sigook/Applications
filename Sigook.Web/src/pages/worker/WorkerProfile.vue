@@ -56,6 +56,9 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useWorkerStore } from '@/stores/worker';
+import { showAlertError } from "@/utils/toast";
 import { getMyProfile } from '@/api/workerApi';
 import { lowercase } from '@/utils/filters';
 
@@ -66,13 +69,13 @@ export default {
     WorkExperience: () => import("../../components/worker/ProfileExperience.vue"),
     Comments: () => import("../../components/worker/ProfileComments.vue"),
     WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity.vue"),
-    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
+    imageDetail: () => import("../../components/worker/WorkImageDetail.vue")
   },
   data() {
     return {
       currentTab: "PersonalDetails",
       visitedTabs: ["PersonalDetails"],
-      isLoading: false,
+      isLoading: false
     };
   },
   methods: {
@@ -83,37 +86,38 @@ export default {
       }
       this.$router.push({
         path: "/worker-profile",
-        query: { tab: tab },
+        query: { tab: tab }
       });
     },
     getProfile() {
         this.isLoading = true;
         getMyProfile()
           .then((data) => {
-            this.$store.commit('worker/setWorkerProfile', data);
+            this.workerStore.setWorkerProfile(data);
             this.isLoading = false;
           })
           .catch((error) => {
             this.isLoading = false;
-            this.showAlertError(error);
+            showAlertError(error);
           });
     },
     updateProfile() {
       this.isLoading = true;
       getMyProfile()
         .then((data) => {
-          this.$store.commit('worker/setWorkerProfile', data);
+          this.workerStore.setWorkerProfile(data);
           this.isLoading = false;
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   computed: {
+    ...mapStores(useWorkerStore),
     workerProfile() {
-      return this.$store.state.worker.workerProfile;
+      return this.workerStore.workerProfile;
     },
     hasPersonalDetailsMissing() {
       if (!this.workerProfile) return false;
@@ -122,7 +126,7 @@ export default {
         || !this.workerProfile.identificationType1File
         || !this.workerProfile.identificationType2File
         || !this.workerProfile.resume;
-    },
+    }
   },
   created() {
     if (this.$route.query && this.$route.query.tab) {
@@ -132,7 +136,7 @@ export default {
       }
     }
     this.getProfile();
-  },
+  }
 };
 </script>
 

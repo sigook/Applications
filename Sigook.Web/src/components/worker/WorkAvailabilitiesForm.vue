@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('Availabilities')" class="has-text-weight-normal">
+        <b-field :label="'Availabilities'" class="has-text-weight-normal">
           <b-checkbox v-for="item in availabilities" :key="item.id" v-model="worker.availabilities" :native-value="item"
             class="mb-2">
             {{ item.value }}
@@ -12,14 +12,14 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="createWorkerAvailabilities()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
-import toastMixin from "../../mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import { getAvailability } from "@/api/catalogApi";
 import { createWorkerAvailabilities } from '@/api/workerApi';
 export default {
@@ -33,7 +33,6 @@ export default {
       }
     }
   },
-  mixins: [toastMixin],
   methods: {
     createWorkerAvailabilities() {
       this.isLoading = true;
@@ -44,7 +43,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },

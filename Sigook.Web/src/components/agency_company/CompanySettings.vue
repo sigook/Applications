@@ -19,16 +19,17 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import {
   updatePermissionToSeeOrders,
   updatePaidHolidays,
-  updateOvertime,
+  updateOvertime
 } from "@/api/agencyCompanyApi";
 
 const apiActions = {
   updatePermissionToSeeOrders,
   updatePaidHolidays,
-  updateOvertime,
+  updateOvertime
 };
 
 export default {
@@ -54,7 +55,7 @@ export default {
       apiActions[action](this.localCompany.id, this.localCompany)
         .then(() => this.isLoading = false)
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },

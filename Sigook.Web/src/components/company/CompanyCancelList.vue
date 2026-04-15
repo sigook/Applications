@@ -18,7 +18,7 @@
         </div>
       </transition>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="validateInput">{{ $t("Send") }}</b-button>
+        <b-button type="is-primary" @click="validateInput">{{ "Send" }}</b-button>
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="section-top-title container-flex mb-2">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        {{ $t('AgencyCompanies') }}
+        {{ 'Clients' }}
         <span class="fw-100 fz-1">
           ({{ totalItems }})
         </span>
@@ -14,7 +14,7 @@
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button tag="router-link" to="/create-company" icon-left="plus">
-            {{ $t('Create') }}
+            {{ 'Create' }}
           </b-button>
         </template>
         <template v-slot:dropdown-actions>
@@ -171,6 +171,9 @@
 </template>
 <script lang="ts">
 
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { useAppStore } from '@/stores/app';
 import { downloadFile } from "@/utils/downloadFile";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyCompanies, bulkAgencyCompanies } from "@/api/agencyCompanyApi";
@@ -211,8 +214,8 @@ export default {
   },
   created() {
     this.statuses = this.$route.meta.companyStatuses;
-    if (this.$store.state.agency.agencyCompanyProfileFilter) {
-      this.serverParams = this.$store.state.agency.agencyCompanyProfileFilter;
+    if (this.agencyStore.agencyCompanyProfileFilter) {
+      this.serverParams = this.agencyStore.agencyCompanyProfileFilter;
       if (this.serverParams.companyStatuses) {
         this.statusesSelected = this.statuses.filter(s => this.serverParams.companyStatuses.some(sps => sps == s.id));
       }
@@ -302,7 +305,7 @@ export default {
     },
     loadCompanies() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyCompanyProfileFilter", this.serverParams);
+      this.agencyStore.updateAgencyCompanyProfileFilter(this.serverParams);
       getAgencyCompanies(this.serverParams)
         .then(companies => {
           this.rows = companies.items.map(c => ({ ...c, showNotes: false }));
@@ -315,8 +318,9 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAgencyStore, useAppStore),
     isMobile() {
-      return this.$store.state.isMobile;
+      return this.appStore.isMobile;
     }
   }
 }

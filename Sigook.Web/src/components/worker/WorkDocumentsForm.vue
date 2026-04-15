@@ -3,11 +3,11 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-6">
-        <b-field :label="$t('WorkerIdentificationType')"
+        <b-field :label="'Identification type'"
           :type="errors.has('identificationType1') ? 'is-danger' : ''"
           :message="errors.has('identificationType1') ? errors.first('identificationType1') : ''">
           <b-select v-model="worker.identificationType1" name="identificationType1" v-validate="'required'" expanded>
-            <option value="" disabled>{{ $t("Select") }}</option>
+            <option value="" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
               :disabled="type === worker.identificationType2" v-bind:key="'identificationType1' + index">
               {{ type.value }}
@@ -16,7 +16,7 @@
         </b-field>
       </div>
       <div class="col-6">
-        <b-field :label="$t('IdentificationNumber')"
+        <b-field :label="'Identification Number'"
           :type="errors.has('identificationNumber1') ? 'is-danger' : ''"
           :message="errors.has('identificationNumber1') ? errors.first('identificationNumber1') : ''">
           <b-input type="text" v-model="worker.identificationNumber1" name="identificationNumber1"
@@ -24,7 +24,7 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('WorkerIdentificationFile')">
+        <b-field :label="'Identification file'">
           <div v-if="worker.identificationType1File && worker.identificationType1File.fileName"
             class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -36,18 +36,18 @@
               @input="handleFile1Selected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedFile1 ? selectedFile1.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedFile1 ? selectedFile1.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-6">
-        <b-field :label="$t('WorkerIdentificationType')"
+        <b-field :label="'Identification type'"
           :type="errors.has('identificationType2') ? 'is-danger' : ''"
           :message="errors.has('identificationType2') ? errors.first('identificationType2') : ''">
           <b-select v-model="worker.identificationType2" name="identificationType2" v-validate="'required'" expanded>
-            <option value="" disabled>{{ $t("Select") }}</option>
+            <option value="" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
               :disabled="type === worker.identificationType1" v-bind:key="'identificationType2' + index">
               {{ type.value }}
@@ -56,7 +56,7 @@
         </b-field>
       </div>
       <div class="col-6">
-        <b-field :label="$t('IdentificationNumber')"
+        <b-field :label="'Identification Number'"
           :type="errors.has('identificationNumber2') ? 'is-danger' : ''"
           :message="errors.has('identificationNumber2') ? errors.first('identificationNumber2') : ''">
           <b-input type="text" v-model="worker.identificationNumber2" name="identificationNumber2"
@@ -64,7 +64,7 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('WorkerIdentificationFile')">
+        <b-field :label="'Identification file'">
           <div v-if="worker.identificationType2File && worker.identificationType2File.fileName"
             class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -76,22 +76,22 @@
               @input="handleFile2Selected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedFile2 ? selectedFile2.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedFile2 ? selectedFile2.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('HasPoliceCheckBackground')">
+        <b-field :label="'Got Police Check/Background?'">
           <b-switch v-model="worker.havePoliceCheckBackground" :true-value="true" :false-value="false">
-            {{ worker.havePoliceCheckBackground ? $t("Yes") : $t("No") }}
+            {{ worker.havePoliceCheckBackground ? "Yes" : "No" }}
           </b-switch>
         </b-field>
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -99,9 +99,9 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { getIdentificationTypes } from "@/api/catalogApi";
 import { createWorkerDocuments } from '@/api/workerApi';
 
@@ -120,7 +120,6 @@ export default {
       }
     };
   },
-  mixins: [toastMixin, multipartUploadMixin],
   async created() {
     this.identificationTypes = await getIdentificationTypes();
     if (this.data != null) {
@@ -132,24 +131,24 @@ export default {
     handleFile1Selected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedFile1 = null;
         return;
       }
       this.fileObjects.identificationType1 = file;
-      const generatedName = this.generateFileName('Document', file.name);
+      const generatedName = generateFileName('Document', file.name);
       this.worker.identificationType1File = { fileName: generatedName, description: '' };
       this.selectedFile1 = null;
     },
     handleFile2Selected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedFile2 = null;
         return;
       }
       this.fileObjects.identificationType2 = file;
-      const generatedName = this.generateFileName('Document', file.name);
+      const generatedName = generateFileName('Document', file.name);
       this.worker.identificationType2File = { fileName: generatedName, description: '' };
       this.selectedFile2 = null;
     },
@@ -167,7 +166,7 @@ export default {
           this.saveDocuments();
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     async saveDocuments() {
@@ -195,7 +194,7 @@ export default {
         await createWorkerDocuments(this.worker.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }

@@ -52,27 +52,30 @@
 
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useSecurityStore } from '@/stores/security';
 import menu from "@/security/menu";
 
 export default {
   methods: {
     async login() {
-      const user = this.$store.state.security.user;
+      const user = this.securityStore.user;
       if (user) {
-        const roles = this.$store.state.security.userRoles;
+        const roles = this.securityStore.userRoles;
         const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
         this.$router.push(homePageUrl);
       } else {
-        await this.$store.dispatch('signIn');
+        await this.securityStore.signIn();
       }
     }
   },
   computed: {
+    ...mapStores(useSecurityStore),
     hiddeHeader() {
       return this.$route.query.hiddeHeader === "true";
     },
     loginButton() {
-      if (this.$store.state.security.user) {
+      if (this.securityStore.user) {
         return 'Go to Portal'
       } else {
         return 'Login'

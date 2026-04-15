@@ -36,7 +36,7 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding mt-5">
-        <b-button type="is-primary" @click="validateForm">{{ $t('Create') }}</b-button>
+        <b-button type="is-primary" @click="validateForm">{{ 'Create' }}</b-button>
       </div>
     </div>
   </div>
@@ -44,6 +44,7 @@
 
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { createCompanyUser } from '@/api/companyApi';
 import { createCompanyProfileUser } from '@/api/agencyCompanyApi';
 
@@ -71,7 +72,7 @@ export default {
           this.onCreateUser()
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     onCreateUser() {
@@ -86,7 +87,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         })
     }
   }

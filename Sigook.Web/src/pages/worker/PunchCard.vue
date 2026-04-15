@@ -7,7 +7,7 @@
         <b-datepicker inline v-model="dateSelected" :events="highlights" indicators="dots"></b-datepicker>
       </div>
       <div class="right-40">
-        <h3 class="fz2 fw-400">{{ $t("WorkerPunchCard") }}</h3>
+        <h3 class="fz2 fw-400">{{ "Punch card" }}</h3>
         <table class="table-report-hours">
           <tr>
             <td>Day:</td>
@@ -30,9 +30,9 @@
           </div>
           <div class="text-center" v-if="canBeRegistered">
             <button class="btn outline-btn white-button md-btn btn-radius" @click="registerEntryHour"
-              v-if="isEntryTime">{{ $t("AddEntryTime") }}</button>
+              v-if="isEntryTime">{{ "START SHIFT" }}</button>
             <button v-else class="btn outline-btn white-button md-btn btn-radius" @click="registerDepartureHour">
-              {{ $t("AddDepartureTime") }}
+              {{ "END SHIFT" }}
             </button>
           </div>
         </div>
@@ -42,6 +42,9 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { workerRegisterTime, getClockType } from '@/api/workerApi';
 import { date, time } from '@/utils/filters';
@@ -73,37 +76,37 @@ export default {
         this.canBeRegistered = clockType !== 0;
         this.isLoading = false;
         if (this.entryTime) {
-          this.showAlertSuccess(this.$t("EnjoyYourShift"));
+          showAlertSuccess("Enjoy your shift!");
         } else {
-          this.showAlertSuccess(this.$t("ThanksForYourJob"));
+          showAlertSuccess("Thanks for your job!");
         }
       }).catch(error => {
         this.isLoading = false;
-        this.showAlertError(error.data);
+        showAlertError(error.data);
       });
     },
     registerEntryHour() {
       if (this.position) {
-        this.showAlertConfirm(this.$t("StartingJob"))
+        showAlertConfirm("Starting Job")
           .then(response => {
             if (response) {
               this.registerHour();
             }
           })
       } else {
-        this.showAlertError('Please enable to know your location in the browser');
+        showAlertError('Please enable to know your location in the browser');
       }
     },
     registerDepartureHour() {
       if (this.position) {
-        this.showAlertConfirm(this.$t("EndingWork"), "")
+        showAlertConfirm("Ending Work", "")
         .then(response => {
           if (response) {
             this.registerHour();
           }
         });
       } else {
-        this.showAlertError('Please enable to know your location in the browser');
+        showAlertError('Please enable to know your location in the browser');
       }
     },
     async getClockType() {
@@ -113,7 +116,7 @@ export default {
   async created() {
     this.getTimeFromNow();
     setInterval(this.getTimeFromNow, 1000);
-    this.dateSelected = await this.$store.dispatch('getCurrentDate');
+    this.dateSelected = await this.appStore.getCurrentDate();
     navigator.geolocation.watchPosition((position) => this.position = position, () => this.position = null);
   },
   destroyed() {
@@ -123,6 +126,7 @@ export default {
     DataEntryTerms: () => import("../../components/DataEntryTerms.vue")
   },
   computed: {
+    ...mapStores(useAppStore),
     highlights() {
       if (this.timesheet && this.timesheet.items.length > 0) {
         return this.timesheet.items.map(i => new Date(i.day));

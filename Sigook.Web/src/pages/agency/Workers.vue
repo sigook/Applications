@@ -14,7 +14,7 @@
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button tag="router-link" to="/agency-workers/register-worker" icon-left="plus">
-            {{ $t('Create') }}
+            {{ 'Create' }}
           </b-button>
         </template>
       </export>
@@ -161,6 +161,9 @@
 </template>
 <script lang="ts">
 
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { workerFeatures as features } from '@/constants/workerFeatures';
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { getAgencyWorkers, updateApprovedToWork } from "@/api/agencyWorkerApi";
@@ -186,6 +189,9 @@ export default {
   },
   components: {
     Export: () => import("@/components/Export.vue")
+  },
+  computed: {
+    ...mapStores(useAgencyStore),
   },
   methods: {
     dateMonth,
@@ -253,7 +259,7 @@ export default {
     },
     loadWorkers() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerProfileFilter", this.serverParams);
+      this.agencyStore.updateAgencyWorkerProfileFilter(this.serverParams);
       getAgencyWorkers(this.serverParams)
         .then(workers => {
           this.rows = workers.items.map(w => ({ ...w, actions: null }));
@@ -269,34 +275,34 @@ export default {
       updateApprovedToWork(worker.id)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
           this.loadWorkers();
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
           this.loadWorkers();
         });
     },
     confirmDelete(worker) {
-      this.showAlertConfirm(
-        this.$t("AreYouSure"),
-        this.$t("YouWantToDisableTheWorker") +
+      showAlertConfirm(
+        "Are you sure?",
+        "You want to disable the worker" +
         ". " +
-        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
+        "This worker will not be able to apply to new requests"
       ).then((response) => {
         if (response) {
           this.deleteWorker(worker);
         }
       })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   created() {
-    if (this.$store.state.agency.agencyWorkerProfileFilter) {
-      this.serverParams = this.$store.state.agency.agencyWorkerProfileFilter;
+    if (this.agencyStore.agencyWorkerProfileFilter) {
+      this.serverParams = this.agencyStore.agencyWorkerProfileFilter;
       if (this.serverParams.features) {
         this.featuresSelected = this.features.filter(s => this.serverParams.features.some(sps => sps == s.id));
       }
@@ -306,7 +312,7 @@ export default {
       }
     }
     this.loadWorkers();
-  },
+  }
 }
 </script>
 <style lang="scss" scoped>

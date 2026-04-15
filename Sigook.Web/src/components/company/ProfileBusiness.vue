@@ -17,7 +17,7 @@
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Industry">
           <b-autocomplete ref="industryComponent" v-model="industrySelected" :data="filteredIndustries"
-            :placeholder="$t('SelectIndustry')" open-on-focus @select="selectIndustry">
+            :placeholder="'Select industry'" open-on-focus @select="selectIndustry">
           </b-autocomplete>
         </b-field>
       </div>
@@ -55,6 +55,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getIndustries } from "@/api/catalogApi";
 import { updateProfile } from "@/api/companyApi";
 
@@ -65,7 +66,7 @@ export default {
       isLoading: false,
       industries: [],
       industrySelected: '',
-      localCompanyData: JSON.parse(JSON.stringify(this.companyData)),
+      localCompanyData: JSON.parse(JSON.stringify(this.companyData))
     }
   },
   watch: {
@@ -77,7 +78,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../../components/PhoneInput.vue"),
+    phoneInput: () => import("../../components/PhoneInput.vue")
   },
   methods: {
     selectIndustry(option) {
@@ -97,11 +98,11 @@ export default {
         updateProfile(this.localCompanyData.id, this.localCompanyData)
           .then(() => {
             this.isLoading = false;
-            this.showAlertSuccess('Profile updated');
+            showAlertSuccess('Profile updated');
           })
           .catch((error) => {
             this.isLoading = false;
-            this.showAlertError(error.data);
+            showAlertError(error.data);
           });
       }
     }

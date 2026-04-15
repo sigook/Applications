@@ -63,6 +63,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { sendInvoiceEmail } from "@/api/agencyInvoiceApi";
 import { getCompanyInvoiceRecipients } from "@/api/agencyCompanyApi";
 export default {
@@ -79,8 +80,8 @@ export default {
         <p>Find your invoice attached, please confirm you have received it. <strong>Your timely payment is greatly appreciated.</strong></p>
         <p>We thank you in advance for your continued business, should you have any further requirements or if you have any questions please do not hesitate to contact us.</p>
         <p>Regards,</p>`,
-        attachments: [],
-      },
+        attachments: []
+      }
     };
   },
   methods: {
@@ -125,7 +126,7 @@ export default {
           this.$emit('sent');
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
       }
     }
@@ -134,7 +135,7 @@ export default {
     await this.loadInvoiceRecipients();
     this.isLoading = false;
     console.log(this.invoice);
-  },
+  }
 };
 </script>
 

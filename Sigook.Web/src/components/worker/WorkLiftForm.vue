@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerYouCanLift')" class="has-text-weight-normal"
+        <b-field :label="'Can you Lift up to'" class="has-text-weight-normal"
           :type="errors.has('lift') ? 'is-danger' : ''">
           <b-select v-model="worker.lift.id" placeholder="Select option" expanded 
             name="lift" v-validate="'required'">
@@ -15,13 +15,14 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="createWorkerOther()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { fetchLifts } from "@/api/catalogApi";
 import { createWorkerOther } from '@/api/workerApi';
 
@@ -48,10 +49,10 @@ export default {
             })
             .catch(error => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             })
         } else {
-          this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+          showAlertError('Please make sure all required fields are filled out correctly');
         }
       });
     }

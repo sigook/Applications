@@ -73,12 +73,12 @@
           <div class="col-12">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
-                {{ candidate.hasVehicle ? $t("Yes") : $t("No") }}
+                {{ candidate.hasVehicle ? "Yes" : "No" }}
               </b-switch>
             </b-field>
           </div>
           <div class="col-12 mt-5">
-            <b-button type="is-primary" native-type="submit">{{ $t('Create') }}</b-button>
+            <b-button type="is-primary" native-type="submit">{{ 'Create' }}</b-button>
           </div>
         </b-step-item>
       </b-steps>
@@ -86,6 +86,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { uploadFile } from "@/utils/fileUpload";
 import { getGenders } from "@/api/catalogApi";
 import { residencyList, sourceList } from "@/constants/catalog";
@@ -110,7 +111,7 @@ export default {
         hasVehicle: false,
         address: null,
         postalCode: null,
-        residencyStatus: null,
+        residencyStatus: null
       },
       file: null
     }
@@ -126,7 +127,7 @@ export default {
         this.submitCandidate();
         return;
       } else {
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       }
     },
     submitCandidate() {
@@ -138,12 +139,12 @@ export default {
       createAgencyCandidate(this.candidate)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess("Created")
+          showAlertSuccess("Created")
           this.$emit('onClose', true);
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     async uploadResume(file) {

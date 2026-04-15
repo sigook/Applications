@@ -9,7 +9,8 @@ import routesCompany from "@/router/routesCompany";
 import routesAgency from "@/router/routesAgency";
 import routesWorker from "@/router/routesWorker";
 import routesLanding from "@/router/routesLanding";
-import store from "../store";
+import pinia from "@/stores";
+import { useSecurityStore } from "@/stores/security";
 
 import { RouteConfig } from 'vue-router';
 
@@ -67,9 +68,10 @@ router.beforeEach(async (to, from, next) => {
     }, 0);
   }
   if (to.meta?.requiresAuth) {
-    const user = await store.dispatch("getUser");
+    const securityStore = useSecurityStore(pinia);
+    const user = await securityStore.getUser();
     if (!user) {
-      await store.dispatch('signIn');
+      securityStore.signIn();
     } else {
       next();
     }

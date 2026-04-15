@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
@@ -82,13 +83,13 @@ export default {
       profileId: this.$route.params.id,
       showModal: false,
       currentPosition: null,
-      showModalRole: false,
+      showModalRole: false
     };
   },
   components: {
     PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
     RequestPositionForm: () => import("../../components/agency_company/RequestJobPositionForm.vue"),
-    RolesShift: () => import("../agency_company/RolesShiftDetail.vue"),
+    RolesShift: () => import("../agency_company/RolesShiftDetail.vue")
   },
   methods: {
     currency,
@@ -113,29 +114,29 @@ export default {
       this.currentPosition = null;
     },
     onDeleteJobPosition(id) {
-      this.showAlertConfirm("Are you sure", "You want to delete this position")
+      showAlertConfirm("Are you sure", "You want to delete this position")
         .then((response) => {
           if (response) {
             this.isLoading = true;
             deleteAgencyCompanyJobPosition(this.profileId, id)
               .then(async () => {
                 this.isLoading = false;
-                this.showAlertSuccess("Deleted");
+                showAlertSuccess("Deleted");
                 await this.loadJobPositions();
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         });
     },
     closeRequestPositionModal() {
       this.showModalRole = false;
-    },
+    }
   },
   async created() {
     await this.loadJobPositions();
-  },
+  }
 };
 </script>

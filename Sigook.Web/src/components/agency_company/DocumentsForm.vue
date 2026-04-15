@@ -36,13 +36,14 @@
     <div class="text-right pr-3">
       <button class="background-btn md-btn orange-button btn-radius margin-top-15 margin-bottom-10" type="button"
         @click="validateForm" :disabled="disableButton">
-        {{ $t("Save") }}
+        {{ "Save" }}
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { usePubSub } from "@/composables/usePubSub";
 import { deleteFile } from "@/utils/fileUpload";
 import { filename } from "@/utils/filters";
@@ -59,12 +60,12 @@ export default {
       disableButton: false,
       model: {
         fileName: null,
-        description: null,
-      },
+        description: null
+      }
     };
   },
   components: {
-    UploadFile: () => import("../../components/UploadFiles.vue"),
+    UploadFile: () => import("../../components/UploadFiles.vue")
   },
   methods: {
     filename,
@@ -74,7 +75,7 @@ export default {
           this.submitDocument();
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     submitDocument() {
@@ -86,14 +87,14 @@ export default {
             id: response.id,
             fileName: this.model.fileName,
             description: this.model.description,
-            pathFile: response.pathFile,
+            pathFile: response.pathFile
           };
           this.$emit("onCreateDocument", newDocument);
-          this.showAlertSuccess("Created");
+          showAlertSuccess("Created");
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     addDocument(file) {
@@ -105,6 +106,6 @@ export default {
         .then(() => { this.model.fileName = null; })
         .finally(() => { this.isLoading = false; });
     }
-  },
+  }
 };
 </script>

@@ -56,7 +56,7 @@
 
             <span class="line-gray" />
             <section class="worker-information">
-              <h3>{{ $t("WorkerWorkInformation") }}</h3>
+              <h3>{{ "Work information" }}</h3>
               <availability :worker="worker" @updateProfile="() => loadWorker()" />
               <availability-times :worker="worker" @updateProfile="() => loadWorker()" />
               <availability-days :worker="worker" @updateProfile="() => loadWorker()" />
@@ -71,7 +71,7 @@
             <span class="line-gray" />
             <b-checkbox v-model="worker.dnu" @input="toggleWorkerProfileDNU"
               :disabled="hasDnuPermission">
-              {{ $t("DNU") }}
+              {{ "DNU" }}
             </b-checkbox>
 
             <span class="line-gray" />
@@ -86,7 +86,7 @@
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
               <div class="button-right">
-                <h3>{{ $t("WorkerWorkExperience") }}</h3>
+                <h3>{{ "Work Experience" }}</h3>
                 <button class="outline-btn md-btn orange-button btn-radius" @click="modalWorkExperience = true">
                   Add experience +
                 </button>
@@ -106,7 +106,7 @@
                       <div class="modal-container modal-light overflow-initial">
                         <span class="fz1 fw-700">Work Experience</span>
                         <button @click="modalWorkExperience = false" class="cross-icon">
-                          {{ $t("Close") }}
+                          {{ "Close" }}
                         </button>
                         <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
                       </div>
@@ -145,6 +145,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
@@ -195,7 +196,7 @@ export default {
     timeSheetHistory: () => import("../../components/worker/TimeSheetHistory.vue"),
     notes: () => import("../../components/worker/Notes.vue"),
     FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
-    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue"),
+    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue")
   },
   async created() {
     this.loadWorker();
@@ -216,8 +217,8 @@ export default {
       this.$router.push({
         path: `/agency-workers/worker/${this.$route.params.id}`,
         query: {
-          tab: tab,
-        },
+          tab: tab
+        }
       });
     },
     updateComments() {
@@ -225,7 +226,7 @@ export default {
       getCommentsWorker({
         workerId: this.worker.workerId,
         size: this.commentSize,
-        pageIndex: this.commentPageIndex,
+        pageIndex: this.commentPageIndex
       })
         .then((data) => {
           this.comments = data;
@@ -249,7 +250,7 @@ export default {
           this.updateComments();
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -257,22 +258,22 @@ export default {
       this.isLoading = true;
       updateAgencyWorkerProfileDNU(this.worker.id)
         .then(() => {
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
           this.isLoading = false;
           this.loadWorker();
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
           this.loadWorker();
         });
     },
     confirmDelete(worker) {
-      this.showAlertConfirm(
-        this.$t("AreYouSure"),
-        this.$t("YouWantToDisableTheWorker") +
+      showAlertConfirm(
+        "Are you sure?",
+        "You want to disable the worker" +
         ". " +
-        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
+        "This worker will not be able to apply to new requests"
       )
         .then((response) => {
           if (response) {
@@ -280,7 +281,7 @@ export default {
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onUpdateApprovedToWork(worker) {
@@ -288,15 +289,15 @@ export default {
       updateApprovedToWork(worker.id)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
           this.loadWorker();
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
           this.loadWorker();
         });
-    },
+    }
   },
   computed: {
     hasDnuPermission() {
@@ -309,7 +310,7 @@ export default {
       } else {
         return true;
       }
-    },
+    }
   }
 };
 </script>

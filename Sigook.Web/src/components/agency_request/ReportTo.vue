@@ -34,16 +34,15 @@
   </div>
 </template>
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import {
   getAgencyRequestReportTo,
   postAgencyRequestReportTo,
-  deleteAgencyRequestReportTo,
+  deleteAgencyRequestReportTo
 } from "@/api/agencyRequestApi";
 
 export default {
   props: ['requestId', 'companyId', 'canEdit'],
-  mixins: [toastMixin],
   data() {
     return {
       showModal: false,
@@ -61,7 +60,7 @@ export default {
           this.data = response;
         })
         .catch(error => {
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     updateContactList(item) {
@@ -77,7 +76,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     removeReportTo(item) {
@@ -91,7 +90,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   },

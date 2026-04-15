@@ -18,6 +18,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getWorkersReadyForPayStub, generatePayStubs } from "@/api/agencyPayStubApi";
 
 export default {
@@ -41,7 +42,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     submitGeneratePayStubs() {
@@ -54,7 +55,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
           this.loadWorkers();
         });
     }

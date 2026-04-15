@@ -13,7 +13,7 @@
           {{ props.row.city.province.code }},
           {{ props.row.postalCode }}
         </span>
-        <span v-if="props.row.isBilling" class="billing-address">{{ $t('AgencyBillingAddress') }}</span>
+        <span v-if="props.row.isBilling" class="billing-address">{{ 'Billing Address' }}</span>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-button type="is-danger" outlined rounded icon-right="delete"
@@ -34,6 +34,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyLocation, deleteAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 export default {
   data() {
@@ -43,7 +44,7 @@ export default {
       profileId: this.$route.params.id,
       data: [],
       showModal: false,
-      currentLocation: null,
+      currentLocation: null
     }
   },
   methods: {
@@ -80,23 +81,23 @@ export default {
       this.showModal = true;
     },
     onDeleteLocation(id, index) {
-      this.showAlertConfirm("Are you sure", "You want to delete this location")
+      showAlertConfirm("Are you sure", "You want to delete this location")
         .then((response) => {
           if (response) {
             this.isLoading = true;
             deleteAgencyCompanyLocation(this.profileId, id)
               .then(() => {
                 this.isLoading = false;
-                this.showAlertSuccess('Deleted')
+                showAlertSuccess('Deleted')
                 this.data.splice(index, 1);
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error)
+                showAlertError(error)
               })
           }
         }).catch((error) => {
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   },

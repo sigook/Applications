@@ -34,13 +34,13 @@
     </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { emailName, dateFromNow } from '@/utils/filters';
-import toastMixin from "@/mixins/toastMixin";
 import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
   updateAgencyRequestNote,
-  deleteAgencyRequestNote,
+  deleteAgencyRequestNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 
@@ -57,7 +57,6 @@ export default {
             notesList: null
         }
     },
-    mixins: [toastMixin],
     components: {
         ModalNotes: () => import("../notes/ModalNotes.vue")
     },
@@ -70,7 +69,7 @@ export default {
                         this.notesList = response;
                     })
                     .catch(error => {
-                        this.showAlertError(error)
+                        showAlertError(error)
                     })
         },
         onCloseModalNotes(){

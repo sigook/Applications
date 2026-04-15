@@ -5,10 +5,10 @@
     <div class="submenu-modal-tabs">
       <ul>
         <li @click="punchCard = true" :class="punchCard == true ? 'active' : ''">
-          {{ $t("PunchCard") }}
+          {{ "Punch Card" }}
         </li>
         <li @click="showTimeSheet()" :class="punchCard == false ? 'active' : ''">
-          {{ $t("TimeSheet") }}
+          {{ "Time sheet" }}
         </li>
       </ul>
     </div>
@@ -22,7 +22,7 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :label="$t('DailyHours')" :type="errors.has('newDateHour') ? 'is-danger' : ''"
+          <b-field :label="'Daily hours'" :type="errors.has('newDateHour') ? 'is-danger' : ''"
             :message="errors.has('newDateHour') ? errors.first('newDateHour') : ''">
             <b-timepicker placeholder="Select a time..." v-model="newDate.hours" name="newDateHour"
               v-validate="'required'" :disabled="!newDate.date" hour-format="24">
@@ -36,13 +36,13 @@
         </div>
         <div class="container-flex" v-if="showOptions">
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field :label="$t('MissingHours')">
+            <b-field :label="'Missing Hours'">
               <b-timepicker v-model="newDate.missingHours" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field :label="$t('MissingHours') + ' ' + $t('Overtime')">
+            <b-field :label="'Missing Hours' + ' ' + 'Over time'">
               <b-timepicker v-model="newDate.missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
@@ -114,7 +114,7 @@
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-button type="is-primary" @click="reportWorkerTimSheet">
-            {{ newDate.id ? $t("Update") : $t("Save") }}
+            {{ newDate.id ? "Update" : "Save" }}
           </b-button>
         </div>
       </div>
@@ -141,6 +141,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
 import { date, time } from '@/utils/filters';
@@ -157,7 +158,7 @@ export default {
       newDate: {
         hours: emptyTime,
         missingHours: emptyTime,
-        missingHoursOvertime: emptyTime,
+        missingHoursOvertime: emptyTime
       },
       size: 30,
       currentPage: 1,
@@ -177,7 +178,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         });
       this.punchCard = false;
     },
@@ -195,14 +196,14 @@ export default {
       postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Created');
+          showAlertSuccess('Created');
           this.$emit('created');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
-    },
+    }
   }
 }
 </script>

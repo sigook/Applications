@@ -5,7 +5,7 @@
                 <div class="modal-mask">
                     <div class="modal-wrapper">
                         <div class="modal-container container modal-light">
-                            <button @click="close(false)" class="cross-icon">{{$t('Close')}}</button>
+                            <button @click="close(false)" class="cross-icon">{{'Close'}}</button>
                             <div class="bg-gray mBottom">Please confirm your subscription</div>
                             <table class="table" style="width: 100%">
                                 <tr>

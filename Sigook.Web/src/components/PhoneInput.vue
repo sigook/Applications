@@ -10,7 +10,6 @@
   </b-field>
 </template>
 <script lang="ts">
-import phoneFormat from "@/mixins/phoneFormatMixin";
 import { phoneMask as mask } from '@/constants/phoneMask';
 
 export default {
@@ -36,6 +35,5 @@ export default {
       return await this.$validator.validateAll();
     },
   },
-  mixins: [phoneFormat]
 };
 </script>

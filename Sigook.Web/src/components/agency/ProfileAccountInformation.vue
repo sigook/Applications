@@ -22,6 +22,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { changeEmail, getEmail } from '@/api/accountApi';
 
 export default {
@@ -39,11 +40,11 @@ export default {
           changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
             .then(() => {
               this.isLoading = false;
-              this.showAlertSuccess("Updated");
+              showAlertSuccess("Updated");
             })
             .catch(error => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             })
         }
       })
@@ -56,7 +57,7 @@ export default {
         this.isLoading = false;
       })
       .catch(error => {
-        this.showAlertError(error);
+        showAlertError(error);
         this.isLoading = false;
       })
   }

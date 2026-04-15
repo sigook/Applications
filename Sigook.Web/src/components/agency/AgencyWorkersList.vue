@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyWorkersDropdown } from "@/api/agencyWorkerApi";
 import { bookAgencyRequestWorker } from "@/api/agencyRequestApi";
 
@@ -50,7 +51,7 @@ export default {
         })
         .catch(error => {
           this.isLoadingList = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     selectWorker(worker) {
@@ -73,16 +74,16 @@ export default {
           this.isLoading = true;
           await bookAgencyRequestWorker(this.requestId, this.workerId, { startWorking: value }).then(() => {
             this.isLoading = false;
-            this.showAlertSuccess(this.$t('Booked'));
+            showAlertSuccess('Booked');
             this.$emit('workerBooked');
             dialog.close();
           }).catch(error => {
             this.isLoading = false;
-            this.showAlertError(error);
+            showAlertError(error);
           });
         }
       });
-    },
-  },
+    }
+  }
 }
 </script>

@@ -13,7 +13,7 @@
       <export :url="'/api/AgencyCandidate/File'" :params="serverParams" :fileName="'Candidates'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button @click="createCandidate = true" icon-left="plus">{{ $t('Create') }}</b-button>
+          <b-button @click="createCandidate = true" icon-left="plus">{{ 'Create' }}</b-button>
         </template>
         <template v-slot:dropdown-actions>
           <b-dropdown-item aria-role="listitem" @click="addFile = true">
@@ -217,8 +217,10 @@
   </div>
 </template>
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { phoneMask as mask } from '@/constants/phoneMask';
-import phoneFormat from "@/mixins/phoneFormatMixin";
 import { residencyList } from "@/constants/catalog";
 import {
   getAgencyCandidates,
@@ -229,13 +231,13 @@ import {
   deleteAgencyCandidate,
   updateAgencyCandidateRecruiter,
   convertCandidateToWorker,
-  bulkAgencyCandidates,
+  bulkAgencyCandidates
 } from "@/api/agencyCandidateApi";
 import { dateMonth, emailName } from '@/utils/filters';
 import {
   getCandidateNotes,
   createCandidateNote,
-  deleteCandidateNote,
+  deleteCandidateNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 
@@ -266,7 +268,6 @@ export default {
       }
     };
   },
-  mixins: [phoneFormat],
   components: {
     CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
     DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
@@ -339,7 +340,7 @@ export default {
     },
     loadCandidates() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyCandidateFilter", this.serverParams);
+      this.agencyStore.updateAgencyCandidateFilter(this.serverParams);
       getAgencyCandidates(this.serverParams)
         .then(candidates => {
           this.rows = candidates.items.map(c => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
@@ -348,7 +349,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     showCandidateDetail(id) {
@@ -383,7 +384,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     deleteCandidateNumber(candidateId, number) {
@@ -395,7 +396,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     addCandidateSkills(id, model) {
@@ -407,7 +408,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onDeleteCandidateSkill(candidateId, skill) {
@@ -419,11 +420,11 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onDeleteCandidate(candidateId) {
-      this.showAlertConfirm("Are you sure", "You want to delete this candidate")
+      showAlertConfirm("Are you sure", "You want to delete this candidate")
         .then((response) => {
           if (response) {
             this.isLoading = true;
@@ -434,16 +435,16 @@ export default {
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     updateCandidateRecruiter(candidateId) {
-      this.showAlertConfirm("Do you want to manage this candidate?", "")
+      showAlertConfirm("Do you want to manage this candidate?", "")
         .then((response) => {
           if (response) {
             this.isLoading = true;
@@ -454,12 +455,12 @@ export default {
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     convertToWorker(candidateId) {
@@ -471,7 +472,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     goToApplicants(item) {
@@ -487,11 +488,11 @@ export default {
     updateCandidate() {
       this.detailCandidate = false
       this.loadCandidates();
-    },
+    }
   },
   created() {
-    if (this.$store.state.agency.agencyCandidateFilter) {
-      this.serverParams = this.$store.state.agency.agencyCandidateFilter;
+    if (this.agencyStore.agencyCandidateFilter) {
+      this.serverParams = this.agencyStore.agencyCandidateFilter;
       if (this.serverParams.statuses) {
         this.statusesSelected = this.residencyList.filter(s => this.serverParams.statuses.some(sps => sps == s));
       }
@@ -503,11 +504,12 @@ export default {
     this.loadCandidates();
   },
   computed: {
+    ...mapStores(useAgencyStore),
     residencyList() {
       return residencyList;
     },
     agencies() {
-      return this.$store.state.agency.personnelAgencies;
+      return this.agencyStore.personnelAgencies;
     }
   }
 };

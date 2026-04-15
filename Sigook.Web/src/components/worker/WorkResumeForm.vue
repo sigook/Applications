@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('Resume')">
+        <b-field :label="'Resume'">
           <div v-if="resume && resume.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
             <span class="selected-file-name">{{ filename(resume.fileName) }}</span>
@@ -14,7 +14,7 @@
               @input="handleResumeFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedResumeFile ? selectedResumeFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedResumeFile ? selectedResumeFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
@@ -22,7 +22,7 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -30,9 +30,9 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerResume } from '@/api/workerApi';
 
 export default {
@@ -50,7 +50,6 @@ export default {
       }
     };
   },
-  mixins: [toastMixin, multipartUploadMixin],
   created() {
     if (this.data != null && this.data.resume) {
       this.resume = { ...this.data.resume };
@@ -61,12 +60,12 @@ export default {
     handleResumeFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedResumeFile = null;
         return;
       }
       this.fileObjects.resume = file;
-      const generatedName = this.generateFileName('Resume', file.name);
+      const generatedName = generateFileName('Resume', file.name);
       this.resume = { fileName: generatedName, description: '' };
       this.selectedResumeFile = null;
     },
@@ -80,7 +79,7 @@ export default {
           this.saveResume();
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     async saveResume() {
@@ -95,7 +94,7 @@ export default {
         await createWorkerResume(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }

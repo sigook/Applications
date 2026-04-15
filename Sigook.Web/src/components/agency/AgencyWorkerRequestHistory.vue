@@ -19,11 +19,10 @@
 </template>
 
 <script lang="ts">
-    import toast from '../../mixins/toastMixin';
+import { showAlertError } from "@/utils/toast";
     import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
     export default {
         props: ['workerId'],
-        mixins: [toast],
         data() {
             return {
                 size: 10,
@@ -41,7 +40,7 @@
                     this.isLoading = false;
                 })
                 .catch(error => {
-                    this.showAlertError(error);
+                    showAlertError(error);
                     this.isLoading = false;
                 })
             }

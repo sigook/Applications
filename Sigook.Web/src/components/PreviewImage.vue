@@ -5,7 +5,7 @@
       <input type="file" id="file" @change="validateImage" accept="image/*" title="logo" name="file"
         v-validate="rules" :ref="'file'" />
 
-      <label for="file">{{ $t("UploadPicture") }}</label>
+      <label for="file">{{ "Upload Picture" }}</label>
       <img v-if="localImage" :src="localImage" alt="logo" style="z-index: 1;">
       <default-image v-if="showDefault && !localImage" :name="name" class="img-100"></default-image>
 
@@ -18,7 +18,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container small-container">
-              <button @click="modalValidation = false" class="cross-icon" type="button">{{ $t('Close') }}</button>
+              <button @click="modalValidation = false" class="cross-icon" type="button">{{ 'Close' }}</button>
               <crop-image :image="cropImage" @onCrop="response => showImage(response)"
                 @closeModal="() => modalValidation = false"></crop-image>
             </div>
@@ -32,6 +32,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { compressFile } from '@/utils/compressFile';
 
 export default {
@@ -94,7 +95,7 @@ export default {
         this.$emit('imageSelected', compressedImage);
         this.isLoading = false;
       } catch (e) {
-        this.showAlertError(e);
+        showAlertError(e);
         this.localImage = null;
         this.cleanInput();
         this.$emit('finishUpload', true);
@@ -116,7 +117,7 @@ export default {
           let height = image.height;
           let width = image.width;
           if (height < 150 || width < 150) {
-            this.showAlertError(this.$t('ErrorDimensionsImage'));
+            showAlertError('This file es too small, please select a photo with height and width of at least 150 pixels');
             this.localImage = null;
           } else {
             this.showCrop(evt);

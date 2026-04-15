@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerSocialInsuranceNumber')"
+        <b-field :label="'SIN/SSN#'"
           :type="errors.has('social insurance #') ? 'is-danger' : ''"
           :message="errors.has('social insurance #') ? errors.first('social insurance #') : ''">
           <b-input type="text" v-model="sin.socialInsurance" name="social insurance #"
@@ -12,7 +12,7 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('WorkerSocialInsuranceFile')">
+        <b-field :label="'SIN/SSN (Upload file)'">
           <div v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
             <span class="selected-file-name">{{ filename(sin.socialInsuranceFile.fileName) }}</span>
@@ -23,21 +23,21 @@
               @input="handleSinFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('Expire')" class="has-text-weight-normal">
+        <b-field :label="'Expire'" class="has-text-weight-normal">
           <b-switch v-model="sin.socialInsuranceExpire" :true-value="true" :false-value="false">
-            {{ sin.socialInsuranceExpire ? $t("Yes") : $t("No") }}
+            {{ sin.socialInsuranceExpire ? "Yes" : "No" }}
           </b-switch>
         </b-field>
       </div>
       <div class="col-12" v-if="sin.socialInsuranceExpire === true">
-        <b-field :label="$t('WorkerDueDate')" :type="errors.has('due date') ? 'is-danger' : ''"
+        <b-field :label="'Expire'" :type="errors.has('due date') ? 'is-danger' : ''"
           :message="errors.has('due date') ? errors.first('due date') : ''">
           <b-datepicker v-model="sin.dueDate" name="due date" v-validate="'required'" append-to-body position="is-top-right">
           </b-datepicker>
@@ -45,7 +45,7 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -53,14 +53,13 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerSin } from '@/api/workerApi';
 
 export default {
   props: ['data'],
-  mixins: [toastMixin, multipartUploadMixin],
   data() {
     return {
       isLoading: false,
@@ -84,12 +83,12 @@ export default {
     handleSinFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedSinFile = null;
         return;
       }
       this.fileObjects.sinFile = file;
-      const generatedName = this.generateFileName('SIN-SSN', file.name);
+      const generatedName = generateFileName('SIN-SSN', file.name);
       this.sin.socialInsuranceFile = { fileName: generatedName, description: '' };
       this.selectedSinFile = null;
     },
@@ -103,7 +102,7 @@ export default {
           this.createWorkerSin();
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     async createWorkerSin() {
@@ -118,7 +117,7 @@ export default {
         await createWorkerSin(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }

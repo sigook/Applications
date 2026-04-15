@@ -40,13 +40,14 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-          <b-button type="is-primary" native-type="submit">{{ $t('Create') }}</b-button>
+          <b-button type="is-primary" native-type="submit">{{ 'Create' }}</b-button>
         </div>
       </div>
     </form>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgency } from "@/api/agencyApi";
 
 export default {
@@ -69,7 +70,7 @@ export default {
         this.submitAgency();
         return;
       } else {
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       }
     },
     submitAgency() {
@@ -78,12 +79,12 @@ export default {
       createAgency(this.agency)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess("Agency created successfully");
+          showAlertSuccess("Agency created successfully");
           this.$router.push('/agency-agencies');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   }

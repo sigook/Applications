@@ -31,6 +31,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getAgencyPersonnel, deleteAgencyPersonnel } from "@/api/agencyApi";
 
 export default {
@@ -57,7 +58,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     updateList() {
@@ -65,7 +66,7 @@ export default {
       this.getUsers();
     },
     deleteUser(id) {
-      this.showAlertConfirm(this.$t('AreYouSure'), this.$t('YouWantToDeleteUser'))
+      showAlertConfirm('Are you sure?', 'You want to delete user.')
         .then(response => {
           if (response) {
             this.isLoading = true;
@@ -76,11 +77,11 @@ export default {
               })
               .catch(error => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               })
           }
         });
-    },
+    }
   },
   created() {
     this.getUsers()

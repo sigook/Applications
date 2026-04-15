@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="fz1 pt-3">{{ $t("History") }}</h2>
+    <h2 class="fz1 pt-3">{{ "History" }}</h2>
     <div>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
@@ -13,7 +13,7 @@
           <b-table-column field="agencyLogo" width="50" v-slot="props">
             <img v-if="props.row.agencyLogo" :src="props.row.agencyLogo" alt="profile image" class="img-30" />
             <default-image v-else :name="props.row.agencyFullName" class="img-30"></default-image>
-            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
+            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
           </b-table-column>
           <b-table-column field="numberId" label="Order ID" v-slot="props">
             {{ props.row.numberId }}
@@ -51,7 +51,7 @@
           <b-table-column field="status" v-slot="props">
             <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-700 text-center"
               :class="props.row.status">
-              {{ $t(props.row.status) }}
+              {{ props.row.status }}
             </div>
           </b-table-column>
         </template>
@@ -61,6 +61,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getWorkerRequestHistory } from '@/api/workerApi';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
 
@@ -92,9 +93,9 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   created() {
     this.getWorkerRequestHistory();

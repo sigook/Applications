@@ -15,6 +15,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { getCraPayrollReport } from "@/api/agencyReportApi";
@@ -44,7 +45,7 @@ export default {
           })
           .catch(error => {
             this.isLoading = false;
-            this.showAlertError(error);
+            showAlertError(error);
           });
       }
     }

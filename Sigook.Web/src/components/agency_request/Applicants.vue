@@ -102,13 +102,14 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { emailName, dateMonth } from '@/utils/filters';
 import { phoneMask as mask } from '@/constants/phoneMask';
 import {
   getAgencyRequestApplicant,
   postAgencyRequestApplicant,
   deleteAgencyRequestApplicant,
-  updateAgencyRequestApplicant,
+  updateAgencyRequestApplicant
 } from "@/api/agencyRequestApi";
 import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
 
@@ -129,7 +130,7 @@ export default {
         requestId: this.$route.params.id,
         pageIndex: 1,
         pageSize: 30,
-        isDescending: true,
+        isDescending: true
       }
     };
   },
@@ -191,7 +192,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     addApplicant(model) {
@@ -202,7 +203,7 @@ export default {
         this.loadApplicants();
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       });
     },
     removeApplicant(item) {
@@ -212,7 +213,7 @@ export default {
         this.loadApplicants();
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       });
     },
     showEditModal(item) {
@@ -229,7 +230,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     convertToWorker(candidateId) {
@@ -241,7 +242,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },

@@ -70,6 +70,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getTaxCategories } from "@/api/catalogApi";
 import {
   updateWorkerProfileExternalId,
@@ -79,7 +80,7 @@ import {
   updateWorkerProfileTaxRate,
   addNewHoliday,
   getAgencyWorkerProfileHolidays,
-  addUpdateAgencyWorkerProfileHolidays,
+  addUpdateAgencyWorkerProfileHolidays
 } from "@/api/agencyWorkerApi";
 
 export default {
@@ -110,7 +111,7 @@ export default {
           this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     updateIsContractor() {
@@ -122,7 +123,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     updateIsSubContractor() {
@@ -134,7 +135,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     updateTaxCategory() {
@@ -145,7 +146,7 @@ export default {
           this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     updateTaxRate() {
@@ -156,7 +157,7 @@ export default {
           this.$emit('update:worker', this.localWorker);
         }).catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     async addHoliday() {

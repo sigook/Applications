@@ -38,6 +38,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getCompanyProfileUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
 
 export default {
@@ -51,7 +52,7 @@ export default {
       showModal: false,
       pageIndex: 1,
       pageSize: 30,
-      users: [],
+      users: []
     }
   },
   methods: {
@@ -64,7 +65,7 @@ export default {
       await deleteCompanyProfileUser(this.company.companyId, id)
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         })
       await this.getUsers();
       this.isLoading = false;

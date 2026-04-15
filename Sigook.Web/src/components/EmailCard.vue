@@ -2,12 +2,12 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-card" :class="{ 'edit': !disabled }">
-      <label>{{ $t('Name') }}:
+      <label>{{ 'Name' }}:
         <input type="text" v-model="localItem.name" placeholder="Name" :name="'name' + index"
           v-validate="'required|max:50|min:3'" :class="{ 'is-danger': errors.has('name' + index) }" :disabled="disabled">
         <span v-show="errors.has('name' + index)" class="help is-danger no-margin">{{ errors.first('name') }}</span>
       </label>
-      <label>{{ $t('Email') }}:
+      <label>{{ 'Email' }}:
         <input type="text" v-model="localItem.email" placeholder="Email" :name="'email' + index"
           v-validate="'required|max:50|min:6|email'" :class="{ 'is-danger': errors.has('email' + index) }"
           :disabled="disabled">
@@ -30,6 +30,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { deleteCompanyInvoiceRecipient, updateCompanyInvoiceRecipient } from "@/api/agencyCompanyApi";
 export default {
   props: ['index', 'item'],
@@ -58,7 +59,7 @@ export default {
           this.$emit("updateDataEmailList", index)
         })
         .catch(error => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -90,7 +91,7 @@ export default {
           this.isLoading = false;
         })
         .catch(error => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     }

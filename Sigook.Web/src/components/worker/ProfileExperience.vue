@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="tab-actions">
       <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
-        {{ $t("AddExperience") }}
+        {{ "Add Experience" }}
       </b-button>
     </div>
     <div>
@@ -23,7 +23,8 @@
 </template>
 
 <script lang="ts">
-import utilsWorkerMixin from '@/mixins/utilsWorkerMixin';
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
 export default {
   props: ['worker'],
   data() {
@@ -33,10 +34,12 @@ export default {
       isLoading: false
     }
   },
-  mixins: [utilsWorkerMixin],
+  computed: {
+    ...mapStores(useAppStore),
+  },
   methods: {
     disableEndDate(index) {
-      let disabledDates = this.$store.state.currentDate;
+      let disabledDates = this.appStore.currentDate;
 
       if (this.worker.jobExperiences[index].startDate) {
         disabledDates = this.worker.jobExperiences[index].startDate
@@ -54,7 +57,7 @@ export default {
     workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue")
   },
   created() {
-    this.$store.dispatch('getCurrentDate').then(response => {
+    this.appStore.getCurrentDate().then(response => {
       this.disableStartDate = response;
     })
   }

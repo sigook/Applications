@@ -68,7 +68,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container border-radius">
-              <button @click="modalRejectWorker = false" class="cross-icon">{{ $t('Close') }}</button>
+              <button @click="modalRejectWorker = false" class="cross-icon">{{ 'Close' }}</button>
               <edit-textarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
                 class="sm-edit-textarea" @updateContent="(data) => onRejectWorker(data)" />
             </div>
@@ -81,6 +81,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from '@/constants/enums';
@@ -108,7 +109,7 @@ export default {
     }
   },
   components: {
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
   },
   methods: {
     dateMonth,
@@ -159,14 +160,14 @@ export default {
           this.rows = response.items.map(i => ({
             ...i,
             status: WorkerRequestStatusLabels[i.workerRequestStatus],
-            actions: null,
+            actions: null
           }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         })
     },
     confirmDelete(worker) {
@@ -182,7 +183,7 @@ export default {
           this.getWorkers();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         })
     }
   },

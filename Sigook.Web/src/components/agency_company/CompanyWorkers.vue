@@ -109,6 +109,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { workerFeatures as features } from '@/constants/workerFeatures';
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { dateMonth } from "@/utils/filters";
@@ -191,10 +192,10 @@ export default {
           this.totalItems = response.totalItems;
           this.isLoading = false;
         }).catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         })
-    },
+    }
   },
   created() {
     this.getAgencyCompanyWorkers();

@@ -24,7 +24,7 @@
                 </div>
 
                 <button class="xs-btn background-btn green-button" @click="sendToRequest()" v-if="data.canCreateRequest">
-                    {{$t('CompanySendRequest')}}
+                    {{'Create request to this worker'}}
                 </button>
             </div>
         </div>

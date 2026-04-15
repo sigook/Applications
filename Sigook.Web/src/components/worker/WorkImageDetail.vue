@@ -13,7 +13,7 @@
             <div class="modal-container modal-light small-container worker-profile-modal">
               <span class="fz1 fw-700 ">Profile Photo</span>
               <button @click="showEditModal = false" type="button" class="cross-icon">
-                {{ $t('Close') }}
+                {{ 'Close' }}
               </button>
               <upload-image v-if="profileImage"
                 @imageSelected="profileImg => this.profileImageFile = profileImg"
@@ -22,9 +22,9 @@
               </upload-image>
               <div class="text-center">
                 <button class="background-btn md-btn red-button btn-radius margin-top-15 margin-right uppercase"
-                  @click="showEditModal = false" type="button">{{ $t("Cancel") }}</button>
+                  @click="showEditModal = false" type="button">{{ "Cancel" }}</button>
                 <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase"
-                  @click="createWorkerImage()" type="button">{{ $t("Save") }}</button>
+                  @click="createWorkerImage()" type="button">{{ "Save" }}</button>
               </div>
             </div>
           </div>
@@ -37,7 +37,8 @@
   </div>
 </template>
 <script lang="ts">
-import multipartUploadMixin from '../../mixins/multipartUploadMixin';
+import { showAlertError } from "@/utils/toast";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { usePubSub } from '@/composables/usePubSub';
 import { createWorkerImage } from '@/api/workerApi';
 export default {
@@ -45,8 +46,7 @@ export default {
     return { ...usePubSub() };
   },
   props: ['data'],
-  mixins: [multipartUploadMixin],
-  data() {
+    data() {
     return {
       showEditModal: false,
       profileImage: {},
@@ -57,7 +57,7 @@ export default {
   methods: {
     async createWorkerImage() {
       if (!this.profileImageFile) {
-        this.showAlertError('Please select an image');
+        showAlertError('Please select an image');
         return;
       }
 
@@ -65,7 +65,7 @@ export default {
 
       try {
         // Generate unique filename with GUID (same pattern as registration)
-        const generatedFileName = this.generateFileName('ProfileImage', this.profileImageFile.name);
+        const generatedFileName = generateFileName('ProfileImage', this.profileImageFile.name);
 
         // Compress the image
         let fileToUpload;
@@ -86,12 +86,12 @@ export default {
         this.$emit('updateProfile', true);
       } catch (error) {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       }
     }
   },
   components: {
-    UploadImage: () => import("../../components/PreviewImage.vue"),
+    UploadImage: () => import("../../components/PreviewImage.vue")
   },
   created() {
     if (this.data != null) {

@@ -14,7 +14,7 @@
         <div class="experience-body">
             <p class="margin-0 date-range">
                 <span>{{toDateMMYYYY(item.startDate)}} -
-                    <span v-if="item.isCurrentJobPosition">{{$t('Present')}}</span>
+                    <span v-if="item.isCurrentJobPosition">{{'Present'}}</span>
                     <span v-else>{{toDateMMYYYY(item.endDate)}}</span>
                 </span>
             </p>
@@ -28,8 +28,8 @@
     </div>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
-import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerWorkExperience } from '@/api/workerApi';
 export default {
     props: ['workerId', 'item'],
@@ -38,13 +38,12 @@ export default {
             modalEdit: false
         }
     },
-    mixins: [toastMixin],
     methods: {
         toDateMMYYYY(date){
             return date ? dayjs(date).format('MM/YYYY') : date;
         },
         confirmDelete(){
-            this.showAlertConfirm('Are you sure', 'that you want to delete this item?')
+            showAlertConfirm('Are you sure', 'that you want to delete this item?')
             .then((response) => {
                 if (response){
                     this.deleteWorkerWorkExperience();
@@ -57,7 +56,7 @@ export default {
                 this.$emit("getWorker", true)
             })
             .catch(error => {
-                this.showAlertError(error);
+                showAlertError(error);
             })
         },
         updateExperience(){

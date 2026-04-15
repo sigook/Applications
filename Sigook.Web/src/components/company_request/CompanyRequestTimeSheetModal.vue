@@ -31,14 +31,14 @@
     </b-message>
     <div class="container-flex">
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-        <b-field :label="$t('HoursApproved')">
+        <b-field :label="'Hours Approved'">
           <b-timepicker v-model="localEditableDay.hoursApprovedToDate" name="timeOut" hour-format="24"
             :max-time="maximumDailyHours">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-        <b-field :label="$t('MissingHours')">
+        <b-field :label="'Missing Hours'">
           <b-timepicker v-model="localEditableDay.missinghoursToDate" name="timeOut" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
@@ -52,12 +52,13 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="validateHours(localEditableDay)">{{ $t("Save") }}</b-button>
+        <b-button type="is-primary" @click="validateHours(localEditableDay)">{{ "Save" }}</b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import { maximumHoursPerDay } from "@/constants/catalog";
@@ -103,19 +104,19 @@ export default {
         hours: dayjs(item.hoursApprovedToDate).format('HH:mm:ss'),
         timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
         missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),
-        missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss"),
+        missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss")
       };
       validateHoursTimeSheet(this.$route.params.id, this.worker.workerId, item.id, model)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Updated');
+          showAlertSuccess('Updated');
           this.$emit("updateData")
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   computed: {
     maximumDailyHours() {

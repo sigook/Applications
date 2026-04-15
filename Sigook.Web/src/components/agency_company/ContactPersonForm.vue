@@ -4,11 +4,11 @@
 
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="$t('Title')" :type="errors.has('title') ? 'is-danger' : ''"
+        <b-field :label="'Title'" :type="errors.has('title') ? 'is-danger' : ''"
           :message="errors.has('title') ? errors.first('title') : ''">
           <b-select v-model="contactPerson.title" :name="'title'" v-validate="'required'" expanded
-            :placeholder="$t('Select')">
-            <option :value="item" v-for="(item, index) in $t('TitleList')" :key="'companyContactPersons' + index">
+            :placeholder="'Select'">
+            <option :value="item" v-for="(item, index) in ['Mr','Mrs','Ms','Miss','Mx','Master','Madam']" :key="'companyContactPersons' + index">
               {{ item }}
             </option>
           </b-select>
@@ -16,7 +16,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Name')" :type="errors.has('name') ? 'is-danger' : ''"
+        <b-field :label="'Name'" :type="errors.has('name') ? 'is-danger' : ''"
           :message="errors.has('name') ? errors.first('name') : ''">
           <b-input v-model="contactPerson.firstName" :name="'name'" v-validate="'required|max:20|min:2'">
           </b-input>
@@ -24,7 +24,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('MiddleName')" :type="errors.has('middlename') ? 'is-danger' : ''"
+        <b-field :label="'Middle Name'" :type="errors.has('middlename') ? 'is-danger' : ''"
           :message="errors.has('middlename') ? errors.first('middlename') : ''">
           <b-input v-model="contactPerson.middleName" :name="'middlename'" v-validate="'max:20|min:1'">
           </b-input>
@@ -32,7 +32,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('LastName')" :type="errors.has('lastname') ? 'is-danger' : ''"
+        <b-field :label="'Last Name'" :type="errors.has('lastname') ? 'is-danger' : ''"
           :message="errors.has('lastname') ? errors.first('lastname') : ''">
           <b-input v-model="contactPerson.lastName" :name="'lastname'" v-validate="'required|max:20|min:2'">
           </b-input>
@@ -40,7 +40,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Position')" :type="errors.has('position') ? 'is-danger' : ''"
+        <b-field :label="'Position'" :type="errors.has('position') ? 'is-danger' : ''"
           :message="errors.has('position') ? errors.first('position') : ''">
           <b-input v-model="contactPerson.position" :name="'position'" v-validate="'required|max:100|min:2'">
           </b-input>
@@ -53,7 +53,7 @@
         </phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Ext')" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
+        <b-field :label="'Ext.'" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
           :message="errors.has('officeNumberExt') ? errors.first('officeNumberExt') : ''">
           <b-input v-model="contactPerson.officeNumberExt" :name="'officeNumberExt'" v-validate="'max:8|min:1|numeric'">
           </b-input>
@@ -67,7 +67,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Email')" :type="errors.has('email') ? 'is-danger' : ''"
+        <b-field :label="'Email'" :type="errors.has('email') ? 'is-danger' : ''"
           :message="errors.has('email') ? errors.first('email') : ''">
           <b-input type="email" v-model="contactPerson.email" :name="'email'"
             v-validate="'required|max:50|email|min:6'">
@@ -77,7 +77,7 @@
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ currentContact ? $t('Save') : $t('Create') }}
+          {{ currentContact ? 'Save' : 'Create' }}
         </b-button>
       </div>
     </div>
@@ -85,6 +85,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 export default {
   props: ['currentContact', 'profileId'],
@@ -119,7 +120,7 @@ export default {
           }
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     createContactPerson() {
@@ -127,12 +128,12 @@ export default {
       createAgencyCompanyContactPerson(this.profileId, this.contactPerson)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Created')
+          showAlertSuccess('Created')
           this.$emit('updateContent');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     updateContactPerson(id) {
@@ -140,14 +141,14 @@ export default {
       updateAgencyCompanyContactPerson(this.profileId, id, this.contactPerson)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess('Updated')
+          showAlertSuccess('Updated')
           this.$emit('updateContent');
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
-    },
+    }
   },
   created() {
     if (this.currentContact && this.currentContact.id) this.contactPerson = Object.assign({}, this.currentContact);

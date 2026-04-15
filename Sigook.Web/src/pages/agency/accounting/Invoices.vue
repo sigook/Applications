@@ -106,6 +106,9 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from "@/utils/toast";
 import { downloadPDF } from "@/utils/downloadFile";
 import { getAgencyInvoices, downloadInvoicePdf } from "@/api/agencyInvoiceApi";
 import { currency, dateMonth } from '@/utils/filters';
@@ -114,7 +117,7 @@ export default {
   components: {
     Export: () => import("@/components/Export.vue"),
     DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice.vue"),
-    SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue"),
+    SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue")
   },
   data() {
     return {
@@ -131,18 +134,21 @@ export default {
       },
       showDeleteModal: false,
       currentInvoice: null,
-      showSendEmailModal: false,
+      showSendEmailModal: false
     };
   },
   created() {
-    if (this.$store.state.agency.agencyInvoiceFilter) {
-      this.serverParams = this.$store.state.agency.agencyInvoiceFilter;
+    if (this.agencyStore.agencyInvoiceFilter) {
+      this.serverParams = this.agencyStore.agencyInvoiceFilter;
       if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
         this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
     this.loadInvoices();
+  },
+  computed: {
+    ...mapStores(useAgencyStore),
   },
   methods: {
     downloadPDF,
@@ -186,7 +192,7 @@ export default {
     },
     loadInvoices() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyInvoiceFilter", this.serverParams);
+      this.agencyStore.updateAgencyInvoiceFilter(this.serverParams);
       getAgencyInvoices(this.serverParams)
         .then((response) => {
           this.rows = response.detail.items.map((i) => ({ ...i, actions: null }));
@@ -196,7 +202,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     onDownloadInvoicePdf(invoice) {
@@ -208,7 +214,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     sendInvoiceEmail(invoice) {

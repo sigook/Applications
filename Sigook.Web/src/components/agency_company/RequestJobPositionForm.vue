@@ -27,6 +27,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getJobPositions } from "@/api/catalogApi";
 import { petitionAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 export default {
@@ -51,7 +52,7 @@ export default {
         this.requestAgencyJobPosition();
       }
       else {
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       }
     },
     requestAgencyJobPosition() {
@@ -63,7 +64,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   },

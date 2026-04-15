@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import { getAgencyRequestSkill, postAgencyRequestSkill, deleteAgencyRequestSkill } from "@/api/agencyRequestApi";
 
 export default {
@@ -22,7 +22,6 @@ export default {
       data: []
     }
   },
-  mixins: [toastMixin],
   components: {
     SkillsForm: () => import("../FormSkillAdd.vue")
   },
@@ -36,7 +35,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     addSkill(item) {
@@ -47,7 +46,7 @@ export default {
           this.loadSkills()
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     removeSkill(item) {
@@ -59,7 +58,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   },

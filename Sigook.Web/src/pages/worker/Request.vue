@@ -11,10 +11,10 @@
       <div>
         <div v-if="request.status && request.status !== 'None'"
           class="option-request-top capitailized fw-700 is-inline-block" :class="request.status">
-          {{ $t(request.status) }}
+          {{ request.status }}
         </div>
         <div v-else class="option-request-top capitailized fw-700 is-inline-block" :class="request.requestStatus">
-          {{ $t(request.requestStatus) }}
+          {{ request.requestStatus }}
         </div>
         <div v-if="currentUser.approvedToWork" class="d-inline-block">
           <button v-if="canApply" class="orange-button md-btn background-btn btn-radius" @click="modalMessage = true">
@@ -68,7 +68,9 @@
 </template>
 
 <script lang="ts">
-import toast from "../../mixins/toastMixin";
+import { mapStores } from 'pinia';
+import { useWorkerStore } from '@/stores/worker';
+import { showAlertError } from "@/utils/toast";
 import { getWorkerRequest, getWorkerRequestHistoryDetail, workerRequestApplySelf } from '@/api/workerApi';
 
 export default {
@@ -76,15 +78,14 @@ export default {
     return {
       isLoading: true,
       request: {},
-      modalMessage: false,
+      modalMessage: false
     };
   },
   components: {
     RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
     Location: () => import("../../components/request/RequestLocation.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
+    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
   },
-  mixins: [toast],
   methods: {
     getWorkerHistoryRequest() {
       getWorkerRequestHistoryDetail(this.$route.params.id)
@@ -109,20 +110,20 @@ export default {
     applyToRequest(comment) {
       this.isLoading = true;
       let model = {
-        comments: comment,
+        comments: comment
       };
       workerRequestApplySelf(this.request.id, model)
         .then(() => {
           this.isLoading = false;
           this.$router.push({
-            path: "/worker-request-applied/" + this.request.id,
+            path: "/worker-request-applied/" + this.request.id
           });
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   created() {
     if (this.$route.query.history) {
@@ -132,6 +133,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useWorkerStore),
     canApply() {
       let available = false;
       switch (this.request.requestStatus) {
@@ -163,8 +165,8 @@ export default {
       return available;
     },
     currentUser() {
-      return this.$store.state.worker.workerProfile;
-    },
-  },
+      return this.workerStore.workerProfile;
+    }
+  }
 };
 </script>

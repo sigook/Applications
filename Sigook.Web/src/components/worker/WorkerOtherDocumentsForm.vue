@@ -5,7 +5,7 @@
       <div class="col-12">
         <b-field>
           <template #label>
-            {{ $t("File") }} <span class="has-text-danger">*</span>
+            {{ "File" }} <span class="has-text-danger">*</span>
           </template>
           <div v-if="otherDocument && otherDocument.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -17,7 +17,7 @@
               @input="handleDocFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedDocFile ? selectedDocFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedDocFile ? selectedDocFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
@@ -27,7 +27,7 @@
         <b-field :type="errors.has('Description') ? 'is-danger' : ''"
           :message="errors.has('Description') ? errors.first('Description') : ''">
           <template #label>
-            {{ $t("Description") }} <span class="has-text-danger">*</span>
+            {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
           <b-input type="text" v-model="otherDocument.description" name="Description"
             v-validate="'required|max:20'" />
@@ -35,7 +35,7 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -43,9 +43,9 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerOtherDocuments } from '@/api/workerApi';
 
 export default {
@@ -59,22 +59,21 @@ export default {
       },
       otherDocument: {
         fileName: "",
-        description: "",
-      },
+        description: ""
+      }
     };
   },
-  mixins: [toastMixin, multipartUploadMixin],
   methods: {
     filename,
     handleDocFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedDocFile = null;
         return;
       }
       this.fileObjects.otherDocument = file;
-      const generatedName = this.generateFileName('OtherDoc', file.name);
+      const generatedName = generateFileName('OtherDoc', file.name);
       this.otherDocument = { fileName: generatedName, description: this.otherDocument.description || '' };
       this.selectedDocFile = null;
     },
@@ -88,7 +87,7 @@ export default {
           this.saveOtherDocument();
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     async saveOtherDocument() {
@@ -103,12 +102,12 @@ export default {
         await createWorkerOtherDocuments(this.data.id, formData);
         this.$emit('closeAndUpdate', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }
     }
-  },
+  }
 };
 </script>
 

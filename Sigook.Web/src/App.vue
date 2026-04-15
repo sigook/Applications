@@ -26,6 +26,9 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
+import { useSecurityStore } from '@/stores/security';
 import Oidc from "oidc-client";
 import axios from "axios";
 
@@ -45,6 +48,7 @@ export default {
     Footer: () => import("@/components/landing/Footer.vue")
   },
   computed: {
+    ...mapStores(useAppStore, useSecurityStore),
     isCallback() {
       return this.$route.name === 'callback';
     }
@@ -57,7 +61,7 @@ export default {
       navigator.userAgent.match(/BlackBerry/i)
     ) {
       this.isMobile = true;
-      this.$store.commit("showMobile");
+      this.appStore.showMobile();
     }
 
     this.getAppVersion();
@@ -95,7 +99,7 @@ export default {
       }
     },
     async setIsLogged(route) {
-      this.isLogged = await this.$store.dispatch("getUser") ? true : false;
+      this.isLogged = await this.securityStore.getUser() ? true : false;
       if (!route.meta.requiresAuth) {
         this.isLogged = false;
       }

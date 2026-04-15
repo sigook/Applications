@@ -113,13 +113,16 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { downloadPDF } from "@/utils/downloadFile";
 import { dateMonth, currency } from '@/utils/filters';
 import {
   getAgencyPayStubs,
   downloadPayStubPdf,
   sendPayStubEmail,
-  deleteAgencyPayStub,
+  deleteAgencyPayStub
 } from "@/api/agencyPayStubApi";
 
 export default {
@@ -145,14 +148,17 @@ export default {
     };
   },
   created() {
-    if (this.$store.state.agency.agencyPayStubFilter) {
-      this.serverParams = this.$store.state.agency.agencyPayStubFilter;
+    if (this.agencyStore.agencyPayStubFilter) {
+      this.serverParams = this.agencyStore.agencyPayStubFilter;
       if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
         this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
     this.loadPayStubs();
+  },
+  computed: {
+    ...mapStores(useAgencyStore),
   },
   methods: {
     downloadPDF,
@@ -199,7 +205,7 @@ export default {
     },
     loadPayStubs() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyPayStubFilter", this.serverParams);
+      this.agencyStore.updateAgencyPayStubFilter(this.serverParams);
       getAgencyPayStubs(this.serverParams)
         .then((response) => {
           this.rows = response.items.map((i) => ({ ...i, emailSending: false, actions: null }));
@@ -208,7 +214,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     onDownloadPayStubPdf(payStub) {
@@ -220,7 +226,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     onSendPayStubEmail(payStub) {
@@ -230,11 +236,11 @@ export default {
           payStub.emailSending = false;
           payStub.emailSent = true;
           console.log(payStub);
-          this.showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
+          showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
         })
         .catch(error => {
           payStub.emailSending = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     async onDeletePayStub(payStub) {
@@ -258,7 +264,7 @@ export default {
             })
             .catch(error => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             });
         }
       })

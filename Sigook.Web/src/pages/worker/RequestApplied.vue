@@ -11,7 +11,7 @@
       <div>
         <div v-if="request.status && request.status !== 'None'" class="capitailized fw-700 is-inline-block"
           :class="request.status">
-          {{ $t(request.status) }}
+          {{ request.status }}
         </div>
       </div>
     </section>

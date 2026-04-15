@@ -4,7 +4,7 @@
     <form class="form-md" @submit.prevent="validateForm">
       <div class="col-12 col-padding">
         <div>
-          <h2 class="main-title">{{ $t("CreateCandidateRequest") }}</h2>
+          <h2 class="main-title">{{ "Create Candidate Request" }}</h2>
           <span class="line-orange"></span>
         </div>
       </div>
@@ -17,7 +17,7 @@
         </div>
         <div
           :class="[directHiring ? 'col-sm-12 col-md-6 col-lg-4 col-padding' : 'col-sm-12 col-md-8 col-lg-8 col-padding']">
-          <b-field :label="`${$t('JobTitle')} *`" :message="errors.first('job title')"
+          <b-field :label="`${'Job title'} *`" :message="errors.first('job title')"
             :type="errors.has('job title') ? 'is-danger' : ''">
             <b-input v-model="request.jobTitle" name="job title" v-validate="'required|max:100|min:1'" />
           </b-field>
@@ -30,14 +30,14 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${$t('WorkersQuantity')} *`"
+          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
             :message="errors.has('worker quantity') ? errors.first('worker quantity') : ''">
             <b-numberinput v-model="request.workersQuantity" name="worker quantity"
               v-validate="'required|min_value:1|numeric'" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!directHiring">
-          <b-field :label="`${$t('RequestJobType')} *`" :message="errors.first('job type')"
+          <b-field :label="`${'Job type'} *`" :message="errors.first('job type')"
             :type="errors.has('job type') ? 'is-danger' : ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
               open-on-focus name="job type" v-validate="'required'" @select="onJobPositionSelected">
@@ -47,7 +47,7 @@
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
         <div :class="[directHiring ? 'col-12 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding']">
-          <b-field :label="`${$t('RequestBranchOffice')} *`"
+          <b-field :label="`${'Branch office'} *`"
             :message="errors.has('branchOffice') ? errors.first('branchOffice') : ''"
             :type="errors.has('branchOffice') ? 'is-danger' : ''">
             <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="jobLocation" open-on-focus
@@ -61,7 +61,7 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="`${$t('Description')} *`" :message="errors.first('description')"
+          <b-field :label="`${'Description'} *`" :message="errors.first('description')"
             :type="errors.has('description') ? 'is-danger' : ''">
             <div class="vue-trix-editor">
               <vue-editor id="description-input" v-model="request.description" :name="'description'"
@@ -77,7 +77,7 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="`${$t('Requirements')} *`" :message="errors.first('requirements')"
+          <b-field :label="`${'Requirements'} *`" :message="errors.first('requirements')"
             :type="errors.has('requirements') ? 'is-danger' : ''">
             <div class="vue-trix-editor">
               <vue-editor id="requirements-input" v-model="request.requirements" :name="'requirements'"
@@ -86,23 +86,23 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" disabled="!directHiring">
-          <b-field :type="errors.has('incentive') ? 'is-danger' : ''" :label="$t('Incentive')"
+          <b-field :type="errors.has('incentive') ? 'is-danger' : ''" :label="'Incentive'"
             :message="errors.has('incentive') ? errors.first('incentive') : ''">
             <b-numberinput controls-alignment="right" v-model="request.incentive" name="incentive"
               v-validate="'decimal:2'" step="0.01" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-9 col-padding">
-          <b-field :type="errors.has('incentiveDes') ? 'is-danger' : ''" :label="$t('IncentiveDescription')"
+          <b-field :type="errors.has('incentiveDes') ? 'is-danger' : ''" :label="'Incentive Description'"
             :message="errors.has('incentiveDes') ? errors.first('incentiveDes') : ''">
             <b-input v-model="request.incentiveDescription" name="incentiveDes" v-validate="'max:5000|min:0'"
               :disabled="!request.incentive" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="!directHiring">
-          <b-field :label="$t('DurationBreakIsPaid')">
+          <b-field :label="'Duration break is paid'">
             <b-switch v-model="request.breakIsPaid" :true-value="true" :false-value="false">
-              {{ request.breakIsPaid ? $t("Yes") : $t("No") }}
+              {{ request.breakIsPaid ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
@@ -158,7 +158,7 @@
         </div>
         <div class="col-12 mt-5">
           <b-button type="is-primary" native-type="submit">
-            {{ $t("Create") }}
+            {{ "Create" }}
           </b-button>
         </div>
       </div>
@@ -171,19 +171,20 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentType,
-  EmploymentTypeLabels,
+  EmploymentTypeLabels
 } from "@/constants/enums";
 import { getLocations, getCompanyJobPositions, createRequest } from "@/api/companyApi";
 
 export default {
   components: {
-    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
+    LocationForm: () => import("@/components/agency_company/LocationForm.vue")
   },
   data() {
     let breakDate = new Date();
@@ -206,16 +207,16 @@ export default {
       request: {
         durationBreak: dayjs().startOf('day').toDate(),
         durationTerm: DurationTerm.LongTerm,
-        employmentType: EmploymentType.FullTime,
+        employmentType: EmploymentType.FullTime
       },
-      errorMessage: this.$t("PleaseVerifyThatTheFieldsAreCorrect"),
+      errorMessage: "Please make sure all required fields are filled out correctly",
       directHiring: false,
       jobPosition: '',
       jobPositionSelected: null,
       jobLocation: '',
       locationSelected: null,
       showLocationModal: false,
-      unsavedChanges: false,
+      unsavedChanges: false
     };
   },
   beforeRouteLeave: confirmationGuard,
@@ -247,22 +248,22 @@ export default {
           this.submitRequest();
           return;
         }
-        this.showAlertError(this.errorMessage);
+        showAlertError(this.errorMessage);
       });
     },
     submitRequest() {
       this.isLoading = true;
       createRequest({
         ...this.request,
-        durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
+        durationBreak: dayjs(this.request.durationBreak).format("HH:mm")
       })
         .then(() => {
-          this.showAlertSuccess(this.$t("RequestCreated"));
+          showAlertSuccess("Request created");
           this.$router.push("company-requests");
           this.isLoading = false;
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -289,7 +290,7 @@ export default {
     async onUpdateLocationModal() {
       this.showLocationModal = false;
       this.locations = await getLocations();
-    },
+    }
   },
   computed: {
     DurationTerm: () => DurationTerm,
@@ -308,7 +309,7 @@ export default {
     },
     finishDate() {
       return dayjs(this.request.startAt).add(1, "year").toDate();
-    },
+    }
   },
   watch: {
     jobPosition(newVal) {
@@ -331,7 +332,7 @@ export default {
       } else {
         this.request.workerSalary = null;
       }
-    },
-  },
+    }
+  }
 };
 </script>

@@ -86,6 +86,7 @@
 </template>
 <script lang="ts">
 
+import { showAlertError } from "@/utils/toast";
 import { distributeHours } from "@/utils/distributeHours";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
@@ -184,7 +185,7 @@ export default {
           week.days[i].totalHoursApproved = hours[i] || 0;
         }
       } else {
-        this.showAlertError("Total hours is invalid");
+        showAlertError("Total hours is invalid");
       }
     },
     updateParent(startDay, endDay) {

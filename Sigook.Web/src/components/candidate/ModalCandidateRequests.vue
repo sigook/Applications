@@ -24,6 +24,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getAllAgencyRequests, postAgencyRequestApplicant } from "@/api/agencyRequestApi";
 export default {
   props: ['candidateId'],
@@ -52,7 +53,7 @@ export default {
         })
         .catch(error => {
           this.isLoadingList = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     saveRequestApplicant() {
@@ -63,7 +64,7 @@ export default {
           this.$emit('onSelectRequest');
         }).catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   }

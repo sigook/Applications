@@ -20,6 +20,8 @@
   </div>
 </template>
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
 export default {
   data() {
     return {
@@ -41,8 +43,9 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAgencyStore),
     isUsaAgency() {
-      return this.$store.state.agency.usaAgency;
+      return this.agencyStore.usaAgency;
     }
   },
   watch: {

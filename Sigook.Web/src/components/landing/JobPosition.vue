@@ -66,6 +66,19 @@
 <script lang="ts">
 import { getLandingJobPositions } from "@/api/websiteApi";
 
+const positionImages = import.meta.glob('@/assets/images/positions/**', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const bannerImages = import.meta.glob('@/assets/images/banners/**', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+
+function resolvePositionImage(solutionType: string, imageName: string): string {
+  const key = Object.keys(positionImages).find(k => k.endsWith(`/positions/${solutionType}/${imageName}`));
+  return key ? positionImages[key] : '';
+}
+
+function resolveBannerImage(imageName: string): string {
+  const key = Object.keys(bannerImages).find(k => k.endsWith(`/banners/${imageName}`));
+  return key ? bannerImages[key] : '';
+}
+
 export default {
   props: ['solutionType'],
   data() {
@@ -90,7 +103,7 @@ export default {
       }
     },
     getPositionImage(imageName) {
-      return require(`@/assets/images/positions/${this.solutionType}/${imageName}`);
+      return resolvePositionImage(this.solutionType, imageName);
     },
     scrollToRequestStaffForm() {
       // no-op
@@ -99,7 +112,7 @@ export default {
   computed: {
     bannerImage() {
       if (this.currentPosition.backgroundImage) {
-        return require(`@/assets/images/banners/${this.currentPosition.backgroundImage}`);
+        return resolveBannerImage(this.currentPosition.backgroundImage);
       } else {
         return ''
       }

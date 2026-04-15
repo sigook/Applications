@@ -33,7 +33,7 @@
         @isLoading="(value) => isLoading = value" />
       <div class="container-flex">
         <div class="col-12 col-padding">
-          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ $t('CompanyUseAsBillingAddress') }}</b-checkbox>
+          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
         </div>
         <div class="col-12 col-padding">
           <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
@@ -44,12 +44,13 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import AddressComponent from "@/components/Address.vue";
 import {
   getProfileLocations,
   createProfileLocation,
   updateProfileLocation,
-  deleteProfileLocation,
+  deleteProfileLocation
 } from "@/api/companyApi";
 
 export default {
@@ -61,7 +62,7 @@ export default {
       showModal: false,
       locationBeingUpdate: {},
       pageSize: 30,
-      pageIndex: 1,
+      pageIndex: 1
     }
   },
   props: ['companyData'],
@@ -79,7 +80,7 @@ export default {
       this.locationBeingUpdate = {};
     },
     deleteLocation(id) {
-      this.showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
+      showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
         if (!r) return;
         this.isLoading = true;
         deleteProfileLocation(id)
@@ -88,7 +89,7 @@ export default {
             this.getLocations();
           }).catch(e => {
             this.isLoading = false;
-            this.showAlertError(e.data);
+            showAlertError(e.data);
           });
       });
     },
@@ -111,7 +112,7 @@ export default {
           this.getLocations();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     createLocation(location) {
@@ -123,7 +124,7 @@ export default {
           this.getLocations();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     getLocations() {
@@ -142,7 +143,7 @@ export default {
         row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
         row.postalCode.toLowerCase().includes(lowerSearchTerm)
       );
-    },
+    }
   },
   created() {
     this.getLocations();

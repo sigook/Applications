@@ -38,8 +38,8 @@
     </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
     import { emailName, dateFromNow } from '@/utils/filters';
-    import toast from '../../mixins/toastMixin';
     import { getWorkerProfileNotes, createWorkerProfileNote } from '@/api/agencyNoteApi';
     import type { NotesFetchPayload, NotesCreatePayload } from '@/types/agency';
     export default {
@@ -54,10 +54,9 @@
                 getNotes: ({ userId, pagination }: NotesFetchPayload) => getWorkerProfileNotes(userId, pagination),
                 createNote: ({ userId, model }: NotesCreatePayload) => createWorkerProfileNote(userId, model),
                 updateNote: null,
-                deleteNote: null,
+                deleteNote: null
             }
         },
-        mixins: [toast],
         components: {
             ModalNotes: () => import("../notes/ModalNotes.vue")
         },
@@ -73,7 +72,7 @@
                         })
                         .catch(error => {
                             this.isLoading = false
-                            this.showAlertError(error);
+                            showAlertError(error);
                         })
             },
             onCloseModalNotes(){

@@ -43,7 +43,7 @@
     </b-message>
     <div class="container-flex">
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-        <b-field :label="$t('HoursApproved')" :type="errors.has('Hours Approved') ? 'is-danger' : ''"
+        <b-field :label="'Hours Approved'" :type="errors.has('Hours Approved') ? 'is-danger' : ''"
           :message="errors.has('Hours Approved') ? errors.first('Hours Approved') : ''">
           <b-timepicker v-model="localEditableDay.hoursApprovedToDate" name="Hours Approved" hour-format="24"
             :max-time="maximumDailyHours" v-validate="'required'">
@@ -51,7 +51,7 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-        <b-field :label="$t('MissingHours')">
+        <b-field :label="'Missing Hours'">
           <b-timepicker v-model="localEditableDay.missinghoursToDate" name="Missing Hours" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
@@ -130,12 +130,13 @@
         </b-field>
       </div>
       <div class="col-12 col-padding mt-5">
-        <b-button type="is-primary" @click="validateHours(localEditableDay)">{{ $t("Save") }}</b-button>
+        <b-button type="is-primary" @click="validateHours(localEditableDay)">{{ "Save" }}</b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import { maximumHoursPerDay } from "@/constants/catalog";
@@ -152,7 +153,7 @@ export default {
     return {
       maximumMissing: maximumMissing,
       isLoading: false,
-      localEditableDay: JSON.parse(JSON.stringify(this.editableDay)),
+      localEditableDay: JSON.parse(JSON.stringify(this.editableDay))
     }
   },
   watch: {
@@ -199,14 +200,14 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.$emit('update:editableDay', this.localEditableDay);
-          this.showAlertSuccess('Updated');
+          showAlertSuccess('Updated');
           this.$emit("updateData")
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   computed: {
     maximumDailyHours() {

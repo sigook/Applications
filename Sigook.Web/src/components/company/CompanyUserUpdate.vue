@@ -23,13 +23,14 @@
         @formattedPhone="(phone) => localUser.mobileNumber = phone"></phone-input>
     </div>
     <div class="col-12 mt-5">
-      <b-button type="is-primary" @click="update">{{ $t("Save") }}</b-button>
+      <b-button type="is-primary" @click="update">{{ "Save" }}</b-button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 
+import { showAlertSuccess } from "@/utils/toast";
 import PhoneInput from "@/components/PhoneInput.vue";
 import { updateCompanyUser } from "@/api/companyApi";
 
@@ -57,7 +58,7 @@ export default {
         this.$emit('update:user', this.localUser);
         updateCompanyUser(this.localUser.id, this.localUser)
           .then(() => {
-            this.showAlertSuccess(this.$t("Updated"));
+            showAlertSuccess("Updated");
           })
       })
     }

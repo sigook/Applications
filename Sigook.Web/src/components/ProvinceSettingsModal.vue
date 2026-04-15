@@ -31,6 +31,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 export default {
   name: 'ProvinceSettingsModal',
   props: ["provinceId", "provinceName", "currentSettings"],
@@ -55,7 +56,7 @@ export default {
     async saveSettings() {
       const isValid = await this.$validator.validateAll();
       if (!isValid) {
-        this.showAlertError('Please fill in all required fields correctly');
+        showAlertError('Please fill in all required fields correctly');
         return;
       }
       const settings = {

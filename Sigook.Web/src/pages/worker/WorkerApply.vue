@@ -14,19 +14,18 @@
 </template>
 
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+import { getErrorMessage } from "@/utils/toast";
 import { workerRequestApply } from '@/api/workerApi';
 
 export default {
   name: "WorkerApply",
-  mixins: [toastMixin],
   data() {
     return {
       isLoading: false,
       errorMessage: null,
       successMessage: null,
       defaultSuccessMessage:
-        "Thank you, one of our recruiters will contact you soon.",
+        "Thank you, one of our recruiters will contact you soon."
     };
   },
   methods: {
@@ -54,17 +53,17 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.errorMessage = this.getErrorMessage(error);
+          this.errorMessage = getErrorMessage(error);
           window.sessionStorage.setItem(key, "1");
         });
     },
     redirectToHome() {
       window.location.href = "/";
-    },
+    }
   },
   created() {
     this.apply();
-  },
+  }
 };
 </script>
 

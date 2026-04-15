@@ -4,7 +4,7 @@
     <div>
       <b-field grouped position="is-right">
         <b-button @click="modalManageWorkers = true" icon-right="calendar-start">
-          {{ $t("AgencyManageWorkers") }}
+          {{ "Manage Workers" }}
         </b-button>
         <b-button type="is-ghost" icon-right="file-excel"
           @click="downloadWorkersReportDocument">Export</b-button>
@@ -169,12 +169,13 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
 import { phoneMask as mask } from '@/constants/phoneMask';
 import {
   getAgencyRequestsWorkers,
   rejectAgencyRequestWorker,
-  updateAgencyRequestWorkerStartDate,
+  updateAgencyRequestWorkerStartDate
 } from "@/api/agencyRequestApi";
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 import { getWorkersReportDocument } from "@/api/agencyReportApi";
@@ -183,7 +184,7 @@ import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
-  deleteAgencyRequestWorkerNote,
+  deleteAgencyRequestWorkerNote
 } from "@/api/agencyNoteApi";
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
 
@@ -216,7 +217,7 @@ export default {
         requestId: this.id || this.$route.params.id,
         pageIndex: 1,
         pageSize: 30,
-        isDescending: true,
+        isDescending: true
       }
     };
   },
@@ -227,7 +228,7 @@ export default {
     WorkersList: () => import("./AgencyWorkersList.vue"),
     ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
     EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
-    DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue"),
+    DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue")
   },
   methods: {
     downloadFile,
@@ -323,14 +324,14 @@ export default {
             ...i,
             status: WorkerRequestStatusLabels[i.workerRequestStatus],
             actions: null,
-            showNotes: false,
+            showNotes: false
           }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     confirmDelete(worker) {
@@ -346,7 +347,7 @@ export default {
         this.$emit('refreshRequest');
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error.data);
+        showAlertError(error.data);
       });
     },
     showNotes(index) {
@@ -368,7 +369,7 @@ export default {
         this.loadRequestWorkers();
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error.data);
+        showAlertError(error.data);
       });
     },
     downloadWorkersReportDocument() {
@@ -380,7 +381,7 @@ export default {
         })
         .catch((err) => {
           this.isLoading = false;
-          this.showAlertError(err);
+          showAlertError(err);
         });
     },
     onWorkerBooked() {
@@ -389,6 +390,6 @@ export default {
       // Emit event to refresh request status (Open/Filled state may have changed)
       this.$emit('refreshRequest');
     }
-  },
+  }
 };
 </script>

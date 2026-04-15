@@ -20,7 +20,7 @@
               <b-field :type="errors.has('name') ? 'is-danger' : ''"
                 :message="errors.has('name') ? errors.first('name') : ''">
                 <template #label>
-                  {{ $t('WorkerName') }} <span class="has-text-danger">*</span>
+                  {{ 'Name' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-input type="text" v-model="worker.firstName" name="name" v-validate="'required|max:20|min:2'" />
               </b-field>
@@ -29,7 +29,7 @@
               <b-field :type="errors.has('lastname') ? 'is-danger' : ''"
                 :message="errors.has('lastname') ? errors.first('lastname') : ''">
                 <template #label>
-                  {{ $t('WorkerLastName') }} <span class="has-text-danger">*</span>
+                  {{ 'Last Name' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-input type="text" v-model="worker.lastName" name="lastname" v-validate="'required|max:20|min:2'" />
               </b-field>
@@ -38,7 +38,7 @@
               <b-field :type="errors.has('birthday') ? 'is-danger' : ''"
                 :message="errors.has('birthday') ? errors.first('birthday') : ''">
                 <template #label>
-                  {{ $t('WorkerBirthday') }} <span class="has-text-danger">*</span>
+                  {{ 'Date of birth' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-datepicker v-model="worker.birthDay" name="birthday" :focused-date="disabledDates"
                   :max-date="disabledDates" v-validate="'required'">
@@ -49,7 +49,7 @@
               <b-field :type="errors.has('gender') ? 'is-danger' : ''"
                 :message="errors.has('gender') ? errors.first('gender') : ''">
                 <template #label>
-                  {{ $t('WorkerGender') }} <span class="has-text-danger">*</span>
+                  {{ 'Gender' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-select v-model="gender" name="gender" v-validate="'required'" expanded>
                   <option v-for="item in genders" v-bind:key="item.id" :value="item.id">
@@ -70,7 +70,7 @@
           <div class="step-navigation-buttons">
             <span></span>
             <b-button type="is-primary" @click="validateAndGoToStep(1)">
-              {{ $t('Next') || 'Next Step' }}
+              {{ 'Next' || 'Next Step' }}
             </b-button>
           </div>
         </b-step-item>
@@ -78,7 +78,7 @@
           <h1 class="title has-text-centered">Preferences</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :label="$t('WorkerAvailability')">
+              <b-field :label="'Availability'">
                 <div class="container-flex">
                   <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-for="item in availabilities"
                     v-bind:key="item.id">
@@ -90,7 +90,7 @@
               </b-field>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :label="$t('WorkerTime')">
+              <b-field :label="'Available Time'">
                 <div class="container-flex">
                   <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-for="time in availabilityTimes"
                     v-bind:key="time.id">
@@ -102,7 +102,7 @@
               </b-field>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :label="$t('WorkerAvailableDays')">
+              <b-field :label="'Available days'">
                 <div class="container-flex">
                   <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
                     <b-checkbox v-model="allDaysSelected" @input="changeDaysSelected">
@@ -118,7 +118,7 @@
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-              <b-field :label="$t('WorkerYouCanLift')">
+              <b-field :label="'Can you Lift up to'">
                 <b-select v-model="worker.lift" placeholder="Select option" expanded>
                   <option v-for="item in lifts" :value="item" v-bind:key="item.id">
                     {{ item.value }}
@@ -127,21 +127,21 @@
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-              <b-field :label="$t('WorkerHasVehicle')">
+              <b-field :label="'Do you have your own vehicle?'">
                 <b-switch v-model="worker.hasVehicle" :true-value="true" :false-value="false">
-                  {{ worker.hasVehicle ? $t("Yes") : $t("No") }}
+                  {{ worker.hasVehicle ? "Yes" : "No" }}
                 </b-switch>
               </b-field>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :label="$t('WorkerLanguages')">
+              <b-field :label="'Languages'">
                 <b-taginput v-model="worker.languages" autocomplete :data="filteredLanguages" open-on-focus
                   field="value" icon="label" placeholder="Select Languages" @typing="getFilteredLanguages">
                 </b-taginput>
               </b-field>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :label="$t('WorkerSkills')">
+              <b-field :label="'Skills'">
                 <b-taginput v-model="worker.skills" autocomplete :data="filteredSkills" open-on-focus field="skill"
                   icon="label" placeholder="Select or Add Skills" :maxlength="20" allow-new @typing="getFilteredSkills"
                   :create-tag="addSkill">
@@ -154,10 +154,10 @@
           </div>
           <div class="step-navigation-buttons">
             <b-button @click="goToPreviousStep()">
-              {{ $t('Previous') || 'Previous' }}
+              {{ 'Previous' || 'Previous' }}
             </b-button>
             <b-button type="is-primary" @click="validateAndGoToStep(2)">
-              {{ $t('Next') || 'Next Step' }}
+              {{ 'Next' || 'Next Step' }}
             </b-button>
           </div>
         </b-step-item>
@@ -181,7 +181,7 @@
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
-                          {{ selectedDocumentFile ? selectedDocumentFile.name : $t("AddFile") }}
+                          {{ selectedDocumentFile ? selectedDocumentFile.name : "Add file" }}
                         </span>
                       </span>
                     </b-upload>
@@ -231,7 +231,7 @@
                           <template #label>
                             Identification Number <span class="has-text-danger">*</span>
                           </template>
-                          <b-input type="text" :placeholder="$t('IdentificationNumber')"
+                          <b-input type="text" :placeholder="'Identification Number'"
                             v-model="worker.identificationNumber1" name="identificationNumber1"
                             v-validate="'required|max:15|min:5'" />
                         </b-field>
@@ -281,7 +281,7 @@
                           <template #label>
                             Identification Number <span class="has-text-danger">*</span>
                           </template>
-                          <b-input type="text" :placeholder="$t('IdentificationNumber')"
+                          <b-input type="text" :placeholder="'Identification Number'"
                             v-model="worker.identificationNumber2" name="identificationNumber2"
                             v-validate="'required|max:15|min:5'" />
                         </b-field>
@@ -297,7 +297,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ $t("WorkerLicenses") }}</label>
+                  <label class="fz1 fw-600 section-label">{{ "Licenses" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedLicenseFile }">
@@ -306,7 +306,7 @@
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
-                          {{ selectedLicenseFile ? selectedLicenseFile.name : $t("AddFile") }}
+                          {{ selectedLicenseFile ? selectedLicenseFile.name : "Add file" }}
                         </span>
                       </span>
                     </b-upload>
@@ -341,7 +341,7 @@
                           <template #label>
                             Description <span class="has-text-danger">*</span>
                           </template>
-                          <b-input type="text" :placeholder="$t('Description')" v-model="item.license.description"
+                          <b-input type="text" :placeholder="'Description'" v-model="item.license.description"
                             :name="'description' + index" v-validate="{
                               required: true,
                               max: 100,
@@ -368,7 +368,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ $t("WorkerCertificates") }}</label>
+                  <label class="fz1 fw-600 section-label">{{ "Certificates" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedCertificateFile }">
@@ -377,7 +377,7 @@
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
-                          {{ selectedCertificateFile ? selectedCertificateFile.name : $t("AddFile") }}
+                          {{ selectedCertificateFile ? selectedCertificateFile.name : "Add file" }}
                         </span>
                       </span>
                     </b-upload>
@@ -421,7 +421,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ $t("Resume") }}</label>
+                  <label class="fz1 fw-600 section-label">{{ "Resume" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
@@ -434,7 +434,7 @@
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
-                          {{ selectedResumeFile ? selectedResumeFile.name : $t("AddFile") }}
+                          {{ selectedResumeFile ? selectedResumeFile.name : "Add file" }}
                         </span>
                       </span>
                     </b-upload>
@@ -480,7 +480,7 @@
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
-                          {{ selectedOtherDocFile ? selectedOtherDocFile.name : $t("AddFile") }}
+                          {{ selectedOtherDocFile ? selectedOtherDocFile.name : "Add file" }}
                         </span>
                       </span>
                     </b-upload>
@@ -534,10 +534,10 @@
           </div>
           <div class="step-navigation-buttons">
             <b-button @click="goToPreviousStep()">
-              {{ $t('Previous') || 'Previous' }}
+              {{ 'Previous' || 'Previous' }}
             </b-button>
             <b-button type="is-primary" @click="validateAndGoToStep(3)">
-              {{ $t('Next') || 'Next Step' }}
+              {{ 'Next' || 'Next Step' }}
             </b-button>
           </div>
         </b-step-item>
@@ -548,7 +548,7 @@
               <b-field :type="errors.has('email') ? 'is-danger' : ''"
                 :message="errors.has('email') ? errors.first('email') : ''">
                 <template #label>
-                  {{ $t('Email') }} <span class="has-text-danger">*</span>
+                  {{ 'Email' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-input type="email" v-model="worker.email" name="email" v-validate="'required|max:50|min:6|email'"
                   :class="{ 'is-danger': errors.has('email') }" />
@@ -558,7 +558,7 @@
               <b-field :type="errors.has('password') ? 'is-danger' : ''"
                 :message="errors.has('password') ? errors.first('password') : ''">
                 <template #label>
-                  {{ $t('Password') }} <span class="has-text-danger">*</span>
+                  {{ 'Password' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-input type="password" v-model="worker.password" name="password" v-validate="'required|max:100|min:6'"
                   data-vv-as="password" ref="password" />
@@ -568,7 +568,7 @@
               <b-field :type="errors.has('confirmPassword') ? 'is-danger' : ''"
                 :message="errors.has('confirmPassword') ? errors.first('confirmPassword') : ''">
                 <template #label>
-                  {{ $t('ConfirmPassword') }} <span class="has-text-danger">*</span>
+                  {{ 'Confirm Password' }} <span class="has-text-danger">*</span>
                 </template>
                 <b-input type="password" v-model="worker.confirmPassword" name="confirmPassword"
                   v-validate="'required|confirmed:password'" />
@@ -579,27 +579,27 @@
                 <b-checkbox v-model="worker.agreeTermsAndConditions" name="agree terms" v-validate="{
                   required: !isLogin
                 }">
-                  {{ $t("IAgreeAll2job") }}
+                  {{ "I agree Sigook™" }}
                   <router-link to="/terms-and-conditions" target="_blank">
-                    <u class="color-primary">{{ $t("TermsAndConditions") }}</u>
+                    <u class="color-primary">{{ "Terms and Conditions" }}</u>
                   </router-link>
                   &
                   <router-link to="/privacy-policy" target="_blank">
-                    <u class="color-primary">{{ $t("PrivacyPolicy") }}.</u>
+                    <u class="color-primary">{{ "Privacy Policy" }}.</u>
                   </router-link>
                 </b-checkbox>
               </b-field>
               <span v-show="errors.has('agree terms')" class="help is-danger no-margin">
-                {{ $t("YouMustAcceptTheTermsAndConditionsToContinue") }}.
+                {{ "You must accept the Terms & Conditions to continue" }}.
               </span>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="step-navigation-buttons">
                 <b-button @click="goToPreviousStep()">
-                  {{ $t('Previous') || 'Previous' }}
+                  {{ 'Previous' || 'Previous' }}
                 </b-button>
                 <b-button type="is-primary" native-type="submit">
-                  {{ $t("Register") }}
+                  {{ "Register" }}
                 </b-button>
               </div>
             </div>
@@ -611,13 +611,16 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
+import { useSecurityStore } from '@/stores/security';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { registerWorker } from "@/api/workerApi";
 import { useCreateWorker } from "@/composables/useCreateWorker";
 import { filename } from '@/utils/filters';
 import { confirmationGuard } from '@/utils/confirmationGuard';
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
-
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 export default {
   setup() {
     return { ...useCreateWorker() };
@@ -625,7 +628,7 @@ export default {
   components: {
     uploadImage: () => import("../../components/PreviewImage.vue"),
     addressComponent: () => import("../../components/Address.vue"),
-    phoneInput: () => import("../../components/PhoneInput.vue"),
+    phoneInput: () => import("../../components/PhoneInput.vue")
   },
   data() {
     return {
@@ -669,7 +672,7 @@ export default {
       if (allValid) {
         this.registerWorker();
       } else {
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       }
     },
     goToPreviousStep() {
@@ -695,7 +698,7 @@ export default {
           this.activeStep++;
         }
       } else {
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       }
     },
     async validateStep1() {
@@ -737,22 +740,22 @@ export default {
       this.worker.gender = { id: this.gender };
 
       try {
-        const formData = await this.createMultipartFormData(this.worker, this.fileObjects);
+        const formData = await createMultipartFormData(this.worker, this.fileObjects);
         const id = await registerWorker(formData);
         this.isLoading = false;
-        this.showAlertSuccess(this.$t("YourAccountHasBeenCreated"));
+        showAlertSuccess("Your account has been created");
         const route = this.isLogin ? `/agency-workers/worker/${id}` : '/home'
         this.$router.push(route);
       } catch (error) {
         this.isLoading = false;
-        this.showAlertError(error.data);
+        showAlertError(error.data);
       }
     },
     validateDocumentFile(file, maxSizeKB = 15500) {
       if (!file) return false;
 
       if (file.size / 1024 > maxSizeKB) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         return false;
       }
 
@@ -793,7 +796,7 @@ export default {
         this.fileObjects.identificationType1 = file;
         this.worker.identificationType1File = {
           fileName: file.name,
-          description: "",
+          description: ""
         };
         this.worker.identificationType1 = null;
         this.worker.identificationNumber1 = null;
@@ -801,7 +804,7 @@ export default {
         this.fileObjects.identificationType2 = file;
         this.worker.identificationType2File = {
           fileName: file.name,
-          description: "",
+          description: ""
         };
         this.worker.identificationType2 = null;
         this.worker.identificationNumber2 = null;
@@ -813,7 +816,7 @@ export default {
         this.worker.identificationType1File.fileName === file.fileName;
       if (isFile1 && this.worker.identificationType2File) {
         this.worker.identificationType1File = {
-          ...this.worker.identificationType2File,
+          ...this.worker.identificationType2File
         };
         this.fileObjects.identificationType1 = this.fileObjects.identificationType2;
         this.worker.identificationType1 = this.worker.identificationType2;
@@ -839,8 +842,8 @@ export default {
       this.worker.licenses.push({
         license: {
           fileName: file.name,
-          description: "",
-        },
+          description: ""
+        }
       });
     },
     deleteLicense(index) {
@@ -851,7 +854,7 @@ export default {
       this.fileObjects.certificates.push(file);
       this.worker.certificates.push({
         fileName: file.name,
-        description: "",
+        description: ""
       });
     },
     deleteCertificate(index) {
@@ -900,14 +903,11 @@ export default {
       this.isLoading = false;
     }
   },
-  mixins: [
-    multipartUploadMixin
-  ],
-  beforeRouteLeave: confirmationGuard,
+    beforeRouteLeave: confirmationGuard,
   async created() {
     await this.loadCatalogs();
     this.isLoading = false;
-    this.$store.dispatch("getCurrentDate").then((response) => {
+    this.appStore.getCurrentDate().then((response) => {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response)
         .subtract(18, "years")
@@ -915,9 +915,10 @@ export default {
     });
   },
   computed: {
+    ...mapStores(useAppStore, useSecurityStore),
     isLogin() {
-      return this.$store.state.security.user ? true : false;
-    },
+      return this.securityStore.user ? true : false;
+    }
   }
 };
 </script>

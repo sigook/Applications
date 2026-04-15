@@ -17,7 +17,7 @@
                 <div class="text-center contain-switch form-100">
                     <p>{{item.description}}</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox"
@@ -26,7 +26,7 @@
 
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
 
@@ -35,26 +35,26 @@
                 <div class="text-center contain-switch form-100">
                     <p>Push Notifications</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox" v-model="item.pushNotification"/>
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
 
                 <div class="text-center contain-switch form-100">
                     <p>Sms Notifications</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox" v-model="item.smsNotification"/>
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
                 -->
@@ -67,6 +67,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getUserNotifications, updateUserNotification } from "@/api/userNotificationApi";
 
     export default {
@@ -86,7 +87,7 @@ import { getUserNotifications, updateUserNotification } from "@/api/userNotifica
                         this.isLoading = false;
                     })
                     .catch(error => {
-                        this.showAlertError(error);
+                        showAlertError(error);
                         this.isLoading = false;
                     })
             },
@@ -97,7 +98,7 @@ import { getUserNotifications, updateUserNotification } from "@/api/userNotifica
                         this.isLoading = false;
                     })
                     .catch(error => {
-                        this.showAlertError(error);
+                        showAlertError(error);
                         this.isLoading = false;
                     })
             }

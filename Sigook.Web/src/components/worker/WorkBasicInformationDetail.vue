@@ -1,13 +1,13 @@
 <template>
   <section>
     <div class="button-right">
-      <h3 class="section-title mt-0">{{ $t("BasicInformation") }}</h3>
+      <h3 class="section-title mt-0">{{ "Basic Information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalBasicInformation = true"></b-button>
     </div>
     <div class="worker-documents">
       <div>
-        <span>{{ $t('WorkerFullName') }}</span>
+        <span>{{ 'Full Name' }}</span>
         <span>
           <p class="fw-200 margin-0">
             {{ worker.firstName }} {{ worker.middleName }} {{ worker.lastName }} {{ worker.secondLastName }}
@@ -15,21 +15,21 @@
         </span>
       </div>
       <div>
-        <span>{{ $t('WorkerBirthday') }}</span>
+        <span>{{ 'Date of birth' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ dateMonth(worker.birthDay) }}</p>
         </span>
       </div>
       <div>
-        <span>{{ $t('WorkerGender') }}</span>
+        <span>{{ 'Gender' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.gender ? worker.gender.value : null }}</p>
         </span>
       </div>
       <div>
-        <span>{{ $t('WorkerHasVehicle') }}</span>
+        <span>{{ 'Do you have your own vehicle?' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.hasVehicle ? $t('Yes') : $t('No') }}</p>
+          <p class="fw-200 margin-0">{{ worker.hasVehicle ? 'Yes' : 'No' }}</p>
         </span>
       </div>
     </div>

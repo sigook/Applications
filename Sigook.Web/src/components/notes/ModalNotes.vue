@@ -50,11 +50,10 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { emailName, dateFromNow, dateMonth } from '@/utils/filters';
-import toast from '../../mixins/toastMixin';
 export default {
   props: ['requestId', 'userId', 'onGet', 'onCreate', 'onUpdate', 'onDelete', 'canCreate', 'currentNote'],
-  mixins: [toast],
   data() {
     return {
       isLoading: false,
@@ -91,7 +90,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     addNote(newNote) {
@@ -114,7 +113,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     deleteNote(id, index) {
@@ -127,12 +126,12 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.notes.items.splice(index, 1)
-          this.showAlertSuccess('Deleted');
+          showAlertSuccess('Deleted');
           this.$emit("onUpdateNote", { size: this.notes.items.length });
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     showModalUpdateNote(item, index) {
@@ -170,7 +169,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     onNoteClose() {

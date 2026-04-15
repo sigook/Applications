@@ -125,7 +125,7 @@
             </a>
           </div>
         </div>
-        <img v-lazy="require('@/assets/images/app_mobile_businesses.png')" class="w-100 grid-item-start hide-on-mobile"
+        <img v-lazy="appMobileBusinesses" class="w-100 grid-item-start hide-on-mobile"
           alt="app mobile" />
       </div>
     </section>
@@ -134,10 +134,14 @@
 
 
 <script lang="ts">
+import appMobileBusinesses from '@/assets/images/app_mobile_businesses.png';
 
 export default {
   components: {
     JobSearch: () => import("@/components/landing/JobSearch.vue")
+  },
+  data() {
+    return { appMobileBusinesses };
   }
 }
 

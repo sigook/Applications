@@ -20,27 +20,27 @@
       </div>
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
-        <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
+        <b-tab-item :label="'Business Information'" value="BusinessInformation">
           <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
+        <b-tab-item :label="'Billing Information'" value="BillingInformation">
           <BillingInformation v-if="visitedTabs.includes('BillingInformation')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
+        <b-tab-item :label="'Contact Information'" value="ContactInformation">
           <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
+        <b-tab-item :label="'Account Security'" value="AccountSecurity">
           <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Users')" value="Users">
+        <b-tab-item :label="'Users'" value="Users">
           <Users v-if="visitedTabs.includes('Users')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('User Notification')" value="UserNotification">
+        <b-tab-item :label="'Notifications'" value="UserNotification">
           <UserNotification v-if="visitedTabs.includes('UserNotification')" />
         </b-tab-item>
       </b-tabs>
@@ -49,8 +49,10 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
-import switchLocaleMixin from "../../mixins/switchLocaleMixin";
 import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
 import { lowercase } from '@/utils/filters';
 
@@ -61,8 +63,7 @@ export default {
       currentTab: "BusinessInformation",
       visitedTabs: ["BusinessInformation"],
       isDisabled: true,
-      lang: this.$validator.dictionary.locale,
-      unsavedChanges: false,
+      unsavedChanges: false
     };
   },
   components: {
@@ -72,7 +73,7 @@ export default {
     AccountSecurity: () => import("@/components/agency/ProfileAccountInformation.vue"),
     UploadImage: () => import("@/components/PreviewImage.vue"),
     UserNotification: () => import("../../components/UserNotification.vue"),
-    Users: () => import("../../components/agency/AgencyPersonnel.vue"),
+    Users: () => import("../../components/agency/AgencyPersonnel.vue")
   },
   async created() {
     if (this.$route.query && this.$route.query.tab) {
@@ -83,9 +84,9 @@ export default {
     }
     this.isLoading = true;
     const agency = await getAgencyProfile();
-    this.$store.commit("agency/setAgency", agency);
+    this.agencyStore.setAgency(agency);
     const personnelAgencies = await getPersonnelAgencies();
-    this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
+    this.agencyStore.setPersonnelAgencies(personnelAgencies);
     this.isLoading = false;
   },
   methods: {
@@ -97,7 +98,7 @@ export default {
       let isValid = true;
       this.$validator.validateAll().then((response) => {
         if (!response || !isValid) {
-          this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+          showAlertError("Please make sure all required fields are filled out correctly");
           return;
         }
         this.saveProfile();
@@ -110,11 +111,11 @@ export default {
           this.isDisabled = true;
           this.unsavedChanges = false;
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     changeTab(tab) {
@@ -123,17 +124,17 @@ export default {
       }
       this.$router.push({
         path: "/agency-profile",
-        query: { tab: tab },
+        query: { tab: tab }
       });
-    },
-  },
-  computed: {
-    agency() {
-      return this.$store.state.agency.agency;
     }
   },
-  mixins: [switchLocaleMixin],
-  beforeRouteLeave: confirmationGuard,
+  computed: {
+    ...mapStores(useAgencyStore),
+    agency() {
+      return this.agencyStore.agency;
+    }
+  },
+  beforeRouteLeave: confirmationGuard
 };
 </script>
 

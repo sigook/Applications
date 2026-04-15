@@ -5,9 +5,9 @@
       <b-field :type="errors.has('country') ? 'is-danger' : ''"
         :message="errors.has('country') ? errors.first('country') : ''">
         <template #label>
-          {{ $t('Country') }} <span class="has-text-danger">*</span>
+          {{ 'Country' }} <span class="has-text-danger">*</span>
         </template>
-        <b-select :placeholder="$t('Select')" v-model="country" name="country" v-validate="'required'" expanded
+        <b-select :placeholder="'Select'" v-model="country" name="country" v-validate="'required'" expanded
           @input="onCountrySelected">
           <option v-for="country in countries" :key="country.id" :value="country">{{ country.value }}</option>
         </b-select>
@@ -16,7 +16,7 @@
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
       <b-field :type="errors.has('province') ? 'is-danger' : ''">
         <template #label>
-          {{ $t('Province') }} <span class="has-text-danger">*</span>
+          {{ 'Province/State' }} <span class="has-text-danger">*</span>
         </template>
         <template #message>
           <span v-if="errors.has('province')">{{ errors.first('province') }}</span>
@@ -26,7 +26,7 @@
             {{ provinceSelected.settings ? 'See Settings' : 'Configure' }}
           </a>
         </template>
-        <b-autocomplete :data="filteredProvinces" :placeholder="$t('Select')" v-model="province" open-on-focus
+        <b-autocomplete :data="filteredProvinces" :placeholder="'Select'" v-model="province" open-on-focus
           name="province" v-validate="'required'" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
       </b-field>
     </div>
@@ -34,9 +34,9 @@
       <b-field :type="errors.has('city') ? 'is-danger' : ''"
         :message="errors.has('city') ? errors.first('city') : ''">
         <template #label>
-          {{ $t('City') }} <span class="has-text-danger">*</span>
+          {{ 'City' }} <span class="has-text-danger">*</span>
         </template>
-        <b-autocomplete :data="filteredCities" ref="autoCompleteCities" :placeholder="$t('Select')" v-model="city"
+        <b-autocomplete :data="filteredCities" ref="autoCompleteCities" :placeholder="'Select'" v-model="city"
           open-on-focus name="city" v-validate="'required'" :loading="loadingCities" selectable-footer @select="onCitySelected"
           @select-footer="addCity">
           <template v-if="isAgency" #footer>
@@ -50,7 +50,7 @@
       <b-field :type="errors.has('address') ? 'is-danger' : ''"
         :message="errors.has('address') ? errors.first('address') : ''">
         <template #label>
-          {{ $t('Address') }} <span class="has-text-danger">*</span>
+          {{ 'Address' }} <span class="has-text-danger">*</span>
         </template>
         <b-input type="text" v-model="localModel.address" name="address"
           v-validate="{ required: true, max: 100, min: 6, regex: $regexAddress }" />
@@ -60,7 +60,7 @@
       <b-field :type="errors.has('postalCode') ? 'is-danger' : ''"
         :message="errors.has('postalCode') ? errors.first('postalCode') : ''">
         <template #label>
-          {{ $t('PostalCode') }} <span class="has-text-danger">*</span>
+          {{ 'Postal/ZIP Code' }} <span class="has-text-danger">*</span>
         </template>
         <b-input type="text" v-model="localModel.postalCode" name="postalCode"
           v-validate="{ 'cvn-postal-code': 'cvn-postal-code' }" />
@@ -75,6 +75,8 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
@@ -254,6 +256,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useSecurityStore),
     filteredProvinces() {
       const provinces = this.provinces.filter(c => c.value.toLowerCase().includes(this.province.toLowerCase()));
       return provinces;
@@ -263,7 +266,7 @@ export default {
       return cities;
     },
     isAgency() {
-      return this.$store.state.security.userRoles.some(ur => ur === roles.agencyPersonnel);
+      return this.securityStore.userRoles.some(ur => ur === roles.agencyPersonnel);
     }
   },
 };

@@ -3,9 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="$t('VaccinationRequired')">
+        <b-field :label="'Vaccination Required'">
           <b-switch v-model="model.required" :value="true" :false-value="false">
-            {{ model.required ? $t('Yes') : $t('No') }}
+            {{ model.required ? 'Yes' : 'No' }}
           </b-switch>
         </b-field>
       </div>
@@ -18,7 +18,7 @@
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding text-right">
         <b-button type="is-primary" @click="saveVaccinationRequired">
-          {{ $t('Save') }}
+          {{ 'Save' }}
         </b-button>
       </div>
     </div>
@@ -26,6 +26,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { updateCompanyVaccinationRequired } from "@/api/agencyCompanyApi";
 
 export default {
@@ -44,17 +45,17 @@ export default {
         if (result) {
           updateCompanyVaccinationRequired(this.companyProfileId, {
             vaccinationRequired: this.model.required,
-            vaccinationRequiredComments: this.model.comments,
+            vaccinationRequiredComments: this.model.comments
           }).then(() => {
             this.isLoading = false
             this.$emit('updated', this.model);
           }).catch(error => {
             this.isLoading = false
-            this.showAlertError(error)
+            showAlertError(error)
           });
         }
       })
-    },
+    }
   },
   created() {
     this.model.required = this.vaccinationRequired;

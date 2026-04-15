@@ -15,18 +15,18 @@
       <div>
         <div v-if="request.status"
           class="option-request-top capitailized fw-700 is-inline-block" :class="RequestStatusLabels[request.status]">
-          {{ $t(RequestStatusLabels[request.status]) }}
+          {{ RequestStatusLabels[request.status] }}
         </div>
         <floating-menu class="is-inline-block" v-if="canEdit">
           <template slot="options">
             <button class="floating-menu-item" v-on:click="alertRequestAnotherWorker">
-              <span>{{ $t("RequestAnotherWorker") }}</span>
+              <span>{{ "Request another worker" }}</span>
             </button>
             <button class="floating-menu-item" v-on:click="editContentModal = true">
               <span>Edit Requirements</span>
             </button>
             <button class="floating-menu-item" v-if="canCancel" v-on:click="modalValidation = true">
-              <span>{{ $t("CancelRequest") }}</span>
+              <span>{{ "Cancel Order" }}</span>
             </button>
           </template>
         </floating-menu>
@@ -74,6 +74,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { isDirectHiring } from '@/utils/directHiring';
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
@@ -89,7 +90,7 @@ export default {
       currentTab: "Detail",
       visitedTabs: ["Detail"],
       editContentModal: false,
-      unsavedChanges: false,
+      unsavedChanges: false
     };
   },
   components: {
@@ -98,7 +99,7 @@ export default {
     FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
     Detail: () => import("../../components/company_request/CompanyRequestDetail.vue"),
     Workers: () => import("../../components/company_request/CompanyRequestWorkers.vue"),
-    PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard.vue"),
+    PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard.vue")
   },
   beforeRouteLeave: confirmationGuard,
   methods: {
@@ -109,12 +110,12 @@ export default {
         .then(() => {
           this.isLoading = false;
           this.unsavedChanges = false;
-          this.showAlertSuccess(this.$t("Cancelled"));
+          showAlertSuccess("Cancelled");
           this.$router.push("/company-requests");
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     getData() {
@@ -124,7 +125,7 @@ export default {
           this.request = response;
         })
         .catch((error) => {
-          this.showAlertError(error.data);
+          showAlertError(error.data);
           this.isLoading = false;
         });
     },
@@ -137,11 +138,11 @@ export default {
       requestAnotherWorker(this.$route.params.id, { comments: comment })
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Requested"));
+          showAlertSuccess("Requested");
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onUpdateRequirements(data) {
@@ -151,12 +152,12 @@ export default {
           editRequest(this.$route.params.id, { requirements: data })
             .then(() => {
               this.isLoading = false;
-              this.showAlertSuccess(this.$t("Updated"));
+              showAlertSuccess("Updated");
               this.request.requirements = data;
               this.editContentModal = false;
             }).catch((error) => {
               this.isLoading = false;
-              this.showAlertError(error.data);
+              showAlertError(error.data);
             });
         }
       });
@@ -168,10 +169,10 @@ export default {
       this.$router.push({
         path: `/request/${this.$route.params.id}`,
         query: {
-          tab: tab,
-        },
+          tab: tab
+        }
       });
-    },
+    }
   },
   created() {
     this.getData();
@@ -196,7 +197,7 @@ export default {
       // Can only cancel orders in Open status without workers
       return this.request.status === RequestStatus.Open &&
              (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
-    },
-  },
+    }
+  }
 };
 </script>

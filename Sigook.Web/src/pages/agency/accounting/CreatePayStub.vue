@@ -148,6 +148,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { getAgencyWorkersDropdown } from "@/api/agencyWorkerApi";
 import { createAgencyPayStub } from "@/api/agencyPayStubApi";
@@ -219,7 +220,7 @@ export default {
         })
         .catch(error => {
           this.isLoadingList = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     selectWorker(worker) {
@@ -298,12 +299,12 @@ export default {
         createAgencyPayStub(payload)
           .then(() => {
             this.isLoading = false;
-            this.showAlertSuccess('PayStub created successfully');
+            showAlertSuccess('PayStub created successfully');
             this.$router.push('/accounting/paystubs');
           })
           .catch(error => {
             this.isLoading = false;
-            this.showAlertError(error);
+            showAlertError(error);
           });
       }
     }

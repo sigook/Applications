@@ -20,20 +20,20 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('full name') ? 'is-danger' : ''" :label="$t('CompanyFullName')"
+          <b-field :type="errors.has('full name') ? 'is-danger' : ''" :label="'Full name'"
             :message="errors.has('full name') ? errors.first('full name') : ''">
             <b-input type="text" v-model="company.fullName" name="full name" v-validate="'required|max:60|min:2'" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('business name') ? 'is-danger' : ''" :label="$t('CompanyBusinessName')"
+          <b-field :type="errors.has('business name') ? 'is-danger' : ''" :label="'Business Name'"
             :message="errors.has('business name') ? errors.first('business name') : ''">
             <b-input type="text" v-model="company.businessName" name="business name"
               v-validate="'required|max:50|min:2'" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('industry') ? 'is-danger' : ''" :label="$t('CompanyTypeIndustry')"
+          <b-field :type="errors.has('industry') ? 'is-danger' : ''" :label="'Type of industry'"
             :message="errors.has('industry') ? errors.first('industry') : ''">
             <b-autocomplete v-model="industrySelected" :data="filteredIndustries" open-on-focus v-validate="'required'"
               ref="autoCompleteIndustries" name="industry" placeholder="Industry" selectable-footer
@@ -57,7 +57,7 @@
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
           <b-field :type="errors.has('salesRepresentative') ? 'is-danger' : ''" label="Sales Representative"
             :message="errors.has('salesRepresentative') ? errors.first('salesRepresentative') : ''">
-            <b-autocomplete :data="filteredSalesRepresentative" :placeholder="$t('Select')"
+            <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
               v-model="salesRepresentative" open-on-focus name="salesRepresentative" v-validate="'required'"
               :custom-formatter="(option) => `${option.name} - ${option.email}`"
               @select="onSalesRepresentativeSelected">
@@ -65,7 +65,7 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-          <b-field :type="errors.has('about') ? 'is-danger' : ''" :label="$t('CompanyAbout')"
+          <b-field :type="errors.has('about') ? 'is-danger' : ''" :label="'About'"
             :message="errors.has('about') ? errors.first('about') : ''">
             <b-input type="textarea" v-model="company.about" name="about" v-validate="'max:5000|min:2'" />
           </b-field>
@@ -80,7 +80,7 @@
           </b-field>
         </div>
       </div>
-      <h3 class="fz1 col-padding">{{ $t("CompanyContactInformation") }}</h3>
+      <h3 class="fz1 col-padding">{{ "Contact Information" }}</h3>
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <phone-input :required="false" :defaultValue="company.phone" model="Phone"
@@ -103,13 +103,13 @@
           </b-field>
         </div>
         <div v-if="!isUpdate" class="col-sm-12 col-md-6 col-padding">
-          <b-field :type="errors.has('email') ? 'is-danger' : ''" :label="$t('Email')"
+          <b-field :type="errors.has('email') ? 'is-danger' : ''" :label="'Email'"
             :message="errors.has('email') ? errors.first('email') : ''">
             <b-input type="email" v-model="company.email" name="email" v-validate="'required|max:50|min:6|email'" />
           </b-field>
         </div>
         <div v-if="displayPassword" class="col-sm-12 col-md-6 col-padding">
-          <b-field :type="errors.has('password') ? 'is-danger' : ''" :label="$t('Password')"
+          <b-field :type="errors.has('password') ? 'is-danger' : ''" :label="'Password'"
             :message="errors.has('password') ? errors.first('password') : ''">
             <b-input type="password" v-model="company.password" name="password" v-validate="{
               required: displayPassword,
@@ -120,7 +120,7 @@
         </div>
         <div
           :class="displayPassword ? 'col-sm-12 col-md-12 col-lg-12 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
-          <b-field :type="errors.has('website') ? 'is-danger' : ''" :label="$t('CompanyWebsite')"
+          <b-field :type="errors.has('website') ? 'is-danger' : ''" :label="'Website'"
             :message="errors.has('website') ? errors.first('website') : ''">
             <b-input type="text" v-model="company.website" name="website" v-validate="'max:50|url'"
               placeholder="www.example.com" />
@@ -128,7 +128,7 @@
         </div>
         <div class="col-12 mt-5">
           <b-button v-if="isUpdate" type="is-primary" native-type="submit">Update</b-button>
-          <b-button v-else type="is-primary" native-type="submit">{{ $t("Create") }}</b-button>
+          <b-button v-else type="is-primary" native-type="submit">{{ "Create" }}</b-button>
         </div>
       </div>
     </form>
@@ -136,6 +136,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { usePubSub } from '@/composables/usePubSub';
@@ -160,19 +161,19 @@ export default {
         logo: {},
         industry: {
           industry: null,
-          otherIndustry: null,
+          otherIndustry: null
         },
-        requiresPermissionToSeeOrders: false,
+        requiresPermissionToSeeOrders: false
       },
       submitted: false,
       isUpdate: false,
-      unsavedChanges: false,
+      unsavedChanges: false
     };
   },
   beforeRouteLeave: confirmationGuard,
   components: {
     UploadImage: () => import("@/components/PreviewImage.vue"),
-    phoneInput: () => import("@/components/PhoneInput.vue"),
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   async created() {
     const company = this.$route.meta.company;
@@ -213,7 +214,7 @@ export default {
           }
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     submitCreateCompany() {
@@ -221,12 +222,12 @@ export default {
       createAgencyCompany(this.company)
         .then((response) => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("CompanyCreated"));
+          showAlertSuccess("Company created");
           this.$router.push("/agency-companies/company/" + response.id);
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     submitUpdateCompany() {
@@ -234,12 +235,12 @@ export default {
       updateAgencyCompany(this.company.companyProfileId, this.company)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess("Company updated");
+          showAlertSuccess("Company updated");
           this.$router.push("/agency-companies/company/" + this.company.companyProfileId);
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         })
     },
     onSalesRepresentativeSelected(option) {
@@ -262,7 +263,7 @@ export default {
         inputAttrs: {
           placeholder: 'Industry',
           maxlength: 100,
-          value: this.industrySelected,
+          value: this.industrySelected
         },
         closeOnConfirm: false,
         confirmText: 'Add',

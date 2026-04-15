@@ -1,7 +1,7 @@
 <template>
   <div class="hover-transform">
     <div class="detail-worker-profile">
-      <span class="width-30">{{ $t("Email") }}</span>
+      <span class="width-30">{{ "Email" }}</span>
       <span class="width-70">
         <p class="fw-200 margin-0">{{ worker.email }}</p>
       </span>

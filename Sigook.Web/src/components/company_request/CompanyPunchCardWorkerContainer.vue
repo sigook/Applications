@@ -95,6 +95,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
@@ -105,7 +106,7 @@ import {
   postCompanyWorkerTimeSheet,
   deleteCompanyWorkerTimeSheet,
   companyTimeSheetClockIn,
-  updateCompanyRequestWorkerTimeSheet,
+  updateCompanyRequestWorkerTimeSheet
 } from '@/api/companyApi';
 
 dayjs.extend(duration);
@@ -143,7 +144,7 @@ export default {
           this.updateCell();
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         })
         .finally(() => {
           this.isLoading = false;
@@ -158,7 +159,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     onMonthChange(startDate, endDate) {
@@ -186,7 +187,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     validatePost(model) {
@@ -195,7 +196,7 @@ export default {
           this.reportWorkerTimSheet(model);
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     reportWorkerTimSheet(item) {
@@ -219,11 +220,11 @@ export default {
           this.getAgencyWorkerTimeSheetByDate();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     confirmDelete(item) {
-      this.showAlertConfirm('Are you sure', 'You want to delete this item?')
+      showAlertConfirm('Are you sure', 'You want to delete this item?')
         .then(response => {
           if (response) {
             this.deleteCompanyWorkerTimeSheet(item);
@@ -242,7 +243,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     changeDecimalToHour(time) {

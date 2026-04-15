@@ -45,6 +45,8 @@
 </template>
 <script lang="ts">
 
+import { mapStores } from 'pinia';
+import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 
 export default {
@@ -59,13 +61,14 @@ export default {
     },
   },
   computed: {
+    ...mapStores(useSecurityStore),
     isCompanyProfile() {
-      return this.$store.state.security.userRoles.some((ur) =>
+      return this.securityStore.userRoles.some((ur) =>
         ur.includes(roles.company)
       );
     },
     isWorkerProfile() {
-      return this.$store.state.security.userRoles.some((ur) =>
+      return this.securityStore.userRoles.some((ur) =>
         ur.includes(roles.worker)
       );
     },

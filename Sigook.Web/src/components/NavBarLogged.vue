@@ -11,16 +11,16 @@
         <b-navbar-item v-for="(item, i) in singleMenus" :key="i" tag="router-link" :to="item.to" :href="item.to"
           :target="item.external ? '_blank' : ''" :active="$route.path === item.to">
           <b-icon :icon="item.icon" class="mr-2"></b-icon>
-          {{ $t(item.label) }}
+          {{ item.label }}
         </b-navbar-item>
         <b-navbar-dropdown v-for="item in multiMenus" :key="item.label" :active="$route.path.startsWith(item.to)">
           <template #label>
             <b-icon :icon="item.icon" class="mr-2"></b-icon>
-            {{ $t(item.label) }}
+            {{ item.label }}
           </template>
           <b-navbar-item v-for="subItem in item.items" :key="subItem.label" tag="router-link"
             :to="item.to + subItem.to">
-            {{ $t(subItem.label) }}
+            {{ subItem.label }}
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
@@ -55,6 +55,9 @@
 
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { useSecurityStore } from '@/stores/security';
 import { avatarLetters } from '@/utils/filters';
 import menu from "@/security/menu";
 import roles from "@/security/roles";
@@ -75,19 +78,14 @@ export default {
     avatarLetters,
     logout() {
       this.isLoading = true
-      this.$store.dispatch("signOut")
+      this.securityStore.signOut()
         .then(() => this.$router.push("/callback"));
-    },
-    switchLocale(lang) {
-      this.$i18n.locale = lang;
-      this.$validator.locale = lang;
-      this.lang = this.$validator.dictionary.locale;
     },
     async getAgencyInfo() {
       const agency = await getAgencyProfile();
-      this.$store.commit("agency/setAgency", agency);
+      this.agencyStore.setAgency(agency);
       const personnelAgencies = await getPersonnelAgencies();
-      this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
+      this.agencyStore.setPersonnelAgencies(personnelAgencies);
       this.profileUrl = "/agency-profile";
     },
     async getCompanyInfo() {
@@ -97,7 +95,7 @@ export default {
       this.profileUrl = "/company-profile";
     },
     async getCompanyUserInfo() {
-      await this.$store.dispatch("getUser").then((r) => {
+      await this.securityStore.getUser().then((r) => {
         this.currentUser.fullName = r.profile.name;
         this.currentUser.profileImage = null;
         this.profileUrl = "/company-user-profile";
@@ -121,8 +119,9 @@ export default {
     },
   },
   computed: {
+    ...mapStores(useAgencyStore, useSecurityStore),
     currentUser() {
-      return this.$store.state.agency.agency;
+      return this.agencyStore.agency;
     },
     singleMenus() {
       return this.menuItems.filter(item => !item.items);
@@ -132,7 +131,7 @@ export default {
     },
   },
   async created() {
-    this.userRoles = this.$store.state.security.userRoles;
+    this.userRoles = this.securityStore.userRoles;
     for (let i = 0; i < this.userRoles.length; i++) {
       const role = this.userRoles[i];
       switch (role) {
@@ -154,7 +153,7 @@ export default {
         }
       }
     }
-    this.menuItems = menu.getMenu(this.userRoles, this.$store.state.agency.agency);
+    this.menuItems = menu.getMenu(this.userRoles, this.agencyStore.agency);
   }
 };
 </script>

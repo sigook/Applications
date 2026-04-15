@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 export default {
     props: ['displayShift', 'roleId', 'companyId'],
@@ -20,7 +20,6 @@ export default {
             isLoading: false
         }
     },
-    mixins: [toastMixin],
     components: {
         ShiftDetail: () => import("../request/ShiftDetail.vue")
     },
@@ -36,7 +35,7 @@ export default {
                         })
                         .catch(error => {
                             this.isLoading = false;
-                            this.showAlertError(error);
+                            showAlertError(error);
                         })
             } else {
                 this.showDetail = false;

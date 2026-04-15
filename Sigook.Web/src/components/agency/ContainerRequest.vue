@@ -2,7 +2,7 @@
   <div class="container-requests">
     <router-link :to="'/agency-request/' + data.id">
       <div class="container-requests-top">
-        <span class="asap" v-if="data.isAsap">{{ $t('Asap') }}</span>
+        <span class="asap" v-if="data.isAsap">{{ 'Asap' }}</span>
         <img :src="data.logo" class="request-logo"/>
         <div class="container-title">
           <h3 class="light-title">
@@ -31,7 +31,7 @@
         </div>
 
         <div class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
-             v-status="{status: data.status}"> {{ $t(data.status) }}
+             v-status="{status: data.status}"> {{ data.status }}
         </div>
       </div>
     </router-link>
@@ -39,6 +39,8 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
 import { dateFromNow } from '@/utils/filters';
 
 export default {
@@ -47,6 +49,9 @@ export default {
     return {
       now: new Date()
     }
+  },
+  computed: {
+    ...mapStores(useAppStore),
   },
   methods: {
     dateFromNow,
@@ -72,7 +77,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getCurrentDate').then(response => {
+    this.appStore.getCurrentDate().then(response => {
       this.now = response;
     })
   }

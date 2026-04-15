@@ -5,7 +5,7 @@
       accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" title="logo" :name="'file' + name + format" v-validate="{
         required: required,
         size: '15500',
-        ext: ['pdf', 'jpeg', 'jpg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx'],
+        ext: ['pdf', 'jpeg', 'jpg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx']
       }" :class="{ 'is-danger': errors.has('file' + name + format) }" :disabled="disabled"
       :ref="'file' + name + format" :id="id" />
     <span v-show="errors.has('file' + name + format)" class="help is-danger no-margin">
@@ -14,6 +14,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { uploadFile } from "@/utils/fileUpload";
 
 export default {
@@ -22,7 +23,7 @@ export default {
     return {
       pathFile: null,
       isLoading: false,
-      selected: false,
+      selected: false
     };
   },
   methods: {
@@ -38,7 +39,7 @@ export default {
           this.isLoading = false;
         })
         .catch((e) => {
-          this.showAlertError(e);
+          showAlertError(e);
           this.cleanInput();
           this.$emit("finishUpload", true);
           this.isLoading = false;
@@ -57,8 +58,8 @@ export default {
             this.onSelectFile(evt);
           }
         })
-    },
-  },
+    }
+  }
 };
 </script>
 

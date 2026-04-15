@@ -35,7 +35,7 @@
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item)">
-                {{ $t("Delete") }}
+                {{ "Delete" }}
               </button>
             </b-tooltip>
           </div>
@@ -56,7 +56,7 @@
             <div class="modal-container modal-light overflow-initial">
               <span class="fz1 fw-700">New Document</span>
               <button @click="modalDocuments = false" type="button" class="cross-icon">
-                {{ $t("Close") }}
+                {{ "Close" }}
               </button>
               <documents-form :data="worker" @closeAndUpdate="() => closeAndUpdate()" />
             </div>
@@ -68,8 +68,8 @@
   </section>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerOtherDocuments } from '@/api/workerApi';
 export default {
   props: ["worker", 'justWhmis'],
@@ -77,10 +77,9 @@ export default {
     return {
       isLoading: false,
       modalDocuments: false,
-      documents: [],
+      documents: []
     };
   },
-  mixins: [toastMixin],
   methods: {
     filename,
     closeAndUpdate() {
@@ -88,7 +87,7 @@ export default {
       this.$emit('updateProfile', true);
     },
     confirmDelete(document) {
-      this.showAlertConfirm("Are you sure", "You want to delete this document").then((response) => {
+      showAlertConfirm("Are you sure", "You want to delete this document").then((response) => {
         if (response) {
           this.isLoading = true;
           deleteWorkerOtherDocuments(this.worker.id, document.id)
@@ -98,14 +97,14 @@ export default {
             })
             .catch((error) => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             });
         }
       })
     }
   },
   components: {
-    documentsForm: () => import("./WorkerOtherDocumentsForm.vue"),
+    documentsForm: () => import("./WorkerOtherDocumentsForm.vue")
   }
 };
 </script>

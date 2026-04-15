@@ -1,26 +1,26 @@
 <template>
   <section>
     <div class="button-right">
-      <h3 class="section-title">{{ $t("SocialInsurance") }}</h3>
+      <h3 class="section-title">{{ "SIN/SSN" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalSocialInsurance = true"></b-button>
     </div>
     <div class="worker-documents">
 
       <div v-if="worker.socialInsurance">
-        <span>{{ $t("WorkerSocialInsuranceNumber") }}</span>
+        <span>{{ "SIN/SSN#" }}</span>
         <span>
           <p class="fw-200 margin-0">
             <b-button size="is-small" type="is-ghost" :icon-right="showSin ? 'eye-off' : 'eye'" @click="showSin = !showSin"></b-button>
             <i v-if="showSin">{{ worker.socialInsurance }}</i>
             <i v-else>{{ sin(worker.socialInsurance) }}</i> |
-            <i>{{ $t("WorkerDueDate") }}: </i>
+            <i>{{ "Expire" }}: </i>
             <i v-if="worker.socialInsuranceExpire">{{ date(worker.dueDate) }}</i>
           </p>
         </span>
       </div>
       <div v-if="worker.socialInsuranceFile && worker.socialInsuranceFile.fileName">
-        <span>{{ $t("File") }}</span>
+        <span>{{ "File" }}</span>
         <span class="fw-200 margin-0">
           <a :href="worker.socialInsuranceFile.pathFile" download target="_blank">
             {{ filename(worker.socialInsuranceFile.fileName) }}

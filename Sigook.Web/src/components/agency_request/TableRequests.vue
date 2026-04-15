@@ -27,7 +27,7 @@
             <router-link :to="{ path: '/agency-request/' + props.row.id }">
               <p>{{ props.row.numberId }}</p>
             </router-link>
-            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
+            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
             <p v-if="props.row.workerSalary" class="asap">DH</p>
             <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
           </template>
@@ -175,7 +175,7 @@
           </template>
           <template v-slot="props">
             <div class="text-center">
-              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark" append-to-body>
+              <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
                     class="request-check" />
@@ -230,6 +230,9 @@
   </div>
 </template>
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from "@/utils/toast";
 import { dateFromNow, dateMonth, breakWord, currency } from '@/utils/filters';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
@@ -238,7 +241,7 @@ import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
   updateAgencyRequestNote,
-  deleteAgencyRequestNote,
+  deleteAgencyRequestNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 import {
@@ -246,7 +249,7 @@ import {
   DurationTermLabels,
   EmploymentTypeLabels,
   RequestStatus,
-  RequestStatusLabels,
+  RequestStatusLabels
 } from "@/constants/enums";
 
 export default {
@@ -432,7 +435,7 @@ export default {
       this.checkedRows = [];
       this.$emit("onDataLoading", true);
       if (!this.companyId && !this.agencyId) {
-        this.$store.dispatch("agency/updateAgencyRequestFilter", this.serverParams);
+        this.agencyStore.updateAgencyRequestFilter(this.serverParams);
       }
       getAgencyRequests(this.serverParams)
         .then((requests) => {
@@ -458,15 +461,15 @@ export default {
           this.loadRequests();
         }).catch((error) => {
           this.showQuickActions = false;
-          this.showAlertError(error);
+          showAlertError(error);
           this.$emit("onDataLoading", false);
         });
     }
   },
   created() {
     if (!this.companyId && !this.agencyId) {
-      if (this.$store.state.agency.agencyRequestFilter) {
-        this.serverParams = this.$store.state.agency.agencyRequestFilter;
+      if (this.agencyStore.agencyRequestFilter) {
+        this.serverParams = this.agencyStore.agencyRequestFilter;
         if (this.serverParams.statuses) {
           this.statusesSelected = this.statuses.filter(s => this.serverParams.statuses.some(sps => sps == s.id));
         }
@@ -493,6 +496,7 @@ export default {
     this.loadRequests();
   },
   computed: {
+    ...mapStores(useAgencyStore),
     DurationTerm: () => DurationTerm,
     DurationTermLabels: () => DurationTermLabels,
     EmploymentTypeLabels: () => EmploymentTypeLabels,
@@ -516,7 +520,7 @@ export default {
           .reduce((a, b) => a + b);
       }
       return 0;
-    },
+    }
   },
   watch: {
     'serverParams.onlyMine': function () {

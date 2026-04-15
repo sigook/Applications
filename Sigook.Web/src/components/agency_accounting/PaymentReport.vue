@@ -32,6 +32,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { downloadFile } from '@/utils/downloadFile';
 import { date, currency } from '@/utils/filters';
 import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
@@ -69,7 +70,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onDownloadWeeklyPayrollReport(row) {
@@ -81,7 +82,7 @@ export default {
         })
         .catch(error => {
           row.reportDownloading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     }
   }

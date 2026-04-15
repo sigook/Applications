@@ -21,21 +21,19 @@
   </form>
 </template>
 <script lang="ts">
-import phoneFormat from "@/mixins/phoneFormatMixin";
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
 
 export default {
   props: ['cssClass', 'isLoading'],
-  mixins: [phoneFormat],
   data() {
     return {
       mask,
       contact: {
         title: 'REQUEST PERSONNEL FORM ~ NOTIFICATION',
         subject: 'Contact Request Staff',
-        emailSetting: process.env.VUE_APP_SIGOOK_NOTIFICATION
+        emailSetting: import.meta.env.VUE_APP_SIGOOK_NOTIFICATION
       },
       formError: null
     }

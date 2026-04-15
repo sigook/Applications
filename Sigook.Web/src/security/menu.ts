@@ -38,29 +38,29 @@ export default {
       {
         to: "/agency-requests",
         icon: "calendar-month",
-        label: "MenuRequestsAgency",
+        label: "Orders",
       },
       {
         to: "/agency-candidates",
         icon: "account-group",
-        label: "MenuCandidatesAgency",
+        label: "Candidates",
       },
       {
         to: "/agency-workers",
         icon: "badge-account-outline",
-        label: "MenuWorkersAgency",
+        label: "Workers",
       },
       {
         to: "/agency-companies",
         icon: "domain",
-        label: "MenuCompanies",
+        label: "Clients",
       },
     ];
     if (agency.masterAgency) {
       menus.push({
         to: "/agency-agencies",
         icon: "office-building",
-        label: "MenuAgencies",
+        label: "Agencies",
       });
     }
     return menus;
@@ -69,7 +69,7 @@ export default {
     const root: MenuItem = {
       to: "/accounting",
       icon: "finance",
-      label: "MenuBilling",
+      label: "Accounting",
       items: [],
     };
     root.items?.push(
@@ -86,7 +86,7 @@ export default {
     if (!agency.usaAgency) {
       root.items?.push({
         to: "/paystubs",
-        label: "Paystubs",
+        label: "Pay Stubs",
       });
     }
     return menus;
@@ -96,12 +96,12 @@ export default {
       {
         to: "/company-requests",
         icon: "calendar-month",
-        label: "MenuCompaniesRequests",
+        label: "Staff Requests",
       },
       {
         to: "/company-invoices",
         icon: "finance",
-        label: "MenuBilling",
+        label: "Accounting",
       },
     ];
   },
@@ -110,7 +110,7 @@ export default {
       {
         to: "/company-requests",
         icon: "calendar-month",
-        label: "MenuCompaniesRequests",
+        label: "Staff Requests",
       },
     ];
   },
@@ -119,12 +119,12 @@ export default {
       {
         to: "/worker-requests",
         icon: "calendar-month",
-        label: "MenuJobs",
+        label: "Jobs available for you",
       },
       {
         to: "/worker-history",
         icon: "history",
-        label: "MenuHistory",
+        label: "History",
       },
     ];
   },

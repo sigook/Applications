@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        {{ $t("CompanyStaffRequests") }}
+        {{ "Staff Requests" }}
         <span class="fw-100 fz-1">
           ({{ totalItems }})
         </span>
@@ -30,7 +30,7 @@
               <router-link :to="{ path: '/request/' + props.row.id }">
                 <p>{{ props.row.numberId }}</p>
               </router-link>
-              <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
+              <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
               <p v-if="props.row.isDirectHiring" class="asap">DH</p>
             </template>
           </b-table-column>
@@ -69,7 +69,7 @@
           </b-table-column>
           <b-table-column field="requestStatus" label="Status" v-slot="props">
             <div class="text-center">
-              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark" append-to-body>
+              <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled"
                     src="../../assets/images/check_white.png" alt="check" class="request-check" />
@@ -85,14 +85,16 @@
 </template>
 
 <script lang="ts">
-import toast from "@/mixins/toastMixin";
+import { mapStores } from 'pinia';
+import { useCompanyStore } from '@/stores/company';
+import { showAlertError } from "@/utils/toast";
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
 
 export default {
   components: {
-    AgencyShift: () => import("@/components/agency_request/AgencyShiftDetail.vue"),
+    AgencyShift: () => import("@/components/agency_request/AgencyShiftDetail.vue")
   },
   data() {
     return {
@@ -107,7 +109,6 @@ export default {
       }
     };
   },
-  mixins: [toast],
   methods: {
     dateFromNow,
     onPageChange(params) {
@@ -160,7 +161,7 @@ export default {
     },
     getCompanyRequests() {
       this.isLoading = true;
-      this.$store.commit('company/setCompanyRequestFilter', this.serverParams);
+      this.companyStore.setCompanyRequestFilter(this.serverParams);
       getRequests(this.serverParams)
         .then((requests) => {
           this.rows = requests.items;
@@ -168,17 +169,18 @@ export default {
           this.isLoading = false;
         }).catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     }
   },
   created() {
-    if (this.$store.state.company.companyRequestFilter) {
-      this.serverParams = this.$store.state.company.companyRequestFilter;
+    if (this.companyStore.companyRequestFilter) {
+      this.serverParams = this.companyStore.companyRequestFilter;
     }
     this.getCompanyRequests();
   },
   computed: {
+    ...mapStores(useCompanyStore),
     RequestStatus: () => RequestStatus,
     RequestStatusLabels: () => RequestStatusLabels,
     totalQuantityWorking() {
@@ -196,7 +198,7 @@ export default {
           .reduce((a, b) => a + b);
       }
       return 0;
-    },
-  },
+    }
+  }
 };
 </script>

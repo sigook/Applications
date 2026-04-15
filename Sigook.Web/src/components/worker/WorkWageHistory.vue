@@ -72,6 +72,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { dateMonth, currency } from '@/utils/filters';
 import { getWorkerProfileWageHistory, getWorkerProfileWageHistoryAccumulated } from '@/api/workerApi';
 
@@ -109,7 +110,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     getTotalQuantity(items) {
@@ -123,11 +124,11 @@ export default {
     getAccumulated(row) {
       getWorkerProfileWageHistoryAccumulated(this.workerId, row.rowNumber)
         .then((response) => this.rowDetail = response)
-        .catch((error) => this.showAlertError(error));
-    },
+        .catch((error) => showAlertError(error));
+    }
   },
   created() {
     this.getWorkerProfileWageHistory();
-  },
+  }
 };
 </script>

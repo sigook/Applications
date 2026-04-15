@@ -8,7 +8,7 @@
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="send">{{ $t("Send") }}</b-button>
+        <b-button type="is-primary" @click="send">{{ "Send" }}</b-button>
       </div>
     </div>
   </div>

@@ -28,6 +28,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { date, currency } from '@/utils/filters';
@@ -65,7 +66,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     downloadSubcontractor(subcontractor) {
@@ -78,7 +79,7 @@ export default {
         })
         .catch(error => {
           subcontractor.reportDownloading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     }
   },

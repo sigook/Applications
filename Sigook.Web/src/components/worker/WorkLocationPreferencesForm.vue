@@ -12,13 +12,14 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="createWorkerLocationPreferences()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getCities } from "@/api/locationApi";
 import { createWorkerLocationPreferences } from '@/api/workerApi';
 export default {
@@ -43,7 +44,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     getCities() {
@@ -55,7 +56,7 @@ export default {
           this.filteredCitiesLocations = result;
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     getFilteredCities(text) {

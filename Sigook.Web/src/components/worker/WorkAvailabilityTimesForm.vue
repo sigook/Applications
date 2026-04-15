@@ -13,13 +13,14 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="createWorkerAvailabilityTimes()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getAvailabilityTimes } from "@/api/catalogApi";
 import { createWorkerAvailabilityTimes } from '@/api/workerApi';
 
@@ -44,7 +45,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },

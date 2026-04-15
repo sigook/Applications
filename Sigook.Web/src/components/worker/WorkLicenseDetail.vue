@@ -2,7 +2,7 @@
   <section>
     <b-loading v-model="isLoading"></b-loading>
     <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ $t("WorkerLicenses") }}</h3>
+      <h3 class="fw-700 fz-0">{{ "Licenses" }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalLicense = true">
         Add License
       </b-button>
@@ -20,7 +20,7 @@
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item.license)">
-                {{ $t("Delete") }}
+                {{ "Delete" }}
               </button>
             </b-tooltip>
           </div>
@@ -43,9 +43,9 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ $t("WorkerLicenses") }}</span>
+              <span class="fz1 fw-700">{{ "Licenses" }}</span>
               <button @click="modalLicense = false" type="button" class="cross-icon">
-                {{ $t("Close") }}
+                {{ "Close" }}
               </button>
               <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
@@ -58,8 +58,8 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename, dateMonth } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerLicenses } from '@/api/workerApi';
 export default {
   props: ["worker"],
@@ -68,7 +68,7 @@ export default {
       modalLicense: false,
       modalEdit: false,
       isLoading: false,
-      localWorker: JSON.parse(JSON.stringify(this.worker)),
+      localWorker: JSON.parse(JSON.stringify(this.worker))
     };
   },
   watch: {
@@ -79,7 +79,6 @@ export default {
       deep: true
     }
   },
-  mixins: [toastMixin],
   methods: {
     filename,
     dateMonth,
@@ -88,7 +87,7 @@ export default {
       this.modalLicense = false;
     },
     confirmDelete(license) {
-      this.showAlertConfirm("Are you sure", "You want to delete this document")
+      showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
             this.isLoading = true;
@@ -100,17 +99,17 @@ export default {
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   components: {
-    licenseEdit: () => import("./WorkLicenseForm.vue"),
-  },
+    licenseEdit: () => import("./WorkLicenseForm.vue")
+  }
 };
 </script>

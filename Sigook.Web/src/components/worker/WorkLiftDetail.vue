@@ -1,7 +1,7 @@
 <template>
   <div class="hover-transform">
     <div class="detail-worker-profile">
-      <span class="width-30">{{ $t("WorkerYouCanLift") }}</span>
+      <span class="width-30">{{ "Can you Lift up to" }}</span>
       <span class="width-70">
         <b-tag v-if="worker.lift" type="is-info is-light" size="is-medium" rounded>{{ worker.lift.value }}</b-tag>
       </span>

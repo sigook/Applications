@@ -76,7 +76,7 @@
             </a>
           </div>
         </div>
-        <img v-lazy="require('@/assets/images/app_mobile.png')" class="w-100 grid-item-start hide-on-mobile" alt="app mobile" />
+        <img v-lazy="appMobile" class="w-100 grid-item-start hide-on-mobile" alt="app mobile" />
       </div>
     </section>
     <b-modal v-model="showConfirmationModal">
@@ -107,21 +107,21 @@
 </template>
 
 <script lang="ts">
-import phoneFormat from "@/mixins/phoneFormatMixin";
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
+import appMobile from '@/assets/images/app_mobile.png';
 
 export default {
-  mixins: [phoneFormat],
   data() {
     return {
       mask,
+      appMobile,
       isLoading: false,
       contact: {
         title: "CONTACT FORM ~ NOTIFICATION",
         subject: "Contact From Sigook™",
-        emailSetting: process.env.VUE_APP_SIGOOK_NOTIFICATION,
+        emailSetting: import.meta.env.VUE_APP_SIGOOK_NOTIFICATION,
       },
       formError: null,
       showConfirmationModal: false,

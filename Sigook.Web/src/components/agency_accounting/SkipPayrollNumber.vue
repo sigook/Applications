@@ -17,6 +17,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getSkipPayrollNumbers, addSkipPayrollNumber } from "@/api/agencyPayStubApi";
 
 export default {
@@ -40,7 +41,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     onSelectFooter() {

@@ -63,6 +63,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { downloadFile } from '@/utils/downloadFile';
 import { getRequestWorkers } from '@/api/companyApi';
@@ -130,13 +131,13 @@ export default {
         .then((response) => {
           this.rows = response.items.map(i => ({
             ...i,
-            status: WorkerRequestStatusLabels[i.workerRequestStatus],
+            status: WorkerRequestStatusLabels[i.workerRequestStatus]
           }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
         .catch(error => {
-          this.showAlertError(error.data);
+          showAlertError(error.data);
           this.isLoading = false;
         })
     },
@@ -149,9 +150,9 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
-    },
+    }
   },
   created() {
     this.getWorkers();

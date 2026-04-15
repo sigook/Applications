@@ -29,7 +29,7 @@
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -38,8 +38,7 @@
 
 <script lang="ts">
 
-import validationEmail from '../../mixins/validationEmail';
-import toastMixin from "../../mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import { updateAgencyCompanyEmail } from "@/api/agencyCompanyApi";
 
 export default {
@@ -49,10 +48,9 @@ export default {
     return {
       isLoading: false,
       newEmail: "",
-      confirmEmail: "",
+      confirmEmail: ""
     }
   },
-  mixins: [toastMixin, validationEmail],
   methods: {
     validateAll() {
       this.$validator.validateAll().then((isValid) => {
@@ -60,7 +58,7 @@ export default {
           this.updateEmail();
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     updateEmail() {
@@ -71,7 +69,7 @@ export default {
       })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     }
   }

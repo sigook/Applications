@@ -63,7 +63,7 @@
         <span class="fw-700 mr-2">Break</span>
         <span class="fw-400">{{ request.durationBreak }}</span>
         <span v-if="request.breakIsPaid" class="fw-400">
-          | {{ $t("RequestBreakPaid") }}</span>
+          | {{ "Break paid" }}</span>
       </section>
     </section>
     <aside class="col-md-3 col-sm-12 section-right">

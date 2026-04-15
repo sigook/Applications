@@ -1,38 +1,38 @@
 <template>
   <section>
     <div class="button-right">
-      <h3 class="section-title">{{ $t("WorkerEmergencyInformation") }}</h3>
+      <h3 class="section-title">{{ "Emergency information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalEmergencyInformation = true"></b-button>
     </div>
     <div class="worker-documents">
       <div>
-        <span>{{ $t('WorkerDoYouHaveAnyHealthProblemsAllergies') }}</span>
+        <span>{{ 'Do you have any health problems / allergies?' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.haveAnyHealthProblem ? "Yes" : "No" }}</p>
         </span>
       </div>
       <div v-if="worker.haveAnyHealthProblem">
-        <span>{{ $t('WorkerWhich') }} ?</span>
+        <span>{{ 'Which' }} ?</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.healthProblem }}</p>
         </span>
       </div>
       <div v-if="worker.haveAnyHealthProblem">
-        <span>{{ $t('WorkerOtherAllergies') }}</span>
+        <span>{{ 'Other allergies' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.otherHealthProblem }}</p>
         </span>
       </div>
 
-      <p class="fw-400 fz-0 is-italic margin-bottom-10">{{ $t('WorkerInCaseOfEmergencyNotify') }}: </p>
+      <p class="fw-400 fz-0 is-italic margin-bottom-10">{{ 'In case of emergency notify' }}: </p>
       <div>
-        <span>{{ $t('Name') }}</span>
+        <span>{{ 'Name' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.contactEmergencyName }} {{ worker.contactEmergencyLastName }}</p>
         </span>
       </div>
       <div>
-        <span>{{ $t('Phone') }}</span>
+        <span>{{ 'Phone' }}</span>
         <span>
           <p class="fw-200 margin-0">{{ worker.contactEmergencyPhone }}</p>
         </span>

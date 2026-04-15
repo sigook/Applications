@@ -25,7 +25,7 @@
                 <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
                     @click="onDeleteDocument(document.id, index)">
-                    {{ $t("Delete") }}
+                    {{ "Delete" }}
                   </button>
                 </b-tooltip>
               </div>
@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from "@/utils/filters";
 import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 export default {
@@ -75,13 +76,13 @@ export default {
       data: null,
       profileId: this.$route.params.id,
       size: 10,
-      currentPage: 1,
+      currentPage: 1
     };
   },
   components: {
     documentsForm: () =>
       import("../../components/agency_company/DocumentsForm.vue"),
-    Pagination: () => import("../../components/Paginator.vue"),
+    Pagination: () => import("../../components/Paginator.vue")
   },
   methods: {
     filename,
@@ -102,7 +103,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onCreateDocument() {
@@ -110,26 +111,26 @@ export default {
       this.loadDocuments(this.currentPage);
     },
     onDeleteDocument(id, index) {
-      this.showAlertConfirm("Are you sure", "You want to delete this document")
+      showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
             this.isLoading = true;
             deleteAgencyCompanyDocument(this.profileId, id)
               .then(() => {
                 this.isLoading = false;
-                this.showAlertSuccess("Deleted");
+                showAlertSuccess("Deleted");
                 this.data.items.splice(index, 1);
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
-  },
+    }
+  }
 };
 </script>

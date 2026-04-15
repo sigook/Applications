@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ $t('WorkerCertificates') }}</h3>
+      <h3 class="fw-700 fz-0">{{ 'Certificates' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalCertificate = true">
         Add Certificate
       </b-button>
@@ -19,7 +19,7 @@
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button" @click="confirmDelete(item)">
-                {{ $t("Delete") }}
+                {{ "Delete" }}
               </button>
             </b-tooltip>
           </div>
@@ -37,9 +37,9 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ $t("WorkerCertificates") }}</span>
+              <span class="fz1 fw-700">{{ "Certificates" }}</span>
               <button @click="modalCertificate = false" type="button" class="cross-icon">
-                {{ $t('Close') }}
+                {{ 'Close' }}
               </button>
               <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
@@ -52,12 +52,11 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
 export default {
   props: ['worker'],
-  mixins: [toastMixin],
   data() {
     return {
       modalCertificate: false,
@@ -81,7 +80,7 @@ export default {
       this.modalCertificate = false
     },
     confirmDelete(certificate) {
-      this.showAlertConfirm(this.$t("AreYouSure"), "You want to delete this document")
+      showAlertConfirm("Are you sure?", "You want to delete this document")
         .then((response) => {
           if (response) {
             this.isLoading = true;
@@ -93,12 +92,12 @@ export default {
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     deleteCertificate(certificateArr) {
@@ -109,7 +108,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },

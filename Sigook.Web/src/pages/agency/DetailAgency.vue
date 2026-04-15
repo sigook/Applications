@@ -21,6 +21,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getAgency } from "@/api/agencyApi";
 import { lowercase } from '@/utils/filters';
 
@@ -30,11 +31,11 @@ export default {
       currentTab: "Orders",
       visitedTabs: ["Orders"],
       agency: null,
-      isLoading: true,
+      isLoading: true
     };
   },
   components: {
-    AgencyRequests: () => import("@/components/agency/AgencyRequests.vue"),
+    AgencyRequests: () => import("@/components/agency/AgencyRequests.vue")
   },
   methods: {
     lowercase,
@@ -45,8 +46,8 @@ export default {
       this.$router.push({
         path: `/agency-detail/${this.$route.params.id}`,
         query: {
-          tab: tab,
-        },
+          tab: tab
+        }
       });
     },
     loadAgency() {
@@ -58,9 +59,9 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   created() {
     this.loadAgency();
@@ -70,6 +71,6 @@ export default {
         this.visitedTabs.push(this.$route.query.tab);
       }
     }
-  },
+  }
 };
 </script>

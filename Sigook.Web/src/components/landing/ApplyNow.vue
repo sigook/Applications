@@ -179,14 +179,14 @@
 </template>
 
 <script lang="ts">
-import multipartUploadMixin from "@/mixins/multipartUploadMixin";
+import { showAlertError } from "@/utils/toast";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { getCountries } from "@/api/locationApi";
 import { submitCandidate } from "@/api/websiteApi";
 
 export default {
   props: ['jobToApply'],
-  mixins: [multipartUploadMixin],
-  components: {
+    components: {
     phoneInput: () => import("@/components/PhoneInput.vue")
   },
   data() {
@@ -222,7 +222,7 @@ export default {
       if (valid) {
         this.activeStep++;
       } else {
-        this.showAlertError("Please verify that the required fields are correctly filled in.");
+        showAlertError("Please verify that the required fields are correctly filled in.");
       }
     },
     async validateStep1() {
@@ -255,7 +255,7 @@ export default {
           // Generate file name if resume is present
           let fileName = null;
           if (this.file) {
-            fileName = this.generateFileName('Resume', this.file.name);
+            fileName = generateFileName('Resume', this.file.name);
           }
 
           // Build candidate data object (similar to CandidateViewModel in covenantWeb)
@@ -293,7 +293,7 @@ export default {
         this.$emit('candidateCreated');
         this.isLoading = false;
       }
-    },
+    }
   },
   computed: {
     isNewApplicantTab() {

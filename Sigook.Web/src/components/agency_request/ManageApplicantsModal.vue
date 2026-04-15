@@ -30,6 +30,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { searchAgencyRequestApplicants } from "@/api/agencyRequestApi";
 export default {
   data() {
@@ -63,7 +64,7 @@ export default {
         })
         .catch(error => {
           this.isLoadingList = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     selectApplicant(item) {

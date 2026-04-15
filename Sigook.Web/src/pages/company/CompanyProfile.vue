@@ -16,27 +16,27 @@
       </div>
 
       <b-tabs v-model="currentTab" @input="changeTab" v-if="companyProfile">
-        <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
+        <b-tab-item :label="'Business Information'" value="BusinessInformation">
           <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data.sync="companyProfile" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
+        <b-tab-item :label="'Contact Information'" value="ContactInformation">
           <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :company-data="companyProfile" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Location Information')" value="LocationInformation">
+        <b-tab-item :label="'Location Information'" value="LocationInformation">
           <LocationInformation v-if="visitedTabs.includes('LocationInformation')" :company-data="companyProfile" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Company Users')" value="CompanyUsers">
+        <b-tab-item :label="'Users'" value="CompanyUsers">
           <CompanyUsers v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
+        <b-tab-item :label="'Account Security'" value="AccountSecurity">
           <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :company-data="companyProfile" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('User Notification')" value="UserNotification">
+        <b-tab-item :label="'Notifications'" value="UserNotification">
           <UserNotification v-if="visitedTabs.includes('UserNotification')" />
         </b-tab-item>
       </b-tabs>
@@ -45,8 +45,8 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
-import switchLocaleMixin from "@/mixins/switchLocaleMixin";
 import { getCompanyProfile, updateProfile } from '@/api/companyApi';
 import { lowercase } from '@/utils/filters';
 
@@ -58,7 +58,7 @@ export default {
     UploadImage: () => import("../../components/PreviewImage.vue"),
     AccountSecurity: () => import("../../components/agency/ProfileAccountInformation.vue"),
     UserNotification: () => import("../../components/UserNotification.vue"),
-    CompanyUsers: () => import("../../components/company/CompanyUsers.vue"),
+    CompanyUsers: () => import("../../components/company/CompanyUsers.vue")
   },
   data() {
     return {
@@ -69,8 +69,7 @@ export default {
       isDisabled: true,
       validForm: "",
       changeForm: false,
-      lang: this.$validator.dictionary.locale,
-      unsavedChanges: false,
+      unsavedChanges: false
     };
   },
   methods: {
@@ -81,7 +80,7 @@ export default {
     validateForm() {
       this.$validator.validateAll().then((response) => {
         if (!response) {
-          this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+          showAlertError("Please make sure all required fields are filled out correctly");
           return;
         }
         this.saveProfile();
@@ -95,12 +94,12 @@ export default {
           this.unsavedChanges = false;
           this.isDisabled = true;
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
           this.changeForm = false;
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     changeTab(tab) {
@@ -109,7 +108,7 @@ export default {
       }
       this.$router.push({
         path: "/company-profile",
-        query: { tab: tab },
+        query: { tab: tab }
       });
     },
     resetForm() {
@@ -125,10 +124,10 @@ export default {
           this.isLoading = false;
         })
         .catch((error) => {
-          this.showAlertError(error.data);
+          showAlertError(error.data);
           this.isLoading = false;
         });
-    },
+    }
   },
   created() {
     if (this.$route.query && this.$route.query.tab) {
@@ -139,8 +138,7 @@ export default {
     }
     this.onGetProfile();
   },
-  mixins: [switchLocaleMixin],
-  beforeRouteLeave: confirmationGuard,
+  beforeRouteLeave: confirmationGuard
 };
 </script>
 

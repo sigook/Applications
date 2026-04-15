@@ -12,7 +12,7 @@
     <div>
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/create-agency" icon-left="plus">
-          {{ $t('Create') }}
+          {{ 'Create' }}
         </b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
@@ -68,6 +68,9 @@
   </div>
 </template>
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from "@/utils/toast";
 import { getAgenciesList } from "@/api/agencyApi";
 import { agencyType } from '@/utils/filters';
 
@@ -87,10 +90,13 @@ export default {
     }
   },
   created() {
-    if (this.$store.state.agency.agencyListFilter) {
-      this.serverParams = this.$store.state.agency.agencyListFilter;
+    if (this.agencyStore.agencyListFilter) {
+      this.serverParams = this.agencyStore.agencyListFilter;
     }
     this.getAgencies();
+  },
+  computed: {
+    ...mapStores(useAgencyStore),
   },
   methods: {
     agencyType,
@@ -124,7 +130,7 @@ export default {
     },
     getAgencies() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyListFilter", this.serverParams);
+      this.agencyStore.updateAgencyListFilter(this.serverParams);
       getAgenciesList(this.serverParams)
         .then(agencies => {
           this.rows = agencies.items;
@@ -133,7 +139,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     }
   }

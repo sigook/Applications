@@ -1,13 +1,13 @@
 <template>
     <section>
         <div class="button-right">
-            <h3 class="section-title">{{ $t('Resume') }}</h3>
+            <h3 class="section-title">{{ 'Resume' }}</h3>
             <b-button type="is-info" outlined rounded icon-right="pencil"
               @click="modal = true"></b-button>
         </div>
         <div class="worker-documents">
             <div v-if="worker.resume">
-                <span>{{ $t('File') }}</span>
+                <span>{{ 'File' }}</span>
                 <span>
                     <a :href="worker.resume.pathFile" target="_blank" download>
                         Resume-File
@@ -22,8 +22,8 @@
                 <div class="modal-mask">
                     <div class="modal-wrapper">
                         <div class="modal-container modal-light">
-                            <span class="fz1 fw-700">{{ $t("Resume") }}</span>
-                            <button @click="modal = false" type="button" class="cross-icon">{{ $t('Close') }}</button>
+                            <span class="fz1 fw-700">{{ "Resume" }}</span>
+                            <button @click="modal = false" type="button" class="cross-icon">{{ 'Close' }}</button>
                             <resume-edit :data="worker" @closeModal="() => closeModalEdit()" />
                         </div>
                     </div>

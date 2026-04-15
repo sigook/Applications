@@ -5,7 +5,7 @@
       <h2 class="fz1 pt-3 col-8 col-md-6 col-sm-12">
         <ul class="tabs-basic tabs-home d-inline-block">
           <li class="active">
-            {{ $t("MenuRequestsAgency") }}
+            {{ "Orders" }}
             <span class="fw-100 fz-1">({{ totalItems }})</span>
           </li>
           <li>

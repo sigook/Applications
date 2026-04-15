@@ -53,6 +53,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { dateMonth, hour } from '@/utils/filters';
 import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
 
@@ -90,14 +91,14 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     getAccumulated(row) {
       getWorkerProfileTimeSheetHistoryAccumulated(this.workerId, row.rowNumber)
         .then((response) => this.rowDetail = response)
-        .catch((error) => this.showAlertError(error));
-    },
+        .catch((error) => showAlertError(error));
+    }
   },
   created() {
     this.getWorkerProfileTimeSheetHistory();

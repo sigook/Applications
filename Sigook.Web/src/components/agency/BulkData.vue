@@ -32,6 +32,9 @@
   </div>
 </template>
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
 
 export default {
@@ -42,7 +45,7 @@ export default {
       isLoading: false,
       bulkFile: null,
       agencySelected: null,
-      fileError: null,
+      fileError: null
     }
   },
   methods: {
@@ -53,7 +56,7 @@ export default {
         .then((file) => {
           if (file.size > 0) {
             this.fileError = file;
-            this.showAlertError("Some records could not be uploaded, please check the file");
+            showAlertError("Some records could not be uploaded, please check the file");
           } else {
             this.$emit("close");
           }
@@ -62,13 +65,14 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   computed: {
+    ...mapStores(useAgencyStore),
     agencies() {
-      return this.$store.state.agency.personnelAgencies;
+      return this.agencyStore.personnelAgencies;
     }
   }
 }

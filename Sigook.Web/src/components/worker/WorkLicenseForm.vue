@@ -5,7 +5,7 @@
       <div class="col-12">
         <b-field>
           <template #label>
-            {{ $t("File") }} <span class="has-text-danger">*</span>
+            {{ "File" }} <span class="has-text-danger">*</span>
           </template>
           <div v-if="licenseModal.license && licenseModal.license.fileName" class="selected-file-display">
             <b-icon icon="certificate" size="is-small"></b-icon>
@@ -17,7 +17,7 @@
               @input="handleLicenseFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
@@ -27,7 +27,7 @@
         <b-field :type="errors.has('license description') ? 'is-danger' : ''"
           :message="errors.has('license description') ? errors.first('license description') : ''">
           <template #label>
-            {{ $t("Description") }} <span class="has-text-danger">*</span>
+            {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
           <b-input type="text" v-model="licenseModal.license.description" name="license description"
             v-validate="'required|max:100'" />
@@ -56,7 +56,7 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -64,9 +64,11 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerLicenses } from '@/api/workerApi';
 
 export default {
@@ -82,27 +84,29 @@ export default {
       licenseModal: {
         license: {
           fileName: "",
-          description: "",
+          description: ""
         },
         number: "",
         issued: null,
-        expires: null,
+        expires: null
       },
-      licenses: [],
+      licenses: []
     };
   },
-  mixins: [toastMixin, multipartUploadMixin],
+  computed: {
+    ...mapStores(useAppStore),
+  },
   methods: {
     filename,
     handleLicenseFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedLicenseFile = null;
         return;
       }
       this.fileObjects.license = file;
-      const generatedName = this.generateFileName('License', file.name);
+      const generatedName = generateFileName('License', file.name);
       this.licenseModal.license = { fileName: generatedName, description: this.licenseModal.license.description || '' };
       this.selectedLicenseFile = null;
     },
@@ -116,7 +120,7 @@ export default {
           this.saveLicenses();
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     async saveLicenses() {
@@ -132,7 +136,7 @@ export default {
         await createWorkerLicenses(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }
@@ -144,10 +148,10 @@ export default {
         this.licenses.push(this.data.licenses[i]);
       }
     }
-    this.$store.dispatch("getCurrentDate").then((response) => {
+    this.appStore.getCurrentDate().then((response) => {
       this.todayDate = response;
     });
-  },
+  }
 };
 </script>
 

@@ -39,7 +39,7 @@
             <b-field label="Title" :type="errors.has('title') ? 'is-danger' : ''"
               :message="errors.has('title') ? errors.first('title') : ''">
               <b-select v-model="contact.title" v-validate="'required'" name="title" expanded>
-                <option :value="item" v-for="(item, idx) in $t('TitleList')" :key="idx">{{ item }}</option>
+                <option :value="item" v-for="(item, idx) in ['Mr','Mrs','Ms','Miss','Mx','Master','Madam']" :key="idx">{{ item }}</option>
               </b-select>
             </b-field>
           </div>
@@ -97,6 +97,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertSuccess } from "@/utils/toast";
 import { updateAgency } from "@/api/agencyApi";
 
 export default {
@@ -106,7 +107,7 @@ export default {
       isLoading: false,
       showModal: false,
       contact: {},
-      localAgencyData: JSON.parse(JSON.stringify(this.agencyData)),
+      localAgencyData: JSON.parse(JSON.stringify(this.agencyData))
     }
   },
   watch: {
@@ -133,7 +134,7 @@ export default {
           .then(() => {
             this.isLoading = false;
             this.showModal = false;
-            this.showAlertSuccess(this.$t("Updated"));
+            showAlertSuccess("Updated");
           })
           .catch(() => {
             this.isLoading = false;
@@ -147,7 +148,7 @@ export default {
       updateAgency(this.localAgencyData)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
+          showAlertSuccess("Updated");
         })
         .catch(() => {
           this.isLoading = false;

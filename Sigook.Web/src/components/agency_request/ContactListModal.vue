@@ -21,6 +21,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
 export default {
@@ -28,7 +29,7 @@ export default {
   data() {
     return {
       isLoading: false,
-      data: [],
+      data: []
     }
   },
   methods: {
@@ -42,7 +43,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     updateContacts() {

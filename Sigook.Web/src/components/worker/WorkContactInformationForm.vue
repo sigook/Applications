@@ -12,13 +12,14 @@
           @formattedPhone="(phone) => worker.phone = phone" />
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="validateAll()">{{ $t("Save") }}</b-button>
+        <b-button type="is-primary" @click="validateAll()">{{ "Save" }}</b-button>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { createWorkerContactInformation } from '@/api/workerApi';
 
 export default {
@@ -40,7 +41,7 @@ export default {
           this.createWorkerContactInformation();
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     createWorkerContactInformation() {
@@ -52,7 +53,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },

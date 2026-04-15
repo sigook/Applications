@@ -92,7 +92,7 @@
                         <td>
                             <div class="capitalize is-inline-block v-middle w-100 text-right">
 
-                                <b-tooltip :label="$t(RequestStatusLabels[item.requestStatus])" type="is-dark" append-to-body>
+                                <b-tooltip :label="RequestStatusLabels[item.requestStatus]" type="is-dark" append-to-body>
                                     <div class="dot-status" :class="'status-' + RequestStatusLabels[item.requestStatus].toLowerCase()"></div>
                                 </b-tooltip>
 
@@ -134,14 +134,14 @@
     </div>
 </template>
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyRequestBoard } from "@/api/agencyRequestApi";
 import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
-  deleteAgencyRequestWorkerNote,
+  deleteAgencyRequestWorkerNote
 } from "@/api/agencyNoteApi";
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
 import { WorkerRequestStatus, DurationTermLabels, RequestStatusLabels } from "@/constants/enums";
@@ -150,7 +150,7 @@ export default {
     computed: {
         WorkerRequestStatus: () => WorkerRequestStatus,
         DurationTermLabels: () => DurationTermLabels,
-        RequestStatusLabels: () => RequestStatusLabels,
+        RequestStatusLabels: () => RequestStatusLabels
     },
     data() {
         return {
@@ -162,10 +162,9 @@ export default {
             getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
             createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
             updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-            deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id),
+            deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id)
         }
     },
-    mixins: [toastMixin],
     components: {
         Pagination: () => import("../../components/Paginator.vue"),
         ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
@@ -183,7 +182,7 @@ export default {
                 this.isLoading = false;
             })
             .catch(error => {
-                this.showAlertError(error);
+                showAlertError(error);
                 this.isLoading = false;
             })
         },
@@ -213,7 +212,7 @@ export default {
                 this.data.items[index].mouseOver = false;
                 this.data.items[index].showNotes = false;
             }
-        },
+        }
     },
     created() {
         this.loadBoard(this.currentPage);

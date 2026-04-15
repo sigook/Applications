@@ -30,7 +30,7 @@
       <address-component ref="addressComponent" :model.sync="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
       <div class="container-flex">
         <div class="col-12 col-padding">
-          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ $t('CompanyUseAsBillingAddress') }}</b-checkbox>
+          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
         </div>
         <div class="col-12 col-padding">
           <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
@@ -41,11 +41,12 @@
 </template>
 
 <script lang="ts">
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import {
   getAgencyLocations,
   createAgencyLocation,
   updateAgencyLocation,
-  deleteAgencyLocation,
+  deleteAgencyLocation
 } from "@/api/agencyApi";
 import AddressComponent from "@/components/Address.vue";
 
@@ -56,7 +57,7 @@ export default {
       isLoading: true,
       locations: [],
       showModal: false,
-      locationBeingUpdate: {},
+      locationBeingUpdate: {}
     }
   },
   props: ['agencyData'],
@@ -80,7 +81,7 @@ export default {
           location.formattedAddress = this.getFormattedAddress(location);
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error.data);
+          showAlertError(error.data);
         });
     },
     createLocation(location) {
@@ -93,7 +94,7 @@ export default {
         this.hideModal();
       }).catch(error => {
         this.isLoading = false;
-        this.showAlertError(error.data);
+        showAlertError(error.data);
       });
     },
     getLocations() {
@@ -104,7 +105,7 @@ export default {
       });
     },
     deleteLocation(location, index) {
-      this.showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
+      showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
         .then(r => {
           if (!r) return;
           this.isLoading = true;
@@ -114,7 +115,7 @@ export default {
               this.locations.splice(index, 1);
             }).catch(e => {
               this.isLoading = false;
-              this.showAlertError(e.data);
+              showAlertError(e.data);
             });
         });
     },

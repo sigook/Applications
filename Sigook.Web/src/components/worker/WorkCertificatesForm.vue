@@ -5,7 +5,7 @@
       <div class="col-12">
         <b-field>
           <template #label>
-            {{ $t("File") }} <span class="has-text-danger">*</span>
+            {{ "File" }} <span class="has-text-danger">*</span>
           </template>
           <div v-if="certificate && certificate.fileName" class="selected-file-display">
             <b-icon icon="certificate" size="is-small"></b-icon>
@@ -17,7 +17,7 @@
               @input="handleCertFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedCertFile ? selectedCertFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedCertFile ? selectedCertFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
@@ -27,7 +27,7 @@
         <b-field :type="errors.has('certificate description') ? 'is-danger' : ''"
           :message="errors.has('certificate description') ? errors.first('certificate description') : ''">
           <template #label>
-            {{ $t("Description") }} <span class="has-text-danger">*</span>
+            {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
           <b-input type="text" v-model="certificate.description" name="certificate description"
             v-validate="'required|max:20'" />
@@ -35,7 +35,7 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
@@ -43,9 +43,9 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerCertificates } from '@/api/workerApi';
 
 export default {
@@ -59,23 +59,22 @@ export default {
       },
       certificate: {
         fileName: "",
-        description: "",
+        description: ""
       },
-      certificates: [],
+      certificates: []
     };
   },
-  mixins: [toastMixin, multipartUploadMixin],
   methods: {
     filename,
     handleCertFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
+        showAlertError('File exceeds 15MB limit');
         this.selectedCertFile = null;
         return;
       }
       this.fileObjects.certificate = file;
-      const generatedName = this.generateFileName('Certificate', file.name);
+      const generatedName = generateFileName('Certificate', file.name);
       this.certificate = { fileName: generatedName, description: this.certificate.description || '' };
       this.selectedCertFile = null;
     },
@@ -89,7 +88,7 @@ export default {
           this.saveCertificates();
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     async saveCertificates() {
@@ -105,7 +104,7 @@ export default {
         await createWorkerCertificates(this.data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
-        this.showAlertError(error);
+        showAlertError(error);
       } finally {
         this.isLoading = false;
       }
@@ -117,7 +116,7 @@ export default {
         this.certificates.push(this.data.certificates[i]);
       }
     }
-  },
+  }
 };
 </script>
 

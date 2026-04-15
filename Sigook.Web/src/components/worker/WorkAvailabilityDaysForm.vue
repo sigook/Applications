@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerAvailableDays')">
+        <b-field :label="'Available days'">
           <div class="container-flex">
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
               <b-checkbox v-model="allDaysSelected" @input="changeDaysSelected">
@@ -20,13 +20,14 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="createWorkerAvailabilityDays()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getDays } from "@/api/catalogApi";
 import { createWorkerAvailabilityDays } from '@/api/workerApi';
 export default {
@@ -51,7 +52,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     changeDaysSelected() {

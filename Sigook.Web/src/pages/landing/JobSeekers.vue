@@ -147,6 +147,7 @@
 
 <script lang="ts">
 import { getJobs } from "@/api/websiteApi";
+import VueScrollTo from 'vue-scrollto';
 
 export default {
   data() {
@@ -179,7 +180,6 @@ export default {
     this.isLoading = false;
 
     this.$nextTick(() => {
-      const VueScrollTo = require('vue-scrollto');
       if (jobIdFromQuery) {
         VueScrollTo.scrollTo("#jobsContainer", 500, { offset: -20 });
       } else {

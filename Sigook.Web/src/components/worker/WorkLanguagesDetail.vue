@@ -1,7 +1,7 @@
 <template>
   <div class="hover-transform">
     <div class="detail-worker-profile">
-      <span class="width-30">{{ $t("WorkerLanguages") }}</span>
+      <span class="width-30">{{ "Languages" }}</span>
       <span class="width-70 items">
         <b-taglist>
           <b-tag v-for="item in worker.languages" :key="'languages' + item.value" type="is-info is-light" size="is-medium" rounded>{{ item.value }}</b-tag>

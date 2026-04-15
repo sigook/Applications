@@ -60,6 +60,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
 import { lowercase } from '@/utils/filters';
@@ -76,7 +77,7 @@ export default {
       isLoading: true,
       showMenuTop: false,
       editNameModal: false,
-      showUpdateLogo: false,
+      showUpdateLogo: false
     };
   },
   components: {
@@ -99,8 +100,8 @@ export default {
       this.$router.push({
         path: `/agency-companies/company/${this.$route.params.id}`,
         query: {
-          tab: tab,
-        },
+          tab: tab
+        }
       });
     },
     loadCompany() {
@@ -110,7 +111,7 @@ export default {
           this.isLoading = false;
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         });
     },
@@ -128,9 +129,9 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
+    }
   },
   created() {
     this.loadCompany();
@@ -152,6 +153,6 @@ export default {
     isClient() {
       return this.company && this.company.companyStatus === 5;
     }
-  },
+  }
 };
 </script>

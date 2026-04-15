@@ -7,7 +7,7 @@
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container update-logo-modal">
               <span class="fz1 fw-700 ">Logo</span>
-              <button @click="cancelUpdate" type="button" class="cross-icon">{{ $t('Close') }}</button>
+              <button @click="cancelUpdate" type="button" class="cross-icon">{{ 'Close' }}</button>
 
               <upload-image v-if="newLogo" @imageSelected="profileImg => this.newLogo = { fileName: profileImg }"
                 :edited-image="this.logo" :required="false" @onUpload="() => subscribe('file')"
@@ -15,10 +15,10 @@
               </upload-image>
               <div class="text-center">
                 <button class="background-btn md-btn red-button btn-radius margin-top-15 margin-right uppercase"
-                  @click="cancelUpdate" type="button">{{ $t("Cancel") }}
+                  @click="cancelUpdate" type="button">{{ "Cancel" }}
                 </button>
                 <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase"
-                  @click="updateLogo()" type="button">{{ $t("Save") }}
+                  @click="updateLogo()" type="button">{{ "Save" }}
                 </button>
               </div>
             </div>

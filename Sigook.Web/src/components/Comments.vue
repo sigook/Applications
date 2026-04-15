@@ -3,13 +3,13 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="button-right" v-if="!onlyView">
-      <h3>{{ $t('WorkerCommentsAndQualification') }}</h3>
-      <button class="outline-btn md-btn orange-button btn-radius" @click="alertComment">{{ $t('WorkerAddComment') }}
+      <h3>{{ 'Comments & Qualification' }}</h3>
+      <button class="outline-btn md-btn orange-button btn-radius" @click="alertComment">{{ 'Add Comment' }}
         +</button>
     </div>
     <div>
       <div class="comment" v-for="comment in data.items" v-bind:key="comment.id">
-        <img :src="comment.logo ? comment.logo : require('../assets/images/icon_agency.svg')">
+        <img :src="comment.logo ? comment.logo : iconAgency">
         <div>
           <!--<h4>King Company</h4>-->
           <p class="fisrt-letter">{{ comment.comment }}</p>
@@ -35,7 +35,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container small-container modal-light">
-              <button @click="modalValidation = false" class="cross-icon">{{ $t('Close') }}</button>
+              <button @click="modalValidation = false" class="cross-icon">{{ 'Close' }}</button>
               <!-- <cancel-list @sendReason="(reason) => cancelRequest(reason)"></cancel-list>-->
               <dialog-comment @createComment="(data) => getComment(data)"></dialog-comment>
             </div>
@@ -51,13 +51,18 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useSecurityStore } from '@/stores/security';
+import { showAlertError } from "@/utils/toast";
 import roles from "@/security/roles";
 import { agencyCommentWorker } from "@/api/agencyWorkerApi";
 import { companyCommentWorker } from "@/api/companyApi";
+import iconAgency from '@/assets/images/icon_agency.svg';
 
 export default {
   data() {
     return {
+      iconAgency,
       isLoading: false,
       currentPage: 1,
       commentary: {
@@ -72,6 +77,9 @@ export default {
     DialogComment: () => import("./DialogWorkerComment.vue"),
     Pagination: () => import("./Paginator.vue")
   },
+  computed: {
+    ...mapStores(useSecurityStore),
+  },
   methods: {
     alertComment() {
       this.modalValidation = true;
@@ -84,11 +92,11 @@ export default {
         this.commentary.rate = data.rating;
         this.comment();
       } else {
-        this.showAlertError(this.$t("AllFieldsAreRequired"))
+        showAlertError("All fields are required")
       }
     },
     comment() {
-      const userRoles = this.$store.state.security.userRoles;
+      const userRoles = this.securityStore.userRoles;
       for (let i = 0; i < userRoles.length; i++) {
         switch (userRoles[i]) {
           case roles.agency:
@@ -111,7 +119,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     changePage(page) {

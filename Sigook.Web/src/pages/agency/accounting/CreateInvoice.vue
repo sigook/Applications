@@ -202,6 +202,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from "@/api/agencyCompanyApi";
 import { previewAgencyInvoice, createAgencyInvoice } from "@/api/agencyInvoiceApi";
@@ -271,7 +272,7 @@ export default {
               });
             }).catch((error) => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             });
         }
       });
@@ -302,13 +303,13 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     cancelPreview() {
       this.previewData = null;
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
+    }
   },
   computed: {
     filteredCompanies() {

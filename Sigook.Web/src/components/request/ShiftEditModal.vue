@@ -12,6 +12,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { fetchRequestShift } from "@/api/requestApi";
 import { updateAgencyRequestShift } from "@/api/agencyRequestApi";
 export default {
@@ -39,7 +40,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     saveShift(model) {
@@ -52,7 +53,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   }

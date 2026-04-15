@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="button-right">
-      <h3 class="section-title">{{ $t("WorkerDocuments") }}</h3>
+      <h3 class="section-title">{{ "Documents" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalDocuments = true"></b-button>
     </div>
@@ -13,7 +13,7 @@
         </span>
       </div>
       <div v-if="worker.identificationType1File && worker.identificationType1">
-        <span>{{ worker.identificationType1.value }} ({{ $t("File") }}) </span>
+        <span>{{ worker.identificationType1.value }} ({{ "File" }}) </span>
         <span>
           <a :href="worker.identificationType1File.pathFile" download target="_blank">
             {{ filename(worker.identificationType1File.fileName) }}
@@ -30,7 +30,7 @@
       </div>
 
       <div v-if="worker.identificationType2File && worker.identificationType2">
-        <span>{{ worker.identificationType2.value }} ({{ $t("File") }})</span>
+        <span>{{ worker.identificationType2.value }} ({{ "File" }})</span>
         <span>
           <a :href="worker.identificationType2File.pathFile" download target="_blank">
             {{ filename(worker.identificationType2File.fileName) }}
@@ -39,7 +39,7 @@
         </span>
       </div>
       <div v-if="worker.havePoliceCheckBackground && worker.policeCheckBackGround">
-        <span>{{ $t("WorkerPoliceCheckBackground") }}</span>
+        <span>{{ "Police Check/Background" }}</span>
         <span>
           <a :href="worker.policeCheckBackGround.pathFile" target="_blank" download>
             {{ filename(worker.policeCheckBackGround.fileName) }}

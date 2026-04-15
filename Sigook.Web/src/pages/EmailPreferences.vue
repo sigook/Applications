@@ -13,6 +13,7 @@
 </template>
 
 <script lang="ts">
+import { getErrorMessage } from "@/utils/toast";
 import { unsubscribe } from '@/api/sharedApi';
 
 export default {
@@ -50,7 +51,7 @@ export default {
         this.redirectToHome();
       } catch (error) {
         this.isLoading = false;
-        this.errorMessage = this.getErrorMessage(error);
+        this.errorMessage = getErrorMessage(error);
         window.sessionStorage.setItem(key, '1');
       }
     },

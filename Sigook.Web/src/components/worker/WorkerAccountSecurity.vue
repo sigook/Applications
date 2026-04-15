@@ -36,7 +36,7 @@
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
             <b-switch v-model="item.emailNotification" @input="saveNotification(item)">
-              {{ item.emailNotification ? $t('Yes') : $t('No') }}
+              {{ item.emailNotification ? 'Yes' : 'No' }}
             </b-switch>
           </div>
         </div>
@@ -63,6 +63,9 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useSecurityStore } from '@/stores/security';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
 
@@ -75,6 +78,9 @@ export default {
       notifications: null
     }
   },
+  computed: {
+    ...mapStores(useSecurityStore),
+  },
   methods: {
     onChangeEmail() {
       this.$validator.validateAll().then((result) => {
@@ -83,11 +89,11 @@ export default {
           changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
             .then(() => {
               this.isLoading = false;
-              this.showAlertSuccess("Updated");
+              showAlertSuccess("Updated");
             })
             .catch(error => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             })
         }
       })
@@ -111,7 +117,7 @@ export default {
           this.notifications = response;
         })
         .catch(error => {
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     saveNotification(item) {
@@ -121,7 +127,7 @@ export default {
           this.isLoading = false;
         })
         .catch(error => {
-          this.showAlertError(error);
+          showAlertError(error);
           this.isLoading = false;
         })
     },
@@ -130,14 +136,14 @@ export default {
       deactivateAccount()
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
+          showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
           setTimeout(() => {
-            this.$store.dispatch('signOut');
+            this.securityStore.signOut();
           }, 2000);
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     }
   },
@@ -148,7 +154,7 @@ export default {
         this.isLoading = false;
       })
       .catch(error => {
-        this.showAlertError(error);
+        showAlertError(error);
         this.isLoading = false;
       });
     this.loadNotifications();

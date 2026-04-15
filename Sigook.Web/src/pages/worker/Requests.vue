@@ -35,7 +35,7 @@
         <template>
           <b-table-column field="numberId" label="Order ID" v-slot="props">
             {{ props.row.numberId }}
-            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
+            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
           </b-table-column>
           <b-table-column field="jobTitle" label="Position" v-slot="props">
             {{ props.row.jobTitle }}
@@ -70,7 +70,7 @@
           <b-table-column field="status" v-slot="props">
             <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-700 text-center"
               :class="props.row.status">
-              {{ $t(props.row.status) }}
+              {{ props.row.status }}
             </div>
           </b-table-column>
         </template>
@@ -80,6 +80,8 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useWorkerStore } from '@/stores/worker';
 import { getJobs } from '@/api/workerApi';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
 
@@ -130,8 +132,9 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useWorkerStore),
     currentUser() {
-      return this.$store.state.worker.workerProfile;
+      return this.workerStore.workerProfile;
     },
     hasMissingDocuments() {
       if (!this.currentUser.hasSocialInsurance || !this.currentUser.hasSocialInsuranceFile) {

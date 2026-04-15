@@ -116,24 +116,24 @@
       <span class="fw-700 mr-2">Break</span>
       <span class="fw-400">{{ request.durationBreak }}</span>
       <span v-if="request.breakIsPaid" class="fw-400">
-        | {{ $t("RequestBreakPaid") }}</span>
+        | {{ "Break paid" }}</span>
     </section>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { currency, dateMonth } from '@/utils/filters';
-import toastMixin from "@/mixins/toastMixin";
 import {
   increaseWorkersQuantityByOne,
   reduceWorkersQuantityByOne,
   updateAgencyRequestIsAsap,
-  updateAgencyPunchCardVisibilityStatusInApp,
+  updateAgencyPunchCardVisibilityStatusInApp
 } from "@/api/agencyRequestApi";
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentTypeLabels,
-  RequestStatus,
+  RequestStatus
 } from "@/constants/enums";
 export default {
   props: ["request"],
@@ -141,12 +141,12 @@ export default {
     DurationTerm: () => DurationTerm,
     DurationTermLabels: () => DurationTermLabels,
     EmploymentTypeLabels: () => EmploymentTypeLabels,
-    RequestStatus: () => RequestStatus,
+    RequestStatus: () => RequestStatus
   },
   data() {
     return {
       isLoading: false,
-      localRequest: JSON.parse(JSON.stringify(this.request)),
+      localRequest: JSON.parse(JSON.stringify(this.request))
     };
   },
   watch: {
@@ -157,10 +157,9 @@ export default {
       deep: true
     }
   },
-  mixins: [toastMixin],
   components: {
     Skills: () => import("../agency_request/AgencyRequestSkills.vue"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
+    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue")
   },
   methods: {
     currency,
@@ -175,7 +174,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onReduceWorkersQuantity() {
@@ -188,7 +187,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onToggleIsAsap() {
@@ -199,7 +198,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onTogglePunchCardVisibility() {
@@ -210,10 +209,10 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
-  },
+    }
+  }
 };
 </script>
 <style lang="scss">

@@ -21,7 +21,7 @@
       <div class="scroll">
         <a v-for="(tab, index) in tabs" :key="'tabCompany' + index"
           v-bind:class="['tab-button', { active: currentTab === tab }]" v-on:click="changeTab(tab)">
-          {{ $t(tab) }}
+          {{ tab }}
         </a>
       </div>
 

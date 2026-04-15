@@ -7,17 +7,15 @@
   </div>
 </template>
 <script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ['company'],
-  mixins: [toastMixin],
   data() {
     return {
-      isLoading: true,
+      isLoading: true
     }
   },
   components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
+    TableRequests: () => import("../../components/agency_request/TableRequests.vue")
   }
 }
 </script>

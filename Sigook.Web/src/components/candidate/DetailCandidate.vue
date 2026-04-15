@@ -7,7 +7,7 @@
         <div class="container-flex">
           <div class="col-12">
             <b-checkbox v-model="candidate.dnu" :disabled="hasDnuPermission">
-              {{ $t("DNU") }}
+              {{ "DNU" }}
             </b-checkbox>
           </div>
           <div class="col-12">
@@ -48,17 +48,18 @@
           <div class="col-12">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
-                {{ candidate.hasVehicle ? $t("Yes") : $t("No") }}
+                {{ candidate.hasVehicle ? "Yes" : "No" }}
               </b-switch>
             </b-field>
           </div>
         </div>
-        <button class="background-btn create-btn orange-button btn-radius" type="submit">{{ $t('Update') }}</button>
+        <button class="background-btn create-btn orange-button btn-radius" type="submit">{{ 'Update' }}</button>
       </form>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getGenders } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
@@ -88,7 +89,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     validateForm() {
@@ -97,7 +98,7 @@ export default {
           this.submitCandidate();
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     submitCandidate() {
@@ -105,12 +106,12 @@ export default {
       updateAgencyCandidate(this.candidateId, this.candidate)
         .then(() => {
           this.isLoading = false
-          this.showAlertSuccess('Updated');
+          showAlertSuccess('Updated');
           this.$emit('onUpdateWorker', true);
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     }
   },
@@ -121,7 +122,7 @@ export default {
         this.loadCandidate();
       })
       .catch(error => {
-        this.showAlertError(error);
+        showAlertError(error);
       })
   },
   computed: {
@@ -141,7 +142,7 @@ export default {
       } else {
         return true;
       }
-    },
+    }
   }
 }
 </script>

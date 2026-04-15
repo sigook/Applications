@@ -52,7 +52,7 @@
         <b-field label="WSIB Group" :type="errors.has('wsibGroup') ? 'is-danger' : ''"
           :message="errors.has('wsibGroup') ? errors.first('wsibGroup') : ''">
           <b-taginput v-model="localAgencyData.wsibGroup" autocomplete :data="wsibGroups" open-on-focus field="value"
-            icon="label" :placeholder="$t('ClickHereToAddMore')" :before-adding="beforeWsibBeingSelected">
+            icon="label" :placeholder="'Click here to add more'" :before-adding="beforeWsibBeingSelected">
           </b-taginput>
         </b-field>
       </div>
@@ -64,6 +64,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertSuccess } from "@/utils/toast";
 import { getWsibGroups } from "@/api/catalogApi";
 import { updateAgency } from "@/api/agencyApi";
 export default {
@@ -71,7 +72,7 @@ export default {
     return {
       isLoading: false,
       localAgencyData: JSON.parse(JSON.stringify(this.agencyData)),
-      wsibGroups: [],
+      wsibGroups: []
     };
   },
   watch: {
@@ -84,7 +85,7 @@ export default {
   },
   props: ["agencyData"],
   components: {
-    phoneInput: () => import("@/components/PhoneInput.vue"),
+    phoneInput: () => import("@/components/PhoneInput.vue")
   },
   methods: {
     async validateForm() {
@@ -97,7 +98,7 @@ export default {
         updateAgency(this.localAgencyData)
           .then(() => {
             this.isLoading = false;
-            this.showAlertSuccess(this.$t("Updated"));
+            showAlertSuccess("Updated");
           })
       }
     },

@@ -28,7 +28,7 @@
         </div>
         <div v-if="request.status && request.status !== 'None'"
           class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
-          {{ $t(RequestStatusLabels[request.status]) }}
+          {{ RequestStatusLabels[request.status] }}
         </div>
         <floating-menu class="is-inline-block" v-if="request.canEdit">
           <template slot="options">
@@ -92,12 +92,15 @@
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia';
+import { useAppStore } from '@/stores/app';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { isDirectHiring } from '@/utils/directHiring';
 import {
   getAgencyRequest,
   cancelAgencyRequest,
   agencyRequestOpen,
-  agencyRequestSendInvitation,
+  agencyRequestSendInvitation
 } from "@/api/agencyRequestApi";
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import { breakWord, dateFromNow } from '@/utils/filters';
@@ -117,7 +120,7 @@ export default {
       jobTitleModal: false,
       locationModal: false,
       canSendInvitation: false,
-      warningMessage: "The invitation must be sent only once every seven days.",
+      warningMessage: "The invitation must be sent only once every seven days."
     };
   },
   components: {
@@ -127,7 +130,7 @@ export default {
     PunchCard: () => import("@/components/agency_request/MassivePunchCard.vue"),
     CancelList: () => import("@/components/company/CompanyCancelList.vue"),
     Applicants: () => import("@/components/agency_request/Applicants.vue"),
-    ShiftModal: () => import("@/components/request/ShiftEditModal.vue"),
+    ShiftModal: () => import("@/components/request/ShiftEditModal.vue")
   },
   methods: {
     breakWord,
@@ -139,8 +142,8 @@ export default {
       this.$router.push({
         path: `/agency-request/${this.$route.params.id}`,
         query: {
-          tab: tab,
-        },
+          tab: tab
+        }
       });
     },
     canEditRequest(request) {
@@ -166,7 +169,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     onCancelRequest(reason) {
@@ -174,16 +177,16 @@ export default {
       this.isLoading = true;
       cancelAgencyRequest(this.request.id, {
         cancellationReasonId: reason.reasonId,
-        otherCancellationReason: reason.otherMessage,
+        otherCancellationReason: reason.otherMessage
       })
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess(this.$t("Cancelled"));
+          showAlertSuccess("Cancelled");
           this.$router.push("/agency-requests");
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     editContentText(title, data) {
@@ -211,7 +214,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     setCanSendInvitation(request) {
@@ -226,7 +229,7 @@ export default {
         return;
       }
 
-      this.$store.dispatch("getCurrentDate").then((now) => {
+      this.appStore.getCurrentDate().then((now) => {
         const invitationSentItAt = new Date(request.invitationSentItAt);
         invitationSentItAt.setDate(invitationSentItAt.getDate() + 7);
         if (invitationSentItAt <= now) {
@@ -241,7 +244,7 @@ export default {
       this.loadRequest();
     },
     sendInvitation(id) {
-      this.showAlertConfirm(this.$t("AreYouSure"), this.warningMessage).then(
+      showAlertConfirm("Are you sure?", this.warningMessage).then(
         (response) => {
           if (response) {
             this.isLoading = true;
@@ -249,11 +252,11 @@ export default {
               .then(() => {
                 this.canSendInvitation = false;
                 this.isLoading = false;
-                this.showAlertSuccess("Sent it!");
+                showAlertSuccess("Sent it!");
               })
               .catch((error) => {
                 this.isLoading = false;
-                this.showAlertError(error);
+                showAlertError(error);
               });
           }
         }
@@ -281,6 +284,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAppStore),
     isDirectHiring() {
       return isDirectHiring(this.request);
     },

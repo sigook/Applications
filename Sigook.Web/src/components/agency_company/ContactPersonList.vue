@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">
-        {{ $t('Create') }}
+        {{ 'Create' }}
       </b-button>
     </b-field>
     <b-table :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="10">
@@ -46,6 +46,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
 export default {
@@ -55,7 +56,7 @@ export default {
       profileId: this.$route.params.id,
       showModal: false,
       data: [],
-      currentContact: null,
+      currentContact: null
     }
   },
   methods: {
@@ -68,7 +69,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     openEditModal(item) {
@@ -84,23 +85,23 @@ export default {
       this.closeModal();
     },
     onDeleteContactPerson(id) {
-      this.showAlertConfirm("Are you sure", "You want to delete this contact")
+      showAlertConfirm("Are you sure", "You want to delete this contact")
         .then(response => {
           if (response) {
             this.isLoading = true;
             deleteAgencyCompanyContactPerson(this.profileId, id)
               .then(async () => {
-                this.showAlertSuccess('Deleted')
+                showAlertSuccess('Deleted')
                 await this.loadContactPersons();
                 this.isLoading = false;
               })
               .catch(error => {
                 this.isLoading = false;
-                this.showAlertError(error)
+                showAlertError(error)
               })
           }
         }).catch(error => {
-          this.showAlertError(error)
+          showAlertError(error)
         })
     }
   },

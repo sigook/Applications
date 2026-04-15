@@ -39,7 +39,7 @@
             <b-field label="Title" :type="errors.has('title') ? 'is-danger' : ''"
               :message="errors.has('title') ? errors.first('title') : ''">
               <b-select v-model="contact.title" v-validate="'required'" name="title" expanded>
-                <option v-for="(item, index) in $t('TitleList')" :key="'title' + index" :value="item">
+                <option v-for="(item, index) in ['Mr','Mrs','Ms','Miss','Mx','Master','Madam']" :key="'title' + index" :value="item">
                   {{ item }}
                 </option>
               </b-select>
@@ -99,6 +99,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/api/companyApi';
 
 export default {
@@ -132,11 +133,11 @@ export default {
           .then(async () => {
             this.isLoading = false;
             await this.getContactPersons();
-            this.showAlertSuccess('Profile updated');
+            showAlertSuccess('Profile updated');
           })
           .catch((error) => {
             this.isLoading = false;
-            this.showAlertError(error.data);
+            showAlertError(error.data);
           });
       }
     }

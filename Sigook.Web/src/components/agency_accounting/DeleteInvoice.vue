@@ -29,10 +29,11 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import {
   getPayStubsByInvoice,
   sendInvoiceVerificationCode,
-  deleteAgencyInvoice,
+  deleteAgencyInvoice
 } from "@/api/agencyInvoiceApi";
 
 export default {
@@ -42,7 +43,7 @@ export default {
       isLoading: true,
       rows: [],
       verificationCode: null,
-      selectedPayStubs: [],
+      selectedPayStubs: []
     }
   },
   methods: {
@@ -60,7 +61,7 @@ export default {
         payStubs: this.selectedPayStubs.map(payStub => payStub.payStubId)
       }).catch(error => {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       });
       this.isLoading = false;
       this.$emit("deleted");

@@ -100,6 +100,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { dateHHmm, hour } from '@/utils/filters';
 import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
@@ -110,7 +111,7 @@ import {
   postAgencyWorkerTimeSheet,
   deleteAgencyWorkerTimeSheet,
   getAgencyTimeSheetUsages,
-  updateAgencyWorkerTimeSheet,
+  updateAgencyWorkerTimeSheet
 } from "@/api/agencyTimeSheetApi";
 
 dayjs.extend(duration);
@@ -148,7 +149,7 @@ export default {
           this.updateCell();
         })
         .catch((error) => {
-          this.showAlertError(error);
+          showAlertError(error);
         })
         .finally(() => {
           this.isLoading = false;
@@ -163,7 +164,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     onMonthChange(startDate, endDate) {
@@ -181,7 +182,7 @@ export default {
           this.reportWorkerTimSheet(model);
           return;
         }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       });
     },
     reportWorkerTimSheet(item) {
@@ -201,7 +202,7 @@ export default {
           this.loadTimeSheets();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     deleteWorkerTimSheet(item) {
@@ -215,7 +216,7 @@ export default {
           this.loadTimeSheets();
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     changeDecimalToHour(time) {
@@ -239,7 +240,7 @@ export default {
           }
         }).catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
     },
     openDetail(item) {
@@ -286,12 +287,12 @@ export default {
         return date;
       }
       return this.startTime;
-    },
+    }
   },
   components: {
     Calendar: () => import("../calendar/CalendarPunchCard.vue"),
     TimeSheetModal: () => import("../../components/agency_request/AgencyRequestTimeSheetModal.vue"),
-    TimeSheetDetail: () => import("../../components/agency_request/AgencyRequestTimeSheetDetail.vue"),
+    TimeSheetDetail: () => import("../../components/agency_request/AgencyRequestTimeSheetDetail.vue")
   }
 }
 </script>

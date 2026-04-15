@@ -78,6 +78,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
 
@@ -101,14 +102,14 @@ export default {
         requestId: this.$route.params.id,
         pageIndex: 1,
         pageSize: 30,
-        isDescending: true,
+        isDescending: true
       }
     }
   },
   components: {
     PunchCard: () => import("@/components/agency_request/AgencyPunchCardWorkerContainer.vue"),
     AgencyPunchCard: () => import("@/components/agency/AgencyPunchCard.vue"),
-    Export: () => import("@/components/Export.vue"),
+    Export: () => import("@/components/Export.vue")
   },
   methods: {
     hour,
@@ -162,7 +163,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     showModalPunchCard(worker) {
@@ -174,7 +175,7 @@ export default {
       if (this.$refs.punchCard) {
         this.$refs.punchCard.updateCell();
       }
-    },
+    }
   },
   created() {
     this.filteredStatuses = this.statuses;

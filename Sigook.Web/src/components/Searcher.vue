@@ -16,9 +16,9 @@
       :class="{ disabled: !this.filter || this.filter.length < 3 }"
       @click="filterResults(filter)"
     >
-      {{ $t("Search") }}
+      {{ "Search" }}
     </button>
-    <button @click="showAll()">{{ $t("All") }}</button>
+    <button @click="showAll()">{{ "All" }}</button>
     <transition name="fade">
       <span class="help is-danger no-margin tooltip2" v-if="error"
         >Please write at least 3 characters</span

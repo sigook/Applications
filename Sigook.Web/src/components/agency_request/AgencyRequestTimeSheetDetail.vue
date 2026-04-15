@@ -29,17 +29,17 @@
     </div>
 
     <div class="form-100">
-      <label>{{ $t("HoursApproved") }}</label>
+      <label>{{ "Hours Approved" }}</label>
       <span>{{ editableDay.totalHoursApproved }}</span>
     </div>
 
     <div class="form-50">
-      <label>{{ $t("MissingHours") }}</label>
+      <label>{{ "Missing Hours" }}</label>
       <span>{{ editableDay.missingHours }}</span>
     </div>
 
     <div class="form-50">
-      <label>{{ $t("MissingHours") }} {{ $t("Overtime") }}</label>
+      <label>{{ "Missing Hours" }} {{ "Over time" }}</label>
       <span>{{ editableDay.missingHoursOvertime }}</span>
     </div>
 
@@ -84,7 +84,7 @@
     </div>
 
     <div class="form-100">
-      <label>{{ $t("Comments") }}</label>
+      <label>{{ "Comments" }}</label>
       <span>{{ editableDay.comment }}</span>
     </div>
   </div>

@@ -30,6 +30,7 @@
 
 
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { datetime, date, currency } from '@/utils/filters';
 import { downloadPDF } from '@/utils/downloadFile';
 import { fetchInvoicePdf } from "@/api/downloadApi";
@@ -67,7 +68,7 @@ export default {
         })
         .catch(e => {
           this.isLoading = false;
-          this.showAlertError(e);
+          showAlertError(e);
         })
     },
     downloadInvoicePdf(item) {
@@ -79,7 +80,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     openCompanyInvoicePay(invoiceId, invoiceNumber) {
@@ -97,12 +98,12 @@ export default {
       if (change) {
         this.showAll()
       }
-    },
+    }
 
   },
   created() {
     this.onGetCompanyInvoice();
-  },
+  }
 }
 
 </script>

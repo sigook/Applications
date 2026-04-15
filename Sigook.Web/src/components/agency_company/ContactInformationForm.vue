@@ -1,6 +1,6 @@
 <template>
   <div class="p-3">
-    <h2 class="text-center main-title">{{ $t('CompanyContactInformation') }}</h2>
+    <h2 class="text-center main-title">{{ 'Contact Information' }}</h2>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="localModel.phone"
@@ -36,7 +36,7 @@
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ $t('Save') }}
+          {{ 'Save' }}
         </b-button>
       </div>
     </div>
@@ -45,6 +45,7 @@
 </template>
 
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { updateAgencyCompanyContactInformation } from "@/api/agencyCompanyApi";
 export default {
   name: 'ContactInformationForm',
@@ -71,7 +72,7 @@ export default {
           this.saveContactInformation();
           return;
       } else {
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       }
     },
     saveContactInformation() {
@@ -79,12 +80,12 @@ export default {
       updateAgencyCompanyContactInformation(this.localModel.id, this.localModel)
         .then(() => {
           this.$emit('save');
-          this.showAlertSuccess("Updated")
+          showAlertSuccess("Updated")
         })
         .catch(error => {
-          this.showAlertError(error)
+          showAlertError(error)
         })
-    },
+    }
   },
   components: {
     phoneInput: () => import("@/components/PhoneInput.vue")

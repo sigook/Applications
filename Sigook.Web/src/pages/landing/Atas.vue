@@ -145,13 +145,11 @@
 </template>
 
 <script lang="ts">
-import phoneFormat from "@/mixins/phoneFormatMixin";
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
 
 export default {
-  mixins: [phoneFormat],
   data() {
     return {
       mask,
@@ -159,7 +157,7 @@ export default {
       contact: {
         title: 'CONTACT ATAS SYSTEM ~ NOTIFICATION',
         subject: 'Request ATAS Demo',
-        emailSetting: process.env.VUE_APP_SIGOOK_NOTIFICATION
+        emailSetting: import.meta.env.VUE_APP_SIGOOK_NOTIFICATION
       },
       solutionType: null,
       formError: null

@@ -67,20 +67,18 @@
 </template>
 <script lang="ts">
 import { currency, dateFromNow, splitCapital, dateMonth } from '@/utils/filters';
-import toastMixin from "@/mixins/toastMixin";
 export default {
   props: ["request"],
   data() {
     return {
-      isLoading: false,
+      isLoading: false
     };
   },
-  mixins: [toastMixin],
   methods: {
     currency,
     dateFromNow,
     splitCapital,
-    dateMonth,
-  },
+    dateMonth
+  }
 };
 </script>

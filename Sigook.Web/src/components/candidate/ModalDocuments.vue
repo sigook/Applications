@@ -47,8 +47,8 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toast from "../../mixins/toastMixin";
 import { usePubSub } from "@/composables/usePubSub";
 import { deleteFile } from "@/utils/fileUpload";
 import { getCandidateDocuments, addCandidateDocument, deleteCandidateDocument } from "@/api/agencyCandidateApi";
@@ -58,7 +58,6 @@ export default {
     return { ...usePubSub() };
   },
   props: ["candidateId"],
-  mixins: [toast],
   data() {
     return {
       showInput: true,
@@ -67,12 +66,12 @@ export default {
       documents: null,
       newDocument: {
         fileName: "",
-        description: "",
-      },
+        description: ""
+      }
     };
   },
   components: {
-    UploadFile: () => import("../../components/UploadFiles.vue"),
+    UploadFile: () => import("../../components/UploadFiles.vue")
   },
   created() {
     this.loadDocuments();
@@ -88,7 +87,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     addDocument(file) {
@@ -103,7 +102,7 @@ export default {
     cleanInput() {
       this.newDocument = {
         fileName: "",
-        description: "",
+        description: ""
       };
     },
     submitDocument() {
@@ -118,11 +117,11 @@ export default {
             })
             .catch((error) => {
               this.isLoading = false;
-              this.showAlertError(error);
+              showAlertError(error);
             });
           return;
         }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
+        showAlertError("Please make sure all required fields are filled out correctly");
       });
     },
     onDeleteDocument(id, index) {
@@ -130,14 +129,14 @@ export default {
       deleteCandidateDocument(this.candidateId, id)
         .then(() => {
           this.isLoading = false;
-          this.showAlertSuccess("Deleted");
+          showAlertSuccess("Deleted");
           this.documents.items.splice(index, 1);
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
-    },
-  },
+    }
+  }
 };
 </script>

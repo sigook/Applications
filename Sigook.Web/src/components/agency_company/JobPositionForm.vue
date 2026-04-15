@@ -61,13 +61,14 @@
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ currentPosition ? $t('Save') : $t('Create') }}
+          {{ currentPosition ? 'Save' : 'Create' }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getJobPositions } from "@/api/catalogApi";
 import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
@@ -88,7 +89,7 @@ export default {
         description: null,
         workerRateMin: null,
         workerRateMax: null,
-        shift: null,
+        shift: null
       },
       jobPositionList: [],
       jobPosition: ''
@@ -114,7 +115,7 @@ export default {
           this.createJobPosition();
         }
       } else {
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
+        showAlertError('Please make sure all required fields are filled out correctly');
       }
     },
     createJobPosition() {
@@ -126,7 +127,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     updateJobPosition(id) {
@@ -138,7 +139,7 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error)
+          showAlertError(error)
         })
     },
     loadJobPositionById(id) {
@@ -151,9 +152,9 @@ export default {
         })
         .catch(error => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         })
-    },
+    }
   },
   async created() {
     this.isLoading = true;

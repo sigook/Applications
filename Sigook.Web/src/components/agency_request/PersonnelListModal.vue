@@ -16,6 +16,7 @@
   </div>
 </template>
 <script lang="ts">
+import { showAlertError } from "@/utils/toast";
 import { getAgencyPersonnel } from "@/api/agencyApi";
 import { postAgencyRequestRecruiter, deleteAgencyRequestRecruiter } from "@/api/agencyRequestApi";
 
@@ -38,7 +39,7 @@ export default {
         })
         .catch((error) => {
           this.isLoading = false;
-          this.showAlertError(error);
+          showAlertError(error);
         });
     },
     updateRecruiters(items) {
@@ -59,7 +60,7 @@ export default {
         this.$emit("selectUser", item);
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       });
     },
     removeRequestRecruiter(item) {
@@ -70,12 +71,12 @@ export default {
         this.$emit("removeUser", item);
       }).catch((error) => {
         this.isLoading = false;
-        this.showAlertError(error);
+        showAlertError(error);
       });
-    },
+    }
   },
   created() {
     this.loadAgencyPersonnel();
-  },
+  }
 };
 </script>
