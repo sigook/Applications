@@ -136,7 +136,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
       backgroundColor: AppTheme.surfaceGrey,
       endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

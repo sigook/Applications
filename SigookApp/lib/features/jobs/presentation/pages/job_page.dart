@@ -66,7 +66,7 @@ class _JobPageState extends ConsumerState<JobPage> {
       return Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
-          backgroundColor: AppTheme.primaryBlue,
+          backgroundColor: AppTheme.secondaryRed,
           title: const NavbarLogo(),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -77,7 +77,7 @@ class _JobPageState extends ConsumerState<JobPage> {
       return Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
-          backgroundColor: AppTheme.primaryBlue,
+          backgroundColor: AppTheme.secondaryRed,
           title: const NavbarLogo(),
         ),
         body: Center(
@@ -117,7 +117,7 @@ class _JobPageState extends ConsumerState<JobPage> {
                 title: const NavbarLogo(),
                 expandedHeight: 100,
                 pinned: true,
-                backgroundColor: AppTheme.primaryBlue,
+                backgroundColor: AppTheme.secondaryRed,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {

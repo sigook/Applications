@@ -54,7 +54,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

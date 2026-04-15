@@ -28,7 +28,7 @@ class _AboutPageState extends State<AboutPage> {
       backgroundColor: AppTheme.surfaceGrey,
       endDrawer: const AppDrawer(currentRoute: AppRoutes.about),
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
