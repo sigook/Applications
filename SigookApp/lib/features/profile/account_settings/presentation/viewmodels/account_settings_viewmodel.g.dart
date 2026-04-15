@@ -42,7 +42,7 @@ final class AccountSettingsViewModelProvider
 }
 
 String _$accountSettingsViewModelHash() =>
-    r'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1';
+    r'8e362b50cd5c7675e1a3eea51c0cc638e57c07c6';
 
 abstract class _$AccountSettingsViewModel
     extends $Notifier<AccountSettingsState> {

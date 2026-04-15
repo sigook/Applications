@@ -14,7 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$JobExperienceState {
 
- bool get isAdding; String? get addError; bool get justAdded; bool get showForm; String? get editingId; bool get isSaving; String? get saveError; bool get justSaved; String? get deletingId; String? get deleteError; bool get justDeleted;
+// Add flow
+ bool get isAdding; String? get addError; bool get justAdded; bool get showForm;// Edit flow
+ String? get editingId; bool get isSaving; String? get saveError; bool get justSaved;// Delete flow
+ String? get deletingId; String? get deleteError; bool get justDeleted;
 /// Create a copy of JobExperienceState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -84,6 +87,18 @@ as bool,
 
 /// Adds pattern-matching-related methods to [JobExperienceState].
 extension JobExperienceStatePatterns on JobExperienceState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
 @optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _JobExperienceState value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
@@ -93,6 +108,18 @@ return $default(_that);case _:
 
 }
 }
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
 
 @optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _JobExperienceState value)  $default,){
 final _that = this;
@@ -103,6 +130,17 @@ return $default(_that);case _:
 
 }
 }
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
 @optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _JobExperienceState value)?  $default,){
 final _that = this;
@@ -113,6 +151,17 @@ return $default(_that);case _:
 
 }
 }
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
 @optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isAdding,  String? addError,  bool justAdded,  bool showForm,  String? editingId,  bool isSaving,  String? saveError,  bool justSaved,  String? deletingId,  String? deleteError,  bool justDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
@@ -122,6 +171,18 @@ return $default(_that.isAdding,_that.addError,_that.justAdded,_that.showForm,_th
 
 }
 }
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
 
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isAdding,  String? addError,  bool justAdded,  bool showForm,  String? editingId,  bool isSaving,  String? saveError,  bool justSaved,  String? deletingId,  String? deleteError,  bool justDeleted)  $default,) {final _that = this;
 switch (_that) {
@@ -131,6 +192,17 @@ return $default(_that.isAdding,_that.addError,_that.justAdded,_that.showForm,_th
 
 }
 }
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
 @optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isAdding,  String? addError,  bool justAdded,  bool showForm,  String? editingId,  bool isSaving,  String? saveError,  bool justSaved,  String? deletingId,  String? deleteError,  bool justDeleted)?  $default,) {final _that = this;
 switch (_that) {
@@ -148,16 +220,19 @@ return $default(_that.isAdding,_that.addError,_that.justAdded,_that.showForm,_th
 
 class _JobExperienceState implements JobExperienceState {
   const _JobExperienceState({this.isAdding = false, this.addError, this.justAdded = false, this.showForm = false, this.editingId, this.isSaving = false, this.saveError, this.justSaved = false, this.deletingId, this.deleteError, this.justDeleted = false});
+  
 
-
+// Add flow
 @override@JsonKey() final  bool isAdding;
 @override final  String? addError;
 @override@JsonKey() final  bool justAdded;
 @override@JsonKey() final  bool showForm;
+// Edit flow
 @override final  String? editingId;
 @override@JsonKey() final  bool isSaving;
 @override final  String? saveError;
 @override@JsonKey() final  bool justSaved;
+// Delete flow
 @override final  String? deletingId;
 @override final  String? deleteError;
 @override@JsonKey() final  bool justDeleted;

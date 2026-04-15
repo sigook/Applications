@@ -52,25 +52,6 @@ class _AccountSettingsSectionCardState
         );
   }
 
-  Future<void> _showPasswordInfoDialog() async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Password'),
-        content: const Text(
-          'To change your password, use the "Forgot Password" option on the '
-          'login screen. A reset link will be sent to your registered email address.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _showDeactivateDialog() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -302,38 +283,6 @@ class _AccountSettingsSectionCardState
             ],
           ),
         ],
-
-        const Divider(height: 24),
-
-        // ── Password ───────────────────────────────────────────────────────
-        Row(
-          children: [
-            Icon(Icons.lock_outline, size: 20, color: Colors.grey.shade600),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Password',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w500)),
-                  const Text('••••••••',
-                      style: TextStyle(fontSize: 14, letterSpacing: 2)),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: _showPasswordInfoDialog,
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primaryBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              child: const Text('Change'),
-            ),
-          ],
-        ),
 
         const Divider(height: 28),
 

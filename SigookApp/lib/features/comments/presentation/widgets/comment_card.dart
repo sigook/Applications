@@ -29,45 +29,65 @@ class CommentCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.blueGrey.shade100,
-                  child: Text(
-                    comment.authorName.isNotEmpty
-                        ? comment.authorName[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey.shade700,
-                    ),
-                  ),
-                ),
+                _buildAvatar(),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    comment.authorName,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
+                Expanded(child: _buildRatingStars()),
+                Text(
+                  comment.formattedDate,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
-                if (comment.createdAt != null)
-                  Text(
-                    comment.createdAt!,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500),
-                  ),
               ],
             ),
             const SizedBox(height: 10),
             Text(
-              comment.content,
+              comment.comment,
               style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade700, height: 1.45),
+                fontSize: 13,
+                color: Colors.grey.shade700,
+                height: 1.45,
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    if (comment.logo != null && comment.logo!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 16,
+        backgroundImage: NetworkImage(comment.logo!),
+        backgroundColor: Colors.blueGrey.shade100,
+      );
+    }
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: Colors.blueGrey.shade100,
+      child: Text(
+        '#${comment.numberId}',
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          color: Colors.blueGrey.shade700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingStars() {
+    final fullStars = comment.rate.floor();
+    final hasHalf = (comment.rate - fullStars) >= 0.5;
+    return Row(
+      children: List.generate(5, (i) {
+        if (i < fullStars) {
+          return const Icon(Icons.star, size: 14, color: Color(0xFFFFC107));
+        } else if (i == fullStars && hasHalf) {
+          return const Icon(Icons.star_half, size: 14, color: Color(0xFFFFC107));
+        } else {
+          return Icon(Icons.star_border, size: 14, color: Colors.grey.shade300);
+        }
+      }),
     );
   }
 }
