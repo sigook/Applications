@@ -17,6 +17,8 @@
 </template>
 
 <script lang="ts">
+import { getSkipPayrollNumbers, addSkipPayrollNumber } from "@/api/agencyPayStubApi";
+
 export default {
   data() {
     return {
@@ -31,7 +33,7 @@ export default {
     },
     getAllNumbers(text) {
       this.isLoading = true;
-      this.$store.dispatch("agency/getSkipPayrollNumbers", { searchTerm: text })
+      getSkipPayrollNumbers({ searchTerm: text })
         .then(response => {
           this.isLoading = false;
           this.numbers = response;
@@ -52,7 +54,7 @@ export default {
         closeOnConfirm: false,
         confirmText: 'Add',
         onConfirm: async (value, dialog) => {
-          await this.$store.dispatch("agency/addSkipPayrollNumber", { value: value });
+          await addSkipPayrollNumber({ value: value });
           this.$refs.autoCompleteNumbers.setSelected(value);
           dialog.close();
         }

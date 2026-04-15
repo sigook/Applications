@@ -40,7 +40,7 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.startWorking | dateMonth }}
+            {{ dateMonth(props.row.startWorking) }}
           </template>
         </b-table-column>
         <b-table-column field="status" label="Status" sortable searchable>
@@ -54,7 +54,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-tooltip label="Reject" type="is-dark" position="is-top">
+          <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
             <b-button size="is-small" type="is-danger" outlined rounded icon-right="close"
               v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
           </b-tooltip>
@@ -81,7 +81,9 @@
 </template>
 
 <script lang="ts">
+import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
+import { WorkerRequestStatusLabels } from '@/constants/enums';
 
 export default {
   data() {
@@ -109,6 +111,7 @@ export default {
     EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
   },
   methods: {
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkers();
@@ -153,7 +156,11 @@ export default {
       this.isLoading = true;
       getRequestWorkers(this.serverParams)
         .then((response) => {
-          this.rows = response.items.map(i => ({ ...i, actions: null }));
+          this.rows = response.items.map(i => ({
+            ...i,
+            status: WorkerRequestStatusLabels[i.workerRequestStatus],
+            actions: null,
+          }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })

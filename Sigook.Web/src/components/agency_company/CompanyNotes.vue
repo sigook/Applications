@@ -12,8 +12,8 @@
             <span :style="{ backgroundColor: item.color }" class="note-color-icon"
               :class="{ 'border': item.color === '#fefefe' }"></span>
             {{ item.note }}
-            <br><i class="fz-2" v-if="item.createdBy">By: {{ item.createdBy | emailName }} | </i>
-            <i class="fz-2" v-if="item.createdAt">{{ item.createdAt | dateFromNow }}</i>
+            <br><i class="fz-2" v-if="item.createdBy">By: {{ emailName(item.createdBy) }} | </i>
+            <i class="fz-2" v-if="item.createdAt">{{ dateFromNow(item.createdAt) }}</i>
           </p>
         </li>
       </ul>
@@ -27,7 +27,7 @@
             <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
               <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
               <modal-notes :user-id="profileId" :on-get="getNotes" :on-create="createNote" :on-update="updateNote"
-                :on-delete="deleteNote" @onUpdateNote="() => getAgencyCompanyFirstNote()">
+                :on-delete="deleteNote" @onUpdateNote="() => loadFirstNotes()">
               </modal-notes>
             </div>
           </div>
@@ -39,15 +39,24 @@
 </template>
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { emailName, dateFromNow } from "@/utils/filters";
+import {
+  getAgencyCompanyNotes,
+  createAgencyCompanyNote,
+  updateAgencyCompanyNote,
+  deleteAgencyCompanyNote,
+} from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+
 export default {
   data() {
     return {
       showModalNotes: false,
       profileId: this.$route.params.id,
-      getNotes: 'agency/getAgencyCompanyNote',
-      createNote: 'agency/createAgencyCompanyNote',
-      updateNote: 'agency/updateAgencyCompanyNote',
-      deleteNote: 'agency/deleteAgencyCompanyNote',
+      getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination),
+      createNote: ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model),
+      updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyCompanyNote(userId, id, model),
+      deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id),
       notesList: null
     }
   },
@@ -56,8 +65,10 @@ export default {
     ModalNotes: () => import("../notes/ModalNotes.vue")
   },
   methods: {
-    getAgencyCompanyFirstNote() {
-      this.$store.dispatch(this.getNotes, { userId: this.profileId, pagination: { page: 1, size: 3 } })
+    emailName,
+    dateFromNow,
+    loadFirstNotes() {
+      getAgencyCompanyNotes(this.profileId, { page: 1, size: 3 })
         .then(response => {
           this.notesList = response;
         })
@@ -67,11 +78,11 @@ export default {
     },
     onCloseModalNotes() {
       this.showModalNotes = false;
-      this.getAgencyCompanyFirstNote();
+      this.loadFirstNotes();
     }
   },
   created() {
-    this.getAgencyCompanyFirstNote();
+    this.loadFirstNotes();
   }
 }
 </script>

@@ -1,11 +1,11 @@
 using Covenant.Api.AccountingModule.Deduction;
 using Covenant.Api.AccountingModule.Deduction.Cpp;
 using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Common.Models.Deductions;
 using Covenant.Common.Repositories;
-using Covenant.Deductions.Services;
+using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Deductions;
 using Covenant.Infrastructure.Deductions.Repositories;
@@ -48,7 +48,8 @@ namespace Covenant.Integration.Tests.AccountingModule.Deduction.Cpp
                 HttpResponseMessage response = await _client.PostAsync($"{RequestUri()}/{period}/Excel", content);
                 response.EnsureSuccessStatusCode();
 
-            };
+            }
+            ;
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             switch (period)
             {

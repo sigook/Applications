@@ -1,167 +1,167 @@
-# Modelo de Negocio - Covenant/Sigook Platform
+# Business Model - Covenant/Sigook Platform
 
 ## 🎯 Value Proposition
 
-Covenant/Sigook es una **plataforma integral de staffing y reclutamiento** que conecta agencias de personal temporal con empresas que necesitan trabajadores, manejando todo el ciclo de vida desde el reclutamiento hasta el pago.
+Covenant/Sigook is an **end-to-end staffing and recruitment platform** that connects temporary staffing agencies with companies that need workers, managing the full lifecycle from recruitment to payment.
 
-### Problema que Resuelve
+### Problem It Solves
 
-**Gestionar el flujo completo de staffing temporal/permanente incluyendo:**
-- ✅ Registro y certificación de trabajadores
-- ✅ Matching entre trabajadores y órdenes de trabajo
-- ✅ Gestión de horarios y timesheets con punch card
-- ✅ Procesamiento de nómina con impuestos canadienses complejos (CPP, EI, Federal, Provincial)
-- ✅ Facturación automatizada a empresas
-- ✅ Cumplimiento regulatorio (documentos, certificaciones, seguros)
-- ✅ Generación de documentos legales (pay stubs, invoices)
+**Manage the complete temporary/permanent staffing flow including:**
+- ✅ Worker registration and certification
+- ✅ Matching workers with job orders
+- ✅ Schedule and timesheet management with punch card
+- ✅ Payroll processing with complex Canadian taxes (CPP, EI, Federal, Provincial)
+- ✅ Automated invoicing for companies
+- ✅ Regulatory compliance (documents, certifications, insurance)
+- ✅ Legal document generation (pay stubs, invoices)
 
 ---
 
-## 👥 Actores Principales
+## 👥 Main Actors
 
-### 1. AGENCY (Agencia de Personal)
+### 1. AGENCY (Staffing Agency)
 
-**Rol:** Intermediario que conecta Companies con Workers y gestiona todo el proceso.
+**Role:** Intermediary that connects Companies with Workers and manages the entire process.
 
-**Tipos de Agency:**
-- **Master** - Agencia principal con sub-agencias
-- **Regular** - Agencia estándar independiente
-- **BusinessPartner** - Socio comercial con acceso limitado
+**Agency Types:**
+- **Master** — Main agency with sub-agencies
+- **Regular** — Standard independent agency
+- **BusinessPartner** — Business partner with limited access
 
-**Responsabilidades:**
-- Reclutar y aprobar Workers
-- Gestionar Companies (clientes)
-- Crear y asignar órdenes de trabajo (Requests)
-- Aprobar timesheets
-- Procesar payroll para workers
-- Facturar a companies
-- Mantener cumplimiento regulatorio
+**Responsibilities:**
+- Recruit and approve Workers
+- Manage Companies (clients)
+- Create and assign job orders (Requests)
+- Approve timesheets
+- Process payroll for workers
+- Bill companies
+- Maintain regulatory compliance
 
-**Estructura:**
-- Tiene ubicaciones físicas (AgencyLocation) con dirección de facturación
-- Tiene personal interno (AgencyPersonnel):
-  - Recruiters (reclutadores)
-  - Sales Representatives (ventas)
+**Structure:**
+- Has physical locations (AgencyLocation) with billing address
+- Has internal personnel (AgencyPersonnel):
+  - Recruiters
+  - Sales Representatives
   - Account Managers
-- Tiene BusinessNumber, HstNumber (tax registration)
+- Has BusinessNumber, HstNumber (tax registration)
 
 ---
 
-### 2. COMPANY (Empresa Cliente)
+### 2. COMPANY (Client)
 
-**Rol:** Cliente de la agencia que necesita personal temporal o permanente.
+**Role:** Agency client that needs temporary or permanent staff.
 
-**Pipeline de Estados:**
+**Status Pipeline:**
 ```
 Lead → Potential → Prospect → Quoted → Client → Blocked/Inactive
 ```
 
-**Responsabilidades:**
-- Definir job positions con rates (tarifas)
-- Crear órdenes de trabajo (Requests)
-- Revisar y aprobar candidatos
-- Revisar timesheets (opcional)
-- Recibir facturación por servicios
+**Responsibilities:**
+- Define job positions with rates
+- Create job orders (Requests)
+- Review and approve candidates
+- Review timesheets (optional)
+- Receive billing for services
 
-**Estructura:**
-- Tiene perfil (CompanyProfile) gestionado por una Agency
-- Múltiples ubicaciones (CompanyProfileLocation)
-- Job positions con rates definidos (CompanyProfileJobPositionRate):
-  - **WorkerRate** - Lo que se paga al worker
-  - **AgencyRate** - Lo que cobra la agencia (incluye markup)
-- Contactos (CompanyProfileContactPerson)
-- Usuarios internos (CompanyUser) para gestionar órdenes
+**Structure:**
+- Has a profile (CompanyProfile) managed by an Agency
+- Multiple locations (CompanyProfileLocation)
+- Job positions with defined rates (CompanyProfileJobPositionRate):
+  - **WorkerRate** — What is paid to the worker
+  - **AgencyRate** — What the agency charges (includes markup)
+- Contacts (CompanyProfileContactPerson)
+- Internal users (CompanyUser) to manage orders
 
-**Datos clave:**
+**Key data:**
 - BusinessName, DbaName
 - BusinessNumber, HstNumber
-- Billing address y shipping addresses
-- RequiresPermissionToSeeOrders (control de acceso)
+- Billing address and shipping addresses
+- RequiresPermissionToSeeOrders (access control)
 
 ---
 
-### 3. WORKER (Trabajador)
+### 3. WORKER
 
-**Rol:** Profesional que busca empleo temporal o permanente a través de la plataforma.
+**Role:** Professional looking for temporary or permanent employment through the platform.
 
-**Estados y Flags:**
-- `ApprovedToWork` - Aprobado por la agencia para trabajar (requiere documentos completos)
-- `Dnu` (Do Not Use) - Marcado como no disponible
-- `IsSubcontractor` - Trabaja como subcontratista (diferentes tax rules)
-- `IsContractor` - Trabaja como contratista independiente
+**States and Flags:**
+- `ApprovedToWork` — Approved by the agency to work (requires complete documents)
+- `Dnu` (Do Not Use) — Marked as unavailable
+- `IsSubcontractor` — Works as a subcontractor (different tax rules)
+- `IsContractor` — Works as an independent contractor
 
-**Responsabilidades:**
-- Completar registro con información completa
-- Mantener documentos vigentes (SIN, IDs, licenses, certificates)
-- Aplicar a órdenes de trabajo
-- Completar timesheets (clock in/out)
-- Recibir pay stubs
+**Responsibilities:**
+- Complete registration with full information
+- Keep documents current (SIN, IDs, licenses, certificates)
+- Apply to job orders
+- Complete timesheets (clock in/out)
+- Receive pay stubs
 
-**Estructura del Perfil (WorkerProfile):**
+**Profile Structure (WorkerProfile):**
 
-**Información Personal:**
+**Personal Information:**
 - FirstName, LastName, BirthDay, Gender
-- SocialInsurance (SIN) con archivo y fecha de vencimiento
-- IdentificationNumber1/2 con archivos (Passport, Driver License, etc)
+- SocialInsurance (SIN) with file and expiration date
+- IdentificationNumber1/2 with files (Passport, Driver License, etc.)
 - ProfileImage
 
-**Información de Contacto:**
+**Contact Information:**
 - MobileNumber, Phone, Email
 - Location (Address, City, Province, PostalCode)
 - HasVehicle
 
-**Información Profesional:**
-- Skills (múltiples habilidades)
-- Languages (idiomas con nivel de competencia)
-- Licenses (licencias profesionales con vencimiento)
-- Certificates (certificaciones con vencimiento)
-- JobExperience (experiencia laboral)
+**Professional Information:**
+- Skills (multiple skills)
+- Languages (with proficiency level)
+- Licenses (professional licenses with expiration)
+- Certificates (certifications with expiration)
+- JobExperience (work history)
 
-**Disponibilidad:**
+**Availability:**
 - AvailabilityType (FullTime, PartTime, Flexible)
-- AvailabilityTime (días y horarios disponibles)
-- LocationPreferences (ciudades preferidas)
+- AvailabilityTime (available days and hours)
+- LocationPreferences (preferred cities)
 
-**Información Fiscal:**
-- TaxCategory (FederalCategory, ProvincialCategory) - Claim codes para cálculo de impuestos
-- Province - Determina qué tabla de impuestos provinciales usar
-
----
-
-### 4. CANDIDATE (Candidato)
-
-**Rol:** Prospecto gestionado por la agencia que AÚN NO tiene cuenta de usuario en el sistema.
-
-**Diferencia con Worker:**
-- **Candidate** - Solo existe en el sistema de la agencia, sin User asociado
-- **Worker** - Tiene User asociado (email, autenticación), puede usar la app
-
-**Transición:**
-```
-Candidate (gestionado por agencia) → Worker (se registra en Flutter app)
-```
-
-**Uso:**
-- Agency registra Candidates manualmente
-- Agency hace seguimiento y reclutamiento
-- Cuando el Candidate se registra en el sistema, se convierte en Worker
+**Tax Information:**
+- TaxCategory (FederalCategory, ProvincialCategory) — Claim codes for tax calculation
+- Province — Determines which provincial tax table to use
 
 ---
 
-## 🔄 Flujo de Negocio Completo
+### 4. CANDIDATE
 
-### FASE 1: PREPARACIÓN
+**Role:** Prospect managed by the agency that does NOT yet have a user account in the system.
+
+**Difference from Worker:**
+- **Candidate** — Only exists in the agency's system, no associated User
+- **Worker** — Has an associated User (email, authentication), can use the app
+
+**Transition:**
+```
+Candidate (managed by agency) → Worker (registers in Flutter app)
+```
+
+**Use:**
+- Agency manually registers Candidates
+- Agency tracks and recruits them
+- When the Candidate registers in the system, they become a Worker
+
+---
+
+## 🔄 End-to-End Business Flow
+
+### PHASE 1: SETUP
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY registra COMPANY                              │
-│    - CompanyProfile con BusinessName, locations         │
-│    - Job Positions con rates (worker rate, agency rate) │
-│    - Contact persons y users                            │
+│ 1. AGENCY registers COMPANY                             │
+│    - CompanyProfile with BusinessName, locations        │
+│    - Job Positions with rates (worker rate, agency rate)│
+│    - Contact persons and users                          │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. WORKER se registra vía Flutter app                   │
+│ 2. WORKER registers via Flutter app                     │
 │    - Personal info, contact, address                    │
 │    - Documents (SIN, IDs, certificates)                 │
 │    - Skills, languages, experience                      │
@@ -169,219 +169,215 @@ Candidate (gestionado por agencia) → Worker (se registra en Flutter app)
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. AGENCY aprueba WORKER                                │
-│    - Revisa documentos y perfil                         │
-│    - Set ApprovedToWork = true                          │
-│    - Worker puede ver y aplicar a jobs                  │
+│ 3. AGENCY approves WORKER                               │
+│    - Reviews documents and profile                      │
+│    - Sets ApprovedToWork = true                         │
+│    - Worker can see and apply to jobs                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### FASE 2: CREACIÓN DE ORDEN
+### PHASE 2: ORDER CREATION
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ COMPANY o AGENCY crea REQUEST                           │
+│ COMPANY or AGENCY creates REQUEST                       │
 │                                                          │
-│ Información clave:                                       │
+│ Key information:                                         │
 │  - JobTitle, Description, Requirements                   │
-│  - WorkersQuantity (cuántos necesita)                   │
-│  - JobLocation (dónde se trabaja)                       │
-│  - JobPositionRate (define tarifas)                     │
-│  - Shift (horario: 7:00 AM - 3:00 PM)                  │
+│  - WorkersQuantity (how many needed)                    │
+│  - JobLocation (where the work is performed)            │
+│  - JobPositionRate (defines rates)                      │
+│  - Shift (e.g. 7:00 AM - 3:00 PM)                       │
 │  - DurationTerm (LongTerm/ShortTerm)                    │
 │  - EmploymentType (FullTime/PartTime/Contractor)        │
-│  - StartAt, FinishAt (fechas)                           │
-│  - Incentive (bonus opcional)                           │
+│  - StartAt, FinishAt (dates)                            │
+│  - Incentive (optional bonus)                           │
 │                                                          │
-│ Estados:                                                 │
-│  - Requested: Recién creada                             │
-│  - InProcess: En proceso de llenado                     │
-│  - Cancelled: Cancelada                                 │
-│  - IsOpen: Todavía acepta workers                       │
+│ Status:                                                  │
+│  - Open: Active order with available capacity           │
+│  - Filled: All positions filled                         │
+│  - Cancelled: Cancelled                                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### FASE 3: MATCHING Y ASIGNACIÓN
+### PHASE 3: MATCHING AND ASSIGNMENT
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. WORKERS ven Requests en Flutter app                  │
+│ 1. WORKERS see Requests in Flutter app                  │
 │    GET /api/WorkerRequest/Available                     │
-│    - Filtran por ciudad, job type, rate                 │
+│    - Filter by city, job type, rate                     │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. WORKER aplica o AGENCY asigna                        │
+│ 2. WORKER applies or AGENCY assigns                     │
 │    POST /api/WorkerRequest/Apply                        │
-│    POST /api/AgencyRequest/{id}/AssignWorker            │
+│    POST /api/AgencyRequest/{requestId}/Worker           │
 │                                                          │
-│    Crea WORKERREQUEST:                                  │
-│     - Status: Booked (asignado)                         │
-│     - StartWorking: Fecha de inicio                     │
-│     - WeekStartWorking: Semana de inicio                │
+│    Creates WORKERREQUEST:                                │
+│     - Status: Booked                                    │
+│     - StartWorking: Start date                          │
+│     - WeekStartWorking: Start week                      │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. REQUEST se llena                                     │
+│ 3. REQUEST gets filled                                  │
 │    WorkersQuantityWorking >= WorkersQuantity            │
-│    → Request puede cerrar o seguir abierto              │
+│    → Status transitions to Filled                       │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### FASE 4: TRABAJO Y TIME TRACKING
+### PHASE 4: WORK AND TIME TRACKING
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. WORKER hace Clock In/Out diario                      │
-│    POST /api/WorkerRequestTimeSheet/ClockIn             │
-│    - ClockIn: 2026-02-01T07:05:23Z (real time)         │
-│    - ClockInRounded: 2026-02-01T07:00:00Z (rounded)    │
+│ 1. WORKER does daily Clock In/Out                       │
+│    POST /api/WorkerRequest/{requestId}/TimeSheet        │
+│    - ClockIn: 2026-02-01T07:05:23Z (real time)          │
+│    - ClockInRounded: 2026-02-01T07:00:00Z (rounded)     │
+│    - ClockOut: 2026-02-01T15:08:12Z                     │
+│    - ClockOutRounded: 2026-02-01T15:00:00Z              │
 │                                                          │
-│    POST /api/WorkerRequestTimeSheet/ClockOut            │
-│    - ClockOut: 2026-02-01T15:08:12Z                    │
-│    - ClockOutRounded: 2026-02-01T15:00:00Z             │
-│                                                          │
-│    Crea TIMESHEET por cada día trabajado                │
+│    Creates one TIMESHEET per day worked                 │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. AGENCY aprueba TIMESHEET                             │
-│    PUT /api/AgencyRequestTimeSheet/{id}/Approve         │
-│    - TimeInApproved: 2026-02-01T07:00:00Z              │
-│    - TimeOutApproved: 2026-02-01T15:00:00Z             │
+│ 2. AGENCY approves TIMESHEET                            │
+│    - TimeInApproved: 2026-02-01T07:00:00Z               │
+│    - TimeOutApproved: 2026-02-01T15:00:00Z              │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. SISTEMA calcula TIMESHEETTOTAL                       │
+│ 3. SYSTEM calculates TIMESHEETTOTAL                     │
 │    - TotalHours = TimeOutApproved - TimeInApproved      │
-│    - RegularHours (primeras 44 hrs/semana)             │
-│    - OvertimeHours (después de 44 hrs)                 │
-│    - NightShiftHours (11 PM - 7 AM)                    │
-│    - HolidayHours (si IsHoliday = true)                │
-│    - AccumulateWeekHours (suma semanal)                │
+│    - RegularHours (first 44 hrs/week)                   │
+│    - OvertimeHours (after 44 hrs)                       │
+│    - NightShiftHours (11 PM - 7 AM)                     │
+│    - HolidayHours (if IsHoliday = true)                 │
+│    - AccumulateWeekHours (weekly sum)                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### FASE 5: PAYROLL (NÓMINA)
+### PHASE 5: PAYROLL
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY selecciona workers para payroll               │
+│ 1. AGENCY selects workers for payroll                   │
 │    POST /api/v4/Accounting/PayStub                      │
 │    - Worker, PaymentDate, WeekEnding                    │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. SISTEMA calcula EARNINGS                             │
+│ 2. SYSTEM calculates EARNINGS                           │
 │    - RegularHours × WorkerRate = RegularWage            │
-│    - OvertimeHours × (Rate × 1.5) = OvertimeWage       │
+│    - OvertimeHours × (Rate × 1.5) = OvertimeWage        │
 │    - NightShiftHours × NightShiftRate                   │
 │    - HolidayHours × HolidayRate                         │
-│    - GrossPayment = suma de todos los wages             │
-│    - Vacations = GrossPayment × 4% (mandatorio Canadá)  │
+│    - GrossPayment = sum of all wages                    │
+│    - Vacations = GrossPayment × 4% (mandatory in Canada)│
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. SISTEMA calcula DEDUCTIONS (ver PAYROLL_RULES.md)   │
+│ 3. SYSTEM calculates DEDUCTIONS (see PAYROLL_RULES.md)  │
 │    - CPP (Canada Pension Plan): 5.95%                   │
 │    - EI (Employment Insurance): 1.66%                   │
 │    - FederalTax (lookup tables)                         │
-│    - ProvincialTax (por provincia)                      │
-│    - TotalDeductions = suma                             │
+│    - ProvincialTax (per province)                       │
+│    - TotalDeductions = sum                              │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 4. GENERA PAYSTUB                                       │
+│ 4. PAYSTUB GENERATED                                    │
 │    - PayStubNumber: PS-0001-26                          │
 │    - TotalEarnings = GrossPayment + Vacations           │
 │    - TotalPaid = TotalEarnings - TotalDeductions        │
-│    - Genera PDF y envía al Worker                       │
+│    - Generates PDF and sends to Worker                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### FASE 6: BILLING (FACTURACIÓN)
+### PHASE 6: BILLING
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY genera INVOICE para COMPANY                   │
+│ 1. AGENCY generates INVOICE for COMPANY                 │
 │    POST /api/v4/Accounting/Invoice                      │
 │    - CompanyProfile, WeekEnding, WorkerRequests         │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. SISTEMA calcula INVOICE TOTALS (ver BILLING_RULES.md)│
-│    Por cada Worker:                                      │
+│ 2. SYSTEM calculates INVOICE TOTALS (see BILLING_RULES) │
+│    Per Worker:                                           │
 │     - RegularHours × AgencyRate                         │
-│     - OvertimeHours × (AgencyRate × 1.5)               │
+│     - OvertimeHours × (AgencyRate × 1.5)                │
 │     - NightShiftHours × NightShiftRate                  │
 │     - HolidayHours × HolidayRate                        │
-│    SubTotal = suma de todos los workers                 │
+│    SubTotal = sum of all workers                        │
 │    Vacations = SubTotal × 4%                            │
-│    HST/GST = (SubTotal + Vacations) × TaxRate          │
+│    HST/GST = (SubTotal + Vacations) × TaxRate           │
 │    TotalNet = SubTotal + Vacations + HST                │
 └─────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. GENERA INVOICE                                       │
+│ 3. INVOICE GENERATED                                    │
 │    - InvoiceNumber: AI-0001-26                          │
-│    - InvoiceTotals (breakdown por worker)               │
-│    - Genera PDF y envía a Company recipients            │
+│    - InvoiceTotals (per-worker breakdown)               │
+│    - Generates PDF and sends to Company recipients      │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 💰 Modelo de Ingresos (Agency)
+## 💰 Revenue Model (Agency)
 
 ### Revenue = Markup on Worker Rates
 
 ```
 AgencyRate - WorkerRate = Agency Profit (Markup)
 
-Ejemplo:
-- AgencyRate: $25/hr (lo que cobra al Company)
-- WorkerRate: $18/hr (lo que paga al Worker)
+Example:
+- AgencyRate: $25/hr (charged to the Company)
+- WorkerRate: $18/hr (paid to the Worker)
 - Markup: $7/hr (28% profit margin)
 
-Para 40 horas/semana:
-- Agency cobra al Company: $1,000
-- Agency paga al Worker: $720
-- Agency profit: $280/semana por worker
+For 40 hours/week:
+- Agency charges Company: $1,000
+- Agency pays Worker: $720
+- Agency profit: $280/week per worker
 ```
 
-### Costos de la Agency:
+### Agency Costs:
 - Payroll processing (CPP, EI employer contributions)
-- Insurance y liability
-- Overhead (personal, office, software)
-- Marketing y recruitment
+- Insurance and liability
+- Overhead (staff, office, software)
+- Marketing and recruitment
 
 ---
 
-## 🎯 Diferenciadores Competitivos
+## 🎯 Competitive Differentiators
 
-### 1. Automatización Completa
-- Desde job posting hasta invoice generation
-- Cálculos automáticos de payroll (complejos impuestos canadienses)
+### 1. Full Automation
+- From job posting to invoice generation
+- Automatic payroll calculations (complex Canadian taxes)
 - Document generation (PDF pay stubs, invoices)
 
-### 2. Multi-jurisdicción
-- Canadá (CPP, EI, Federal/Provincial taxes)
-- USA (Federal, State, FICA) - preparado para expansión
-- Tax tables actualizadas
+### 2. Multi-Jurisdiction
+- Canada (CPP, EI, Federal/Provincial taxes)
+- USA (Federal, State, FICA) — prepared for expansion
+- Up-to-date tax tables
 
-### 3. Mobile-First para Workers
-- Flutter app nativa para iOS/Android
-- Clock in/out con GPS
+### 3. Mobile-First for Workers
+- Native Flutter app for iOS/Android
+- Clock in/out with GPS
 - Real-time job search
 - Document upload
 
-### 4. Compliance y Tracking
+### 4. Compliance and Tracking
 - Document expiry tracking
 - License/certificate validation
-- Audit trail completo
+- Full audit trail
 - Legal document generation
 
 ### 5. Cloud-Native
-- Azure Storage para documentos
-- Azure Service Bus para async processing
-- Escalable y resiliente
+- Azure Storage for documents
+- Azure Service Bus for async processing
+- Scalable and resilient

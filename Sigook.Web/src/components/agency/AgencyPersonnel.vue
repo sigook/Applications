@@ -31,6 +31,7 @@
 </template>
 
 <script lang="ts">
+import { getAgencyPersonnel, deleteAgencyPersonnel } from "@/api/agencyApi";
 
 export default {
   name: "AgencyUsers",
@@ -49,7 +50,7 @@ export default {
   methods: {
     getUsers() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyPersonnel')
+      getAgencyPersonnel()
         .then((response) => {
           this.isLoading = false;
           this.users = response.map(r => ({ ...r, actions: null }))
@@ -68,7 +69,7 @@ export default {
         .then(response => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch('agency/deleteAgencyPersonnel', id)
+            deleteAgencyPersonnel(id)
               .then(() => {
                 this.isLoading = false;
                 this.getUsers();

@@ -16,7 +16,7 @@
         <span>{{ worker.identificationType1.value }} ({{ $t("File") }}) </span>
         <span>
           <a :href="worker.identificationType1File.pathFile" download target="_blank">
-            {{ worker.identificationType1File.fileName | filename }}
+            {{ filename(worker.identificationType1File.fileName) }}
             <span class="download-button"></span>
           </a>
         </span>
@@ -33,7 +33,7 @@
         <span>{{ worker.identificationType2.value }} ({{ $t("File") }})</span>
         <span>
           <a :href="worker.identificationType2File.pathFile" download target="_blank">
-            {{ worker.identificationType2File.fileName | filename }}
+            {{ filename(worker.identificationType2File.fileName) }}
             <span class="download-button"></span>
           </a>
         </span>
@@ -42,7 +42,7 @@
         <span>{{ $t("WorkerPoliceCheckBackground") }}</span>
         <span>
           <a :href="worker.policeCheckBackGround.pathFile" target="_blank" download>
-            {{ worker.policeCheckBackGround.fileName | filename }}
+            {{ filename(worker.policeCheckBackGround.fileName) }}
             <span class="download-button"></span>
           </a>
         </span>
@@ -55,6 +55,8 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
+
 export default {
   props: ["worker"],
   data() {
@@ -63,6 +65,7 @@ export default {
     };
   },
   methods: {
+    filename,
     closeModalEdit() {
       this.$emit("updateProfile", true);
       this.modalDocuments = false;

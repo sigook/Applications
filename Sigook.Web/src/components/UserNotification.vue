@@ -22,7 +22,7 @@
 
                             <input type="checkbox"
                                    v-model="item.emailNotification"
-                                   @change="updateUserNotification(item)"/>
+                                   @change="saveNotification(item)"/>
 
                             <span class="slider round"></span>
                         </label>
@@ -67,6 +67,7 @@
 </template>
 
 <script lang="ts">
+import { getUserNotifications, updateUserNotification } from "@/api/userNotificationApi";
 
     export default {
         props: ['isDisabled'],
@@ -77,9 +78,9 @@
             }
         },
         methods: {
-            getUserNotification(){
+            loadNotifications(){
                 this.isLoading = true;
-                this.$store.dispatch('agency/getUserNotification')
+                getUserNotifications()
                     .then(response => {
                         this.data = response;
                         this.isLoading = false;
@@ -89,9 +90,9 @@
                         this.isLoading = false;
                     })
             },
-            updateUserNotification(item){
+            saveNotification(item){
                 this.isLoading = true;
-                this.$store.dispatch('agency/updateUserNotification', item)
+                updateUserNotification(item)
                     .then(() => {
                         this.isLoading = false;
                     })
@@ -103,7 +104,7 @@
         },
         created(){
             this.$emit('hideEditButton', true);
-            this.getUserNotification();
+            this.loadNotifications();
         }
     }
 </script>

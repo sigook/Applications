@@ -17,27 +17,27 @@
         </div>
         <div
           :class="[directHiring ? 'col-sm-12 col-md-6 col-lg-4 col-padding' : 'col-sm-12 col-md-8 col-lg-8 col-padding']">
-          <b-field :label="$t('JobTitle')" :message="errors.first('job title')"
+          <b-field :label="`${$t('JobTitle')} *`" :message="errors.first('job title')"
             :type="errors.has('job title') ? 'is-danger' : ''">
-            <b-input v-model="request.jobTitle" name="job title" v-validate="'required'" />
+            <b-input v-model="request.jobTitle" name="job title" v-validate="'required|max:100|min:1'" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
-          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary"
+          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary *"
             :message="errors.has('workerSalary') ? errors.first('workerSalary') : ''">
             <b-numberinput v-model="request.workerSalary" name="workerSalary" v-validate="'required'"
               controls-alignment="right"></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="$t('WorkersQuantity')"
+          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${$t('WorkersQuantity')} *`"
             :message="errors.has('worker quantity') ? errors.first('worker quantity') : ''">
             <b-numberinput v-model="request.workersQuantity" name="worker quantity"
               v-validate="'required|min_value:1|numeric'" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!directHiring">
-          <b-field :label="$t('RequestJobType')" :message="errors.first('job type')"
+          <b-field :label="`${$t('RequestJobType')} *`" :message="errors.first('job type')"
             :type="errors.has('job type') ? 'is-danger' : ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
               open-on-focus name="job type" v-validate="'required'" @select="onJobPositionSelected">
@@ -47,7 +47,7 @@
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
         <div :class="[directHiring ? 'col-12 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding']">
-          <b-field :label="$t('RequestBranchOffice')"
+          <b-field :label="`${$t('RequestBranchOffice')} *`"
             :message="errors.has('branchOffice') ? errors.first('branchOffice') : ''"
             :type="errors.has('branchOffice') ? 'is-danger' : ''">
             <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="jobLocation" open-on-focus
@@ -61,11 +61,11 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="$t('Description')" :message="errors.first('description')"
+          <b-field :label="`${$t('Description')} *`" :message="errors.first('description')"
             :type="errors.has('description') ? 'is-danger' : ''">
             <div class="vue-trix-editor">
               <vue-editor id="description-input" v-model="request.description" :name="'description'"
-                v-validate="'required|max:50000|min:25'" />
+                v-validate="'required|max:5000|min:10'" />
             </div>
           </b-field>
         </div>
@@ -77,11 +77,11 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="$t('Requirements')" :message="errors.first('requirements')"
+          <b-field :label="`${$t('Requirements')} *`" :message="errors.first('requirements')"
             :type="errors.has('requirements') ? 'is-danger' : ''">
             <div class="vue-trix-editor">
               <vue-editor id="requirements-input" v-model="request.requirements" :name="'requirements'"
-                v-validate="'required|max:50000|min:25'" />
+                v-validate="'required|max:5000|min:10'" />
             </div>
           </b-field>
         </div>
@@ -89,7 +89,7 @@
           <b-field :type="errors.has('incentive') ? 'is-danger' : ''" :label="$t('Incentive')"
             :message="errors.has('incentive') ? errors.first('incentive') : ''">
             <b-numberinput controls-alignment="right" v-model="request.incentive" name="incentive"
-              v-validate="'required|decimal:2'" step="0.01" />
+              v-validate="'decimal:2'" step="0.01" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-9 col-padding">
@@ -108,7 +108,7 @@
         </div>
         <div class="col-sm-12 col-md-6 col-lg-9 col-padding" v-if="!directHiring">
           <b-field label="Duration Break">
-            <b-timepicker v-model="request.durationBreakFormat" :max-time="maxBreak" hour-format="24"
+            <b-timepicker v-model="request.durationBreak" :max-time="maxBreak" hour-format="24"
               :disabled="!request.breakIsPaid">
             </b-timepicker>
           </b-field>
@@ -116,11 +116,11 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Duration Term">
             <b-select v-model="request.durationTerm" expanded>
-              <option :value="this.$longTerm">
-                {{ this.$longTerm | splitCapital }}
+              <option :value="DurationTerm.LongTerm">
+                {{ DurationTermLabels[DurationTerm.LongTerm] }}
               </option>
-              <option :value="this.$shortTerm">
-                {{ this.$shortTerm | splitCapital }}
+              <option :value="DurationTerm.ShortTerm">
+                {{ DurationTermLabels[DurationTerm.ShortTerm] }}
               </option>
             </b-select>
           </b-field>
@@ -128,29 +128,29 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Employment Type">
             <b-select v-model="request.employmentType" expanded>
-              <option :value="this.$fullTime">
-                {{ this.$fullTime | splitCapital }}
+              <option :value="EmploymentType.FullTime">
+                {{ EmploymentTypeLabels[EmploymentType.FullTime] }}
               </option>
-              <option :value="this.$partTime">
-                {{ this.$partTime | splitCapital }}
+              <option :value="EmploymentType.PartTime">
+                {{ EmploymentTypeLabels[EmploymentType.PartTime] }}
               </option>
-              <option :value="this.$contractor">
-                {{ this.$contractor | splitCapital }}
+              <option :value="EmploymentType.Contractor">
+                {{ EmploymentTypeLabels[EmploymentType.Contractor] }}
               </option>
-              <option :value="this.$temporary">
-                {{ this.$temporary | splitCapital }}
+              <option :value="EmploymentType.Temporary">
+                {{ EmploymentTypeLabels[EmploymentType.Temporary] }}
               </option>
             </b-select>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field label="Start" :type="errors.has('from') ? 'is-danger' : ''"
+          <b-field label="Start *" :type="errors.has('from') ? 'is-danger' : ''"
             :message="errors.has('from') ? errors.first('from') : ''">
             <b-datepicker v-model="request.startAt" name="from" :min-date="timeZero" v-validate="'required'">
             </b-datepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === this.$shortTerm">
+        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
             <b-datepicker v-model="request.finishAt" name="from" :min-date="request.startAt" :max-date="finishDate">
             </b-datepicker>
@@ -172,7 +172,14 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import confirmationAlert from "@/mixins/confirmationAlert";
+import { confirmationGuard } from '@/utils/confirmationGuard';
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentType,
+  EmploymentTypeLabels,
+} from "@/constants/enums";
+import { getLocations, getCompanyJobPositions, createRequest } from "@/api/companyApi";
 
 export default {
   components: {
@@ -196,9 +203,11 @@ export default {
       companyJobPositions: [],
       timeZero: timeZero,
       maxBreak: maxBreak,
-      modalValidation: false,
-      contact: {},
-      request: {},
+      request: {
+        durationBreak: dayjs().startOf('day').toDate(),
+        durationTerm: DurationTerm.LongTerm,
+        employmentType: EmploymentType.FullTime,
+      },
       errorMessage: this.$t("PleaseVerifyThatTheFieldsAreCorrect"),
       directHiring: false,
       jobPosition: '',
@@ -206,12 +215,13 @@ export default {
       jobLocation: '',
       locationSelected: null,
       showLocationModal: false,
+      unsavedChanges: false,
     };
   },
-  mixins: [confirmationAlert],
+  beforeRouteLeave: confirmationGuard,
   async created() {
-    this.locations = await this.$store.dispatch("company/getLocations");
-    this.companyJobPositions = await this.$store.dispatch("company/getCompanyJobPositions");
+    this.locations = await getLocations();
+    this.companyJobPositions = await getCompanyJobPositions();
     this.isLoading = false;
   },
   methods: {
@@ -234,18 +244,18 @@ export default {
       this.$validator.validateAll().then((result) => {
         const selectionsValid = this.validateAutocompleteSelections();
         if (result && selectionsValid) {
-          this.createRequest();
+          this.submitRequest();
           return;
         }
         this.showAlertError(this.errorMessage);
       });
     },
-    createRequest() {
+    submitRequest() {
       this.isLoading = true;
-      this.request.durationBreak = this.directHiring
-        ? `0:00:00`
-        : `${this.request.durationBreakFormat.getHours()}:${this.request.durationBreakFormat.getMinutes()}:00`;
-      this.$store.dispatch("company/createRequest", this.request)
+      createRequest({
+        ...this.request,
+        durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
+      })
         .then(() => {
           this.showAlertSuccess(this.$t("RequestCreated"));
           this.$router.push("company-requests");
@@ -255,34 +265,6 @@ export default {
           this.showAlertError(error);
           this.isLoading = false;
         });
-    },
-    sendMessage() {
-      this.$validator.validate("message").then((result) => {
-        if (result) {
-          this.isLoading = true;
-          this.$store.dispatch("company/requestNewPosition", this.contact)
-            .then(() => {
-              this.isLoading = false;
-              this.showAlertSuccess(this.$t("Sent"));
-              this.modalValidation = false;
-            })
-            .catch((error) => {
-              this.isLoading = false;
-              this.showAlertError(error);
-              this.modalValidation = false;
-            });
-        }
-      });
-    },
-    getCompanyJobPositionById(id) {
-      this.isLoading = true;
-      this.request.shift = null;
-      this.$store.dispatch("company/getCompanyJobPositionById", id)
-        .then((response) => {
-          this.request.shift = response.shift || {};
-          this.request.rate = response.workerRate;
-          this.isLoading = false;
-        })
     },
     onJobPositionSelected(option) {
       this.jobPositionSelected = option;
@@ -306,10 +288,14 @@ export default {
     },
     async onUpdateLocationModal() {
       this.showLocationModal = false;
-      this.locations = await this.$store.dispatch("company/getLocations");
+      this.locations = await getLocations();
     },
   },
   computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentType: () => EmploymentType,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
     filteredCompanyJobPositions() {
       const jobPositions = this.companyJobPositions
         .filter(cjp => cjp.value.toLowerCase().includes(this.jobPosition.toLowerCase()));

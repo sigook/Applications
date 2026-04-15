@@ -4,12 +4,13 @@
         <button v-if="displayShift" @click="getShift" class="no-border pl-4 pr-3" :class="{'up': showDetail}">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px">
         </button>
-        <shift-detail v-if="showDetail" :shift="shift" :isLoading.sync="isLoading" />
+        <shift-detail v-if="showDetail" :shift="shift" :is-loading.sync="isLoading" />
     </div>
 </template>
 
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 export default {
     props: ['displayShift', 'roleId', 'companyId'],
     data() {
@@ -28,7 +29,7 @@ export default {
             if (!this.showDetail){
                 this.isLoading = true;
                 this.showDetail = true;
-                this.$store.dispatch('agency/getAgencyCompanyJobPositionById', {profileId: this.companyId, id: this.roleId})
+                getAgencyCompanyJobPositionById(this.companyId, this.roleId)
                         .then(response => {
                             this.isLoading = false;
                             this.shift = response.shift;

@@ -28,6 +28,7 @@
 </template>
 <script lang="ts">
 import { getJobPositions } from "@/api/catalogApi";
+import { petitionAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 export default {
   props: ["profileId"],
   data() {
@@ -55,7 +56,7 @@ export default {
     },
     requestAgencyJobPosition() {
       this.isLoading = true;
-      this.$store.dispatch('agency/petitionAgencyCompanyJobPosition', { profileId: this.profileId, model: this.model })
+      petitionAgencyCompanyJobPosition(this.profileId, this.model)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal');

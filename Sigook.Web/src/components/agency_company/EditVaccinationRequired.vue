@@ -17,7 +17,7 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding text-right">
-        <b-button type="is-primary" @click="updateCompanyVaccinationRequired">
+        <b-button type="is-primary" @click="saveVaccinationRequired">
           {{ $t('Save') }}
         </b-button>
       </div>
@@ -26,6 +26,8 @@
 </template>
 
 <script lang="ts">
+import { updateCompanyVaccinationRequired } from "@/api/agencyCompanyApi";
+
 export default {
   name: "EditVaccinationRequired",
   data() {
@@ -36,13 +38,13 @@ export default {
   },
   props: ["companyProfileId", "vaccinationRequired", "vaccinationComments"],
   methods: {
-    updateCompanyVaccinationRequired() {
+    saveVaccinationRequired() {
       this.isLoading = true
       this.$validator.validateAll().then(result => {
         if (result) {
-          this.$store.dispatch('agency/updateCompanyVaccinationRequired', {
-            companyProfileId: this.companyProfileId,
-            model: this.model
+          updateCompanyVaccinationRequired(this.companyProfileId, {
+            vaccinationRequired: this.model.required,
+            vaccinationRequiredComments: this.model.comments,
           }).then(() => {
             this.isLoading = false
             this.$emit('updated', this.model);

@@ -1,6 +1,13 @@
 import { Route } from 'vue-router';
-import store from "@/store";
 import { getCompanyStatus, getIndustries } from "@/api/catalogApi";
+import { getAgencyPersonnel } from "@/api/agencyApi";
+import {
+  getAgencyCompanyJobPositions,
+  getAgencyCompanyLocation,
+  getAgencyCompany,
+  getCompanyUsers,
+} from "@/api/agencyCompanyApi";
+import { getAgencyRequest } from "@/api/agencyRequestApi";
 
 export const loadAgencyCompaniesResolver = async (to: Route, from: Route, next: (...args: any[]) => void) => {
     (to.meta as Record<string, any>)['companyStatuses'] = await getCompanyStatus();
@@ -8,18 +15,18 @@ export const loadAgencyCompaniesResolver = async (to: Route, from: Route, next: 
 }
 
 export const loadAgencyRequestToUpdateResolver = async (to: Route, from: Route, next: (...args: any[]) => void) => {
-    (to.meta as Record<string, any>)['companyJobPositions'] = await store.dispatch("agency/getAgencyCompanyJobPositions", to.params.companyProfileId);
-    (to.meta as Record<string, any>)['companyLocations'] = await store.dispatch("agency/getCompanyLocation", to.params.companyProfileId);
-    (to.meta as Record<string, any>)['agencyPersonnel'] = await store.dispatch("agency/getAgencyPersonnel");
-    (to.meta as Record<string, any>)['agencyRequest'] = await store.dispatch("agency/getAgencyRequest", to.params.requestId);
-    (to.meta as Record<string, any>)['companyUsers'] = await store.dispatch("agency/getCompanyUsers", to.params.companyProfileId);
+    (to.meta as Record<string, any>)['companyJobPositions'] = await getAgencyCompanyJobPositions(to.params.companyProfileId as string);
+    (to.meta as Record<string, any>)['companyLocations'] = await getAgencyCompanyLocation(to.params.companyProfileId as string);
+    (to.meta as Record<string, any>)['agencyPersonnel'] = await getAgencyPersonnel();
+    (to.meta as Record<string, any>)['agencyRequest'] = await getAgencyRequest(to.params.requestId as string);
+    (to.meta as Record<string, any>)['companyUsers'] = await getCompanyUsers(to.params.companyProfileId as string);
     next();
 }
 
 export const loadCompanyToUpdateResolver = async (to: Route, from: Route, next: (...args: any[]) => void) => {
     (to.meta as Record<string, any>)['companyStatuses'] = await getCompanyStatus();
     (to.meta as Record<string, any>)['industryList'] = await getIndustries();
-    (to.meta as Record<string, any>)['company'] = await store.dispatch("agency/getCompany", to.params.companyProfileId);
-    (to.meta as Record<string, any>)['agencyPersonnel'] = await store.dispatch("agency/getAgencyPersonnel");
+    (to.meta as Record<string, any>)['company'] = await getAgencyCompany(to.params.companyProfileId as string);
+    (to.meta as Record<string, any>)['agencyPersonnel'] = await getAgencyPersonnel();
     next();
 }

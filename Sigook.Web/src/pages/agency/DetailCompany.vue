@@ -11,7 +11,7 @@
         <h2 class="capitalize fz1 fw-700">
           <span class="fw-400 fz-1" v-if="company.numberId">{{ company.numberId }} |
           </span>
-          {{ company.businessName | lowercase }}
+          {{ lowercase(company.businessName) }}
         </h2>
       </div>
 
@@ -60,9 +60,14 @@
 </template>
 
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
+import { lowercase } from '@/utils/filters';
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   data() {
     return {
       currentTab: "Detail",
@@ -85,8 +90,8 @@ export default {
     FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
     CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo.vue")
   },
-  mixins: [billingAdminMixin],
   methods: {
+    lowercase,
     changeTab(tab) {
       if (!this.visitedTabs.includes(tab)) {
         this.visitedTabs.push(tab);
@@ -98,9 +103,8 @@ export default {
         },
       });
     },
-    getCompany() {
-      this.$store
-        .dispatch("agency/getCompany", this.$route.params.id)
+    loadCompany() {
+      getAgencyCompany(this.$route.params.id)
         .then((response) => {
           this.company = response;
           this.isLoading = false;
@@ -113,10 +117,7 @@ export default {
     updateLogo(newLogo) {
       this.showUpdateLogo = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyCompanyProfileLogo", {
-        profileId: this.company.id,
-        model: newLogo,
-      })
+      updateAgencyCompanyProfileLogo(this.company.id, newLogo)
         .then(() => {
           this.isLoading = false;
           this.company.logo.pathFile = this.company.logo.pathFile.replace(
@@ -132,7 +133,7 @@ export default {
     },
   },
   created() {
-    this.getCompany();
+    this.loadCompany();
     if (this.$route.query && this.$route.query.tab) {
       this.currentTab = this.$route.query.tab;
       if (!this.visitedTabs.includes(this.$route.query.tab)) {

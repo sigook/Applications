@@ -43,6 +43,12 @@ Tests:           Covenant.Tests/
 - Services in `Covenant.Core.BL` depend only on repository interfaces
 - EF Core configurations in `Covenant.Infrastructure/Configurations/`
 
+## Domain Gotchas
+
+- **`RequestStatus` enum has only 3 values:** `Open = 1`, `Filled = 3`, `Cancelled = 4` (value `2` intentionally skipped). `Status` is the single source of truth — there is no `IsOpen` flag. Transitions happen automatically inside `Request.AddWorker` / `RejectWorker` / `Cancel` / `Open`; never set `Status` directly.
+- **Cancellation rule:** `Request.Cancel()` only succeeds when `Status == Open` AND `WorkersQuantityWorking == 0`. To cancel a request with assignees, reject every worker first.
+- **Controller routes** use the pattern `public const string RouteName = "api/..."` + `[Route(RouteName)]`. To locate an endpoint, grep for `RouteName =`.
+
 ## Commands
 
 ```bash

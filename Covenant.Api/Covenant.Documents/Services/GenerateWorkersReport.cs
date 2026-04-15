@@ -45,7 +45,7 @@ namespace Covenant.Documents.Services
                 sheet.Cell($"D{row}").SetValue(data.SocialInsurance).AdjustToContents();
                 sheet.Cell($"E{row}").SetValue(data.DueDate).AdjustToContents();
                 sheet.Cell($"F{row}").SetValue(data.StartWorking).AdjustToContents();
-                sheet.Cell($"G{row}").SetValue(data.Status).AdjustToContents();
+                sheet.Cell($"G{row}").SetValue(data.WorkerRequestStatus.ToString()).AdjustToContents();
             }
             workbook.SaveAs(memoryStream);
             await Task.CompletedTask;

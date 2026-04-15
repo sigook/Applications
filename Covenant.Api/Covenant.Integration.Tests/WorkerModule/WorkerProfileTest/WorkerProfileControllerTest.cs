@@ -23,8 +23,8 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
@@ -92,7 +92,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
 
             using (var content = new MultipartFormDataContent())
             {
-                var json = JsonConvert.SerializeObject(model);
+                var json = JsonSerializer.Serialize(model);
                 content.Add(new StringContent(json), "data");
 
                 var response = await _client.PostAsync("api/WorkerProfile", content);

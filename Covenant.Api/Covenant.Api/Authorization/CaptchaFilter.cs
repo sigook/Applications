@@ -1,8 +1,8 @@
 ﻿using Covenant.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Text;
 
 namespace Covenant.Api.Authorization
@@ -32,7 +32,7 @@ namespace Covenant.Api.Authorization
             var client = httpClientFactory.CreateClient();
             var secret = configuration.GetValue<string>("ReCAPTCHASecretKey");
             var payload = context.ActionArguments["contact"] as ContactDto;
-            var serializeObject = JsonConvert.SerializeObject(new { secret, response = payload.CaptchaResponse });
+            var serializeObject = JsonSerializer.Serialize(new { secret, response = payload.CaptchaResponse });
             var content = new StringContent(serializeObject, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secret}&response={payload.CaptchaResponse}", content);
             var stringResponse = await response.Content.ReadAsStringAsync() ?? "";

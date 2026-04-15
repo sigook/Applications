@@ -3,8 +3,8 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="col-8 col-padding">
       <b-field label="Skills">
-        <skills-form :existingSkills="data" v-if="request.canEdit" @onPressAdd="(item) => postAgencySkill(item)"
-          @onDelete="(item) => deleteAgencySkill(item)" />
+        <skills-form :existingSkills="data" v-if="request.canEdit" @onPressAdd="(item) => addSkill(item)"
+          @onDelete="(item) => removeSkill(item)" />
       </b-field>
     </div>
   </section>
@@ -12,6 +12,8 @@
 
 <script lang="ts">
 import toastMixin from "@/mixins/toastMixin";
+import { getAgencyRequestSkill, postAgencyRequestSkill, deleteAgencyRequestSkill } from "@/api/agencyRequestApi";
+
 export default {
   props: ['request'],
   data() {
@@ -25,9 +27,9 @@ export default {
     SkillsForm: () => import("../FormSkillAdd.vue")
   },
   methods: {
-    getAgencySkill() {
+    loadSkills() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencySkill", { requestId: this.request.id })
+      getAgencyRequestSkill(this.request.id)
         .then(response => {
           this.isLoading = false;
           this.data = response;
@@ -37,27 +39,23 @@ export default {
           this.showAlertError(error)
         })
     },
-    postAgencySkill(item) {
-      let model = {
-        id: null,
-        skill: item.skill
-      }
+    addSkill(item) {
       this.isLoading = true;
-      this.$store.dispatch("agency/postAgencySkill", { requestId: this.request.id, model: model })
+      postAgencyRequestSkill(this.request.id, { skill: item.skill })
         .then(() => {
           this.isLoading = false;
-          this.getAgencySkill()
+          this.loadSkills()
         }).catch(error => {
           this.isLoading = false;
           this.showAlertError(error)
         })
     },
-    deleteAgencySkill(item) {
+    removeSkill(item) {
       this.isLoading = true;
-      this.$store.dispatch("agency/deleteAgencySkill", { requestId: this.request.id, id: item.id })
+      deleteAgencyRequestSkill(this.request.id, item.id)
         .then(() => {
           this.isLoading = false;
-          this.getAgencySkill()
+          this.loadSkills()
         })
         .catch(error => {
           this.isLoading = false;
@@ -66,7 +64,7 @@ export default {
     }
   },
   created() {
-    this.getAgencySkill()
+    this.loadSkills()
   }
 }
 </script>

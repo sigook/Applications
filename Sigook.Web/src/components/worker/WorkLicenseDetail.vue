@@ -13,12 +13,12 @@
         <div class="button-right">
           <a :href="item.license.pathFile" target="_blank" download>
             <h4 class="fw-400">
-              {{ item.license.fileName | filename }}
+              {{ filename(item.license.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
           <div class="actions text-right">
-            <b-tooltip label="Delete" type="is-dark" position="is-top">
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item.license)">
                 {{ $t("Delete") }}
               </button>
@@ -32,8 +32,8 @@
             <strong class="fw-400" v-if="item.number">
               # {{ item.number }}</strong>
           </p>
-          <span v-if="item.issued">Issued: {{ item.issued | dateMonth }} | </span>
-          <span v-if="item.expires">Expire: {{item.expires | dateMonth }}</span>
+          <span v-if="item.issued">Issued: {{ dateMonth(item.issued) }} | </span>
+          <span v-if="item.expires">Expire: {{dateMonth(item.expires) }}</span>
         </div>
       </div>
     </div>
@@ -58,6 +58,7 @@
 </template>
 
 <script lang="ts">
+import { filename, dateMonth } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerLicenses } from '@/api/workerApi';
 export default {
@@ -80,6 +81,8 @@ export default {
   },
   mixins: [toastMixin],
   methods: {
+    filename,
+    dateMonth,
     closeModalEdit() {
       this.$emit("updateProfile", true);
       this.modalLicense = false;

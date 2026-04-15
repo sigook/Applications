@@ -1,6 +1,6 @@
 <template>
   <div class="p-3">
-    <h2 class="text-center main-title"> {{ editableDay.day | dateMonth }} </h2>
+    <h2 class="text-center main-title"> {{ dateMonth(editableDay.day) }} </h2>
 
     <div class="text-center">
       <div class="container-worker-report">
@@ -8,19 +8,19 @@
         <div class="d-flex space-between">
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Clock In</span>
-            <span v-if="editableDay.clockIn">{{ editableDay.clockIn | dateHHmm }}</span>
+            <span v-if="editableDay.clockIn">{{ dateHHmm(editableDay.clockIn) }}</span>
             <span v-else class="fz-1">No reported</span>
 
           </div>
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Clock Out</span>
-            <span v-if="editableDay.clockOut">{{ editableDay.clockOut | dateHHmm }}</span>
+            <span v-if="editableDay.clockOut">{{ dateHHmm(editableDay.clockOut) }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
           <div class="pl-2 pr-2">
             <span class="fz-2 fw-700 d-block">Hours</span>
             <span v-if="editableDay.clockOut && editableDay.totalHours">
-              {{ editableDay.totalHours | hour }}
+              {{ hour(editableDay.totalHours) }}
             </span>
             <span v-else class="fz-1">No reported</span>
           </div>
@@ -51,7 +51,14 @@
 </template>
 
 <script lang="ts">
+import { dateMonth, dateHHmm, hour } from '@/utils/filters';
+
 export default {
   props: ['editableDay'],
+  methods: {
+    dateMonth,
+    dateHHmm,
+    hour,
+  },
 }
 </script>

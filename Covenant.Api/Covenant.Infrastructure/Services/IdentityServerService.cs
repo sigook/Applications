@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services;
 
@@ -50,13 +50,13 @@ public class IdentityServerService : IIdentityServerService
             {
                 model.Password = RandomPassword();
             }
-            var content = JsonConvert.SerializeObject(model);
+            var content = JsonSerializer.Serialize(model);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PostAsync("CreateUser", stringContent);
             var stringResponse = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                var result = JsonConvert.DeserializeObject<IdModel>(stringResponse);
+                var result = JsonSerializer.Deserialize<IdModel>(stringResponse);
                 var newUser = new User(model.Email, result.Id);
                 await userRepository.Create(newUser);
                 await userRepository.SaveChangesAsync();
@@ -76,7 +76,7 @@ public class IdentityServerService : IIdentityServerService
         try
         {
             var client = httpClientFactory.CreateClient(IdentityClient);
-            var content = JsonConvert.SerializeObject(agency);
+            var content = JsonSerializer.Serialize(agency);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PutAsync($"UpdateAgencyUser/{userId}", stringContent);
             var stringResponse = await response.Content.ReadAsStringAsync();
@@ -103,13 +103,13 @@ public class IdentityServerService : IIdentityServerService
                 return Result.Fail("User not exists");
             }
             var client = httpClientFactory.CreateClient(IdentityClient);
-            var content = JsonConvert.SerializeObject(claim);
+            var content = JsonSerializer.Serialize(claim);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PutAsync($"DeleteUserOrClaim/{userId}", stringContent);
             var stringResponse = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                var userDeleted = JsonConvert.DeserializeObject<bool>(stringResponse);
+                var userDeleted = JsonSerializer.Deserialize<bool>(stringResponse);
                 if (userDeleted)
                 {
                     userRepository.Delete(user);
@@ -138,7 +138,7 @@ public class IdentityServerService : IIdentityServerService
         try
         {
             var client = httpClientFactory.CreateClient(IdentityClient);
-            var content = JsonConvert.SerializeObject(new IdModel(id));
+            var content = JsonSerializer.Serialize(new IdModel(id));
             var response = await client.PostAsync("CreateInactiveUser", new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json));
             var stringResponse = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
@@ -167,7 +167,7 @@ public class IdentityServerService : IIdentityServerService
                 if (!await userRepository.UserExists(email.Value.Email))
                 {
                     var client = httpClientFactory.CreateClient(IdentityClient);
-                    var content = JsonConvert.SerializeObject(model);
+                    var content = JsonSerializer.Serialize(model);
                     var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
                     var response = await client.PutAsync("UpdateEmail", stringContent);
                     var stringResponse = await response.Content.ReadAsStringAsync();
@@ -196,7 +196,7 @@ public class IdentityServerService : IIdentityServerService
         try
         {
             var client = httpClientFactory.CreateClient(IdentityClient);
-            var content = JsonConvert.SerializeObject(model);
+            var content = JsonSerializer.Serialize(model);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PutAsync("UpdateRole", stringContent);
             var stringResponse = await response.Content.ReadAsStringAsync();

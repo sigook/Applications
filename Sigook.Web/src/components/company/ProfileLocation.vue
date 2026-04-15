@@ -45,6 +45,12 @@
 
 <script lang="ts">
 import AddressComponent from "@/components/Address.vue";
+import {
+  getProfileLocations,
+  createProfileLocation,
+  updateProfileLocation,
+  deleteProfileLocation,
+} from "@/api/companyApi";
 
 export default {
   components: { AddressComponent },
@@ -76,7 +82,7 @@ export default {
       this.showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
         if (!r) return;
         this.isLoading = true;
-        this.$store.dispatch("company/deleteProfileLocation", { id })
+        deleteProfileLocation(id)
           .then(() => {
             this.isLoading = false;
             this.getLocations();
@@ -98,7 +104,7 @@ export default {
     },
     updateLocation(location) {
       this.isLoading = true;
-      this.$store.dispatch("company/updateProfileLocation", { id: location.id, model: location })
+      updateProfileLocation(location.id, location)
         .then(() => {
           this.isLoading = false;
           this.closeModal();
@@ -110,7 +116,7 @@ export default {
     },
     createLocation(location) {
       this.isLoading = true;
-      this.$store.dispatch("company/createProfileLocation", location)
+      createProfileLocation(location)
         .then(() => {
           this.isLoading = false;
           this.closeModal();
@@ -122,7 +128,7 @@ export default {
     },
     getLocations() {
       this.isLoading = true;
-      this.$store.dispatch("company/getProfileLocations")
+      getProfileLocations()
         .then(r => {
           this.locations = r;
           this.isLoading = false;

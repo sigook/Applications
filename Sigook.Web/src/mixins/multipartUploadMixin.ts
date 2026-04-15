@@ -1,4 +1,4 @@
-import compress from './compressFiles';
+import { compressFile } from '@/utils/compressFile';
 
 interface FileObjects {
   profileImage?: File | null;
@@ -174,7 +174,7 @@ export default {
 
       if (fileObjects.profileImage && generatedFileNames.profileImage) {
         try {
-          const compressedImage = await vm.compressFile(fileObjects.profileImage);
+          const compressedImage = await compressFile(fileObjects.profileImage);
           formData.append(generatedFileNames.profileImage, compressedImage, generatedFileNames.profileImage);
         } catch {
           formData.append(generatedFileNames.profileImage, fileObjects.profileImage, generatedFileNames.profileImage);
@@ -213,6 +213,5 @@ export default {
 
       return formData;
     }
-  },
-  mixins: [compress]
+  }
 };

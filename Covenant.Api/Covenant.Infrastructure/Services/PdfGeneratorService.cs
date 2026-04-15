@@ -2,8 +2,8 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Pdf;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services
 {
@@ -25,7 +25,7 @@ namespace Covenant.Infrastructure.Services
             {
                 File.Delete(filePath);
             }
-            string dataAsString = JsonConvert.SerializeObject(new { Name = "Payroll", Html = html });
+            string dataAsString = JsonSerializer.Serialize(new { Name = "Payroll", Html = html });
             var content = new StringContent(dataAsString);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             var client = httpClientFactory.CreateClient(PdfGeneratorClient);
@@ -48,7 +48,7 @@ namespace Covenant.Infrastructure.Services
             {
                 File.Delete(filePath);
             }
-            string dataAsString = JsonConvert.SerializeObject(new { Name = fileName, pdfParams.Html });
+            string dataAsString = JsonSerializer.Serialize(new { Name = fileName, pdfParams.Html });
             var content = new StringContent(dataAsString);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             var client = httpClientFactory.CreateClient(PdfGeneratorClient);

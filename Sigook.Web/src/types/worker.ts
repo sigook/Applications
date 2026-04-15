@@ -190,3 +190,110 @@ export interface TimeSheetHistoryFilter {
 export interface ClockTypeResult {
   clockType: string;
 }
+
+// ---------------------------------------------------------------------------
+// Worker profile sub-info payloads (POST /api/WorkerProfile/{id}/...)
+// Each mirrors the corresponding backend model in Covenant.Common.Models.Worker.
+// ---------------------------------------------------------------------------
+
+// Generic id/value pair used by many worker endpoints (backend BaseModel<Guid>).
+export interface WorkerCatalogItem {
+  id: string;
+  value?: string;
+}
+
+export interface WorkerBasicInformationModel {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  secondLastName?: string;
+  birthDay: string;
+  gender: WorkerCatalogItem | null;
+  hasVehicle: boolean;
+}
+
+export interface WorkerContactInformationModel {
+  mobileNumber: string;
+  phone?: string;
+  phoneExt?: number | null;
+  location: {
+    address?: string;
+    city?: WorkerCatalogItem | null;
+    province?: WorkerCatalogItem | null;
+    postalCode?: string;
+  } | null;
+}
+
+export interface WorkerEmergencyInformationModel {
+  haveAnyHealthProblem: boolean;
+  healthProblem?: string;
+  otherHealthProblem?: string;
+  contactEmergencyName?: string;
+  contactEmergencyLastName?: string;
+  contactEmergencyPhone?: string;
+}
+
+export interface WorkerOtherInformationModel {
+  lift: WorkerCatalogItem | null;
+}
+
+// Payload for POST/PUT /api/WorkerProfile/{id}/JobExperience.
+// Mirrors backend WorkerProfileJobExperienceModel.
+export interface WorkerJobExperienceModel {
+  company: string;
+  supervisor?: string;
+  duties?: string;
+  startDate: string;
+  endDate?: string | null;
+  isCurrentJobPosition: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Worker-facing request list / detail / timesheet items
+// Loose shapes sourced from backend GetRequestsForWorker / GetRequestDetailForWorker.
+// ---------------------------------------------------------------------------
+
+export interface WorkerRequestListItem {
+  id: string;
+  numberId?: number;
+  jobTitle?: string;
+  companyFullName?: string;
+  location?: string;
+  startWorking?: string;
+  finishWorking?: string;
+  status?: string;
+  isAsap?: boolean;
+  logo?: string;
+}
+
+export interface WorkerRequestDetail extends WorkerRequestListItem {
+  description?: string;
+  requirements?: string;
+  responsibilities?: string;
+  workerRate?: number | null;
+  workerSalary?: number | null;
+  displayShift?: string;
+}
+
+export interface WorkerTimeSheetItem {
+  id: string;
+  date: string;
+  clockIn?: string | null;
+  clockOut?: string | null;
+  totalHours?: number;
+}
+
+export interface WorkerWageHistoryItem {
+  rowNumber: number;
+  weekEnding: string;
+  totalPaid: number;
+  quantity?: number;
+  total?: number;
+  items?: { quantity: number; total: number }[];
+}
+
+export interface WorkerTimeSheetHistoryItem {
+  rowNumber: number;
+  weekEnding: string;
+  totalHours: number;
+}

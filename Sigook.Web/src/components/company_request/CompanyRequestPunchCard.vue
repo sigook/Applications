@@ -5,7 +5,7 @@
     <div>
       <b-field grouped position="is-right">
         <b-button size="is-small" type="is-ghost" icon-right="file-excel"
-          @click="getRequestTimeSheetDocument">Export</b-button>
+          @click="downloadTimeSheetDocument">Export</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
@@ -38,10 +38,10 @@
             </template>
           </b-table-column>
           <b-table-column field="totalHoursApproved" label="Approved Hours" sortable v-slot="props">
-            {{ props.row.totalHoursApproved | hour }}
+            {{ hour(props.row.totalHoursApproved) }}
           </b-table-column>
           <b-table-column field="totalHoursWorker" label="Total Hours" sortable v-slot="props">
-            {{ props.row.totalHoursWorker | hour }}
+            {{ hour(props.row.totalHoursWorker) }}
           </b-table-column>
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
@@ -50,7 +50,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <b-tag rounded :type="props.row.workerRequestStatus === 3 ? 'is-success' : 'is-danger'">{{ props.row.workerRequestStatus === 3 ? 'Booked' : 'Rejected' }}</b-tag>
             </template>
           </b-table-column>
         </template>
@@ -63,8 +63,11 @@
   </div>
 </template>
 <script lang="ts">
-import download from '@/mixins/downloadFileMixin';
+import { hour } from '@/utils/filters';
+import { downloadFile } from '@/utils/downloadFile';
 import { getRequestWorkers } from '@/api/companyApi';
+import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
+import { WorkerRequestStatusLabels } from "@/constants/enums";
 
 export default {
   props: ['request'],
@@ -90,8 +93,9 @@ export default {
     TablePunchCard: () => import("@/components/company_request/CompanyPunchCardWorkerContainer.vue"),
     DataEntryTerms: () => import("@/components/DataEntryTerms.vue")
   },
-  mixins: [download],
   methods: {
+    downloadFile,
+    hour,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkers();
@@ -124,7 +128,10 @@ export default {
       this.isLoading = true;
       getRequestWorkers(this.serverParams)
         .then((response) => {
-          this.rows = response.items;
+          this.rows = response.items.map(i => ({
+            ...i,
+            status: WorkerRequestStatusLabels[i.workerRequestStatus],
+          }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
@@ -133,9 +140,9 @@ export default {
           this.isLoading = false;
         })
     },
-    getRequestTimeSheetDocument() {
+    downloadTimeSheetDocument() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getRequestTimeSheetDocument', this.serverParams.requestId)
+      getRequestTimeSheetDocument(this.serverParams.requestId)
         .then(response => {
           this.isLoading = false;
           this.downloadFile(response, `TimeSheet_${this.serverParams.requestId}`);

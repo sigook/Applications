@@ -21,6 +21,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
+
 export default {
   props: ['requestId', 'companyId', 'activeUsers'],
   data() {
@@ -30,12 +32,12 @@ export default {
     }
   },
   methods: {
-    getAgencyCompanyContactPerson() {
+    loadContactPersons() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyCompanyContactPerson', this.companyId)
+      getAgencyCompanyContactPerson(this.companyId)
         .then(response => {
           this.isLoading = false;
-          this.data = response;
+          this.data = response.map(item => ({ ...item, active: false }));
           this.updateContacts();
         })
         .catch(error => {
@@ -45,9 +47,9 @@ export default {
     },
     updateContacts() {
       for (let i = 0; i < this.activeUsers.length; i++) {
-        for (let j = 0; j < this.data.items.length; j++) {
-          if (this.activeUsers[i].id === this.data.items[j].id) {
-            this.$set(this.data.items[j], 'active', true);
+        for (let j = 0; j < this.data.length; j++) {
+          if (this.activeUsers[i].id === this.data[j].id) {
+            this.data[j].active = true;
           }
         }
       }
@@ -60,7 +62,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyCompanyContactPerson()
+    this.loadContactPersons()
   }
 }
 </script>

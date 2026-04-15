@@ -61,7 +61,7 @@
           <template v-slot="props">
             {{ props.row.jobTitle }}
             <i class="fz-2 block mb-0" v-if="props.row.billingTitle">{{ props.row.billingTitle }}</i>
-            <i class="fz-2 block">{{ props.row.createdAt | dateFromNow }}</i>
+            <i class="fz-2 block">{{ dateFromNow(props.row.createdAt) }}</i>
           </template>
         </b-table-column>
         <b-table-column field="updatedAt" label="Last Update" sortable searchable>
@@ -73,7 +73,7 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.updatedAt | dateMonth }}
+            {{ dateMonth(props.row.updatedAt) }}
           </template>
         </b-table-column>
         <b-table-column field="startAt" sortable searchable>
@@ -89,17 +89,17 @@
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ props.row.startAt | dateMonth }}
-            <span v-if="props.row.durationTerm !== $longTerm">
-              - {{ props.row.finishAt | dateMonth }}
+            {{ dateMonth(props.row.startAt) }}
+            <span v-if="props.row.durationTerm !== DurationTerm.LongTerm">
+              - {{ dateMonth(props.row.finishAt) }}
             </span>
             <span
-              v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
-              - {{ props.row.finishAt | dateMonth }}
+              v-if="(props.row.requestStatus === RequestStatus.Filled || props.row.requestStatus === RequestStatus.Cancelled) && props.row.durationTerm === DurationTerm.LongTerm">
+              - {{ dateMonth(props.row.finishAt) }}
             </span>
             <agency-shift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
             <i class="fz-2 d-block">
-              {{ props.row.durationTerm | splitCapital }} - {{ props.row.employmentType | splitCapital }}
+              {{ DurationTermLabels[props.row.durationTerm] }} - {{ EmploymentTypeLabels[props.row.employmentType] }}
             </i>
           </template>
         </b-table-column>
@@ -110,7 +110,7 @@
           </template>
           <template v-slot="props">
             <div v-if="props.row.displayRecruiters" class="capitalize is-inline-block v-middle">
-              {{ props.row.displayRecruiters | breakWord }}
+              {{ breakWord(props.row.displayRecruiters) }}
               <button v-if="tableConfig.showRecruiterModal" type="button"
                 class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
             </div>
@@ -141,7 +141,7 @@
             </b-field>
           </template>
           <template v-slot="props">
-            {{ (props.row.workerRate || props.row.workerSalary) | currency }}
+            {{ currency(props.row.workerRate || props.row.workerSalary) }}
           </template>
         </b-table-column>
         <b-table-column field="workersQuantityWorking" sortable>
@@ -160,9 +160,9 @@
             </b-tag>
           </div>
           <div v-if="props.row.showNotes" class="notes-tooltip">
-            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="'agency/getAgencyRequestNote'"
-              :on-create="'agency/createAgencyRequestNote'" :on-update="'agency/updateAgencyRequestNote'"
-              :on-delete="'agency/deleteAgencyRequestNote'" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
+            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getNotes"
+              :on-create="createNote" :on-update="updateNote"
+              :on-delete="deleteNote" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
               @close="onNote(props.row, false)">
             </modal-notes>
           </div>
@@ -175,9 +175,9 @@
           </template>
           <template v-slot="props">
             <div class="text-center">
-              <b-tooltip :label="$t(props.row.status)" type="is-dark">
+              <b-tooltip :label="$t(RequestStatusLabels[props.row.requestStatus])" type="is-dark" append-to-body>
                 <div class="status-dot-container">
-                  <img v-if="props.row.status === $statusFilled" src="../../assets/images/check_white.png" alt="check"
+                  <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
                     class="request-check" />
                   <div class="dot-status" :class="getStatusClass(props.row)"></div>
                 </div>
@@ -230,9 +230,29 @@
   </div>
 </template>
 <script lang="ts">
-import billingAdminMixin from '@/mixins/billingAdminMixin'
+import { dateFromNow, dateMonth, breakWord, currency } from '@/utils/filters';
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
+import { getAgencyRequests } from "@/api/agencyRequestApi";
+import {
+  getAgencyRequestNotes,
+  createAgencyRequestNote,
+  updateAgencyRequestNote,
+  deleteAgencyRequestNote,
+} from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentTypeLabels,
+  RequestStatus,
+  RequestStatusLabels,
+} from "@/constants/enums";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ["totalItems", "companyId", "agencyId", "config"],
   data() {
     return {
@@ -249,6 +269,10 @@ export default {
       recruiters: null,
       currentRequest: null,
       currentIndex: null,
+      getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
+      createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
+      updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
+      deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
       statuses: [
         { id: 1, value: this.$statusDisplayOpen },
         { id: 3, value: this.$statusDisplayFilled },
@@ -269,7 +293,6 @@ export default {
       quickActions: {}
     };
   },
-  mixins: [billingAdminMixin],
   components: {
     ModalNotes: () => import("../notes/ModalNotes.vue"),
     PersonnelList: () => import("../../components/agency_request/PersonnelListModal.vue"),
@@ -277,6 +300,10 @@ export default {
     Export: () => import("@/components/Export.vue")
   },
   methods: {
+    dateFromNow,
+    dateMonth,
+    breakWord,
+    currency,
     onCellClick(row, column, rowIndex) {
       switch (column._props.field) {
         case 'workersQuantityWorking':
@@ -302,7 +329,7 @@ export default {
     },
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -335,16 +362,16 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onStatusChange() {
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onLastUpdateSelected() {
       this.serverParams.lastUpdateFrom = this.lastUpdateDatesSelected[0];
       this.serverParams.lastUpdateTo = this.lastUpdateDatesSelected[1];
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onLastUpdateCleared() {
       this.lastUpdateDatesSelected = [];
@@ -353,7 +380,7 @@ export default {
     onStartAtSelected() {
       this.serverParams.startAtFrom = this.startAtDatesSelected[0];
       this.serverParams.startAtTo = this.startAtDatesSelected[1];
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     onStartAtCleared() {
       this.startAtDatesSelected = [];
@@ -361,16 +388,16 @@ export default {
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getAgencyRequests();
+        this.loadRequests();
       }
     },
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", status);
+      this.rows[index].showNotes = status;
     },
     onUpdateNote(row, size) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "notesCount", size);
+      this.rows[index].notesCount = size;
     },
     onShowRecruitersModal(item, index) {
       this.currentRequest = item;
@@ -382,34 +409,34 @@ export default {
     },
     onUpdateRecruiter() {
       this.showRecruitersModal = false;
-      this.getAgencyRequests();
+      this.loadRequests();
     },
     canEdit(status) {
       return (
-        status === this.$statusOpen ||
-        status === this.$statusFilled
+        status === RequestStatus.Open ||
+        status === RequestStatus.Filled
       );
     },
     getStatusClass(row) {
-      if (row.status === this.$statusOpen &&
+      if (row.requestStatus === RequestStatus.Open &&
         row.workersQuantityWorking > 0 &&
         row.workersQuantityWorking < row.workersQuantity) {
         return 'status-inprogress';
       }
-      return 'status-' + row.status.toLowerCase();
+      return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
     },
     updateWorkers(item) {
       this.rows[this.currentIndex].workersQuantityWorking = item;
     },
-    getAgencyRequests() {
+    loadRequests() {
       this.checkedRows = [];
       this.$emit("onDataLoading", true);
       if (!this.companyId && !this.agencyId) {
         this.$store.dispatch("agency/updateAgencyRequestFilter", this.serverParams);
       }
-      this.$store.dispatch("agency/getAgencyRequests", this.serverParams)
+      getAgencyRequests(this.serverParams)
         .then((requests) => {
-          this.rows = requests.items.map(i => ({ ...i, actions: null }));
+          this.rows = requests.items.map(i => ({ ...i, actions: null, showNotes: false, notesCount: i.notesCount || 0 }));
           this.$emit('update:totalItems', requests.totalItems);
           this.$emit("onDataLoading", false);
         })
@@ -425,10 +452,10 @@ export default {
         ids: this.checkedRows.map(cr => cr.id),
         isAsap: this.quickActions.isAsap
       };
-      this.$store.dispatch('agency/updateIsAsapRequests', payload)
+      updateIsAsapRequests(payload)
         .then(() => {
           this.showQuickActions = false;
-          this.getAgencyRequests();
+          this.loadRequests();
         }).catch((error) => {
           this.showQuickActions = false;
           this.showAlertError(error);
@@ -463,9 +490,14 @@ export default {
         this.serverParams.agencyId = this.agencyId;
       }
     }
-    this.getAgencyRequests();
+    this.loadRequests();
   },
   computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
+    RequestStatus: () => RequestStatus,
+    RequestStatusLabels: () => RequestStatusLabels,
     tableConfig() {
       return { ...this.defaultConfig, ...this.config };
     },
@@ -488,17 +520,8 @@ export default {
   },
   watch: {
     'serverParams.onlyMine': function () {
-      this.getAgencyRequests();
+      this.loadRequests();
     }
   }
 };
 </script>
-<style lang="scss">
-tr {
-  cursor: pointer;
-}
-
-td {
-  vertical-align: middle !important;
-}
-</style>

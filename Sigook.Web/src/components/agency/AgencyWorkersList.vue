@@ -19,6 +19,8 @@
 </template>
 
 <script lang="ts">
+import { getAgencyWorkersDropdown } from "@/api/agencyWorkerApi";
+import { bookAgencyRequestWorker } from "@/api/agencyRequestApi";
 
 export default {
   data() {
@@ -34,14 +36,14 @@ export default {
   methods: {
     onWorkerInput(text) {
       if (text.length >= 3) {
-        this.getAllWorkers(text);
+        this.searchWorkers(text);
       } else {
         this.workers = [];
       }
     },
-    getAllWorkers(text) {
+    searchWorkers(text) {
       this.isLoadingList = true;
-      this.$store.dispatch("agency/getAllWorkers", { searchTerm: text })
+      getAgencyWorkersDropdown({ searchTerm: text })
         .then(response => {
           this.isLoadingList = false;
           this.workers = response;
@@ -69,11 +71,7 @@ export default {
         confirmText: 'Book',
         onConfirm: async (value, dialog) => {
           this.isLoading = true;
-          await this.$store.dispatch("agency/bookAgencyRequestWorker", {
-            requestId: this.requestId,
-            workerId: this.workerId,
-            model: { startDate: value }
-          }).then(() => {
+          await bookAgencyRequestWorker(this.requestId, this.workerId, { startWorking: value }).then(() => {
             this.isLoading = false;
             this.showAlertSuccess(this.$t('Booked'));
             this.$emit('workerBooked');

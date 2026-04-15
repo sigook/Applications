@@ -4,7 +4,7 @@
         <button v-if="displayShift" @click.stop="getRequestShift" class="no-border" :class="{'up': showDetail}">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ml-2">
         </button>
-        <shift-detail v-if="showDetail" :shift="shift" :isLoading.sync="isLoading" />
+        <shift-detail v-if="showDetail" :shift="shift" :is-loading.sync="isLoading" />
     </div>
 </template>
 

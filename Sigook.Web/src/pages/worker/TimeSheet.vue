@@ -6,13 +6,13 @@
       </template>
       <template>
         <b-table-column field="day" :label="$t('Day')" v-slot="props">
-          <span v-if="props.row.day">{{ props.row.day | date }}</span>
+          <span v-if="props.row.day">{{ date(props.row.day) }}</span>
         </b-table-column>
         <b-table-column field="clockIn" label="Clock In" v-slot="props">
-          <span v-if="props.row.timeIn">{{ props.row.clockIn | time }}</span>
+          <span v-if="props.row.timeIn">{{ time(props.row.clockIn) }}</span>
         </b-table-column>
         <b-table-column field="clockOut" label="Clock Out" v-slot="props">
-          <span v-if="props.row.clockOut !== null">{{ props.row.clockOut | time }}</span>
+          <span v-if="props.row.clockOut !== null">{{ time(props.row.clockOut) }}</span>
         </b-table-column>
         <b-table-column field="totalHours" :label="$t('WorkedHours')" v-slot="props">
           {{ props.row.totalHours.toFixed(2) }}
@@ -22,7 +22,13 @@
   </div>
 </template>
 <script lang="ts">
+import { date, time } from '@/utils/filters';
+
 export default {
-  props: ['data']
+  props: ['data'],
+  methods: {
+    date,
+    time,
+  },
 }
 </script>

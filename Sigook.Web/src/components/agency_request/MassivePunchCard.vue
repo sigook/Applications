@@ -1,3 +1,4 @@
+
 <template>
   <div class="mt-1">
     <b-loading v-model="isLoading"></b-loading>
@@ -42,10 +43,10 @@
             </template>
           </b-table-column>
           <b-table-column field="totalHoursApproved" label="Approved Hours" sortable v-slot="props">
-            {{ props.row.totalHoursApproved | hour }}
+            {{ hour(props.row.totalHoursApproved) }}
           </b-table-column>
           <b-table-column field="totalHoursWorker" label="Total Hours" sortable v-slot="props">
-            {{ props.row.totalHoursWorker | hour }}
+            {{ hour(props.row.totalHoursWorker) }}
           </b-table-column>
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
@@ -58,7 +59,7 @@
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-tooltip label="Punch Card" type="is-dark" position="is-top">
+            <b-tooltip label="Punch Card" type="is-dark" position="is-top" append-to-body>
               <b-button type="is-info" outlined rounded icon-right="timetable" class="mr-2"
                 @click="showModalPunchCard(props.row)"></b-button>
             </b-tooltip>
@@ -77,6 +78,8 @@
   </div>
 </template>
 <script lang="ts">
+import { hour } from '@/utils/filters';
+import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
 
 export default {
   props: ['request'],
@@ -108,9 +111,10 @@ export default {
     Export: () => import("@/components/Export.vue"),
   },
   methods: {
+    hour,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -128,11 +132,11 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getWorkers();
+        this.loadRequestWorkers();
       }
     },
     filterStatuses(text) {
@@ -146,11 +150,11 @@ export default {
         !this.statusesSelected.some(ss => ss.id === s.id)
       );
       this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getWorkers();
+      this.loadRequestWorkers();
     },
-    getWorkers() {
+    loadRequestWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getAgencyRequestsWorkers', this.serverParams)
+      getAgencyRequestsWorkers(this.serverParams)
         .then(response => {
           this.rows = response.items.map(i => ({ ...i, actions: null }));
           this.totalItems = response.totalItems;
@@ -174,7 +178,7 @@ export default {
   },
   created() {
     this.filteredStatuses = this.statuses;
-    this.getWorkers();
+    this.loadRequestWorkers();
   },
   computed: {
     getTimeSheetUrl() {

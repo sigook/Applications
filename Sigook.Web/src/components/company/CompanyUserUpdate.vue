@@ -31,6 +31,7 @@
 <script lang="ts">
 
 import PhoneInput from "@/components/PhoneInput.vue";
+import { updateCompanyUser } from "@/api/companyApi";
 
 export default {
   name: "CompanyUserUpdate",
@@ -54,7 +55,7 @@ export default {
       this.$validator.validateAll().then(r => {
         if (!r) return;
         this.$emit('update:user', this.localUser);
-        this.$store.dispatch("company/updateCompanyUser", { id: this.localUser.id, user: this.localUser })
+        updateCompanyUser(this.localUser.id, this.localUser)
           .then(() => {
             this.showAlertSuccess(this.$t("Updated"));
           })

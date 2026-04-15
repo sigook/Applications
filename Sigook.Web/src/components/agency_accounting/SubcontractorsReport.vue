@@ -8,16 +8,16 @@
       </template>
       <template>
         <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
-          {{ props.row.weekEnding | date }}
+          {{ date(props.row.weekEnding) }}
         </b-table-column>
         <b-table-column field="numberOfWorkers" label="Workers" v-slot="props">
           {{ props.row.numberOfWorkers }}
         </b-table-column>
         <b-table-column field="totalNet" label="Total" v-slot="props">
-          {{ props.row.totalNet | currency }}
+          {{ currency(props.row.totalNet) }}
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-tooltip label="Download Report" type="is-dark" position="is-top">
+          <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
             <b-button type="is-success" outlined rounded icon-right="file-excel" :loading="props.row.reportDownloading"
               @click="downloadSubcontractor(props.row)">
             </b-button>
@@ -29,7 +29,9 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
+import { date, currency } from '@/utils/filters';
+import { getPayrollSubcontractors, downloadSubcontractorReport } from "@/api/agencyPayStubApi";
 
 export default {
   data() {
@@ -45,17 +47,19 @@ export default {
       }
     };
   },
-  mixins: [download],
   methods: {
+    downloadFile,
+    date,
+    currency,
     onPageChange(page) {
       this.serverParams.pageIndex = page;
-      this.getPayrollSubcontractors();
+      this.loadSubcontractors();
     },
-    getPayrollSubcontractors() {
+    loadSubcontractors() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getPayrollSubcontractors", this.serverParams)
+      getPayrollSubcontractors(this.serverParams)
         .then((response) => {
-          this.rows = response.items.map(item => ({ ...item, actions: null, reportDownloading: false }));
+          this.rows = response.items.map((item) => ({ ...item, actions: null, reportDownloading: false }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
@@ -67,7 +71,7 @@ export default {
     downloadSubcontractor(subcontractor) {
       const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
       subcontractor.reportDownloading = true;
-      this.$store.dispatch("agency/downloadSubcontractorReport", weekEnding)
+      downloadSubcontractorReport(weekEnding)
         .then(response => {
           subcontractor.reportDownloading = false;
           this.downloadFile(response, `Subcontractor_${weekEnding}`);
@@ -79,7 +83,7 @@ export default {
     }
   },
   created() {
-    this.getPayrollSubcontractors();
+    this.loadSubcontractors();
   }
 };
 </script>

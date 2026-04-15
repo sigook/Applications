@@ -12,15 +12,21 @@
       <div class="mt-3">
         <h3 class="fw-700">Created by</h3>
         <span class="d-inline-block valign-middle">
-          {{ request.createdBy | emailName }} {{ request.createdAt | dateFromNow }}
+          {{ emailName(request.createdBy) }} {{ dateFromNow(request.createdAt) }}
         </span>
       </div>
     </aside>
   </div>
 </template>
 <script lang="ts">
+import { emailName, dateFromNow } from '@/utils/filters';
+
 export default {
   props: ["request"],
+  methods: {
+    emailName,
+    dateFromNow,
+  },
   components: {
     RequestDetail: () => import("../request/RequestDetail.vue"),
     Location: () => import("../request/RequestLocation.vue"),

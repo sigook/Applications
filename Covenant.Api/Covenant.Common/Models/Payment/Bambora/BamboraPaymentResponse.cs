@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Payment.Bambora
 {
@@ -6,39 +6,39 @@ namespace Covenant.Common.Models.Payment.Bambora
     {
         public long Code { get; set; }
 
-        [JsonProperty(PropertyName = "id")]
+        [JsonPropertyName("id")]
         public string TransactionId { get; set; }
 
 
-        [JsonProperty(PropertyName = "approved")]
+        [JsonPropertyName("approved")]
         public string Approved { get; set; }
 
 
-        [JsonProperty(PropertyName = "message_id")]
+        [JsonPropertyName("message_id")]
         public string MessageId { get; set; }
 
 
-        [JsonProperty(PropertyName = "message")]
+        [JsonPropertyName("message")]
         public string Message { get; set; }
 
 
-        [JsonProperty(PropertyName = "auth_code")]
+        [JsonPropertyName("auth_code")]
         public string AuthCode { get; set; }
 
 
-        [JsonProperty(PropertyName = "created")]
+        [JsonPropertyName("created")]
         public DateTime Created { get; set; }
 
 
-        [JsonProperty(PropertyName = "order_number")]
+        [JsonPropertyName("order_number")]
         public string OrderNumber { get; set; }
 
 
-        [JsonProperty(PropertyName = "type")]
+        [JsonPropertyName("type")]
         public string TransType { get; set; }
 
 
-        [JsonProperty(PropertyName = "payment_method")]
+        [JsonPropertyName("payment_method")]
         public string PaymentMethod { get; set; }
     }
 }

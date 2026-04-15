@@ -63,6 +63,8 @@
   </div>
 </template>
 <script lang="ts">
+import { sendInvoiceEmail } from "@/api/agencyInvoiceApi";
+import { getCompanyInvoiceRecipients } from "@/api/agencyCompanyApi";
 export default {
   props: ["invoice"],
   data() {
@@ -82,8 +84,8 @@ export default {
     };
   },
   methods: {
-    async getInvoiceRecipients() {
-      this.invoiceRecipients = await this.$store.dispatch("agency/getInvoiceRecipients", this.invoice.companyProfileId);
+    async loadInvoiceRecipients() {
+      this.invoiceRecipients = await getCompanyInvoiceRecipients(this.invoice.companyProfileId);
     },
     createTag(email) {
       const recipient = { email };
@@ -112,7 +114,7 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoading = true;
-        await this.$store.dispatch('agency/sendInvoiceEmail', {
+        await sendInvoiceEmail({
           invoiceId: this.invoice.id,
           recipients: this.invoiceRecipients.map(recipient => recipient.email),
           subject: this.newEmail.subject,
@@ -129,7 +131,7 @@ export default {
     }
   },
   async created() {
-    await this.getInvoiceRecipients();
+    await this.loadInvoiceRecipients();
     this.isLoading = false;
     console.log(this.invoice);
   },

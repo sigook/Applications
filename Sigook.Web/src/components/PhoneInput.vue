@@ -11,12 +11,13 @@
 </template>
 <script lang="ts">
 import phoneFormat from "@/mixins/phoneFormatMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { phoneMask as mask } from '@/constants/phoneMask';
 
 export default {
   props: ["model", "defaultValue", "disabled", "required", "placeholder"],
   data() {
     return {
+      mask,
       phoneValue: 0,
       preventNextIteration: false,
       formattedPhoneValue: this.defaultValue || ""
@@ -35,6 +36,6 @@ export default {
       return await this.$validator.validateAll();
     },
   },
-  mixins: [phoneFormat, phoneMaskMixin]
+  mixins: [phoneFormat]
 };
 </script>

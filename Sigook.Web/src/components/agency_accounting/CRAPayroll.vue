@@ -16,10 +16,10 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
+import { getCraPayrollReport } from "@/api/agencyReportApi";
 
 export default {
-  mixins: [download],
   data() {
     return {
       isLoading: false,
@@ -28,6 +28,7 @@ export default {
     }
   },
   methods: {
+    downloadFile,
     onDatesSelected() {
       this.serverParams.startDate = dayjs(this.createdAtDatesSelected[0]).format('YYYY-MM-DD');
       this.serverParams.endDate = dayjs(this.createdAtDatesSelected[1]).format('YYYY-MM-DD');
@@ -36,7 +37,7 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoading = true;
-        this.$store.dispatch('agency/getCraPayrollReport', this.serverParams)
+        getCraPayrollReport(this.serverParams)
           .then(response => {
             this.isLoading = false;
             this.downloadFile(response, `CRA_Payroll_${this.serverParams.startDate}_${this.serverParams.endDate}`);

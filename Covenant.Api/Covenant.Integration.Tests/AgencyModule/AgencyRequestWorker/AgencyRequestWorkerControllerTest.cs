@@ -47,7 +47,7 @@ public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFi
         Assert.Equal(model.WorkerId, workerRequest.WorkerId);
         Assert.Equal(model.WorkerProfileId, Data.FakeWorkerForList.Id);
         Assert.Equal(model.Name, Data.FakeWorkerForList.FullName);
-        Assert.Equal(model.Status, workerRequest.WorkerRequestStatus.ToString());
+        Assert.Equal(model.WorkerRequestStatus, workerRequest.WorkerRequestStatus);
         Assert.Equal(model.ProfileImage, Data.FakeWorkerForList.ProfileImage?.FileName);
         Assert.Equal(model.ApprovedToWork, Data.FakeWorkerForList.ApprovedToWork);
         Assert.StartsWith(model.SocialInsurance, Data.FakeWorkerForList.MaskedSocialInsurance);

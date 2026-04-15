@@ -38,6 +38,8 @@
 </template>
 
 <script lang="ts">
+import { getCompanyProfileUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
+
 export default {
   props: ['company'],
   components: {
@@ -54,12 +56,12 @@ export default {
   },
   methods: {
     async getUsers() {
-      this.users = await this.$store.dispatch('agency/getCompanyProfileUsers', this.company.companyId);
+      this.users = await getCompanyProfileUsers(this.company.companyId);
       this.users = this.users.map(r => ({ ...r, actions: null }));
     },
     async deleteUser(id) {
       this.isLoading = true;
-      await this.$store.dispatch('agency/deleteCompanyProfileUser', { companyId: this.company.companyId, userId: id })
+      await deleteCompanyProfileUser(this.company.companyId, id)
         .catch(error => {
           this.isLoading = false;
           this.showAlertError(error.data);

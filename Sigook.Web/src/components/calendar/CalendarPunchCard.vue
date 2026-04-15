@@ -2,7 +2,7 @@
   <div class="wrapper-calendar">
     <div class="container-flex">
       <div class="col-8">
-        <h2 class="fz1">{{ selectDate | onlyMonth }} <span class="fw-100">{{ selectDate | onlyYear }}</span></h2>
+        <h2 class="fz1">{{ onlyMonth(selectDate) }} <span class="fw-100">{{ onlyYear(selectDate) }}</span></h2>
       </div>
       <div class="col-4 text-right align-s-center">
         <b-button size="is-small" @click="getPreviousMonth" icon-left="chevron-left" class="btn-calendar">
@@ -37,7 +37,7 @@
             :class="{ 'bg-gray': !isAvailableToUpdate(item.day) || !isAvailableToUpdateWorker(item.day) }">
             <div class="wrapper-day" :class="{ 'highlight-day': item.id }">
               <span :class="{ 'isToday': isToday(item.day), 'notCurrentMonth': notCurrentMonth(item.day) }">
-                {{ item.day | onlyDay }}
+                {{ onlyDay(item.day) }}
               </span>
               <slot name="punch-input"
                 v-if="item && isAvailableToUpdate(item.day) && isAvailableToUpdateWorker(item.day)" :index="indexDay"
@@ -71,7 +71,7 @@
             <div class="day-header">{{ weekdays[indexDay] }}</div>
             <div class="day-number"
               :class="{ 'isToday': isToday(item.day), 'notCurrentMonth': notCurrentMonth(item.day) }">
-              {{ item.day | onlyDay }}
+              {{ onlyDay(item.day) }}
             </div>
             <div class="day-content">
               <slot name="punch-input"
@@ -86,16 +86,26 @@
 </template>
 <script lang="ts">
 
-import calendarMixin from "@/mixins/calendarMixin";
-import distributeHours from "@/mixins/distributeHoursMixin";
+import { distributeHours } from "@/utils/distributeHours";
+import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
+import { WorkerRequestStatus } from "@/constants/enums";
 export default {
   props: ["highlights", "workerId", "requestId", "startDate", "status", "worker"],
-  mixins: [distributeHours, calendarMixin],
   data() {
     return {
-      windowWidth: window.innerWidth
+      windowWidth: window.innerWidth,
+      calendar: [],
+      selectDate: null,
+      today: null,
+      weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+      momentFormat: 'YYYY-MM-DD'
     }
+  },
+  created() {
+    this.today = dayjs().toDate();
+    this.selectDate = this.today;
+    this.getTodayMonth();
   },
   mounted() {
     window.addEventListener('resize', this.handleResize);
@@ -104,8 +114,78 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    onlyMonth(value) {
+      return value ? dayjs(value).format('MMMM').toString() : String(value);
+    },
+    onlyYear(value) {
+      return value ? dayjs(value).format('YYYY').toString() : String(value);
+    },
+    onlyDay(value) {
+      return value ? dayjs(value).format('DD').toString() : String(value);
+    },
+    getCurrentMonth() {
+      this.calendar = [];
+      const startDay = dayjs(this.selectDate).startOf('month').startOf('week');
+      const endDay = dayjs(this.selectDate).endOf('month').endOf('week');
+      let date = startDay;
+      while (date.isBefore(endDay, 'day') || date.isSame(endDay, 'day')) {
+        const week = {
+          totalHoursWeek: 0,
+          days: []
+        };
+        for (let i = 0; i < 7; i++) {
+          week.days.push({
+            id: null,
+            day: date.toDate(),
+            totalHoursApproved: 0
+          });
+          date = date.add(1, 'day');
+        }
+        this.calendar.push(week);
+      }
+      this.updateParent(startDay, endDay);
+    },
+    getTodayMonth() {
+      this.selectDate = dayjs(this.today).startOf('month').format(this.momentFormat);
+      this.getCurrentMonth();
+    },
+    getNextMonth() {
+      this.selectDate = dayjs(this.selectDate).add(1, 'month');
+      this.getCurrentMonth();
+    },
+    getPreviousMonth() {
+      this.selectDate = dayjs(this.selectDate).subtract(1, 'month');
+      this.getCurrentMonth();
+    },
+    isToday(date) {
+      return dayjs(date).format(this.momentFormat) === dayjs(this.today).format(this.momentFormat);
+    },
+    notCurrentMonth(date) {
+      return dayjs(date).format('MMMM') !== dayjs(this.selectDate).format('MMMM');
+    },
+    toMomentFormat(date) {
+      return dayjs(date).format(this.momentFormat).toString();
+    },
+    isAvailableToUpdate(date) {
+      const start = dayjs(this.startDate).subtract(1, 'day');
+      const oneMonth = dayjs().add(1, 'month');
+      if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
+        return true;
+      }
+      return false;
+    },
     handleResize() {
       this.windowWidth = window.innerWidth;
+    },
+    distributeWeekHours(week) {
+      const hours = distributeHours(week.days.length, week.totalHoursWeek, maximumHoursPerDay);
+      if (hours.length > 0) {
+        for (let i = 0; i < hours.length; i++) {
+          week.days[i].totalHoursApproved = hours[i] || 0;
+        }
+      } else {
+        this.showAlertError("Total hours is invalid");
+      }
     },
     updateParent(startDay, endDay) {
       let start = startDay.format(this.momentFormat)
@@ -113,7 +193,7 @@ export default {
       this.$emit("onMonthChange", { startDate: start, endDate: end })
     },
     isAvailableToUpdateWorker(date) {
-      if (this.worker && this.worker.status === this.$statusReject && this.worker.rejectedAt) {
+      if (this.worker && this.worker.workerRequestStatus === WorkerRequestStatus.Rejected && this.worker.rejectedAt) {
         let start = dayjs(this.startDate).subtract(1, 'day');
         let oneMonth = dayjs(this.worker.rejectedAt).add(1, 'month');
         if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
@@ -153,6 +233,7 @@ export default {
     }
   },
   computed: {
+    WorkerRequestStatus: () => WorkerRequestStatus,
     isMobile() {
       return this.windowWidth <= 768;
     },

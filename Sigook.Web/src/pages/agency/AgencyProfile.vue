@@ -9,7 +9,7 @@
         </upload-image>
 
         <div v-if="agency.locations">
-          <h1 class="capitalize">{{ agency.fullName | lowercase }}</h1>
+          <h1 class="capitalize">{{ lowercase(agency.fullName) }}</h1>
           <p class="icon-before-location icon-before uppercase" v-if="agency.locations[0]">
             {{ agency.locations[0].address }}
             {{ agency.locations[0].city.value }}
@@ -49,8 +49,10 @@
 </template>
 
 <script lang="ts">
-import confirmationAlert from "../../mixins/confirmationAlert";
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import switchLocaleMixin from "../../mixins/switchLocaleMixin";
+import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
+import { lowercase } from '@/utils/filters';
 
 export default {
   data() {
@@ -60,6 +62,7 @@ export default {
       visitedTabs: ["BusinessInformation"],
       isDisabled: true,
       lang: this.$validator.dictionary.locale,
+      unsavedChanges: false,
     };
   },
   components: {
@@ -79,11 +82,14 @@ export default {
       }
     }
     this.isLoading = true;
-    await this.$store.dispatch("agency/getAgencyProfile");
-    await this.$store.dispatch("agency/getPersonnelAgency");
+    const agency = await getAgencyProfile();
+    this.$store.commit("agency/setAgency", agency);
+    const personnelAgencies = await getPersonnelAgencies();
+    this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
     this.isLoading = false;
   },
   methods: {
+    lowercase,
     editProfile() {
       this.isDisabled = false;
     },
@@ -99,7 +105,7 @@ export default {
     },
     saveProfile() {
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgency", this.agency)
+      updateAgency(this.agency)
         .then(() => {
           this.isDisabled = true;
           this.unsavedChanges = false;
@@ -126,7 +132,8 @@ export default {
       return this.$store.state.agency.agency;
     }
   },
-  mixins: [confirmationAlert, switchLocaleMixin],
+  mixins: [switchLocaleMixin],
+  beforeRouteLeave: confirmationGuard,
 };
 </script>
 

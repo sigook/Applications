@@ -11,7 +11,6 @@ namespace Covenant.Common.Models.Request.TimeSheet
         public double TotalHoursWorker { get; set; }
         public string WorkerName { get; set; }
         public WorkerRequestStatus WorkerRequestStatus { get; set; }
-        public string Status { get; set; }
         public double TotalHoursApproved { get; set; }
         public int NumberId { get; set; }
         public string ProfileImage { get; set; }

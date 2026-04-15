@@ -8,7 +8,7 @@
           Document
           <span class="sign-required"></span>
           <div class="input-file-edited input-block" v-if="model.fileName">
-            <span>{{ model.fileName | filename }}</span>
+            <span>{{ filename(model.fileName) }}</span>
             <button v-if="model.fileName" @click="deleteDocument()" class="button cross-button" type="button" />
           </div>
           <upload-file v-else id="documentButton" class="input-block inline-100"
@@ -43,10 +43,15 @@
 </template>
 
 <script lang="ts">
-import pubSub from "@/mixins/pubSub";
-import updateMixin from "../../mixins/uploadFiles";
+import { usePubSub } from "@/composables/usePubSub";
+import { deleteFile } from "@/utils/fileUpload";
+import { filename } from "@/utils/filters";
+import { createAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...usePubSub() };
+  },
   props: ["profileId"],
   data() {
     return {
@@ -61,23 +66,20 @@ export default {
   components: {
     UploadFile: () => import("../../components/UploadFiles.vue"),
   },
-  mixins: [pubSub, updateMixin],
   methods: {
+    filename,
     validateForm() {
       this.$validator.validateAll().then((result) => {
         if (result) {
-          this.createAgencyCompanyDocument();
+          this.submitDocument();
           return;
         }
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       });
     },
-    createAgencyCompanyDocument() {
+    submitDocument() {
       this.isLoading = true;
-      this.$store.dispatch("agency/createAgencyCompanyDocument", {
-          profileId: this.profileId,
-          model: this.model,
-        })
+      createAgencyCompanyDocument(this.profileId, this.model)
         .then((response) => {
           this.isLoading = false;
           let newDocument = {
@@ -98,7 +100,10 @@ export default {
       this.model.fileName = file;
     },
     deleteDocument() {
-      this.deleteFile(this.model.fileName).then(() => this.model.fileName = null)
+      this.isLoading = true;
+      deleteFile(this.model.fileName)
+        .then(() => { this.model.fileName = null; })
+        .finally(() => { this.isLoading = false; });
     }
   },
 };

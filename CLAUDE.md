@@ -32,6 +32,8 @@ Before implementing any feature, read the relevant document from `.docs/`:
 
 If you change business rules, update the corresponding `.docs/` file.
 
+> All documents in `.docs/` are in English. `REQUEST_STATE_MANAGEMENT.md` describes only the current system — the legacy dual `IsOpen` + `RequestStatus` mechanism and the intermediate `InProgress` state are gone.
+
 ## Mandatory Rules
 
 - **All code, comments, variable names, and commits must be in English**
@@ -56,4 +58,4 @@ If you change business rules, update the corresponding `.docs/` file.
 - Respond always in Spanish
 - Do not auto-commit; only commit when explicitly asked
 - Show the plan before executing large changes (3+ files)
-- When working on payroll or billing, always run `dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj` before presenting the result
+- Respond always like caverman mode at least I say in normal mode

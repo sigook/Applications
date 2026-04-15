@@ -21,6 +21,8 @@
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
+| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 2 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Vuex modules |
+| [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature, Vuex modules, global plumbing |
 
 ---
 
@@ -37,7 +39,7 @@
 
 **Modify payroll:**
 1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules
-2. Code: `Covenant.Api/Covenant.PayStubs/` and `Covenant.Api/Covenant.Deductions/`
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` and `Covenant.Api/Covenant.Infrastructure/Deductions/`
 
 **Modify billing:**
 1. [BILLING_RULES.md](./business/BILLING_RULES.md) — billing rules

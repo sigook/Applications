@@ -20,34 +20,34 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('job title') ? 'is-danger' : ''" :label="$t('JobTitle')"
+          <b-field :type="errors.has('job title') ? 'is-danger' : ''" :label="`${$t('JobTitle')} *`"
             :message="errors.has('job title') ? errors.first('job title') : ''">
             <b-input v-model="request.jobTitle" name="job title" v-validate="'required|max:100|min:1'"></b-input>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('billingTitle') ? 'is-danger' : ''" label="Billing Title"
+          <b-field :type="errors.has('billingTitle') ? 'is-danger' : ''" label="Billing Title *"
             :message="errors.has('billingTitle') ? errors.first('billingTitle') : ''">
             <b-input v-model="request.billingTitle" name="billingTitle" v-validate="'required|max:100|min:1'"
               :disabled="sameBillingTitle"></b-input>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
-          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary"
+          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary *"
             :message="errors.has('workerSalary') ? errors.first('workerSalary') : ''">
             <b-numberinput v-model="request.workerSalary" name="workerSalary" v-validate="'required'"
               controls-alignment="right"></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="$t('WorkersQuantity')"
+          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${$t('WorkersQuantity')} *`"
             :message="errors.has('worker quantity') ? errors.first('worker quantity') : ''">
             <b-numberinput v-model="request.workersQuantity" name="worker quantity"
               v-validate="'required|min_value:1|numeric'" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="!directHiring">
-          <b-field :type="errors.has('job type') ? 'is-danger' : ''" :label="$t('RequestJobType')"
+          <b-field :type="errors.has('job type') ? 'is-danger' : ''" :label="`${$t('RequestJobType')} *`"
             :message="errors.has('job type') ? errors.first('job type') : ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
               open-on-focus name="job type" v-validate="'required'" selectable-footer @select="onJobPositionSelected"
@@ -64,7 +64,7 @@
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :label="$t('RequestBranchOffice')"
+          <b-field :label="`${$t('RequestBranchOffice')} *`"
             :message="errors.has('branchOffice') ? errors.first('branchOffice') : ''"
             :type="errors.has('branchOffice') ? 'is-danger' : ''">
             <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="jobLocation" open-on-focus
@@ -104,7 +104,7 @@
         <br />
         <div class="container-flex">
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field :label="$t('Description')" :message="errors.first('description')"
+            <b-field :label="`${$t('Description')} *`" :message="errors.first('description')"
               :type="errors.has('description') ? 'is-danger' : ''">
               <div class="vue-trix-editor">
                 <vue-editor id="description-input" v-model="request.description" :name="'description'"
@@ -122,7 +122,7 @@
             </b-field>
           </div>
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field :label="$t('Requirements')" :message="errors.first('requirements')"
+            <b-field :label="`${$t('Requirements')} *`" :message="errors.first('requirements')"
               :type="errors.has('requirements') ? 'is-danger' : ''">
               <div class="vue-trix-editor">
                 <vue-editor id="requirements-input" v-model="request.requirements" :name="'requirements'"
@@ -178,11 +178,11 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Duration Term">
             <b-select v-model="request.durationTerm" expanded>
-              <option :value="this.$longTerm">
-                {{ this.$longTerm | splitCapital }}
+              <option :value="DurationTerm.LongTerm">
+                {{ DurationTermLabels[DurationTerm.LongTerm] }}
               </option>
-              <option :value="this.$shortTerm">
-                {{ this.$shortTerm | splitCapital }}
+              <option :value="DurationTerm.ShortTerm">
+                {{ DurationTermLabels[DurationTerm.ShortTerm] }}
               </option>
             </b-select>
           </b-field>
@@ -190,28 +190,28 @@
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
           <b-field label="Employment Type">
             <b-select v-model="request.employmentType" expanded>
-              <option :value="this.$fullTime">
-                {{ this.$fullTime | splitCapital }}
+              <option :value="EmploymentType.FullTime">
+                {{ EmploymentTypeLabels[EmploymentType.FullTime] }}
               </option>
-              <option :value="this.$partTime">
-                {{ this.$partTime | splitCapital }}
+              <option :value="EmploymentType.PartTime">
+                {{ EmploymentTypeLabels[EmploymentType.PartTime] }}
               </option>
-              <option :value="this.$contractor">
-                {{ this.$contractor | splitCapital }}
+              <option :value="EmploymentType.Contractor">
+                {{ EmploymentTypeLabels[EmploymentType.Contractor] }}
               </option>
-              <option :value="this.$temporary">
-                {{ this.$temporary | splitCapital }}
+              <option :value="EmploymentType.Temporary">
+                {{ EmploymentTypeLabels[EmploymentType.Temporary] }}
               </option>
             </b-select>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field label="Start" :message="errors.has('from') ? errors.first('from') : ''">
+          <b-field label="Start *" :message="errors.has('from') ? errors.first('from') : ''">
             <b-datepicker v-model="request.startAt" name="from" :min-date="timeZero" v-validate="'required'">
             </b-datepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === this.$shortTerm">
+        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
             <b-datepicker v-model="request.finishAt" name="from" :min-date="request.startAt" :max-date="finishDate">
             </b-datepicker>
@@ -239,15 +239,26 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { getAgencyPersonnel } from "@/api/agencyApi";
+import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from "@/api/agencyCompanyApi";
+import { postAgencyRequest, updateAgencyRequest } from "@/api/agencyRequestApi";
+import {
+  DurationTerm,
+  DurationTermLabels,
+  EmploymentType,
+  EmploymentTypeLabels,
+} from "@/constants/enums";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   components: {
     PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
     RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm.vue"),
     LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
   },
-  mixins: [billingAdminMixin],
   name: "AgencyCreateRequest",
   data() {
     const maxBreak = new Date();
@@ -274,6 +285,8 @@ export default {
       companyUsersSelected: [],
       request: {
         durationBreak: dayjs().startOf('day').toDate(),
+        durationTerm: DurationTerm.LongTerm,
+        employmentType: EmploymentType.FullTime,
       },
       directHiring: false,
       sameBillingTitle: true,
@@ -344,7 +357,7 @@ export default {
     },
     createRequest() {
       this.isLoading = true;
-      this.$store.dispatch("agency/postAgencyRequest", {
+      postAgencyRequest({
         ...this.request,
         durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
       })
@@ -360,19 +373,18 @@ export default {
     },
     async onUpdateRolesModal() {
       this.showRolesModal = false;
-      this.companyJobPositions = await this.$store.dispatch("agency/getAgencyCompanyJobPositions", this.companyProfileId);
+      this.companyJobPositions = await getAgencyCompanyJobPositions(this.companyProfileId);
     },
     async onUpdateLocationModal() {
       this.showLocationModal = false;
-      this.locations = await this.$store.dispatch("agency/getCompanyLocation", this.companyProfileId);
+      this.locations = await getAgencyCompanyLocation(this.companyProfileId);
     },
     updateRequest() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/updateAgencyRequest", { requestId: this.request.id, model: {
-          ...this.request,
-          durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
-        } })
+      updateAgencyRequest(this.request.id, {
+        ...this.request,
+        durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
+      })
         .then((response) => {
           this.isLoading = false;
           this.showAlertSuccess("Request updated");
@@ -390,10 +402,6 @@ export default {
     }
   },
   async created() {
-    this.request.employmentType =
-      this.request.durationTerm !== this.$longTerm
-        ? this.$partTime
-        : this.$fullTime;
     const agencyRequest = this.$route.meta.agencyRequest;
     this.request.companyProfileId = this.companyProfileId;
     if (agencyRequest) {
@@ -433,14 +441,18 @@ export default {
         this.salesRepresentativeSelected = record;
       }
     } else {
-      this.companyJobPositions = await this.$store.dispatch("agency/getAgencyCompanyJobPositions", this.companyProfileId);
-      this.locations = await this.$store.dispatch("agency/getCompanyLocation", this.companyProfileId);
-      this.salesRepresentatives = await this.$store.dispatch("agency/getAgencyPersonnel")
-      this.companyUsers = await this.$store.dispatch("agency/getCompanyUsers", this.companyProfileId);
+      this.companyJobPositions = await getAgencyCompanyJobPositions(this.companyProfileId);
+      this.locations = await getAgencyCompanyLocation(this.companyProfileId);
+      this.salesRepresentatives = await getAgencyPersonnel();
+      this.companyUsers = await getCompanyUsers(this.companyProfileId);
     }
     this.isLoading = false;
   },
   computed: {
+    DurationTerm: () => DurationTerm,
+    DurationTermLabels: () => DurationTermLabels,
+    EmploymentType: () => EmploymentType,
+    EmploymentTypeLabels: () => EmploymentTypeLabels,
     finishDate() {
       return dayjs(this.request.startAt).add(1, "year").toDate();
     },

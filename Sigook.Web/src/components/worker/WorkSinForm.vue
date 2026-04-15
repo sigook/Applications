@@ -15,7 +15,7 @@
         <b-field :label="$t('WorkerSocialInsuranceFile')">
           <div v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
-            <span class="selected-file-name">{{ sin.socialInsuranceFile.fileName | filename }}</span>
+            <span class="selected-file-name">{{ filename(sin.socialInsuranceFile.fileName) }}</span>
             <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearSinFile()"></b-button>
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedSinFile }">
@@ -53,6 +53,7 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 import { createWorkerSin } from '@/api/workerApi';
@@ -79,6 +80,7 @@ export default {
     };
   },
   methods: {
+    filename,
     handleSinFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {

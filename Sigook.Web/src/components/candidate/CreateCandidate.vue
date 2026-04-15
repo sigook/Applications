@@ -86,9 +86,10 @@
   </div>
 </template>
 <script lang="ts">
-import updateMixin from "@/mixins/uploadFiles";
+import { uploadFile } from "@/utils/fileUpload";
 import { getGenders } from "@/api/catalogApi";
 import { residencyList, sourceList } from "@/constants/catalog";
+import { createAgencyCandidate } from "@/api/agencyCandidateApi";
 
 export default {
   data() {
@@ -114,7 +115,6 @@ export default {
       file: null
     }
   },
-  mixins: [updateMixin],
   components: {
     phoneInput: () => import("@/components/PhoneInput.vue")
   },
@@ -123,19 +123,19 @@ export default {
       const mainFormValid = await this.$validator.validateAll();
       const phoneValid = await this.$refs.phoneComponent.validatePhone();
       if (mainFormValid && phoneValid) {
-        this.createAgencyCandidate();
+        this.submitCandidate();
         return;
       } else {
         this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
       }
     },
-    createAgencyCandidate() {
+    submitCandidate() {
       this.isLoading = true;
       this.candidate.skills = this.candidate.skills.map(s => ({ skill: s }));
       if (this.phoneNumber != null) {
         this.candidate.phoneNumbers = [{ phoneNumber: this.phoneNumber }]
       }
-      this.$store.dispatch('agency/createAgencyCandidate', this.candidate)
+      createAgencyCandidate(this.candidate)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess("Created")
@@ -148,7 +148,7 @@ export default {
     },
     async uploadResume(file) {
       this.isLoading = true;
-      const response = await this.uploadFile(file, 'document', 'Resume_');
+      const response = await uploadFile(file, 'document', 'Resume_');
       this.candidate.fileName = response;
       this.isLoading = false;
     }

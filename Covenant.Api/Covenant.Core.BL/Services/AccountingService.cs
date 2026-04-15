@@ -13,7 +13,6 @@ using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Invoices;
 using Covenant.Documents.Services;
-using Covenant.PayStubs.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,7 +28,6 @@ public class AccountingService : IAccountingService
     private readonly ISubcontractorRepository subcontractorRepository;
     private readonly ITimeSheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
-    private readonly CreatePayStubUsingTimeSheet createPayStubUsingTimeSheet;
     private readonly IMediator mediator;
     private readonly IServiceProvider serviceProvider;
 
@@ -42,7 +40,6 @@ public class AccountingService : IAccountingService
         ISubcontractorRepository subcontractorRepository,
         ITimeSheetRepository timeSheetRepository,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
-        CreatePayStubUsingTimeSheet createPayStubUsingTimeSheet,
         IMediator mediator,
         IServiceProvider serviceProvider)
     {
@@ -54,7 +51,6 @@ public class AccountingService : IAccountingService
         this.subcontractorRepository = subcontractorRepository;
         this.timeSheetRepository = timeSheetRepository;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
-        this.createPayStubUsingTimeSheet = createPayStubUsingTimeSheet;
         this.mediator = mediator;
         this.serviceProvider = serviceProvider;
     }
@@ -64,23 +60,6 @@ public class AccountingService : IAccountingService
         await payStubRepository.Delete([payStubId]);
         await payStubsContainer.DeleteFileIfExists(payStubId.ToPayStubBlobName());
         await payStubRepository.SaveChangesAsync();
-    }
-
-    [Obsolete]
-    public async Task<Result> GeneratePayStubs(IEnumerable<Guid> workerIds)
-    {
-        var result = Result.Ok();
-        var agencyIds = identityServerService.GetAgencyIds();
-        foreach (var workerId in workerIds)
-        {
-            var timeSheet = await timeSheetRepository.GetTimeSheetForCreatingPayStubs(agencyIds, workerId);
-            result = await createPayStubUsingTimeSheet.Create(timeSheet);
-            if (!result)
-            {
-                break;
-            }
-        }
-        return result;
     }
 
     public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilterV2 filter)

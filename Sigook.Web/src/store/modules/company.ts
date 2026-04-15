@@ -1,5 +1,7 @@
+import type { CompanyRequestFilter } from '@/types/company';
+
 interface CompanyState {
-  companyRequestFilter: Record<string, unknown> | null;
+  companyRequestFilter: CompanyRequestFilter | null;
 }
 
 export default {
@@ -8,7 +10,7 @@ export default {
     companyRequestFilter: null
   } as CompanyState,
   mutations: {
-    setCompanyRequestFilter(state: CompanyState, data: Record<string, unknown> | null) {
+    setCompanyRequestFilter(state: CompanyState, data: CompanyRequestFilter | null) {
       state.companyRequestFilter = data;
     },
   },

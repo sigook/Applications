@@ -1,6 +1,8 @@
 import Vue from 'vue';
 
-// Request Status (must match backend enum)
+// Request Status — string values returned by worker-facing endpoints
+// (WorkerRequestListModel / WorkerRequestDetailModel).
+// Agency/company pages use the numeric enum from src/constants/enums.ts.
 Vue.prototype.$statusOpen = "Open";
 Vue.prototype.$statusFilled = "Filled";
 Vue.prototype.$statusCancelled = "Cancelled";
@@ -10,7 +12,9 @@ Vue.prototype.$statusDisplayOpen = "Open";
 Vue.prototype.$statusDisplayFilled = "Filled";
 Vue.prototype.$statusDisplayCancelled = "Cancelled";
 
-// worker status
+// worker status — string values returned by worker-facing endpoints
+// (WorkerRequestListModel / WorkerRequestDetailModel).
+// Agency/company pages use the numeric enum from src/constants/enums.ts.
 Vue.prototype.$statusNone = "None";
 Vue.prototype.$statusApply = "Applied";
 Vue.prototype.$statusDecline = "Declined";
@@ -72,11 +76,13 @@ Vue.prototype.$company = "company";
 Vue.prototype.$worker = "worker";
 Vue.prototype.$companyUser = "company.user";
 
-// Duration Term
+// Duration Term — string values returned by worker-facing endpoints.
+// Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
 Vue.prototype.$longTerm = "LongTerm";
 Vue.prototype.$shortTerm = "ShortTerm";
 
-// Employment Type
+// Employment Type — display/legacy values used by worker-facing pages.
+// Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
 Vue.prototype.$fullTime = "FullTime";
 Vue.prototype.$partTime = "PartTime";
 Vue.prototype.$contractor = "Contractor";

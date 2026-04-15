@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models
 {
     public class PotentialAction
     {
-        [JsonProperty("@type")]
+        [JsonPropertyName("@type")]
         public string Type { get; set; } = "OpenUri";
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; } = "Go To sigook.com";
 
-        [JsonProperty("targets")]
+        [JsonPropertyName("targets")]
         public IEnumerable<Target> Targets { get; set; } = new List<Target>();
     }
 }

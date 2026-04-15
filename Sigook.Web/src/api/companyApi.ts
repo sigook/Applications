@@ -1,5 +1,7 @@
 import http from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
+import type { CreateAgencyRequestModel } from '@/types/agency';
+import type { InvoiceSummaryModel } from '@/types/accounting';
 import type {
   CompanyProfileDetail,
   CompanyProfileLocationDetail,
@@ -21,7 +23,7 @@ import type {
 } from '@/types/company';
 
 // Profile
-export function getProfile(): Promise<CompanyProfileDetail> {
+export function getCompanyProfile(): Promise<CompanyProfileDetail> {
   return http.get('/api/CompanyProfile').then(r => r.data);
 }
 
@@ -77,11 +79,11 @@ export function getRequest(id: string): Promise<CompanyRequestListItem> {
   return http.get(`/api/CompanyRequest/${id}`).then(r => r.data);
 }
 
-export function createRequest(request: Record<string, unknown>): Promise<CompanyRequestListItem> {
+export function createRequest(request: CreateAgencyRequestModel): Promise<{ id: string }> {
   return http.post('/api/CompanyRequest', request).then(r => r.data);
 }
 
-export function editRequest(id: string, model: Record<string, unknown>): Promise<void> {
+export function editRequest(id: string, model: { requirements: string }): Promise<void> {
   return http.put(`/api/CompanyRequest/${id}`, model).then(() => {});
 }
 
@@ -179,6 +181,6 @@ export function getCompanyInvoice(filter: CompanyInvoiceFilter): Promise<Paginat
   return http.get('/api/CompanyInvoice', { params: { ...filter } }).then(r => r.data);
 }
 
-export function getCompanyInvoiceDetail(id: string): Promise<Record<string, unknown>> {
+export function getCompanyInvoiceDetail(id: string): Promise<InvoiceSummaryModel> {
   return http.get(`/api/CompanyInvoice/${id}`).then(r => r.data);
 }

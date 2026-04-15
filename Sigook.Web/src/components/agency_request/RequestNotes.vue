@@ -11,8 +11,8 @@
                     <p class="fw-400">
                         <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
                         {{ item.note }}
-                        <br><i class="fz-2" v-if="item.createdBy">By: {{item.createdBy | emailName}} | </i>
-                        <i class="fz-2" v-if="item.createdAt">{{item.createdAt | dateFromNow}}</i>
+                        <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
+                        <i class="fz-2" v-if="item.createdAt">{{dateFromNow(item.createdAt)}}</i>
                     </p>
                 </li>
             </ul>
@@ -30,7 +30,7 @@
                                          :on-create="createNote"
                                          :on-update="updateNote"
                                          :on-delete="deleteNote"
-                                         @onUpdateNote="() => getAgencyRequestFirstNote()">
+                                         @onUpdateNote="() => loadFirstNotes()">
                             </modal-notes>
                         </div>
                     </div>
@@ -41,17 +41,26 @@
     </div>
 </template>
 <script lang="ts">
+import { emailName, dateFromNow } from '@/utils/filters';
 import toastMixin from "@/mixins/toastMixin";
+import {
+  getAgencyRequestNotes,
+  createAgencyRequestNote,
+  updateAgencyRequestNote,
+  deleteAgencyRequestNote,
+} from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+
 export default {
     props: ['canEdit'],
     data() {
         return {
             showModalNotes: false,
             profileId: this.$route.params.id,
-            getNotes: 'agency/getAgencyRequestNote',
-            createNote: 'agency/createAgencyRequestNote',
-            updateNote: 'agency/updateAgencyRequestNote',
-            deleteNote: 'agency/deleteAgencyRequestNote',
+            getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
+            createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
+            updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
+            deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
             notesList: null
         }
     },
@@ -60,8 +69,10 @@ export default {
         ModalNotes: () => import("../notes/ModalNotes.vue")
     },
     methods: {
-        getAgencyRequestFirstNote(){
-            this.$store.dispatch(this.getNotes, {userId: this.profileId, pagination: {page: 1, size: 3}})
+        emailName,
+        dateFromNow,
+        loadFirstNotes(){
+            getAgencyRequestNotes(this.profileId, {page: 1, size: 3})
                     .then(response => {
                         this.notesList = response;
                     })
@@ -71,11 +82,11 @@ export default {
         },
         onCloseModalNotes(){
             this.showModalNotes = false;
-            this.getAgencyRequestFirstNote();
+            this.loadFirstNotes();
         }
     },
     created() {
-        this.getAgencyRequestFirstNote();
+        this.loadFirstNotes();
     }
 }
 </script>

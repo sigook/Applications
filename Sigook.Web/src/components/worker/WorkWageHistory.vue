@@ -15,11 +15,11 @@
           </p>
         </b-table-column>
         <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
-          {{ props.row.weekEnding | dateMonth }}
+          {{ dateMonth(props.row.weekEnding) }}
           <br />
-          <i class="fz-1">From: {{ props.row.start | dateMonth }}</i>
+          <i class="fz-1">From: {{ dateMonth(props.row.start) }}</i>
           <br />
-          <i class="fz-1">To: {{ props.row.end | dateMonth }}</i>
+          <i class="fz-1">To: {{ dateMonth(props.row.end) }}</i>
         </b-table-column>
         <b-table-column field="items" v-slot="props">
           <table class="no-border-bottom">
@@ -34,34 +34,34 @@
               <tr v-for="(item, idx) in props.row.items" :key="idx">
                 <td width="120px">{{ item.description }}</td>
                 <td width="80px">{{ item.quantity }}</td>
-                <td width="80px">{{ item.total | currency }}</td>
+                <td width="80px">{{ currency(item.total) }}</td>
               </tr>
               <tr>
                 <td width="120px">Total:</td>
                 <td width="80px">{{ getTotalQuantity(props.row.items) }}</td>
-                <td width="80px">{{ getTotal(props.row.items) | currency }}</td>
+                <td width="80px">{{ currency(getTotal(props.row.items)) }}</td>
               </tr>
             </tbody>
           </table>
         </b-table-column>
         <b-table-column field="vacations" label="Vacations" v-slot="props">
-          {{ props.row.vacations | currency }}
+          {{ currency(props.row.vacations) }}
         </b-table-column>
         <b-table-column field="totalEarnings" label="Total Earnings" v-slot="props">
-          {{ props.row.totalEarnings | currency }}
+          {{ currency(props.row.totalEarnings) }}
         </b-table-column>
         <b-table-column field="totalPaid" label="Total Paid" v-slot="props">
-          <p>{{ props.row.totalPaid | currency }}</p>
+          <p>{{ currency(props.row.totalPaid) }}</p>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
           <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
-            @open="getAccumulated(props.row)" @close="rowDetail = {}">
+            @open="getAccumulated(props.row)" @close="rowDetail = {}" append-to-body>
             <template v-slot:content>
               <div><strong>Qty: </strong>{{ rowDetail.quantity }}</div>
-              <div><strong>Total: </strong>{{ rowDetail.total | currency }}</div>
-              <div><strong>Vacations: </strong> {{ rowDetail.vacations | currency }}</div>
-              <div><strong>Total Earnings: </strong>{{ rowDetail.totalEarnings | currency }}</div>
-              <div><strong>Total Paid: </strong>{{ rowDetail.totalPaid | currency }}</div>
+              <div><strong>Total: </strong>{{ currency(rowDetail.total) }}</div>
+              <div><strong>Vacations: </strong> {{ currency(rowDetail.vacations) }}</div>
+              <div><strong>Total Earnings: </strong>{{ currency(rowDetail.totalEarnings) }}</div>
+              <div><strong>Total Paid: </strong>{{ currency(rowDetail.totalPaid) }}</div>
             </template>
             <b-button type="is-info" outlined rounded label="Accumulated" />
           </b-tooltip>
@@ -72,6 +72,7 @@
 </template>
 
 <script lang="ts">
+import { dateMonth, currency } from '@/utils/filters';
 import { getWorkerProfileWageHistory, getWorkerProfileWageHistoryAccumulated } from '@/api/workerApi';
 
 export default {
@@ -92,6 +93,8 @@ export default {
     };
   },
   methods: {
+    dateMonth,
+    currency,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getWorkerProfileWageHistory();

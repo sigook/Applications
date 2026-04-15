@@ -97,6 +97,8 @@
 </template>
 
 <script lang="ts">
+import { updateAgency } from "@/api/agencyApi";
+
 export default {
   props: ['agencyData'],
   data() {
@@ -127,7 +129,7 @@ export default {
         this.isLoading = true;
         this.localAgencyData.contactInformation.push(this.contact);
         this.$emit('update:agencyData', this.localAgencyData);
-        this.$store.dispatch("agency/updateAgency", this.localAgencyData)
+        updateAgency(this.localAgencyData)
           .then(() => {
             this.isLoading = false;
             this.showModal = false;
@@ -142,7 +144,7 @@ export default {
       this.isLoading = true;
       this.localAgencyData.contactInformation.splice(index, 1);
       this.$emit('update:agencyData', this.localAgencyData);
-      this.$store.dispatch("agency/updateAgency", this.localAgencyData)
+      updateAgency(this.localAgencyData)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess(this.$t("Updated"));

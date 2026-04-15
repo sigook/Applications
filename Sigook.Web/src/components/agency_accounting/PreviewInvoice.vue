@@ -22,8 +22,8 @@
           <div class="container-flex mb-2" v-for="(item, index) in preview.items" :key="'item-' + index">
             <div class="col-sm-6 col-md-6 col-lg-6 col-padding">{{ item.description }}</div>
             <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ parseFloat(item.quantity).toFixed(2) }}</div>
-            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ item.unitPrice | currency }}</div>
-            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ item.total | currency }}</div>
+            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ currency(item.unitPrice) }}</div>
+            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ currency(item.total) }}</div>
           </div>
         </div>
       </div>
@@ -44,9 +44,9 @@
             :key="'discount-' + index">
             <div class="col-sm-6 col-md-6 col-lg-6 col-padding">{{ discount.description }}</div>
             <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ parseFloat(discount.quantity).toFixed(2) }}</div>
-            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ discount.unitPrice | currency }}
+            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">{{ currency(discount.unitPrice) }}
             </div>
-            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">-{{ discount.total | currency }}</div>
+            <div class="col-sm-2 col-md-2 col-lg-2 col-padding text-right">-{{ currency(discount.total) }}</div>
           </div>
         </div>
       </div>
@@ -56,16 +56,16 @@
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
           <div class="container-flex mb-2">
             <div class="col-6 col-padding">Subtotal:</div>
-            <div class="col-6 col-padding text-right fw-600">{{ preview.subTotal | currency }}</div>
+            <div class="col-6 col-padding text-right fw-600">{{ currency(preview.subTotal) }}</div>
           </div>
           <div class="container-flex mb-2">
             <div class="col-6 col-padding">TAX/HST:</div>
-            <div class="col-6 col-padding text-right fw-600">{{ preview.hst | currency }}</div>
+            <div class="col-6 col-padding text-right fw-600">{{ currency(preview.hst) }}</div>
           </div>
           <hr class="my-2">
           <div class="container-flex">
             <div class="col-6 col-padding fz1 fw-600">Total:</div>
-            <div class="col-6 col-padding text-right fz1 fw-600">{{ preview.total | currency }}</div>
+            <div class="col-6 col-padding text-right fz1 fw-600">{{ currency(preview.total) }}</div>
           </div>
         </div>
       </div>
@@ -74,6 +74,8 @@
 </template>
 
 <script lang="ts">
+import { currency } from '@/utils/filters';
+
 export default {
   name: "PreviewInvoice",
   props: ['preview'],
@@ -87,6 +89,7 @@ export default {
     }
   },
   methods: {
+    currency,
     formatCurrency(amount) {
       if (!amount && amount !== 0) return '0.00';
       return parseFloat(amount).toFixed(2);

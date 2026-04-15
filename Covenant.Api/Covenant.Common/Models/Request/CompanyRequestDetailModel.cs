@@ -1,3 +1,4 @@
+using Covenant.Common.Enums;
 using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Models.Request
@@ -21,8 +22,8 @@ namespace Covenant.Common.Models.Request
         public LocationDetailModel JobLocation { get; set; }
         public JobPositionDetailModel JobPositionRate { get; set; }
         public decimal? AgencyRate { get; set; }
-        public string Status { get; set; }
-        public string DurationTerm { get; set; }
+        public RequestStatus Status { get; set; }
+        public DurationTerm DurationTerm { get; set; }
         public string DisplayShift { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? StartAt { get; set; }

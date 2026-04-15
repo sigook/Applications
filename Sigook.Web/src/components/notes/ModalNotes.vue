@@ -11,9 +11,9 @@
             <span :style="{ backgroundColor: item.color }" class="note-color-icon"
               :class="{ 'border': item.color === '#fefefe' }"></span>
             {{ item.note }}
-            <br><i class="fz-2" v-if="item.createdBy">By: {{ item.createdBy | emailName }} | </i>
-            <i class="fz-2" v-if="item.createdAt">{{ item.createdAt | dateFromNow }} | </i>
-            <i class="fz-2" v-if="item.createdAt">{{ item.createdAt | dateMonth }}</i>
+            <br><i class="fz-2" v-if="item.createdBy">By: {{ emailName(item.createdBy) }} | </i>
+            <i class="fz-2" v-if="item.createdAt">{{ dateFromNow(item.createdAt) }} | </i>
+            <i class="fz-2" v-if="item.createdAt">{{ dateMonth(item.createdAt) }}</i>
           </div>
           <div>
             <button v-if="onUpdate" class="btn-icon-sm btn-icon-edit" type="button"
@@ -50,6 +50,7 @@
   </div>
 </template>
 <script lang="ts">
+import { emailName, dateFromNow, dateMonth } from '@/utils/filters';
 import toast from '../../mixins/toastMixin';
 export default {
   props: ['requestId', 'userId', 'onGet', 'onCreate', 'onUpdate', 'onDelete', 'canCreate', 'currentNote'],
@@ -74,9 +75,12 @@ export default {
     this.getNotes(this.currentPage);
   },
   methods: {
+    emailName,
+    dateFromNow,
+    dateMonth,
     getNotes(index) {
       this.isLoading = true;
-      this.$store.dispatch(this.onGet, {
+      this.onGet({
         userId: this.userId,
         requestId: this.requestId,
         pagination: { page: index, size: this.size }
@@ -92,7 +96,7 @@ export default {
     },
     addNote(newNote) {
       this.isLoading = true;
-      this.$store.dispatch(this.onCreate, {
+      this.onCreate({
         userId: this.userId,
         requestId: this.requestId,
         model: newNote
@@ -115,7 +119,7 @@ export default {
     },
     deleteNote(id, index) {
       this.isLoading = true;
-      this.$store.dispatch(this.onDelete, {
+      this.onDelete({
         userId: this.userId,
         requestId: this.requestId,
         id: id
@@ -144,7 +148,7 @@ export default {
     },
     updateNote(model) {
       this.isLoading = true;
-      this.$store.dispatch(this.onUpdate, {
+      this.onUpdate({
         userId: this.userId,
         requestId: this.requestId,
         id: this.editNoteModel.id,

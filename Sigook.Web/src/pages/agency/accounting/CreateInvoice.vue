@@ -203,6 +203,8 @@
 
 <script lang="ts">
 import dayjs from 'dayjs';
+import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from "@/api/agencyCompanyApi";
+import { previewAgencyInvoice, createAgencyInvoice } from "@/api/agencyInvoiceApi";
 
 export default {
   name: "CreateInvoice",
@@ -230,14 +232,14 @@ export default {
       this.invoice.from = dayjs(this.dateSelected[0]).format('YYYY-MM-DD');
       this.invoice.to = dayjs(this.dateSelected[1]).format('YYYY-MM-DD');
     },
-    async getCompanies() {
-      this.companies = await this.$store.dispatch('agency/getAgencyCompanyProfileWithRequests');
+    async loadCompanies() {
+      this.companies = await getAgencyCompanyProfileWithRequests();
     },
     async selectCompany(company) {
       if (company) {
         this.invoice.companyId = company.companyId;
         this.invoice.companyProfileId = company.id;
-        this.provinces = await this.$store.dispatch('agency/getCompanyProvinceWithTaxes', this.invoice.companyProfileId);
+        this.provinces = await getCompanyProvinceWithTaxes(this.invoice.companyProfileId);
       } else {
         this.invoice = {};
         this.provinces = [];
@@ -255,7 +257,7 @@ export default {
           this.isLoading = true;
           this.invoice.additionalItems = this.additionalItems;
           this.invoice.discounts = this.discounts;
-          this.$store.dispatch('agency/previewInvoice', this.invoice)
+          previewAgencyInvoice(this.invoice)
             .then((response) => {
               this.isLoading = false;
               this.previewData = response;
@@ -293,7 +295,7 @@ export default {
     },
     confirmInvoice() {
       this.isLoading = true;
-      this.$store.dispatch('agency/createInvoice', this.invoice)
+      createAgencyInvoice(this.invoice)
         .then(() => {
           this.isLoading = false;
           this.$router.push('/accounting/invoices');
@@ -317,7 +319,7 @@ export default {
     }
   },
   async created() {
-    await this.getCompanies();
+    await this.loadCompanies();
   }
 };
 </script>

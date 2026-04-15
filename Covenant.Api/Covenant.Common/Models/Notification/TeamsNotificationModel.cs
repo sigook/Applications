@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Notification
 {
@@ -10,16 +10,19 @@ namespace Covenant.Common.Models.Notification
             Text = text;
         }
 
-        [JsonProperty("themeColor")]
+        [JsonInclude]
+        [JsonPropertyName("themeColor")]
         public string ThemeColor { get; private set; } = "0072C6";
 
-        [JsonProperty("title")]
+        [JsonInclude]
+        [JsonPropertyName("title")]
         public string Title { get; private set; }
 
-        [JsonProperty("text")]
+        [JsonInclude]
+        [JsonPropertyName("text")]
         public string Text { get; private set; }
 
-        [JsonProperty("potentialAction")]
+        [JsonPropertyName("potentialAction")]
         public IEnumerable<PotentialAction> PotentialAction { get; set; } = new List<PotentialAction>();
 
         public static TeamsNotificationModel CreateSuccess(string title, string text) =>

@@ -7,7 +7,7 @@
         <span class="fw-100 fz-1">
           ({{ totalItems }})
         </span>
-        <b-tag size="is-medium"><b>{{ total | currency }}</b></b-tag>
+        <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
       </h2>
     </div>
     <div>
@@ -45,7 +45,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              {{ props.row.createdAt | dateMonth }}
+              {{ dateMonth(props.row.createdAt) }}
             </template>
           </b-table-column>
           <b-table-column field="companyFullName" label="Company" sortable searchable>
@@ -70,22 +70,22 @@
           </b-table-column>
           <b-table-column field="totalNet" label="Total">
             <template v-slot="props">
-              {{ props.row.totalNet | currency }}
+              {{ currency(props.row.totalNet) }}
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top">
+              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-success" outlined rounded icon-right="file-pdf" class="mr-2"
-                  @click="downloadInvoicePdf(props.row)">
+                  @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Send Email" type="is-dark" position="is-top">
+              <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
                   @click="sendInvoiceEmail(props.row)">
                 </b-button>
               </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top">
+              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-danger" outlined rounded icon-right="delete" @click="deleteInvoice(props.row)">
                 </b-button>
               </b-tooltip>
@@ -106,7 +106,9 @@
 </template>
 
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadPDF } from "@/utils/downloadFile";
+import { getAgencyInvoices, downloadInvoicePdf } from "@/api/agencyInvoiceApi";
+import { currency, dateMonth } from '@/utils/filters';
 
 export default {
   components: {
@@ -114,7 +116,6 @@ export default {
     DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice.vue"),
     SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue"),
   },
-  mixins: [download],
   data() {
     return {
       isLoading: true,
@@ -141,12 +142,15 @@ export default {
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
-    this.getInvoices();
+    this.loadInvoices();
   },
   methods: {
+    downloadPDF,
+    currency,
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getInvoices();
+      this.loadInvoices();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -164,28 +168,28 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getInvoices();
+      this.loadInvoices();
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getInvoices();
+        this.loadInvoices();
       }
     },
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getInvoices();
+      this.loadInvoices();
     },
     onCreatedAtCleared() {
       this.createdAtDatesSelected = [];
       this.onCreatedAtSelected();
     },
-    getInvoices() {
+    loadInvoices() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyInvoiceFilter", this.serverParams);
-      this.$store.dispatch("agency/getInvoices", this.serverParams)
+      getAgencyInvoices(this.serverParams)
         .then((response) => {
-          this.rows = response.detail.items.map(i => ({ ...i, actions: null }));
+          this.rows = response.detail.items.map((i) => ({ ...i, actions: null }));
           this.totalItems = response.detail.totalItems;
           this.total = response.total;
           this.isLoading = false;
@@ -195,9 +199,9 @@ export default {
           this.showAlertError(error.data);
         });
     },
-    downloadInvoicePdf(invoice) {
+    onDownloadInvoicePdf(invoice) {
       this.isLoading = true;
-      this.$store.dispatch("agency/downloadInvoicePdf", invoice.id)
+      downloadInvoicePdf(invoice.id)
         .then(response => {
           this.isLoading = false;
           this.downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
@@ -213,7 +217,7 @@ export default {
     },
     onSendInvoiceEmail() {
       this.showSendEmailModal = false;
-      this.getInvoices();
+      this.loadInvoices();
     },
     deleteInvoice(invoice) {
       this.currentInvoice = invoice;
@@ -221,7 +225,7 @@ export default {
     },
     onDeleteInvoice() {
       this.showDeleteModal = false;
-      this.getInvoices();
+      this.loadInvoices();
     }
   }
 };

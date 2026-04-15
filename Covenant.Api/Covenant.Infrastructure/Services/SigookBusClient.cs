@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net.Mime;
+using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services
 {
@@ -55,7 +55,7 @@ namespace Covenant.Infrastructure.Services
 
         public async Task SendMessageAsync<T>(T message, string queueOrTopic)
         {
-            var busMessage = new ServiceBusMessage(JsonConvert.SerializeObject(message))
+            var busMessage = new ServiceBusMessage(JsonSerializer.Serialize(message))
             {
                 ContentType = MediaTypeNames.Application.Json,
             };

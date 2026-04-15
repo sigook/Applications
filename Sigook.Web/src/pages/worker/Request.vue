@@ -163,7 +163,7 @@ export default {
       return available;
     },
     currentUser() {
-      return this.$store.state.worker.workerBasic;
+      return this.$store.state.worker.workerProfile;
     },
   },
 };

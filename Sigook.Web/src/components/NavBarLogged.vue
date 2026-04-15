@@ -33,7 +33,7 @@
             <svg v-else width="40" height="40">
               <circle cx="20" cy="20" r="20" fill="#aeaeae" />
               <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="20px" font-family="Arial" dy=".3em">
-                {{ currentUser.fu  | avatarLetters }}
+                {{ avatarLetters(currentUser.fu) }}
               </text>
             </svg>
           </template>
@@ -55,9 +55,12 @@
 
 
 <script lang="ts">
+import { avatarLetters } from '@/utils/filters';
 import menu from "@/security/menu";
 import roles from "@/security/roles";
 import { getMyProfile } from '@/api/workerApi';
+import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
+import { getCompanyProfile } from '@/api/companyApi';
 
 export default {
   data() {
@@ -69,6 +72,7 @@ export default {
     };
   },
   methods: {
+    avatarLetters,
     logout() {
       this.isLoading = true
       this.$store.dispatch("signOut")
@@ -80,17 +84,17 @@ export default {
       this.lang = this.$validator.dictionary.locale;
     },
     async getAgencyInfo() {
-      await this.$store.dispatch("agency/getAgencyProfile");
-      await this.$store.dispatch("agency/getPersonnelAgency");
+      const agency = await getAgencyProfile();
+      this.$store.commit("agency/setAgency", agency);
+      const personnelAgencies = await getPersonnelAgencies();
+      this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
       this.profileUrl = "/agency-profile";
     },
     async getCompanyInfo() {
-      await this.$store.dispatch("company/getProfile").then((response) => {
-        this.currentUser.fullName = response.businessName;
-        this.currentUser.profileImage = response.logo.pathFile;
-        this.profileUrl = "/company-profile";
-        this.$store.commit("company/setCompanyIsActive", response.active);
-      });
+      const response = await getCompanyProfile();
+      this.currentUser.fullName = response.businessName;
+      this.currentUser.profileImage = response.logo?.pathFile ?? null;
+      this.profileUrl = "/company-profile";
     },
     async getCompanyUserInfo() {
       await this.$store.dispatch("getUser").then((r) => {
@@ -108,7 +112,7 @@ export default {
     },
     switchAgency(agency) {
       if (agency.isPrimary) return;
-      this.$store.dispatch("agency/putPersonnelAgency", agency.id)
+      switchPersonnelAgency(agency.id)
         .then(async () => {
           this.$router.push('/agency-requests');
           await this.getAgencyInfo();

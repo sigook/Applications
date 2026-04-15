@@ -17,20 +17,20 @@
             <div v-if="document.canDownload" class="button-right">
               <a :href="document.pathFile" target="_blank" download>
                 <p class="fw-400">
-                  {{ document.fileName | filename }}
+                  {{ filename(document.fileName) }}
                   <span class="download-button"></span>
                 </p>
               </a>
               <div class="actions text-right">
-                <b-tooltip label="Delete" type="is-dark" position="is-top">
+                <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
-                    @click="deleteAgencyCompanyDocument(document.id, index)">
+                    @click="onDeleteDocument(document.id, index)">
                     {{ $t("Delete") }}
                   </button>
                 </b-tooltip>
               </div>
             </div>
-            <p v-else class="fw-400">{{ document.fileName | filename }}</p>
+            <p v-else class="fw-400">{{ filename(document.fileName) }}</p>
             <div class="fz-1">
               <p>
                 <strong class="fw-400">{{ document.description }}</strong>
@@ -42,7 +42,7 @@
         <button @click="showModal = true" class="sm-save-button">Add</button>
 
         <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="this.size"
-          @changePage="(index) => getAgencyCompanyDocument(index)">
+          @changePage="(index) => loadDocuments(index)">
         </pagination>
       </div>
     </transition>
@@ -64,6 +64,8 @@
   </div>
 </template>
 <script lang="ts">
+import { filename } from "@/utils/filters";
+import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 export default {
   data() {
     return {
@@ -82,20 +84,18 @@ export default {
     Pagination: () => import("../../components/Paginator.vue"),
   },
   methods: {
+    filename,
     onShowDocuments() {
       if (!this.showDocuments) {
         this.showDocuments = true;
-        this.getAgencyCompanyDocument(this.currentPage);
+        this.loadDocuments(this.currentPage);
       } else {
         this.showDocuments = false;
       }
     },
-    getAgencyCompanyDocument(index) {
+    loadDocuments(index) {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyCompanyDocument", {
-        profileId: this.profileId,
-        pagination: { size: this.size, page: index },
-      })
+      getAgencyCompanyDocument(this.profileId, { size: this.size, page: index })
         .then((response) => {
           this.isLoading = false;
           this.data = response;
@@ -107,18 +107,14 @@ export default {
     },
     onCreateDocument() {
       this.showModal = false;
-      this.getAgencyCompanyDocument(this.currentPage);
+      this.loadDocuments(this.currentPage);
     },
-    deleteAgencyCompanyDocument(id, index) {
+    onDeleteDocument(id, index) {
       this.showAlertConfirm("Are you sure", "You want to delete this document")
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store
-              .dispatch("agency/deleteAgencyCompanyDocument", {
-                profileId: this.profileId,
-                id: id,
-              })
+            deleteAgencyCompanyDocument(this.profileId, id)
               .then(() => {
                 this.isLoading = false;
                 this.showAlertSuccess("Deleted");

@@ -1,6 +1,6 @@
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Deductions;
 using Covenant.Common.Repositories;
-using Covenant.Deductions.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AccountingModule.Deduction.Cpp

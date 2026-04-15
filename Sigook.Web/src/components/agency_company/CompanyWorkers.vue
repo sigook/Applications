@@ -71,7 +71,7 @@
                 @input="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
-            <template v-slot="props">{{ props.row.createdAt | dateMonth }}</template>
+            <template v-slot="props">{{ dateMonth(props.row.createdAt) }}</template>
           </b-table-column>
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
@@ -109,15 +109,18 @@
   </div>
 </template>
 <script lang="ts">
-import workerFeaturesMixin from "@/mixins/workerFeaturesMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { workerFeatures as features } from '@/constants/workerFeatures';
+import { phoneMask as mask } from '@/constants/phoneMask';
+import { dateMonth } from "@/utils/filters";
+import { getAgencyWorkers } from "@/api/agencyWorkerApi";
 
 export default {
   props: ['company'],
-  mixins: [workerFeaturesMixin, phoneMaskMixin],
   data() {
     const companyProfileId = this.company.id;
     return {
+      mask,
+      features,
       isLoading: false,
       totalItems: 0,
       createdAtDatesSelected: [],
@@ -133,6 +136,7 @@ export default {
     }
   },
   methods: {
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
       this.getAgencyCompanyWorkers();
@@ -181,7 +185,7 @@ export default {
     },
     getAgencyCompanyWorkers() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getWorkers', this.serverParams)
+      getAgencyWorkers(this.serverParams)
         .then(response => {
           this.rows = response.items;
           this.totalItems = response.totalItems;

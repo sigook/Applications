@@ -1,6 +1,8 @@
-# Entidades y Relaciones - Covenant/Sigook Platform
+# Entities and Relationships - Covenant/Sigook Platform
 
-## 📊 Diagrama de Relaciones Principal
+> Code samples in this document are simplified projections of the actual entities. They show the most relevant fields, not every property. The source of truth is `Covenant.Api/Covenant.Common/Entities/`.
+
+## 📊 Main Relationship Diagram
 
 ```
                     ┌──────────────────┐
@@ -35,11 +37,11 @@
 │      REQUEST         │    │      USER       │
 │ ──────────────────── │    │ ─────────────── │
 │ Id                   │    │ Id              │
-│ CompanyProfileId (FK)│    │ Email           │
+│ CompanyId (FK)       │    │ Email           │
 │ AgencyId (FK)        │    │ Enabled         │
 │ JobTitle             │    └─────────────────┘
 │ WorkersQuantity      │
-│ RequestStatus        │
+│ Status               │
 │ JobLocationId (FK)   │
 └────┬─────────────────┘
      │
@@ -51,7 +53,7 @@
 │ ──────────────────────────── │
 │ Id                           │
 │ RequestId (FK)               │
-│ WorkerProfileId (FK)         │
+│ WorkerId (FK)                │
 │ WorkerRequestStatus          │
 │ StartWorking                 │
 └────┬─────────────────────────┘
@@ -96,7 +98,7 @@
 │ RegularWage                  │
 │ GrossPayment                 │
 │ Vacations                    │
-│ CPP, EI                      │
+│ Cpp, Ei                      │
 │ FederalTax, ProvincialTax    │
 │ TotalPaid                    │
 └──────────────────────────────┘
@@ -117,10 +119,10 @@
 
 ## 🏢 AGENCY Module
 
-### Agency (Agencia de Personal)
+### Agency
 
-**Tabla:** `Agency`
-**Ubicación:** `Covenant.Common/Entities/Agency/Agency.cs`
+**Table:** `Agency`
+**Location:** `Covenant.Common/Entities/Agency/Agency.cs`
 
 ```csharp
 public class Agency
@@ -159,7 +161,7 @@ public enum AgencyType
 
 ### AgencyLocation
 
-**Tabla:** `AgencyLocation`
+**Table:** `AgencyLocation`
 
 ```csharp
 public class AgencyLocation
@@ -181,7 +183,7 @@ public class AgencyLocation
 
 ### AgencyPersonnel (Employees)
 
-**Tabla:** `AgencyPersonnel`
+**Table:** `AgencyPersonnel`
 
 ```csharp
 public class AgencyPersonnel
@@ -192,7 +194,7 @@ public class AgencyPersonnel
     public string LastName { get; set; }
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
-    public PersonnelType Type { get; set; }           // Recruiter, SalesRep, etc
+    public PersonnelType Type { get; set; }           // Recruiter, SalesRep, etc.
     public bool IsActive { get; set; }
 
     // Navigation
@@ -217,8 +219,8 @@ public enum PersonnelType
 
 ### CompanyProfile
 
-**Tabla:** `CompanyProfile`
-**Ubicación:** `Covenant.Common/Entities/Company/CompanyProfile.cs`
+**Table:** `CompanyProfile`
+**Location:** `Covenant.Common/Entities/Company/CompanyProfile.cs`
 
 ```csharp
 public class CompanyProfile
@@ -265,7 +267,7 @@ public enum CompanyStatus
 
 ### CompanyProfileLocation
 
-**Tabla:** `CompanyProfileLocation`
+**Table:** `CompanyProfileLocation`
 
 ```csharp
 public class CompanyProfileLocation
@@ -286,9 +288,9 @@ public class CompanyProfileLocation
 
 ### CompanyProfileJobPositionRate
 
-**Tabla:** `CompanyProfileJobPositionRate`
+**Table:** `CompanyProfileJobPositionRate`
 
-**CRÍTICO:** Define las tarifas que determinan pricing.
+**CRITICAL:** Defines the rates that drive pricing.
 
 ```csharp
 public class CompanyProfileJobPositionRate
@@ -298,8 +300,8 @@ public class CompanyProfileJobPositionRate
     public string JobTitle { get; set; }
 
     // Rates
-    public decimal WorkerRate { get; set; }            // Lo que se paga al worker
-    public decimal AgencyRate { get; set; }            // Lo que se cobra a la company
+    public decimal WorkerRate { get; set; }            // Paid to the worker
+    public decimal AgencyRate { get; set; }            // Charged to the company
     // Markup = AgencyRate - WorkerRate (profit)
 
     // Shift premiums (multipliers)
@@ -319,7 +321,7 @@ public class CompanyProfileJobPositionRate
 
 ### CompanyProfileContactPerson
 
-**Tabla:** `CompanyProfileContactPerson`
+**Table:** `CompanyProfileContactPerson`
 
 ```csharp
 public class CompanyProfileContactPerson
@@ -342,9 +344,9 @@ public class CompanyProfileContactPerson
 
 ### CompanyUser
 
-**Tabla:** `CompanyUser`
+**Table:** `CompanyUser`
 
-**Purpose:** Links User to CompanyProfile for access control.
+**Purpose:** Links a User to a CompanyProfile for access control.
 
 ```csharp
 public class CompanyUser
@@ -367,13 +369,14 @@ public class CompanyUser
 
 ### WorkerProfile
 
-**Tabla:** `WorkerProfile`
-**Ubicación:** `Covenant.Common/Entities/Worker/WorkerProfile.cs`
+**Table:** `WorkerProfile`
+**Location:** `Covenant.Common/Entities/Worker/WorkerProfile.cs`
 
 ```csharp
 public class WorkerProfile
 {
     public Guid Id { get; set; }
+    public int NumberId { get; set; }                  // Sequential worker number
     public Guid AgencyId { get; set; }
     public Guid? UserId { get; set; }                  // Link to User (authentication)
 
@@ -402,7 +405,7 @@ public class WorkerProfile
     public bool HasVehicle { get; set; }
 
     // Status Flags
-    public bool ApprovedToWork { get; set; }           // Critical: Can worker work?
+    public bool ApprovedToWork { get; set; }           // Critical: can the worker work?
     public bool Dnu { get; set; }                      // Do Not Use
     public bool IsSubcontractor { get; set; }
     public bool IsContractor { get; set; }
@@ -430,13 +433,15 @@ public class WorkerProfile
 }
 ```
 
+> **Note:** `WorkerProfile.NumberId` (not `PayStub`) is the canonical source for the worker's sequential number used in pay stubs and reports.
+
 ---
 
 ### WorkerProfileTaxCategory
 
-**Tabla:** `WorkerProfileTaxCategory`
+**Table:** `WorkerProfileTaxCategory`
 
-**Purpose:** Tax claim codes para cálculo de impuestos.
+**Purpose:** Tax claim codes for tax calculations.
 
 ```csharp
 public class WorkerProfileTaxCategory
@@ -453,128 +458,11 @@ public class WorkerProfileTaxCategory
 
 ---
 
-### WorkerSkill
+### WorkerSkill / WorkerLanguage / WorkerLicense / WorkerCertificate / WorkerAvailability / WorkerLocationPreference
 
-**Tabla:** `WorkerSkill`
+Standard child tables linking a `WorkerProfile` to its skills, languages, licenses, certificates, available days/hours, and preferred cities. Each follows the same shape: a primary key, a `WorkerProfileId` foreign key, and the relevant attributes (e.g. `LicenseName`, `ExpiryDate`, `Proficiency`, etc.).
 
-```csharp
-public class WorkerSkill
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public Guid SkillId { get; set; }                  // FK to Skill catalog
-    public int ExperienceYears { get; set; }
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-    public Skill Skill { get; set; }
-}
-```
-
----
-
-### WorkerLanguage
-
-**Tabla:** `WorkerLanguage`
-
-```csharp
-public class WorkerLanguage
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public Guid LanguageId { get; set; }
-    public LanguageProficiency Proficiency { get; set; } // Basic, Intermediate, Advanced, Native
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-    public Language Language { get; set; }
-}
-```
-
----
-
-### WorkerLicense
-
-**Tabla:** `WorkerLicense`
-
-```csharp
-public class WorkerLicense
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public string LicenseName { get; set; }
-    public string LicenseNumber { get; set; }
-    public DateTime? IssueDate { get; set; }
-    public DateTime? ExpiryDate { get; set; }
-    public Guid? FileId { get; set; }
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-    public File File { get; set; }
-}
-```
-
----
-
-### WorkerCertificate
-
-**Tabla:** `WorkerCertificate`
-
-```csharp
-public class WorkerCertificate
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public string CertificateName { get; set; }
-    public string CertificateNumber { get; set; }
-    public DateTime? IssueDate { get; set; }
-    public DateTime? ExpiryDate { get; set; }
-    public Guid? FileId { get; set; }
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-    public File File { get; set; }
-}
-```
-
----
-
-### WorkerAvailability
-
-**Tabla:** `WorkerAvailability`
-
-```csharp
-public class WorkerAvailability
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public DayOfWeek DayOfWeek { get; set; }
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-}
-```
-
----
-
-### WorkerLocationPreference
-
-**Tabla:** `WorkerLocationPreference`
-
-```csharp
-public class WorkerLocationPreference
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public Guid CityId { get; set; }
-
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-    public City City { get; set; }
-}
-```
+See `Covenant.Common/Entities/Worker/` for the full definitions.
 
 ---
 
@@ -582,27 +470,31 @@ public class WorkerLocationPreference
 
 ### Request
 
-**Tabla:** `Request`
-**Ubicación:** `Covenant.Common/Entities/Request/Request.cs`
+**Table:** `Request`
+**Location:** `Covenant.Common/Entities/Request/Request.cs`
 
 ```csharp
 public class Request
 {
     public Guid Id { get; set; }
+    public int NumberId { get; set; }
     public Guid AgencyId { get; set; }
-    public Guid CompanyProfileId { get; set; }
+    public Guid CompanyId { get; set; }                // FK to User (the company user)
 
     // Job Details
     public string JobTitle { get; set; }
+    public string BillingTitle { get; set; }
     public string Description { get; set; }
     public string Requirements { get; set; }
+    public string InternalRequirements { get; set; }
+    public string Responsibilities { get; set; }
 
     // Workers
     public int WorkersQuantity { get; set; }           // How many workers needed
-    public int WorkersQuantityWorking { get; set; }    // Currently assigned
+    public int WorkersQuantityWorking { get; private set; } // Currently assigned
 
     // Timing
-    public DateTime StartAt { get; set; }
+    public DateTime? StartAt { get; set; }
     public DateTime? FinishAt { get; set; }
     public bool IsAsap { get; set; }
     public DurationTerm DurationTerm { get; set; }     // LongTerm, ShortTerm
@@ -612,48 +504,61 @@ public class Request
 
     // Location
     public Guid JobLocationId { get; set; }
+    public Location JobLocation { get; set; }
+    public bool JobIsOnBranchOffice { get; set; }
 
     // Rates
     public Guid? JobPositionRateId { get; set; }
+    public CompanyProfileJobPositionRate JobPositionRate { get; set; }
     public decimal? WorkerRate { get; set; }
     public decimal? AgencyRate { get; set; }
-    public string Currency { get; set; }
+    public decimal? WorkerSalary { get; set; }
 
     // Shift
-    public TimeSpan? ShiftStart { get; set; }
-    public TimeSpan? ShiftEnd { get; set; }
-    public TimeSpan? DurationBreak { get; set; }
+    public Guid? ShiftId { get; set; }
+    public Shift Shift { get; set; }
+    public TimeSpan DurationBreak { get; set; }
+    public bool BreakIsPaid { get; set; }
+    public bool HolidayIsPaid { get; set; }
+    public bool PunchCardOptionEnabled { get; set; }
 
     // Incentive
     public decimal? Incentive { get; set; }
     public string IncentiveDescription { get; set; }
 
-    // Status
-    public RequestStatus RequestStatus { get; set; }
-    public bool IsOpen { get; set; }
+    // Status (single source of truth — no IsOpen flag)
+    public RequestStatus Status { get; private set; }
+
+    // Derived
+    public bool CanBeUpdated => Status != RequestStatus.Cancelled;
+    public bool IsAvailableToApply => Status == RequestStatus.Open;
 
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    // Navigation properties
+    // Navigation
     public Agency Agency { get; set; }
-    public CompanyProfile CompanyProfile { get; set; }
-    public Location JobLocation { get; set; }
-    public CompanyProfileJobPositionRate JobPositionRate { get; set; }
-    public ICollection<WorkerRequest> WorkerRequests { get; set; }
-    public ICollection<RequestRecruiter> Recruiters { get; set; }
+    public User Company { get; set; }                  // The user that owns this order on the company side
+    public IReadOnlyCollection<WorkerRequest> Workers { get; }
+    public IReadOnlyCollection<RequestRecruiter> Recruiters { get; }
 }
 ```
+
+> The `Request` entity exposes only `Status` — there is **no** `IsOpen` property. State transitions happen automatically through methods such as `AddWorker`, `RejectWorker`, `Cancel`, `Open`, `IncreaseWorkersQuantityByOne`, and `DecreaseWorkersQuantityByOne`. See `.docs/business/REQUEST_STATE_MANAGEMENT.md` for the full transition rules.
+>
+> The link from `Request.CompanyId` is to the company-side `User`, not directly to `CompanyProfile`.
 
 **RequestStatus Enum:**
 ```csharp
 public enum RequestStatus
 {
-    Requested = 1,      // Just created
-    InProcess = 2,      // Workers assigned, in progress
-    Cancelled = 3       // Cancelled
+    Open = 1,        // Active order with available capacity
+    Filled = 3,      // All positions filled
+    Cancelled = 4    // Cancelled
 }
 ```
+
+> Enum value `2` is intentionally skipped (legacy `InProgress` was removed).
 
 **DurationTerm Enum:**
 ```csharp
@@ -679,17 +584,17 @@ public enum EmploymentType
 
 ### WorkerRequest (Assignment)
 
-**Tabla:** `WorkerRequest`
+**Table:** `WorkerRequest`
 
-**Purpose:** Links Worker to Request (assignment).
+**Purpose:** Links a Worker to a Request (assignment).
 
 ```csharp
 public class WorkerRequest
 {
     public Guid Id { get; set; }
     public Guid RequestId { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public WorkerRequestStatus Status { get; set; }
+    public Guid WorkerId { get; set; }
+    public WorkerRequestStatus WorkerRequestStatus { get; set; }
     public DateTime StartWorking { get; set; }
     public int WeekStartWorking { get; set; }
     public string RejectComments { get; set; }
@@ -699,6 +604,8 @@ public class WorkerRequest
     public Request Request { get; set; }
     public WorkerProfile WorkerProfile { get; set; }
     public ICollection<TimeSheet> TimeSheets { get; set; }
+
+    public bool IsRejected => WorkerRequestStatus == WorkerRequestStatus.Rejected;
 }
 ```
 
@@ -717,8 +624,8 @@ public enum WorkerRequestStatus
 
 ### TimeSheet
 
-**Tabla:** `TimeSheet`
-**Ubicación:** `Covenant.Common/Entities/Request/TimeSheet.cs`
+**Table:** `TimeSheet`
+**Location:** `Covenant.Common/Entities/Request/TimeSheet.cs`
 
 ```csharp
 public class TimeSheet
@@ -762,7 +669,7 @@ public class TimeSheet
 
 ### TimeSheetTotal
 
-**Tabla:** `TimeSheetTotal`
+**Table:** `TimeSheetTotal`
 
 **Purpose:** Calculated hours breakdown.
 
@@ -794,8 +701,8 @@ public class TimeSheetTotal
 
 ### PayStub
 
-**Tabla:** `PayStub`
-**Ubicación:** `Covenant.Common/Entities/Accounting/PayStub.cs`
+**Table:** `PayStub`
+**Location:** `Covenant.Common/Entities/Accounting/PayStub.cs`
 
 ```csharp
 public class PayStub
@@ -823,7 +730,6 @@ public class PayStub
     public decimal Ei { get; set; }                    // Employment Insurance
     public decimal FederalTax { get; set; }
     public decimal ProvincialTax { get; set; }
-    public decimal OtherDeductions { get; set; }
     public decimal TotalDeductions { get; set; }
 
     // Net Pay
@@ -838,13 +744,15 @@ public class PayStub
 }
 ```
 
+> The `OtherDeductions` column was removed from `PayStub` in migration `20260327161135_RemoveOtherDeductionsColumn`. Per-line "other deduction" amounts now live in `PayStubOtherDeduction`.
+
 ---
 
 ### PayStubItem
 
-**Tabla:** `PayStubItem`
+**Table:** `PayStubItem`
 
-**Purpose:** Daily breakdown for pay stub.
+**Purpose:** Daily breakdown for the pay stub.
 
 ```csharp
 public class PayStubItem
@@ -855,7 +763,7 @@ public class PayStubItem
     public TimeSpan Hours { get; set; }
     public decimal Rate { get; set; }
     public decimal Amount { get; set; }
-    public string Type { get; set; }               // "Regular", "Overtime", etc
+    public string Type { get; set; }               // "Regular", "Overtime", etc.
 
     // Navigation
     public PayStub PayStub { get; set; }
@@ -866,7 +774,7 @@ public class PayStubItem
 
 ### PayStubWageDetail
 
-**Tabla:** `PayStubWageDetail`
+**Table:** `PayStubWageDetail`
 
 **Purpose:** Breakdown by wage type.
 
@@ -889,8 +797,8 @@ public class PayStubWageDetail
 
 ### Invoice
 
-**Tabla:** `Invoice`
-**Ubicación:** `Covenant.Common/Entities/Accounting/Invoice.cs`
+**Table:** `Invoice`
+**Location:** `Covenant.Common/Entities/Accounting/Invoice.cs`
 
 ```csharp
 public class Invoice
@@ -927,9 +835,9 @@ public class Invoice
 
 ### InvoiceTotal
 
-**Tabla:** `InvoiceTotal`
+**Table:** `InvoiceTotal`
 
-**Purpose:** Per-worker breakdown in invoice.
+**Purpose:** Per-worker breakdown in an invoice.
 
 ```csharp
 public class InvoiceTotal
@@ -964,7 +872,7 @@ public class InvoiceTotal
 
 ### Location
 
-**Tabla:** `Location`
+**Table:** `Location`
 
 ```csharp
 public class Location
@@ -986,7 +894,7 @@ public class Location
 
 ### City
 
-**Tabla:** `City`
+**Table:** `City`
 
 ```csharp
 public class City
@@ -1002,7 +910,7 @@ public class City
 
 ### Province
 
-**Tabla:** `Province`
+**Table:** `Province`
 
 ```csharp
 public class Province
@@ -1019,7 +927,7 @@ public class Province
 
 ### Country
 
-**Tabla:** `Country`
+**Table:** `Country`
 
 ```csharp
 public class Country
@@ -1032,7 +940,7 @@ public class Country
 
 ---
 
-## 🔗 Relaciones Clave
+## 🔗 Key Relationships
 
 ### 1:N Relationships
 
@@ -1040,7 +948,7 @@ public class Country
 Agency → CompanyProfile (1:N)
 Agency → WorkerProfile (1:N)
 Agency → Request (1:N)
-CompanyProfile → Request (1:N)
+CompanyProfile → Request (1:N)             (via Request.CompanyId → User → CompanyProfile)
 CompanyProfile → CompanyProfileLocation (1:N)
 CompanyProfile → CompanyProfileJobPositionRate (1:N)
 CompanyProfile → Invoice (1:N)
@@ -1065,19 +973,19 @@ WorkerProfile → WorkerProfileTaxCategory (1:1)
 
 ```sql
 -- Request filtering
-CREATE INDEX idx_request_agency ON Request(AgencyId);
-CREATE INDEX idx_request_company ON Request(CompanyProfileId);
-CREATE INDEX idx_request_status ON Request(RequestStatus, IsOpen);
+CREATE INDEX idx_request_agency  ON Request(AgencyId);
+CREATE INDEX idx_request_company ON Request(CompanyId);
+CREATE INDEX idx_request_status  ON Request(Status);
 
 -- Worker filtering
-CREATE INDEX idx_worker_agency ON WorkerProfile(AgencyId);
+CREATE INDEX idx_worker_agency   ON WorkerProfile(AgencyId);
 CREATE INDEX idx_worker_approved ON WorkerProfile(ApprovedToWork, Dnu);
 
 -- TimeSheet queries
 CREATE INDEX idx_timesheet_workerrequest ON TimeSheet(WorkerRequestId);
-CREATE INDEX idx_timesheet_date ON TimeSheet(Date);
+CREATE INDEX idx_timesheet_date          ON TimeSheet(Date);
 
 -- Accounting queries
-CREATE INDEX idx_paystub_worker ON PayStub(WorkerProfileId);
+CREATE INDEX idx_paystub_worker  ON PayStub(WorkerProfileId);
 CREATE INDEX idx_invoice_company ON Invoice(CompanyProfileId);
 ```

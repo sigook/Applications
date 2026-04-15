@@ -38,42 +38,4 @@ public static class CloseXMLExtensions
             sheet.Cell($"{columnLetter}1").SetValue(headers[i]);
         }
     }
-
-    public static Cell GetCell(this SheetData sheetData, string cellReference) =>
-        sheetData.Descendants<Cell>().FirstOrDefault(c => c.CellReference == cellReference);
-
-    public static Row GetRow(this SheetData sheetData, uint rowIndex)
-    {
-        Row row = sheetData.Elements<Row>().FirstOrDefault(c => c.RowIndex == rowIndex);
-        return row ?? sheetData.AppendChild(new Row { RowIndex = rowIndex });
-    }
-
-    public static Cell AddCell2(this Row row, string columnReference, Cell cellToClone)
-    {
-        string cellReference = $"{columnReference}{row.RowIndex}";
-        Cell cell = row.Elements<Cell>().FirstOrDefault(c => c.CellReference == cellReference);
-        if (cell != null) return cell;
-        cell = (Cell)cellToClone.CloneNode(true);
-        cell.CellReference = cellReference;
-        row.AppendChild(cell);
-        return cell;
-    }
-
-    public static Cell AddValue(this Cell cell, string value)
-    {
-        cell.DataType = CellValues.String;
-        if (cell.CellValue is null) cell.CellValue = new CellValue();
-        cell.CellValue.Text = value;
-        cell.CellFormula?.ClearAllAttributes();
-        return cell;
-    }
-
-    public static Cell AddFormula(this Cell cell, string formula)
-    {
-        cell.DataType = CellValues.Number;
-        cell.CellValue = new CellValue();
-        if (cell.CellFormula is null) cell.CellFormula = new CellFormula();
-        cell.CellFormula.Text = formula;
-        return cell;
-    }
 }

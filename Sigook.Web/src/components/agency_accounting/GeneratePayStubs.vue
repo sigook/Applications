@@ -14,10 +14,12 @@
         </b-table-column>
       </template>
     </b-table>
-    <b-button type="is-primary" :disabled="selectedWorkers.length === 0" @click="generatePayStubs">Generate</b-button>
+    <b-button type="is-primary" :disabled="selectedWorkers.length === 0" @click="submitGeneratePayStubs">Generate</b-button>
   </div>
 </template>
 <script lang="ts">
+import { getWorkersReadyForPayStub, generatePayStubs } from "@/api/agencyPayStubApi";
+
 export default {
   data() {
     return {
@@ -27,12 +29,12 @@ export default {
     }
   },
   created() {
-    this.getWorkersReadyForPayStub();
+    this.loadWorkers();
   },
   methods: {
-    getWorkersReadyForPayStub() {
+    loadWorkers() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getWorkersReadyForPayStub")
+      getWorkersReadyForPayStub()
         .then((response) => {
           this.rows = response;
           this.isLoading = false;
@@ -42,10 +44,10 @@ export default {
           this.showAlertError(error);
         });
     },
-    generatePayStubs() {
+    submitGeneratePayStubs() {
       this.isLoading = true;
       const workerIds = this.selectedWorkers.map(worker => worker.workerId);
-      this.$store.dispatch("agency/generatePayStubs", workerIds)
+      generatePayStubs(workerIds)
         .then(() => {
           this.isLoading = false;
           this.$emit("pay-stubs-generated");
@@ -53,7 +55,7 @@ export default {
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
-          this.getWorkersReadyForPayStub();
+          this.loadWorkers();
         });
     }
   }

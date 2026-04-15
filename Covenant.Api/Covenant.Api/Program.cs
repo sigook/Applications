@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using AutoMapper.EquivalencyExpression;
+using Azure.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
 using Covenant.Api.Configuration;
@@ -16,10 +17,8 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
-using Azure.Identity;
 using System.Globalization;
 using System.Reflection;
-using Covenant.Infrastructure.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,7 +58,10 @@ builder.WebHost
 builder.Services
     .AddControllersWithViews()
         .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-        .AddNewtonsoftJson();
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        });
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddSwaggerGen(opt =>

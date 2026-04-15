@@ -1,3 +1,4 @@
+using Covenant.Common.Constants;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Worker;
@@ -16,18 +17,20 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(c => c.FirstName)
             .NotEmpty()
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.FirstNameMinLength, CovenantConstants.Validation.FirstNameMaxLength);
         RuleFor(c => c.MiddleName)
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.FirstNameMinLength, CovenantConstants.Validation.FirstNameMaxLength)
+            .When(c => !string.IsNullOrEmpty(c.MiddleName));
         RuleFor(c => c.LastName)
             .NotEmpty()
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.LastNameMinLength, CovenantConstants.Validation.LastNameMaxLength);
         RuleFor(c => c.SecondLastName)
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.FirstNameMinLength, CovenantConstants.Validation.FirstNameMaxLength)
+            .When(c => !string.IsNullOrEmpty(c.SecondLastName));
         RuleFor(c => c.BirthDay)
             .NotEmpty()
-            .LessThan(DateTime.Now)
-            .WithMessage(bd => ValidationMessages.AgeMsg(DateTime.Today.Year - bd.BirthDay.Year));
+            .LessThanOrEqualTo(_ => DateTime.Now.Date.AddYears(-CovenantConstants.Validation.BirthdayMinimumAge))
+            .WithMessage(ValidationMessages.AgeMsg(CovenantConstants.Validation.BirthdayMinimumAge));
         RuleFor(c => c.Gender)
             .NotNull();
         RuleFor(c => c.MobileNumber)
@@ -38,6 +41,18 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
         RuleFor(c => c.Phone)
             .Matches(@"^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$")
             .WithMessage("Invalid phone format");
+        RuleFor(c => c.Location)
+            .NotNull()
+            .WithMessage(ValidationMessages.RequiredMsg(ApiResources.Location));
+        RuleFor(c => c.Location.City)
+            .NotNull()
+            .When(c => c.Location != null);
+        RuleFor(c => c.Location.Address)
+            .NotEmpty()
+            .When(c => c.Location != null);
+        RuleFor(c => c.Location.PostalCode)
+            .NotEmpty()
+            .When(c => c.Location != null);
         RuleForEach(c => c.Skills)
             .ChildRules(skill =>
             {
@@ -45,12 +60,18 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
                     .MaximumLength(20);
             });
         RuleFor(c => c.ContactEmergencyName)
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.ContactEmergencyMinLength, CovenantConstants.Validation.ContactEmergencyMaxLength)
+            .When(c => !string.IsNullOrEmpty(c.ContactEmergencyName));
         RuleFor(c => c.ContactEmergencyLastName)
-            .MaximumLength(50);
+            .Length(CovenantConstants.Validation.ContactEmergencyMinLength, CovenantConstants.Validation.ContactEmergencyMaxLength)
+            .When(c => !string.IsNullOrEmpty(c.ContactEmergencyLastName));
         RuleFor(c => c.ContactEmergencyPhone)
             .Matches(@"^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$")
             .WithMessage("Invalid emergency contact phone format");
+        RuleFor(c => c.HealthProblem)
+            .MaximumLength(CovenantConstants.Validation.HealthProblemMaxLength);
+        RuleFor(c => c.OtherHealthProblem)
+            .MaximumLength(CovenantConstants.Validation.HealthProblemMaxLength);
         RuleFor(c => c.Email)
             .NotEmpty()
             .EmailAddress()
@@ -90,5 +111,22 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
                         w => w.IdentificationNumber2 == number);
             }).WithMessage(ApiResources.IdentificationNumberAlreadyTaken)
             .When(c => !string.IsNullOrEmpty(c.IdentificationNumber2));
+
+        RuleForEach(c => c.Licenses)
+            .ChildRules(license =>
+            {
+                license.RuleFor(l => l.License).NotNull()
+                    .WithMessage(ValidationMessages.RequiredMsg(ApiResources.LicenseFile));
+                license.RuleFor(l => l.License.FileName).NotEmpty()
+                    .When(l => l.License != null)
+                    .WithMessage(ValidationMessages.RequiredMsg(ApiResources.LicenseFile));
+            });
+
+        RuleForEach(c => c.Certificates)
+            .ChildRules(certificate =>
+            {
+                certificate.RuleFor(c => c.FileName).NotEmpty()
+                    .WithMessage(ValidationMessages.RequiredMsg(ApiResources.Certificates));
+            });
     }
 }

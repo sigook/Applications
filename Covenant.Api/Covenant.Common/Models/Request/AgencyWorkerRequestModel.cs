@@ -12,7 +12,6 @@ namespace Covenant.Common.Models.Request
         public Guid Id { get; set; }
         public Guid WorkerId { get; set; }
         public string Name { get; set; }
-        public string Status { get; set; }
         public WorkerRequestStatus WorkerRequestStatus { get; set; }
         public string RejectComments { get; set; }
         public string RejectedBy { get; set; }

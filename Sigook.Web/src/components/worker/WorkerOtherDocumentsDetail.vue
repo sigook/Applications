@@ -28,12 +28,12 @@
         <div class="button-right">
           <a :href="item.pathFile" target="_blank" download>
             <h4 class="fw-400">
-              {{ item.fileName | filename }}
+              {{ filename(item.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
           <div class="actions text-right">
-            <b-tooltip label="Delete" type="is-dark" position="is-top">
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item)">
                 {{ $t("Delete") }}
               </button>
@@ -68,6 +68,7 @@
   </section>
 </template>
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerOtherDocuments } from '@/api/workerApi';
 export default {
@@ -81,6 +82,7 @@ export default {
   },
   mixins: [toastMixin],
   methods: {
+    filename,
     closeAndUpdate() {
       this.modalDocuments = false;
       this.$emit('updateProfile', true);

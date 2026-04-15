@@ -85,7 +85,7 @@
             <template v-slot="props">
               <skills-form :existingSkills="props.row.skills"
                 @onPressAdd="(item) => addCandidateSkills(props.row.id, item)"
-                @onDelete="(item) => deleteCandidateSkill(props.row.id, item)" />
+                @onDelete="(item) => onDeleteCandidateSkill(props.row.id, item)" />
             </template>
           </b-table-column>
           <b-table-column field="requests" label="Order ID" searchable>
@@ -125,7 +125,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.createdAt | dateMonth }}</span>
+              <span class="d-block">{{ dateMonth(props.row.createdAt) }}</span>
             </template>
           </b-table-column>
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
@@ -135,7 +135,7 @@
             </template>
             <template v-slot="props">
               <div class="capitalize is-inline-block v-middle pr-0" v-if="props.row.recruiter">
-                {{ props.row.recruiter | emailName }}
+                {{ emailName(props.row.recruiter) }}
               </div>
               <div v-else class="op3 is-inline-block v-middle pr-0">
                 Recruiter
@@ -151,8 +151,8 @@
               </b-tag>
             </div>
             <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="'agency/getCandidateNotes'"
-                :on-create="'agency/addCandidateNote'" :on-delete="'agency/deleteCandidateNote'"
+              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotes"
+                :on-create="addCandidateNote" :on-delete="deleteCandidateNote"
                 @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
               </modal-notes>
             </div>
@@ -184,7 +184,7 @@
                 @click="convertToWorker(props.row.id)">
                 Convert to Worker
               </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" @click="deleteCandidate(props.row.id)">
+              <b-dropdown-item aria-role="listitem" @click="onDeleteCandidate(props.row.id)">
                 Delete
               </b-dropdown-item>
             </b-dropdown>
@@ -207,7 +207,7 @@
     </b-modal>
 
     <b-modal v-model="addFile" @close="addFile = false" width="500px">
-      <bulk-data :store-action="'agency/bulkCandidates'" :error-file-name="'BulkCandidatesError'"
+      <bulk-data :upload-fn="bulkAgencyCandidates" :error-file-name="'BulkCandidatesError'"
         :title="'Bulk Candidates'" :file-label="'Candidates File'" @close="addFile = false" />
     </b-modal>
 
@@ -217,20 +217,42 @@
   </div>
 </template>
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { phoneMask as mask } from '@/constants/phoneMask';
 import phoneFormat from "@/mixins/phoneFormatMixin";
 import { residencyList } from "@/constants/catalog";
+import {
+  getAgencyCandidates,
+  addCandidatePhoneNumber,
+  deleteCandidatePhoneNumber,
+  addCandidateSkill,
+  deleteCandidateSkill,
+  deleteAgencyCandidate,
+  updateAgencyCandidateRecruiter,
+  convertCandidateToWorker,
+  bulkAgencyCandidates,
+} from "@/api/agencyCandidateApi";
+import { dateMonth, emailName } from '@/utils/filters';
+import {
+  getCandidateNotes,
+  createCandidateNote,
+  deleteCandidateNote,
+} from "@/api/agencyNoteApi";
+import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 
 export default {
   data() {
     return {
+      mask,
       isLoading: false,
       totalItems: 0,
       createdAtDatesSelected: [],
       statusesSelected: [],
       createCandidate: false,
       addFile: false,
+      bulkAgencyCandidates,
+      getCandidateNotes: ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination),
+      addCandidateNote: ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model),
+      deleteCandidateNote: ({ userId, id }: NotesDeletePayload) => deleteCandidateNote(userId, id),
       detailCandidate: false,
       detailId: null,
       showDocuments: false,
@@ -244,7 +266,7 @@ export default {
       }
     };
   },
-  mixins: [phoneMaskMixin, download, phoneFormat],
+  mixins: [phoneFormat],
   components: {
     CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
     DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
@@ -256,6 +278,8 @@ export default {
     Export: () => import("@/components/Export.vue")
   },
   methods: {
+    dateMonth,
+    emailName,
     onCellClick(row, column) {
       if (column._props.field === 'name' && row.hasDocuments) {
         this.showDocumentsCandidate(row.id);
@@ -263,7 +287,7 @@ export default {
     },
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -290,12 +314,12 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     onCreatedAtCleared() {
       this.createdAtDatesSelected = [];
@@ -303,22 +327,22 @@ export default {
     },
     onStatusSelected() {
       this.serverParams.statuses = this.statusesSelected;
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     onInputEntered(event) {
       if (typeof event === 'boolean') {
-        this.getAgencyCandidates();
+        this.loadCandidates();
       }
       else if (event.key === 'Enter') {
-        this.getAgencyCandidates();
+        this.loadCandidates();
       }
     },
-    getAgencyCandidates() {
+    loadCandidates() {
       this.isLoading = true;
       this.$store.dispatch("agency/updateAgencyCandidateFilter", this.serverParams);
-      this.$store.dispatch("agency/getAgencyCandidates", this.serverParams)
+      getAgencyCandidates(this.serverParams)
         .then(candidates => {
-          this.rows = candidates.items.map(c => ({ ...c, actions: null }));
+          this.rows = candidates.items.map(c => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
           this.totalItems = candidates.totalItems;
           this.isLoading = false;
         })
@@ -333,11 +357,11 @@ export default {
     },
     onNote(row, status) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "showNotes", status);
+      this.rows[index].showNotes = status;
     },
     onUpdateNote(row, size) {
       const index = this.rows.findIndex(r => r.id === row.id);
-      this.$set(this.rows[index], "notesCount", size);
+      this.rows[index].notesCount = size;
     },
     showDocumentsCandidate(id) {
       this.detailId = id;
@@ -349,13 +373,13 @@ export default {
     },
     onSelectRequest() {
       this.showRequestModal = false;
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     addCandidatePhoneNumber(candidateId, phone) {
       this.isLoading = true;
-      this.$store.dispatch('agency/addCandidateNumber', { candidateId: candidateId, model: { phoneNumber: phone } })
+      addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
         .then(() => {
-          this.getAgencyCandidates();
+          this.loadCandidates();
         })
         .catch((error) => {
           this.isLoading = false;
@@ -364,10 +388,10 @@ export default {
     },
     deleteCandidateNumber(candidateId, number) {
       this.isLoading = true;
-      this.$store.dispatch("agency/deleteCandidateNumber", { candidateId: candidateId, number: number.id })
+      deleteCandidatePhoneNumber(candidateId, number.id)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyCandidates();
+          this.loadCandidates();
         })
         .catch((error) => {
           this.isLoading = false;
@@ -376,38 +400,37 @@ export default {
     },
     addCandidateSkills(id, model) {
       this.isLoading = true;
-      this.$store.dispatch("agency/addCandidateSkill", { candidateId: id, model: model })
+      addCandidateSkill(id, model)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyCandidates();
+          this.loadCandidates();
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
         });
     },
-    deleteCandidateSkill(candidateId, skill) {
+    onDeleteCandidateSkill(candidateId, skill) {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/deleteCandidateSkill", { candidateId: candidateId, skill: skill.id })
+      deleteCandidateSkill(candidateId, skill.id)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyCandidates();
+          this.loadCandidates();
         })
         .catch((error) => {
           this.isLoading = false;
           this.showAlertError(error);
         });
     },
-    deleteCandidate(candidateId) {
+    onDeleteCandidate(candidateId) {
       this.showAlertConfirm("Are you sure", "You want to delete this candidate")
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store.dispatch("agency/deleteCandidate", candidateId)
+            deleteAgencyCandidate(candidateId)
               .then(() => {
                 this.isLoading = false;
-                this.getAgencyCandidates();
+                this.loadCandidates();
               })
               .catch((error) => {
                 this.isLoading = false;
@@ -424,11 +447,10 @@ export default {
         .then((response) => {
           if (response) {
             this.isLoading = true;
-            this.$store
-              .dispatch("agency/updateCandidateRecruiter", candidateId)
+            updateAgencyCandidateRecruiter(candidateId)
               .then(() => {
                 this.isLoading = false;
-                this.getAgencyCandidates(this.currentPage);
+                this.loadCandidates();
               })
               .catch((error) => {
                 this.isLoading = false;
@@ -442,10 +464,10 @@ export default {
     },
     convertToWorker(candidateId) {
       this.isLoading = true;
-      this.$store.dispatch("agency/convertToWorker", candidateId)
+      convertCandidateToWorker(candidateId)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyCandidates();
+          this.loadCandidates();
         })
         .catch((error) => {
           this.isLoading = false
@@ -460,11 +482,11 @@ export default {
     },
     onCandidateCreated() {
       this.createCandidate = false;
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
     updateCandidate() {
       this.detailCandidate = false
-      this.getAgencyCandidates();
+      this.loadCandidates();
     },
   },
   created() {
@@ -478,7 +500,7 @@ export default {
         this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
       }
     }
-    this.getAgencyCandidates();
+    this.loadCandidates();
   },
   computed: {
     residencyList() {

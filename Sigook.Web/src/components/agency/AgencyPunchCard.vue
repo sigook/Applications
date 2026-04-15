@@ -127,10 +127,10 @@
         </template>
         <template>
           <b-table-column field="day" label="Day" v-slot="props">
-            {{ props.row.day | date }}
+            {{ date(props.row.day) }}
           </b-table-column>
           <b-table-column field="timeIn" label="Start Time" v-slot="props">
-            {{ props.row.timeIn | time }}
+            {{ time(props.row.timeIn) }}
           </b-table-column>
           <b-table-column field="totalHoursApproved" label="Hours Approved" v-slot="props">
             <span class="big-decimal">{{ props.row.totalHoursApproved }}</span>
@@ -142,6 +142,8 @@
 </template>
 <script lang="ts">
 import dayjs from "dayjs";
+import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
+import { date, time } from '@/utils/filters';
 
 export default {
   props: ["workerId", "workerName", "requestId"],
@@ -164,9 +166,11 @@ export default {
     }
   },
   methods: {
+    date,
+    time,
     showTimeSheet() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId })
+      getAgencyWorkerTimeSheet(this.requestId, this.workerId)
         .then(response => {
           this.isLoading = false;
           this.rows = response;
@@ -184,11 +188,11 @@ export default {
       const payload = {
         ...this.newDate,
         hours,
-        timeIn: dayjs(date + ' ' + hours).format('MM-DD-YYYYY HH:mm:ss'),
+        timeIn: dayjs(date + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
         missingHours: dayjs(this.newDate.missingHours).format('HH:mm:ss'),
         missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss')
       }
-      this.$store.dispatch("agency/postAgencyWorkerTimeSheet", { requestId: this.requestId, workerId: this.workerId, model: payload })
+      postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
         .then(() => {
           this.isLoading = false;
           this.showAlertSuccess('Created');

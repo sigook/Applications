@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Models.Location;
+﻿using Covenant.Common.Enums;
+using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Models.Request
 {
@@ -21,7 +22,7 @@ namespace Covenant.Common.Models.Request
         public string JobPosition { get; set; }
         public bool HolidayIsPaid { get; set; }
         public bool BreakIsPaid { get; set; }
-        public string Status { get; set; }
+        public RequestStatus Status { get; set; }
         public string CancellationDetail { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedBy { get; set; }
@@ -34,8 +35,8 @@ namespace Covenant.Common.Models.Request
         public decimal? AgencyRate { get; set; }
         public decimal? WorkerRate { get; set; }
         public decimal? WorkerSalary { get; set; }
-        public string DurationTerm { get; set; }
-        public string EmploymentType { get; set; }
+        public DurationTerm DurationTerm { get; set; }
+        public EmploymentType EmploymentType { get; set; }
         public string DisplayRecruiters { get; set; }
         public string DisplayShift { get; set; }
         public bool IsAsap { get; set; }

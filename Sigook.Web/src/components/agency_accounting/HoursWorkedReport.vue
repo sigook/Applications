@@ -29,9 +29,9 @@
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="getReport">Generate</b-button>
+        <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
-      <div class="col-12 col-padding">
+      <div v-if="reportGenerated" class="col-12 col-padding">
         <export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </export>
@@ -48,31 +48,31 @@
               {{ props.row.jobPosition }}
             </b-table-column>
             <b-table-column field="billRate" label="Bill Rate" v-slot="props">
-              {{ props.row.billRate | currency }}
+              {{ currency(props.row.billRate) }}
             </b-table-column>
             <b-table-column field="regularHoursWorked" label="Regular Hours" v-slot="props">
               {{ props.row.regularHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayRegularRate" label="Total Pay Regular Rate" v-slot="props">
-              {{ props.row.totalPayRegularRate | currency }}
+              {{ currency(props.row.totalPayRegularRate) }}
             </b-table-column>
             <b-table-column field="overtimeHoursWorked" label="Overtime Hours" v-slot="props">
               {{ props.row.overtimeHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayOvertimeRate" label="Total Pay Overtime Rate" v-slot="props">
-              {{ props.row.totalPayOvertimeRate | currency }}
+              {{ currency(props.row.totalPayOvertimeRate) }}
             </b-table-column>
             <b-table-column field="holidayHoursWorked" label="Holiday Hours" v-slot="props">
               {{ props.row.holidayHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayHolidayRate" label="Total Pay Holiday Rate" v-slot="props">
-              {{ props.row.totalPayHolidayRate | currency }}
+              {{ currency(props.row.totalPayHolidayRate) }}
             </b-table-column>
             <b-table-column field="totalHoursWorked" label="Total Hours" v-slot="props">
               {{ props.row.totalHoursWorked }}
             </b-table-column>
             <b-table-column field="totalPayRate" label="Total Pay Rate" v-slot="props">
-              {{ props.row.totalPayRate | currency }}
+              {{ currency(props.row.totalPayRate) }}
             </b-table-column>
           </template>
           <template v-slot:footer>
@@ -81,13 +81,13 @@
               <th></th>
               <th></th>
               <th>{{ report.totalRegularHours }}</th>
-              <th>{{ report.totalPayRegular | currency }}</th>
+              <th>{{ currency(report.totalPayRegular) }}</th>
               <th>{{ report.totalOvertimeHours }}</th>
-              <th>{{ report.totalPayOvertime | currency }}</th>
+              <th>{{ currency(report.totalPayOvertime) }}</th>
               <th>{{ report.totalHolidayHours }}</th>
-              <th>{{ report.totalPayHoliday | currency }}</th>
+              <th>{{ currency(report.totalPayHoliday) }}</th>
               <th>{{ report.totalHours }}</th>
-              <th>{{ report.totalPay | currency }}</th>
+              <th>{{ currency(report.totalPay) }}</th>
             </template>
           </template>
         </b-table>
@@ -97,6 +97,9 @@
 </template>
 <script lang="ts">
 import dayjs from 'dayjs';
+import { currency } from '@/utils/filters';
+import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
+import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
 
 export default {
   components: {
@@ -115,38 +118,40 @@ export default {
       pageIndex: 1,
       pageSize: 30,
       serverParams: {},
+      reportGenerated: false,
       report: {
         rows: []
       }
     }
   },
   async created() {
-    await this.getCompanies();
+    await this.loadCompanies();
   },
   methods: {
-    async getCompanies() {
+    currency,
+    async loadCompanies() {
       this.isLoading = true;
-      this.companies = await this.$store.dispatch('agency/getAgencyCompanyProfileWithRequests');
+      this.companies = await getAgencyCompanyProfileWithRequests();
       this.isLoading = false;
     },
     async onDatesSelected() {
       this.serverParams.startDate = dayjs(this.datesSelected[0]).format('YYYY-MM-DD');
       this.serverParams.endDate = dayjs(this.datesSelected[1]).format('YYYY-MM-DD');
-      await this.getJobPositionsHoursWorked();
+      await this.loadJobPositions();
     },
     async selectCompany(company) {
       if (company) {
         this.serverParams.companyId = company.companyId;
-        await this.getJobPositionsHoursWorked();
+        await this.loadJobPositions();
       } else {
         this.serverParams.companyId = null;
         this.jobPositions = [];
       }
     },
-    async getJobPositionsHoursWorked() {
+    async loadJobPositions() {
       if (this.serverParams.companyId && this.datesSelected.length === 2) {
         this.isLoadingJobPositions = true;
-        this.jobPositions = await this.$store.dispatch('agency/getJobPositionsHoursWorked', this.serverParams);
+        this.jobPositions = await getJobPositionsHoursWorked(this.serverParams);
         this.isLoadingJobPositions = false;
       }
     },
@@ -161,13 +166,14 @@ export default {
       const result = await this.$validator.validateAll();
       if (result) {
         this.isLoadingReport = true;
-        this.$store.dispatch('agency/getHoursWorkedReport', this.serverParams)
-          .then(response => {
+        getHoursWorkedReport(this.serverParams)
+          .then((response) => {
             this.isLoadingReport = false;
             this.report = {
               ...response,
               rows: response.detail,
             }
+            this.reportGenerated = true;
           }).catch(error => {
             this.isLoadingReport = false;
             this.showAlertError(error);

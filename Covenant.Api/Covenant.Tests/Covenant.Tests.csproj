@@ -121,7 +121,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Covenant.Api\Covenant.Api.csproj" />
-    <ProjectReference Include="..\Covenant.PayStubs\Covenant.PayStubs.csproj" />
   </ItemGroup>
   <Target Name="CopyFiles">
     <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="c:\MyProject\Destination" />

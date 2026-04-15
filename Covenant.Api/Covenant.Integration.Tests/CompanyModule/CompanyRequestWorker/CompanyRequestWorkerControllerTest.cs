@@ -55,7 +55,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             Assert.NotNull(item);
             Assert.NotNull(item.Name);
             Assert.NotNull(item.ProfileImage);
-            Assert.NotNull(item.Status);
             Assert.NotEqual(Guid.Empty, item.WorkerId);
             Assert.NotEqual(Guid.Empty, item.WorkerProfileId);
         }

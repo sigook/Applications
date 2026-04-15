@@ -9,7 +9,7 @@
           </template>
           <div v-if="licenseModal.license && licenseModal.license.fileName" class="selected-file-display">
             <b-icon icon="certificate" size="is-small"></b-icon>
-            <span class="selected-file-name">{{ licenseModal.license.fileName | filename }}</span>
+            <span class="selected-file-name">{{ filename(licenseModal.license.fileName) }}</span>
             <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearLicenseFile()"></b-button>
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedLicenseFile }">
@@ -64,6 +64,7 @@
 </template>
 
 <script lang="ts">
+import { filename } from '@/utils/filters';
 import toastMixin from "../../mixins/toastMixin";
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 import { createWorkerLicenses } from '@/api/workerApi';
@@ -92,6 +93,7 @@ export default {
   },
   mixins: [toastMixin, multipartUploadMixin],
   methods: {
+    filename,
     handleLicenseFileSelected(file) {
       if (!file) return;
       if (file.size / 1024 > 15500) {

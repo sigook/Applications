@@ -3,37 +3,42 @@
         <b-loading v-model="localIsLoading"></b-loading>
         <ul class="table-shift-detail" v-if="shift">
             <li v-if="shift.sunday">
-                Sun {{ shift.sundayStart | hourminutes }} to {{ shift.sundayFinish | hourminutes }}
+                Sun {{ hourminutes(shift.sundayStart) }} to {{ hourminutes(shift.sundayFinish) }}
             </li>
             <li v-if="shift.monday">
-                Mon {{ shift.mondayStart | hourminutes }} to {{ shift.mondayFinish | hourminutes }}
+                Mon {{ hourminutes(shift.mondayStart) }} to {{ hourminutes(shift.mondayFinish) }}
             </li>
             <li v-if="shift.tuesday">
-                Tue {{ shift.tuesdayStart | hourminutes }} to {{ shift.tuesdayFinish | hourminutes }}
+                Tue {{ hourminutes(shift.tuesdayStart) }} to {{ hourminutes(shift.tuesdayFinish) }}
             </li>
             <li v-if="shift.wednesday">
-                Wed {{ shift.wednesdayStart | hourminutes }} to {{ shift.wednesdayFinish | hourminutes }}
+                Wed {{ hourminutes(shift.wednesdayStart) }} to {{ hourminutes(shift.wednesdayFinish) }}
             </li>
             <li v-if="shift.thursday">
-                Thu {{ shift.thursdayStart | hourminutes }} to {{ shift.thursdayFinish | hourminutes }}
+                Thu {{ hourminutes(shift.thursdayStart) }} to {{ hourminutes(shift.thursdayFinish) }}
             </li>
             <li v-if="shift.friday">
-                Fri {{ shift.fridayStart | hourminutes }} to {{ shift.fridayFinish | hourminutes }}
+                Fri {{ hourminutes(shift.fridayStart) }} to {{ hourminutes(shift.fridayFinish) }}
             </li>
             <li v-if="shift.saturday">
-                Sat {{ shift.saturdayStart | hourminutes }} to {{ shift.saturdayFinish | hourminutes }}
+                Sat {{ hourminutes(shift.saturdayStart) }} to {{ hourminutes(shift.saturdayFinish) }}
             </li>
             <li class="fz-1" v-if="shift.comments"><i>*{{ shift.comments }}</i></li>
         </ul>
     </div>
 </template>
 <script lang="ts">
+import { hourminutes } from '@/utils/filters';
+
 export default {
     props: ['shift', 'isLoading'],
     data() {
         return {
             localIsLoading: this.isLoading
         }
+    },
+    methods: {
+        hourminutes,
     },
     watch: {
         isLoading(newVal) {

@@ -16,7 +16,6 @@ public interface IAccountingService
     Task<PaginatedList<PayStubListModel>> GetPayStubs(GetPayStubsFilter filter);
     Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter);
     Task DeletePayStub(Guid payStubId);
-    Task<Result> GeneratePayStubs(IEnumerable<Guid> workerIds);
     Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(Pagination pagination);
     Task<Result<ResultGenerateDocument<byte[]>>> GetWeeklyPayrollGroupByPaymentDateFile(string weekEnding);
     Task<PaginatedList<PayrollSubContractorListModel>> GetSubcontractors(Pagination filter);

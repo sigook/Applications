@@ -196,12 +196,12 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.identificationType1File.fileName | filename }}
+                            {{ filename(worker.identificationType1File.fileName) }}
                           </h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType1File)">
                           </b-button>
@@ -246,12 +246,12 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.identificationType2File.fileName | filename }}
+                            {{ filename(worker.identificationType2File.fileName) }}
                           </h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType2File)">
                           </b-button>
@@ -322,12 +322,12 @@
                         <div class="document-icon-title">
                           <b-icon icon="certificate" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ item.license.fileName | filename }}
+                            {{ filename(item.license.fileName) }}
                           </h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteLicense(index)">
                           </b-button>
@@ -392,11 +392,11 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="card-account-details" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ item.fileName | filename }}</h4>
+                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteCertificate(index)">
                           </b-button>
@@ -449,12 +449,12 @@
                         <div class="document-icon-title">
                           <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
                           <h4 class="fw-600 document-filename">
-                            {{ worker.resume.fileName | filename }}
+                            {{ filename(worker.resume.fileName) }}
                           </h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteResume()">
                           </b-button>
@@ -505,11 +505,11 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="folder-open" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ item.fileName | filename }}</h4>
+                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
-                        <b-tooltip label="Delete" type="is-dark" position="is-top">
+                        <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteOtherDocument(index)">
                           </b-button>
@@ -612,12 +612,16 @@
 
 <script lang="ts">
 import dayjs from "dayjs";
-import createWorkerMixin from "@/mixins/createWorkerMixin";
-import confirmationAlert from "../../mixins/confirmationAlert";
-import updateMixin from "../../mixins/uploadFiles";
+import { registerWorker } from "@/api/workerApi";
+import { useCreateWorker } from "@/composables/useCreateWorker";
+import { filename } from '@/utils/filters';
+import { confirmationGuard } from '@/utils/confirmationGuard';
 import multipartUploadMixin from "../../mixins/multipartUploadMixin";
 
 export default {
+  setup() {
+    return { ...useCreateWorker() };
+  },
   components: {
     uploadImage: () => import("../../components/PreviewImage.vue"),
     addressComponent: () => import("../../components/Address.vue"),
@@ -626,6 +630,7 @@ export default {
   data() {
     return {
       activeStep: 0,
+      unsavedChanges: false,
       showWorkInformationTab: true,
       alphaNumericSpaces: /^[-_ a-zA-Z0-9]+$/,
       disableStartDate: null,
@@ -652,6 +657,7 @@ export default {
     };
   },
   methods: {
+    filename,
     async validateForm() {
       const step4Fields = ['email', 'password', 'confirmPassword'];
       if (!this.isLogin) {
@@ -732,9 +738,7 @@ export default {
 
       try {
         const formData = await this.createMultipartFormData(this.worker, this.fileObjects);
-        const action = this.isLogin ? `agency/createWorker` : `worker/registerWorker`
-
-        const id = await this.$store.dispatch(action, formData);
+        const id = await registerWorker(formData);
         this.isLoading = false;
         this.showAlertSuccess(this.$t("YourAccountHasBeenCreated"));
         const route = this.isLogin ? `/agency-workers/worker/${id}` : '/home'
@@ -897,12 +901,12 @@ export default {
     }
   },
   mixins: [
-    createWorkerMixin,
-    confirmationAlert,
-    updateMixin,
     multipartUploadMixin
   ],
-  created() {
+  beforeRouteLeave: confirmationGuard,
+  async created() {
+    await this.loadCatalogs();
+    this.isLoading = false;
     this.$store.dispatch("getCurrentDate").then((response) => {
       this.disableStartDate = response;
       this.disabledDates = dayjs(response)

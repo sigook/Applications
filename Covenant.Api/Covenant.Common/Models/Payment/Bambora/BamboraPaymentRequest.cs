@@ -1,29 +1,29 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Payment.Bambora
 {
     public class BamboraPaymentRequest
     {
-        [JsonProperty(PropertyName = "payment_profile")]
+        [JsonPropertyName("payment_profile")]
         public BamboraPaymentRequestProfile PaymentProfile { get; set; }
 
-        [JsonProperty(PropertyName = "payment_method")]
+        [JsonPropertyName("payment_method")]
         public string PaymentMethod { get; set; }
 
-        [JsonProperty(PropertyName = "order_number")]
+        [JsonPropertyName("order_number")]
         public string OrderNumber { get; set; }
 
         /// <summary>
         /// In the format 0.00. Max 2 decimal places. Max 9 digits total.
         /// </summary>
-        [JsonProperty(PropertyName = "amount")]
+        [JsonPropertyName("amount")]
         public decimal Amount { get; set; }
 
         /// <summary>
         /// 3 characters, either ENG or FRE.
         /// Optional
         /// </summary>
-        [JsonProperty(PropertyName = "language")]
+        [JsonPropertyName("language")]
         public string Language { get; set; }
 
 
@@ -32,13 +32,13 @@ namespace Covenant.Common.Models.Payment.Bambora
         /// Optional.
         /// </summary>
         /// <value>The customer ip.</value>
-        [JsonProperty(PropertyName = "customer_ip")]
+        [JsonPropertyName("customer_ip")]
         public string CustomerIp { get; set; }
 
-        [JsonProperty(PropertyName = "comments")]
+        [JsonPropertyName("comments")]
         public string Comments { get; set; }
 
-        [JsonProperty(PropertyName = "custom")]
+        [JsonPropertyName("custom")]
         public BamboraCustomField CustomFields { get; set; }
     }
 }

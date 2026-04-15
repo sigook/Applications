@@ -32,11 +32,11 @@
   </div>
 </template>
 <script lang="ts">
-import download from "@/mixins/downloadFileMixin";
+import { downloadFile } from "@/utils/downloadFile";
 
 export default {
   name: 'BulkData',
-  props: ['storeAction', 'errorFileName', 'title', 'fileLabel'],
+  props: ['uploadFn', 'errorFileName', 'title', 'fileLabel'],
   data() {
     return {
       isLoading: false,
@@ -45,11 +45,11 @@ export default {
       fileError: null,
     }
   },
-  mixins: [download],
   methods: {
+    downloadFile,
     bulkUpload() {
       this.isLoading = true;
-      this.$store.dispatch(this.storeAction, { agencyId: this.agencySelected, file: this.bulkFile })
+      this.uploadFn(this.agencySelected, this.bulkFile)
         .then((file) => {
           if (file.size > 0) {
             this.fileError = file;

@@ -10,18 +10,18 @@
           </template>
           <template>
             <b-table-column field="weekEnding" label="Payment Date" v-slot="props">
-              {{ props.row.weekEnding | date }}
+              {{ date(props.row.weekEnding) }}
             </b-table-column>
             <b-table-column field="numberOfPayStubs" label="PayStubs" v-slot="props">
               {{ props.row.numberOfPayStubs }}
             </b-table-column>
             <b-table-column field="totalNet" label="Total Net" v-slot="props">
-              {{ props.row.totalNet | currency }}
+              {{ currency(props.row.totalNet) }}
             </b-table-column>
             <b-table-column field="actions" v-slot="props">
-              <b-tooltip label="Download" type="is-dark" position="is-top">
+              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-success" outlined rounded icon-right="file-excel"
-                  :loading="props.row.reportDownloading" @click="downloadWeeklyPayrollReport(props.row)">
+                  :loading="props.row.reportDownloading" @click="onDownloadWeeklyPayrollReport(props.row)">
                 </b-button>
               </b-tooltip>
             </b-table-column>
@@ -32,7 +32,9 @@
   </div>
 </template>
 <script lang="ts">
-import download from '@/mixins/downloadFileMixin';
+import { downloadFile } from '@/utils/downloadFile';
+import { date, currency } from '@/utils/filters';
+import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
 
 export default {
   data() {
@@ -46,21 +48,22 @@ export default {
       }
     }
   },
-  mixins: [download],
   created() {
     this.getReport();
   },
   methods: {
+    downloadFile,
+    date,
+    currency,
     onPageChange(page) {
       this.serverParams.pageIndex = page;
       this.getReport();
     },
     getReport() {
       this.isLoading = true;
-      this.$store.dispatch('agency/getPaymentReport', this.serverParams)
-        .then(response => {
-          this.rows = response.items.map(i => ({ ...i, actions: null, reportDownloading: false }));
-          console.log(response);
+      getPaymentReport(this.serverParams)
+        .then((response) => {
+          this.rows = response.items.map((i) => ({ ...i, actions: null, reportDownloading: false }));
           this.totalItems = response.totalItems;
           this.isLoading = false;
         })
@@ -69,9 +72,9 @@ export default {
           this.showAlertError(error);
         });
     },
-    downloadWeeklyPayrollReport(row) {
+    onDownloadWeeklyPayrollReport(row) {
       row.reportDownloading = true;
-      this.$store.dispatch('agency/downloadWeeklyPayrollReport', row.displayWeekEnding)
+      downloadWeeklyPayrollReport(row.displayWeekEnding)
         .then(response => {
           row.reportDownloading = false;
           this.downloadFile(response, `Payment_${row.displayWeekEnding}`);

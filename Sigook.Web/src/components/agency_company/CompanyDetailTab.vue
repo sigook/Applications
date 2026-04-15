@@ -7,7 +7,7 @@
       <contact-information v-if="company" :company="company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
-      <table class="table-detail">
+      <table class="table-detail" v-if="company">
         <tr v-if="company.industry">
           <td><span class="fw-700">Industry </span></td>
           <td>
@@ -30,12 +30,12 @@
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">About</span>
         <pre class="long-description">{{ company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4">
+      <section class="margin-top-15 mb-4" v-if="company">
         <span class="fw-700">Internal Info</span>
         <pre class="long-description" v-html="company.internalInfo"></pre>
       </section>
@@ -62,7 +62,7 @@
             <div v-if="showEditor">
               <vue-editor v-model="editorContent" :editorToolbar="customToolbar"></vue-editor>
               <br />
-              <button class="sm-save-button" v-if="editorContent" @click="postInvoiceNotes()">
+              <button class="sm-save-button" v-if="editorContent" @click="saveInvoiceNotes()">
                 {{ $t("Save") }}
               </button>
             </div>
@@ -73,7 +73,7 @@
       <div>
         <div class="button-right">
           <span class="fw-700">Invoice Recipients</span>
-          <button class="show-notes-btn" @click="getCompanyInvoiceRecipients()">
+          <button class="show-notes-btn" @click="loadCompanyInvoiceRecipients()">
             <img src="../../assets/images/right-arrow.svg" :class="{ open: showRecipients }" />
           </button>
         </div>
@@ -117,8 +117,8 @@
         </div>
       </div>
 
-      <i class="fz-1 op5" v-if="company.createdAt">
-        Created: {{ company.createdAt | date }}
+      <i class="fz-1 op5" v-if="company && company.createdAt">
+        Created: {{ date(company.createdAt) }}
       </i>
     </section>
 
@@ -127,7 +127,7 @@
       <location />
     </aside>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px">
+    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
       <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
         :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
     </b-modal>
@@ -135,9 +135,20 @@
 </template>
 
 <script lang="ts">
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { date } from "@/utils/filters";
+import {
+  getInvoiceNotes,
+  postInvoiceNotes,
+  getCompanyInvoiceRecipients,
+  postCompanyInvoiceRecipient,
+  updatePermissionToSeeOrders,
+} from "@/api/agencyCompanyApi";
 
 export default {
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   props: ["company"],
   data() {
     return {
@@ -175,7 +186,6 @@ export default {
     Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
     EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
   },
-  mixins: [billingAdminMixin],
   watch: {
     company: {
       handler(newVal) {
@@ -185,20 +195,21 @@ export default {
     }
   },
   methods: {
+    date,
     showNotesEditor() {
       if (this.showEditor) {
         this.showEditor = false;
       } else {
         if (!this.editorContent) {
-          this.getInvoiceNotes();
+          this.loadInvoiceNotes();
         } else {
           this.showEditor = true;
         }
       }
     },
-    getInvoiceNotes() {
+    loadInvoiceNotes() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getInvoiceNotes", this.$route.params.id)
+      getInvoiceNotes(this.$route.params.id)
         .then((response) => {
           this.editorContent = response.htmlNotes;
           this.showEditor = true;
@@ -209,18 +220,14 @@ export default {
           this.isLoading = false;
         });
     },
-    postInvoiceNotes() {
+    saveInvoiceNotes() {
       // to check the size
       let result = this.editorContent.replace(/(<([^>]+)>)/gi, "");
       if (result.length > 500) {
         this.showAlertError(this.$t("ErrorLong"));
       } else {
         this.isLoading = true;
-        this.$store
-          .dispatch("agency/postInvoiceNotes", {
-            id: this.$route.params.id,
-            model: { htmlNotes: this.editorContent },
-          })
+        postInvoiceNotes(this.$route.params.id, { htmlNotes: this.editorContent })
           .then(() => {
             this.showAlertSuccess(this.$t("Updated"));
             this.isLoading = false;
@@ -231,11 +238,11 @@ export default {
           });
       }
     },
-    getCompanyInvoiceRecipients() {
+    loadCompanyInvoiceRecipients() {
       if (!this.showRecipients) {
         this.isLoading = true;
         this.showRecipients = true;
-        this.$store.dispatch("agency/getCompanyInvoiceRecipients", this.$route.params.id)
+        getCompanyInvoiceRecipients(this.$route.params.id)
           .then((response) => {
             this.isLoading = false;
             this.companyRecipients = response;
@@ -249,13 +256,9 @@ export default {
         this.newRecipient = { name: "", email: "" };
       }
     },
-    postCompanyInvoiceRecipient() {
+    saveCompanyInvoiceRecipient() {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/postCompanyInvoiceRecipient", {
-          companyProfileId: this.$route.params.id,
-          model: this.newRecipient,
-        })
+      postCompanyInvoiceRecipient(this.$route.params.id, this.newRecipient)
         .then((response) => {
           this.companyRecipients.push({
             id: response.id,
@@ -286,7 +289,7 @@ export default {
           }
         });
         if (valid) {
-          this.postCompanyInvoiceRecipient();
+          this.saveCompanyInvoiceRecipient();
         }
       });
     },
@@ -302,11 +305,7 @@ export default {
     },
     updateRequiresPermissionToSee(e) {
       this.isLoading = true;
-      this.$store
-        .dispatch("agency/updatePermissionToSeeOrders", {
-          companyId: this.company.id,
-          value: e.target.checked,
-        })
+      updatePermissionToSeeOrders(this.company.id, { requiresPermissionToSeeOrders: e.target.checked })
         .then(() => this.isLoading = false)
         .catch((error) => {
           this.showAlertError(error);

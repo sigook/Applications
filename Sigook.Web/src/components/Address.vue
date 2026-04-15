@@ -77,11 +77,13 @@
 <script lang="ts">
 import roles from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
-import billingAdminMixin from "@/mixins/billingAdminMixin";
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getCountries, getProvinces, getCities, createCity } from "@/api/locationApi";
 
 export default {
-  mixins: [billingAdminMixin],
+  setup() {
+    return { ...useBillingAdmin() };
+  },
   components: {
     ProvinceSettingsModal
   },

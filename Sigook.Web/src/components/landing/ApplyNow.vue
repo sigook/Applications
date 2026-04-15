@@ -179,14 +179,13 @@
 </template>
 
 <script lang="ts">
-import updateMixin from "@/mixins/uploadFiles";
 import multipartUploadMixin from "@/mixins/multipartUploadMixin";
 import { getCountries } from "@/api/locationApi";
 import { submitCandidate } from "@/api/websiteApi";
 
 export default {
   props: ['jobToApply'],
-  mixins: [updateMixin, multipartUploadMixin],
+  mixins: [multipartUploadMixin],
   components: {
     phoneInput: () => import("@/components/PhoneInput.vue")
   },

@@ -25,10 +25,10 @@
             <template v-slot="props">
               <span class="d-block">
                 {{ props.row.name }}
-                <b-tooltip label="Candidate" type="is-dark">
+                <b-tooltip label="Candidate" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.candidateId" icon="account-group" size="is-small"></b-icon>
                 </b-tooltip>
-                <b-tooltip label="Worker" type="is-dark">
+                <b-tooltip label="Worker" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
                 </b-tooltip>
               </span>
@@ -62,10 +62,10 @@
             </template>
             <template v-slot="props">
               <div class="capitalize" v-if="props.row.createdBy">
-                <p>{{ props.row.createdBy | emailName }}</p>
+                <p>{{ emailName(props.row.createdBy) }}</p>
               </div>
               <div v-else class="op3">Added by</div>
-              <i class="fz-2">{{ props.row.createdAt | dateMonth }}</i>
+              <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
             </template>
           </b-table-column>
           <b-table-column field="comments" label="Comments" v-slot="props">
@@ -82,7 +82,7 @@
                 @click="convertToWorker(props.row.candidateId)">
                 Convert to Worker
               </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" @click="deleteAgencyRequestApplicant(props.row)">
+              <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
                 Delete
               </b-dropdown-item>
             </b-dropdown>
@@ -92,22 +92,31 @@
     </div>
 
     <b-modal v-model="modalManageWorkers" width="800px">
-      <manage-tabs @updateApplicants="(args) => postAgencyRequestApplicant(args.model)" />
+      <manage-tabs @updateApplicants="(args) => addApplicant(args.model)" />
     </b-modal>
 
     <b-modal v-model="modalComment" width="500px">
       <edit-textarea v-if="currentItem" :title="'Comments'" subtitle="Comments" :min-length="0" :data="currentItem.comments"
-        @updateContent="(data) => updateAgencyRequestApplicant(data)"></edit-textarea>
+        @updateContent="(data) => saveApplicantComment(data)"></edit-textarea>
     </b-modal>
   </div>
 </template>
 <script lang="ts">
-import phoneMaskMixin from "@/mixins/phoneMaskMixin"
+import { emailName, dateMonth } from '@/utils/filters';
+import { phoneMask as mask } from '@/constants/phoneMask';
+import {
+  getAgencyRequestApplicant,
+  postAgencyRequestApplicant,
+  deleteAgencyRequestApplicant,
+  updateAgencyRequestApplicant,
+} from "@/api/agencyRequestApi";
+import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
 
 export default {
   props: ["request"],
   data() {
     return {
+      mask,
       isLoading: false,
       currentItem: null,
       createdAtDatesSelected: [],
@@ -124,15 +133,16 @@ export default {
       }
     };
   },
-  mixins: [phoneMaskMixin],
   components: {
     manageTabs: () => import("./ManageApplicantsModal.vue"),
     EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
   },
   methods: {
+    emailName,
+    dateMonth,
     onPageChange(params) {
       this.serverParams.pageIndex = params;
-      this.getAgencyRequestApplicant();
+      this.loadApplicants();
     },
     onSortChange(field, order) {
       switch (field) {
@@ -144,7 +154,7 @@ export default {
           break;
       }
       this.serverParams.isDescending = order !== 'asc';
-      this.getAgencyRequestApplicant();
+      this.loadApplicants();
     },
     onCellClick(row, column) {
       switch (column._props.field) {
@@ -159,7 +169,7 @@ export default {
     },
     onInputEntered(event) {
       if (event.key === 'Enter') {
-        this.getAgencyRequestApplicant();
+        this.loadApplicants();
       }
     },
     onCreatedAtCleared() {
@@ -169,11 +179,11 @@ export default {
     onCreatedAtSelected() {
       this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
       this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getAgencyRequestApplicant();
+      this.loadApplicants();
     },
-    getAgencyRequestApplicant() {
+    loadApplicants() {
       this.isLoading = true;
-      this.$store.dispatch("agency/getAgencyRequestApplicant", this.serverParams)
+      getAgencyRequestApplicant(this.serverParams)
         .then((response) => {
           this.rows = response.items.map(c => ({ ...c, actions: null }));
           this.totalItems = response.totalItems;
@@ -184,28 +194,22 @@ export default {
           this.showAlertError(error);
         });
     },
-    postAgencyRequestApplicant(model) {
+    addApplicant(model) {
       this.modalManageWorkers = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/postAgencyRequestApplicant", {
-        requestId: this.serverParams.requestId,
-        model: model,
-      }).then(() => {
+      postAgencyRequestApplicant(this.serverParams.requestId, model).then(() => {
         this.isLoading = false;
-        this.getAgencyRequestApplicant();
+        this.loadApplicants();
       }).catch((error) => {
         this.isLoading = false;
         this.showAlertError(error);
       });
     },
-    deleteAgencyRequestApplicant(item) {
+    removeApplicant(item) {
       this.isLoading = true;
-      this.$store.dispatch("agency/deleteAgencyRequestApplicant", {
-        requestId: this.requestId,
-        id: item.id,
-      }).then(() => {
+      deleteAgencyRequestApplicant(this.requestId, item.id).then(() => {
         this.isLoading = false;
-        this.getAgencyRequestApplicant();
+        this.loadApplicants();
       }).catch((error) => {
         this.isLoading = false;
         this.showAlertError(error);
@@ -215,17 +219,13 @@ export default {
       this.currentItem = item;
       this.modalComment = true;
     },
-    updateAgencyRequestApplicant(comment) {
+    saveApplicantComment(comment) {
       this.modalComment = false;
       this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyRequestApplicant", {
-        requestId: this.requestId,
-        id: this.currentItem.id,
-        model: { comments: comment },
-      })
+      updateAgencyRequestApplicant(this.requestId, this.currentItem.id, { comments: comment })
         .then(() => {
           this.isLoading = false;
-          this.getAgencyRequestApplicant();
+          this.loadApplicants();
         })
         .catch((error) => {
           this.isLoading = false;
@@ -234,10 +234,10 @@ export default {
     },
     convertToWorker(candidateId) {
       this.isLoading = true;
-      this.$store.dispatch("agency/convertToWorker", candidateId)
+      convertCandidateToWorker(candidateId)
         .then(() => {
           this.isLoading = false;
-          this.getAgencyRequestApplicant();
+          this.loadApplicants();
         })
         .catch((error) => {
           this.isLoading = false
@@ -246,7 +246,7 @@ export default {
     }
   },
   created() {
-    this.getAgencyRequestApplicant();
+    this.loadApplicants();
   }
 };
 </script>
