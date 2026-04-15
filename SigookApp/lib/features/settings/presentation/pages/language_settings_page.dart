@@ -14,7 +14,7 @@ class LanguageSettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const NavbarLogo(),
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
       ),
       body: ListView(

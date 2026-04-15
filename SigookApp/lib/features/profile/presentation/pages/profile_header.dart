@@ -62,11 +62,15 @@ class ProfileHeader extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue,
+                  color: AppTheme.secondaryRed,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                 ),
-                child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
+                child: const Icon(
+                  Icons.camera_alt,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -79,47 +83,47 @@ class ProfileHeader extends StatelessWidget {
     // content area during the collapse animation.
     return ClipRect(
       child: Opacity(
-      opacity: t,
-      child: Container(
-        width: double.infinity,
-        color: Colors.white,
-        padding: const EdgeInsets.only(bottom: 48.0),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                avatar,
-                SizedBox(height: 12.0 * t),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: nameSize,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
+        opacity: t,
+        child: Container(
+          width: double.infinity,
+          color: Colors.white,
+          padding: const EdgeInsets.only(bottom: 48.0),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  avatar,
+                  SizedBox(height: 12.0 * t),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: nameSize,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textDark,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                if (emailOpacity > 0) ...[
-                  const SizedBox(height: 4),
-                  Opacity(
-                    opacity: emailOpacity,
-                    child: Text(
-                      email,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
+                  if (emailOpacity > 0) ...[
+                    const SizedBox(height: 4),
+                    Opacity(
+                      opacity: emailOpacity,
+                      child: Text(
+                        email,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ),
     );
   }
 

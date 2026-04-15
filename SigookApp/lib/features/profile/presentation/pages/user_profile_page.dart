@@ -7,10 +7,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
-import '../../../auth/presentation/pages/logout_webview_page.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import 'profile_header.dart';
+import 'account_settings_tab.dart';
+import 'comments_tab.dart';
+import 'job_experience_tab.dart';
 import 'personal_details/personal_details_tab.dart';
 import 'preferences/preferences_tab.dart';
 
@@ -29,7 +30,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadAppVersion();
   }
 
@@ -46,43 +47,6 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     super.dispose();
   }
 
-  Future<void> _showLogoutDialog() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryRed,
-            ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout != true || !mounted) return;
-
-    final idToken = ref.read(authViewModelProvider).token?.idToken;
-    final notifier = ref.read(authViewModelProvider.notifier);
-
-    await Navigator.of(context).push(
-      MaterialPageRoute<bool>(
-        builder: (_) => LogoutWebviewPage(idToken: idToken),
-      ),
-    );
-
-    await notifier.logout();
-    if (mounted) context.go(AppRoutes.welcome);
-  }
-
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(cachedWorkerProfileProvider);
@@ -90,7 +54,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -136,8 +100,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   },
                 ),
               ),
+
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(48.0),
+                preferredSize: const Size.fromHeight(74.0),
                 child: Container(
                   color: Colors.white,
                   child: TabBar(
@@ -146,17 +111,37 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     unselectedLabelColor: Colors.grey.shade600,
                     indicatorColor: AppTheme.primaryBlue,
                     indicatorWeight: 3,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     labelStyle: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
                     unselectedLabelStyle: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
                     tabs: const [
-                      Tab(text: 'Personal Details'),
-                      Tab(text: 'Preferences'),
+                      Tab(
+                        icon: Icon(Icons.person_outline, size: 20),
+                        text: 'Personal',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.work_history_outlined, size: 20),
+                        text: 'Experience',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.tune_outlined, size: 20),
+                        text: 'Preferences',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.rate_review_outlined, size: 20),
+                        text: 'Comments',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.manage_accounts_outlined, size: 20),
+                        text: 'Account',
+                      ),
                     ],
                   ),
                 ),
@@ -167,10 +152,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             controller: _tabController,
             children: [
               const PersonalDetailsTab(),
-              PreferencesTab(
-                onLogout: _showLogoutDialog,
-                appVersion: _appVersion,
-              ),
+              const WorkExperienceTab(),
+              PreferencesTab(appVersion: _appVersion),
+              const CommentsTab(),
+              const AccountSettingsTab(),
             ],
           ),
         ),

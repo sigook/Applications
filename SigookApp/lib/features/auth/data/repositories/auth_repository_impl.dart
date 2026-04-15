@@ -81,6 +81,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, void>> deactivateAccount(String accessToken) async {
+    try {
+      if (!await networkInfo.isConnected) return Left(NetworkFailure());
+      await remote.deactivateAccount(accessToken);
+      await local.clearToken();
+      return Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> logout() async {
     try {
       final cachedToken = await local.getCachedToken();

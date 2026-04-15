@@ -57,7 +57,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       backgroundColor: AppTheme.surfaceGrey,
       endDrawer: const AppDrawer(currentRoute: AppRoutes.history),
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,

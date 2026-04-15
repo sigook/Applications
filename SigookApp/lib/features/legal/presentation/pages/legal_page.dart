@@ -28,7 +28,7 @@ class LegalPage extends StatelessWidget {
       backgroundColor: AppTheme.surfaceGrey,
       appBar: AppBar(
         title: const NavbarLogo(),
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -126,7 +126,9 @@ class _SectionTile extends StatelessWidget {
           ),
           iconColor: AppTheme.primaryBlue,
           collapsedIconColor: AppTheme.textMedium,
-          children: section.paragraphs.map((p) => _ParagraphItem(text: p)).toList(),
+          children: section.paragraphs
+              .map((p) => _ParagraphItem(text: p))
+              .toList(),
         ),
       ),
     );
@@ -141,10 +143,7 @@ class _ParagraphItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBullet = text.startsWith('• ');
     return Padding(
-      padding: EdgeInsets.only(
-        left: isBullet ? 8 : 0,
-        bottom: 8,
-      ),
+      padding: EdgeInsets.only(left: isBullet ? 8 : 0, bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
