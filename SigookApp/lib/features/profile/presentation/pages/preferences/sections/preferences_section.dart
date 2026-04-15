@@ -149,7 +149,7 @@ class _PreferencesSectionCardState
       return ProfileSectionCard(
         title: 'Preferences',
         icon: Icons.work_outline,
-        iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
+        iconGradient: const [Color(0xFFEA1D25), Color(0xFFEF5350)],
         trailing: actions,
         children: [
           ChipDisplayRow(
@@ -189,7 +189,7 @@ class _PreferencesSectionCardState
     return ProfileSectionCard(
       title: 'Preferences',
       icon: Icons.work_outline,
-      iconGradient: const [Color(0xFF2196F3), Color(0xFF64B5F6)],
+      iconGradient: const [Color(0xFFEA1D25), Color(0xFFEF5350)],
       trailing: actions,
       children: [
         ChipSelector(

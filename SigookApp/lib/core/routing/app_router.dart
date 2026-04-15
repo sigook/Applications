@@ -272,13 +272,13 @@ class AppRouter {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+                          color: const Color(0xFFEA1D25).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.construction_rounded,
                           size: 32,
-                          color: Color(0xFF1565C0),
+                          color: Color(0xFFEA1D25),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -310,7 +310,7 @@ class AppRouter {
                   child: ElevatedButton(
                     onPressed: () => context.go(AppRoutes.jobs),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
+                      backgroundColor: const Color(0xFFEA1D25),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

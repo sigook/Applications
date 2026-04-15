@@ -56,7 +56,7 @@ class _InitErrorApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: const Color(0xFFEA1D25),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),

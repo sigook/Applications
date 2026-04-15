@@ -236,7 +236,7 @@ class _JobExperienceSectionCardState
     return ProfileSectionCard(
       title: 'Work Experience',
       icon: Icons.work_history_outlined,
-      iconGradient: const [Color(0xFF1565C0), Color(0xFF42A5F5)],
+      iconGradient: const [Color(0xFFEA1D25), Color(0xFFEF5350)],
       children: [
         experiencesAsync.when(
           data: (experiences) => experiences.isEmpty

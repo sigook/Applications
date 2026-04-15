@@ -38,13 +38,13 @@ const kAboutServices = [
     icon: Icons.access_time_rounded,
     title: 'Temporary',
     description: 'Short-term placements to cover seasonal or project-based needs.',
-    color: Color(0xFF1565C0),
+    color: Color(0xFFEA1D25),
   ),
   ServiceItem(
     icon: Icons.sync_alt_rounded,
     title: 'Temp-to-Hire',
     description: 'Start temporary and transition to a permanent role.',
-    color: Color(0xFF0277BD),
+    color: Color(0xFFFF7043),
   ),
   ServiceItem(
     icon: Icons.verified_user_rounded,
