@@ -11,6 +11,7 @@ import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import 'profile_header.dart';
+import 'job_experience_tab.dart';
 import 'personal_details/personal_details_tab.dart';
 import 'preferences/preferences_tab.dart';
 
@@ -29,7 +30,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadAppVersion();
   }
 
@@ -197,6 +198,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     ),
                     tabs: const [
                       Tab(text: 'Personal Details'),
+                      Tab(text: 'Work Experience'),
                       Tab(text: 'Preferences'),
                     ],
                   ),
@@ -208,6 +210,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             controller: _tabController,
             children: [
               const PersonalDetailsTab(),
+              const WorkExperienceTab(),
               PreferencesTab(
                 onLogout: _showLogoutDialog,
                 onDeleteAccount: _showDeleteAccountDialog,
