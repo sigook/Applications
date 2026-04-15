@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../../core/providers/analytics_providers.dart';
 import '../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../providers/resume_providers.dart';
 
@@ -33,6 +34,10 @@ class ResumeViewModel extends _$ResumeViewModel {
       (_) {
         state = state.copyWith(isUploading: false, justUploaded: true);
         ref.invalidate(cachedWorkerProfileProvider);
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'profile_section_saved',
+          parameters: {'section': 'resume'},
+        );
       },
     );
   }

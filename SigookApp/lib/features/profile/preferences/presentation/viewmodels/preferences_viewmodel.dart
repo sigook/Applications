@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../../core/providers/analytics_providers.dart';
 import '../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../providers/preferences_providers.dart';
 
@@ -46,6 +47,10 @@ class PreferencesViewModel extends _$PreferencesViewModel {
           justSaved: true,
         );
         ref.invalidate(cachedWorkerProfileProvider);
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'profile_section_saved',
+          parameters: {'section': 'preferences'},
+        );
       },
     );
   }

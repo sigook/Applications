@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/analytics_service.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/get_job_details.dart';
@@ -56,6 +58,11 @@ class _JobPageState extends ConsumerState<JobPage> {
           _jobDetails = jobDetails;
           _isLoading = false;
         });
+        JobAnalyticsEvents.logJobViewed(
+          ref.read(analyticsServiceProvider),
+          jobId: widget.jobId,
+          jobTitle: jobDetails.jobTitle,
+        );
       },
     );
   }

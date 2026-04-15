@@ -443,6 +443,12 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
           }
         },
         (response) {
+          ref.read(analyticsServiceProvider).logEvent(
+            name: _clockType == ClockType.clockIn
+                ? 'clock_in_success'
+                : 'clock_out_success',
+            parameters: {'job_id': widget.jobId},
+          );
           _showSuccessSnackBar(response.workerFullName, response.finish);
           _loadClockType();
         },
