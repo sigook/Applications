@@ -10,6 +10,7 @@
 
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { getCommentsWorker } from '@/api/workerApi';
 
 export default {
@@ -23,7 +24,7 @@ export default {
     }
   },
   components: {
-    Comments: () => import("../../components/Comments.vue")
+    Comments: defineAsyncComponent(() => import("../../components/Comments.vue"))
   },
   methods: {
     updateComments() {

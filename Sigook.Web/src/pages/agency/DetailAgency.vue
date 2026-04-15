@@ -12,7 +12,7 @@
       </div>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="agency">
       <b-tab-item label="Orders" value="Orders">
         <agency-requests v-if="visitedTabs.includes('Orders')" :agency="agency" class="p-2" />
       </b-tab-item>
@@ -21,6 +21,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgency } from "@/api/agencyApi";
 import { lowercase } from '@/utils/filters';
@@ -35,7 +36,7 @@ export default {
     };
   },
   components: {
-    AgencyRequests: () => import("@/components/agency/AgencyRequests.vue")
+    AgencyRequests: defineAsyncComponent(() => import("@/components/agency/AgencyRequests.vue"))
   },
   methods: {
     lowercase,

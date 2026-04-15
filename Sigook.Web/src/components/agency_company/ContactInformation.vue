@@ -53,6 +53,7 @@
 
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['company'],
   data() {
@@ -104,8 +105,8 @@ export default {
     }
   },
   components: {
-    DialogCompanyUpdateEmail: () => import("@/components/company/DialogCompanyUpdateEmail.vue"),
-    ContactInformationForm: () => import("@/components/agency_company/ContactInformationForm.vue"),
+    DialogCompanyUpdateEmail: defineAsyncComponent(() => import("@/components/company/DialogCompanyUpdateEmail.vue")),
+    ContactInformationForm: defineAsyncComponent(() => import("@/components/agency_company/ContactInformationForm.vue")),
   },
 }
 </script>

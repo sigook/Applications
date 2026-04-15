@@ -7,7 +7,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="createdBy"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -20,7 +20,7 @@
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">
@@ -40,7 +40,7 @@
           <b-table-column field="phoneNumber" label="Phone" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+                @keypress="onInputEntered" v-cleave="mask"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.phoneNumber">
@@ -53,11 +53,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -102,6 +102,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { emailName, dateMonth } from '@/utils/filters';
 import { phoneMask as mask } from '@/constants/phoneMask';
@@ -135,8 +136,8 @@ export default {
     };
   },
   components: {
-    manageTabs: () => import("./ManageApplicantsModal.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
+    manageTabs: defineAsyncComponent(() => import("./ManageApplicantsModal.vue")),
+    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue"))
   },
   methods: {
     emailName,
@@ -158,7 +159,7 @@ export default {
       this.loadApplicants();
     },
     onCellClick(row, column) {
-      switch (column._props.field) {
+      switch (column.field) {
         case 'comments':
         case 'actions':
           break;

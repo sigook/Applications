@@ -19,9 +19,9 @@
         </div>
       </div>
 
-      <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="agency">
         <b-tab-item :label="'Business Information'" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
         <b-tab-item :label="'Billing Information'" value="BillingInformation">
@@ -29,7 +29,7 @@
         </b-tab-item>
 
         <b-tab-item :label="'Contact Information'" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
         <b-tab-item :label="'Account Security'" value="AccountSecurity">
@@ -49,6 +49,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
@@ -67,13 +68,13 @@ export default {
     };
   },
   components: {
-    BusinessInformation: () => import("@/components/agency/ProfileBusiness.vue"),
-    BillingInformation: () => import("@/components/agency/ProfileBilling.vue"),
-    ContactInformation: () => import("@/components/agency/ProfileContact.vue"),
-    AccountSecurity: () => import("@/components/agency/ProfileAccountInformation.vue"),
-    UploadImage: () => import("@/components/PreviewImage.vue"),
-    UserNotification: () => import("../../components/UserNotification.vue"),
-    Users: () => import("../../components/agency/AgencyPersonnel.vue")
+    BusinessInformation: defineAsyncComponent(() => import("@/components/agency/ProfileBusiness.vue")),
+    BillingInformation: defineAsyncComponent(() => import("@/components/agency/ProfileBilling.vue")),
+    ContactInformation: defineAsyncComponent(() => import("@/components/agency/ProfileContact.vue")),
+    AccountSecurity: defineAsyncComponent(() => import("@/components/agency/ProfileAccountInformation.vue")),
+    UploadImage: defineAsyncComponent(() => import("@/components/PreviewImage.vue")),
+    UserNotification: defineAsyncComponent(() => import("../../components/UserNotification.vue")),
+    Users: defineAsyncComponent(() => import("../../components/agency/AgencyPersonnel.vue"))
   },
   async created() {
     if (this.$route.query && this.$route.query.tab) {

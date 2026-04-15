@@ -146,6 +146,7 @@
 
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { getJobs } from "@/api/websiteApi";
 import VueScrollTo from 'vue-scrollto';
 
@@ -160,10 +161,10 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu.vue"),
-    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
-    JobSearch: () => import("@/components/landing/JobSearch.vue"),
-    ApplyNow: () => import("@/components/landing/ApplyNow.vue"),
+    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue")),
+    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
+    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue")),
+    ApplyNow: defineAsyncComponent(() => import("@/components/landing/ApplyNow.vue")),
   },
   async created() {
     this.isLoading = true;

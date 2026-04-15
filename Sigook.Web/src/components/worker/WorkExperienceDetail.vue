@@ -28,6 +28,7 @@
     </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { deleteWorkerWorkExperience } from '@/api/workerApi';
@@ -65,7 +66,7 @@ export default {
         }
     },
     components: {
-        workExperienceForm: () => import("./WorkExperienceForm.vue")
+        workExperienceForm: defineAsyncComponent(() => import("./WorkExperienceForm.vue"))
     }
 }
 </script>

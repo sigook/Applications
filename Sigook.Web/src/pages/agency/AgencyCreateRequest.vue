@@ -15,7 +15,7 @@
           <b-field>
             <b-checkbox v-model="directHiring">Direct Hiring?</b-checkbox>
             <b-checkbox v-model="request.isAsap" :disabled="isUpdate">Is Asap?</b-checkbox>
-            <b-checkbox v-model="sameBillingTitle" @input="onSameBillingChecked">Job title same for billing
+            <b-checkbox v-model="sameBillingTitle" @update:modelValue="onSameBillingChecked">Job title same for billing
               title?</b-checkbox>
           </b-field>
         </div>
@@ -238,6 +238,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
@@ -256,9 +257,9 @@ export default {
     return { ...useBillingAdmin() };
   },
   components: {
-    PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
-    RequestPositionForm: () => import("@/components/agency_company/RequestJobPositionForm.vue"),
-    LocationForm: () => import("@/components/agency_company/LocationForm.vue")
+    PositionForm: defineAsyncComponent(() => import("@/components/agency_company/JobPositionForm.vue")),
+    RequestPositionForm: defineAsyncComponent(() => import("@/components/agency_company/RequestJobPositionForm.vue")),
+    LocationForm: defineAsyncComponent(() => import("@/components/agency_company/LocationForm.vue"))
   },
   name: "AgencyCreateRequest",
   data() {

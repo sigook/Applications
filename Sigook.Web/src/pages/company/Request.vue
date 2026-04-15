@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="request">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
       <b-tab-item label="Detail" value="Detail">
         <detail v-if="visitedTabs.includes('Detail')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
@@ -74,6 +74,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { isDirectHiring } from '@/utils/directHiring';
@@ -94,12 +95,12 @@ export default {
     };
   },
   components: {
-    CancelList: () => import("../../components/company/CompanyCancelList.vue"),
-    RequestAnotherWorker: () => import("../../components/company/DialogRequestWorker.vue"),
-    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
-    Detail: () => import("../../components/company_request/CompanyRequestDetail.vue"),
-    Workers: () => import("../../components/company_request/CompanyRequestWorkers.vue"),
-    PunchCard: () => import("../../components/company_request/CompanyRequestPunchCard.vue")
+    CancelList: defineAsyncComponent(() => import("../../components/company/CompanyCancelList.vue")),
+    RequestAnotherWorker: defineAsyncComponent(() => import("../../components/company/DialogRequestWorker.vue")),
+    FloatingMenu: defineAsyncComponent(() => import("../../components/FloatingMenuDots.vue")),
+    Detail: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestDetail.vue")),
+    Workers: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestWorkers.vue")),
+    PunchCard: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestPunchCard.vue"))
   },
   beforeRouteLeave: confirmationGuard,
   methods: {

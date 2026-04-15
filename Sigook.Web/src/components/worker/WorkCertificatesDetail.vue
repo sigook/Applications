@@ -52,6 +52,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
@@ -113,7 +114,7 @@ export default {
     }
   },
   components: {
-    certificateEdit: () => import("./WorkCertificatesForm.vue")
+    certificateEdit: defineAsyncComponent(() => import("./WorkCertificatesForm.vue"))
   }
 }
 </script>

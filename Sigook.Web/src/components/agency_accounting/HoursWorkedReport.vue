@@ -6,7 +6,7 @@
         <b-field label="Dates (From - To)" :type="errors.has('dates') ? 'is-danger' : ''"
           :message="errors.has('dates') ? errors.first('dates') : ''">
           <b-datepicker v-model="datesSelected" v-validate="'required'" name="dates" range
-            @input="onDatesSelected" />
+            @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
       <div class="col-12 col-md-6 col-lg-4 col-padding">
@@ -36,7 +36,7 @@
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </export>
         <b-table :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
-          :current-page.sync="pageIndex" pagination-rounded>
+          v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
           </template>
@@ -96,6 +96,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { currency } from '@/utils/filters';
@@ -104,7 +105,7 @@ import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyRe
 
 export default {
   components: {
-    Export: () => import("@/components/Export.vue")
+    Export: defineAsyncComponent(() => import("@/components/Export.vue"))
   },
   data() {
     return {

@@ -41,6 +41,7 @@
     </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { emailName, dateFromNow } from '@/utils/filters';
 import {
@@ -65,7 +66,7 @@ export default {
         }
     },
     components: {
-        ModalNotes: () => import("../notes/ModalNotes.vue")
+        ModalNotes: defineAsyncComponent(() => import("../notes/ModalNotes.vue"))
     },
     methods: {
         emailName,

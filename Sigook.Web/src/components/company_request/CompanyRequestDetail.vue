@@ -72,14 +72,15 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { dateFromNow, currency } from '@/utils/filters';
 import { DurationTermLabels } from "@/constants/enums";
 
 export default {
   props: ["request"],
   components: {
-    Location: () => import("../request/RequestLocation.vue"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
+    Location: defineAsyncComponent(() => import("../request/RequestLocation.vue")),
+    AgencyShift: defineAsyncComponent(() => import("../agency_request/AgencyShiftDetail.vue")),
   },
   methods: {
     dateFromNow,

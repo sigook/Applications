@@ -50,13 +50,13 @@
       <div class="item">
         <span class="fw-700">Is Asap</span>
         <p>
-          <b-checkbox v-model="localRequest.isAsap" @input="onToggleIsAsap()"></b-checkbox>
+          <b-checkbox v-model="localRequest.isAsap" @update:modelValue="onToggleIsAsap()"></b-checkbox>
         </p>
       </div>
       <div class="item">
         <span class="fw-700">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @input="onTogglePunchCardVisibility()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
         </p>
       </div>
       <div class="item">
@@ -121,6 +121,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { currency, dateMonth } from '@/utils/filters';
 import {
@@ -158,8 +159,8 @@ export default {
     }
   },
   components: {
-    Skills: () => import("../agency_request/AgencyRequestSkills.vue"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue")
+    Skills: defineAsyncComponent(() => import("../agency_request/AgencyRequestSkills.vue")),
+    AgencyShift: defineAsyncComponent(() => import("../agency_request/AgencyShiftDetail.vue"))
   },
   methods: {
     currency,

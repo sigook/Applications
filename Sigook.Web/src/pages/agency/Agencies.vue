@@ -17,7 +17,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -25,7 +25,7 @@
           <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.fullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/agency-detail/' + props.row.id }">
@@ -44,7 +44,7 @@
           <b-table-column field="email" label="Email" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.email" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">{{ props.row.email }}</span>
@@ -53,7 +53,7 @@
           <b-table-column field="agencyType" label="Type" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="$agencyTypes" open-on-focus
-                field="label" icon="label" placeholder="Select Type" @input="onAgencyTypeSelected" append-to-body>
+                field="label" icon="label" placeholder="Select Type" @update:modelValue="onAgencyTypeSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">

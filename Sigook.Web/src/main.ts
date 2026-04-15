@@ -1,51 +1,49 @@
-import Vue from 'vue';
+import { createApp, defineAsyncComponent } from 'vue';
 import App from './App.vue';
 import router from './router';
 import pinia from './stores';
 import VueScrollTo from 'vue-scrollto';
-import validator from './lang/validator';
-import './varaibles';
-import Buefy from 'buefy'
-import { VueEditor } from "vue2-editor";
-import { VueRecaptcha } from 'vue-recaptcha';
+import { registerAppGlobals } from './varaibles';
+import Buefy from '@ntohq/buefy-next';
+import { QuillEditor } from '@vueup/vue-quill';
 import VueLazyload from 'vue-lazyload';
 import errorImage from '@/assets/images/default/error.svg';
 import loadingImage from '@/assets/images/default/loading.svg';
+import { registerValidationRules } from '@/lang/validator';
+import { setupBuefyProgrammatic } from '@/utils/buefyProgrammatic';
 
 // import the styles
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.min.js'
-import 'jquery/dist/jquery.min.js'
-import 'buefy/dist/buefy.css';
-
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.min.js';
+import 'jquery/dist/jquery.min.js';
+import '@ntohq/buefy-next/dist/buefy.css';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 import statusDirective from './directives/status-directive';
 import cleaveDirective from '@/directives/cleave-directive';
 
+registerValidationRules();
 
+const app = createApp(App);
 
-Vue.directive('status', statusDirective);
-Vue.directive('cleave', cleaveDirective);
+registerAppGlobals(app);
 
+app.directive('status', statusDirective);
+app.directive('cleave', cleaveDirective);
 
-Vue.component("defaultImage", () => import("./components/DefaultImage.vue"));
-Vue.component("vue-editor", VueEditor);
-Vue.component('vue-recaptcha', VueRecaptcha)
+app.component('defaultImage', defineAsyncComponent(() => import('./components/DefaultImage.vue')));
+app.component('QuillEditor', QuillEditor);
 
-Vue.config.productionTip = false;
-Vue.use(VueScrollTo);
-Vue.use(Buefy);
-Vue.use(VueLazyload, {
+app.use(router);
+app.use(pinia);
+app.use(Buefy);
+setupBuefyProgrammatic(app);
+app.use(VueScrollTo);
+app.use(VueLazyload, {
   preLoad: 1.3,
   error: errorImage,
   loading: loadingImage,
-  attempt: 1
+  attempt: 1,
 });
 
-new Vue({
-  render: h => h(App),
-  router,
-  pinia,
-  validator
-} as any).$mount('#app');
+app.mount('#app');

@@ -14,7 +14,7 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedCertFile }">
             <b-upload v-model="selectedCertFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleCertFileSelected" class="file-label" rounded>
+              @update:modelValue="handleCertFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
                 <span class="file-label">{{ selectedCertFile ? selectedCertFile.name : 'Add file' }}</span>

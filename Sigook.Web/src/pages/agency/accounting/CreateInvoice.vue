@@ -61,7 +61,7 @@
           <b-field label="Dates (From - To) (optional)"
             :message="'Optional: Dates to filter timesheets. Leave empty to include all timesheets from the beginning.'">
             <b-datepicker v-model="dateSelected" placeholder="Select start date for filtering" range
-              @input="onDatesSelected" />
+              @update:modelValue="onDatesSelected" />
           </b-field>
         </div>
       </div>
@@ -93,7 +93,7 @@
                     :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
                     <b-numberinput v-model="item.quantity" :min="0.01" :max="1000000" :step="0.01" :controls="false"
                       :name="'quantity' + i" v-validate="'required|min_value:0.01'"
-                      @input="updateTotalAdditionalItems(item)" />
+                      @update:modelValue="updateTotalAdditionalItems(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
@@ -101,7 +101,7 @@
                     :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
                     <b-numberinput v-model="item.unitPrice" :min="0.01" :max="1000000" :step="0.01" :controls="false"
                       :name="'unitPrice' + i" v-validate="'required|min_value:0.01'"
-                      @input="updateTotalAdditionalItems(item)" />
+                      @update:modelValue="updateTotalAdditionalItems(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
@@ -149,7 +149,7 @@
                     :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
                     <b-numberinput v-model="discount.quantity" :min="0.01" :max="1000000" :step="0.01" :controls="false"
                       :name="'quantity' + i" v-validate="'required|min_value:0.01'"
-                      @input="updateTotalDiscounts(discount)" />
+                      @update:modelValue="updateTotalDiscounts(discount)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
@@ -157,7 +157,7 @@
                     :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
                     <b-numberinput v-model="discount.unitPrice" :min="0.01" :max="1000000" :step="0.01"
                       :controls="false" :name="'unitPrice' + i" v-validate="'required|min_value:0.01'"
-                      @input="updateTotalDiscounts(discount)" />
+                      @update:modelValue="updateTotalDiscounts(discount)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
@@ -202,6 +202,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from "@/api/agencyCompanyApi";
@@ -210,7 +211,7 @@ import { previewAgencyInvoice, createAgencyInvoice } from "@/api/agencyInvoiceAp
 export default {
   name: "CreateInvoice",
   components: {
-    PreviewInvoice: () => import("@/components/agency_accounting/PreviewInvoice.vue")
+    PreviewInvoice: defineAsyncComponent(() => import("@/components/agency_accounting/PreviewInvoice.vue"))
   },
   data() {
     return {

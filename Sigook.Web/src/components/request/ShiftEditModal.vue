@@ -12,6 +12,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { fetchRequestShift } from "@/api/requestApi";
 import { updateAgencyRequestShift } from "@/api/agencyRequestApi";
@@ -24,7 +25,7 @@ export default {
     }
   },
   components: {
-    ShiftForm: () => import("../../components/request/ShiftsForm.vue")
+    ShiftForm: defineAsyncComponent(() => import("../../components/request/ShiftsForm.vue"))
   },
   created() {
     this.getRequestShift();

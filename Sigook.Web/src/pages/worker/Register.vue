@@ -59,7 +59,7 @@
               </b-field>
             </div>
           </div>
-          <address-component ref="addressComponent" :model.sync="worker.location" @isLoading="(value) => isLoading = value"
+          <address-component ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -105,12 +105,12 @@
               <b-field :label="'Available days'">
                 <div class="container-flex">
                   <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-                    <b-checkbox v-model="allDaysSelected" @input="changeDaysSelected">
+                    <b-checkbox v-model="allDaysSelected" @update:modelValue="changeDaysSelected">
                       All Days
                     </b-checkbox>
                   </div>
                   <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-for="day in days" v-bind:key="day.id">
-                    <b-checkbox v-model="worker.availabilityDays" :native-value="day" @input="changeAllDays">
+                    <b-checkbox v-model="worker.availabilityDays" :native-value="day" @update:modelValue="changeAllDays">
                       {{ day.value }}
                     </b-checkbox>
                   </div>
@@ -175,7 +175,7 @@
                     'upload-disabled': worker.identificationType1File && worker.identificationType2File
                   }">
                     <b-upload v-model="selectedDocumentFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                      @input="handleIdentificationUpload"
+                      @update:modelValue="handleIdentificationUpload"
                       :disabled="worker.identificationType1File && worker.identificationType2File" :loading="isLoading"
                       class="file-label" rounded>
                       <span class="file-cta">
@@ -302,7 +302,7 @@
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedLicenseFile }">
                     <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                      @input="handleLicenseUpload" :loading="isLoading" class="file-label" rounded>
+                      @update:modelValue="handleLicenseUpload" :loading="isLoading" class="file-label" rounded>
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
@@ -373,7 +373,7 @@
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedCertificateFile }">
                     <b-upload v-model="selectedCertificateFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                      @input="handleCertificateUpload" :loading="isLoading" class="file-label" rounded>
+                      @update:modelValue="handleCertificateUpload" :loading="isLoading" class="file-label" rounded>
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
@@ -429,7 +429,7 @@
                     'upload-disabled': worker.resume
                   }">
                     <b-upload v-model="selectedResumeFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                      @input="handleResumeUpload" :disabled="worker.resume ? true : false" :loading="isLoading"
+                      @update:modelValue="handleResumeUpload" :disabled="worker.resume ? true : false" :loading="isLoading"
                       class="file-label" rounded>
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
@@ -476,7 +476,7 @@
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedOtherDocFile }">
                     <b-upload v-model="selectedOtherDocFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                      @input="handleOtherDocumentUpload" :loading="isLoading" class="file-label" rounded>
+                      @update:modelValue="handleOtherDocumentUpload" :loading="isLoading" class="file-label" rounded>
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
                         <span class="file-label">
@@ -611,6 +611,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
@@ -626,9 +627,9 @@ export default {
     return { ...useCreateWorker() };
   },
   components: {
-    uploadImage: () => import("../../components/PreviewImage.vue"),
-    addressComponent: () => import("../../components/Address.vue"),
-    phoneInput: () => import("../../components/PhoneInput.vue")
+    uploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue")),
+    addressComponent: defineAsyncComponent(() => import("../../components/Address.vue")),
+    phoneInput: defineAsyncComponent(() => import("../../components/PhoneInput.vue"))
   },
   data() {
     return {

@@ -46,6 +46,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
@@ -109,7 +110,7 @@ export default {
     this.loadContactPersons();
   },
   components: {
-    ContactForm: () => import("./ContactPersonForm.vue")
+    ContactForm: defineAsyncComponent(() => import("./ContactPersonForm.vue"))
   }
 }
 </script>

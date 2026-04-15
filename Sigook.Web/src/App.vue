@@ -26,10 +26,11 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
-import Oidc from "oidc-client";
+import { UserManager } from "oidc-client-ts";
 import axios from "axios";
 
 export default {
@@ -38,14 +39,14 @@ export default {
     return {
       isMobile: false,
       isANewVersion: false,
-      userManager: new Oidc.UserManager({} as any),
+      userManager: new UserManager({} as any),
       isLogged: false
     };
   },
   components: {
-    NavBarLogged: () => import("@/components/NavBarLogged.vue"),
-    Header: () => import("@/components/landing/Header.vue"),
-    Footer: () => import("@/components/landing/Footer.vue")
+    NavBarLogged: defineAsyncComponent(() => import("@/components/NavBarLogged.vue")),
+    Header: defineAsyncComponent(() => import("@/components/landing/Header.vue")),
+    Footer: defineAsyncComponent(() => import("@/components/landing/Footer.vue"))
   },
   computed: {
     ...mapStores(useAppStore, useSecurityStore),

@@ -2,7 +2,7 @@
   <div class="unsubscribe-container">
     <b-loading v-model="isLoading"></b-loading>
     <h3 class="text-center">Would you like to unsubscribe from these emails?</h3>
-    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage">
+    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage"></p>
     <div>
       <button v-on:click="redirectToHome" type="button" class="background-btn create-btn btn-radius">Cancel
       </button>

@@ -18,13 +18,13 @@
         </div>
         <div class="form-100">
           <input type="text" class="input-border input-block" placeholder="Description"
-            v-model="newDocument.description" name="documentDescription" v-validate="'required|max:40'" />
-          <span v-show="errors.has('documentDescription')" class="help is-danger no-margin">
-            {{ errors.first("documentDescription") }}
+            v-model="description" name="documentDescription" />
+          <span v-show="errors.description" class="help is-danger no-margin">
+            {{ errors.description }}
           </span>
         </div>
         <button type="button" class="sm-btn fz-1 background-btn orange-button" :disabled="isDisabled"
-          @click="submitDocument()">
+          @click="submitDocument">
           Add
         </button>
       </div>
@@ -47,6 +47,9 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
+import { useForm } from 'vee-validate';
+import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { usePubSub } from "@/composables/usePubSub";
@@ -54,24 +57,29 @@ import { deleteFile } from "@/utils/fileUpload";
 import { getCandidateDocuments, addCandidateDocument, deleteCandidateDocument } from "@/api/agencyCandidateApi";
 
 export default {
-  setup() {
-    return { ...usePubSub() };
-  },
   props: ["candidateId"],
+  components: {
+    UploadFile: defineAsyncComponent(() => import("../../components/UploadFiles.vue")),
+  },
+  setup() {
+    const schema = yup.object({
+      description: yup.string().required('Description is required').max(40),
+    });
+    const { handleSubmit, errors, defineField, resetForm } = useForm({
+      validationSchema: schema,
+    });
+    const [description] = defineField('description');
+    return { ...usePubSub(), description, errors, handleSubmit, resetForm };
+  },
   data() {
     return {
-      showInput: true,
       isDisabled: false,
       isLoading: false,
-      documents: null,
+      documents: null as any,
       newDocument: {
-        fileName: "",
-        description: ""
-      }
+        fileName: "" as string | null,
+      },
     };
-  },
-  components: {
-    UploadFile: () => import("../../components/UploadFiles.vue")
   },
   created() {
     this.loadDocuments();
@@ -81,50 +89,51 @@ export default {
     loadDocuments() {
       this.isLoading = true;
       getCandidateDocuments(this.candidateId)
-        .then((response) => {
+        .then((response: any) => {
           this.isLoading = false;
           this.documents = response;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           this.isLoading = false;
           showAlertError(error);
         });
     },
-    addDocument(file) {
+    addDocument(file: string) {
       this.newDocument.fileName = file;
     },
     deleteDocument() {
       this.isLoading = true;
-      deleteFile(this.newDocument.fileName)
+      deleteFile(this.newDocument.fileName as string)
         .then(() => { this.newDocument.fileName = null; })
         .finally(() => { this.isLoading = false; });
     },
     cleanInput() {
-      this.newDocument = {
-        fileName: "",
-        description: ""
-      };
+      this.newDocument.fileName = "";
+      (this as any).resetForm();
     },
     submitDocument() {
-      this.$validator.validateAll().then((result) => {
-        if (result && this.newDocument.fileName) {
-          this.isLoading = true;
-          addCandidateDocument(this.candidateId, this.newDocument)
-            .then(() => {
-              this.isLoading = false;
-              this.loadDocuments();
-              this.cleanInput();
-            })
-            .catch((error) => {
-              this.isLoading = false;
-              showAlertError(error);
-            });
+      (this as any).handleSubmit((values: any) => {
+        if (!this.newDocument.fileName) {
+          showAlertError("Please make sure all required fields are filled out correctly");
           return;
         }
-        showAlertError("Please make sure all required fields are filled out correctly");
-      });
+        this.isLoading = true;
+        addCandidateDocument(this.candidateId, {
+          fileName: this.newDocument.fileName,
+          description: values.description,
+        })
+          .then(() => {
+            this.isLoading = false;
+            this.loadDocuments();
+            this.cleanInput();
+          })
+          .catch((error: any) => {
+            this.isLoading = false;
+            showAlertError(error);
+          });
+      })();
     },
-    onDeleteDocument(id, index) {
+    onDeleteDocument(id: number, index: number) {
       this.isLoading = true;
       deleteCandidateDocument(this.candidateId, id)
         .then(() => {
@@ -132,11 +141,11 @@ export default {
           showAlertSuccess("Deleted");
           this.documents.items.splice(index, 1);
         })
-        .catch((error) => {
+        .catch((error: any) => {
           this.isLoading = false;
           showAlertError(error);
         });
-    }
-  }
+    },
+  },
 };
 </script>

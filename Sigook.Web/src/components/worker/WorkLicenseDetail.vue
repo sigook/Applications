@@ -58,6 +58,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename, dateMonth } from '@/utils/filters';
 import { deleteWorkerLicenses } from '@/api/workerApi';
@@ -109,7 +110,7 @@ export default {
     }
   },
   components: {
-    licenseEdit: () => import("./WorkLicenseForm.vue")
+    licenseEdit: defineAsyncComponent(() => import("./WorkLicenseForm.vue"))
   }
 };
 </script>

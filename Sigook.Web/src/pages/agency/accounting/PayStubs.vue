@@ -27,7 +27,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -35,7 +35,7 @@
           <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.payStubNumber" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -47,7 +47,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -57,7 +57,7 @@
           <b-table-column field="workerFullName" label="Worker" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.workerFullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -67,7 +67,7 @@
           <b-table-column field="numberId" label="Number ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -113,6 +113,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
@@ -127,9 +128,9 @@ import {
 
 export default {
   components: {
-    Export: () => import("@/components/Export.vue"),
-    GeneratePayStubs: () => import("@/components/agency_accounting/GeneratePayStubs.vue"),
-    SkipPayrollNumber: () => import("@/components/agency_accounting/SkipPayrollNumber.vue")
+    Export: defineAsyncComponent(() => import("@/components/Export.vue")),
+    GeneratePayStubs: defineAsyncComponent(() => import("@/components/agency_accounting/GeneratePayStubs.vue")),
+    SkipPayrollNumber: defineAsyncComponent(() => import("@/components/agency_accounting/SkipPayrollNumber.vue"))
   },
   data() {
     return {

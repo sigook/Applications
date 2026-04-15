@@ -209,6 +209,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import bannerTestimonials1 from '@/assets/images/home_carousel/banner_testimonials_1.png';
 import bannerTestimonials2 from '@/assets/images/home_carousel/banner_testimonials_2.png';
 import bannerTestimonials3 from '@/assets/images/home_carousel/banner_testimonials_3.png';
@@ -219,8 +220,8 @@ export default {
     return { bannerTestimonials1, bannerTestimonials2, bannerTestimonials3, appMobile };
   },
   components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
-    JobSearch: () => import("@/components/landing/JobSearch.vue")
+    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
+    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue"))
   },
 }
 

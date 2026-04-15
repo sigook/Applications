@@ -1,36 +1,32 @@
 <template>
   <div class="p-3 white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
-    <form @submit.prevent="validateForm">
+    <form @submit.prevent="submit">
       <b-steps animated mobile-mode="compact">
         <b-step-item step="1" label="Basic">
           <div class="container-flex">
             <div class="col-12">
-              <b-field label="Full Name" :type="errors.has('full name') ? 'is-danger' : ''"
-                :message="errors.has('full name') ? errors.first('full name') : ''">
-                <b-input type="text" v-model="candidate.name" name="full name" v-validate="'required|max:60|min:2'" />
+              <b-field label="Full Name" :type="errors.name ? 'is-danger' : ''" :message="errors.name">
+                <b-input type="text" v-model="name" />
               </b-field>
             </div>
             <div class="col-12">
-              <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
-                :message="errors.has('email') ? errors.first('email') : ''">
-                <b-input type="email" v-model="candidate.email" name="email"
-                  v-validate="'required|email|max:50|min:6'" />
+              <b-field label="Email" :type="errors.email ? 'is-danger' : ''" :message="errors.email">
+                <b-input type="email" v-model="email" />
               </b-field>
             </div>
             <div class="col-12">
-              <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="phoneNumber"
+              <phone-input model="Phone" :required="true" :defaultValue="phoneNumber"
                 @formattedPhone="(phone) => phoneNumber = phone"></phone-input>
             </div>
             <div class="col-12">
-              <b-field :type="errors.has('address') ? 'is-danger' : ''" label="Address"
-                :message="errors.has('address') ? errors.first('address') : ''">
-                <b-input type="text" v-model="candidate.address" name="address" v-validate="'required|max:100|min:2'" />
+              <b-field label="Address" :type="errors.address ? 'is-danger' : ''" :message="errors.address">
+                <b-input type="text" v-model="address" />
               </b-field>
             </div>
             <div class="col-12 mt-5">
               <b-field class="file is-primary" :class="{ 'has-name': !!file }">
-                <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @input="uploadResume" rounded>
+                <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @update:modelValue="uploadResume" rounded>
                   <span class="file-cta">
                     <b-icon class="file-icon" icon="upload"></b-icon>
                     <span class="file-label">{{ file ? file.name : "Click to upload" }}</span>
@@ -42,7 +38,7 @@
         </b-step-item>
         <b-step-item step="2" label="Additionals">
           <div class="col-12">
-            <b-field label="Skills (Press enter to add)" :type="errors.has('skills') ? 'is-danger' : ''">
+            <b-field label="Skills (Press enter to add)">
               <b-taginput v-model="candidate.skills" :maxlength="20" open-on-focus icon="label" placeholder="Add Skills" allow-new>
               </b-taginput>
             </b-field>
@@ -78,84 +74,102 @@
             </b-field>
           </div>
           <div class="col-12 mt-5">
-            <b-button type="is-primary" native-type="submit">{{ 'Create' }}</b-button>
+            <b-button type="is-primary" native-type="submit">Create</b-button>
           </div>
         </b-step-item>
       </b-steps>
     </form>
   </div>
 </template>
+
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
+import { useForm } from 'vee-validate';
+import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { uploadFile } from "@/utils/fileUpload";
 import { getGenders } from "@/api/catalogApi";
 import { residencyList, sourceList } from "@/constants/catalog";
 import { createAgencyCandidate } from "@/api/agencyCandidateApi";
+import { phoneSchema } from "@/utils/validation";
 
 export default {
+  components: {
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
+  },
+  setup() {
+    const schema = yup.object({
+      name: yup.string().required('Full name is required').min(2).max(60),
+      email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
+      address: yup.string().required('Address is required').min(2).max(100),
+      Phone: phoneSchema(true),
+    });
+
+    const { handleSubmit, errors, defineField } = useForm({
+      validationSchema: schema,
+    });
+
+    const [name] = defineField('name');
+    const [email] = defineField('email');
+    const [address] = defineField('address');
+
+    return { name, email, address, errors, handleSubmit };
+  },
   data() {
     return {
       isLoading: false,
-      showMoreInformation: false,
-      genders: [],
-      skills: [],
-      skill: "",
+      genders: [] as Array<{ id: number; value: string }>,
       phoneNumber: "",
       candidate: {
-        name: null,
-        email: null,
-        phoneNumbers: [],
-        skills: [],
-        source: null,
-        gender: null,
+        phoneNumbers: [] as Array<{ phoneNumber: string }>,
+        skills: [] as string[],
+        source: null as string | null,
+        gender: null as { id: number; value: string } | null,
         hasVehicle: false,
-        address: null,
-        postalCode: null,
-        residencyStatus: null
+        residencyStatus: null as string | null,
+        fileName: null as string | null,
       },
-      file: null
-    }
-  },
-  components: {
-    phoneInput: () => import("@/components/PhoneInput.vue")
+      file: null as File | null,
+    };
   },
   methods: {
-    async validateForm() {
-      const mainFormValid = await this.$validator.validateAll();
-      const phoneValid = await this.$refs.phoneComponent.validatePhone();
-      if (mainFormValid && phoneValid) {
-        this.submitCandidate();
-        return;
-      } else {
-        showAlertError("Please make sure all required fields are filled out correctly");
-      }
+    submit() {
+      (this as any).handleSubmit((values: any) => this.submitCandidate(values))();
     },
-    submitCandidate() {
+    submitCandidate(values: any) {
       this.isLoading = true;
-      this.candidate.skills = this.candidate.skills.map(s => ({ skill: s }));
-      if (this.phoneNumber != null) {
-        this.candidate.phoneNumbers = [{ phoneNumber: this.phoneNumber }]
-      }
-      createAgencyCandidate(this.candidate)
+      const payload: any = {
+        name: values.name,
+        email: values.email,
+        address: values.address,
+        skills: this.candidate.skills.map((s: string) => ({ skill: s })),
+        phoneNumbers: this.phoneNumber ? [{ phoneNumber: this.phoneNumber }] : [],
+        source: this.candidate.source,
+        gender: this.candidate.gender,
+        hasVehicle: this.candidate.hasVehicle,
+        residencyStatus: this.candidate.residencyStatus,
+        fileName: this.candidate.fileName,
+      };
+      createAgencyCandidate(payload)
         .then(() => {
           this.isLoading = false;
-          showAlertSuccess("Created")
+          showAlertSuccess("Created");
           this.$emit('onClose', true);
         })
-        .catch(error => {
+        .catch((error: any) => {
           this.isLoading = false;
-          showAlertError(error)
-        })
+          showAlertError(error);
+        });
     },
-    async uploadResume(file) {
+    async uploadResume(file: File) {
       this.isLoading = true;
       const response = await uploadFile(file, 'document', 'Resume_');
       this.candidate.fileName = response;
       this.isLoading = false;
-    }
+    },
   },
   async created() {
-    this.genders = await getGenders()
+    this.genders = await getGenders();
   },
   computed: {
     residencyList() {
@@ -163,7 +177,7 @@ export default {
     },
     sourceList() {
       return sourceList;
-    }
-  }
-}
+    },
+  },
+};
 </script>

@@ -42,6 +42,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
@@ -123,7 +124,7 @@ export default {
     clearInterval(this.getTimeFromNow)
   },
   components: {
-    DataEntryTerms: () => import("../../components/DataEntryTerms.vue")
+    DataEntryTerms: defineAsyncComponent(() => import("../../components/DataEntryTerms.vue"))
   },
   computed: {
     ...mapStores(useAppStore),

@@ -136,6 +136,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
@@ -172,8 +173,8 @@ export default {
   },
   beforeRouteLeave: confirmationGuard,
   components: {
-    UploadImage: () => import("@/components/PreviewImage.vue"),
-    phoneInput: () => import("@/components/PhoneInput.vue")
+    UploadImage: defineAsyncComponent(() => import("@/components/PreviewImage.vue")),
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   async created() {
     const company = this.$route.meta.company;

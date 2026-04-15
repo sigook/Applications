@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { getLandingJobPositions } from "@/api/websiteApi";
 
 const positionImages = import.meta.glob('@/assets/images/positions/**', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -87,7 +88,7 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu.vue")
+    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue"))
   },
   async created() {
     if (this.$route.params.position) {

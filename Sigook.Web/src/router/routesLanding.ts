@@ -1,4 +1,4 @@
-import { RouteConfig } from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 import Home from "@/pages/landing/Home.vue";
 
 // Lazy loading para páginas secundarias de landing
@@ -13,7 +13,7 @@ const Atas = () => import("@/pages/landing/Atas.vue");
 const TermsAndConditions = () => import("@/pages/landing/TermsAndConditions.vue");
 const PrivacyPolicy = () => import("@/pages/landing/PrivacyPolicy.vue");
 
-const routesLanding: RouteConfig[] = [
+const routesLanding: RouteRecordRaw[] = [
     {
         path: "/home",
         name: "home",

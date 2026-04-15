@@ -20,6 +20,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 export default {
@@ -29,11 +30,11 @@ export default {
     };
   },
   components: {
-    SubcontractorsReport: () => import("@/components/agency_accounting/SubcontractorsReport.vue"),
-    HoursWorkedReport: () => import("@/components/agency_accounting/HoursWorkedReport.vue"),
-    T4Report: () => import("@/components/agency_accounting/T4.vue"),
-    CraPayrollReport: () => import("@/components/agency_accounting/CRAPayroll.vue"),
-    PaymentReport: () => import("@/components/agency_accounting/PaymentReport.vue")
+    SubcontractorsReport: defineAsyncComponent(() => import("@/components/agency_accounting/SubcontractorsReport.vue")),
+    HoursWorkedReport: defineAsyncComponent(() => import("@/components/agency_accounting/HoursWorkedReport.vue")),
+    T4Report: defineAsyncComponent(() => import("@/components/agency_accounting/T4.vue")),
+    CraPayrollReport: defineAsyncComponent(() => import("@/components/agency_accounting/CRAPayroll.vue")),
+    PaymentReport: defineAsyncComponent(() => import("@/components/agency_accounting/PaymentReport.vue"))
   },
   created() {
     if (this.isUsaAgency) {

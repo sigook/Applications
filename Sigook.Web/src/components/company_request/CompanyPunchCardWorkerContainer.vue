@@ -50,14 +50,13 @@
         </div>
         <div class="mt-2" v-else>
           <div class="container-flex">
-            <b-field :type="errors.has('item' + slotProps.indexDay) ? 'is-danger' : ''"
-              :message="errors.has('item' + slotProps.indexDay) ? errors.first('item' + slotProps.indexDay) : ''">
+            <b-field :type="itemErrors[slotProps.index] ? 'is-danger' : ''"
+              :message="itemErrors[slotProps.index] || ''">
               <b-numberinput v-model="slotProps.item.totalHoursApproved" placeholder="Hours"
-                :disabled="!!slotProps.item.id" step="0.01" :name="'item' + slotProps.indexDay"
-                v-validate="{ 'max_value': maximumDailyHours, 'min_value': 0, decimal: 2 }" title="Approved hours"
-                :controls="false">
+                :disabled="!!slotProps.item.id" step="0.01" :name="'item' + slotProps.index"
+                title="Approved hours" :controls="false">
               </b-numberinput>
-              <b-button type="is-ghost" @click="validatePost(slotProps.item)" v-if="!slotProps.item.id"
+              <b-button type="is-ghost" @click="validatePost(slotProps.item, slotProps.index)" v-if="!slotProps.item.id"
                 icon-right="check"></b-button>
             </b-field>
           </div>
@@ -73,7 +72,7 @@
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
       <time-sheet-modal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
-        :editable-day.sync="editableDay" @updateData="updateCell" />
+        v-model:editable-day="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
@@ -95,6 +94,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
@@ -125,7 +125,8 @@ export default {
       clockInTime: emptyTime,
       maxClockInTime: new Date(),
       showModalPunchCard: false,
-      showDetailPunchCard: false
+      showDetailPunchCard: false,
+      itemErrors: {} as Record<string, string>,
     }
   },
   computed: {
@@ -190,14 +191,24 @@ export default {
           showAlertError(error)
         })
     },
-    validatePost(model) {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.reportWorkerTimSheet(model);
-          return;
-        }
+    validatePost(model, index) {
+      const key = String(index);
+      const raw = model.totalHoursApproved;
+      const value = Number(raw);
+      if (raw == null || raw === '' || isNaN(value) || value < 0 || value > this.maximumDailyHours) {
+        this.itemErrors = { ...this.itemErrors, [key]: `Hours must be between 0 and ${this.maximumDailyHours}` };
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+        return;
+      }
+      if (!/^\d+(\.\d{1,2})?$/.test(String(raw))) {
+        this.itemErrors = { ...this.itemErrors, [key]: 'Max 2 decimal places' };
+        showAlertError('Please make sure all required fields are filled out correctly');
+        return;
+      }
+      const next = { ...this.itemErrors };
+      delete next[key];
+      this.itemErrors = next;
+      this.reportWorkerTimSheet(model);
     },
     reportWorkerTimSheet(item) {
       this.isLoading = true;
@@ -303,9 +314,9 @@ export default {
     }
   },
   components: {
-    Calendar: () => import("../calendar/CalendarPunchCard.vue"),
-    TimeSheetModal: () => import("../../components/company_request/CompanyRequestTimeSheetModal.vue"),
-    TimeSheetDetail: () => import("../../components/company_request/CompanyRequestTimeSheetDetail.vue")
+    Calendar: defineAsyncComponent(() => import("../calendar/CalendarPunchCard.vue")),
+    TimeSheetModal: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestTimeSheetModal.vue")),
+    TimeSheetDetail: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestTimeSheetDetail.vue"))
   }
 }
 </script>

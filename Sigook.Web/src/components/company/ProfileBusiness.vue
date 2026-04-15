@@ -55,6 +55,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getIndustries } from "@/api/catalogApi";
 import { updateProfile } from "@/api/companyApi";
@@ -78,7 +79,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../../components/PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("../../components/PhoneInput.vue"))
   },
   methods: {
     selectIndustry(option) {

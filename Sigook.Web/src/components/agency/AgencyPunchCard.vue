@@ -15,17 +15,17 @@
     <transition name="fadeHeight">
       <div class="container-flex" v-if="punchCard">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('newDate') ? 'is-danger' : ''" label="Date"
-            :message="errors.has('newDate') ? errors.first('newDate') : ''">
+          <b-field :type="formErrors.newDate ? 'is-danger' : ''" label="Date"
+            :message="formErrors.newDate">
             <b-datepicker v-model="newDate.date" indicators="bars" append-to-body>
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :label="'Daily hours'" :type="errors.has('newDateHour') ? 'is-danger' : ''"
-            :message="errors.has('newDateHour') ? errors.first('newDateHour') : ''">
-            <b-timepicker placeholder="Select a time..." v-model="newDate.hours" name="newDateHour"
-              v-validate="'required'" :disabled="!newDate.date" hour-format="24">
+          <b-field label="Daily hours" :type="formErrors.newDateHour ? 'is-danger' : ''"
+            :message="formErrors.newDateHour">
+            <b-timepicker placeholder="Select a time..." v-model="newDate.hours"
+              :disabled="!newDate.date" hour-format="24">
             </b-timepicker>
           </b-field>
         </div>
@@ -36,79 +36,69 @@
         </div>
         <div class="container-flex" v-if="showOptions">
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field :label="'Missing Hours'">
+            <b-field label="Missing Hours">
               <b-timepicker v-model="newDate.missingHours" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field :label="'Missing Hours' + ' ' + 'Over time'">
+            <b-field label="Missing Hours Over time">
               <b-timepicker v-model="newDate.missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Missing Worker Rate" :type="errors.has('deductionsW') ? 'is-danger' : ''"
-              :message="errors.has('deductionsW') ? errors.first('deductionsW') : ''">
-              <b-numberinput v-model="newDate.missingRateWorker" step="0.01" name="deductionsW"
-                v-validate="'max_value:100|min_value:0'" controls-alignment="right">
+            <b-field label="Missing Worker Rate" :type="formErrors.deductionsW ? 'is-danger' : ''"
+              :message="formErrors.deductionsW">
+              <b-numberinput v-model="newDate.missingRateWorker" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Missing Agency Rate" :type="errors.has('deductionsC') ? 'is-danger' : ''"
-              :message="errors.has('deductionsC') ? errors.first('deductionsC') : ''">
-              <b-numberinput v-model="newDate.missingRateAgency" step="0.01" name="deductionsC"
-                v-validate="'max_value:100|min_value:0'" controls-alignment="right">
+            <b-field label="Missing Agency Rate" :type="formErrors.deductionsC ? 'is-danger' : ''"
+              :message="formErrors.deductionsC">
+              <b-numberinput v-model="newDate.missingRateAgency" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Deductions" :type="errors.has('deductions') ? 'is-danger' : ''"
-              :message="errors.has('deductions') ? errors.first('deductions') : ''">
-              <b-numberinput v-model="newDate.deductionsOthers" step="0.01" name="deductions"
-                v-validate="'max_value:1000|min_value:0'" controls-alignment="right">
+            <b-field label="Deductions" :type="formErrors.deductions ? 'is-danger' : ''"
+              :message="formErrors.deductions">
+              <b-numberinput v-model="newDate.deductionsOthers" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Deductions Description" :type="errors.has('deductionsDes') ? 'is-danger' : ''"
-              :message="errors.has('deductionsDes') ? errors.first('deductionsDes') : ''">
-              <b-input v-model="newDate.deductionsOthersDescription" type="text" name="deductionsDes"
-                v-validate="'max:1000'">
-              </b-input>
+            <b-field label="Deductions Description" :type="formErrors.deductionsDes ? 'is-danger' : ''"
+              :message="formErrors.deductionsDes">
+              <b-input v-model="newDate.deductionsOthersDescription" type="text"></b-input>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Bonus or others" :type="errors.has('bonus') ? 'is-danger' : ''"
-              :message="errors.has('bonus') ? errors.first('bonus') : ''">
-              <b-numberinput v-model="newDate.bonusOrOthers" step="0.01" name="bonus"
-                v-validate="'max_value:1000|min_value:0'" controls-alignment="right">
+            <b-field label="Bonus or others" :type="formErrors.bonus ? 'is-danger' : ''"
+              :message="formErrors.bonus">
+              <b-numberinput v-model="newDate.bonusOrOthers" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Bonus or others Description" :type="errors.has('bonusDes') ? 'is-danger' : ''"
-              :message="errors.has('bonusDes') ? errors.first('bonusDes') : ''">
-              <b-input v-model="newDate.bonusOrOthersDescription" type="text" name="bonusDes" v-validate="'max:1000'">
-              </b-input>
+            <b-field label="Bonus or others Description" :type="formErrors.bonusDes ? 'is-danger' : ''"
+              :message="formErrors.bonusDes">
+              <b-input v-model="newDate.bonusOrOthersDescription" type="text"></b-input>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Reimbursements" :type="errors.has('reimbursements') ? 'is-danger' : ''"
-              :message="errors.has('reimbursements') ? errors.first('reimbursements') : ''">
-              <b-numberinput v-model="newDate.reimbursements" step="0.01" name="reimbursements"
-                v-validate="'max_value:1000|min_value:0'" controls-alignment="right">
+            <b-field label="Reimbursements" :type="formErrors.reimbursements ? 'is-danger' : ''"
+              :message="formErrors.reimbursements">
+              <b-numberinput v-model="newDate.reimbursements" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Reimbursements Description"
-              :type="errors.has('reimbursementsDescription') ? 'is-danger' : ''"
-              :message="errors.has('reimbursementsDescription') ? errors.first('reimbursementsDescription') : ''">
-              <b-input v-model="newDate.reimbursementsDescription" type="text" name="reimbursementsDescription"
-                v-validate="'max:1000'">
-              </b-input>
+              :type="formErrors.reimbursementsDescription ? 'is-danger' : ''"
+              :message="formErrors.reimbursementsDescription">
+              <b-input v-model="newDate.reimbursementsDescription" type="text"></b-input>
             </b-field>
           </div>
         </div>
@@ -141,10 +131,36 @@
   </div>
 </template>
 <script lang="ts">
+import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
 import { date, time } from '@/utils/filters';
+
+const optionalNumber = (max: number) =>
+  yup
+    .number()
+    .transform((v, o) => (o === '' || o === null || o === undefined ? undefined : v))
+    .min(0, 'Minimum is 0')
+    .max(max, `Maximum is ${max}`)
+    .nullable()
+    .notRequired();
+
+const optionalText = (max: number) =>
+  yup.string().max(max, `Max ${max} characters`).nullable().notRequired();
+
+const schema = yup.object({
+  newDate: yup.mixed().required('Date is required'),
+  newDateHour: yup.mixed().required('Daily hours is required'),
+  deductionsW: optionalNumber(100),
+  deductionsC: optionalNumber(100),
+  deductions: optionalNumber(1000),
+  deductionsDes: optionalText(1000),
+  bonus: optionalNumber(1000),
+  bonusDes: optionalText(1000),
+  reimbursements: optionalNumber(1000),
+  reimbursementsDescription: optionalText(1000),
+});
 
 export default {
   props: ["workerId", "workerName", "requestId"],
@@ -158,13 +174,14 @@ export default {
       newDate: {
         hours: emptyTime,
         missingHours: emptyTime,
-        missingHoursOvertime: emptyTime
-      },
+        missingHoursOvertime: emptyTime,
+      } as any,
       size: 30,
       currentPage: 1,
-      maximumMissing: maximumMissing,
-      rows: []
-    }
+      maximumMissing,
+      rows: [] as any[],
+      formErrors: {} as Record<string, string>,
+    };
   },
   methods: {
     date,
@@ -172,38 +189,68 @@ export default {
     showTimeSheet() {
       this.isLoading = true;
       getAgencyWorkerTimeSheet(this.requestId, this.workerId)
-        .then(response => {
+        .then((response: any) => {
           this.isLoading = false;
           this.rows = response;
         })
-        .catch(error => {
+        .catch((error: any) => {
           this.isLoading = false;
-          showAlertError(error)
+          showAlertError(error);
         });
       this.punchCard = false;
     },
     reportWorkerTimSheet() {
+      const values = {
+        newDate: this.newDate.date,
+        newDateHour: this.newDate.hours,
+        deductionsW: this.newDate.missingRateWorker,
+        deductionsC: this.newDate.missingRateAgency,
+        deductions: this.newDate.deductionsOthers,
+        deductionsDes: this.newDate.deductionsOthersDescription,
+        bonus: this.newDate.bonusOrOthers,
+        bonusDes: this.newDate.bonusOrOthersDescription,
+        reimbursements: this.newDate.reimbursements,
+        reimbursementsDescription: this.newDate.reimbursementsDescription,
+      };
+      schema
+        .validate(values, { abortEarly: false })
+        .then(() => {
+          this.formErrors = {};
+          this.submitTimeSheet();
+        })
+        .catch((err: any) => {
+          const next: Record<string, string> = {};
+          if (err.inner) {
+            err.inner.forEach((e: any) => {
+              if (e.path && !next[e.path]) next[e.path] = e.message;
+            });
+          }
+          this.formErrors = next;
+          showAlertError('Please make sure all required fields are filled out correctly');
+        });
+    },
+    submitTimeSheet() {
       this.isLoading = true;
-      const date = dayjs(this.newDate.date).format('YYYY-MM-DD');
+      const dateStr = dayjs(this.newDate.date).format('YYYY-MM-DD');
       const hours = dayjs(this.newDate.hours).format('HH:mm:ss');
       const payload = {
         ...this.newDate,
         hours,
-        timeIn: dayjs(date + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
+        timeIn: dayjs(dateStr + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
         missingHours: dayjs(this.newDate.missingHours).format('HH:mm:ss'),
-        missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss')
-      }
+        missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss'),
+      };
       postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
         .then(() => {
           this.isLoading = false;
           showAlertSuccess('Created');
           this.$emit('created');
         })
-        .catch(error => {
+        .catch((error: any) => {
           this.isLoading = false;
           showAlertError(error);
-        })
-    }
-  }
-}
+        });
+    },
+  },
+};
 </script>

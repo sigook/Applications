@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from "@/utils/filters";
 import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
@@ -82,7 +83,7 @@ export default {
   components: {
     documentsForm: () =>
       import("../../components/agency_company/DocumentsForm.vue"),
-    Pagination: () => import("../../components/Paginator.vue")
+    Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue"))
   },
   methods: {
     filename,

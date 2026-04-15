@@ -85,6 +85,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 export default {
@@ -106,7 +107,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue"))
   },
   methods: {
     validateForm() {

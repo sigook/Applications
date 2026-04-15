@@ -28,12 +28,12 @@
       </floating-menu>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="company">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="company">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :company.sync="company" class="p-2" />
+        <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Settings" value="Settings" v-if="isPayrollManager">
-        <settings v-if="visitedTabs.includes('Settings')" :company.sync="company" class="p-2" />
+        <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
         <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />
@@ -60,6 +60,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
@@ -81,15 +82,15 @@ export default {
     };
   },
   components: {
-    Detail: () => import("@/components/agency_company/CompanyDetailTab.vue"),
-    Settings: () => import("@/components/agency_company/CompanySettings.vue"),
-    Users: () => import("@/components/agency_company/UserList.vue"),
-    ContactPerson: () => import("@/components/agency_company/ContactPersonList.vue"),
-    JobPosition: () => import("@/components/agency_company/JobPositionList.vue"),
-    Requests: () => import("@/components/agency_company/CompanyRequests.vue"),
-    Workers: () => import("@/components/agency_company/CompanyWorkers.vue"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
-    CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo.vue")
+    Detail: defineAsyncComponent(() => import("@/components/agency_company/CompanyDetailTab.vue")),
+    Settings: defineAsyncComponent(() => import("@/components/agency_company/CompanySettings.vue")),
+    Users: defineAsyncComponent(() => import("@/components/agency_company/UserList.vue")),
+    ContactPerson: defineAsyncComponent(() => import("@/components/agency_company/ContactPersonList.vue")),
+    JobPosition: defineAsyncComponent(() => import("@/components/agency_company/JobPositionList.vue")),
+    Requests: defineAsyncComponent(() => import("@/components/agency_company/CompanyRequests.vue")),
+    Workers: defineAsyncComponent(() => import("@/components/agency_company/CompanyWorkers.vue")),
+    FloatingMenu: defineAsyncComponent(() => import("@/components/FloatingMenuDots.vue")),
+    CompanyUpdateLogo: defineAsyncComponent(() => import("@/components/agency_company/CompanyUpdateLogo.vue"))
   },
   methods: {
     lowercase,

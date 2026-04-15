@@ -6,12 +6,12 @@
         <b-field :label="'Available days'">
           <div class="container-flex">
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-checkbox v-model="allDaysSelected" @input="changeDaysSelected">
+              <b-checkbox v-model="allDaysSelected" @update:modelValue="changeDaysSelected">
                 All Days
               </b-checkbox>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-for="day in days" v-bind:key="day.id">
-              <b-checkbox v-model="worker.availabilityDays" :native-value="day" @input="changeAllDays">
+              <b-checkbox v-model="worker.availabilityDays" :native-value="day" @update:modelValue="changeAllDays">
                 {{ day.value }}
               </b-checkbox>
             </div>

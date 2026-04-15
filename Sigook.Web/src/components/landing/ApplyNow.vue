@@ -179,6 +179,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { getCountries } from "@/api/locationApi";
@@ -187,7 +188,7 @@ import { submitCandidate } from "@/api/websiteApi";
 export default {
   props: ['jobToApply'],
     components: {
-    phoneInput: () => import("@/components/PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   data() {
     return {

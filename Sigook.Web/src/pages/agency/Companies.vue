@@ -30,7 +30,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="updatedAt"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -39,7 +39,7 @@
           <b-table-column field="businessName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.businessInfo" placeholder="Search..." :icon="isMobile ? '' : 'magnify'"
-                size="is-small" @keypress.native="onInputEntered"></b-input>
+                size="is-small" @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/agency-companies/company/' + props.row.id }">
@@ -58,7 +58,7 @@
           <b-table-column field="email" label="Contact Info" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.contactInfo" placeholder="Search..." :icon="isMobile ? '' : 'magnify'"
-                size="is-small" @keypress.native="onInputEntered"></b-input>
+                size="is-small" @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.contactName || 'No contact name' }}
@@ -74,7 +74,7 @@
           <b-table-column field="industry" label="Industry" :visible="!isMobile" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.industry" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <b-tag size="is-medium" rounded>
@@ -86,7 +86,7 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Sales Rep"
-                  v-model="serverParams.salesRepresentative" @keypress.native="onInputEntered"></b-input>
+                  v-model="serverParams.salesRepresentative" @keypress="onInputEntered"></b-input>
               </b-field>
             </template>
             <template v-slot="props">
@@ -97,11 +97,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -113,11 +113,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input placeholder="Updated By" size="is-small" icon="magnify" v-model="serverParams.updatedBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker placeholder="Updated At" size="is-small" :mobile-native="false"
                   :icon-right="updatedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="updatedAtDatesSelected" icon-right-clickable @icon-right-click="onUpdatedAtCleared"
-                  @input="onUpdatedAtSelected" append-to-body>
+                  @update:modelValue="onUpdatedAtSelected" append-to-body>
                 </b-datepicker>
               </b-field>
             </template>
@@ -150,7 +150,7 @@
           <b-table-column field="companyStatus" label="Status" :searchable="!isMobile">
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -171,6 +171,7 @@
 </template>
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 import { useAppStore } from '@/stores/app';
@@ -186,9 +187,9 @@ export default {
     return { ...useBillingAdmin() };
   },
   components: {
-    Export: () => import("@/components/Export.vue"),
-    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
-    BulkData: () => import("@/components/agency/BulkData.vue"),
+    Export: defineAsyncComponent(() => import("@/components/Export.vue")),
+    ModalNotes: defineAsyncComponent(() => import("@/components/notes/ModalNotes.vue")),
+    BulkData: defineAsyncComponent(() => import("@/components/agency/BulkData.vue")),
   },
   data() {
     return {
@@ -282,7 +283,7 @@ export default {
       this.loadCompanies();
     },
     onCellClick(row, column) {
-      switch (column._props.field) {
+      switch (column.field) {
         case 'notesCount':
         case 'email':
           break;

@@ -2,10 +2,10 @@
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <b-checkbox class="col-2" v-model="localCompany.requiresPermissionToSeeOrders" @input="updateRequiresPermissionToSee">
+      <b-checkbox class="col-2" v-model="localCompany.requiresPermissionToSeeOrders" @update:modelValue="updateRequiresPermissionToSee">
         Requires permission to see orders?
       </b-checkbox>
-      <b-checkbox class="col-2" v-model="localCompany.paidHolidays" @input="updatePaidHolidays">
+      <b-checkbox class="col-2" v-model="localCompany.paidHolidays" @update:modelValue="updatePaidHolidays">
         Paid Holidays?
       </b-checkbox>
       <span class="line-gray"></span>

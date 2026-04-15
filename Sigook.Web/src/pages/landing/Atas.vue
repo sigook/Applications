@@ -145,6 +145,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { phoneMask as mask } from '@/constants/phoneMask';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
@@ -164,7 +165,7 @@ export default {
     }
   },
   components: {
-    SubMenu: () => import("@/components/landing/SubMenu.vue")
+    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue"))
   },
   created() {
     this.solutionType = this.$route.query.solutionType;

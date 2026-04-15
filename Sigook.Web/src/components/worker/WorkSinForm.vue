@@ -20,7 +20,7 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedSinFile }">
             <b-upload v-model="selectedSinFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleSinFileSelected" class="file-label" rounded>
+              @update:modelValue="handleSinFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
                 <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : 'Add file' }}</span>

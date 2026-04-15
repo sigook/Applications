@@ -33,7 +33,7 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedFile1 }">
             <b-upload v-model="selectedFile1" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleFile1Selected" class="file-label" rounded>
+              @update:modelValue="handleFile1Selected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
                 <span class="file-label">{{ selectedFile1 ? selectedFile1.name : 'Add file' }}</span>
@@ -73,7 +73,7 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedFile2 }">
             <b-upload v-model="selectedFile2" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleFile2Selected" class="file-label" rounded>
+              @update:modelValue="handleFile2Selected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
                 <span class="file-label">{{ selectedFile2 ? selectedFile2.name : 'Add file' }}</span>

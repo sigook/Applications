@@ -171,6 +171,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { confirmationGuard } from '@/utils/confirmationGuard';
@@ -184,7 +185,7 @@ import { getLocations, getCompanyJobPositions, createRequest } from "@/api/compa
 
 export default {
   components: {
-    LocationForm: () => import("@/components/agency_company/LocationForm.vue")
+    LocationForm: defineAsyncComponent(() => import("@/components/agency_company/LocationForm.vue"))
   },
   data() {
     let breakDate = new Date();

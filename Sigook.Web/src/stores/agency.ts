@@ -1,5 +1,5 @@
-import Vue from 'vue';
 import { defineStore } from 'pinia';
+import { appGlobals } from '@/varaibles';
 import type {
   AgencyProfile,
   AgencyListFilter,
@@ -47,7 +47,7 @@ export const useAgencyStore = defineStore('agency', {
         usaAgency: data.locations.some(
           (l) => (l as unknown as { isUSA?: boolean }).isUSA === true
         ),
-        masterAgency: data.agencyType === (Vue.prototype as { $agencyTypeMaster?: number }).$agencyTypeMaster,
+        masterAgency: data.agencyType === appGlobals.$agencyTypeMaster,
       };
     },
     setPersonnelAgencies(data: AgencyProfile[]) {

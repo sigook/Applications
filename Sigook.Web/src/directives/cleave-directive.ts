@@ -1,23 +1,19 @@
 import Cleave from 'cleave.js';
+import type { Directive } from 'vue';
 
-export default {
-  name: 'cleave',
-  bind(el: HTMLElement, binding: any) {
-    let input: any;
-    if (el.tagName.toLowerCase() === 'input') {
-      input = el;
-    } else {
-      input = el.querySelector('input');
+const cleaveDirective: Directive = {
+  mounted(el: HTMLElement, binding: any) {
+    const input: any = el.tagName.toLowerCase() === 'input' ? el : el.querySelector('input');
+    if (input) {
+      input._vCleave = new Cleave(input, binding.value);
     }
-    input._vCleave = new Cleave(input, binding.value);
   },
-  unbind(el: HTMLElement) {
-    let input: any;
-    if (el.tagName.toLowerCase() === 'input') {
-      input = el;
-    } else {
-      input = el.querySelector('input');
+  unmounted(el: HTMLElement) {
+    const input: any = el.tagName.toLowerCase() === 'input' ? el : el.querySelector('input');
+    if (input && input._vCleave) {
+      input._vCleave.destroy();
     }
-    input._vCleave.destroy();
-  }
-}
+  },
+};
+
+export default cleaveDirective;

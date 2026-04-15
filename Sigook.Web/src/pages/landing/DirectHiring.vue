@@ -134,11 +134,12 @@
 
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import appMobileBusinesses from '@/assets/images/app_mobile_businesses.png';
 
 export default {
   components: {
-    JobSearch: () => import("@/components/landing/JobSearch.vue")
+    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue"))
   },
   data() {
     return { appMobileBusinesses };

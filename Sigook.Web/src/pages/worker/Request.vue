@@ -68,6 +68,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useWorkerStore } from '@/stores/worker';
 import { showAlertError } from "@/utils/toast";
@@ -82,9 +83,9 @@ export default {
     };
   },
   components: {
-    RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
-    Location: () => import("../../components/request/RequestLocation.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
+    RequestDetail: defineAsyncComponent(() => import("../../components/worker/RequestDetail.vue")),
+    Location: defineAsyncComponent(() => import("../../components/request/RequestLocation.vue")),
+    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue"))
   },
   methods: {
     getWorkerHistoryRequest() {

@@ -25,7 +25,7 @@
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
           <b-field label="Dates of work" :type="errors.has('datesOfWork') ? 'is-danger' : ''"
             :message="errors.has('datesOfWork') ? errors.first('datesOfWork') : ''">
-            <b-datepicker v-model="datesSelected" name="datesOfWork" range @input="onDatesSelected"
+            <b-datepicker v-model="datesSelected" name="datesOfWork" range @update:modelValue="onDatesSelected"
               v-validate="'required'" />
           </b-field>
         </div>
@@ -56,7 +56,7 @@
                   <b-field label="Type" expanded :type="errors.has('type' + i) ? 'is-danger' : ''"
                     :message="errors.has('type' + i) ? errors.first('type' + i) : ''">
                     <b-select v-model="item.type" :name="'type' + i" v-validate="'required'" expanded
-                      placeholder="Select a type" @input="onItemTypeChanged(item)">
+                      placeholder="Select a type" @update:modelValue="onItemTypeChanged(item)">
                       <option v-for="opt in getAvailableTypesForItem(item)" :key="opt.type" :value="opt.type"
                         :disabled="opt.disabled">
                         {{ opt.label }}{{ opt.disabled ? ' (auto-calculated)' : '' }}
@@ -73,14 +73,14 @@
                   <b-field label="Quantity" expanded :type="errors.has('quantity' + i) ? 'is-danger' : ''"
                     :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
                     <b-numberinput v-model="item.quantity" :min="1" :max="1000000" :step="0.01" :controls="false"
-                      :name="'quantity' + i" v-validate="'required|min_value:0.01'" @input="updateItem(item)" />
+                      :name="'quantity' + i" v-validate="'required|min_value:0.01'" @update:modelValue="updateItem(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
                   <b-field label="Price" expanded :type="errors.has('unitPrice' + i) ? 'is-danger' : ''"
                     :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
                     <b-numberinput v-model="item.unitPrice" :min="0.01" :max="1000000" :step="0.01" :controls="false"
-                      :name="'unitPrice' + i" v-validate="'required|min_value:0.01'" @input="updateItem(item)" />
+                      :name="'unitPrice' + i" v-validate="'required|min_value:0.01'" @update:modelValue="updateItem(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-2 col-lg-2 col-padding">

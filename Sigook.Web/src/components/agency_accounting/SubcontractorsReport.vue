@@ -2,7 +2,7 @@
   <div>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
       backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
+      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>

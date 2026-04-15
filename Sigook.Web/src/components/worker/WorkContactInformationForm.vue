@@ -2,7 +2,7 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <location-address :model.sync="worker.location" @isLoading="(value) => isLoading = value" />
+      <location-address v-model:model="worker.location" @isLoading="(value) => isLoading = value" />
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <phone-input :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
           @formattedPhone="(phone) => worker.mobileNumber = phone" />
@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { createWorkerContactInformation } from '@/api/workerApi';
 
@@ -31,8 +32,8 @@ export default {
     }
   },
   components: {
-    LocationAddress: () => import("@/components/Address.vue"),
-    phoneInput: () => import("@/components/PhoneInput.vue")
+    LocationAddress: defineAsyncComponent(() => import("@/components/Address.vue")),
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   methods: {
     validateAll() {

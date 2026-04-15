@@ -68,6 +68,7 @@
   </section>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { deleteWorkerOtherDocuments } from '@/api/workerApi';
@@ -104,7 +105,7 @@ export default {
     }
   },
   components: {
-    documentsForm: () => import("./WorkerOtherDocumentsForm.vue")
+    documentsForm: defineAsyncComponent(() => import("./WorkerOtherDocumentsForm.vue"))
   }
 };
 </script>

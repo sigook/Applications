@@ -104,9 +104,10 @@
 
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 export default {
   components: {
-    JobSearch: () => import("@/components/landing/JobSearch.vue")
+    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue"))
   }
 }
 

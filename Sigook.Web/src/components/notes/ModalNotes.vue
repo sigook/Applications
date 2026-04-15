@@ -50,6 +50,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { emailName, dateFromNow, dateMonth } from '@/utils/filters';
 export default {
@@ -67,8 +68,8 @@ export default {
     }
   },
   components: {
-    NoteForm: () => import("./NoteForm.vue"),
-    Pagination: () => import("../../components/Paginator.vue")
+    NoteForm: defineAsyncComponent(() => import("./NoteForm.vue")),
+    Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue"))
   },
   mounted() {
     this.getNotes(this.currentPage);

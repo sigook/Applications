@@ -51,6 +51,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useSecurityStore } from '@/stores/security';
 import { showAlertError } from "@/utils/toast";
@@ -74,8 +75,8 @@ export default {
   },
   props: ['userId', 'data', "sizeComments", "onlyView"],
   components: {
-    DialogComment: () => import("./DialogWorkerComment.vue"),
-    Pagination: () => import("./Paginator.vue")
+    DialogComment: defineAsyncComponent(() => import("./DialogWorkerComment.vue")),
+    Pagination: defineAsyncComponent(() => import("./Paginator.vue"))
   },
   computed: {
     ...mapStores(useSecurityStore),

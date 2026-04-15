@@ -4,11 +4,12 @@
         <button v-if="displayShift" @click.stop="getRequestShift" class="no-border" :class="{'up': showDetail}">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ml-2">
         </button>
-        <shift-detail v-if="showDetail" :shift="shift" :is-loading.sync="isLoading" />
+        <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />
     </div>
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { fetchRequestShift } from "@/api/requestApi";
 export default {
@@ -21,7 +22,7 @@ export default {
         }
     },
     components: {
-        ShiftDetail: () => import("../request/ShiftDetail.vue")
+        ShiftDetail: defineAsyncComponent(() => import("../request/ShiftDetail.vue"))
     },
     methods: {
         getRequestShift(){

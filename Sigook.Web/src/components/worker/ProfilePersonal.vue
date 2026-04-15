@@ -21,6 +21,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['worker'],
   data() {
@@ -29,14 +30,14 @@ export default {
     }
   },
   components: {
-    basicInformation: () => import("./WorkBasicInformationDetail.vue"),
-    socialInsurance: () => import("./WorkSinDetail.vue"),
-    documents: () => import("./WorkDocumentsDetail.vue"),
-    contactInformation: () => import('./WorkContactInformationDetail.vue'),
-    resume: () => import('./WorkResumeDetail.vue'),
-    licenses: () => import('./WorkLicenseDetail.vue'),
-    certificates: () => import('./WorkCertificatesDetail.vue'),
-    otherDocuments: () => import('./WorkerOtherDocumentsDetail.vue')
+    basicInformation: defineAsyncComponent(() => import("./WorkBasicInformationDetail.vue")),
+    socialInsurance: defineAsyncComponent(() => import("./WorkSinDetail.vue")),
+    documents: defineAsyncComponent(() => import("./WorkDocumentsDetail.vue")),
+    contactInformation: defineAsyncComponent(() => import('./WorkContactInformationDetail.vue')),
+    resume: defineAsyncComponent(() => import('./WorkResumeDetail.vue')),
+    licenses: defineAsyncComponent(() => import('./WorkLicenseDetail.vue')),
+    certificates: defineAsyncComponent(() => import('./WorkCertificatesDetail.vue')),
+    otherDocuments: defineAsyncComponent(() => import('./WorkerOtherDocumentsDetail.vue'))
   },
   methods: {
     updateProfile() {

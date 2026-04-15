@@ -15,6 +15,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['worker'],
   data() {
@@ -29,7 +30,7 @@ export default {
     }
   },
   components: {
-    availabilityTimesEdit: () => import("./WorkAvailabilityTimesForm.vue")
+    availabilityTimesEdit: defineAsyncComponent(() => import("./WorkAvailabilityTimesForm.vue"))
   }
 }
 </script>

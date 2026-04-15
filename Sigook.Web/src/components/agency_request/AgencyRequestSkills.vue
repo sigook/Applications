@@ -11,6 +11,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgencyRequestSkill, postAgencyRequestSkill, deleteAgencyRequestSkill } from "@/api/agencyRequestApi";
 
@@ -23,7 +24,7 @@ export default {
     }
   },
   components: {
-    SkillsForm: () => import("../FormSkillAdd.vue")
+    SkillsForm: defineAsyncComponent(() => import("../FormSkillAdd.vue"))
   },
   methods: {
     loadSkills() {

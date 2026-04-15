@@ -1,4 +1,4 @@
-import { ToastProgrammatic as Toast, DialogProgrammatic as Dialog } from 'buefy';
+import { getToast, getDialog } from '@/utils/buefyProgrammatic';
 
 export async function getErrorMessage(errorMessage: any): Promise<string> {
   if (
@@ -36,7 +36,7 @@ export async function getErrorMessage(errorMessage: any): Promise<string> {
 export async function showAlertError(errorMessage: any): Promise<void> {
   const message = await getErrorMessage(errorMessage);
   if (message == null || message === "") return;
-  Toast.open({
+  getToast().open({
     message,
     type: 'is-danger',
     duration: 10000,
@@ -45,7 +45,7 @@ export async function showAlertError(errorMessage: any): Promise<void> {
 }
 
 export function showAlertSuccess(successMessage: string): void {
-  Toast.open({
+  getToast().open({
     message: successMessage,
     type: 'is-success',
     duration: 4000,
@@ -55,7 +55,7 @@ export function showAlertSuccess(successMessage: string): void {
 
 export function showAlertConfirm(title: string, message?: string, confirmBtnText?: string): Promise<boolean> {
   return new Promise((resolve) => {
-    Dialog.confirm({
+    getDialog().confirm({
       title,
       message: message || '',
       confirmText: confirmBtnText || 'Ok',

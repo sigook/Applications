@@ -24,7 +24,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -34,8 +34,8 @@
             <template v-slot:searchable>
               <b-field grouped>
                 <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" expanded
-                  @keypress.native="onInputEntered"></b-input>
-                <b-checkbox v-model="serverParams.resumeOnly" @input="onInputEntered" size="is-small">
+                  @keypress="onInputEntered"></b-input>
+                <b-checkbox v-model="serverParams.resumeOnly" @update:modelValue="onInputEntered" size="is-small">
                   <b-icon icon="file-download" size="is-small"></b-icon>
                 </b-checkbox>
               </b-field>
@@ -56,7 +56,7 @@
           <b-table-column field="phoneNumbers" label="Phone" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+                @keypress="onInputEntered" v-cleave="mask"></b-input>
             </template>
             <template v-slot="props">
               <b-taginput size="is-small" v-model="props.row.phoneNumbers" v-cleave="mask" placeholder="Add Phone"
@@ -68,7 +68,7 @@
           <b-table-column field="address" label="Address" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.address" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <p class="capitalize">{{ props.row.address }}</p>
@@ -80,7 +80,7 @@
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <skills-form :existingSkills="props.row.skills"
@@ -91,7 +91,7 @@
           <b-table-column field="requests" label="Order ID" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.requests && props.row.requests.length > 0">
@@ -110,7 +110,7 @@
           <b-table-column field="source" label="Source" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.source" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">{{ props.row.source }}</span>
@@ -121,7 +121,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -131,7 +131,7 @@
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.recruiter" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div class="capitalize is-inline-block v-middle pr-0" v-if="props.row.recruiter">
@@ -160,7 +160,7 @@
           <b-table-column field="residencyStatus" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyList" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -217,6 +217,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
@@ -269,20 +270,20 @@ export default {
     };
   },
   components: {
-    CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
-    DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
-    ModalDocuments: () => import("@/components/candidate/ModalDocuments.vue"),
-    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
-    SkillsForm: () => import("@/components/FormSkillAdd.vue"),
-    CandidateRequest: () => import("@/components/candidate/ModalCandidateRequests.vue"),
-    BulkData: () => import("@/components/agency/BulkData.vue"),
-    Export: () => import("@/components/Export.vue")
+    CreateCandidate: defineAsyncComponent(() => import("@/components/candidate/CreateCandidate.vue")),
+    DetailCandidate: defineAsyncComponent(() => import("@/components/candidate/DetailCandidate.vue")),
+    ModalDocuments: defineAsyncComponent(() => import("@/components/candidate/ModalDocuments.vue")),
+    ModalNotes: defineAsyncComponent(() => import("@/components/notes/ModalNotes.vue")),
+    SkillsForm: defineAsyncComponent(() => import("@/components/FormSkillAdd.vue")),
+    CandidateRequest: defineAsyncComponent(() => import("@/components/candidate/ModalCandidateRequests.vue")),
+    BulkData: defineAsyncComponent(() => import("@/components/agency/BulkData.vue")),
+    Export: defineAsyncComponent(() => import("@/components/Export.vue"))
   },
   methods: {
     dateMonth,
     emailName,
     onCellClick(row, column) {
-      if (column._props.field === 'name' && row.hasDocuments) {
+      if (column.field === 'name' && row.hasDocuments) {
         this.showDocumentsCandidate(row.id);
       }
     },

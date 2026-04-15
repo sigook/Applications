@@ -11,7 +11,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick" @mouseleave="hideNotes">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -25,7 +25,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -34,14 +34,14 @@
           <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">{{ props.row.externalId }}</template>
           </b-table-column>
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.name }}
@@ -50,14 +50,14 @@
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+                @keypress="onInputEntered" v-cleave="mask"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
           <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.socialInsurance" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.socialInsurance">
@@ -72,7 +72,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-                @input="onStartWorkingSelected" append-to-body>
+                @update:modelValue="onStartWorkingSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -85,11 +85,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -101,11 +101,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.rejectedBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
-                  @input="onRejectedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onRejectedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -131,7 +131,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -162,13 +162,14 @@
     </b-modal>
 
     <b-modal v-model="modalStartWorking" width="415px">
-      <datepicker-modal v-if="currentWorker" :start-working.sync="currentWorker.startWorking"
+      <datepicker-modal v-if="currentWorker" v-model:start-working="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>
   </div>
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
 import { phoneMask as mask } from '@/constants/phoneMask';
@@ -225,17 +226,17 @@ export default {
     this.loadRequestWorkers();
   },
   components: {
-    WorkersList: () => import("./AgencyWorkersList.vue"),
-    ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
-    DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue")
+    WorkersList: defineAsyncComponent(() => import("./AgencyWorkersList.vue")),
+    ModalNotes: defineAsyncComponent(() => import("../../components/notes/ModalNotes.vue")),
+    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue")),
+    DatepickerModal: defineAsyncComponent(() => import("@/components/agency_request/DatepickerModal.vue"))
   },
   methods: {
     downloadFile,
     dateMonth,
     emailName,
     onCellClick(row, column, rowIndex) {
-      switch (column._props.field) {
+      switch (column.field) {
         case 'startWorking':
           this.onShowModalStartWorking(row);
           break;

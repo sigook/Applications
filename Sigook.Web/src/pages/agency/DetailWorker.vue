@@ -33,7 +33,7 @@
         </floating-menu>
       </div>
     </section>
-    <b-tabs v-model="currentTab" @input="changeTab">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Profile" value="profile">
         <div v-if="visitedTabs.includes('profile')" class="wrapper-request">
         <div class="container-flex">
@@ -69,16 +69,16 @@
             <skills :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <b-checkbox v-model="worker.dnu" @input="toggleWorkerProfileDNU"
+            <b-checkbox v-model="worker.dnu" @update:modelValue="toggleWorkerProfileDNU"
               :disabled="hasDnuPermission">
               {{ "DNU" }}
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <licenses v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <certificates :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <certificates v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray"></span>
             <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
@@ -129,7 +129,7 @@
         </div>
       </b-tab-item>
       <b-tab-item label="Settings" value="workerSettings" v-if="isPayrollManager">
-        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker.sync="worker" />
+        <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
       </b-tab-item>
       <b-tab-item label="PayStubs" value="wageHistory" v-if="isPayrollManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
@@ -145,6 +145,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { workerColor } from '@/utils/workerStatus';
@@ -170,33 +171,33 @@ export default {
     };
   },
   components: {
-    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
-    Comments: () => import("../../components/Comments.vue"),
-    workExperienceForm: () => import("../../components/worker/WorkExperienceForm.vue"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue"),
-    socialInsurance: () => import("../../components/worker/WorkSinDetail.vue"),
-    basicInformation: () => import("../../components/worker/WorkBasicInformationDetail.vue"),
-    emergencyInformation: () => import("../../components/worker/WorkEmergencyInformationDetail.vue"),
-    documents: () => import("../../components/worker/WorkDocumentsDetail.vue"),
-    resume: () => import("../../components/worker/WorkResumeDetail.vue"),
-    contactInformation: () => import("../../components/worker/WorkContactInformationDetail.vue"),
-    emailDetail: () => import("../../components/worker/WorkEmailDetail.vue"),
-    availability: () => import("../../components/worker/WorkAvailabilitiesDetail.vue"),
-    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail.vue"),
-    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail.vue"),
-    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail.vue"),
-    lift: () => import("../../components/worker/WorkLiftDetail.vue"),
-    languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
-    skills: () => import("../../components/worker/WorkSkillsDetail.vue"),
-    licenses: () => import("../../components/worker/WorkLicenseDetail.vue"),
-    certificates: () => import("../../components/worker/WorkCertificatesDetail.vue"),
-    workerSettings: () => import('@/components/worker/WorkerSettings.vue'),
-    wageHistory: () => import("../../components/worker/WorkWageHistory.vue"),
-    requestHistory: () => import("../../components/agency/AgencyWorkerRequestHistory.vue"),
-    timeSheetHistory: () => import("../../components/worker/TimeSheetHistory.vue"),
-    notes: () => import("../../components/worker/Notes.vue"),
-    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
-    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue")
+    imageDetail: defineAsyncComponent(() => import("../../components/worker/WorkImageDetail.vue")),
+    Comments: defineAsyncComponent(() => import("../../components/Comments.vue")),
+    workExperienceForm: defineAsyncComponent(() => import("../../components/worker/WorkExperienceForm.vue")),
+    workExperienceDetail: defineAsyncComponent(() => import("../../components/worker/WorkExperienceDetail.vue")),
+    socialInsurance: defineAsyncComponent(() => import("../../components/worker/WorkSinDetail.vue")),
+    basicInformation: defineAsyncComponent(() => import("../../components/worker/WorkBasicInformationDetail.vue")),
+    emergencyInformation: defineAsyncComponent(() => import("../../components/worker/WorkEmergencyInformationDetail.vue")),
+    documents: defineAsyncComponent(() => import("../../components/worker/WorkDocumentsDetail.vue")),
+    resume: defineAsyncComponent(() => import("../../components/worker/WorkResumeDetail.vue")),
+    contactInformation: defineAsyncComponent(() => import("../../components/worker/WorkContactInformationDetail.vue")),
+    emailDetail: defineAsyncComponent(() => import("../../components/worker/WorkEmailDetail.vue")),
+    availability: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilitiesDetail.vue")),
+    availabilityTimes: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityTimesDetail.vue")),
+    availabilityDays: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityDaysDetail.vue")),
+    locationPreferences: defineAsyncComponent(() => import("../../components/worker/WorkLocationPreferencesDetail.vue")),
+    lift: defineAsyncComponent(() => import("../../components/worker/WorkLiftDetail.vue")),
+    languages: defineAsyncComponent(() => import("../../components/worker/WorkLanguagesDetail.vue")),
+    skills: defineAsyncComponent(() => import("../../components/worker/WorkSkillsDetail.vue")),
+    licenses: defineAsyncComponent(() => import("../../components/worker/WorkLicenseDetail.vue")),
+    certificates: defineAsyncComponent(() => import("../../components/worker/WorkCertificatesDetail.vue")),
+    workerSettings: defineAsyncComponent(() => import('@/components/worker/WorkerSettings.vue')),
+    wageHistory: defineAsyncComponent(() => import("../../components/worker/WorkWageHistory.vue")),
+    requestHistory: defineAsyncComponent(() => import("../../components/agency/AgencyWorkerRequestHistory.vue")),
+    timeSheetHistory: defineAsyncComponent(() => import("../../components/worker/TimeSheetHistory.vue")),
+    notes: defineAsyncComponent(() => import("../../components/worker/Notes.vue")),
+    FloatingMenu: defineAsyncComponent(() => import("../../components/FloatingMenuDots.vue")),
+    otherDocuments: defineAsyncComponent(() => import("../../components/worker/WorkerOtherDocumentsDetail.vue"))
   },
   async created() {
     this.loadWorker();

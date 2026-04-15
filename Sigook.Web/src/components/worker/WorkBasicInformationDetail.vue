@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { dateMonth } from '@/utils/filters';
 
 export default {
@@ -60,7 +61,7 @@ export default {
     }
   },
   components: {
-    basicInformationEdit: () => import("./WorkBasicInformationForm.vue")
+    basicInformationEdit: defineAsyncComponent(() => import("./WorkBasicInformationForm.vue"))
   }
 }
 </script>

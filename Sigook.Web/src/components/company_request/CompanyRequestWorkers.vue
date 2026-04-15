@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      :current-page.sync="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
+      v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -16,7 +16,7 @@
         <b-table-column field="numberId" label="ID" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress.native="onInputEntered"></b-input>
+              @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
             <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -25,7 +25,7 @@
         <b-table-column field="name" label="Name" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress.native="onInputEntered"></b-input>
+              @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
             {{ props.row.name }}
@@ -36,7 +36,7 @@
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
               :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
               @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-              @input="onStartWorkingSelected" append-to-body>
+              @update:modelValue="onStartWorkingSelected" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -46,7 +46,7 @@
         <b-table-column field="status" label="Status" sortable searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+              field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
             </b-taginput>
           </template>
           <template v-slot="props">
@@ -81,6 +81,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
@@ -109,7 +110,7 @@ export default {
     }
   },
   components: {
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue")
+    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue"))
   },
   methods: {
     dateMonth,

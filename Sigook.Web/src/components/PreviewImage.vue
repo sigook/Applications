@@ -32,6 +32,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { compressFile } from '@/utils/compressFile';
 
@@ -55,7 +56,7 @@ export default {
     }
   },
   components: {
-    cropImage: () => import("./CropImage.vue")
+    cropImage: defineAsyncComponent(() => import("./CropImage.vue"))
   },
   computed: {
     rules() {

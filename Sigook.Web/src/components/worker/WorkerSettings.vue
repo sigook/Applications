@@ -4,20 +4,20 @@
     <div class="container-flex">
       <div class="col-2">
         <b-field label="External ID">
-          <b-input v-model="localWorker.externalId" placeholder="External ID" @keypress.enter.native="updateExternalId">
+          <b-input v-model="localWorker.externalId" placeholder="External ID" @keypress.enter="updateExternalId">
           </b-input>
         </b-field>
       </div>
-      <b-checkbox class="col-2" v-model="localWorker.isContractor" @input="updateIsContractor">
+      <b-checkbox class="col-2" v-model="localWorker.isContractor" @update:modelValue="updateIsContractor">
         Is Contractor
       </b-checkbox>
-      <b-checkbox class="col-2" v-model="localWorker.isSubcontractor" @input="updateIsSubContractor">
+      <b-checkbox class="col-2" v-model="localWorker.isSubcontractor" @update:modelValue="updateIsSubContractor">
         Is Subcontractor
       </b-checkbox>
       <span class="line-gray"></span>
       <div class="col-2">
         <b-field label="Federal Category">
-          <b-select v-model="localWorker.federalTaxCategory" @input="updateTaxCategory" expanded>
+          <b-select v-model="localWorker.federalTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">
               {{ taxCategory.value }}
@@ -27,7 +27,7 @@
       </div>
       <div class="col-2">
         <b-field label="Provincial Category" class="mr-5">
-          <b-select v-model="localWorker.provincialTaxCategory" @input="updateTaxCategory" expanded>
+          <b-select v-model="localWorker.provincialTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">
               {{ taxCategory.value }}
@@ -39,7 +39,7 @@
         <b-field label="CPP" :type="errors.has('cpp') ? 'is-danger' : ''"
           :message="errors.has('cpp') ? errors.first('cpp') : ''">
           <b-numberinput v-model="localWorker.cpp" name="cpp" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
+            v-validate="'min_value:0'" @keypress.enter="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
@@ -47,7 +47,7 @@
         <b-field label="EI" :type="errors.has('ei') ? 'is-danger' : ''"
           :message="errors.has('ei') ? errors.first('ei') : ''">
           <b-numberinput v-model="localWorker.ei" name="ei" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter.native="updateTaxRate">
+            v-validate="'min_value:0'" @keypress.enter="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
@@ -56,7 +56,7 @@
         <b-button type="is-ghost" icon-left="plus" @click="addHoliday">Add Holiday</b-button>
         <b-field grouped>
           <b-field label="Holidays">
-            <b-datepicker inline :selectable-dates="selectableDates" @input="onHolidaySelected"
+            <b-datepicker inline :selectable-dates="selectableDates" @update:modelValue="onHolidaySelected"
               :unselectable-days-of-week="[0, 1, 2, 3, 4, 5, 6]">
             </b-datepicker>
           </b-field>

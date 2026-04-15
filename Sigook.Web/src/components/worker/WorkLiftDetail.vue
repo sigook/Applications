@@ -13,6 +13,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['worker'],
   data() {
@@ -27,7 +28,7 @@ export default {
     }
   },
   components: {
-    liftEdit: () => import("./WorkLiftForm.vue")
+    liftEdit: defineAsyncComponent(() => import("./WorkLiftForm.vue"))
   }
 }
 </script>

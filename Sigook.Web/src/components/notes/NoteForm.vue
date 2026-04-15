@@ -19,6 +19,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['currentNote', 'currentIndex'],
   data() {
@@ -34,7 +35,7 @@ export default {
     }
   },
   components: {
-    ColorPicker: () => import("./ColorPicker.vue"),
+    ColorPicker: defineAsyncComponent(() => import("./ColorPicker.vue")),
   },
   methods: {
     addNote() {

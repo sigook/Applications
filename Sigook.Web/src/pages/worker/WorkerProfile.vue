@@ -26,7 +26,7 @@
       </div>
 
       <!-- Buefy Tabs -->
-      <b-tabs v-model="currentTab" @input="changeTab" v-if="workerProfile">
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="workerProfile">
       <b-tab-item value="PersonalDetails">
         <template #header>
           <span>Personal Details</span>
@@ -56,6 +56,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useWorkerStore } from '@/stores/worker';
 import { showAlertError } from "@/utils/toast";
@@ -64,12 +65,12 @@ import { lowercase } from '@/utils/filters';
 
 export default {
   components: {
-    PersonalDetails: () => import("../../components/worker/ProfilePersonal.vue"),
-    Preferences: () => import("../../components/worker/ProfilePreferences.vue"),
-    WorkExperience: () => import("../../components/worker/ProfileExperience.vue"),
-    Comments: () => import("../../components/worker/ProfileComments.vue"),
-    WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity.vue"),
-    imageDetail: () => import("../../components/worker/WorkImageDetail.vue")
+    PersonalDetails: defineAsyncComponent(() => import("../../components/worker/ProfilePersonal.vue")),
+    Preferences: defineAsyncComponent(() => import("../../components/worker/ProfilePreferences.vue")),
+    WorkExperience: defineAsyncComponent(() => import("../../components/worker/ProfileExperience.vue")),
+    Comments: defineAsyncComponent(() => import("../../components/worker/ProfileComments.vue")),
+    WorkerAccountSecurity: defineAsyncComponent(() => import("../../components/worker/WorkerAccountSecurity.vue")),
+    imageDetail: defineAsyncComponent(() => import("../../components/worker/WorkImageDetail.vue"))
   },
   data() {
     return {

@@ -7,7 +7,7 @@
         @onDataLoading="(value) => isLoading = value"></export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-        detail-transition="fade" default-sort="name" :current-page.sync="serverParams.pageIndex"
+        detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -20,7 +20,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -29,14 +29,14 @@
           <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">{{ props.row.externalId }}</template>
           </b-table-column>
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.name }}
@@ -51,7 +51,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="filteredStatuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @typing="filterStatuses" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @typing="filterStatuses" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -78,6 +78,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
@@ -107,9 +108,9 @@ export default {
     }
   },
   components: {
-    PunchCard: () => import("@/components/agency_request/AgencyPunchCardWorkerContainer.vue"),
-    AgencyPunchCard: () => import("@/components/agency/AgencyPunchCard.vue"),
-    Export: () => import("@/components/Export.vue")
+    PunchCard: defineAsyncComponent(() => import("@/components/agency_request/AgencyPunchCardWorkerContainer.vue")),
+    AgencyPunchCard: defineAsyncComponent(() => import("@/components/agency/AgencyPunchCard.vue")),
+    Export: defineAsyncComponent(() => import("@/components/Export.vue"))
   },
   methods: {
     hour,

@@ -55,6 +55,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { filename } from '@/utils/filters';
 
 export default {
@@ -72,7 +73,7 @@ export default {
     },
   },
   components: {
-    documentsEdit: () => import("./WorkDocumentsForm.vue"),
+    documentsEdit: defineAsyncComponent(() => import("./WorkDocumentsForm.vue")),
   },
 };
 </script>

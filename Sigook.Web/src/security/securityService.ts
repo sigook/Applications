@@ -1,15 +1,15 @@
-import Oidc from "oidc-client";
+import { UserManager, Log } from "oidc-client-ts";
 
 const redirectUrl = window.location.origin;
 const securityServerUrl = import.meta.env.VUE_APP_SECURITY_SERVER;
 const client = import.meta.env.VUE_APP_CLIENT;
 
-if (process.env.NODE_ENV !== "production") {
-  Oidc.Log.logger = console;
-  Oidc.Log.level = Oidc.Log.ERROR;
+if (import.meta.env.MODE !== "production") {
+  Log.setLogger(console);
+  Log.setLevel(Log.ERROR);
 }
 
-const mgr = new Oidc.UserManager({
+const mgr = new UserManager({
   authority: securityServerUrl,
   client_id: client,
   redirect_uri: redirectUrl + "/callback",

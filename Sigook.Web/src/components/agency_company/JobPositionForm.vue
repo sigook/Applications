@@ -68,6 +68,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getJobPositions } from "@/api/catalogApi";
@@ -96,7 +97,7 @@ export default {
     }
   },
   components: {
-    Shift: () => import("../request/ShiftsForm.vue")
+    Shift: defineAsyncComponent(() => import("../request/ShiftsForm.vue"))
   },
   methods: {
     async validateForm() {

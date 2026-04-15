@@ -15,9 +15,9 @@
         </div>
       </div>
 
-      <b-tabs v-model="currentTab" @input="changeTab" v-if="companyProfile">
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="companyProfile">
         <b-tab-item :label="'Business Information'" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :company-data.sync="companyProfile" />
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:company-data="companyProfile" />
         </b-tab-item>
 
         <b-tab-item :label="'Contact Information'" value="ContactInformation">
@@ -45,6 +45,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { getCompanyProfile, updateProfile } from '@/api/companyApi';
@@ -52,13 +53,13 @@ import { lowercase } from '@/utils/filters';
 
 export default {
   components: {
-    BusinessInformation: () => import("../../components/company/ProfileBusiness.vue"),
-    ContactInformation: () => import("../../components/company/ProfileContact.vue"),
-    LocationInformation: () => import("../../components/company/ProfileLocation.vue"),
-    UploadImage: () => import("../../components/PreviewImage.vue"),
-    AccountSecurity: () => import("../../components/agency/ProfileAccountInformation.vue"),
-    UserNotification: () => import("../../components/UserNotification.vue"),
-    CompanyUsers: () => import("../../components/company/CompanyUsers.vue")
+    BusinessInformation: defineAsyncComponent(() => import("../../components/company/ProfileBusiness.vue")),
+    ContactInformation: defineAsyncComponent(() => import("../../components/company/ProfileContact.vue")),
+    LocationInformation: defineAsyncComponent(() => import("../../components/company/ProfileLocation.vue")),
+    UploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue")),
+    AccountSecurity: defineAsyncComponent(() => import("../../components/agency/ProfileAccountInformation.vue")),
+    UserNotification: defineAsyncComponent(() => import("../../components/UserNotification.vue")),
+    CompanyUsers: defineAsyncComponent(() => import("../../components/company/CompanyUsers.vue"))
   },
   data() {
     return {

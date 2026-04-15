@@ -5,9 +5,10 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   components: {
-    Invoices: () => import("../../components/company/CompanyInvoices.vue")
+    Invoices: defineAsyncComponent(() => import("../../components/company/CompanyInvoices.vue"))
   },
   data() {
     return {

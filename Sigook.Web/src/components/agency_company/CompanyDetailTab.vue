@@ -135,6 +135,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { date } from "@/utils/filters";
@@ -180,12 +181,12 @@ export default {
     };
   },
   components: {
-    EmailCard: () => import("@/components/EmailCard.vue"),
-    Location: () => import("../../components/agency_company/LocationDetail.vue"),
-    ContactInformation: () => import("./ContactInformation.vue"),
-    Documents: () => import("../../components/agency_company/Documents.vue"),
-    Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
-    EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
+    EmailCard: defineAsyncComponent(() => import("@/components/EmailCard.vue")),
+    Location: defineAsyncComponent(() => import("../../components/agency_company/LocationDetail.vue")),
+    ContactInformation: defineAsyncComponent(() => import("./ContactInformation.vue")),
+    Documents: defineAsyncComponent(() => import("../../components/agency_company/Documents.vue")),
+    Notes: defineAsyncComponent(() => import("../../components/agency_company/CompanyNotes.vue")),
+    EditVaccinationRequired: defineAsyncComponent(() => import("@/components/agency_company/EditVaccinationRequired.vue"))
   },
   watch: {
     company: {

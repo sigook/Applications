@@ -33,6 +33,7 @@
     </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
     export default {
         props: ['image'],
         data(){
@@ -42,7 +43,7 @@
           }
         },
         components: {
-            VueCropper: () => import("vue-cropperjs")
+            VueCropper: defineAsyncComponent(() => import("vue-cropperjs"))
         },
         methods: {
             uploadCroppedImage() {

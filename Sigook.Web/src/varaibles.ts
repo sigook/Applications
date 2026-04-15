@@ -1,99 +1,107 @@
-import Vue from 'vue';
+import type { App } from 'vue';
 
-// Request Status — string values returned by worker-facing endpoints
-// (WorkerRequestListModel / WorkerRequestDetailModel).
-// Agency/company pages use the numeric enum from src/constants/enums.ts.
-Vue.prototype.$statusOpen = "Open";
-Vue.prototype.$statusFilled = "Filled";
-Vue.prototype.$statusCancelled = "Cancelled";
+export const appGlobals = {
+  // Request Status — string values returned by worker-facing endpoints
+  // (WorkerRequestListModel / WorkerRequestDetailModel).
+  // Agency/company pages use the numeric enum from src/constants/enums.ts.
+  $statusOpen: "Open",
+  $statusFilled: "Filled",
+  $statusCancelled: "Cancelled",
 
-// Request Status Display Labels
-Vue.prototype.$statusDisplayOpen = "Open";
-Vue.prototype.$statusDisplayFilled = "Filled";
-Vue.prototype.$statusDisplayCancelled = "Cancelled";
+  // Request Status Display Labels
+  $statusDisplayOpen: "Open",
+  $statusDisplayFilled: "Filled",
+  $statusDisplayCancelled: "Cancelled",
 
-// worker status — string values returned by worker-facing endpoints
-// (WorkerRequestListModel / WorkerRequestDetailModel).
-// Agency/company pages use the numeric enum from src/constants/enums.ts.
-Vue.prototype.$statusNone = "None";
-Vue.prototype.$statusApply = "Applied";
-Vue.prototype.$statusDecline = "Declined";
-Vue.prototype.$statusReject = "Rejected";
-Vue.prototype.$statusBook = "Booked";
-Vue.prototype.$statusInQueue = "InQueue";
-Vue.prototype.$statusNotWorking = "NotWorking";
-Vue.prototype.$statusWorking = "Working";
+  // worker status — string values returned by worker-facing endpoints
+  // (WorkerRequestListModel / WorkerRequestDetailModel).
+  // Agency/company pages use the numeric enum from src/constants/enums.ts.
+  $statusNone: "None",
+  $statusApply: "Applied",
+  $statusDecline: "Declined",
+  $statusReject: "Rejected",
+  $statusBook: "Booked",
+  $statusInQueue: "InQueue",
+  $statusNotWorking: "NotWorking",
+  $statusWorking: "Working",
 
-// worker status Display
-Vue.prototype.$statusDisplayNone = "None";
-Vue.prototype.$statusDisplayApply = "Applied";
-Vue.prototype.$statusDisplayDecline = "Declined";
-Vue.prototype.$statusDisplayReject = "Rejected";
-Vue.prototype.$statusDisplayBook = "Booked";
-Vue.prototype.$statusDisplayInQueue = "InQueue";
-Vue.prototype.$statusDisplayNotWorking = "NotWorking";
-Vue.prototype.$statusDisplayWorking = "Working";
+  // worker status Display
+  $statusDisplayNone: "None",
+  $statusDisplayApply: "Applied",
+  $statusDisplayDecline: "Declined",
+  $statusDisplayReject: "Rejected",
+  $statusDisplayBook: "Booked",
+  $statusDisplayInQueue: "InQueue",
+  $statusDisplayNotWorking: "NotWorking",
+  $statusDisplayWorking: "Working",
 
-// Company sort by
-Vue.prototype.$companySortByName = "Name";
-Vue.prototype.$companySortByNumberId = "NumberId";
-Vue.prototype.$companySortByLocation = "Location";
+  // Company sort by
+  $companySortByName: "Name",
+  $companySortByNumberId: "NumberId",
+  $companySortByLocation: "Location",
 
-// Worker sort by
-Vue.prototype.$workerSortById = "Id";
-Vue.prototype.$workerSortByName = "Name";
-Vue.prototype.$workerSortByNumberId = "NumberId";
-Vue.prototype.$workerSortByPhone = "Phone";
-Vue.prototype.$workerSortByRequestId = "RequestId";
-Vue.prototype.$workerSortByCreateAt = "CreateAt";
+  // Worker sort by
+  $workerSortById: "Id",
+  $workerSortByName: "Name",
+  $workerSortByNumberId: "NumberId",
+  $workerSortByPhone: "Phone",
+  $workerSortByRequestId: "RequestId",
+  $workerSortByCreateAt: "CreateAt",
 
-// Request sort by
-Vue.prototype.$requestSortByClient = "Client";
-Vue.prototype.$requestSortByJobTitle = "JobTitle";
-Vue.prototype.$requestSortByStartAt = "StartAt";
-Vue.prototype.$requestSortByRecruiter = "Recruiter";
-Vue.prototype.$requestSortByRate = "Rate";
-Vue.prototype.$requestSortByWorkersQuantity = "WorkersQuantity";
-Vue.prototype.$requestSortByUpdateAt = "UpdatedAt";
+  // Request sort by
+  $requestSortByClient: "Client",
+  $requestSortByJobTitle: "JobTitle",
+  $requestSortByStartAt: "StartAt",
+  $requestSortByRecruiter: "Recruiter",
+  $requestSortByRate: "Rate",
+  $requestSortByWorkersQuantity: "WorkersQuantity",
+  $requestSortByUpdateAt: "UpdatedAt",
 
-// Candidates Sort By
-Vue.prototype.$candidatesSortByName = 'Name';
-Vue.prototype.$candidatesSortByPhone = 'Phone';
-Vue.prototype.$candidatesSortByLocation = 'Location';
-Vue.prototype.$candidatesSortBySkills = 'Skills';
-Vue.prototype.$candidatesSortByLastRequest = 'LastRequest';
-Vue.prototype.$candidatesSortByStatus = 'Status';
-Vue.prototype.$candidatesSortByCreateAt = 'CreateAt';
-Vue.prototype.$candidatesSortByRecruiter = 'Recruiter';
+  // Candidates Sort By
+  $candidatesSortByName: 'Name',
+  $candidatesSortByPhone: 'Phone',
+  $candidatesSortByLocation: 'Location',
+  $candidatesSortBySkills: 'Skills',
+  $candidatesSortByLastRequest: 'LastRequest',
+  $candidatesSortByStatus: 'Status',
+  $candidatesSortByCreateAt: 'CreateAt',
+  $candidatesSortByRecruiter: 'Recruiter',
 
-// regex
-Vue.prototype.$regexAddress = /^[-.# a-zA-Z0-9]+$/;
-Vue.prototype.$regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // regex
+  $regexAddress: /^[-.# a-zA-Z0-9]+$/,
+  $regexEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 
-//Users
-Vue.prototype.$agency = "agency";
-Vue.prototype.$company = "company";
-Vue.prototype.$worker = "worker";
-Vue.prototype.$companyUser = "company.user";
+  //Users
+  $agency: "agency",
+  $company: "company",
+  $worker: "worker",
+  $companyUser: "company.user",
 
-// Duration Term — string values returned by worker-facing endpoints.
-// Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
-Vue.prototype.$longTerm = "LongTerm";
-Vue.prototype.$shortTerm = "ShortTerm";
+  // Duration Term — string values returned by worker-facing endpoints.
+  // Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
+  $longTerm: "LongTerm",
+  $shortTerm: "ShortTerm",
 
-// Employment Type — display/legacy values used by worker-facing pages.
-// Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
-Vue.prototype.$fullTime = "FullTime";
-Vue.prototype.$partTime = "PartTime";
-Vue.prototype.$contractor = "Contractor";
-Vue.prototype.$temporary = "Temporary";
+  // Employment Type — display/legacy values used by worker-facing pages.
+  // Agency/company pages (and create payloads) use the numeric enum from src/constants/enums.ts.
+  $fullTime: "FullTime",
+  $partTime: "PartTime",
+  $contractor: "Contractor",
+  $temporary: "Temporary",
 
-// Agency Type
-Vue.prototype.$agencyTypeMaster = 1;
-Vue.prototype.$agencyTypeRegular = 2;
-Vue.prototype.$agencyTypeBusinessPartner = 3;
+  // Agency Type
+  $agencyTypeMaster: 1,
+  $agencyTypeRegular: 2,
+  $agencyTypeBusinessPartner: 3,
 
-Vue.prototype.$agencyTypes = [
-  { value: 2, label: 'Regular' },
-  { value: 3, label: 'Business Partner' }
-];
+  $agencyTypes: [
+    { value: 2, label: 'Regular' },
+    { value: 3, label: 'Business Partner' },
+  ] as { value: number; label: string }[],
+};
+
+export function registerAppGlobals(app: App): void {
+  for (const [key, value] of Object.entries(appGlobals)) {
+    app.config.globalProperties[key] = value;
+  }
+}

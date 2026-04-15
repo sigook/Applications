@@ -131,13 +131,14 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import appMobileBusinesses from '@/assets/images/app_mobile_businesses.png';
 
 export default {
   components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
-    SubMenu: () => import("@/components/landing/SubMenu.vue"),
-    NeedStaff: () => import("@/components/landing/NeedStaff.vue")
+    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
+    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue")),
+    NeedStaff: defineAsyncComponent(() => import("@/components/landing/NeedStaff.vue"))
   },
   data() {
     return {

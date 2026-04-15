@@ -23,6 +23,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 export default {
@@ -53,8 +54,8 @@ export default {
     }
   },
   components: {
-    workExperience: () => import("./WorkExperienceForm.vue"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue")
+    workExperience: defineAsyncComponent(() => import("./WorkExperienceForm.vue")),
+    workExperienceDetail: defineAsyncComponent(() => import("../../components/worker/WorkExperienceDetail.vue"))
   },
   created() {
     this.appStore.getCurrentDate().then(response => {

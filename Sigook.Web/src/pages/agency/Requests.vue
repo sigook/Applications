@@ -17,13 +17,14 @@
       </h2>
     </div>
     <div>
-      <table-requests @onDataLoading="(value) => isLoading = value" :total-items.sync="totalItems" />
+      <table-requests @onDataLoading="(value) => isLoading = value" v-model:total-items="totalItems" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 export default {
   data() {
     return {
@@ -32,7 +33,7 @@ export default {
     };
   },
   components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
+    TableRequests: defineAsyncComponent(() => import("../../components/agency_request/TableRequests.vue")),
   }
 };
 </script>

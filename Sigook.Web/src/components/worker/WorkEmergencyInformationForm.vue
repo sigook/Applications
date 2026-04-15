@@ -53,6 +53,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { createWorkerEmergencyInformation } from '@/api/workerApi';
 
@@ -93,7 +94,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("../PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue"))
   }
 }
 </script>

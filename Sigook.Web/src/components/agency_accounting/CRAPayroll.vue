@@ -5,7 +5,7 @@
         <b-field label="Dates (From - To)" :type="errors.has('dates') ? 'is-danger' : ''"
           :message="errors.has('dates') ? errors.first('dates') : ''">
           <b-datepicker v-model="createdAtDatesSelected" v-validate="'required'" name="dates" range
-            @input="onDatesSelected" />
+            @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
       <div class="col-12 col-padding">

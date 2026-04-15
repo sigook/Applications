@@ -36,6 +36,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { sin, date, filename } from '@/utils/filters';
 
 export default {
@@ -56,7 +57,7 @@ export default {
     }
   },
   components: {
-    socialInsuranceEdit: () => import("./WorkSinForm.vue")
+    socialInsuranceEdit: defineAsyncComponent(() => import("./WorkSinForm.vue"))
   }
 }
 </script>

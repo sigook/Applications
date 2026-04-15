@@ -2,7 +2,7 @@
   <div>
     <b-taginput size="is-small" ref="workSkillFormTagInput" v-model="localSkills" autocomplete :data="filteredSkills"
       open-on-focus field="skill" icon="label" placeholder="Select or Add Skill" allow-new @typing="getFilteredSkills"
-      @add="addSkill" @keydown.native.esc="closeTagInput" @remove="deleteSkill">
+      @add="addSkill" @keydown.esc="closeTagInput" @remove="deleteSkill">
     </b-taginput>
   </div>
 </template>

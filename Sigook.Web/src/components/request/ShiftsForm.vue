@@ -7,7 +7,7 @@
 
       <div class="grid-header">Day</div>
       <div v-for="(item, dayKey) in weekShift" :key="'header-' + dayKey" class="grid-header">
-        <b-checkbox size="is-small" v-model="item.going" @input="updateModel">
+        <b-checkbox size="is-small" v-model="item.going" @update:modelValue="updateModel">
           {{ item.day }}
         </b-checkbox>
       </div>
@@ -18,7 +18,7 @@
         </b-button>
       </div>
       <div v-for="(item, dayKey) in weekShift" :key="'from-' + dayKey" class="grid-cell">
-        <b-timepicker size="is-small" v-if="item.going" v-model="item.start" hour-format="24" @input="updateModel">
+        <b-timepicker size="is-small" v-if="item.going" v-model="item.start" hour-format="24" @update:modelValue="updateModel">
         </b-timepicker>
       </div>
 
@@ -35,7 +35,7 @@
         </b-button>
       </div>
       <div v-for="(item, dayKey) in weekShift" :key="'to-' + dayKey" class="grid-cell">
-        <b-timepicker size="is-small" v-if="item.going" v-model="item.finish" hour-format="24" @input="updateModel">
+        <b-timepicker size="is-small" v-if="item.going" v-model="item.finish" hour-format="24" @update:modelValue="updateModel">
         </b-timepicker>
       </div>
 
@@ -50,7 +50,7 @@
     <div class="col-sm-12 col-md-12 col-lg-12 col-padding pt-1">
       <b-field :type="errors.has('description') ? 'is-danger' : ''" label="Comments"
         :message="errors.has('description') ? errors.first('description') : ''">
-        <b-input type="textarea" v-model="comments" name="description" @input="updateModel" />
+        <b-input type="textarea" v-model="comments" name="description" @update:modelValue="updateModel" />
       </b-field>
     </div>
   </div>

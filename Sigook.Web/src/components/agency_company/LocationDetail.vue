@@ -4,7 +4,7 @@
       <h3 class="fw-700">Location</h3>
       <button @click="showModal = true" class="fw-700 fz-1 sm-btn outline-btn orange-button btn-radius">Add</button>
     </div>
-    <b-table :data="data" narrowed hoverable paginated :per-page="pageSize" :current-page.sync="pageIndex"
+    <b-table :data="data" narrowed hoverable paginated :per-page="pageSize" v-model:current-page="pageIndex"
       pagination-rounded @cellclick="onCellClick">
       <b-table-column field="id" v-slot="props" searchable :custom-search="onSearchLocation">
         <span>
@@ -34,6 +34,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyLocation, deleteAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 export default {
@@ -49,7 +50,7 @@ export default {
   },
   methods: {
     onCellClick(row, column) {
-      switch (column._props.field) {
+      switch (column.field) {
         case 'id':
           this.openEditModal(row);
           break;
@@ -105,7 +106,7 @@ export default {
     await this.loadCompanyLocations();
   },
   components: {
-    LocationForm: () => import("./LocationForm.vue")
+    LocationForm: defineAsyncComponent(() => import("./LocationForm.vue"))
   }
 }
 </script>

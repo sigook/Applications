@@ -5,7 +5,7 @@
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
     <b-table :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="pageSize"
-      :current-page.sync="pageIndex">
+      v-model:current-page="pageIndex">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -38,13 +38,14 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getCompanyProfileUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
 
 export default {
   props: ['company'],
   components: {
-    CreateUser: () => import("@/components/CompanyCreateUserModal.vue")
+    CreateUser: defineAsyncComponent(() => import("@/components/CompanyCreateUserModal.vue"))
   },
   data() {
     return {

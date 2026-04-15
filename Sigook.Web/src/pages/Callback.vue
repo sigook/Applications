@@ -5,7 +5,7 @@
 <script lang="ts">
 import { mapStores } from 'pinia';
 import { useSecurityStore } from '@/stores/security';
-import Oidc from 'oidc-client';
+import { UserManager } from 'oidc-client-ts';
 import menu from "@/security/menu";
 
 export default {
@@ -14,7 +14,7 @@ export default {
   },
   data() {
     return {
-      userManager: new Oidc.UserManager({} as any)
+      userManager: new UserManager({} as any)
     }
   },
   async created() {

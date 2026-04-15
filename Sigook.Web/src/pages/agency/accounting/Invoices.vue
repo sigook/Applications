@@ -21,7 +21,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="invoiceNumber"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -29,7 +29,7 @@
           <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.invoiceNumber" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -41,7 +41,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -51,7 +51,7 @@
           <b-table-column field="companyFullName" label="Company" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -61,7 +61,7 @@
           <b-table-column field="salesRepresentative" label="Sales Rep" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered">
+                @keypress="onInputEntered">
               </b-input>
             </template>
             <template v-slot="props">
@@ -106,6 +106,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError } from "@/utils/toast";
@@ -115,9 +116,9 @@ import { currency, dateMonth } from '@/utils/filters';
 
 export default {
   components: {
-    Export: () => import("@/components/Export.vue"),
-    DeleteInvoice: () => import("@/components/agency_accounting/DeleteInvoice.vue"),
-    SendInvoiceEmail: () => import("@/components/agency_accounting/SendInvoiceEmail.vue")
+    Export: defineAsyncComponent(() => import("@/components/Export.vue")),
+    DeleteInvoice: defineAsyncComponent(() => import("@/components/agency_accounting/DeleteInvoice.vue")),
+    SendInvoiceEmail: defineAsyncComponent(() => import("@/components/agency_accounting/SendInvoiceEmail.vue"))
   },
   data() {
     return {

@@ -134,6 +134,7 @@
     </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyRequestBoard } from "@/api/agencyRequestApi";
@@ -166,9 +167,9 @@ export default {
         }
     },
     components: {
-        Pagination: () => import("../../components/Paginator.vue"),
-        ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
-        AgencyShift: () => import("../../components/agency_request/AgencyShiftDetail.vue")
+        Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue")),
+        ModalNotes: defineAsyncComponent(() => import("../../components/notes/ModalNotes.vue")),
+        AgencyShift: defineAsyncComponent(() => import("../../components/agency_request/AgencyShiftDetail.vue"))
     },
     methods: {
         dateMonth,

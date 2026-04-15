@@ -14,7 +14,7 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedLicenseFile }">
             <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleLicenseFileSelected" class="file-label" rounded>
+              @update:modelValue="handleLicenseFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
                 <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : 'Add file' }}</span>

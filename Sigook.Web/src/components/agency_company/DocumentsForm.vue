@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { usePubSub } from "@/composables/usePubSub";
 import { deleteFile } from "@/utils/fileUpload";
@@ -65,7 +66,7 @@ export default {
     };
   },
   components: {
-    UploadFile: () => import("../../components/UploadFiles.vue")
+    UploadFile: defineAsyncComponent(() => import("../../components/UploadFiles.vue"))
   },
   methods: {
     filename,

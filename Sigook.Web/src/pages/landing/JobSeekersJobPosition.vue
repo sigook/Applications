@@ -5,9 +5,10 @@
 
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 export default {
   components: {
-    JobPosition: () => import("@/components/landing/JobPosition.vue")
+    JobPosition: defineAsyncComponent(() => import("@/components/landing/JobPosition.vue"))
   }
 }
 

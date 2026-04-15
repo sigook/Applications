@@ -35,7 +35,7 @@
             <span>{{ item.description }}</span>
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <b-switch v-model="item.emailNotification" @input="saveNotification(item)">
+            <b-switch v-model="item.emailNotification" @update:modelValue="saveNotification(item)">
               {{ item.emailNotification ? 'Yes' : 'No' }}
             </b-switch>
           </div>

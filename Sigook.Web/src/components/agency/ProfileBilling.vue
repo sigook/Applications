@@ -27,7 +27,7 @@
     </b-table>
 
     <b-modal v-model="showModal" width="500px">
-      <address-component ref="addressComponent" :model.sync="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
+      <address-component ref="addressComponent" v-model:model="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
       <div class="container-flex">
         <div class="col-12 col-padding">
           <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>

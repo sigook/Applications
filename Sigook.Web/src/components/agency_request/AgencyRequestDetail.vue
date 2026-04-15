@@ -19,6 +19,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { emailName, dateFromNow } from '@/utils/filters';
 
 export default {
@@ -28,11 +29,11 @@ export default {
     dateFromNow,
   },
   components: {
-    RequestDetail: () => import("../request/RequestDetail.vue"),
-    Location: () => import("../request/RequestLocation.vue"),
-    Notes: () => import("../agency_request/RequestNotes.vue"),
-    RequestedBy: () => import("./RequestedBy.vue"),
-    ReportTo: () => import("./ReportTo.vue")
+    RequestDetail: defineAsyncComponent(() => import("../request/RequestDetail.vue")),
+    Location: defineAsyncComponent(() => import("../request/RequestLocation.vue")),
+    Notes: defineAsyncComponent(() => import("../agency_request/RequestNotes.vue")),
+    RequestedBy: defineAsyncComponent(() => import("./RequestedBy.vue")),
+    ReportTo: defineAsyncComponent(() => import("./ReportTo.vue"))
   }
 }
 </script>

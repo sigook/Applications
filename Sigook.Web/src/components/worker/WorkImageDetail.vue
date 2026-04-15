@@ -37,6 +37,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
 import { usePubSub } from '@/composables/usePubSub';
@@ -91,7 +92,7 @@ export default {
     }
   },
   components: {
-    UploadImage: () => import("../../components/PreviewImage.vue")
+    UploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue"))
   },
   created() {
     if (this.data != null) {

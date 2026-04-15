@@ -1,5 +1,4 @@
-import Vue from "vue";
-import Router from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import NotFound from "@/pages/NotFound.vue";
 import SilentRefresh from "@/pages/SilentRefresh.vue";
 import Unauthorized from "@/pages/Unauthorized.vue";
@@ -12,10 +11,7 @@ import routesLanding from "@/router/routesLanding";
 import pinia from "@/stores";
 import { useSecurityStore } from "@/stores/security";
 
-import { RouteConfig } from 'vue-router';
-
-Vue.use(Router);
-const routes: RouteConfig[] = [
+const routes: RouteRecordRaw[] = [
   {
     path: "/callback",
     name: 'callback',
@@ -40,7 +36,7 @@ const routes: RouteConfig[] = [
     component: Unauthorized,
   },
   {
-    path: "*",
+    path: "/:pathMatch(.*)*",
     name: "not-found",
     component: NotFound,
   },
@@ -53,13 +49,13 @@ const routes: RouteConfig[] = [
     },
   },
 ];
-const router = new Router({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(),
   routes: routes
-    .concat(routesAgency)
-    .concat(routesCompany)
-    .concat(routesWorker)
-    .concat(routesLanding),
+    .concat(routesAgency as RouteRecordRaw[])
+    .concat(routesCompany as RouteRecordRaw[])
+    .concat(routesWorker as RouteRecordRaw[])
+    .concat(routesLanding as RouteRecordRaw[]),
 });
 router.beforeEach(async (to, from, next) => {
   if (from.name !== 'jobSeekers') {

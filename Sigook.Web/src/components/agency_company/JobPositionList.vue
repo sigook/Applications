@@ -9,7 +9,7 @@
           role</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
-        pagination-rounded :per-page="pageSize" detail-transition="fade" :current-page.sync="pageIndex"
+        pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -64,6 +64,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
@@ -87,9 +88,9 @@ export default {
     };
   },
   components: {
-    PositionForm: () => import("@/components/agency_company/JobPositionForm.vue"),
-    RequestPositionForm: () => import("../../components/agency_company/RequestJobPositionForm.vue"),
-    RolesShift: () => import("../agency_company/RolesShiftDetail.vue")
+    PositionForm: defineAsyncComponent(() => import("@/components/agency_company/JobPositionForm.vue")),
+    RequestPositionForm: defineAsyncComponent(() => import("../../components/agency_company/RequestJobPositionForm.vue")),
+    RolesShift: defineAsyncComponent(() => import("../agency_company/RolesShiftDetail.vue"))
   },
   methods: {
     currency,

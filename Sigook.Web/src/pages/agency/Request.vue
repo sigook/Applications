@@ -63,7 +63,7 @@
         </floating-menu>
       </div>
     </section>
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="request">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
       <b-tab-item label="Detail" value="Detail">
         <detail v-if="visitedTabs.includes('Detail')" :key="request.id + '-' + request.workersQuantity + '-' + request.status" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
@@ -92,6 +92,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
@@ -124,13 +125,13 @@ export default {
     };
   },
   components: {
-    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
-    Detail: () => import("@/components/agency_request/AgencyRequestDetail.vue"),
-    Workers: () => import("@/components/agency/AgencyWorkers.vue"),
-    PunchCard: () => import("@/components/agency_request/MassivePunchCard.vue"),
-    CancelList: () => import("@/components/company/CompanyCancelList.vue"),
-    Applicants: () => import("@/components/agency_request/Applicants.vue"),
-    ShiftModal: () => import("@/components/request/ShiftEditModal.vue")
+    FloatingMenu: defineAsyncComponent(() => import("@/components/FloatingMenuDots.vue")),
+    Detail: defineAsyncComponent(() => import("@/components/agency_request/AgencyRequestDetail.vue")),
+    Workers: defineAsyncComponent(() => import("@/components/agency/AgencyWorkers.vue")),
+    PunchCard: defineAsyncComponent(() => import("@/components/agency_request/MassivePunchCard.vue")),
+    CancelList: defineAsyncComponent(() => import("@/components/company/CompanyCancelList.vue")),
+    Applicants: defineAsyncComponent(() => import("@/components/agency_request/Applicants.vue")),
+    ShiftModal: defineAsyncComponent(() => import("@/components/request/ShiftEditModal.vue"))
   },
   methods: {
     breakWord,

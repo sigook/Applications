@@ -64,6 +64,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertSuccess } from "@/utils/toast";
 import { getWsibGroups } from "@/api/catalogApi";
 import { updateAgency } from "@/api/agencyApi";
@@ -85,7 +86,7 @@ export default {
   },
   props: ["agencyData"],
   components: {
-    phoneInput: () => import("@/components/PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   methods: {
     async validateForm() {

@@ -15,7 +15,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -24,7 +24,7 @@
           <b-table-column field="numberId" label="Order ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/request/' + props.row.id }">
@@ -37,7 +37,7 @@
           <b-table-column field="jobTitle" label="Position" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.jobTitle" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.jobTitle }}
@@ -47,7 +47,7 @@
           <b-table-column field="location" label="Location" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.location }}
@@ -85,6 +85,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { mapStores } from 'pinia';
 import { useCompanyStore } from '@/stores/company';
 import { showAlertError } from "@/utils/toast";
@@ -94,7 +95,7 @@ import { dateFromNow } from '@/utils/filters';
 
 export default {
   components: {
-    AgencyShift: () => import("@/components/agency_request/AgencyShiftDetail.vue")
+    AgencyShift: defineAsyncComponent(() => import("@/components/agency_request/AgencyShiftDetail.vue"))
   },
   data() {
     return {
@@ -131,7 +132,7 @@ export default {
       this.getCompanyRequests();
     },
     onCellClick(row, column) {
-      switch (column._props.field) {
+      switch (column.field) {
         case 'displayShift':
           break;
         case 'workersQuantityWorking':

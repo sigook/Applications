@@ -7,6 +7,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['company'],
   data() {
@@ -15,7 +16,7 @@ export default {
     }
   },
   components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests.vue")
+    TableRequests: defineAsyncComponent(() => import("../../components/agency_request/TableRequests.vue"))
   }
 }
 </script>

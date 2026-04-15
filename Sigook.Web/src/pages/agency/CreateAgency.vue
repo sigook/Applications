@@ -47,6 +47,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgency } from "@/api/agencyApi";
 
@@ -60,7 +61,7 @@ export default {
     }
   },
   components: {
-    phoneInput: () => import("@/components/PhoneInput.vue")
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   methods: {
     async validateForm() {

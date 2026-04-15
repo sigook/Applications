@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
     import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
     export default {
@@ -49,8 +50,8 @@ import { showAlertError } from "@/utils/toast";
             this.loadRequestHistory(this.currentPage)
         },
         components: {
-            Pagination: () => import("../../components/Paginator.vue"),
-            ContainerRequest: () => import("../agency/AgencyWorkerRequestHistoryContainer.vue")
+            Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue")),
+            ContainerRequest: defineAsyncComponent(() => import("../agency/AgencyWorkerRequestHistoryContainer.vue"))
         }
     }
 </script>

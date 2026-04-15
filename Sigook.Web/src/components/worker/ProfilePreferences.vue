@@ -32,17 +32,18 @@
 
 <script lang="ts">
 
+import { defineAsyncComponent } from 'vue';
 export default {
   props: ['worker'],
   components: {
-    skills: () => import("../../components/worker/WorkSkillsDetail.vue"),
-    languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
-    lift: () => import("../../components/worker/WorkLiftDetail.vue"),
-    availability: () => import("../../components/worker/WorkAvailabilitiesDetail.vue"),
-    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail.vue"),
-    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail.vue"),
-    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail.vue"),
-    emergencyInformation: () => import("./WorkEmergencyInformationDetail.vue")
+    skills: defineAsyncComponent(() => import("../../components/worker/WorkSkillsDetail.vue")),
+    languages: defineAsyncComponent(() => import("../../components/worker/WorkLanguagesDetail.vue")),
+    lift: defineAsyncComponent(() => import("../../components/worker/WorkLiftDetail.vue")),
+    availability: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilitiesDetail.vue")),
+    availabilityTimes: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityTimesDetail.vue")),
+    availabilityDays: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityDaysDetail.vue")),
+    locationPreferences: defineAsyncComponent(() => import("../../components/worker/WorkLocationPreferencesDetail.vue")),
+    emergencyInformation: defineAsyncComponent(() => import("./WorkEmergencyInformationDetail.vue"))
   },
   methods: {
     updateProfile() {

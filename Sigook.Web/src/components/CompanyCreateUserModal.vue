@@ -44,6 +44,7 @@
 
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { createCompanyUser } from '@/api/companyApi';
 import { createCompanyProfileUser } from '@/api/agencyCompanyApi';
@@ -51,7 +52,7 @@ import { createCompanyProfileUser } from '@/api/agencyCompanyApi';
 export default {
   props: ['companyId'],
   components: {
-    PhoneInput: () => import("@/components/PhoneInput.vue")
+    PhoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   data() {
     return {

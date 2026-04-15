@@ -34,6 +34,7 @@
   </div>
 </template>
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import {
   getAgencyRequestRequestedBy,
@@ -51,7 +52,7 @@ export default {
     }
   },
   components: {
-    ContactList: () => import("./ContactListModal.vue")
+    ContactList: defineAsyncComponent(() => import("./ContactListModal.vue"))
   },
   methods: {
     loadRequestedBy() {

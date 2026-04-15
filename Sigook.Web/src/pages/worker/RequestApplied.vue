@@ -16,7 +16,7 @@
       </div>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="request">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
       <b-tab-item label="Summary Request" value="Summary Request">
         <div v-if="visitedTabs.includes('Summary Request')" class="container-flex">
           <section class="col-md-9 col-sm-12 section-left">
@@ -38,14 +38,15 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from 'vue';
 import { getWorkerRequest, workerGetTimeSheet } from '@/api/workerApi';
 
 export default {
   components: {
-    RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
-    Location: () => import("../../components/request/RequestLocation.vue"),
-    PunchCard: () => import("./PunchCard.vue"),
-    TimeSheet: () => import("./TimeSheet.vue"),
+    RequestDetail: defineAsyncComponent(() => import("../../components/worker/RequestDetail.vue")),
+    Location: defineAsyncComponent(() => import("../../components/request/RequestLocation.vue")),
+    PunchCard: defineAsyncComponent(() => import("./PunchCard.vue")),
+    TimeSheet: defineAsyncComponent(() => import("./TimeSheet.vue")),
   },
   data() {
     return {

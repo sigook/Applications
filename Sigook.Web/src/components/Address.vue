@@ -8,7 +8,7 @@
           {{ 'Country' }} <span class="has-text-danger">*</span>
         </template>
         <b-select :placeholder="'Select'" v-model="country" name="country" v-validate="'required'" expanded
-          @input="onCountrySelected">
+          @update:modelValue="onCountrySelected">
           <option v-for="country in countries" :key="country.id" :value="country">{{ country.value }}</option>
         </b-select>
       </b-field>
