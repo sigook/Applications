@@ -101,6 +101,14 @@ stages:
           flutter analyze --no-fatal-infos
           echo "✅ Code analysis passed"
     - task: CmdLine@2
+      displayName: 'Flutter Test'
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          echo "Running flutter test..."
+          flutter test
+          echo "✅ All tests passed"
+    - task: CmdLine@2
       displayName: 'Verify Build Configuration (Fast)'
       inputs:
         script: |

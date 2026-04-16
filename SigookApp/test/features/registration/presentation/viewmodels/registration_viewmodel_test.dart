@@ -46,6 +46,8 @@ void main() {
           name: any(named: 'name'),
           parameters: any(named: 'parameters'),
         )).thenAnswer((_) async {});
+    when(() => mockAnalytics.logSignUp(method: any(named: 'method')))
+        .thenAnswer((_) async {});
   });
 
   buildTestContainer() => buildContainer(ProviderContainer(overrides: [
