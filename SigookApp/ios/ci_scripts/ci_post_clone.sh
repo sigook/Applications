@@ -90,6 +90,13 @@ flutter precache --ios
 flutter pub get
 
 # ---------------------------------------
+# Run Flutter tests
+# ---------------------------------------
+echo "Running Flutter tests..."
+flutter test --reporter=expanded
+echo "✅ Flutter tests passed"
+
+# ---------------------------------------
 # pod install with retry (handles transient GitHub/CDN 502 errors)
 # ---------------------------------------
 pod_install_with_retry() {
