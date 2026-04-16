@@ -83,6 +83,7 @@ class RegistrationViewModel extends _$RegistrationViewModel {
         return failure.message;
       },
       (_) {
+        ref.read(analyticsServiceProvider).logSignUp(method: 'email');
         ref.read(analyticsServiceProvider).logEvent(
           name: 'registration_completed',
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
@@ -81,6 +82,10 @@ class _JobsPageState extends ConsumerState<JobsPage> {
             _currentSort = sort;
             _currentFilter = filter;
           });
+          ref.read(analyticsServiceProvider).logEvent(
+            name: 'jobs_filter_applied',
+            parameters: {'filter': filter.name, 'sort': sort.name},
+          );
         },
       ),
     );
