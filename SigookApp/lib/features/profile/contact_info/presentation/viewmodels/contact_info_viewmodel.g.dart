@@ -42,7 +42,7 @@ final class ContactInfoViewModelProvider
 }
 
 String _$contactInfoViewModelHash() =>
-    r'135767f5bcd5628f7cea65a81aac826882e0acc9';
+    r'b562f56f12a02a5ed31d82f805ac192e387a0494';
 
 abstract class _$ContactInfoViewModel extends $Notifier<ContactInfoState> {
   ContactInfoState build();

@@ -42,7 +42,7 @@ final class PreferencesViewModelProvider
 }
 
 String _$preferencesViewModelHash() =>
-    r'842b06e29c19fdc33cc7867e528a5f77aff2927f';
+    r'828f0a03a8989ff046f320122c108fe397b56a77';
 
 abstract class _$PreferencesViewModel extends $Notifier<PreferencesState> {
   PreferencesState build();

@@ -42,7 +42,7 @@ final class PersonalDetailsViewModelProvider
 }
 
 String _$personalDetailsViewModelHash() =>
-    r'5961d9adcaf3819eaa638acc53fbe268264787ee';
+    r'0b8a2346b69f3fac6c1342df8184ad30efd8ecb3';
 
 abstract class _$PersonalDetailsViewModel
     extends $Notifier<PersonalDetailsState> {

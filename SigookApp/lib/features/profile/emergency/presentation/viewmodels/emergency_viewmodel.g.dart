@@ -42,7 +42,7 @@ final class EmergencyViewModelProvider
 }
 
 String _$emergencyViewModelHash() =>
-    r'88095828dba042fbecf08454ca94c5fd3073c5cc';
+    r'7264935fb2503809d7884217f25b059d58c706f9';
 
 abstract class _$EmergencyViewModel extends $Notifier<EmergencyState> {
   EmergencyState build();

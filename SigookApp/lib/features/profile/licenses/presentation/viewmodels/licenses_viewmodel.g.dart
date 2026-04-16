@@ -41,7 +41,7 @@ final class LicensesViewModelProvider
   }
 }
 
-String _$licensesViewModelHash() => r'8c938da6443490e6f25436d1a64556e4a132fac3';
+String _$licensesViewModelHash() => r'afa9dc4beb4ae36159a3bf1f6b00a0d0baf50d79';
 
 abstract class _$LicensesViewModel extends $Notifier<LicensesState> {
   LicensesState build();

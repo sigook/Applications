@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
@@ -85,13 +86,45 @@ class AzureAppInsightsClient {
   Future<void> _post(List<Map<String, dynamic>> items) async {
     try {
       final url = '${_ingestionEndpoint.trimRight()}/v2/track';
-      await _dio.post<void>(
+      final response = await _dio.post<dynamic>(
         url,
         data: items,
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
+      assert(() {
+        debugPrint(
+          '[AppInsights] POST ${response.statusCode} — '
+          '${items.map((e) => e['data']?['baseType']).join(', ')}',
+        );
+        return true;
+      }());
+    } catch (e) {
+      assert(() {
+        debugPrint('[AppInsights] POST failed: $e');
+        return true;
+      }());
+    }
+  }
+
+  /// Sends a test payload synchronously and returns the HTTP status code.
+  /// Use only from diagnostic/debug UI — never from production code paths.
+  Future<int?> testConnection() async {
+    try {
+      final url = '${_ingestionEndpoint.trimRight()}/v2/track';
+      final envelope = await buildEnvelope(
+        baseType: 'EventData',
+        name: 'diagnostic_ping',
+        baseData: {'name': 'diagnostic_ping'},
+        properties: {'source': 'debug_panel'},
+      );
+      final response = await _dio.post<dynamic>(
+        url,
+        data: [envelope],
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      return response.statusCode;
     } catch (_) {
-      // Swallow silently — telemetry must never crash the app.
+      return null;
     }
   }
 

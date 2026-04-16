@@ -41,7 +41,7 @@ final class SinViewModelProvider
   }
 }
 
-String _$sinViewModelHash() => r'8024b5550d90cdbeda1cd785e7b941639ca08da2';
+String _$sinViewModelHash() => r'05fa80ebdcc4ad329a1dfb57ad9cb3bed0696df7';
 
 abstract class _$SinViewModel extends $Notifier<SinState> {
   SinState build();

@@ -42,7 +42,7 @@ final class CertificatesViewModelProvider
 }
 
 String _$certificatesViewModelHash() =>
-    r'c0bcab3fa88acc67a22106f0470743f79c4692d2';
+    r'35c7cbc991bbece5dd9db9d64c14cf522573bfc2';
 
 abstract class _$CertificatesViewModel extends $Notifier<CertificatesState> {
   CertificatesState build();

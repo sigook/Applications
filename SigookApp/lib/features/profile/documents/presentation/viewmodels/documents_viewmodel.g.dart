@@ -42,7 +42,7 @@ final class DocumentsViewModelProvider
 }
 
 String _$documentsViewModelHash() =>
-    r'f6b45e1e43be0a1d0a3e0f59056d14560b3652e3';
+    r'2f61535386658289da38c58d30f0c5b2d0ff66b4';
 
 abstract class _$DocumentsViewModel extends $Notifier<DocumentsState> {
   DocumentsState build();
