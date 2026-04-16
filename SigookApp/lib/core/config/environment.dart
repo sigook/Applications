@@ -27,6 +27,8 @@ class EnvironmentConfig {
       String.fromEnvironment('SCOPES');
   static const String _appName =
       String.fromEnvironment('APP_NAME');
+  static const String _appInsightsConnectionString =
+      String.fromEnvironment('APP_INSIGHTS_CONNECTION_STRING', defaultValue: '');
 
   static String get authority => _authAuthority;
 
@@ -44,6 +46,8 @@ class EnvironmentConfig {
   }
 
   static String get appName => _appName;
+
+  static String get appInsightsConnectionString => _appInsightsConnectionString;
 
   static Environment get current {
     final envString = _environment.toLowerCase();
@@ -110,6 +114,7 @@ class EnvironmentConfig {
     _printConfigLine('POST_LOGOUT_URI', postLogoutRedirectUri);
     _printConfigLine('SCOPES', scopes.join(','));
     _printConfigLine('APP_NAME', appName);
+    debugPrint(' APP_INSIGHTS_CONNECTION_STRING: ${_appInsightsConnectionString.isNotEmpty ? '[set]' : '[not set]'}');
     debugPrint('========================================================');
     debugPrint('');
   }

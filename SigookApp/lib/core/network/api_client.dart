@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/environment.dart';
+import '../services/crash_reporting_service.dart';
+import 'crash_reporting_interceptor.dart';
 import 'dio_error_interceptor.dart';
 
 class ApiClient {
@@ -13,7 +15,7 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  ApiClient({Interceptor? authInterceptor}) {
+  ApiClient({Interceptor? authInterceptor, CrashReportingService? crashReportingService}) {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -26,14 +28,18 @@ class ApiClient {
       ),
     );
 
-    _addInterceptors(authInterceptor);
+    _addInterceptors(authInterceptor, crashReportingService);
   }
 
-  void _addInterceptors(Interceptor? authInterceptor) {
+  void _addInterceptors(Interceptor? authInterceptor, CrashReportingService? crashReportingService) {
     _dio.interceptors.add(DioErrorInterceptor());
 
     if (authInterceptor != null) {
       _dio.interceptors.add(authInterceptor);
+    }
+
+    if (crashReportingService != null) {
+      _dio.interceptors.add(CrashReportingInterceptor(crashReportingService));
     }
 
     _dio.interceptors.add(

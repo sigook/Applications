@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../../core/providers/analytics_providers.dart';
 import '../providers/job_experience_providers.dart';
 
 part 'job_experience_viewmodel.freezed.dart';
@@ -65,6 +66,10 @@ class JobExperienceViewModel extends _$JobExperienceViewModel {
       (_) {
         state = state.copyWith(isAdding: false, justAdded: true, showForm: false);
         ref.invalidate(jobExperienceListProvider);
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'profile_section_saved',
+          parameters: {'section': 'job_experience'},
+        );
       },
     );
   }
@@ -100,6 +105,10 @@ class JobExperienceViewModel extends _$JobExperienceViewModel {
           justSaved: true,
         );
         ref.invalidate(jobExperienceListProvider);
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'profile_section_saved',
+          parameters: {'section': 'job_experience'},
+        );
       },
     );
   }
