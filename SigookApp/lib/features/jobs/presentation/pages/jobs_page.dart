@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/jobs_viewmodel.dart';
@@ -81,6 +82,10 @@ class _JobsPageState extends ConsumerState<JobsPage> {
             _currentSort = sort;
             _currentFilter = filter;
           });
+          ref.read(analyticsServiceProvider).logEvent(
+            name: 'jobs_filter_applied',
+            parameters: {'filter': filter.name, 'sort': sort.name},
+          );
         },
       ),
     );
@@ -136,7 +141,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
       backgroundColor: AppTheme.surfaceGrey,
       endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

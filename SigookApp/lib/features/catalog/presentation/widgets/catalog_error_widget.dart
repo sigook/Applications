@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/error_state_widget.dart';
+import '../../../../core/widgets/feedback/error_state_widget.dart';
 
 class CatalogErrorWidget extends StatelessWidget {
   final String message;

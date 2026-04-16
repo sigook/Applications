@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/analytics_providers.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/apply_to_job.dart';
@@ -546,6 +548,11 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
         );
       },
       (_) {
+        JobAnalyticsEvents.logJobApplied(
+          ref.read(analyticsServiceProvider),
+          jobId: jobDetails.id,
+          jobTitle: jobDetails.jobTitle,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Successfully applied to job!'),

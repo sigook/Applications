@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/analytics_service.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/welcome/presentation/pages/welcome_page.dart';
 import '../../features/registration/presentation/pages/registration_screen.dart';
@@ -41,17 +42,34 @@ class KeyboardDismissObserver extends NavigatorObserver {
   }
 }
 
+class AnalyticsNavigatorObserver extends NavigatorObserver {
+  final AnalyticsService analytics;
+  AnalyticsNavigatorObserver(this.analytics);
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final name = route.settings.name;
+    if (name != null && name.isNotEmpty) {
+      analytics.logScreenView(screenName: name);
+    }
+  }
+}
+
 class AppRouter {
-  static final GoRouter router = GoRouter(
+  static GoRouter buildRouter(AnalyticsService analytics) => GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
-    observers: [KeyboardDismissObserver()],
+    observers: [
+      KeyboardDismissObserver(),
+      AnalyticsNavigatorObserver(analytics),
+    ],
     routes: [
       GoRoute(
         path: AppRoutes.splash,
         name: 'splash',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const SplashScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -63,6 +81,7 @@ class AppRouter {
         name: 'welcome',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const WelcomePage(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
@@ -76,6 +95,7 @@ class AppRouter {
         name: 'signIn',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const SignInPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
@@ -95,6 +115,7 @@ class AppRouter {
         name: 'registration',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const RegistrationScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
@@ -114,6 +135,7 @@ class AppRouter {
         name: 'registrationConfirmation',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const RegistrationConfirmationPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -125,6 +147,7 @@ class AppRouter {
         name: 'jobs',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const JobsPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -147,6 +170,7 @@ class AppRouter {
           }
           return CustomTransitionPage(
             key: state.pageKey,
+            name: state.name ?? state.matchedLocation,
             child: JobPage(jobId: jobId, isFromHistory: isFromHistory),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
@@ -171,6 +195,7 @@ class AppRouter {
         name: 'profile',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const UserProfilePage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -182,6 +207,7 @@ class AppRouter {
         name: 'history',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const HistoryPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -193,6 +219,7 @@ class AppRouter {
         name: 'about',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const AboutPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
@@ -204,6 +231,7 @@ class AppRouter {
         name: 'privacyPolicy',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const PrivacyPolicyPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
@@ -222,6 +250,7 @@ class AppRouter {
         name: 'terms',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
           child: const TermsPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
@@ -272,13 +301,13 @@ class AppRouter {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+                          color: const Color(0xFFEA1D25).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.construction_rounded,
                           size: 32,
-                          color: Color(0xFF1565C0),
+                          color: Color(0xFFEA1D25),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -310,7 +339,7 @@ class AppRouter {
                   child: ElevatedButton(
                     onPressed: () => context.go(AppRoutes.jobs),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
+                      backgroundColor: const Color(0xFFEA1D25),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

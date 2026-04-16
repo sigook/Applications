@@ -7,19 +7,19 @@ class AppTheme {
   AppTheme._();
 
   // Color Palette
-  static const Color primaryBlue = Color(0xFF1565C0); // Deep Blue
-  static const Color secondaryRed = Color(0xFFEA1D25); // Vibrant Red
-  static const Color tertiaryBlue = Color(0xFF0277BD); // Light Blue
-  static const Color surfaceGrey = Color(0xFFF2F3F5); // Neutral light grey
+  static const Color primaryBlue = Color(0xFFEA1D25);  // Brand Red (primary)
+  static const Color secondaryRed = Color(0xFFEA1D25);  // Brand Red
+  static const Color tertiaryBlue = Color(0xFFC62828);  // Dark Red (gradients / pressed)
+  static const Color surfaceGrey = Color(0xFFF2F3F5);   // Neutral light grey
   static const Color cardBackground = Color(0xFFFAFAFB); // Soft off-white
-  static const Color errorRed = Color(0xFFD32F2F); // Error red
-  static const Color successGreen = Color(0xFF43A047); // Success green
-  static const Color warningOrange = Color(0xFFF57C00); // Warning orange
-  static const Color textDark = Color(0xFF212121); // Dark grey text
-  static const Color textMedium = Color(0xFF757575); // Medium grey text
-  static const Color textLight = Color(0xFF757575); // Light grey text
-  static const Color borderLight = Color(0xFFE8E8EA); // Neutral light border
-  static const Color slate800 = Color(0xFF1E293B); // Dark grey text
+  static const Color errorRed = Color(0xFFD32F2F);       // Error red
+  static const Color successGreen = Color(0xFF43A047);   // Success green
+  static const Color warningOrange = Color(0xFFF57C00);  // Warning orange
+  static const Color textDark = Color(0xFF212121);       // Dark grey text
+  static const Color textMedium = Color(0xFF757575);     // Medium grey text
+  static const Color textLight = Color(0xFF757575);      // Light grey text
+  static const Color borderLight = Color(0xFFE8E8EA);    // Neutral light border
+  static const Color slate800 = Color(0xFF1E293B);       // Dark grey text
 
   // Spacing Constants
   static const double spacing4 = 4.0;
@@ -100,7 +100,7 @@ class AppTheme {
   static const TextStyle button = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: primaryBlue,
+    color: secondaryRed,
     height: 1.2,
   );
 
@@ -116,9 +116,9 @@ class AppTheme {
     return ThemeData(
       // Color Scheme
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryBlue,
-        primary: primaryBlue,
-        secondary: secondaryRed,
+        seedColor: secondaryRed,
+        primary: secondaryRed,
+        secondary: tertiaryBlue,
         tertiary: tertiaryBlue,
         surface: surfaceGrey,
         error: errorRed,
@@ -136,7 +136,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: primaryBlue,
+        backgroundColor: secondaryRed,
         foregroundColor: Colors.white,
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(
@@ -149,21 +149,21 @@ class AppTheme {
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryBlue,
+          backgroundColor: secondaryRed,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 2,
-          shadowColor: primaryBlue.withValues(alpha: 0.3),
+          shadowColor: secondaryRed.withValues(alpha: 0.3),
         ),
       ),
 
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primaryBlue,
+          foregroundColor: secondaryRed,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
@@ -171,8 +171,8 @@ class AppTheme {
       // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryBlue,
-          side: const BorderSide(color: primaryBlue, width: 1.5),
+          foregroundColor: secondaryRed,
+          side: const BorderSide(color: secondaryRed, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -198,15 +198,15 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryBlue, width: 2),
+          borderSide: const BorderSide(color: secondaryRed, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: secondaryRed, width: 1.5),
+          borderSide: const BorderSide(color: errorRed, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: secondaryRed, width: 2),
+          borderSide: const BorderSide(color: errorRed, width: 2),
         ),
       ),
 
@@ -225,25 +225,25 @@ class AppTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: const Color(0xFFF5F5F5),
-        selectedColor: primaryBlue.withValues(alpha: 0.15),
-        secondarySelectedColor: secondaryRed.withValues(alpha: 0.15),
+        selectedColor: secondaryRed.withValues(alpha: 0.15),
+        secondarySelectedColor: tertiaryBlue.withValues(alpha: 0.15),
         labelStyle: const TextStyle(fontSize: 14, color: textDark),
         secondaryLabelStyle: const TextStyle(fontSize: 14, color: textDark),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        checkmarkColor: primaryBlue,
+        checkmarkColor: secondaryRed,
       ),
 
       // Progress Indicator Theme
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: secondaryRed, // RED ACCENT!
+        color: secondaryRed,
         linearTrackColor: secondaryRed.withValues(alpha: 0.2),
         circularTrackColor: secondaryRed.withValues(alpha: 0.2),
       ),
 
       // Floating Action Button Theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: secondaryRed, // RED ACCENT!
+        backgroundColor: secondaryRed,
         foregroundColor: Colors.white,
         elevation: 4,
       ),
@@ -271,10 +271,10 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryBlue,
+        seedColor: secondaryRed,
         brightness: Brightness.dark,
-        primary: primaryBlue,
-        secondary: secondaryRed,
+        primary: secondaryRed,
+        secondary: tertiaryBlue,
       ),
       useMaterial3: true,
     );

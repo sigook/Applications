@@ -62,6 +62,7 @@ features/<feature>/
 ## Tech Stack
 
 ### Core Dependencies
+
 - **flutter_riverpod** (^2.5.1) - State management
 - **freezed** (^2.5.7) - Immutable data classes & code generation
 - **dartz** (^0.10.1) - Functional programming (`Either<Failure, T>`)
@@ -72,6 +73,7 @@ features/<feature>/
 - **shared_preferences** (^2.2.3) - Local storage
 
 ### Code Generation
+
 - **build_runner** (^2.4.12)
 - **freezed_annotation** (^2.4.4)
 - **json_serializable** (^6.8.0)
@@ -343,7 +345,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```bash
 flutter analyze                # Check for static errors
 flutter test                   # Run unit tests
-flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart  # Manual test
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart  # Manual test
 ```
 
 ## Reusable Core Widgets
@@ -402,50 +404,123 @@ CacheException           →  CacheFailure
 
 ### Debugging with VS Code
 
-#### Fix "Dart-only workspace" error
+#### 1. Create your `.vscode/launch.json`
 
-If VS Code shows **"Unable to launch Flutter project in a Dart-only workspace"**, the Dart extension cannot locate the Flutter SDK. Create `.vscode/settings.json` with your Flutter SDK path:
+The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `SigookApp/`:
+
+Copy the block below and save it as `.vscode/launch.json`:
 
 ```json
 {
-  "dart.flutterSdkPath": "C:\\dev\\flutter"
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug — Staging",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Profile — Staging",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "profile",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Debug — Local",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_local.dart",
+      "args": ["--dart-define-from-file=.env.local"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Profile — Local",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_local.dart",
+      "args": ["--dart-define-from-file=.env.local"],
+      "flutterMode": "profile",
+      "toolArgs": ["--device-timeout=60"]
+    },
+    {
+      "name": "Debug — Staging (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"],
+      "deviceId": "android"
+    },
+    {
+      "name": "Debug — Staging (iOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_staging.dart",
+      "args": ["--dart-define-from-file=.env.staging"],
+      "flutterMode": "debug",
+      "toolArgs": ["--device-timeout=60"],
+      "deviceId": "ios"
+    },
+    {
+      "name": "Attach to Device",
+      "request": "attach",
+      "type": "dart"
+    }
+  ]
 }
 ```
 
-Find your path with `where flutter` (Windows) or `which flutter` (Mac/Linux) — use the directory above `bin/`. This file is gitignored so each developer sets their own.
+#### 2. Create your `.env` file
 
----
-
-#### Launch configurations
-
-Pre-configured launch configurations:
-
-- **Development (Staging)** - Default development with staging environment
-- **Staging Environment** - Explicit staging build
-- **Production Environment** - Explicit production build
-- **Platform-specific variants** for iOS Simulator and Android Emulator
-
-1. Open VS Code, press `Ctrl+Shift+D` (`Cmd+Shift+D` on Mac)
-2. Select configuration from the dropdown
-3. Press `F5`
-
-- **Staging**: Orange theme, points to staging servers
-- **Production**: Clean theme, points to production servers
-- Each environment loads its respective `.env` file
-
-See `.vscode/README.md` for detailed configuration.
-
-### Build Flavors
+The `.env.*` files are gitignored and contain real credentials — never commit them. Ask a teammate for the values, then create the file for the environment you need:
 
 ```bash
-# Staging (debug run)
-flutter run --dart-define-from-file=.env.staging --flavor staging -t lib/main_staging.dart
+# Most common: connect to staging servers
+cp .env.example .env.staging
+# Then edit .env.staging and fill in the real values
 
-# Local (uses production flavor pointing to local backend)
-flutter run --dart-define-from-file=.env.local --flavor production -t lib/main_local.dart
-
-# Production release
-flutter build apk --dart-define-from-file=.env.production --flavor production -t lib/main_production.dart --release
+# For local backend development
+cp .env.example .env.local
+# Then edit .env.local — see URL notes below
 ```
 
-See `BUILD_FLAVORS_GUIDE.md` for complete setup instructions.
+**Local URL notes** — update `API_BASE_URL` and `AUTH_AUTHORITY` in `.env.local` based on your setup:
+
+| Target           | API_BASE_URL                          | AUTH_AUTHORITY                  |
+| ---------------- | ------------------------------------- | ------------------------------- |
+| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44381/`       |
+| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44381/`      |
+| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44381/`  |
+
+#### 3. Run
+
+1. Open the Run & Debug panel — `Ctrl+Shift+D` (Windows/Linux) or `Cmd+Shift+D` (Mac)
+2. Select a configuration from the dropdown:
+   - **Debug — Staging** — day-to-day development against staging servers
+   - **Profile — Staging** — performance profiling (DevTools)
+   - **Debug — Local** — requires local backend (`Covenant.Api` + `Covenant.IdentityServer` running)
+   - **Debug — Staging (Android/iOS)** — forces a specific platform when multiple devices are connected
+   - **Attach to Device** — attach the debugger to an already-running app
+3. Press `F5`
+
+### Build Environments
+
+```bash
+# Local (localhost services)
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
+
+# Staging
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+
+# Production
+flutter build apk --dart-define-from-file=.env.production -t lib/main_production.dart --release
+```

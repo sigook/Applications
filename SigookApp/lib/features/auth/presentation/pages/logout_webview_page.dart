@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/config/environment.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 
 class LogoutWebviewPage extends StatefulWidget {
   final String? idToken;
@@ -25,8 +25,9 @@ class _LogoutWebviewPageState extends State<LogoutWebviewPage> {
 
     _identityServerHost = Uri.parse(EnvironmentConfig.authority).host;
 
-    final baseUri = Uri.parse(EnvironmentConfig.authority)
-        .resolve('connect/endsession');
+    final baseUri = Uri.parse(
+      EnvironmentConfig.authority,
+    ).resolve('connect/endsession');
     final uri = widget.idToken != null
         ? baseUri.replace(queryParameters: {'id_token_hint': widget.idToken!})
         : baseUri;
@@ -73,15 +74,12 @@ class _LogoutWebviewPageState extends State<LogoutWebviewPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: AppTheme.primaryBlue,
+        backgroundColor: AppTheme.secondaryRed,
         title: const NavbarLogo(),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

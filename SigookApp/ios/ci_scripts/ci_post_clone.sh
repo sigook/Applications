@@ -52,6 +52,7 @@ REQUIRED_VARS=(
   API_BASE_URL
   SCOPES
   APP_NAME
+  APP_INSIGHTS_CONNECTION_STRING
 )
 
 echo "Validating environment variables..."
@@ -89,6 +90,13 @@ flutter precache --ios
 flutter pub get
 
 # ---------------------------------------
+# Run Flutter tests
+# ---------------------------------------
+echo "Running Flutter tests..."
+flutter test --reporter=expanded
+echo "✅ Flutter tests passed"
+
+# ---------------------------------------
 # pod install with retry (handles transient GitHub/CDN 502 errors)
 # ---------------------------------------
 pod_install_with_retry() {
@@ -122,7 +130,6 @@ echo "Build Version: $VERSION_NAME ($VERSION_CODE)"
 echo "Starting Flutter iOS build..."
 
 flutter build ios --release \
-  --flavor "$ENVIRONMENT" \
   -t "$ENTRY_POINT" \
   --no-codesign \
   --build-name="$VERSION_NAME" \
@@ -134,7 +141,10 @@ flutter build ios --release \
   --dart-define=REDIRECT_URI="$REDIRECT_URI" \
   --dart-define=POST_LOGOUT_REDIRECT_URI="$POST_LOGOUT_REDIRECT_URI" \
   --dart-define=SCOPES="$SCOPES" \
-  --dart-define=APP_NAME="$APP_NAME"
+  --dart-define=APP_NAME="$APP_NAME" \
+  --dart-define=APP_INSIGHTS_CONNECTION_STRING="$APP_INSIGHTS_CONNECTION_STRING"
+
+
 
 echo "================================"
 echo " Flutter iOS build completed ✅"

@@ -26,7 +26,6 @@ platform :android do
     gradle(
       project_dir: android_path,
       task: "bundle",
-      flavor: "production",
       build_type: "Release",
       print_command: true,
       properties: {
@@ -47,7 +46,6 @@ platform :android do
     gradle(
       project_dir: android_path,
       task: "assemble",
-      flavor: "production",
       build_type: "Release"
     )
   end
@@ -59,7 +57,6 @@ platform :android do
     gradle(
       project_dir: android_path,
       task: "test",
-      flavor: "production",
       build_type: "Debug"
     )
   end
@@ -68,7 +65,7 @@ platform :android do
   lane :deploy do |options|
     # Always use production package name (only one app identity now)
     package_name = ANDROID_PACKAGE_NAME
-    aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/productionRelease/*.aab", __dir__)).first
+    aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/release/*.aab", __dir__)).first
 
     if aab_path.nil? || !File.exist?(aab_path)
       UI.user_error!("❌ AAB not found at expected path. Build the app first with 'fastlane android production'")
