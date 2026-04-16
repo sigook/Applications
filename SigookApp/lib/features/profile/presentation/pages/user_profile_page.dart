@@ -111,8 +111,8 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                     unselectedLabelColor: Colors.grey.shade600,
                     indicatorColor: AppTheme.primaryBlue,
                     indicatorWeight: 3,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
+                    isScrollable: false,
+                    tabAlignment: TabAlignment.fill,
                     labelStyle: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
