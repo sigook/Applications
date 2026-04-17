@@ -2,24 +2,23 @@
   <div class="container-flex">
     <b-loading v-model="isLoading"></b-loading>
     <div class="col-12 col-padding">
-      <b-field :type="errors.has('country') ? 'is-danger' : ''"
-        :message="errors.has('country') ? errors.first('country') : ''">
+      <b-field :type="errors.country ? 'is-danger' : ''" :message="errors.country || ''">
         <template #label>
           {{ 'Country' }} <span class="has-text-danger">*</span>
         </template>
-        <b-select :placeholder="'Select'" v-model="country" name="country" v-validate="'required'" expanded
+        <b-select :placeholder="'Select'" v-model="country" name="country" expanded
           @update:modelValue="onCountrySelected">
           <option v-for="country in countries" :key="country.id" :value="country">{{ country.value }}</option>
         </b-select>
       </b-field>
     </div>
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-      <b-field :type="errors.has('province') ? 'is-danger' : ''">
+      <b-field :type="errors.province ? 'is-danger' : ''">
         <template #label>
           {{ 'Province/State' }} <span class="has-text-danger">*</span>
         </template>
         <template #message>
-          <span v-if="errors.has('province')">{{ errors.first('province') }}</span>
+          <span v-if="errors.province">{{ errors.province }}</span>
           <a v-if="provinceSelected && isPayrollManager && enableProvinceSettings"
              @click="openProvinceSettings"
              class="province-configure-link">
@@ -27,17 +26,16 @@
           </a>
         </template>
         <b-autocomplete :data="filteredProvinces" :placeholder="'Select'" v-model="province" open-on-focus
-          name="province" v-validate="'required'" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
+          name="province" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
       </b-field>
     </div>
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-      <b-field :type="errors.has('city') ? 'is-danger' : ''"
-        :message="errors.has('city') ? errors.first('city') : ''">
+      <b-field :type="errors.city ? 'is-danger' : ''" :message="errors.city || ''">
         <template #label>
           {{ 'City' }} <span class="has-text-danger">*</span>
         </template>
         <b-autocomplete :data="filteredCities" ref="autoCompleteCities" :placeholder="'Select'" v-model="city"
-          open-on-focus name="city" v-validate="'required'" :loading="loadingCities" selectable-footer @select="onCitySelected"
+          open-on-focus name="city" :loading="loadingCities" selectable-footer @select="onCitySelected"
           @select-footer="addCity">
           <template v-if="isAgency" #footer>
             <a><span> Add new... </span></a>
@@ -47,23 +45,19 @@
       </b-field>
     </div>
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-      <b-field :type="errors.has('address') ? 'is-danger' : ''"
-        :message="errors.has('address') ? errors.first('address') : ''">
+      <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address || ''">
         <template #label>
           {{ 'Address' }} <span class="has-text-danger">*</span>
         </template>
-        <b-input type="text" v-model="localModel.address" name="address"
-          v-validate="{ required: true, max: 100, min: 6, regex: $regexAddress }" />
+        <b-input type="text" v-model="address" name="address" />
       </b-field>
     </div>
     <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-      <b-field :type="errors.has('postalCode') ? 'is-danger' : ''"
-        :message="errors.has('postalCode') ? errors.first('postalCode') : ''">
+      <b-field :type="errors.postalCode ? 'is-danger' : ''" :message="errors.postalCode || ''">
         <template #label>
           {{ 'Postal/ZIP Code' }} <span class="has-text-danger">*</span>
         </template>
-        <b-input type="text" v-model="localModel.postalCode" name="postalCode"
-          v-validate="{ 'cvn-postal-code': 'cvn-postal-code' }" />
+        <b-input type="text" v-model="postalCode" name="postalCode" />
       </b-field>
     </div>
     <b-modal v-model="showProvinceSettingsModal" width="500px">
@@ -75,16 +69,85 @@
 </template>
 
 <script lang="ts">
+import { computed, reactive, watch } from 'vue';
 import { mapStores } from 'pinia';
+import { useForm } from 'vee-validate';
+import * as yup from 'yup';
 import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getCountries, getProvinces, getCities, createCity } from "@/api/locationApi";
+import { postalCodeSchema } from '@/utils/validation';
+import { appGlobals } from '@/varaibles';
+
+const addressSchema = yup.object({
+  country: yup.mixed().required('Country is required'),
+  province: yup.string().required('Province is required'),
+  city: yup.string().required('City is required'),
+  address: yup
+    .string()
+    .required('Address is required')
+    .min(6, 'Address must be at least 6 characters')
+    .max(100, 'Address must be at most 100 characters')
+    .matches(appGlobals.$regexAddress, 'Invalid address format'),
+  postalCode: postalCodeSchema(true),
+});
 
 export default {
-  setup() {
-    return { ...useBillingAdmin() };
+  setup(props: any) {
+    const { errors: formErrors, defineField, setFieldError, validate } = useForm({
+      validationSchema: addressSchema,
+      initialValues: {
+        country: null,
+        province: '',
+        city: '',
+        address: props.model?.address || '',
+        postalCode: props.model?.postalCode || '',
+      },
+    });
+
+    const [country] = defineField('country');
+    const [province] = defineField('province');
+    const [city] = defineField('city');
+    const [address] = defineField('address');
+    const [postalCode] = defineField('postalCode');
+
+    const interacted = reactive<Record<string, boolean>>({});
+    watch(country, () => { interacted.country = true; });
+    watch(province, () => { interacted.province = true; });
+    watch(city, () => { interacted.city = true; });
+    watch(address, () => { interacted.address = true; });
+    watch(postalCode, () => { interacted.postalCode = true; });
+
+    const errors = computed(() => ({
+      country: interacted.country ? (formErrors.value.country || '') : '',
+      province: interacted.province ? (formErrors.value.province || '') : '',
+      city: interacted.city ? (formErrors.value.city || '') : '',
+      address: interacted.address ? (formErrors.value.address || '') : '',
+      postalCode: interacted.postalCode ? (formErrors.value.postalCode || '') : '',
+    }));
+
+    function markAllInteracted() {
+      interacted.country = true;
+      interacted.province = true;
+      interacted.city = true;
+      interacted.address = true;
+      interacted.postalCode = true;
+    }
+
+    return {
+      ...useBillingAdmin(),
+      errors,
+      country,
+      province,
+      city,
+      address,
+      postalCode,
+      validate,
+      setFieldError,
+      markAllInteracted,
+    };
   },
   components: {
     ProvinceSettingsModal
@@ -95,12 +158,9 @@ export default {
       isLoading: false,
       localModel: JSON.parse(JSON.stringify(this.model)),
       countries: [],
-      country: null,
       provinces: [],
-      province: '',
       provinceSelected: null,
       cities: [],
-      city: '',
       citySelected: null,
       loadingProvinces: false,
       loadingCities: false,
@@ -196,25 +256,22 @@ export default {
         }
       })
     },
-    validateSelection() {
-      let valid = true;
+    async validateAddress(): Promise<boolean> {
+      (this as any).markAllInteracted();
+      const result = await (this as any).validate();
+      let valid = result.valid;
 
       if (this.province && (!this.provinceSelected || this.provinceSelected.value.toLowerCase() !== this.province.toLowerCase())) {
-        this.errors.add({ field: 'province', msg: 'Please select a province from the list' });
+        this.setFieldError('province', 'Please select a province from the list');
         valid = false;
       }
 
       if (this.city && (!this.citySelected || this.citySelected.value.toLowerCase() !== this.city.toLowerCase())) {
-        this.errors.add({ field: 'city', msg: 'Please select a city from the list' });
+        this.setFieldError('city', 'Please select a city from the list');
         valid = false;
       }
 
       return valid;
-    },
-    async validateAddress() {
-      const fieldsValid = await this.$validator.validateAll();
-      const selectionValid = this.validateSelection();
-      return fieldsValid && selectionValid;
     },
     openProvinceSettings() {
       this.showProvinceSettingsModal = true;
@@ -235,11 +292,17 @@ export default {
       },
       deep: true
     },
-    'localModel.address'() {
-      this.$emit('update:model', this.localModel);
+    address() {
+      if (this.localModel) {
+        this.localModel.address = this.address;
+        this.$emit('update:model', this.localModel);
+      }
     },
-    'localModel.postalCode'() {
-      this.$emit('update:model', this.localModel);
+    postalCode() {
+      if (this.localModel) {
+        this.localModel.postalCode = this.postalCode;
+        this.$emit('update:model', this.localModel);
+      }
     },
     province(newVal) {
       if (this.provinceSelected && this.provinceSelected.value !== newVal) {
@@ -258,11 +321,11 @@ export default {
   computed: {
     ...mapStores(useSecurityStore),
     filteredProvinces() {
-      const provinces = this.provinces.filter(c => c.value.toLowerCase().includes(this.province.toLowerCase()));
+      const provinces = this.provinces.filter(c => c.value.toLowerCase().includes((this.province || '').toLowerCase()));
       return provinces;
     },
     filteredCities() {
-      const cities = this.cities.filter(c => c.value.toLowerCase().includes(this.city.toLowerCase()));
+      const cities = this.cities.filter(c => c.value.toLowerCase().includes((this.city || '').toLowerCase()));
       return cities;
     },
     isAgency() {

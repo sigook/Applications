@@ -2,7 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
+      <b-button type="is-ghost" icon-right="plus-circle" @click="openAddContactModal">Add</b-button>
     </b-field>
     <b-table :data="localAgencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated
       pagination-rounded>
@@ -36,55 +36,55 @@
       <div class="p-3">
         <div class="container-flex">
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Title" :type="errors.has('title') ? 'is-danger' : ''"
-              :message="errors.has('title') ? errors.first('title') : ''">
-              <b-select v-model="contact.title" v-validate="'required'" name="title" expanded>
-                <option :value="item" v-for="(item, idx) in ['Mr','Mrs','Ms','Miss','Mx','Master','Madam']" :key="idx">{{ item }}</option>
+            <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
+              :message="formErrors.title || ''">
+              <b-select v-model="title" name="title" expanded>
+                <option :value="item" v-for="(item, idx) in titleOptions" :key="idx">{{ item }}</option>
               </b-select>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="First Name" :type="errors.has('first name') ? 'is-danger' : ''"
-              :message="errors.has('first name') ? errors.first('first name') : ''">
-              <b-input v-model="contact.firstName" v-validate="'required|max:20|min:2'" name="first name" />
+            <b-field label="First Name" :type="formErrors.firstName ? 'is-danger' : ''"
+              :message="formErrors.firstName || ''">
+              <b-input v-model="firstName" name="first name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Middle Name" :type="errors.has('middle name') ? 'is-danger' : ''"
-              :message="errors.has('middle name') ? errors.first('middle name') : ''">
-              <b-input v-model="contact.middleName" v-validate="'max:20|min:1'" name="middle name" />
+            <b-field label="Middle Name" :type="formErrors.middleName ? 'is-danger' : ''"
+              :message="formErrors.middleName || ''">
+              <b-input v-model="middleName" name="middle name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Last Name" :type="errors.has('last name') ? 'is-danger' : ''"
-              :message="errors.has('last name') ? errors.first('last name') : ''">
-              <b-input v-model="contact.lastName" v-validate="'required|max:20|min:2'" name="last name" />
+            <b-field label="Last Name" :type="formErrors.lastName ? 'is-danger' : ''"
+              :message="formErrors.lastName || ''">
+              <b-input v-model="lastName" name="last name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Email" :type="errors.has('email') ? 'is-danger' : ''"
-              :message="errors.has('email') ? errors.first('email') : ''">
-              <b-input v-model="contact.email" v-validate="'required|email'" name="email" />
+            <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
+              :message="formErrors.email || ''">
+              <b-input v-model="email" name="email" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Position" :type="errors.has('position') ? 'is-danger' : ''"
-              :message="errors.has('position') ? errors.first('position') : ''">
-              <b-input v-model="contact.position" v-validate="'required|max:30|min:3'" name="position" />
+            <b-field label="Position" :type="formErrors.position ? 'is-danger' : ''"
+              :message="formErrors.position || ''">
+              <b-input v-model="position" name="position" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <phone-input ref="mobileComponent" :required="true" :defaultValue="contact.mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone) => contact.mobileNumber = phone" />
+            <phone-input ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
+              model="Mobile Number" @formattedPhone="(phone) => mobileNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <phone-input ref="officeComponent" :required="false" :defaultValue="contact.officeNumber"
-              model="Office Number" @formattedPhone="(phone) => contact.officeNumber = phone" />
+            <phone-input ref="officeComponent" :required="false" :defaultValue="officeNumber"
+              model="Office Number" @formattedPhone="(phone) => officeNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <b-field label="Ext" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
-              :message="errors.has('officeNumberExt') ? errors.first('officeNumberExt') : ''">
-              <b-input v-model="contact.officeNumberExt" v-validate="'max:8|min:1|numeric'" name="officeNumberExt" />
+            <b-field label="Ext" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
+              :message="formErrors.officeNumberExt || ''">
+              <b-input v-model="officeNumberExt" name="officeNumberExt" />
             </b-field>
           </div>
           <div class="col-12 col-padding">
@@ -97,52 +97,108 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertSuccess } from "@/utils/toast";
 import { updateAgency } from "@/api/agencyApi";
 
+const numericExt = yup
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+  .matches(/^\d{1,8}$/, { message: 'Must be 1-8 digits', excludeEmptyString: true });
+
+const schema = yup.object({
+  title: yup.string().required('Title is required'),
+  firstName: yup.string().required('First name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(1, 'Min 1 character').max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  email: yup.string().required('Email is required').email('Invalid email'),
+  position: yup.string().required('Position is required').min(3, 'Min 3 characters').max(30, 'Max 30 characters'),
+  mobileNumber: yup.string().nullable(),
+  officeNumber: yup.string().nullable(),
+  officeNumberExt: numericExt,
+});
+
 export default {
   props: ['agencyData'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        title: '',
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        email: '',
+        position: '',
+        mobileNumber: '',
+        officeNumber: '',
+        officeNumberExt: '',
+      },
+    });
+
+    const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      resetForm: form.resetAll,
+      titleOptions,
+    };
+  },
   data() {
     return {
       isLoading: false,
       showModal: false,
-      contact: {},
-      localAgencyData: JSON.parse(JSON.stringify(this.agencyData))
-    }
+      localAgencyData: JSON.parse(JSON.stringify((this as any).agencyData)),
+    };
   },
   watch: {
     agencyData: {
       handler(newVal) {
         this.localAgencyData = JSON.parse(JSON.stringify(newVal));
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
   },
   methods: {
+    openAddContactModal() {
+      this.resetForm();
+      this.showModal = true;
+    },
     async validateForm() {
-      const mobileValid = await this.$refs.mobileComponent.validatePhone();
-      const officeValid = await this.$refs.officeComponent.validatePhone();
-      const valid = await this.$validator.validateAll();
-      if (mobileValid && officeValid && valid) {
+      this.markInteracted();
+      const mobileValid = await (this.$refs.mobileComponent as any).validatePhone();
+      const officeValid = await (this.$refs.officeComponent as any).validatePhone();
+      this.handleSubmit((values) => {
+        if (!mobileValid || !officeValid) return;
         this.isLoading = true;
-        this.localAgencyData.contactInformation.push(this.contact);
+        const contact = {
+          ...values,
+          officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+        };
+        this.localAgencyData.contactInformation.push(contact);
         this.$emit('update:agencyData', this.localAgencyData);
         updateAgency(this.localAgencyData)
           .then(() => {
             this.isLoading = false;
             this.showModal = false;
-            showAlertSuccess("Updated");
+            this.resetForm();
+            showAlertSuccess('Updated');
           })
           .catch(() => {
             this.isLoading = false;
           });
-      }
+      })();
     },
-    removeContact(index) {
+    removeContact(index: number) {
       this.isLoading = true;
       this.localAgencyData.contactInformation.splice(index, 1);
       this.$emit('update:agencyData', this.localAgencyData);
@@ -154,7 +210,7 @@ export default {
         .catch(() => {
           this.isLoading = false;
         });
-    }
-  }
-}
+    },
+  },
+};
 </script>

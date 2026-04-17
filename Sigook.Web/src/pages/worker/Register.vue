@@ -17,41 +17,41 @@
               </div>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-field :type="errors.has('name') ? 'is-danger' : ''"
-                :message="errors.has('name') ? errors.first('name') : ''">
+              <b-field :type="errors.firstName ? 'is-danger' : ''"
+                :message="errors.firstName || ''">
                 <template #label>
                   {{ 'Name' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="text" v-model="worker.firstName" name="name" v-validate="'required|max:20|min:2'" />
+                <b-input type="text" v-model="firstName" name="name" />
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-field :type="errors.has('lastname') ? 'is-danger' : ''"
-                :message="errors.has('lastname') ? errors.first('lastname') : ''">
+              <b-field :type="errors.lastName ? 'is-danger' : ''"
+                :message="errors.lastName || ''">
                 <template #label>
                   {{ 'Last Name' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="text" v-model="worker.lastName" name="lastname" v-validate="'required|max:20|min:2'" />
+                <b-input type="text" v-model="lastName" name="lastname" />
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-field :type="errors.has('birthday') ? 'is-danger' : ''"
-                :message="errors.has('birthday') ? errors.first('birthday') : ''">
+              <b-field :type="errors.birthDay ? 'is-danger' : ''"
+                :message="errors.birthDay || ''">
                 <template #label>
                   {{ 'Date of birth' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-datepicker v-model="worker.birthDay" name="birthday" :focused-date="disabledDates"
-                  :max-date="disabledDates" v-validate="'required'">
+                <b-datepicker v-model="birthDay" name="birthday" :focused-date="disabledDates"
+                  :max-date="disabledDates">
                 </b-datepicker>
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-field :type="errors.has('gender') ? 'is-danger' : ''"
-                :message="errors.has('gender') ? errors.first('gender') : ''">
+              <b-field :type="errors.gender ? 'is-danger' : ''"
+                :message="errors.gender || ''">
                 <template #label>
                   {{ 'Gender' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-select v-model="gender" name="gender" v-validate="'required'" expanded>
+                <b-select v-model="gender" name="gender" expanded>
                   <option v-for="item in genders" v-bind:key="item.id" :value="item.id">
                     {{ item.value }}
                   </option>
@@ -147,8 +147,8 @@
                   :create-tag="addSkill">
                 </b-taginput>
               </b-field>
-              <span v-show="errors.has('workerSkills')" class="help is-danger no-margin">
-                {{ errors.first("workerSkills") }}
+              <span v-show="errors.workerSkills" class="help is-danger no-margin">
+                {{ errors.workerSkills || '' }}
               </span>
             </div>
           </div>
@@ -210,15 +210,15 @@
                     </div>
                     <div class="container-flex">
                       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                        <b-field :type="errors.has('identificationType1') ? 'is-danger' : ''"
-                          :message="errors.has('identificationType1') ? errors.first('identificationType1') : ''">
+                        <b-field :type="errors.identificationType1 ? 'is-danger' : ''"
+                          :message="errors.identificationType1 || ''">
                           <template #label>
                             Identification Type <span class="has-text-danger">*</span>
                           </template>
-                          <b-select v-model="worker.identificationType1" name="identificationType1"
-                            v-validate="{ required: true }" placeholder="Select identification type" expanded>
+                          <b-select v-model="identificationType1" name="identificationType1"
+                            placeholder="Select identification type" expanded>
                             <option v-for="(type, index) in identificationTypes" :value="type"
-                              :disabled="type === worker.identificationType2"
+                              :disabled="type === identificationType2"
                               v-bind:key="'identificationType1' + index">
                               {{ type.value }}
                             </option>
@@ -226,14 +226,13 @@
                         </b-field>
                       </div>
                       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                        <b-field :type="errors.has('identificationNumber1') ? 'is-danger' : ''"
-                          :message="errors.has('identificationNumber1') ? errors.first('identificationNumber1') : ''">
+                        <b-field :type="errors.identificationNumber1 ? 'is-danger' : ''"
+                          :message="errors.identificationNumber1 || ''">
                           <template #label>
                             Identification Number <span class="has-text-danger">*</span>
                           </template>
                           <b-input type="text" :placeholder="'Identification Number'"
-                            v-model="worker.identificationNumber1" name="identificationNumber1"
-                            v-validate="'required|max:15|min:5'" />
+                            v-model="identificationNumber1" name="identificationNumber1" />
                         </b-field>
                       </div>
                     </div>
@@ -260,15 +259,15 @@
                     </div>
                     <div class="container-flex">
                       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                        <b-field :type="errors.has('identificationType2') ? 'is-danger' : ''"
-                          :message="errors.has('identificationType2') ? errors.first('identificationType2') : ''">
+                        <b-field :type="errors.identificationType2 ? 'is-danger' : ''"
+                          :message="errors.identificationType2 || ''">
                           <template #label>
                             Identification Type <span class="has-text-danger">*</span>
                           </template>
-                          <b-select v-model="worker.identificationType2" name="identificationType2"
-                            v-validate="{ required: true }" placeholder="Select identification type" expanded>
+                          <b-select v-model="identificationType2" name="identificationType2"
+                            placeholder="Select identification type" expanded>
                             <option v-for="(type, index) in identificationTypes" :value="type"
-                              :disabled="type === worker.identificationType1"
+                              :disabled="type === identificationType1"
                               v-bind:key="'identificationType2' + index">
                               {{ type.value }}
                             </option>
@@ -276,14 +275,13 @@
                         </b-field>
                       </div>
                       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                        <b-field :type="errors.has('identificationNumber2') ? 'is-danger' : ''"
-                          :message="errors.has('identificationNumber2') ? errors.first('identificationNumber2') : ''">
+                        <b-field :type="errors.identificationNumber2 ? 'is-danger' : ''"
+                          :message="errors.identificationNumber2 || ''">
                           <template #label>
                             Identification Number <span class="has-text-danger">*</span>
                           </template>
                           <b-input type="text" :placeholder="'Identification Number'"
-                            v-model="worker.identificationNumber2" name="identificationNumber2"
-                            v-validate="'required|max:15|min:5'" />
+                            v-model="identificationNumber2" name="identificationNumber2" />
                         </b-field>
                       </div>
                     </div>
@@ -336,27 +334,22 @@
                     </div>
                     <div class="container-flex">
                       <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
-                        <b-field :type="errors.has('description' + index) ? 'is-danger' : ''"
-                          :message="errors.has('description' + index) ? errors.first('description' + index) : ''">
+                        <b-field :type="itemErrors['description' + index] ? 'is-danger' : ''"
+                          :message="itemErrors['description' + index] || ''">
                           <template #label>
                             Description <span class="has-text-danger">*</span>
                           </template>
                           <b-input type="text" :placeholder="'Description'" v-model="item.license.description"
-                            :name="'description' + index" v-validate="{
-                              required: true,
-                              max: 100,
-                              min: 1,
-                              regex: alphaNumericSpaces
-                            }" />
+                            :name="'description' + index" />
                         </b-field>
                       </div>
                       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-                        <b-field :type="errors.has('licenseExpires' + index) ? 'is-danger' : ''"
-                          :message="errors.has('licenseExpires' + index) ? errors.first('licenseExpires' + index) : ''">
+                        <b-field :type="itemErrors['licenseExpires' + index] ? 'is-danger' : ''"
+                          :message="itemErrors['licenseExpires' + index] || ''">
                           <template #label>
                             Expires In <span class="has-text-danger">*</span>
                           </template>
-                          <b-datepicker v-model="item.expires" :name="'licenseExpires' + index" v-validate="'required'">
+                          <b-datepicker v-model="item.expires" :name="'licenseExpires' + index">
                           </b-datepicker>
                         </b-field>
                       </div>
@@ -403,16 +396,11 @@
                         </b-tooltip>
                       </div>
                     </div>
-                    <b-field :type="errors.has('descriptioncer' + index) ? 'is-danger' : ''"
-                      :message="errors.has('descriptioncer' + index) ? errors.first('descriptioncer' + index) : ''"
+                    <b-field :type="itemErrors['descriptioncer' + index] ? 'is-danger' : ''"
+                      :message="itemErrors['descriptioncer' + index] || ''"
                       label="Description">
                       <b-input type="text" placeholder="Description" v-model="item.description"
-                        :name="'descriptioncer' + index" v-validate="{
-                          required: true,
-                          max: 100,
-                          min: 1,
-                          regex: alphaNumericSpaces
-                        }" />
+                        :name="'descriptioncer' + index" />
                     </b-field>
                   </div>
                 </div>
@@ -516,16 +504,11 @@
                         </b-tooltip>
                       </div>
                     </div>
-                    <b-field :type="errors.has('descriptionOther' + index) ? 'is-danger' : ''"
-                      :message="errors.has('descriptionOther' + index) ? errors.first('descriptionOther' + index) : ''"
+                    <b-field :type="itemErrors['descriptionOther' + index] ? 'is-danger' : ''"
+                      :message="itemErrors['descriptionOther' + index] || ''"
                       label="Description">
                       <b-input type="text" placeholder="Description" v-model="item.description"
-                        :name="'descriptionOther' + index" v-validate="{
-                          required: true,
-                          max: 100,
-                          min: 1,
-                          regex: alphaNumericSpaces
-                        }" />
+                        :name="'descriptionOther' + index" />
                     </b-field>
                   </div>
                 </div>
@@ -545,40 +528,36 @@
           <h1 class="title has-text-centered">Account</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <b-field :type="errors.has('email') ? 'is-danger' : ''"
-                :message="errors.has('email') ? errors.first('email') : ''">
+              <b-field :type="errors.email ? 'is-danger' : ''"
+                :message="errors.email || ''">
                 <template #label>
                   {{ 'Email' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="email" v-model="worker.email" name="email" v-validate="'required|max:50|min:6|email'"
-                  :class="{ 'is-danger': errors.has('email') }" />
+                <b-input type="email" v-model="email" name="email"
+                  :class="{ 'is-danger': !!errors.email }" />
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-              <b-field :type="errors.has('password') ? 'is-danger' : ''"
-                :message="errors.has('password') ? errors.first('password') : ''">
+              <b-field :type="errors.password ? 'is-danger' : ''"
+                :message="errors.password || ''">
                 <template #label>
                   {{ 'Password' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="password" v-model="worker.password" name="password" v-validate="'required|max:100|min:6'"
-                  data-vv-as="password" ref="password" />
+                <b-input type="password" v-model="password" name="password" />
               </b-field>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-              <b-field :type="errors.has('confirmPassword') ? 'is-danger' : ''"
-                :message="errors.has('confirmPassword') ? errors.first('confirmPassword') : ''">
+              <b-field :type="errors.confirmPassword ? 'is-danger' : ''"
+                :message="errors.confirmPassword || ''">
                 <template #label>
                   {{ 'Confirm Password' }} <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="password" v-model="worker.confirmPassword" name="confirmPassword"
-                  v-validate="'required|confirmed:password'" />
+                <b-input type="password" v-model="confirmPassword" name="confirmPassword" />
               </b-field>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="!isLogin">
               <b-field>
-                <b-checkbox v-model="worker.agreeTermsAndConditions" name="agree terms" v-validate="{
-                  required: !isLogin
-                }">
+                <b-checkbox v-model="agreeTermsAndConditions" name="agree terms">
                   {{ "I agree Sigook™" }}
                   <router-link to="/terms-and-conditions" target="_blank">
                     <u class="color-primary">{{ "Terms and Conditions" }}</u>
@@ -589,8 +568,8 @@
                   </router-link>
                 </b-checkbox>
               </b-field>
-              <span v-show="errors.has('agree terms')" class="help is-danger no-margin">
-                {{ "You must accept the Terms & Conditions to continue" }}.
+              <span v-show="errors.agreeTermsAndConditions" class="help is-danger no-margin">
+                {{ errors.agreeTermsAndConditions || '' }}
               </span>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -611,20 +590,142 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, reactive, ref, computed, watch, toRefs } from 'vue';
 import { mapStores } from 'pinia';
+import { useForm, useField } from 'vee-validate';
+import * as yup from 'yup';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { registerWorker } from "@/api/workerApi";
 import { useCreateWorker } from "@/composables/useCreateWorker";
+import { usePubSub } from "@/composables/usePubSub";
 import { filename } from '@/utils/filters';
 import { confirmationGuard } from '@/utils/confirmationGuard';
 import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+
+const alphaNumericSpacesRegex = /^[-_ a-zA-Z0-9]+$/;
+
 export default {
   setup() {
-    return { ...useCreateWorker() };
+    const createWorker = useCreateWorker();
+    const pubSub = usePubSub();
+    const securityStore = useSecurityStore();
+
+    const worker = createWorker.worker;
+    const isLogin = computed(() => !!securityStore.user);
+    const hasSecondId = computed(() => !!worker.identificationType2File);
+
+    const validationSchema = computed(() => {
+      const shape: Record<string, any> = {
+        firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+        lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+        birthDay: yup.mixed().required('Date of birth is required'),
+        gender: yup.mixed().required('Gender is required'),
+        identificationType1: yup.mixed().required('Identification type is required'),
+        identificationNumber1: yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+        email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
+        password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
+        confirmPassword: yup
+          .string()
+          .required('Confirm password is required')
+          .oneOf([yup.ref('password')], 'Passwords must match'),
+      };
+      if (hasSecondId.value) {
+        shape.identificationType2 = yup.mixed().required('Identification type is required');
+        shape.identificationNumber2 = yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters');
+      }
+      if (!isLogin.value) {
+        shape.agreeTermsAndConditions = yup
+          .boolean()
+          .oneOf([true], 'You must accept the Terms & Conditions to continue');
+      }
+      return yup.object(shape);
+    });
+
+    const { errors: formErrors, setFieldValue, setFieldError, validateField } = useForm({
+      validationSchema,
+      initialValues: {
+        firstName: '',
+        lastName: '',
+        birthDay: null,
+        gender: null,
+        identificationType1: null,
+        identificationNumber1: '',
+        identificationType2: null,
+        identificationNumber2: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        agreeTermsAndConditions: false,
+      },
+    });
+
+    const { value: firstName } = useField<string>('firstName');
+    const { value: lastName } = useField<string>('lastName');
+    const { value: birthDay } = useField<any>('birthDay');
+    const { value: gender } = useField<any>('gender');
+    const { value: identificationType1 } = useField<any>('identificationType1');
+    const { value: identificationNumber1 } = useField<string>('identificationNumber1');
+    const { value: identificationType2 } = useField<any>('identificationType2');
+    const { value: identificationNumber2 } = useField<string>('identificationNumber2');
+    const { value: email } = useField<string>('email');
+    const { value: password } = useField<string>('password');
+    const { value: confirmPassword } = useField<string>('confirmPassword');
+    const { value: agreeTermsAndConditions } = useField<boolean>('agreeTermsAndConditions');
+
+    const interacted = reactive<Record<string, boolean>>({});
+    watch(firstName, () => { interacted.firstName = true; });
+    watch(lastName, () => { interacted.lastName = true; });
+    watch(birthDay, () => { interacted.birthDay = true; });
+    watch(gender, () => { interacted.gender = true; });
+    watch(identificationType1, () => { interacted.identificationType1 = true; });
+    watch(identificationNumber1, () => { interacted.identificationNumber1 = true; });
+    watch(identificationType2, () => { interacted.identificationType2 = true; });
+    watch(identificationNumber2, () => { interacted.identificationNumber2 = true; });
+    watch(email, () => { interacted.email = true; });
+    watch(password, () => { interacted.password = true; });
+    watch(confirmPassword, () => { interacted.confirmPassword = true; });
+    watch(agreeTermsAndConditions, () => { interacted.agreeTermsAndConditions = true; });
+
+    const errors = computed(() => {
+      const out: Record<string, string> = {};
+      for (const key of Object.keys(formErrors.value)) {
+        out[key] = interacted[key] ? (formErrors.value[key] || '') : '';
+      }
+      return out;
+    });
+
+    function markInteracted(fields: string[]) {
+      for (const f of fields) interacted[f] = true;
+    }
+
+    const itemErrors = reactive<Record<string, string>>({});
+
+    return {
+      ...createWorker,
+      ...pubSub,
+      errors,
+      setFieldValue,
+      setFieldError,
+      validateField,
+      markInteracted,
+      firstName,
+      lastName,
+      birthDay,
+      gender,
+      identificationType1,
+      identificationNumber1,
+      identificationType2,
+      identificationNumber2,
+      email,
+      password,
+      confirmPassword,
+      agreeTermsAndConditions,
+      itemErrors,
+      isLogin,
+    };
   },
   components: {
     uploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue")),
@@ -636,11 +737,9 @@ export default {
       activeStep: 0,
       unsavedChanges: false,
       showWorkInformationTab: true,
-      alphaNumericSpaces: /^[-_ a-zA-Z0-9]+$/,
       disableStartDate: null,
       submitted: false,
       isLoading: true,
-      gender: null,
       disabledDates: null,
       isCanada: false,
       selectedDocumentFile: null,
@@ -663,13 +762,11 @@ export default {
   methods: {
     filename,
     async validateForm() {
-      const step4Fields = ['email', 'password', 'confirmPassword'];
-      if (!this.isLogin) {
-        step4Fields.push('agree terms');
-      }
-      const results = await Promise.all(step4Fields.map(f => this.$validator.validate(f)));
-      const allValid = results.every(r => r);
-
+      const fields = ['email', 'password', 'confirmPassword'];
+      if (!this.isLogin) fields.push('agreeTermsAndConditions');
+      this.markInteracted(fields);
+      const results = await Promise.all(fields.map(f => this.validateField(f)));
+      const allValid = results.every((r: any) => r.valid);
       if (allValid) {
         this.registerWorker();
       } else {
@@ -703,41 +800,87 @@ export default {
       }
     },
     async validateStep1() {
-      const step1Fields = ['name', 'lastname', 'birthday', 'gender'];
-      const results = await Promise.all(step1Fields.map(f => this.$validator.validate(f)));
+      const fields = ['firstName', 'lastName', 'birthDay', 'gender'];
+      this.markInteracted(fields);
+      const results = await Promise.all(fields.map(f => this.validateField(f)));
+      const fieldsValid = results.every((r: any) => r.valid);
       const addressValid = await this.$refs.addressComponent.validateAddress();
       const phoneValid = await this.$refs.phoneComponent.validatePhone();
-      return results.every(r => r) && addressValid && phoneValid;
+      return fieldsValid && addressValid && phoneValid;
     },
     async validateStep3() {
       this.documentsError = !this.worker.identificationType1File;
       if (this.documentsError) return false;
 
-      const fields = [];
-      if (this.worker.identificationType1File) {
-        fields.push('identificationType1', 'identificationNumber1');
-      }
+      const fields = ['identificationType1', 'identificationNumber1'];
       if (this.worker.identificationType2File) {
         fields.push('identificationType2', 'identificationNumber2');
       }
-      this.worker.licenses.forEach((_, i) => {
-        fields.push('description' + i, 'licenseExpires' + i);
-      });
-      this.worker.certificates.forEach((_, i) => {
-        fields.push('descriptioncer' + i);
-      });
-      this.worker.otherDocuments.forEach((_, i) => {
-        fields.push('descriptionOther' + i);
-      });
+      this.markInteracted(fields);
+      const results = await Promise.all(fields.map(f => this.validateField(f)));
+      let valid = results.every((r: any) => r.valid);
 
-      const registeredFields = fields.filter(f => this.$validator.fields.find({ name: f }));
-      if (registeredFields.length === 0) return true;
-
-      const results = await Promise.all(registeredFields.map(f => this.$validator.validate(f)));
-      return results.every(r => r);
+      const next: Record<string, string> = {};
+      this.worker.licenses.forEach((item: any, i: number) => {
+        const desc = item?.license?.description || '';
+        if (!desc) {
+          next['description' + i] = 'Description is required';
+          valid = false;
+        } else if (desc.length > 100) {
+          next['description' + i] = 'Max 100 characters';
+          valid = false;
+        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+          next['description' + i] = 'Only letters, numbers, spaces and -_';
+          valid = false;
+        }
+        if (!item.expires) {
+          next['licenseExpires' + i] = 'Expiration date is required';
+          valid = false;
+        }
+      });
+      this.worker.certificates.forEach((item: any, i: number) => {
+        const desc = item?.description || '';
+        if (!desc) {
+          next['descriptioncer' + i] = 'Description is required';
+          valid = false;
+        } else if (desc.length > 100) {
+          next['descriptioncer' + i] = 'Max 100 characters';
+          valid = false;
+        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+          next['descriptioncer' + i] = 'Only letters, numbers, spaces and -_';
+          valid = false;
+        }
+      });
+      this.worker.otherDocuments.forEach((item: any, i: number) => {
+        const desc = item?.description || '';
+        if (!desc) {
+          next['descriptionOther' + i] = 'Description is required';
+          valid = false;
+        } else if (desc.length > 100) {
+          next['descriptionOther' + i] = 'Max 100 characters';
+          valid = false;
+        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+          next['descriptionOther' + i] = 'Only letters, numbers, spaces and -_';
+          valid = false;
+        }
+      });
+      Object.keys(this.itemErrors).forEach(k => delete this.itemErrors[k]);
+      Object.assign(this.itemErrors, next);
+      return valid;
     },
     async registerWorker() {
       this.isLoading = true;
+      this.worker.firstName = this.firstName;
+      this.worker.lastName = this.lastName;
+      this.worker.birthDay = this.birthDay;
+      this.worker.identificationType1 = this.identificationType1;
+      this.worker.identificationNumber1 = this.identificationNumber1;
+      this.worker.identificationType2 = this.identificationType2;
+      this.worker.identificationNumber2 = this.identificationNumber2;
+      this.worker.email = this.email;
+      this.worker.password = this.password;
+      this.worker.confirmPassword = this.confirmPassword;
+      this.worker.agreeTermsAndConditions = this.agreeTermsAndConditions;
       this.worker.gender = { id: this.gender };
 
       try {
@@ -799,16 +942,16 @@ export default {
           fileName: file.name,
           description: ""
         };
-        this.worker.identificationType1 = null;
-        this.worker.identificationNumber1 = null;
+        this.setFieldValue('identificationType1', null);
+        this.setFieldValue('identificationNumber1', '');
       } else {
         this.fileObjects.identificationType2 = file;
         this.worker.identificationType2File = {
           fileName: file.name,
           description: ""
         };
-        this.worker.identificationType2 = null;
-        this.worker.identificationNumber2 = null;
+        this.setFieldValue('identificationType2', null);
+        this.setFieldValue('identificationNumber2', '');
       }
       this.documentsError = false;
     },
@@ -820,22 +963,22 @@ export default {
           ...this.worker.identificationType2File
         };
         this.fileObjects.identificationType1 = this.fileObjects.identificationType2;
-        this.worker.identificationType1 = this.worker.identificationType2;
-        this.worker.identificationNumber1 = this.worker.identificationNumber2;
+        this.setFieldValue('identificationType1', this.identificationType2);
+        this.setFieldValue('identificationNumber1', this.identificationNumber2);
         this.fileObjects.identificationType2 = null;
         this.worker.identificationType2File = null;
-        this.worker.identificationType2 = null;
-        this.worker.identificationNumber2 = null;
+        this.setFieldValue('identificationType2', null);
+        this.setFieldValue('identificationNumber2', '');
       } else if (isFile1) {
         this.fileObjects.identificationType1 = null;
         this.worker.identificationType1File = null;
-        this.worker.identificationType1 = null;
-        this.worker.identificationNumber1 = null;
+        this.setFieldValue('identificationType1', null);
+        this.setFieldValue('identificationNumber1', '');
       } else {
         this.fileObjects.identificationType2 = null;
         this.worker.identificationType2File = null;
-        this.worker.identificationType2 = null;
-        this.worker.identificationNumber2 = null;
+        this.setFieldValue('identificationType2', null);
+        this.setFieldValue('identificationNumber2', '');
       }
     },
     addLicense(file) {
@@ -885,7 +1028,11 @@ export default {
     },
     saveImage(image) {
       this.fileObjects.profileImage = image;
-      this.worker.profileImage.fileName = image.name;
+      if (!this.worker.profileImage) {
+        this.worker.profileImage = { fileName: image.name };
+      } else {
+        this.worker.profileImage.fileName = image.name;
+      }
     },
     addSkill(skill) {
       if (!skill.skill) {
@@ -916,10 +1063,7 @@ export default {
     });
   },
   computed: {
-    ...mapStores(useAppStore, useSecurityStore),
-    isLogin() {
-      return this.securityStore.user ? true : false;
-    }
+    ...mapStores(useAppStore, useSecurityStore)
   }
 };
 </script>

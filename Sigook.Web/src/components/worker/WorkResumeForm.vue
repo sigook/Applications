@@ -74,13 +74,7 @@ export default {
       this.resume = { fileName: '', description: '' };
     },
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveResume();
-          return;
-        }
-        showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      this.saveResume();
     },
     async saveResume() {
       this.isLoading = true;

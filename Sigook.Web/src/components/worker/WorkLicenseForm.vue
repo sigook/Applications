@@ -24,34 +24,33 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
-        <b-field :type="errors.has('license description') ? 'is-danger' : ''"
-          :message="errors.has('license description') ? errors.first('license description') : ''">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
           <template #label>
             {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
-          <b-input type="text" v-model="licenseModal.license.description" name="license description"
-            v-validate="'required|max:100'" />
+          <b-input type="text" v-model="description" name="license description" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Number">
-          <b-input type="text" v-model="licenseModal.number" />
+          <b-input type="text" v-model="number" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Issued">
-          <b-datepicker v-model="licenseModal.issued" :focused-date="todayDate" :max-date="todayDate"
+          <b-datepicker v-model="issued" :focused-date="todayDate" :max-date="todayDate"
             position="is-top-left" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('licenseExpires') ? 'is-danger' : ''"
-          :message="errors.has('licenseExpires') ? errors.first('licenseExpires') : ''">
+        <b-field :type="formErrors.expires ? 'is-danger' : ''"
+          :message="formErrors.expires || ''">
           <template #label>
             Expires <span class="has-text-danger">*</span>
           </template>
-          <b-datepicker v-model="licenseModal.expires" :focused-date="todayDate" :min-date="todayDate"
-            position="is-top-left" name="licenseExpires" v-validate="'required'" />
+          <b-datepicker v-model="expires" :focused-date="todayDate" :min-date="todayDate"
+            position="is-top-left" name="licenseExpires" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
@@ -64,33 +63,52 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerLicenses } from '@/api/workerApi';
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(100, 'Max 100 characters'),
+  number: yup.string().nullable(),
+  issued: yup.mixed().nullable(),
+  expires: yup.mixed().required('Expires is required'),
+});
 
 export default {
   props: ["data"],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        description: '',
+        number: '',
+        issued: null as Date | null,
+        expires: null as Date | null,
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
-      todayDate: null,
+      todayDate: null as any,
       isLoading: false,
-      selectedLicenseFile: null,
-      fileObjects: {
-        license: null
-      },
+      selectedLicenseFile: null as any,
+      fileObjects: { license: null as any },
       licenseModal: {
-        license: {
-          fileName: "",
-          description: ""
-        },
-        number: "",
-        issued: null,
-        expires: null
-      },
-      licenses: []
+        license: { fileName: "", description: "" },
+      } as any,
+      licenses: [] as any[],
     };
   },
   computed: {
@@ -98,7 +116,7 @@ export default {
   },
   methods: {
     filename,
-    handleLicenseFileSelected(file) {
+    handleLicenseFileSelected(file: any) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
         showAlertError('File exceeds 15MB limit');
@@ -107,7 +125,7 @@ export default {
       }
       this.fileObjects.license = file;
       const generatedName = generateFileName('License', file.name);
-      this.licenseModal.license = { fileName: generatedName, description: this.licenseModal.license.description || '' };
+      this.licenseModal.license = { fileName: generatedName, description: '' };
       this.selectedLicenseFile = null;
     },
     clearLicenseFile() {
@@ -115,43 +133,52 @@ export default {
       this.licenseModal.license = { fileName: '', description: '' };
     },
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveLicenses();
-          return;
-        }
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.saveLicenses(values);
+      }, () => {
         showAlertError("Please make sure all required fields are filled out correctly");
-      });
+      })();
     },
-    async saveLicenses() {
+    async saveLicenses(values: any) {
       this.isLoading = true;
       try {
-        const allLicenses = [...this.licenses, this.licenseModal];
+        const newLicense = {
+          license: {
+            fileName: this.licenseModal.license.fileName,
+            description: values.description,
+          },
+          number: values.number,
+          issued: values.issued,
+          expires: values.expires,
+        };
+        const allLicenses = [...this.licenses, newLicense];
         const formData = new FormData();
         formData.append('data', JSON.stringify(allLicenses));
         if (this.fileObjects.license) {
-          const fn = this.licenseModal.license.fileName;
+          const fn = newLicense.license.fileName;
           formData.append(fn, this.fileObjects.license, fn);
         }
-        await createWorkerLicenses(this.data.id, formData);
+        await createWorkerLicenses((this as any).data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         showAlertError(error);
       } finally {
         this.isLoading = false;
       }
-    }
+    },
   },
   created() {
-    if (this.data != null) {
-      for (let i = 0; i < this.data.licenses.length; i++) {
-        this.licenses.push(this.data.licenses[i]);
+    const data = (this as any).data;
+    if (data != null) {
+      for (let i = 0; i < data.licenses.length; i++) {
+        this.licenses.push(data.licenses[i]);
       }
     }
-    this.appStore.getCurrentDate().then((response) => {
+    (this as any).appStore.getCurrentDate().then((response: any) => {
       this.todayDate = response;
     });
-  }
+  },
 };
 </script>
 

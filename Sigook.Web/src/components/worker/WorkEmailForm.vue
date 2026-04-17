@@ -8,18 +8,16 @@
     </b-message>
     <div class="container-flex">
       <div class="col-12">
-        <b-field label="New Email" :type="errors.has('newEmail') ? 'is-danger' : ''"
-          :message="errors.has('newEmail') ? errors.first('newEmail') : ''">
-          <b-input type="email" v-model="newEmail" name="newEmail" v-validate="'required|email'" data-vv-as="newEmail"
-            ref="newEmail">
+        <b-field label="New Email" :type="formErrors.newEmail ? 'is-danger' : ''"
+          :message="formErrors.newEmail || ''">
+          <b-input type="email" v-model="newEmail" name="newEmail">
           </b-input>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field label="Confirm Email" :type="errors.has('confirmEmail') ? 'is-danger' : ''"
-          :message="errors.has('confirmEmail') ? errors.first('confirmEmail') : ''">
-          <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail"
-            v-validate="{ required: true, confirmed: newEmail }">
+        <b-field label="Confirm Email" :type="formErrors.confirmEmail ? 'is-danger' : ''"
+          :message="formErrors.confirmEmail || ''">
+          <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail">
           </b-input>
         </b-field>
       </div>
@@ -32,32 +30,59 @@
   </div>
 </template>
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { updateAgencyWorkerEmail } from "@/api/agencyWorkerApi";
 
+const schema = yup.object({
+  newEmail: yup.string()
+    .required('Email is required')
+    .email('Invalid email'),
+  confirmEmail: yup.string()
+    .required('Confirm Email is required')
+    .email('Invalid email')
+    .oneOf([yup.ref('newEmail')], 'Emails must match'),
+});
+
 export default {
   props: ['data'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        newEmail: '',
+        confirmEmail: '',
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+      resetForm: form.resetAll,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      newEmail: "",
-      confirmEmail: "",
-      worker: {}
-    }
+      worker: {} as any,
+    };
   },
   methods: {
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.updateWorkerEmail();
-          return;
-        }
+      this.markInteracted();
+      this.handleSubmit((values: any) => {
+        this.updateWorkerEmail(values);
+      }, () => {
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      })();
     },
-    updateWorkerEmail() {
+    updateWorkerEmail(values: any) {
       this.isLoading = true;
-      updateAgencyWorkerEmail(this.worker.id, { newEmail: this.newEmail })
+      updateAgencyWorkerEmail(this.worker.id, { newEmail: values.newEmail })
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -65,13 +90,13 @@ export default {
         .catch(error => {
           this.isLoading = false;
           showAlertError(error);
-        })
-    }
+        });
+    },
   },
   created() {
-    if (this.data != null) {
-      this.worker = Object.assign({}, this.data);
+    if ((this as any).data != null) {
+      this.worker = Object.assign({}, (this as any).data);
     }
-  }
-}
+  },
+};
 </script>

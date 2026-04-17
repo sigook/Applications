@@ -1,16 +1,16 @@
 <template>
   <div class="container-image">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="update-image" :class="{ 'is-danger': errors.has('file') }">
+    <div class="update-image" :class="{ 'is-danger': !!fileError }">
       <input type="file" id="file" @change="validateImage" accept="image/*" title="logo" name="file"
-        v-validate="rules" :ref="'file'" />
+        :ref="'file'" />
 
       <label for="file">{{ "Upload Picture" }}</label>
       <img v-if="localImage" :src="localImage" alt="logo" style="z-index: 1;">
       <default-image v-if="showDefault && !localImage" :name="name" class="img-100"></default-image>
 
     </div>
-    <span v-show="errors.has('file')" class="help is-danger no-margin">{{ errors.first('file') }}</span>
+    <span v-show="fileError" class="help is-danger no-margin">{{ fileError }}</span>
 
     <!-- custom modal -->
     <transition name="modal">
@@ -36,8 +36,10 @@ import { defineAsyncComponent } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { compressFile } from '@/utils/compressFile';
 
+const ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'gif', 'svg'];
+const MAX_SIZE_KB = 10000;
+
 export default {
-  inject: ['$validator'],
   props: [
     'editedImage',
     'required',
@@ -52,27 +54,35 @@ export default {
       localImage: this.editedImage ? this.editedImage.pathFile : null,
       modalValidation: false,
       cropImage: '',
-      hasImage: false
+      hasImage: false,
+      fileError: '' as string,
     }
   },
   components: {
     cropImage: defineAsyncComponent(() => import("./CropImage.vue"))
   },
-  computed: {
-    rules() {
-      let oRules = {
-        required: false,
-        size: 10000,
-        ext: ['jpeg', 'jpg', 'png', 'gif', 'svg']
-      }
-      if (this.required) {
-        oRules.required = !this.hasImage;
-      }
-      return oRules;
-    }
-  },
   methods: {
     compressFile,
+    validateFile(file: File): boolean {
+      this.fileError = '';
+      if (!file) {
+        if (this.required && !this.hasImage) {
+          this.fileError = 'Image is required';
+          return false;
+        }
+        return true;
+      }
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        this.fileError = `Allowed formats: ${ALLOWED_EXTENSIONS.join(', ')}`;
+        return false;
+      }
+      if (file.size / 1024 > MAX_SIZE_KB) {
+        this.fileError = `File exceeds ${MAX_SIZE_KB / 1000}MB limit`;
+        return false;
+      }
+      return true;
+    },
     showCrop(evt) {
       if ((document as any).documentMode || /Edge/.test(navigator.userAgent)) {
         this.showImage(evt.target.files[0])
@@ -104,7 +114,7 @@ export default {
       }
     },
     cleanInput() {
-      const input = this.$refs['file'];
+      const input = this.$refs['file'] as HTMLInputElement;
       input.type = 'text';
       input.type = 'file';
     },
@@ -128,16 +138,12 @@ export default {
 
     },
     validateImage(evt) {
-      Promise.all([
-        this.$validator.validate('file')
-          .then(isValid => {
-            if (isValid) {
-              this.validateDimensions(evt);
-            } else {
-              this.localImage = null;
-            }
-          })
-      ]);
+      const file = evt.target.files[0];
+      if (this.validateFile(file)) {
+        this.validateDimensions(evt);
+      } else {
+        this.localImage = null;
+      }
     }
   }
 }

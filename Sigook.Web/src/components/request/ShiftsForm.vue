@@ -48,8 +48,7 @@
     </div>
 
     <div class="col-sm-12 col-md-12 col-lg-12 col-padding pt-1">
-      <b-field :type="errors.has('description') ? 'is-danger' : ''" label="Comments"
-        :message="errors.has('description') ? errors.first('description') : ''">
+      <b-field label="Comments">
         <b-input type="textarea" v-model="comments" name="description" @update:modelValue="updateModel" />
       </b-field>
     </div>

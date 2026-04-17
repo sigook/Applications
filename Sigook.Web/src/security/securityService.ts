@@ -13,11 +13,12 @@ const mgr = new UserManager({
   authority: securityServerUrl,
   client_id: client,
   redirect_uri: redirectUrl + "/callback",
-  response_type: "id_token token",
-  scope: "openid profile api1 roles",
+  response_type: "code",
+  scope: "openid profile api1 roles offline_access",
   post_logout_redirect_uri: redirectUrl + "/callback",
   automaticSilentRenew: true,
   silent_redirect_uri: redirectUrl + "/silent-refresh",
+  loadUserInfo: true,
 });
 
 export default mgr;

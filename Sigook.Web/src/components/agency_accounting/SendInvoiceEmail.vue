@@ -8,18 +8,17 @@
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-field label="Cc" :type="(errors.has('recipients') || emailValidationType) ? 'is-danger' : ''"
-          :message="errors.has('recipients') ? errors.first('recipients') : emailValidationMessage">
+        <b-field label="Cc" :type="emailValidationType || ''"
+          :message="emailValidationMessage">
           <b-taginput v-model="invoiceRecipients" autocomplete field="email" append-to-body allow-new
             :before-adding="validateEmail" :create-tag="createTag" placeholder="Add email..."
             name="recipients"></b-taginput>
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-field label="Subject" :type="errors.has('subject') ? 'is-danger' : ''"
-          :message="errors.has('subject') ? errors.first('subject') : ''">
-          <b-input v-model="newEmail.subject" placeholder="Subject" v-validate="'required|max:100|min:2'"
-            name="subject"></b-input>
+        <b-field label="Subject" :type="formErrors.subject ? 'is-danger' : ''"
+          :message="formErrors.subject || ''">
+          <b-input v-model="subject" placeholder="Subject" name="subject"></b-input>
         </b-field>
       </div>
       <div class="col-12 col-padding">
@@ -46,12 +45,11 @@
         </b-taglist>
       </div>
       <div class="col-12 col-padding">
-        <b-field label="Body" :type="errors.has('body') ? 'is-danger' : ''"
-          :message="errors.has('body') ? errors.first('body') : ''">
+        <b-field label="Body" :type="formErrors.body ? 'is-danger' : ''"
+          :message="formErrors.body || ''">
           <div class="vue-trix-editor">
             <div>
-              <vue-editor id="internalRequirements-input" v-model="newEmail.body" v-validate="'required'"
-                name="body"></vue-editor>
+              <QuillEditor theme="snow" content-type="html" v-model:content="body" />
             </div>
           </div>
         </b-field>
@@ -63,11 +61,43 @@
   </div>
 </template>
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { sendInvoiceEmail } from "@/api/agencyInvoiceApi";
 import { getCompanyInvoiceRecipients } from "@/api/agencyCompanyApi";
+
+const emailSchema = yup.object({
+  subject: yup.string().required('Subject is required').min(2).max(100, 'Max 100 characters'),
+  body: yup
+    .string()
+    .required('Body is required')
+    .test('not-empty', 'Body is required', (v) => !!(v || '').replace(/<[^>]*>/g, '').trim()),
+});
+
+const defaultBody = `<p>Good Morning,</p>
+        <p>Find your invoice attached, please confirm you have received it. <strong>Your timely payment is greatly appreciated.</strong></p>
+        <p>We thank you in advance for your continued business, should you have any further requirements or if you have any questions please do not hesitate to contact us.</p>
+        <p>Regards,</p>`;
+
 export default {
   props: ["invoice"],
+  setup(props) {
+    const form = useStickyForm({
+      schema: emailSchema,
+      initialValues: {
+        subject: `Invoice ${props.invoice.invoiceNumber} - ${props.invoice.companyFullName}`,
+        body: defaultBody,
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
       isLoading: true,
@@ -75,12 +105,7 @@ export default {
       emailValidationMessage: '',
       emailValidationType: '',
       newEmail: {
-        subject: `Invoice ${this.invoice.invoiceNumber} - ${this.invoice.companyFullName}`,
-        body: `<p>Good Morning,</p>
-        <p>Find your invoice attached, please confirm you have received it. <strong>Your timely payment is greatly appreciated.</strong></p>
-        <p>We thank you in advance for your continued business, should you have any further requirements or if you have any questions please do not hesitate to contact us.</p>
-        <p>Regards,</p>`,
-        attachments: []
+        attachments: [] as any[]
       }
     };
   },
@@ -111,15 +136,15 @@ export default {
     removeFile(file) {
       this.newEmail.attachments = this.newEmail.attachments.filter(f => f !== file);
     },
-    async sendEmail() {
-      const result = await this.$validator.validateAll();
-      if (result) {
+    sendEmail() {
+      this.markInteracted(['subject', 'body']);
+      this.handleSubmit((values) => {
         this.isLoading = true;
-        await sendInvoiceEmail({
+        sendInvoiceEmail({
           invoiceId: this.invoice.id,
           recipients: this.invoiceRecipients.map(recipient => recipient.email),
-          subject: this.newEmail.subject,
-          body: this.newEmail.body,
+          subject: values.subject,
+          body: values.body,
           attachments: this.newEmail.attachments
         }).then(() => {
           this.isLoading = false;
@@ -128,13 +153,12 @@ export default {
           this.isLoading = false;
           showAlertError(error);
         });
-      }
+      })();
     }
   },
   async created() {
     await this.loadInvoiceRecipients();
     this.isLoading = false;
-    console.log(this.invoice);
   }
 };
 </script>

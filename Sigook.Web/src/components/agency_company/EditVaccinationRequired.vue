@@ -4,15 +4,15 @@
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-field :label="'Vaccination Required'">
-          <b-switch v-model="model.required" :value="true" :false-value="false">
-            {{ model.required ? 'Yes' : 'No' }}
+          <b-switch v-model="required" :value="true" :false-value="false">
+            {{ required ? 'Yes' : 'No' }}
           </b-switch>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field label="Comments" :message="errors.first('vaccinationComments')"
-          :type="errors.has('vaccinationComments') ? 'is-danger' : ''">
-          <b-input type="textarea" v-model="model.comments" name="vaccinationComments" v-validate="'max:5000'">
+        <b-field label="Comments" :message="formErrors.comments || ''"
+          :type="formErrors.comments ? 'is-danger' : ''">
+          <b-input type="textarea" v-model="comments" name="vaccinationComments">
           </b-input>
         </b-field>
       </div>
@@ -26,40 +26,64 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { updateCompanyVaccinationRequired } from "@/api/agencyCompanyApi";
 
+const schema = yup.object({
+  comments: yup.string().nullable().transform((v) => (v === '' ? null : v)).max(5000, 'Max 5000 characters'),
+});
+
 export default {
   name: "EditVaccinationRequired",
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        required: false,
+        comments: '' as string | null,
+      },
+    });
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+    };
+  },
   data() {
     return {
-      model: {},
-      isLoading: false
-    }
+      isLoading: false,
+    };
   },
   props: ["companyProfileId", "vaccinationRequired", "vaccinationComments"],
   methods: {
     saveVaccinationRequired() {
-      this.isLoading = true
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          updateCompanyVaccinationRequired(this.companyProfileId, {
-            vaccinationRequired: this.model.required,
-            vaccinationRequiredComments: this.model.comments
-          }).then(() => {
-            this.isLoading = false
-            this.$emit('updated', this.model);
-          }).catch(error => {
-            this.isLoading = false
-            showAlertError(error)
-          });
-        }
-      })
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.isLoading = true;
+        updateCompanyVaccinationRequired(this.companyProfileId, {
+          vaccinationRequired: this.required,
+          vaccinationRequiredComments: values.comments
+        }).then(() => {
+          this.isLoading = false;
+          this.$emit('updated', { required: this.required, comments: values.comments });
+        }).catch(error => {
+          this.isLoading = false;
+          showAlertError(error);
+        });
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     }
   },
   created() {
-    this.model.required = this.vaccinationRequired;
-    this.model.comments = this.vaccinationComments;
+    this.hydrateForm({
+      required: !!this.vaccinationRequired,
+      comments: this.vaccinationComments || '',
+    });
   }
 }
 </script>

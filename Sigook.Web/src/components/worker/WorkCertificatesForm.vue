@@ -24,13 +24,12 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :type="errors.has('certificate description') ? 'is-danger' : ''"
-          :message="errors.has('certificate description') ? errors.first('certificate description') : ''">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
           <template #label>
             {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
-          <b-input type="text" v-model="certificate.description" name="certificate description"
-            v-validate="'required|max:20'" />
+          <b-input type="text" v-model="description" name="certificate description" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
@@ -43,30 +42,43 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerCertificates } from '@/api/workerApi';
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
+});
 
 export default {
   props: ["data"],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: { description: '' },
+    });
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      selectedCertFile: null,
-      fileObjects: {
-        certificate: null
-      },
-      certificate: {
-        fileName: "",
-        description: ""
-      },
-      certificates: []
+      selectedCertFile: null as any,
+      fileObjects: { certificate: null as any },
+      certificate: { fileName: "", description: "" } as any,
+      certificates: [] as any[],
     };
   },
   methods: {
     filename,
-    handleCertFileSelected(file) {
+    handleCertFileSelected(file: any) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
         showAlertError('File exceeds 15MB limit');
@@ -75,7 +87,7 @@ export default {
       }
       this.fileObjects.certificate = file;
       const generatedName = generateFileName('Certificate', file.name);
-      this.certificate = { fileName: generatedName, description: this.certificate.description || '' };
+      this.certificate = { fileName: generatedName, description: '' };
       this.selectedCertFile = null;
     },
     clearCertFile() {
@@ -83,40 +95,41 @@ export default {
       this.certificate = { fileName: '', description: '' };
     },
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveCertificates();
-          return;
-        }
-        showAlertError("Please make sure all required fields are filled out correctly");
-      });
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.saveCertificates(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    async saveCertificates() {
+    async saveCertificates(values: any) {
       this.isLoading = true;
       try {
-        const allCertificates = [...this.certificates, this.certificate];
+        const newCert = { fileName: this.certificate.fileName, description: values.description };
+        const allCertificates = [...this.certificates, newCert];
         const formData = new FormData();
         formData.append('data', JSON.stringify(allCertificates));
         if (this.fileObjects.certificate) {
-          const fn = this.certificate.fileName;
+          const fn = newCert.fileName;
           formData.append(fn, this.fileObjects.certificate, fn);
         }
-        await createWorkerCertificates(this.data.id, formData);
+        await createWorkerCertificates((this as any).data.id, formData);
         this.$emit('closeModal', true);
       } catch (error) {
         showAlertError(error);
       } finally {
         this.isLoading = false;
       }
-    }
+    },
   },
   created() {
-    if (this.data != null) {
-      for (let i = 0; i < this.data.certificates.length; i++) {
-        this.certificates.push(this.data.certificates[i]);
+    const data = (this as any).data;
+    if (data != null) {
+      for (let i = 0; i < data.certificates.length; i++) {
+        this.certificates.push(data.certificates[i]);
       }
     }
-  }
+  },
 };
 </script>
 

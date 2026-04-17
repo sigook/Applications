@@ -1,7 +1,7 @@
 <template>
   <div class="white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
-    <form class="form-md" @submit.prevent="validateForm">
+    <form class="form-md" @submit.prevent="onSubmit">
       <div class="col-12 col-padding">
         <div>
           <h2 class="main-title">
@@ -20,37 +20,34 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('job title') ? 'is-danger' : ''" :label="`${'Job title'} *`"
-            :message="errors.has('job title') ? errors.first('job title') : ''">
-            <b-input v-model="request.jobTitle" name="job title" v-validate="'required|max:100|min:1'"></b-input>
+          <b-field :type="errors.jobTitle ? 'is-danger' : ''" :label="`${'Job title'} *`"
+            :message="errors.jobTitle || ''">
+            <b-input v-model="jobTitle" name="job title"></b-input>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('billingTitle') ? 'is-danger' : ''" label="Billing Title *"
-            :message="errors.has('billingTitle') ? errors.first('billingTitle') : ''">
-            <b-input v-model="request.billingTitle" name="billingTitle" v-validate="'required|max:100|min:1'"
-              :disabled="sameBillingTitle"></b-input>
+          <b-field :type="errors.billingTitle ? 'is-danger' : ''" label="Billing Title *"
+            :message="errors.billingTitle || ''">
+            <b-input v-model="billingTitle" name="billingTitle" :disabled="sameBillingTitle"></b-input>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
-          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary *"
-            :message="errors.has('workerSalary') ? errors.first('workerSalary') : ''">
-            <b-numberinput v-model="request.workerSalary" name="workerSalary" v-validate="'required'"
-              controls-alignment="right"></b-numberinput>
+          <b-field :type="errors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
+            :message="errors.workerSalary || ''">
+            <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
-            :message="errors.has('worker quantity') ? errors.first('worker quantity') : ''">
-            <b-numberinput v-model="request.workersQuantity" name="worker quantity"
-              v-validate="'required|min_value:1|numeric'" controls-alignment="right" expanded></b-numberinput>
+          <b-field :type="errors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
+            :message="errors.workersQuantity || ''">
+            <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="!directHiring">
-          <b-field :type="errors.has('job type') ? 'is-danger' : ''" :label="`${'Job type'} *`"
-            :message="errors.has('job type') ? errors.first('job type') : ''">
+          <b-field :type="errors.jobPosition ? 'is-danger' : ''" :label="`${'Job type'} *`"
+            :message="errors.jobPosition || ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
-              open-on-focus name="job type" v-validate="'required'" selectable-footer @select="onJobPositionSelected"
+              open-on-focus name="job type" selectable-footer @select="onJobPositionSelected"
               @select-footer="() => showRolesModal = true">
               <template #footer>
                 <a>
@@ -64,12 +61,11 @@
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :label="`${'Branch office'} *`"
-            :message="errors.has('branchOffice') ? errors.first('branchOffice') : ''"
-            :type="errors.has('branchOffice') ? 'is-danger' : ''">
-            <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="jobLocation" open-on-focus
-              name="branchOffice" v-validate="'required'" selectable-footer field="formattedAddress"
-              @select="onLocationSelected" @select-footer="() => showLocationModal = true">
+          <b-field :label="`${'Branch office'} *`" :message="errors.branchOffice || ''"
+            :type="errors.branchOffice ? 'is-danger' : ''">
+            <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="branchOffice" open-on-focus
+              name="branchOffice" selectable-footer field="formattedAddress" @select="onLocationSelected"
+              @select-footer="() => showLocationModal = true">
               <template #footer>
                 <a><span> Add new... </span></a>
               </template>
@@ -104,54 +100,46 @@
         <br />
         <div class="container-flex">
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field :label="`${'Description'} *`" :message="errors.first('description')"
-              :type="errors.has('description') ? 'is-danger' : ''">
+            <b-field :label="`${'Description'} *`" :message="errors.description || ''"
+              :type="errors.description ? 'is-danger' : ''">
               <div class="vue-trix-editor">
-                <vue-editor id="description-input" v-model="request.description" :name="'description'"
-                  v-validate="'required|max:5000|min:10'"></vue-editor>
+                <QuillEditor theme="snow" content-type="html" v-model:content="description" />
               </div>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
             <b-field label="Responsibilities">
               <div class="vue-trix-editor">
-                <div>
-                  <vue-editor id="responsibilities-input" v-model="request.responsibilities"></vue-editor>
-                </div>
+                <QuillEditor theme="snow" content-type="html" v-model:content="request.responsibilities" />
               </div>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field :label="`${'Requirements'} *`" :message="errors.first('requirements')"
-              :type="errors.has('requirements') ? 'is-danger' : ''">
+            <b-field :label="`${'Requirements'} *`" :message="errors.requirements || ''"
+              :type="errors.requirements ? 'is-danger' : ''">
               <div class="vue-trix-editor">
-                <vue-editor id="requirements-input" v-model="request.requirements" :name="'requirements'"
-                  v-validate="'required|max:5000|min:10'"></vue-editor>
+                <QuillEditor theme="snow" content-type="html" v-model:content="requirements" />
               </div>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
             <b-field label="Internal Requirements">
               <div class="vue-trix-editor">
-                <div>
-                  <vue-editor id="internalRequirements-input" v-model="request.internalRequirements"></vue-editor>
-                </div>
+                <QuillEditor theme="snow" content-type="html" v-model:content="request.internalRequirements" />
               </div>
             </b-field>
           </div>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" disabled="!directHiring">
-          <b-field :type="errors.has('incentive') ? 'is-danger' : ''" :label="'Incentive'"
-            :message="errors.has('incentive') ? errors.first('incentive') : ''">
-            <b-numberinput controls-alignment="right" v-model="request.incentive" name="incentive"
-              v-validate="'decimal:2'" step="0.01" />
+          <b-field :type="errors.incentive ? 'is-danger' : ''" :label="'Incentive'"
+            :message="errors.incentive || ''">
+            <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-9 col-padding">
-          <b-field :type="errors.has('incentiveDes') ? 'is-danger' : ''" :label="'Incentive Description'"
-            :message="errors.has('incentiveDes') ? errors.first('incentiveDes') : ''">
-            <b-input v-model="request.incentiveDescription" name="incentiveDes" v-validate="'max:5000|min:0'"
-              :disabled="!request.incentive" />
+          <b-field :type="errors.incentiveDescription ? 'is-danger' : ''" :label="'Incentive Description'"
+            :message="errors.incentiveDescription || ''">
+            <b-input v-model="incentiveDescription" name="incentiveDes" :disabled="!incentive" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="!directHiring">
@@ -206,14 +194,15 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field label="Start *" :message="errors.has('from') ? errors.first('from') : ''">
-            <b-datepicker v-model="request.startAt" name="from" :min-date="timeZero" v-validate="'required'">
+          <b-field label="Start *" :type="errors.startAt ? 'is-danger' : ''"
+            :message="errors.startAt || ''">
+            <b-datepicker v-model="startAt" name="from" :min-date="timeZero">
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
-            <b-datepicker v-model="request.finishAt" name="from" :min-date="request.startAt" :max-date="finishDate">
+            <b-datepicker v-model="request.finishAt" name="from" :min-date="startAt" :max-date="finishDate">
             </b-datepicker>
           </b-field>
         </div>
@@ -238,7 +227,9 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref, computed } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
@@ -254,7 +245,67 @@ import {
 
 export default {
   setup() {
-    return { ...useBillingAdmin() };
+    const directHiring = ref(false);
+
+    const validationSchema = computed(() => {
+      const shape: Record<string, any> = {
+        jobTitle: yup.string().required('Job title is required').min(1).max(100, 'Max 100 characters'),
+        billingTitle: yup.string().required('Billing title is required').min(1).max(100, 'Max 100 characters'),
+        workersQuantity: yup
+          .number()
+          .typeError('Workers quantity is required')
+          .required('Workers quantity is required')
+          .min(1, 'Must be at least 1'),
+        branchOffice: yup.string().required('Branch office is required'),
+        description: yup.string().required('Description is required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+        requirements: yup.string().required('Requirements are required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+        incentive: yup
+          .number()
+          .nullable()
+          .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
+          .test('decimal2', 'Max 2 decimals', (v) => v == null || /^-?\d+(\.\d{1,2})?$/.test(String(v))),
+        incentiveDescription: yup.string().nullable().max(5000, 'Max 5000 characters'),
+        startAt: yup.mixed().required('Start date is required'),
+      };
+      if (directHiring.value) {
+        shape.workerSalary = yup
+          .number()
+          .typeError('Worker salary is required')
+          .required('Worker salary is required');
+      } else {
+        shape.jobPosition = yup.string().required('Job type is required');
+      }
+      return yup.object(shape);
+    });
+
+    const form = useStickyForm({
+      schema: validationSchema,
+      initialValues: {
+        jobTitle: '',
+        billingTitle: '',
+        workersQuantity: 1,
+        workerSalary: null as number | null,
+        jobPosition: '',
+        branchOffice: '',
+        description: '',
+        requirements: '',
+        incentive: null as number | null,
+        incentiveDescription: '',
+        startAt: null as Date | null,
+      },
+    });
+
+    return {
+      ...useBillingAdmin(),
+      directHiring,
+      ...form.fields,
+      errors: form.errors,
+      handleSubmit: form.handleSubmit,
+      setFieldValue: form.setFieldValue,
+      setFieldError: form.setFieldError,
+      resetForm: form.hydrate,
+      markInteracted: form.markInteracted,
+    };
   },
   components: {
     PositionForm: defineAsyncComponent(() => import("@/components/agency_company/JobPositionForm.vue")),
@@ -275,10 +326,8 @@ export default {
       isLoading: false,
       companyProfileId: this.$route.params.companyProfileId,
       companyJobPositions: [],
-      jobPosition: '',
       jobPositionSelected: null,
       locations: [],
-      jobLocation: '',
       locationSelected: null,
       salesRepresentatives: [],
       salesRepresentative: '',
@@ -290,7 +339,6 @@ export default {
         durationTerm: DurationTerm.LongTerm,
         employmentType: EmploymentType.FullTime
       },
-      directHiring: false,
       sameBillingTitle: true,
       totalHours: 0,
       errorMessage: "Please make sure all required fields are filled out correctly",
@@ -332,37 +380,53 @@ export default {
       let valid = true;
 
       if (!this.directHiring && this.jobPosition && (!this.jobPositionSelected || this.jobPositionSelected.value.toLowerCase() !== this.jobPosition.toLowerCase())) {
-        this.errors.add({ field: 'job type', msg: 'Please select a role from the list' });
+        this.setFieldError('jobPosition', 'Please select a role from the list');
         valid = false;
       }
 
-      if (this.jobLocation && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.jobLocation.toLowerCase())) {
-        this.errors.add({ field: 'branchOffice', msg: 'Please select a location from the list' });
+      if (this.branchOffice && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.branchOffice.toLowerCase())) {
+        this.setFieldError('branchOffice', 'Please select a location from the list');
         valid = false;
       }
 
       return valid;
     },
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        const selectionsValid = this.validateAutocompleteSelections();
-        if (result && selectionsValid) {
-          if (this.isUpdate) {
-            this.updateRequest();
-          } else {
-            this.createRequest();
-          }
+    onSubmit() {
+      this.markInteracted([
+        'jobTitle', 'billingTitle', 'workersQuantity', 'workerSalary',
+        'jobPosition', 'branchOffice', 'description', 'requirements',
+        'incentive', 'incentiveDescription', 'startAt'
+      ]);
+      this.handleSubmit((values) => {
+        if (!this.validateAutocompleteSelections()) {
+          showAlertError(this.errorMessage);
           return;
         }
+        const payload = {
+          ...this.request,
+          jobTitle: values.jobTitle,
+          billingTitle: values.billingTitle,
+          workersQuantity: values.workersQuantity,
+          workerSalary: this.directHiring ? values.workerSalary : null,
+          description: values.description,
+          requirements: values.requirements,
+          incentive: values.incentive,
+          incentiveDescription: values.incentiveDescription,
+          startAt: values.startAt,
+          durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
+        };
+        if (this.isUpdate) {
+          this.updateRequest(payload);
+        } else {
+          this.createRequest(payload);
+        }
+      }, () => {
         showAlertError(this.errorMessage);
-      });
+      })();
     },
-    createRequest() {
+    createRequest(payload) {
       this.isLoading = true;
-      postAgencyRequest({
-        ...this.request,
-        durationBreak: dayjs(this.request.durationBreak).format("HH:mm")
-      })
+      postAgencyRequest(payload)
         .then((response) => {
           showAlertSuccess("Request created");
           this.$router.push("/agency-request/" + response.id);
@@ -381,12 +445,9 @@ export default {
       this.showLocationModal = false;
       this.locations = await getAgencyCompanyLocation(this.companyProfileId);
     },
-    updateRequest() {
+    updateRequest(payload) {
       this.isLoading = true;
-      updateAgencyRequest(this.request.id, {
-        ...this.request,
-        durationBreak: dayjs(this.request.durationBreak).format("HH:mm")
-      })
+      updateAgencyRequest(this.request.id, payload)
         .then((response) => {
           this.isLoading = false;
           showAlertSuccess("Request updated");
@@ -398,8 +459,10 @@ export default {
         });
     },
     onSameBillingChecked(value) {
-      if (!value) {
-        this.request.billingTitle = "";
+      if (value) {
+        this.setFieldValue('billingTitle', this.jobTitle);
+      } else {
+        this.setFieldValue('billingTitle', '');
       }
     }
   },
@@ -417,15 +480,15 @@ export default {
         durationBreak: agencyRequest.breakIsPaid ? dayjs().add(agencyRequest.durationBreak, "hours").toDate() : dayjs().startOf('day').toDate(),
         jobPositionRateId: agencyRequest.jobPositionId,
         rate: agencyRequest.workerRate,
-        startAt: new Date(agencyRequest.startAt),
         finishAt: new Date(agencyRequest.finishAt || "")
       };
       this.directHiring = agencyRequest.workerSalary ? true : false;
       this.sameBillingTitle = agencyRequest.jobTitle === agencyRequest.billingTitle;
       this.companyUsersSelected = this.companyUsers.filter(cu => agencyRequest.companyUserIds.some(ar => cu.id == ar));
+
       let record = this.companyJobPositions.find(cjp => cjp.id === agencyRequest.jobPositionId);
       if (record) {
-        this.jobPosition = record.value;
+        this.setFieldValue('jobPosition', record.value);
         this.jobPositionSelected = record;
       }
       record = this.locations.find(l => l.address === agencyRequest.jobLocation.address);
@@ -434,7 +497,7 @@ export default {
       }
       record = this.locations.find(l => l.id === this.request.locationId);
       if (record) {
-        this.jobLocation = record.formattedAddress;
+        this.setFieldValue('branchOffice', record.formattedAddress);
         this.locationSelected = record;
       }
       record = this.salesRepresentatives.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
@@ -442,6 +505,20 @@ export default {
         this.salesRepresentative = `${record.name} - ${record.email}`;
         this.salesRepresentativeSelected = record;
       }
+
+      this.resetForm({
+        jobTitle: agencyRequest.jobTitle,
+        billingTitle: agencyRequest.billingTitle,
+        workersQuantity: agencyRequest.workersQuantity,
+        workerSalary: agencyRequest.workerSalary,
+        jobPosition: this.jobPosition,
+        branchOffice: this.branchOffice,
+        description: agencyRequest.description,
+        requirements: agencyRequest.requirements,
+        incentive: agencyRequest.incentive,
+        incentiveDescription: agencyRequest.incentiveDescription,
+        startAt: new Date(agencyRequest.startAt),
+      });
     } else {
       this.companyJobPositions = await getAgencyCompanyJobPositions(this.companyProfileId);
       this.locations = await getAgencyCompanyLocation(this.companyProfileId);
@@ -456,22 +533,19 @@ export default {
     EmploymentType: () => EmploymentType,
     EmploymentTypeLabels: () => EmploymentTypeLabels,
     finishDate() {
-      return dayjs(this.request.startAt).add(1, "year").toDate();
+      return dayjs(this.startAt).add(1, "year").toDate();
     },
     filteredCompanyJobPositions() {
-      const jobPositions = this.companyJobPositions
-        .filter(cjp => cjp.value.toLowerCase().includes(this.jobPosition.toLowerCase()));
-      return jobPositions;
+      const search = (this.jobPosition || '').toLowerCase();
+      return this.companyJobPositions.filter(cjp => cjp.value.toLowerCase().includes(search));
     },
     filteredLocations() {
-      const locations = this.locations
-        .filter(l => l.formattedAddress.toLowerCase().includes(this.jobLocation.toLowerCase()));
-      return locations;
+      const search = (this.branchOffice || '').toLowerCase();
+      return this.locations.filter(l => l.formattedAddress.toLowerCase().includes(search));
     },
     filteredSalesRepresentative() {
-      const salesRepresentatives = this.salesRepresentatives
+      return this.salesRepresentatives
         .filter(sr => `${sr.name} - ${sr.email}`.toLowerCase().includes(this.salesRepresentative.toLowerCase()));
-      return salesRepresentatives;
     }
   },
   watch: {
@@ -483,7 +557,7 @@ export default {
         this.request.jobPositionRateId = null;
       }
     },
-    jobLocation(newVal) {
+    branchOffice(newVal) {
       if (this.locationSelected && this.locationSelected.formattedAddress !== newVal) {
         this.locationSelected = null;
         this.request.locationId = null;
@@ -498,38 +572,24 @@ export default {
         }
       }
     },
-    directHiring: function (val) {
-      if (val) {
-        this.$validator.detach("job type");
-      } else {
-        this.request.workerSalary = null;
+    directHiring(val) {
+      if (!val) {
+        this.setFieldValue('workerSalary', null);
       }
     },
-    sameBillingTitle: function (val) {
+    sameBillingTitle(val) {
       if (val) {
-        this.request.billingTitle = this.request.jobTitle;
+        this.setFieldValue('billingTitle', this.jobTitle);
       }
     },
-    companyUser: function (val) {
-      if (val) {
-        this.request.companyUserId = val.id;
-      }
-    },
-    companyUsersSelected: function (val) {
+    companyUsersSelected(val) {
       this.request.companyUserIds = val.map(cus => cus.id);
     },
-    "request.jobTitle": function (val) {
+    jobTitle(val) {
       if (this.sameBillingTitle) {
-        this.request.billingTitle = val;
+        this.setFieldValue('billingTitle', val);
       }
     }
   }
 };
 </script>
-<style>
-#description,
-#requirements,
-#internalRequirements {
-  height: 250px;
-}
-</style>

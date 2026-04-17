@@ -45,11 +45,10 @@ export const useSecurityStore = defineStore('security', {
     signIn(): void {
       mgr.signinRedirect().then();
     },
-    signOut(): void {
-      mgr.signoutRedirect().then(async () => {
-        mgr.removeUser();
-        this.setUser(null);
-      });
+    async signOut(): Promise<void> {
+      await mgr.removeUser();
+      this.setUser(null);
+      await mgr.signoutRedirect();
     },
     silentSignin(): Promise<void> {
       return new Promise((resolve, reject) => {

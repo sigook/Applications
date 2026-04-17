@@ -30,37 +30,38 @@
           class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
           {{ RequestStatusLabels[request.status] }}
         </div>
-        <floating-menu class="is-inline-block" v-if="request.canEdit">
-          <template slot="options">
-            <button class="floating-menu-item"
-              @click="$router.push({ path: `/agency-update-request/${request.companyProfileId}/${request.id}` })">
-              <span>Edit Request</span>
-            </button>
-            <button class="floating-menu-item" v-on:click="showShiftModal = true">
-              <span>Edit Shift</span>
-            </button>
-            <template v-if="request.status === RequestStatus.Open">
-              <button v-if="canSendInvitation" class="floating-menu-item" v-on:click="sendInvitation(request.id)">
-                <span>Send an email invitation</span>
-              </button>
-              <button disabled v-else class="floating-menu-item" :title="warningMessage">
-                <span>Send an email invitation
-                  <span class="fz-1">
-                    (Sent it {{ dateFromNow(request.invitationSentItAt) }})</span></span>
-              </button>
-            </template>
-            <button class="floating-menu-item" v-if="request.canCancel" v-on:click="cancelRequestModal = true">
-              <span> Cancel Order</span>
-            </button>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="request.canEdit">
+          <template #trigger>
+            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
-        </floating-menu>
-        <floating-menu class="is-inline-block" v-if="!request.canEdit">
-          <template slot="options">
-            <button class="floating-menu-item" v-on:click="onOpenRequest(request.id)">
-              <span>Reopen</span>
-            </button>
+          <b-dropdown-item aria-role="listitem"
+            @click="$router.push({ path: `/agency-update-request/${request.companyProfileId}/${request.id}` })">
+            Edit Request
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="showShiftModal = true">
+            Edit Shift
+          </b-dropdown-item>
+          <template v-if="request.status === RequestStatus.Open">
+            <b-dropdown-item v-if="canSendInvitation" aria-role="listitem" @click="sendInvitation(request.id)">
+              Send an email invitation
+            </b-dropdown-item>
+            <b-dropdown-item v-else aria-role="listitem" :disabled="true" :title="warningMessage">
+              Send an email invitation
+              <span class="fz-1">(Sent it {{ dateFromNow(request.invitationSentItAt) }})</span>
+            </b-dropdown-item>
           </template>
-        </floating-menu>
+          <b-dropdown-item aria-role="listitem" v-if="request.canCancel" @click="cancelRequestModal = true">
+            Cancel Order
+          </b-dropdown-item>
+        </b-dropdown>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="!request.canEdit">
+          <template #trigger>
+            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
+          </template>
+          <b-dropdown-item aria-role="listitem" @click="onOpenRequest(request.id)">
+            Reopen
+          </b-dropdown-item>
+        </b-dropdown>
       </div>
     </section>
     <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
@@ -125,7 +126,6 @@ export default {
     };
   },
   components: {
-    FloatingMenu: defineAsyncComponent(() => import("@/components/FloatingMenuDots.vue")),
     Detail: defineAsyncComponent(() => import("@/components/agency_request/AgencyRequestDetail.vue")),
     Workers: defineAsyncComponent(() => import("@/components/agency/AgencyWorkers.vue")),
     PunchCard: defineAsyncComponent(() => import("@/components/agency_request/MassivePunchCard.vue")),

@@ -7,16 +7,15 @@
       <h3 class="section-title">Change Email</h3>
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field label="Email" :type="errors.has('email') ? 'is-danger' : ''"
-            :message="errors.has('email') ? errors.first('email') : ''">
-            <b-input v-model="userEmail" v-validate="'required|email'" name="email" ref="email" data-vv-as="Email" />
+          <b-field label="Email" :type="formErrors.userEmail ? 'is-danger' : ''"
+            :message="formErrors.userEmail || ''">
+            <b-input v-model="userEmail" name="email" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field label="Confirm Email" :type="errors.has('confirmNewEmail') ? 'is-danger' : ''"
-            :message="errors.has('confirmNewEmail') ? errors.first('confirmNewEmail') : ''">
-            <b-input v-model="confirmNewEmail" name="confirmNewEmail"
-              v-validate="'required|email|confirmed:email'" />
+          <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
+            :message="formErrors.confirmNewEmail || ''">
+            <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -63,43 +62,68 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
 import { mapStores } from 'pinia';
 import { useSecurityStore } from '@/stores/security';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
 
+const schema = yup.object({
+  userEmail: yup.string().required('Email is required').email('Invalid email'),
+  confirmNewEmail: yup.string().required('Confirm Email is required').email('Invalid email')
+    .oneOf([yup.ref('userEmail')], 'Emails must match'),
+});
+
 export default {
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        userEmail: '',
+        confirmNewEmail: '',
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+      resetForm: form.resetAll,
+    };
+  },
   data() {
     return {
-      userEmail: null,
-      confirmNewEmail: '',
       isLoading: true,
-      notifications: null
-    }
+      notifications: null as any,
+    };
   },
   computed: {
     ...mapStores(useSecurityStore),
   },
   methods: {
     onChangeEmail() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.isLoading = true;
-          changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
-            .then(() => {
-              this.isLoading = false;
-              showAlertSuccess("Updated");
-            })
-            .catch(error => {
-              this.isLoading = false;
-              showAlertError(error);
-            })
-        }
-      })
+      this.markInteracted();
+      this.handleSubmit((values: any) => {
+        this.isLoading = true;
+        changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
+          .then(() => {
+            this.isLoading = false;
+            showAlertSuccess("Updated");
+          })
+          .catch(error => {
+            this.isLoading = false;
+            showAlertError(error);
+          });
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
     confirmDeactivation() {
-      this.$buefy.dialog.confirm({
+      (this as any).$buefy.dialog.confirm({
         title: 'Are you sure?',
         message: 'This action will deactivate your account. You will be signed out and will no longer be able to access the platform. Do you want to proceed?',
         confirmText: 'Yes, Deactivate',
@@ -108,7 +132,7 @@ export default {
         hasIcon: true,
         onConfirm: () => {
           this.onDeactivateAccount();
-        }
+        },
       });
     },
     loadNotifications() {
@@ -118,9 +142,9 @@ export default {
         })
         .catch(error => {
           showAlertError(error);
-        })
+        });
     },
-    saveNotification(item) {
+    saveNotification(item: any) {
       this.isLoading = true;
       updateUserNotification(item)
         .then(() => {
@@ -129,7 +153,7 @@ export default {
         .catch(error => {
           showAlertError(error);
           this.isLoading = false;
-        })
+        });
     },
     onDeactivateAccount() {
       this.isLoading = true;
@@ -145,12 +169,15 @@ export default {
           this.isLoading = false;
           showAlertError(error);
         });
-    }
+    },
   },
   created() {
     getEmail()
       .then(response => {
-        this.userEmail = response.email;
+        this.hydrateForm({
+          userEmail: response.email || '',
+          confirmNewEmail: '',
+        });
         this.isLoading = false;
       })
       .catch(error => {
@@ -158,8 +185,8 @@ export default {
         this.isLoading = false;
       });
     this.loadNotifications();
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss">

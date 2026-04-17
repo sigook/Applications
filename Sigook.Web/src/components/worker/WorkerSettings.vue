@@ -36,18 +36,18 @@
         </b-field>
       </div>
       <div class="col-2">
-        <b-field label="CPP" :type="errors.has('cpp') ? 'is-danger' : ''"
-          :message="errors.has('cpp') ? errors.first('cpp') : ''">
-          <b-numberinput v-model="localWorker.cpp" name="cpp" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter="updateTaxRate">
+        <b-field label="CPP" :type="formErrors.cpp ? 'is-danger' : ''"
+          :message="formErrors.cpp || ''">
+          <b-numberinput v-model="cpp" name="cpp" :step="0.01" :controls="false" expanded
+            @keypress.enter="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-2">
-        <b-field label="EI" :type="errors.has('ei') ? 'is-danger' : ''"
-          :message="errors.has('ei') ? errors.first('ei') : ''">
-          <b-numberinput v-model="localWorker.ei" name="ei" :step="0.01" :controls="false" expanded
-            v-validate="'min_value:0'" @keypress.enter="updateTaxRate">
+        <b-field label="EI" :type="formErrors.ei ? 'is-danger' : ''"
+          :message="formErrors.ei || ''">
+          <b-numberinput v-model="ei" name="ei" :step="0.01" :controls="false" expanded
+            @keypress.enter="updateTaxRate">
           </b-numberinput>
         </b-field>
       </div>
@@ -70,6 +70,8 @@
   </div>
 </template>
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { getTaxCategories } from "@/api/catalogApi";
 import {
@@ -80,27 +82,56 @@ import {
   updateWorkerProfileTaxRate,
   addNewHoliday,
   getAgencyWorkerProfileHolidays,
-  addUpdateAgencyWorkerProfileHolidays
+  addUpdateAgencyWorkerProfileHolidays,
 } from "@/api/agencyWorkerApi";
+
+const schema = yup.object({
+  cpp: yup.number().nullable().transform((v, o) => o === '' || o === null ? null : v)
+    .min(0, 'Must be greater than or equal to 0'),
+  ei: yup.number().nullable().transform((v, o) => o === '' || o === null ? null : v)
+    .min(0, 'Must be greater than or equal to 0'),
+});
 
 export default {
   props: ['worker'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        cpp: null as number | null,
+        ei: null as number | null,
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+      resetForm: form.resetAll,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      taxCategories: [],
-      workerHolidays: [],
-      workerHolidaySelected: null,
-      localWorker: JSON.parse(JSON.stringify(this.worker))
-    }
+      taxCategories: [] as any[],
+      workerHolidays: [] as any[],
+      workerHolidaySelected: null as any,
+      localWorker: JSON.parse(JSON.stringify((this as any).worker)),
+    };
   },
   watch: {
     worker: {
       handler(newVal) {
         this.localWorker = JSON.parse(JSON.stringify(newVal));
+        this.hydrateForm({
+          cpp: newVal?.cpp ?? null,
+          ei: newVal?.ei ?? null,
+        });
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     updateExternalId() {
@@ -147,54 +178,65 @@ export default {
         }).catch((error) => {
           this.isLoading = false;
           showAlertError(error);
-        })
+        });
     },
     updateTaxRate() {
-      this.isLoading = true;
-      updateWorkerProfileTaxRate(this.localWorker)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('update:worker', this.localWorker);
-        }).catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
+      this.markInteracted();
+      this.handleSubmit((values: any) => {
+        this.isLoading = true;
+        this.localWorker.cpp = values.cpp;
+        this.localWorker.ei = values.ei;
+        updateWorkerProfileTaxRate(this.localWorker)
+          .then(() => {
+            this.isLoading = false;
+            this.$emit('update:worker', this.localWorker);
+          }).catch((error) => {
+            this.isLoading = false;
+            showAlertError(error);
+          });
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
     async addHoliday() {
-      this.$buefy.dialog.prompt({
+      (this as any).$buefy.dialog.prompt({
         message: `City`,
         inputAttrs: {
           type: 'date',
-          placeholder: 'Date'
+          placeholder: 'Date',
         },
         closeOnConfirm: false,
         confirmText: 'Add',
-        onConfirm: async (value, dialog) => {
+        onConfirm: async (value: any, dialog: any) => {
           await addNewHoliday({ workerProfileId: this.localWorker.id, date: value });
           this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
           dialog.close();
-        }
-      })
+        },
+      });
     },
-    onHolidaySelected(date) {
+    onHolidaySelected(date: Date) {
       this.workerHolidaySelected = this.workerHolidays.find(wh => new Date(wh.date).getDate() === date.getDate());
     },
     async addUpdateWorkerHoliday() {
       this.isLoading = true;
       await addUpdateAgencyWorkerProfileHolidays(this.localWorker.id, this.workerHolidaySelected);
       this.isLoading = false;
-    }
+    },
   },
   async created() {
     this.taxCategories = await getTaxCategories();
     this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
+    this.hydrateForm({
+      cpp: this.localWorker?.cpp ?? null,
+      ei: this.localWorker?.ei ?? null,
+    });
   },
   computed: {
     selectableDates() {
-      const holidays = this.workerHolidays.map(wh => new Date(wh.date));
+      const holidays = this.workerHolidays.map((wh: any) => new Date(wh.date));
       return holidays;
-    }
-  }
-}
+    },
+  },
+};
 
 </script>

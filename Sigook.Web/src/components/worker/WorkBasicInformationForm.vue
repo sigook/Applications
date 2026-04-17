@@ -4,50 +4,49 @@
     <form @submit.prevent="validateAll">
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('name') ? 'is-danger' : ''" :label="'Name'"
-            :message="errors.has('name') ? errors.first('name') : ''">
-            <b-input type="text" v-model="worker.firstName" name="name" v-validate="'required|max:20|min:2'" />
+          <b-field :type="formErrors.firstName ? 'is-danger' : ''" :label="'Name'"
+            :message="formErrors.firstName || ''">
+            <b-input type="text" v-model="firstName" name="name" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('middle name') ? 'is-danger' : ''" :label="'Middle Name'"
-            :message="errors.has('middle name') ? errors.first('middle name') : ''">
-            <b-input type="text" v-model="worker.middleName" name="middle name" v-validate="'max:20|min:1'" />
+          <b-field :type="formErrors.middleName ? 'is-danger' : ''" :label="'Middle Name'"
+            :message="formErrors.middleName || ''">
+            <b-input type="text" v-model="middleName" name="middle name" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('lastname') ? 'is-danger' : ''" :label="'Last Name'"
-            :message="errors.has('lastname') ? errors.first('lastname') : ''">
-            <b-input type="text" v-model="worker.lastName" name="lastname" v-validate="'required|max:20|min:2'" />
+          <b-field :type="formErrors.lastName ? 'is-danger' : ''" :label="'Last Name'"
+            :message="formErrors.lastName || ''">
+            <b-input type="text" v-model="lastName" name="lastname" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('second lastname') ? 'is-danger' : ''"
+          <b-field :type="formErrors.secondLastName ? 'is-danger' : ''"
             :label="'Other Family Name'"
-            :message="errors.has('second lastname') ? errors.first('second lastname') : ''">
-            <b-input type="text" v-model="worker.secondLastName" name="second lastname" v-validate="'max:20|min:2'" />
+            :message="formErrors.secondLastName || ''">
+            <b-input type="text" v-model="secondLastName" name="second lastname" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('birthday') ? 'is-danger' : ''" :label="'Date of birth'"
-            :message="errors.has('birthday') ? errors.first('birthday') : ''">
-            <b-datepicker v-model="worker.birthDay" name="birthday" :focused-date="disabledDates" :max-date="disabledDates" v-validate="'required'" expanded>
+          <b-field :type="formErrors.birthDay ? 'is-danger' : ''" :label="'Date of birth'"
+            :message="formErrors.birthDay || ''">
+            <b-datepicker v-model="birthDay" name="birthday" :focused-date="disabledDates" :max-date="disabledDates" expanded>
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="errors.has('gender') ? 'is-danger' : ''" :label="'Gender'"
-            :message="errors.has('gender') ? errors.first('gender') : ''">
-            <b-select v-model="worker.gender" placeholder="Select gender" name="gender" expanded
-              v-validate="'required'">
+          <b-field :type="formErrors.gender ? 'is-danger' : ''" :label="'Gender'"
+            :message="formErrors.gender || ''">
+            <b-select v-model="gender" placeholder="Select gender" name="gender" expanded>
               <option v-for="item in genders" :key="item.id" :value="item">{{ item.value }}</option>
             </b-select>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <b-field :label="'Do you have your own vehicle?'">
-            <b-switch v-model="worker.hasVehicle" :true-value="true" :false-value="false">
-              {{ worker.hasVehicle ? "Yes" : "No" }}
+            <b-switch v-model="hasVehicle" :true-value="true" :false-value="false">
+              {{ hasVehicle ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
@@ -59,39 +58,86 @@
   </div>
 </template>
 <script lang="ts">
+import * as yup from 'yup';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getGenders } from "@/api/catalogApi";
 import { createWorkerBasicInformation } from '@/api/workerApi';
 
+const schema = yup.object({
+  firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  secondLastName: yup.string().nullable().min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  birthDay: yup.mixed().required('Date of birth is required'),
+  gender: yup.mixed().required('Gender is required'),
+});
+
 export default {
   props: ['data'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        secondLastName: '',
+        birthDay: null as Date | null,
+        gender: null as any,
+      },
+    });
+
+    function hydrate(src: any) {
+      form.hydrate({
+        firstName: src?.firstName || '',
+        middleName: src?.middleName || '',
+        lastName: src?.lastName || '',
+        secondLastName: src?.secondLastName || '',
+        birthDay: src?.birthDay ? new Date(src.birthDay) : null,
+        gender: src?.gender || null,
+      });
+    }
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrate,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      worker: {},
-      disabledDates: null,
-      genders: []
-    }
+      workerId: null as any,
+      hasVehicle: false,
+      disabledDates: null as any,
+      genders: [] as any[],
+    };
   },
   computed: {
     ...mapStores(useAppStore),
   },
   methods: {
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.createWorkerBasicInformation();
-          return;
-        }
+      this.markInteracted(['firstName', 'middleName', 'lastName', 'secondLastName', 'birthDay', 'gender']);
+      this.handleSubmit((values) => {
+        this.submitWorkerBasicInformation(values);
+      }, () => {
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      })();
     },
-    createWorkerBasicInformation() {
+    submitWorkerBasicInformation(values: any) {
       this.isLoading = true;
-      createWorkerBasicInformation(this.worker.id, this.worker)
+      const payload = {
+        ...values,
+        hasVehicle: this.hasVehicle,
+      };
+      createWorkerBasicInformation(this.workerId, payload)
         .then(() => {
           this.isLoading = false;
           this.$emit('closeModal', true);
@@ -99,16 +145,16 @@ export default {
         .catch(error => {
           this.isLoading = false;
           showAlertError(error);
-        })
+        });
     }
   },
   async created() {
     if (this.data != null) {
-      this.worker = Object.assign({}, this.data);
-      this.worker.birthDay = new Date(this.worker.birthDay);
+      this.workerId = this.data.id;
+      this.hasVehicle = !!this.data.hasVehicle;
+      this.hydrate(this.data);
     }
     this.appStore.getCurrentDate().then(response => {
-      this.disableStartDate = response;
       this.disabledDates = dayjs(response).subtract(18, 'years').toDate();
     });
     this.genders = await getGenders();

@@ -4,11 +4,10 @@
 
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="'Title'" :type="errors.has('title') ? 'is-danger' : ''"
-          :message="errors.has('title') ? errors.first('title') : ''">
-          <b-select v-model="contactPerson.title" :name="'title'" v-validate="'required'" expanded
-            :placeholder="'Select'">
-            <option :value="item" v-for="(item, index) in ['Mr','Mrs','Ms','Miss','Mx','Master','Madam']" :key="'companyContactPersons' + index">
+        <b-field :label="'Title'" :type="formErrors.title ? 'is-danger' : ''"
+          :message="formErrors.title || ''">
+          <b-select v-model="title" name="title" expanded :placeholder="'Select'">
+            <option :value="item" v-for="(item, index) in titleOptions" :key="'companyContactPersons' + index">
               {{ item }}
             </option>
           </b-select>
@@ -16,34 +15,30 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Name'" :type="errors.has('name') ? 'is-danger' : ''"
-          :message="errors.has('name') ? errors.first('name') : ''">
-          <b-input v-model="contactPerson.firstName" :name="'name'" v-validate="'required|max:20|min:2'">
-          </b-input>
+        <b-field :label="'Name'" :type="formErrors.firstName ? 'is-danger' : ''"
+          :message="formErrors.firstName || ''">
+          <b-input v-model="firstName" name="name" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Middle Name'" :type="errors.has('middlename') ? 'is-danger' : ''"
-          :message="errors.has('middlename') ? errors.first('middlename') : ''">
-          <b-input v-model="contactPerson.middleName" :name="'middlename'" v-validate="'max:20|min:1'">
-          </b-input>
+        <b-field :label="'Middle Name'" :type="formErrors.middleName ? 'is-danger' : ''"
+          :message="formErrors.middleName || ''">
+          <b-input v-model="middleName" name="middlename" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Last Name'" :type="errors.has('lastname') ? 'is-danger' : ''"
-          :message="errors.has('lastname') ? errors.first('lastname') : ''">
-          <b-input v-model="contactPerson.lastName" :name="'lastname'" v-validate="'required|max:20|min:2'">
-          </b-input>
+        <b-field :label="'Last Name'" :type="formErrors.lastName ? 'is-danger' : ''"
+          :message="formErrors.lastName || ''">
+          <b-input v-model="lastName" name="lastname" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Position'" :type="errors.has('position') ? 'is-danger' : ''"
-          :message="errors.has('position') ? errors.first('position') : ''">
-          <b-input v-model="contactPerson.position" :name="'position'" v-validate="'required|max:100|min:2'">
-          </b-input>
+        <b-field :label="'Position'" :type="formErrors.position ? 'is-danger' : ''"
+          :message="formErrors.position || ''">
+          <b-input v-model="position" name="position" />
         </b-field>
       </div>
 
@@ -53,10 +48,9 @@
         </phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Ext.'" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
-          :message="errors.has('officeNumberExt') ? errors.first('officeNumberExt') : ''">
-          <b-input v-model="contactPerson.officeNumberExt" :name="'officeNumberExt'" v-validate="'max:8|min:1|numeric'">
-          </b-input>
+        <b-field :label="'Ext.'" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
+          :message="formErrors.officeNumberExt || ''">
+          <b-input v-model="officeNumberExt" name="officeNumberExt" />
         </b-field>
       </div>
 
@@ -67,11 +61,9 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Email'" :type="errors.has('email') ? 'is-danger' : ''"
-          :message="errors.has('email') ? errors.first('email') : ''">
-          <b-input type="email" v-model="contactPerson.email" :name="'email'"
-            v-validate="'required|max:50|email|min:6'">
-          </b-input>
+        <b-field :label="'Email'" :type="formErrors.email ? 'is-danger' : ''"
+          :message="formErrors.email || ''">
+          <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
 
@@ -86,73 +78,128 @@
 
 <script lang="ts">
 import { defineAsyncComponent } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
+
+const numericExt = yup
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+  .matches(/^\d{1,8}$/, { message: 'Must be 1-8 digits', excludeEmptyString: true });
+
+const schema = yup.object({
+  title: yup.string().required('Title is required'),
+  firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(1, 'Min 1 character').max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  position: yup.string().required('Position is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+  officeNumberExt: numericExt,
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+});
+
 export default {
   props: ['currentContact', 'profileId'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        title: '',
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        position: '',
+        officeNumberExt: '',
+        email: '',
+      },
+    });
+    const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+      titleOptions,
+    };
+  },
   data() {
     return {
       isLoading: false,
       contactPerson: {
-        title: null,
-        firstName: null,
-        middleName: null,
-        lastName: null,
-        position: null,
-        mobileNumber: null,
-        officeNumber: null,
-        officeNumberExt: null,
-        email: null
-      }
-    }
+        mobileNumber: null as any,
+        officeNumber: null as any,
+      } as any,
+    };
   },
   components: {
-    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue"))
+    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue")),
   },
   methods: {
     validateForm() {
-      this.submitted = true;
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          if (this.contactPerson.id) {
-            this.updateContactPerson(this.contactPerson.id);
-          } else {
-            this.createContactPerson();
-          }
-          return;
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        const payload = {
+          ...this.contactPerson,
+          title: values.title,
+          firstName: values.firstName,
+          middleName: values.middleName,
+          lastName: values.lastName,
+          position: values.position,
+          officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+          email: values.email,
+        };
+        if (payload.id) {
+          this.updateContactPerson(payload, payload.id);
+        } else {
+          this.createContactPerson(payload);
         }
+      }, () => {
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      })();
     },
-    createContactPerson() {
+    createContactPerson(payload: any) {
       this.isLoading = true;
-      createAgencyCompanyContactPerson(this.profileId, this.contactPerson)
+      createAgencyCompanyContactPerson((this as any).profileId, payload)
         .then(() => {
           this.isLoading = false;
-          showAlertSuccess('Created')
+          showAlertSuccess('Created');
           this.$emit('updateContent');
         })
-        .catch(error => {
+        .catch((error: any) => {
           this.isLoading = false;
-          showAlertError(error)
-        })
+          showAlertError(error);
+        });
     },
-    updateContactPerson(id) {
+    updateContactPerson(payload: any, id: any) {
       this.isLoading = true;
-      updateAgencyCompanyContactPerson(this.profileId, id, this.contactPerson)
+      updateAgencyCompanyContactPerson((this as any).profileId, id, payload)
         .then(() => {
           this.isLoading = false;
-          showAlertSuccess('Updated')
+          showAlertSuccess('Updated');
           this.$emit('updateContent');
         })
-        .catch(error => {
+        .catch((error: any) => {
           this.isLoading = false;
-          showAlertError(error)
-        })
-    }
+          showAlertError(error);
+        });
+    },
   },
   created() {
-    if (this.currentContact && this.currentContact.id) this.contactPerson = Object.assign({}, this.currentContact);
-  }
-}
+    const currentContact = (this as any).currentContact;
+    if (currentContact && currentContact.id) {
+      this.contactPerson = Object.assign({}, currentContact);
+      this.hydrateForm({
+        title: currentContact.title || '',
+        firstName: currentContact.firstName || '',
+        middleName: currentContact.middleName || '',
+        lastName: currentContact.lastName || '',
+        position: currentContact.position || '',
+        officeNumberExt: currentContact.officeNumberExt != null ? String(currentContact.officeNumberExt) : '',
+        email: currentContact.email || '',
+      });
+    }
+  },
+};
 </script>

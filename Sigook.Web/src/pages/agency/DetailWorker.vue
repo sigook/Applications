@@ -21,16 +21,17 @@
         </div>
       </div>
       <div>
-        <floating-menu class="is-inline-block">
-          <template slot="options">
-            <button class="floating-menu-item" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
-              <span>Approve to work</span>
-            </button>
-            <button class="floating-menu-item" v-if="worker.approvedToWork" @click="confirmDelete(worker)">
-              <span>Reject to work</span>
-            </button>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block">
+          <template #trigger>
+            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
-        </floating-menu>
+          <b-dropdown-item aria-role="listitem" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
+            Approve to work
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" v-if="worker.approvedToWork" @click="confirmDelete(worker)">
+            Reject to work
+          </b-dropdown-item>
+        </b-dropdown>
       </div>
     </section>
     <b-tabs v-model="currentTab" @update:modelValue="changeTab">
@@ -196,7 +197,6 @@ export default {
     requestHistory: defineAsyncComponent(() => import("../../components/agency/AgencyWorkerRequestHistory.vue")),
     timeSheetHistory: defineAsyncComponent(() => import("../../components/worker/TimeSheetHistory.vue")),
     notes: defineAsyncComponent(() => import("../../components/worker/Notes.vue")),
-    FloatingMenu: defineAsyncComponent(() => import("../../components/FloatingMenuDots.vue")),
     otherDocuments: defineAsyncComponent(() => import("../../components/worker/WorkerOtherDocumentsDetail.vue"))
   },
   async created() {

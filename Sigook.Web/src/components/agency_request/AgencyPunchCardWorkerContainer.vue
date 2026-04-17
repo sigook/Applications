@@ -44,7 +44,7 @@
                 <div class="d-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
                   <b-tooltip :triggers="['click']" :auto-close="['outside', 'escape']" type="is-dark" size="is-medium"
                     position="is-top" multilined append-to-body>
-                    <template slot="content">
+                    <template #content>
                       <div>
                         <p v-if="currentTimeSheetUsage.invoiceNumber"><b>Invoice:</b>
                           {{ currentTimeSheetUsage.invoiceNumber }}

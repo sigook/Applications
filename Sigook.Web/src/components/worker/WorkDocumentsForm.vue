@@ -4,12 +4,12 @@
     <div class="container-flex">
       <div class="col-6">
         <b-field :label="'Identification type'"
-          :type="errors.has('identificationType1') ? 'is-danger' : ''"
-          :message="errors.has('identificationType1') ? errors.first('identificationType1') : ''">
-          <b-select v-model="worker.identificationType1" name="identificationType1" v-validate="'required'" expanded>
-            <option value="" disabled>{{ "Select" }}</option>
+          :type="formErrors.identificationType1 ? 'is-danger' : ''"
+          :message="formErrors.identificationType1 || ''">
+          <b-select v-model="identificationType1" name="identificationType1" expanded>
+            <option :value="null" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
-              :disabled="type === worker.identificationType2" v-bind:key="'identificationType1' + index">
+              :disabled="type === identificationType2" v-bind:key="'identificationType1' + index">
               {{ type.value }}
             </option>
           </b-select>
@@ -17,10 +17,9 @@
       </div>
       <div class="col-6">
         <b-field :label="'Identification Number'"
-          :type="errors.has('identificationNumber1') ? 'is-danger' : ''"
-          :message="errors.has('identificationNumber1') ? errors.first('identificationNumber1') : ''">
-          <b-input type="text" v-model="worker.identificationNumber1" name="identificationNumber1"
-            v-validate="'max:15|min:5'" expanded />
+          :type="formErrors.identificationNumber1 ? 'is-danger' : ''"
+          :message="formErrors.identificationNumber1 || ''">
+          <b-input type="text" v-model="identificationNumber1" name="identificationNumber1" expanded />
         </b-field>
       </div>
       <div class="col-12">
@@ -44,12 +43,12 @@
       </div>
       <div class="col-6">
         <b-field :label="'Identification type'"
-          :type="errors.has('identificationType2') ? 'is-danger' : ''"
-          :message="errors.has('identificationType2') ? errors.first('identificationType2') : ''">
-          <b-select v-model="worker.identificationType2" name="identificationType2" v-validate="'required'" expanded>
-            <option value="" disabled>{{ "Select" }}</option>
+          :type="formErrors.identificationType2 ? 'is-danger' : ''"
+          :message="formErrors.identificationType2 || ''">
+          <b-select v-model="identificationType2" name="identificationType2" expanded>
+            <option :value="null" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
-              :disabled="type === worker.identificationType1" v-bind:key="'identificationType2' + index">
+              :disabled="type === identificationType1" v-bind:key="'identificationType2' + index">
               {{ type.value }}
             </option>
           </b-select>
@@ -57,10 +56,9 @@
       </div>
       <div class="col-6">
         <b-field :label="'Identification Number'"
-          :type="errors.has('identificationNumber2') ? 'is-danger' : ''"
-          :message="errors.has('identificationNumber2') ? errors.first('identificationNumber2') : ''">
-          <b-input type="text" v-model="worker.identificationNumber2" name="identificationNumber2"
-            v-validate="'max:15|min:5'" expanded />
+          :type="formErrors.identificationNumber2 ? 'is-danger' : ''"
+          :message="formErrors.identificationNumber2 || ''">
+          <b-input type="text" v-model="identificationNumber2" name="identificationNumber2" expanded />
         </b-field>
       </div>
       <div class="col-12">
@@ -99,36 +97,70 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { getIdentificationTypes } from "@/api/catalogApi";
 import { createWorkerDocuments } from '@/api/workerApi';
 
+const schema = yup.object({
+  identificationType1: yup.mixed().required('Identification type is required'),
+  identificationNumber1: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+  identificationType2: yup.mixed().required('Identification type is required'),
+  identificationNumber2: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+});
+
 export default {
   props: ["data"],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        identificationType1: null as any,
+        identificationNumber1: '',
+        identificationType2: null as any,
+        identificationNumber2: '',
+      },
+    });
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      worker: {},
-      identificationTypes: [],
-      selectedFile1: null,
-      selectedFile2: null,
+      worker: {} as any,
+      identificationTypes: [] as any[],
+      selectedFile1: null as any,
+      selectedFile2: null as any,
       fileObjects: {
-        identificationType1: null,
-        identificationType2: null
-      }
+        identificationType1: null as any,
+        identificationType2: null as any,
+      },
     };
   },
   async created() {
     this.identificationTypes = await getIdentificationTypes();
-    if (this.data != null) {
-      this.worker = { ...this.data };
+    const data = (this as any).data;
+    if (data != null) {
+      this.worker = { ...data };
+      this.hydrateForm({
+        identificationType1: data.identificationType1 || null,
+        identificationNumber1: data.identificationNumber1 || '',
+        identificationType2: data.identificationType2 || null,
+        identificationNumber2: data.identificationNumber2 || '',
+      });
     }
   },
   methods: {
     filename,
-    handleFile1Selected(file) {
+    handleFile1Selected(file: any) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
         showAlertError('File exceeds 15MB limit');
@@ -140,7 +172,7 @@ export default {
       this.worker.identificationType1File = { fileName: generatedName, description: '' };
       this.selectedFile1 = null;
     },
-    handleFile2Selected(file) {
+    handleFile2Selected(file: any) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
         showAlertError('File exceeds 15MB limit');
@@ -161,25 +193,24 @@ export default {
       this.worker.identificationType2File = null;
     },
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveDocuments();
-          return;
-        }
-        showAlertError("Please make sure all required fields are filled out correctly");
-      });
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.saveDocuments(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    async saveDocuments() {
+    async saveDocuments(values: any) {
       this.isLoading = true;
       try {
         const payload = {
-          identificationType1: this.worker.identificationType1,
-          identificationNumber1: this.worker.identificationNumber1,
+          identificationType1: values.identificationType1,
+          identificationNumber1: values.identificationNumber1,
           identificationType1File: this.worker.identificationType1File,
-          identificationType2: this.worker.identificationType2,
-          identificationNumber2: this.worker.identificationNumber2,
+          identificationType2: values.identificationType2,
+          identificationNumber2: values.identificationNumber2,
           identificationType2File: this.worker.identificationType2File,
-          havePoliceCheckBackground: this.worker.havePoliceCheckBackground
+          havePoliceCheckBackground: this.worker.havePoliceCheckBackground,
         };
         const formData = new FormData();
         formData.append('data', JSON.stringify(payload));
@@ -198,8 +229,8 @@ export default {
       } finally {
         this.isLoading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

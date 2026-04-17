@@ -2,13 +2,13 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <location-address v-model:model="worker.location" @isLoading="(value) => isLoading = value" />
+      <location-address ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value" />
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
+        <phone-input ref="mobileComponent" :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
           @formattedPhone="(phone) => worker.mobileNumber = phone" />
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="false" model="Phone" :defaultValue="worker.phone"
+        <phone-input ref="phoneComponent" :required="false" model="Phone" :defaultValue="worker.phone"
           @formattedPhone="(phone) => worker.phone = phone" />
       </div>
       <div class="col-12 mt-5">
@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       isLoading: false,
-      worker: {}
+      worker: {} as any
     }
   },
   components: {
@@ -36,14 +36,15 @@ export default {
     phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
   },
   methods: {
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.createWorkerContactInformation();
-          return;
-        }
+    async validateAll() {
+      const addressValid = await (this.$refs.addressComponent as any).validateAddress();
+      const mobileValid = await (this.$refs.mobileComponent as any).validatePhone();
+      const phoneValid = await (this.$refs.phoneComponent as any).validatePhone();
+      if (addressValid && mobileValid && phoneValid) {
+        this.createWorkerContactInformation();
+      } else {
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      }
     },
     createWorkerContactInformation() {
       this.isLoading = true;

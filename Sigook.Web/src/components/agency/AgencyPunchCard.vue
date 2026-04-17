@@ -17,15 +17,15 @@
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field :type="formErrors.newDate ? 'is-danger' : ''" label="Date"
             :message="formErrors.newDate">
-            <b-datepicker v-model="newDate.date" indicators="bars" append-to-body>
+            <b-datepicker v-model="newDate" indicators="bars" append-to-body>
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field label="Daily hours" :type="formErrors.newDateHour ? 'is-danger' : ''"
             :message="formErrors.newDateHour">
-            <b-timepicker placeholder="Select a time..." v-model="newDate.hours"
-              :disabled="!newDate.date" hour-format="24">
+            <b-timepicker placeholder="Select a time..." v-model="newDateHour"
+              :disabled="!newDate" hour-format="24">
             </b-timepicker>
           </b-field>
         </div>
@@ -37,60 +37,60 @@
         <div class="container-flex" v-if="showOptions">
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Missing Hours">
-              <b-timepicker v-model="newDate.missingHours" hour-format="24" :max-time="maximumMissing">
+              <b-timepicker v-model="missingHours" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Missing Hours Over time">
-              <b-timepicker v-model="newDate.missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
+              <b-timepicker v-model="missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
               </b-timepicker>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Missing Worker Rate" :type="formErrors.deductionsW ? 'is-danger' : ''"
               :message="formErrors.deductionsW">
-              <b-numberinput v-model="newDate.missingRateWorker" step="0.01" controls-alignment="right">
+              <b-numberinput v-model="deductionsW" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Missing Agency Rate" :type="formErrors.deductionsC ? 'is-danger' : ''"
               :message="formErrors.deductionsC">
-              <b-numberinput v-model="newDate.missingRateAgency" step="0.01" controls-alignment="right">
+              <b-numberinput v-model="deductionsC" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Deductions" :type="formErrors.deductions ? 'is-danger' : ''"
               :message="formErrors.deductions">
-              <b-numberinput v-model="newDate.deductionsOthers" step="0.01" controls-alignment="right">
+              <b-numberinput v-model="deductions" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Deductions Description" :type="formErrors.deductionsDes ? 'is-danger' : ''"
               :message="formErrors.deductionsDes">
-              <b-input v-model="newDate.deductionsOthersDescription" type="text"></b-input>
+              <b-input v-model="deductionsDes" type="text"></b-input>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Bonus or others" :type="formErrors.bonus ? 'is-danger' : ''"
               :message="formErrors.bonus">
-              <b-numberinput v-model="newDate.bonusOrOthers" step="0.01" controls-alignment="right">
+              <b-numberinput v-model="bonus" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Bonus or others Description" :type="formErrors.bonusDes ? 'is-danger' : ''"
               :message="formErrors.bonusDes">
-              <b-input v-model="newDate.bonusOrOthersDescription" type="text"></b-input>
+              <b-input v-model="bonusDes" type="text"></b-input>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
             <b-field label="Reimbursements" :type="formErrors.reimbursements ? 'is-danger' : ''"
               :message="formErrors.reimbursements">
-              <b-numberinput v-model="newDate.reimbursements" step="0.01" controls-alignment="right">
+              <b-numberinput v-model="reimbursements" step="0.01" controls-alignment="right">
               </b-numberinput>
             </b-field>
           </div>
@@ -98,13 +98,13 @@
             <b-field label="Reimbursements Description"
               :type="formErrors.reimbursementsDescription ? 'is-danger' : ''"
               :message="formErrors.reimbursementsDescription">
-              <b-input v-model="newDate.reimbursementsDescription" type="text"></b-input>
+              <b-input v-model="reimbursementsDescription" type="text"></b-input>
             </b-field>
           </div>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-button type="is-primary" @click="reportWorkerTimSheet">
-            {{ newDate.id ? "Update" : "Save" }}
+            {{ "Save" }}
           </b-button>
         </div>
       </div>
@@ -132,6 +132,7 @@
 </template>
 <script lang="ts">
 import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
@@ -164,23 +165,45 @@ const schema = yup.object({
 
 export default {
   props: ["workerId", "workerName", "requestId"],
-  data() {
+  setup() {
     const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
+
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        newDate: null as Date | null,
+        newDateHour: emptyTime as Date | null,
+        missingHours: emptyTime as Date | null,
+        missingHoursOvertime: emptyTime as Date | null,
+        deductionsW: null as number | null,
+        deductionsC: null as number | null,
+        deductions: null as number | null,
+        deductionsDes: '',
+        bonus: null as number | null,
+        bonusDes: '',
+        reimbursements: null as number | null,
+        reimbursementsDescription: '',
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      clearForm: form.resetAll,
+    };
+  },
+  data() {
     const maximumMissing = dayjs().hour(12).minute(0).second(0).millisecond(0).toDate();
     return {
       showOptions: false,
       punchCard: true,
       isLoading: false,
-      newDate: {
-        hours: emptyTime,
-        missingHours: emptyTime,
-        missingHoursOvertime: emptyTime,
-      } as any,
       size: 30,
       currentPage: 1,
       maximumMissing,
       rows: [] as any[],
-      formErrors: {} as Record<string, string>,
     };
   },
   methods: {
@@ -200,50 +223,40 @@ export default {
       this.punchCard = false;
     },
     reportWorkerTimSheet() {
-      const values = {
-        newDate: this.newDate.date,
-        newDateHour: this.newDate.hours,
-        deductionsW: this.newDate.missingRateWorker,
-        deductionsC: this.newDate.missingRateAgency,
-        deductions: this.newDate.deductionsOthers,
-        deductionsDes: this.newDate.deductionsOthersDescription,
-        bonus: this.newDate.bonusOrOthers,
-        bonusDes: this.newDate.bonusOrOthersDescription,
-        reimbursements: this.newDate.reimbursements,
-        reimbursementsDescription: this.newDate.reimbursementsDescription,
-      };
-      schema
-        .validate(values, { abortEarly: false })
-        .then(() => {
-          this.formErrors = {};
-          this.submitTimeSheet();
-        })
-        .catch((err: any) => {
-          const next: Record<string, string> = {};
-          if (err.inner) {
-            err.inner.forEach((e: any) => {
-              if (e.path && !next[e.path]) next[e.path] = e.message;
-            });
-          }
-          this.formErrors = next;
-          showAlertError('Please make sure all required fields are filled out correctly');
-        });
+      this.markInteracted([
+        'newDate', 'newDateHour', 'deductionsW', 'deductionsC',
+        'deductions', 'deductionsDes', 'bonus', 'bonusDes',
+        'reimbursements', 'reimbursementsDescription',
+      ]);
+      this.handleSubmit((values) => {
+        this.submitTimeSheet(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    submitTimeSheet() {
+    submitTimeSheet(values: any) {
       this.isLoading = true;
-      const dateStr = dayjs(this.newDate.date).format('YYYY-MM-DD');
-      const hours = dayjs(this.newDate.hours).format('HH:mm:ss');
+      const dateStr = dayjs(values.newDate).format('YYYY-MM-DD');
+      const hours = dayjs(values.newDateHour).format('HH:mm:ss');
       const payload = {
-        ...this.newDate,
         hours,
         timeIn: dayjs(dateStr + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
-        missingHours: dayjs(this.newDate.missingHours).format('HH:mm:ss'),
-        missingHoursOvertime: dayjs(this.newDate.missingHoursOvertime).format('HH:mm:ss'),
+        missingHours: dayjs(values.missingHours).format('HH:mm:ss'),
+        missingHoursOvertime: dayjs(values.missingHoursOvertime).format('HH:mm:ss'),
+        missingRateWorker: values.deductionsW,
+        missingRateAgency: values.deductionsC,
+        deductionsOthers: values.deductions,
+        deductionsOthersDescription: values.deductionsDes,
+        bonusOrOthers: values.bonus,
+        bonusOrOthersDescription: values.bonusDes,
+        reimbursements: values.reimbursements,
+        reimbursementsDescription: values.reimbursementsDescription,
       };
       postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
         .then(() => {
           this.isLoading = false;
           showAlertSuccess('Created');
+          this.clearForm();
           this.$emit('created');
         })
         .catch((error: any) => {

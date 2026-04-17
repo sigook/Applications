@@ -45,90 +45,91 @@
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Hours Approved" :type="formErrors.hoursApproved ? 'is-danger' : ''"
           :message="formErrors.hoursApproved">
-          <b-timepicker v-model="localEditableDay.hoursApprovedToDate" hour-format="24"
+          <b-timepicker v-model="hoursApproved" hour-format="24"
             :max-time="maximumDailyHours">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Missing Hours">
-          <b-timepicker v-model="localEditableDay.missinghoursToDate" hour-format="24" :max-time="maximumMissing">
+          <b-timepicker v-model="missinghours" hour-format="24" :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Missing Hours Overtime">
-          <b-timepicker v-model="localEditableDay.missingHoursOvertimeToDate" hour-format="24" :max-time="maximumMissing">
+          <b-timepicker v-model="missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Missing Worker Rate" :type="formErrors.deductionsW ? 'is-danger' : ''"
           :message="formErrors.deductionsW">
-          <b-numberinput v-model="localEditableDay.missingRateWorker" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductionsW" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Missing Agency Rate" :type="formErrors.deductionsC ? 'is-danger' : ''"
           :message="formErrors.deductionsC">
-          <b-numberinput v-model="localEditableDay.missingRateAgency" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductionsC" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Deductions Others" :type="formErrors.deductions ? 'is-danger' : ''"
           :message="formErrors.deductions">
-          <b-numberinput v-model="localEditableDay.deductionsOthers" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductions" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Deductions Others Description" :type="formErrors.deductionsDes ? 'is-danger' : ''"
           :message="formErrors.deductionsDes">
-          <b-input v-model="localEditableDay.deductionsOthersDescription" type="text"></b-input>
+          <b-input v-model="deductionsDes" type="text"></b-input>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Bonus or others" :type="formErrors.bonus ? 'is-danger' : ''"
           :message="formErrors.bonus">
-          <b-numberinput v-model="localEditableDay.bonusOrOthers" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="bonus" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Bonus or others Description" :type="formErrors.bonusDes ? 'is-danger' : ''"
           :message="formErrors.bonusDes">
-          <b-input v-model="localEditableDay.bonusOrOthersDescription" type="text"></b-input>
+          <b-input v-model="bonusDes" type="text"></b-input>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Reimbursements" :type="formErrors.reimbursements ? 'is-danger' : ''"
           :message="formErrors.reimbursements">
-          <b-numberinput v-model="localEditableDay.reimbursements" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="reimbursements" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Reimbursements Description" :type="formErrors.reimbursementsDes ? 'is-danger' : ''"
           :message="formErrors.reimbursementsDes">
-          <b-input v-model="localEditableDay.reimbursementsDescription" type="text"></b-input>
+          <b-input v-model="reimbursementsDes" type="text"></b-input>
         </b-field>
       </div>
       <div class="col-12 col-padding">
         <b-field label="Comments" :type="formErrors.comments ? 'is-danger' : ''"
           :message="formErrors.comments">
-          <b-input v-model="localEditableDay.comment" type="textarea"></b-input>
+          <b-input v-model="comments" type="textarea"></b-input>
         </b-field>
       </div>
       <div class="col-12 col-padding mt-5">
-        <b-button type="is-primary" @click="validateHours(localEditableDay)">Save</b-button>
+        <b-button type="is-primary" @click="saveHours">Save</b-button>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
 import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
@@ -164,8 +165,54 @@ const schema = yup.object({
   comments: optionalText(1000),
 });
 
+function cloneEditable(src: any): any {
+  if (!src) return src;
+  const copy = JSON.parse(JSON.stringify(src));
+  const dateFields = ['hoursApprovedToDate', 'missinghoursToDate', 'missingHoursOvertimeToDate', 'timeInApproved', 'timeOutApproved'];
+  for (const key of dateFields) {
+    if (copy[key]) copy[key] = new Date(copy[key]);
+  }
+  return copy;
+}
+
+function valuesFromEditable(src: any) {
+  const clone = cloneEditable(src) || {};
+  return {
+    hoursApproved: clone.hoursApprovedToDate || null,
+    missinghours: clone.missinghoursToDate || null,
+    missingHoursOvertime: clone.missingHoursOvertimeToDate || null,
+    deductionsW: clone.missingRateWorker ?? null,
+    deductionsC: clone.missingRateAgency ?? null,
+    deductions: clone.deductionsOthers ?? null,
+    deductionsDes: clone.deductionsOthersDescription ?? '',
+    bonus: clone.bonusOrOthers ?? null,
+    bonusDes: clone.bonusOrOthersDescription ?? '',
+    reimbursements: clone.reimbursements ?? null,
+    reimbursementsDes: clone.reimbursementsDescription ?? '',
+    comments: clone.comment ?? '',
+  };
+}
+
 export default {
   props: ['editableDay', 'worker'],
+  setup(props) {
+    const form = useStickyForm({
+      schema,
+      initialValues: valuesFromEditable(props.editableDay),
+    });
+
+    function hydrate(src: any) {
+      form.hydrate(valuesFromEditable(src));
+    }
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrate,
+    };
+  },
   data() {
     const maximumMissing = new Date();
     maximumMissing.setHours(12);
@@ -175,14 +222,14 @@ export default {
     return {
       maximumMissing,
       isLoading: false,
-      localEditableDay: this.cloneEditable(this.editableDay),
-      formErrors: {} as Record<string, string>,
+      localEditableDay: cloneEditable(this.editableDay),
     };
   },
   watch: {
     editableDay: {
       handler(newVal) {
-        this.localEditableDay = (this as any).cloneEditable(newVal);
+        this.localEditableDay = cloneEditable(newVal);
+        this.hydrate(newVal);
       },
       deep: true,
     },
@@ -191,67 +238,54 @@ export default {
     dateMonth,
     dateHHmm,
     hour,
-    cloneEditable(src: any): any {
-      if (!src) return src;
-      const copy = JSON.parse(JSON.stringify(src));
-      const dateFields = ['hoursApprovedToDate', 'missinghoursToDate', 'missingHoursOvertimeToDate', 'timeInApproved', 'timeOutApproved'];
-      for (const key of dateFields) {
-        if (copy[key]) copy[key] = new Date(copy[key]);
-      }
-      return copy;
+    saveHours() {
+      this.markInteracted([
+        'hoursApproved', 'deductionsW', 'deductionsC', 'deductions', 'deductionsDes',
+        'bonus', 'bonusDes', 'reimbursements', 'reimbursementsDes', 'comments'
+      ]);
+      this.handleSubmit((values) => {
+        this.sendValidation(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    validateHours(item: any) {
-      const values = {
-        hoursApproved: item.hoursApprovedToDate,
-        deductionsW: item.missingRateWorker,
-        deductionsC: item.missingRateAgency,
-        deductions: item.deductionsOthers,
-        deductionsDes: item.deductionsOthersDescription,
-        bonus: item.bonusOrOthers,
-        bonusDes: item.bonusOrOthersDescription,
-        reimbursements: item.reimbursements,
-        reimbursementsDes: item.reimbursementsDescription,
-        comments: item.comment,
-      };
-      schema
-        .validate(values, { abortEarly: false })
-        .then(() => {
-          this.formErrors = {};
-          this.sendValidation(item);
-        })
-        .catch((err: any) => {
-          const next: Record<string, string> = {};
-          if (err.inner) {
-            err.inner.forEach((e: any) => {
-              if (e.path && !next[e.path]) next[e.path] = e.message;
-            });
-          }
-          this.formErrors = next;
-          showAlertError('Please make sure all required fields are filled out correctly');
-        });
-    },
-    sendValidation(item: any) {
+    sendValidation(values: any) {
       this.isLoading = true;
-      const timeInZero = dayjs(item.timeIn).hour(0).minute(0).second(0);
+      const timeInZero = dayjs(this.localEditableDay.timeIn).hour(0).minute(0).second(0);
       const model = {
-        hours: dayjs(item.hoursApprovedToDate).format('HH:mm:ss'),
+        hours: dayjs(values.hoursApproved).format('HH:mm:ss'),
         timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
-        missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),
-        missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss"),
-        deductionsOthers: item.deductionsOthers,
-        deductionsOthersDescription: item.deductionsOthersDescription,
-        bonusOrOthers: item.bonusOrOthers || 0,
-        bonusOrOthersDescription: item.bonusOrOthersDescription || '',
-        comments: item.comment,
-        missingRateAgency: item.missingRateAgency,
-        missingRateWorker: item.missingRateWorker,
-        reimbursements: item.reimbursements || 0,
-        reimbursementsDescription: item.reimbursementsDescription || '',
+        missingHours: dayjs(values.missinghours).format("HH:mm:ss"),
+        missingHoursOvertime: dayjs(values.missingHoursOvertime).format("HH:mm:ss"),
+        deductionsOthers: values.deductions,
+        deductionsOthersDescription: values.deductionsDes,
+        bonusOrOthers: values.bonus || 0,
+        bonusOrOthersDescription: values.bonusDes || '',
+        comments: values.comments,
+        missingRateAgency: values.deductionsC,
+        missingRateWorker: values.deductionsW,
+        reimbursements: values.reimbursements || 0,
+        reimbursementsDescription: values.reimbursementsDes || '',
       };
-      updateAgencyWorkerTimeSheet(this.$route.params.id, this.worker.workerId, item.id, model)
+      updateAgencyWorkerTimeSheet(this.$route.params.id, this.worker.workerId, this.localEditableDay.id, model)
         .then(() => {
           this.isLoading = false;
-          this.$emit('update:editableDay', this.localEditableDay);
+          const updated = {
+            ...this.localEditableDay,
+            hoursApprovedToDate: values.hoursApproved,
+            missinghoursToDate: values.missinghours,
+            missingHoursOvertimeToDate: values.missingHoursOvertime,
+            missingRateWorker: values.deductionsW,
+            missingRateAgency: values.deductionsC,
+            deductionsOthers: values.deductions,
+            deductionsOthersDescription: values.deductionsDes,
+            bonusOrOthers: values.bonus,
+            bonusOrOthersDescription: values.bonusDes,
+            reimbursements: values.reimbursements,
+            reimbursementsDescription: values.reimbursementsDes,
+            comment: values.comments,
+          };
+          this.$emit('update:editableDay', updated);
           showAlertSuccess('Updated');
           this.$emit("updateData");
         })

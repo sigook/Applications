@@ -15,17 +15,19 @@
         </h2>
       </div>
 
-      <floating-menu>
-        <template slot="options">
-          <button v-if="isClient" class="floating-menu-item"
-            @click="$router.push({ path: `/agency-create-request/${company.id}` })">
-            Create Order
-          </button>
-          <button class="floating-menu-item" @click="$router.push({ path: `/update-company/${company.id}` })">
-            <span>Edit Company</span>
-          </button>
+      <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+        <template #trigger>
+          <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
         </template>
-      </floating-menu>
+        <b-dropdown-item v-if="isClient" aria-role="listitem"
+          @click="$router.push({ path: `/agency-create-request/${company.id}` })">
+          Create Order
+        </b-dropdown-item>
+        <b-dropdown-item aria-role="listitem"
+          @click="$router.push({ path: `/update-company/${company.id}` })">
+          Edit Company
+        </b-dropdown-item>
+      </b-dropdown>
     </section>
 
     <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="company">
@@ -89,7 +91,6 @@ export default {
     JobPosition: defineAsyncComponent(() => import("@/components/agency_company/JobPositionList.vue")),
     Requests: defineAsyncComponent(() => import("@/components/agency_company/CompanyRequests.vue")),
     Workers: defineAsyncComponent(() => import("@/components/agency_company/CompanyWorkers.vue")),
-    FloatingMenu: defineAsyncComponent(() => import("@/components/FloatingMenuDots.vue")),
     CompanyUpdateLogo: defineAsyncComponent(() => import("@/components/agency_company/CompanyUpdateLogo.vue"))
   },
   methods: {

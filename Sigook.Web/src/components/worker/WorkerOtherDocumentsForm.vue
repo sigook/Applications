@@ -24,13 +24,12 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :type="errors.has('Description') ? 'is-danger' : ''"
-          :message="errors.has('Description') ? errors.first('Description') : ''">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
           <template #label>
             {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
-          <b-input type="text" v-model="otherDocument.description" name="Description"
-            v-validate="'required|max:20'" />
+          <b-input type="text" v-model="description" name="Description" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
@@ -43,29 +42,42 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerOtherDocuments } from '@/api/workerApi';
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
+});
 
 export default {
   props: ["data"],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: { description: '' },
+    });
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      selectedDocFile: null,
-      fileObjects: {
-        otherDocument: null
-      },
-      otherDocument: {
-        fileName: "",
-        description: ""
-      }
+      selectedDocFile: null as any,
+      fileObjects: { otherDocument: null as any },
+      otherDocument: { fileName: "", description: "" } as any,
     };
   },
   methods: {
     filename,
-    handleDocFileSelected(file) {
+    handleDocFileSelected(file: any) {
       if (!file) return;
       if (file.size / 1024 > 15500) {
         showAlertError('File exceeds 15MB limit');
@@ -74,7 +86,7 @@ export default {
       }
       this.fileObjects.otherDocument = file;
       const generatedName = generateFileName('OtherDoc', file.name);
-      this.otherDocument = { fileName: generatedName, description: this.otherDocument.description || '' };
+      this.otherDocument = { fileName: generatedName, description: '' };
       this.selectedDocFile = null;
     },
     clearDocFile() {
@@ -82,32 +94,32 @@ export default {
       this.otherDocument = { fileName: '', description: '' };
     },
     validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveOtherDocument();
-          return;
-        }
-        showAlertError("Please make sure all required fields are filled out correctly");
-      });
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.saveOtherDocument(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    async saveOtherDocument() {
+    async saveOtherDocument(values: any) {
       this.isLoading = true;
       try {
+        const payload = { fileName: this.otherDocument.fileName, description: values.description };
         const formData = new FormData();
-        formData.append('data', JSON.stringify(this.otherDocument));
+        formData.append('data', JSON.stringify(payload));
         if (this.fileObjects.otherDocument) {
-          const fn = this.otherDocument.fileName;
+          const fn = payload.fileName;
           formData.append(fn, this.fileObjects.otherDocument, fn);
         }
-        await createWorkerOtherDocuments(this.data.id, formData);
+        await createWorkerOtherDocuments((this as any).data.id, formData);
         this.$emit('closeAndUpdate', true);
       } catch (error) {
         showAlertError(error);
       } finally {
         this.isLoading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

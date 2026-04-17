@@ -3,23 +3,21 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('company') ? 'is-danger' : ''" :label="'Company'"
-          :message="errors.has('company') ? errors.first('company') : ''">
-          <b-input type="text" v-model="workExperience.company" :name="'company'"
-            v-validate="'required|max:50|min:2'" />
+        <b-field :type="formErrors.company ? 'is-danger' : ''" :label="'Company'"
+          :message="formErrors.company || ''">
+          <b-input type="text" v-model="company" :name="'company'" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('supervisor') ? 'is-danger' : ''" :label="'Supervisor'"
-          :message="errors.has('supervisor') ? errors.first('supervisor') : ''">
-          <b-input type="text" v-model="workExperience.supervisor" :name="'supervisor'"
-            v-validate="'required|max:60|min:2'" />
+        <b-field :type="formErrors.supervisor ? 'is-danger' : ''" :label="'Supervisor'"
+          :message="formErrors.supervisor || ''">
+          <b-input type="text" v-model="supervisor" :name="'supervisor'" />
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-field :type="errors.has('duties') ? 'is-danger' : ''" :label="'Duties'"
-          :message="errors.has('duties') ? errors.first('duties') : ''">
-          <b-input type="textarea" v-model="workExperience.duties" :name="'duties'" v-validate="'required|max:5000'" />
+        <b-field :type="formErrors.duties ? 'is-danger' : ''" :label="'Duties'"
+          :message="formErrors.duties || ''">
+          <b-input type="textarea" v-model="duties" :name="'duties'" />
         </b-field>
       </div>
       <div class="col-12 col-padding">
@@ -31,18 +29,18 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('startDate') ? 'is-danger' : ''" :label="'Start date'"
-          :message="errors.has('startDate') ? errors.first('startDate') : ''">
-          <b-datepicker v-model="workExperience.startDate" :name="'startDate'" v-validate="'required'"
+        <b-field :type="formErrors.startDate ? 'is-danger' : ''" :label="'Start date'"
+          :message="formErrors.startDate || ''">
+          <b-datepicker v-model="startDate" :name="'startDate'"
             :max-date="disableStartDate" append-to-body position="is-top-right">
           </b-datepicker>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!workExperience.isCurrentJobPosition">
-        <b-field :type="errors.has('endDate') ? 'is-danger' : ''" :label="'End date'"
-          :message="errors.has('endDate') ? errors.first('endDate') : ''">
-          <b-datepicker v-model="workExperience.endDate" :name="'endDate'" v-validate="'required'"
-            :max-date="disableStartDate" :min-date="workExperience.startDate" append-to-body position="is-top-right">
+        <b-field :type="formErrors.endDate ? 'is-danger' : ''" :label="'End date'"
+          :message="formErrors.endDate || ''">
+          <b-datepicker v-model="endDate" :name="'endDate'"
+            :max-date="disableStartDate" :min-date="startDate" append-to-body position="is-top-right">
           </b-datepicker>
         </b-field>
       </div>
@@ -56,46 +54,86 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { createWorkerWorkExperience, editWorkerWorkExperience } from '@/api/workerApi';
+
+const schema = yup.object({
+  company: yup.string().required('Company is required')
+    .min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
+  supervisor: yup.string().required('Supervisor is required')
+    .min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
+  duties: yup.string().required('Duties is required').max(5000, 'Max 5000 characters'),
+  startDate: yup.mixed().required('Start date is required'),
+  endDate: yup.mixed().nullable(),
+});
+
 export default {
   props: ['workerId', 'data'],
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        company: '',
+        supervisor: '',
+        duties: '',
+        startDate: null as Date | null,
+        endDate: null as Date | null,
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      hydrateForm: form.hydrate,
+      resetForm: form.resetAll,
+    };
+  },
   data() {
     return {
       isLoading: false,
-      disableStartDate: null,
+      disableStartDate: null as Date | null,
       workExperience: {
-        company: "",
-        supervisor: "",
-        duties: "",
-        startDate: null,
-        endDate: null,
-        isCurrentJobPosition: true
-      }
-    }
+        isCurrentJobPosition: true,
+      } as any,
+    };
   },
   computed: {
     ...mapStores(useAppStore),
   },
   methods: {
     validateAll() {
-      this.$validator.validateAll().then(async (isValid) => {
-        if (isValid) {
-          if (this.data) {
-            this.editWorkerWorkExperience()
-          } else {
-            this.createWorkerWorkExperience();
-          }
+      this.markInteracted();
+      this.handleSubmit((values: any) => {
+        if (!this.workExperience.isCurrentJobPosition && !values.endDate) {
+          showAlertError('Please make sure all required fields are filled out correctly');
           return;
         }
+        const payload = {
+          ...this.workExperience,
+          company: values.company,
+          supervisor: values.supervisor,
+          duties: values.duties,
+          startDate: values.startDate,
+          endDate: this.workExperience.isCurrentJobPosition ? null : values.endDate,
+        };
+        if ((this as any).data) {
+          this.editWorkerWorkExperience(payload);
+        } else {
+          this.createWorkerWorkExperience(payload);
+        }
+      }, () => {
         showAlertError('Please make sure all required fields are filled out correctly');
-      });
+      })();
     },
-    createWorkerWorkExperience() {
+    createWorkerWorkExperience(payload: any) {
       this.isLoading = true;
-      createWorkerWorkExperience(this.workerId, this.workExperience)
+      createWorkerWorkExperience((this as any).workerId, payload)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateExperience");
@@ -103,11 +141,11 @@ export default {
         .catch(error => {
           this.isLoading = false;
           showAlertError(error);
-        })
+        });
     },
-    editWorkerWorkExperience() {
+    editWorkerWorkExperience(payload: any) {
       this.isLoading = true;
-      editWorkerWorkExperience(this.workerId, this.data.id, this.workExperience)
+      editWorkerWorkExperience((this as any).workerId, (this as any).data.id, payload)
         .then(() => {
           this.isLoading = false;
           this.$emit("updateExperience");
@@ -115,21 +153,29 @@ export default {
         .catch(error => {
           this.isLoading = false;
           showAlertError(error);
-        })
+        });
     },
     updateData() {
-      this.workExperience = Object.assign({}, this.data);
-      this.workExperience.startDate = new Date(this.data.startDate);
-      this.workExperience.endDate = this.data.endDate ? new Date(this.data.endDate) : null;
-    }
+      const src = (this as any).data;
+      this.workExperience = Object.assign({}, src);
+      const startDate = new Date(src.startDate);
+      const endDate = src.endDate ? new Date(src.endDate) : null;
+      this.hydrateForm({
+        company: src.company || '',
+        supervisor: src.supervisor || '',
+        duties: src.duties || '',
+        startDate,
+        endDate,
+      });
+    },
   },
   created() {
-    this.appStore.getCurrentDate().then(response => {
+    this.appStore.getCurrentDate().then((response: any) => {
       this.disableStartDate = response;
     });
-    if (this.data) {
+    if ((this as any).data) {
       this.updateData();
     }
-  }
-}
+  },
+};
 </script>

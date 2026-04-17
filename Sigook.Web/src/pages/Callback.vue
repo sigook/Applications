@@ -1,25 +1,25 @@
 <template>
-  <b-loading active></b-loading>
+  <b-loading v-model="isLoading"></b-loading>
 </template>
 
 <script lang="ts">
 import { mapStores } from 'pinia';
 import { useSecurityStore } from '@/stores/security';
-import { UserManager } from 'oidc-client-ts';
+import mgr from '@/security/securityService';
 import menu from "@/security/menu";
 
 export default {
+  data() {
+    return {
+      isLoading: true
+    }
+  },
   computed: {
     ...mapStores(useSecurityStore),
   },
-  data() {
-    return {
-      userManager: new UserManager({} as any)
-    }
-  },
   async created() {
     if (!this.securityStore.user) {
-      await this.userManager.signinRedirectCallback();
+      await mgr.signinRedirectCallback();
       await this.securityStore.getUser();
       const roles = await this.securityStore.userRoles;
       let homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);

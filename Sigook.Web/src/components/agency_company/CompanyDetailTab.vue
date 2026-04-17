@@ -60,7 +60,7 @@
         <div class="vue-trix-editor">
           <transition name="fade">
             <div v-if="showEditor">
-              <vue-editor v-model="editorContent" :editorToolbar="customToolbar"></vue-editor>
+              <QuillEditor theme="snow" content-type="html" v-model:content="editorContent" :toolbar="customToolbar" />
               <br />
               <button class="sm-save-button" v-if="editorContent" @click="saveInvoiceNotes()">
                 {{ "Save" }}
@@ -90,18 +90,18 @@
                 <li class="newRecipient">
                   <div class="container-card">
                     <label>{{ "Name" }}:
-                      <input type="text" v-model="newRecipient.name" placeholder="Name" name="name"
-                        v-validate="'required|max:50|min:3'" :class="{ 'is-danger': errors.has('name') }" />
-                      <span v-show="errors.has('name')" class="help is-danger no-margin">
-                        {{ errors.first("name") }}
+                      <input type="text" v-model="name" placeholder="Name" name="name"
+                        :class="{ 'is-danger': !!formErrors.name }" />
+                      <span v-show="formErrors.name" class="help is-danger no-margin">
+                        {{ formErrors.name }}
                       </span>
                     </label>
 
                     <label>{{ "Email" }}:
-                      <input type="text" v-model="newRecipient.email" placeholder="Email" name="email"
-                        v-validate="'required|max:50|min:6|email'" :class="{ 'is-danger': errors.has('email') }" />
-                      <span v-show="errors.has('email')" class="help is-danger no-margin">
-                        {{ errors.first("email") }}
+                      <input type="text" v-model="email" placeholder="Email" name="email"
+                        :class="{ 'is-danger': !!formErrors.email }" />
+                      <span v-show="formErrors.email" class="help is-danger no-margin">
+                        {{ formErrors.email }}
                       </span>
                     </label>
                   </div>
@@ -136,6 +136,8 @@
 
 <script lang="ts">
 import { defineAsyncComponent } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { date } from "@/utils/filters";
@@ -147,9 +149,26 @@ import {
   updatePermissionToSeeOrders
 } from "@/api/agencyCompanyApi";
 
+const recipientSchema = yup.object({
+  name: yup.string().required('Name is required').min(3, 'Min 3 characters').max(50, 'Max 50 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
+});
+
 export default {
   setup() {
-    return { ...useBillingAdmin() };
+    const form = useStickyForm({
+      schema: recipientSchema,
+      initialValues: { name: '', email: '' },
+    });
+
+    return {
+      ...useBillingAdmin(),
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+      clearForm: form.resetAll,
+    };
   },
   props: ["company"],
   data() {
@@ -174,10 +193,6 @@ export default {
         ["clean"],
       ],
       companyRecipients: [],
-      newRecipient: {
-        name: "",
-        email: ""
-      }
     };
   },
   components: {
@@ -255,20 +270,19 @@ export default {
           });
       } else {
         this.showRecipients = false;
-        this.newRecipient = { name: "", email: "" };
+        this.clearForm();
       }
     },
-    saveCompanyInvoiceRecipient() {
+    saveCompanyInvoiceRecipient(values) {
       this.isLoading = true;
-      postCompanyInvoiceRecipient(this.$route.params.id, this.newRecipient)
+      postCompanyInvoiceRecipient(this.$route.params.id, values)
         .then((response) => {
           this.companyRecipients.push({
             id: response.id,
-            name: this.newRecipient.name,
-            email: this.newRecipient.email
+            name: values.name,
+            email: values.email
           });
-          this.newRecipient = { name: "", email: "" };
-          this.$validator.reset();
+          this.clearForm();
           this.isLoading = false;
         })
         .catch((error) => {
@@ -280,20 +294,10 @@ export default {
       this.companyRecipients.splice(index, 1);
     },
     validateCreateEmail() {
-      let valid = true;
-      Promise.all([
-        this.$validator.validate("email"),
-        this.$validator.validate("name"),
-      ]).then((isValid) => {
-        isValid.forEach(function (value) {
-          if (value === false) {
-            valid = false;
-          }
-        });
-        if (valid) {
-          this.saveCompanyInvoiceRecipient();
-        }
-      });
+      this.markInteracted(['name', 'email']);
+      this.handleSubmit((values) => {
+        this.saveCompanyInvoiceRecipient(values);
+      })();
     },
     getLabelVaccinationRequired(vaccinationRequired) {
       if (vaccinationRequired == null) return "";

@@ -5,10 +5,11 @@ const phoneUtil = PhoneNumberUtil.getInstance();
 
 export function isValidPhone(value: string | undefined | null): boolean {
   if (!value) return false;
+  const digits = value.replace(/\D/g, '');
+  if (digits.length < 10) return false;
   const validRegions = ['CA', 'US', 'PR'];
-  if (value.length > 12) return true;
   try {
-    const instance = phoneUtil.parse(value, 'CA');
+    const instance = phoneUtil.parse(digits, 'CA');
     const region = phoneUtil.getRegionCodeForNumber(instance);
     return validRegions.some(vr => vr === region);
   } catch {

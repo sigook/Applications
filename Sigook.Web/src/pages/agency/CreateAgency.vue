@@ -7,15 +7,15 @@
     <form @submit.prevent="validateForm">
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field label="Full Name" :type="errors.has('full name') ? 'is-danger' : ''"
-            :message="errors.has('full name') ? errors.first('full name') : ''">
-            <b-input type="text" v-model="agency.fullName" name="full name" v-validate="'required|max:100|min:2'" />
+          <b-field label="Full Name" :type="formErrors.fullName ? 'is-danger' : ''"
+            :message="formErrors.fullName || ''">
+            <b-input type="text" v-model="fullName" name="full name" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
-            :message="errors.has('email') ? errors.first('email') : ''">
-            <b-input type="email" v-model="agency.email" name="email" v-validate="'required|email|max:50|min:6'" />
+          <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+            :message="formErrors.email || ''">
+            <b-input type="email" v-model="email" name="email" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
@@ -23,9 +23,9 @@
             @formattedPhone="(phone) => phoneNumber = phone"></phone-input>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field :type="errors.has('agency type') ? 'is-danger' : ''" label="Agency Type"
-            :message="errors.has('agency type') ? errors.first('agency type') : ''">
-            <b-select v-model="agency.agencyType" name="agency type" v-validate="'required'" placeholder="Select agency type" expanded>
+          <b-field :type="formErrors.agencyType ? 'is-danger' : ''" label="Agency Type"
+            :message="formErrors.agencyType || ''">
+            <b-select v-model="agencyType" name="agency type" placeholder="Select agency type" expanded>
               <option v-for="type in agencyTypes" :key="type.value" :value="type.value">
                 {{ type.label }}
               </option>
@@ -33,10 +33,9 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field :type="errors.has('password') ? 'is-danger' : ''" label="Password"
-            :message="errors.has('password') ? errors.first('password') : ''">
-            <b-input type="password" v-model="agency.password" name="password" v-validate="'required|min:6|max:100'"
-              password-reveal />
+          <b-field :type="formErrors.password ? 'is-danger' : ''" label="Password"
+            :message="formErrors.password || ''">
+            <b-input type="password" v-model="password" name="password" password-reveal />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
@@ -48,36 +47,71 @@
 </template>
 <script lang="ts">
 import { defineAsyncComponent } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgency } from "@/api/agencyApi";
 
+const schema = yup.object({
+  fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+  agencyType: yup.mixed().required('Agency type is required'),
+  password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
+});
+
 export default {
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: {
+        fullName: '',
+        email: '',
+        agencyType: null as any,
+        password: '',
+      },
+    });
+
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
       isLoading: false,
       phoneNumber: "",
-      agency: {},
-      agencyTypes: this.$agencyTypes
-    }
+      agencyTypes: (this as any).$agencyTypes,
+    };
   },
   components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue"))
+    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
   },
   methods: {
     async validateForm() {
-      const mainFormValid = await this.$validator.validateAll();
-      const phoneValid = await this.$refs.phoneComponent.validatePhone();
-      if (mainFormValid && phoneValid) {
-        this.submitAgency();
-        return;
-      } else {
-        showAlertError("Please make sure all required fields are filled out correctly");
-      }
+      this.markInteracted();
+      const phoneValid = await (this.$refs.phoneComponent as any).validatePhone();
+      this.handleSubmit((values) => {
+        if (!phoneValid) {
+          showAlertError('Please make sure all required fields are filled out correctly');
+          return;
+        }
+        this.submitAgency(values);
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     },
-    submitAgency() {
+    submitAgency(values: any) {
       this.isLoading = true;
-      this.agency.phonePrincipal = this.phoneNumber;
-      createAgency(this.agency)
+      const payload = {
+        fullName: values.fullName,
+        email: values.email,
+        agencyType: values.agencyType,
+        password: values.password,
+        phonePrincipal: this.phoneNumber,
+      };
+      createAgency(payload)
         .then(() => {
           this.isLoading = false;
           showAlertSuccess("Agency created successfully");
@@ -86,8 +120,8 @@ export default {
         .catch(error => {
           this.isLoading = false;
           showAlertError(error);
-        })
-    }
-  }
-}
+        });
+    },
+  },
+};
 </script>

@@ -11,9 +11,9 @@
       </div>
       <transition name="fadeHeight">
         <div v-if="reasonSelected" class="col-12 col-padding">
-          <b-field label="Please indicate the reason" :type="errors.has('reason') ? 'is-danger' : ''"
-            :message="errors.has('reason') ? errors.first('reason') : ''">
-            <b-input type="textarea" v-model="reasonMessage" name="reason" v-validate="'required'" />
+          <b-field label="Please indicate the reason" :type="formErrors.reason ? 'is-danger' : ''"
+            :message="formErrors.reason || ''">
+            <b-input type="textarea" v-model="reason" name="reason" />
           </b-field>
         </div>
       </transition>
@@ -25,14 +25,33 @@
 </template>
 
 <script lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { getReasonCancellationRequest } from "@/api/catalogApi";
+
+const schema = yup.object({
+  reason: yup.string().required('Reason is required'),
+});
+
 export default {
+  setup() {
+    const form = useStickyForm({
+      schema,
+      initialValues: { reason: '' },
+    });
+    return {
+      ...form.fields,
+      formErrors: form.errors,
+      handleSubmit: form.handleSubmit,
+      markInteracted: form.markInteracted,
+    };
+  },
   data() {
     return {
       isLoading: true,
-      reasonSelected: null,
-      reasonMessage: null,
-      cancellationList: []
+      reasonSelected: null as any,
+      cancellationList: [] as any[],
     }
   },
   async created() {
@@ -41,11 +60,16 @@ export default {
   },
   methods: {
     validateInput() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.$emit('sendReason', { reasonId: this.reasonSelected.id, otherMessage: this.reasonMessage });
-        }
-      });
+      if (!this.reasonSelected) {
+        showAlertError('Please select a cancellation reason');
+        return;
+      }
+      this.markInteracted();
+      this.handleSubmit((values) => {
+        this.$emit('sendReason', { reasonId: this.reasonSelected.id, otherMessage: values.reason });
+      }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+      })();
     }
   }
 }
