@@ -74,7 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final role = await remote.getUserRole(accessToken);
       return Right(role);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     }

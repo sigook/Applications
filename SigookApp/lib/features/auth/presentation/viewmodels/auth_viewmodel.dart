@@ -91,6 +91,13 @@ class AuthViewModel extends _$AuthViewModel {
           state = state.copyWith(isLoading: false, error: null);
         } else {
           state = state.copyWith(isLoading: false, error: failure.message);
+          ref.read(analyticsServiceProvider).logEvent(
+            name: 'sign_in_failed',
+            parameters: {
+              'error': failure.message,
+              'timestamp': DateTime.now().toIso8601String(),
+            },
+          );
         }
       },
       (token) async {
@@ -130,6 +137,13 @@ class AuthViewModel extends _$AuthViewModel {
               } else {
                 debugPrint(
                   '🔑 [AUTH] User role is "$role" - access denied, logging out',
+                );
+                ref.read(analyticsServiceProvider).logEvent(
+                  name: 'sign_in_access_denied',
+                  parameters: {
+                    'role': role,
+                    'timestamp': DateTime.now().toIso8601String(),
+                  },
                 );
                 final logoutUseCase = ref.read(logoutProvider);
                 await logoutUseCase(NoParams());
