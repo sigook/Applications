@@ -6,6 +6,7 @@ class ProfileHeader extends StatelessWidget {
   final String email;
   final String? photoUrl;
   final bool isEditing;
+  final bool isUploading;
   final VoidCallback? onPhotoTap;
 
   /// 1.0 = fully expanded, 0.0 = fully collapsed (invisible).
@@ -17,6 +18,7 @@ class ProfileHeader extends StatelessWidget {
     required this.email,
     this.photoUrl,
     this.isEditing = false,
+    this.isUploading = false,
     this.onPhotoTap,
     this.collapseRatio = 1.0,
   });
@@ -53,7 +55,26 @@ class ProfileHeader extends StatelessWidget {
                 )
               : null,
         ),
-        if (isEditing)
+        if (isUploading)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: avatarRadius * 0.7,
+                  height: avatarRadius * 0.7,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          )
+        else if (isEditing)
           Positioned(
             right: 0,
             bottom: 0,
