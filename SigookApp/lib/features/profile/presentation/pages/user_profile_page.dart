@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
+import '../../profile_image/presentation/providers/profile_image_providers.dart';
+import '../../profile_image/presentation/viewmodels/profile_image_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import 'profile_header.dart';
 import 'account_settings_tab.dart';
@@ -41,6 +45,75 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     }
   }
 
+  Future<void> _handlePhotoTap() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 90,
+    );
+    if (picked == null || !mounted) return;
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Photo',
+          toolbarColor: AppTheme.secondaryRed,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+          cropStyle: CropStyle.circle,
+        ),
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+          cropStyle: CropStyle.circle,
+        ),
+      ],
+    );
+    if (cropped == null || !mounted) return;
+
+    ref.read(profileImageViewModelProvider.notifier).upload(cropped.path);
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -50,6 +123,21 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(cachedWorkerProfileProvider);
+
+    ref.listen<ProfileImageState>(profileImageViewModelProvider, (_, next) {
+      if (next.justUploaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile photo updated successfully')),
+        );
+      } else if (next.uploadError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload photo: ${next.uploadError}')),
+        );
+      }
+    });
+
+    final isUploadingPhoto =
+        ref.watch(profileImageViewModelProvider).isUploading;
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
@@ -96,6 +184,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                       email: profile?.email ?? '',
                       photoUrl: profile?.profilePhotoUrl,
                       collapseRatio: t,
+                      isEditing: true,
+                      isUploading: isUploadingPhoto,
+                      onPhotoTap:
+                          isUploadingPhoto ? null : _handlePhotoTap,
                     );
                   },
                 ),
