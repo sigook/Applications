@@ -36,4 +36,9 @@ class CertificatesRemoteDataSource extends ProfileBaseDatasource {
           data: formData,
         );
       });
+
+  Future<void> deleteCertificate(String workerId, String certificateId) =>
+      execute(() => apiClient.dio.delete(
+            '/WorkerProfile/$workerId/Certificates/$certificateId',
+          ));
 }

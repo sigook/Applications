@@ -242,6 +242,7 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       resumeFileUrl: resume?.pathFile,
       licenses: licenses
           .map((l) => WorkerLicense(
+                id: l.license?.id,
                 fileUrl: l.license?.pathFile,
                 fileName: l.license?.fileName,
                 description: l.license?.description,

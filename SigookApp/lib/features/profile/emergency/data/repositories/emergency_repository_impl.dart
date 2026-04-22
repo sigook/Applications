@@ -19,6 +19,9 @@ class EmergencyRepositoryImpl implements EmergencyRepository {
       guardedProfileCall(networkInfo, () async {
         final current = await datasource.getWorkerProfile();
         final updated = current.copyWith(
+          haveAnyHealthProblem: fields.containsKey('haveAnyHealthProblem')
+              ? fields['haveAnyHealthProblem'] == 'true'
+              : current.haveAnyHealthProblem,
           contactEmergencyName:
               fields['contactEmergencyName'] ?? current.contactEmergencyName,
           contactEmergencyLastName: fields['contactEmergencyLastName'] ??

@@ -49,4 +49,9 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
           data: formData,
         );
       });
+
+  Future<void> deleteLicense(String workerId, String licenseId) =>
+      execute(() => apiClient.dio.delete(
+            '/WorkerProfile/$workerId/Licenses/$licenseId',
+          ));
 }

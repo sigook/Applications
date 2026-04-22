@@ -24,4 +24,11 @@ class CertificatesRepositoryImpl implements CertificatesRepository {
           existingCertificates: profile.certificates,
         );
       });
+
+  @override
+  Future<Either<Failure, void>> delete(String certificateId) =>
+      guardedProfileCall(networkInfo, () async {
+        final profile = await datasource.getWorkerProfile();
+        await datasource.deleteCertificate(profile.id, certificateId);
+      });
 }

@@ -32,4 +32,11 @@ class LicensesRepositoryImpl implements LicensesRepository {
           existingLicenses: profile.licenses,
         );
       });
+
+  @override
+  Future<Either<Failure, void>> delete(String licenseId) =>
+      guardedProfileCall(networkInfo, () async {
+        final profile = await datasource.getWorkerProfile();
+        await datasource.deleteLicense(profile.id, licenseId);
+      });
 }

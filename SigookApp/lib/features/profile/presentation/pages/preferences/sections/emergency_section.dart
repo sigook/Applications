@@ -27,6 +27,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  bool _haveAllergies = false;
 
   @override
   void dispose() {
@@ -43,6 +44,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
     _phoneController.text = _emergencyPhoneMaskFormatter.maskText(
       profile?.contactEmergencyPhone ?? '',
     );
+    setState(() => _haveAllergies = profile?.haveAnyHealthProblem ?? false);
   }
 
   @override
@@ -81,17 +83,32 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
         onCancel: ref.read(emergencyViewModelProvider.notifier).cancelEditing,
         onSave: () =>
             ref.read(emergencyViewModelProvider.notifier).save({
+              'haveAnyHealthProblem': _haveAllergies.toString(),
               'contactEmergencyName': _nameController.text,
               'contactEmergencyLastName': _lastNameController.text,
               'contactEmergencyPhone': _phoneController.text,
             }),
       ),
       children: [
-        ProfileInfoRow(
-          label: 'Do you have any health problems / allergies?',
-          value: profile?.haveAnyHealthProblem == true ? 'Yes' : 'No',
-          icon: Icons.health_and_safety_outlined,
-        ),
+        if (vm.isEditing)
+          SwitchListTile(
+            value: _haveAllergies,
+            onChanged: (val) => setState(() => _haveAllergies = val),
+            title: const Text(
+              'Do you have any health problems / allergies?',
+              style: TextStyle(fontSize: 14),
+            ),
+            secondary: Icon(Icons.health_and_safety_outlined,
+                color: AppTheme.primaryBlue),
+            activeThumbColor: AppTheme.primaryBlue,
+            contentPadding: EdgeInsets.zero,
+          )
+        else
+          ProfileInfoRow(
+            label: 'Do you have any health problems / allergies?',
+            value: profile?.haveAnyHealthProblem == true ? 'Yes' : 'No',
+            icon: Icons.health_and_safety_outlined,
+          ),
         const Padding(
           padding: EdgeInsets.only(bottom: 8),
           child: Text(

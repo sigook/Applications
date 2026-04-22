@@ -13,6 +13,9 @@ abstract class CertificatesState with _$CertificatesState {
     @Default(false) bool isUploading,
     String? uploadError,
     @Default(false) bool justUploaded,
+    @Default(false) bool isDeleting,
+    String? deleteError,
+    @Default(false) bool justDeleted,
   }) = _CertificatesState;
 }
 
@@ -38,6 +41,23 @@ class CertificatesViewModel extends _$CertificatesViewModel {
           name: 'profile_section_saved',
           parameters: {'section': 'certificates'},
         );
+      },
+    );
+  }
+
+  Future<void> delete(String certificateId) async {
+    state = state.copyWith(isDeleting: true, deleteError: null, justDeleted: false);
+
+    final result = await ref.read(deleteCertificateUseCaseProvider)(certificateId);
+
+    result.fold(
+      (failure) => state = state.copyWith(
+        isDeleting: false,
+        deleteError: failure.message,
+      ),
+      (_) {
+        state = state.copyWith(isDeleting: false, justDeleted: true);
+        ref.invalidate(cachedWorkerProfileProvider);
       },
     );
   }
