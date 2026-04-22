@@ -8,12 +8,14 @@ class LanguageAutocompleteField extends ConsumerStatefulWidget {
   final List<Language> selectedLanguages;
   final ValueChanged<List<Language>> onChanged;
   final String? errorText;
+  final IconData? icon;
 
   const LanguageAutocompleteField({
     super.key,
     required this.selectedLanguages,
     required this.onChanged,
     this.errorText,
+    this.icon,
   });
 
   @override
@@ -46,6 +48,25 @@ class _LanguageAutocompleteFieldState
     widget.onChanged(updatedList);
   }
 
+  Widget _buildLabel() {
+    if (widget.icon == null) {
+      return const Text(
+        'Languages',
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      );
+    }
+    return Row(
+      children: [
+        Icon(widget.icon, size: 18, color: Colors.grey.shade700),
+        const SizedBox(width: 6),
+        const Text(
+          'Languages',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final languagesAsync = ref.watch(languagesProvider);
@@ -54,10 +75,7 @@ class _LanguageAutocompleteFieldState
       loading: () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Languages',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
+          _buildLabel(),
           const SizedBox(height: 12),
           const Center(child: CircularProgressIndicator()),
         ],
@@ -65,10 +83,7 @@ class _LanguageAutocompleteFieldState
       error: (error, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Languages',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
+          _buildLabel(),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),

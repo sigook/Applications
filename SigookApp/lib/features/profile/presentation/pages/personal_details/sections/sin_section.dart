@@ -23,6 +23,8 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
   final _sinController = TextEditingController();
   bool _deleteSinFile = false;
   PickedFileData? _replaceSinFile;
+  bool _expiresSin = false;
+  DateTime? _dueDate;
 
   @override
   void dispose() {
@@ -33,10 +35,27 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
   void _populateFields() {
     final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
     _sinController.text = profile?.socialInsurance ?? '';
+    DateTime? parsed;
+    if (profile?.dueDate != null) {
+      parsed = DateTime.tryParse(profile!.dueDate!);
+    }
     setState(() {
       _deleteSinFile = false;
       _replaceSinFile = null;
+      _expiresSin = profile?.socialInsuranceExpire ?? false;
+      _dueDate = parsed;
     });
+  }
+
+  Future<void> _pickDueDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 20),
+    );
+    if (picked != null) setState(() => _dueDate = picked);
   }
 
   Future<void> _pickFile() async {
@@ -97,6 +116,9 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
         onSave: () => ref.read(sinViewModelProvider.notifier).save(
           {
             'socialInsurance': _sinController.text,
+            'socialInsuranceExpire': _expiresSin.toString(),
+            if (_expiresSin && _dueDate != null)
+              'dueDate': _dueDate!.toIso8601String(),
             if (_deleteSinFile) '_deleteSinFile': 'true',
           },
           filePath: _replaceSinFile?.path,
@@ -112,17 +134,52 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _sinController : null,
         ),
-        ProfileInfoRow(
-          label: 'Expires',
-          value: profile?.socialInsuranceExpire == true ? 'Yes' : 'No',
-          icon: Icons.event_busy_outlined,
-        ),
-        if (profile?.socialInsuranceExpire == true)
+        if (!vm.isEditing) ...[
           ProfileInfoRow(
-            label: 'Due Date',
-            value: profile?.formattedDueDate ?? 'N/A',
-            icon: Icons.calendar_today_outlined,
+            label: 'Expires',
+            value: profile?.socialInsuranceExpire == true ? 'Yes' : 'No',
+            icon: Icons.event_busy_outlined,
           ),
+          if (profile?.socialInsuranceExpire == true)
+            ProfileInfoRow(
+              label: 'Due Date',
+              value: profile?.formattedDueDate ?? 'N/A',
+              icon: Icons.calendar_today_outlined,
+            ),
+        ],
+        if (vm.isEditing) ...[
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            title: Row(
+              children: [
+                const Icon(Icons.event_busy_outlined, size: 18, color: Colors.grey),
+                const SizedBox(width: 8),
+                const Text('Expires', style: TextStyle(fontSize: 14)),
+              ],
+            ),
+            value: _expiresSin,
+            onChanged: (v) => setState(() {
+              _expiresSin = v;
+              if (!v) _dueDate = null;
+            }),
+          ),
+          if (_expiresSin)
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+              leading: const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey),
+              title: Text(
+                _dueDate != null
+                    ? '${_dueDate!.year}-${_dueDate!.month.toString().padLeft(2, '0')}-${_dueDate!.day.toString().padLeft(2, '0')}'
+                    : 'Select due date',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _dueDate != null ? Colors.black87 : Colors.grey,
+                ),
+              ),
+              trailing: const Icon(Icons.edit_calendar_outlined, size: 18),
+              onTap: _pickDueDate,
+            ),
+        ],
         DocumentFileRow(
           label: 'File',
           fileName: profile?.socialInsuranceFileName,

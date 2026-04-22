@@ -24,9 +24,17 @@ class SinRepositoryImpl implements SinRepository {
         final deleteSinFile = mutableFields.remove('_deleteSinFile') == 'true';
 
         final current = await datasource.getWorkerProfile();
+
+        final expireStr = mutableFields.remove('socialInsuranceExpire');
+        final dueDateStr = mutableFields.remove('dueDate');
+
         final updated = current.copyWith(
           socialInsurance:
               mutableFields['socialInsurance'] ?? current.socialInsurance,
+          socialInsuranceExpire: expireStr != null
+              ? expireStr == 'true'
+              : current.socialInsuranceExpire,
+          dueDate: expireStr == 'true' ? (dueDateStr ?? current.dueDate) : null,
           socialInsuranceFile:
               deleteSinFile ? null : current.socialInsuranceFile,
         );

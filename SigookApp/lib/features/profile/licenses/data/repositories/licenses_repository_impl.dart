@@ -29,6 +29,7 @@ class LicensesRepositoryImpl implements LicensesRepository {
           number: number,
           issued: issued,
           expires: expires,
+          existingLicenses: profile.licenses,
         );
       });
 }

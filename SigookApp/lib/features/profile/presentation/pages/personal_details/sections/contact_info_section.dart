@@ -130,27 +130,31 @@ class _ContactInfoSectionCardState
           value: profile?.email ?? 'N/A',
           icon: Icons.email_outlined,
         ),
-        if (!vm.isEditing) ...[
-          ProfileInfoRow(
-            label: 'Country',
-            value: profile?.country ?? 'N/A',
-            icon: Icons.flag_outlined,
-          ),
-          ProfileInfoRow(
-            label: 'State / Province',
-            value: profile?.province ?? 'N/A',
-            icon: Icons.map_outlined,
-          ),
-          ProfileInfoRow(
-            label: 'City',
-            value: profile?.city ?? 'N/A',
-            icon: Icons.location_city_outlined,
-          ),
-        ],
+        ProfileInfoRow(
+          label: 'Country',
+          value: vm.isEditing
+              ? (_editCountry?.value ?? profile?.country ?? 'N/A')
+              : (profile?.country ?? 'N/A'),
+          icon: Icons.flag_outlined,
+        ),
+        ProfileInfoRow(
+          label: 'State / Province',
+          value: vm.isEditing
+              ? (_editProvince?.value ?? profile?.province ?? 'N/A')
+              : (profile?.province ?? 'N/A'),
+          icon: Icons.map_outlined,
+        ),
+        ProfileInfoRow(
+          label: 'City',
+          value: vm.isEditing
+              ? (_editCity?.value ?? profile?.city ?? 'N/A')
+              : (profile?.city ?? 'N/A'),
+          icon: Icons.location_city_outlined,
+        ),
         if (vm.isEditing) ...[
           const SizedBox(height: 4),
           Text(
-            'Location',
+            'Change Location',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
