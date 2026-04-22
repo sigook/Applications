@@ -4,6 +4,7 @@ import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/licenses_remote_datasource.dart';
 import '../../data/repositories/licenses_repository_impl.dart';
 import '../../domain/repositories/licenses_repository.dart';
+import '../../domain/usecases/delete_license.dart';
 import '../../domain/usecases/upload_license.dart';
 
 final licensesDatasourceProvider = Provider<LicensesRemoteDataSource>((ref) {
@@ -21,4 +22,8 @@ final licensesRepositoryProvider = Provider<LicensesRepository>((ref) {
 
 final uploadLicenseUseCaseProvider = Provider<UploadLicense>((ref) {
   return UploadLicense(ref.read(licensesRepositoryProvider));
+});
+
+final deleteLicenseUseCaseProvider = Provider<DeleteLicense>((ref) {
+  return DeleteLicense(ref.read(licensesRepositoryProvider));
 });

@@ -34,6 +34,30 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
     super.dispose();
   }
 
+  Future<void> _confirmDelete(String licenseId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete License'),
+        content: const Text('Are you sure you want to delete this license? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(licensesViewModelProvider.notifier).delete(licenseId);
+    }
+  }
+
   void _previewDocument(String url, String title) {
     final token = ref.read(authViewModelProvider).token?.accessToken;
     Navigator.of(context).push(
@@ -119,8 +143,13 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
         showProfileSuccess(context, 'License uploaded successfully!');
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
-        showProfileError(
-            context, 'Failed to upload license: ${next.uploadError}');
+        showProfileError(context, 'Failed to upload license: ${next.uploadError}');
+      }
+      if (next.justDeleted && !(prev?.justDeleted ?? false)) {
+        showProfileSuccess(context, 'License deleted successfully!');
+      }
+      if (next.deleteError != null && next.deleteError != prev?.deleteError) {
+        showProfileError(context, 'Failed to delete license: ${next.deleteError}');
       }
     });
 
@@ -136,6 +165,9 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
               onPreview: license.fileUrl != null
                   ? () => _previewDocument(
                       license.fileUrl!, license.description ?? 'License')
+                  : null,
+              onDelete: license.id != null
+                  ? () => _confirmDelete(license.id!)
                   : null,
             ),
           ),

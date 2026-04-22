@@ -8,12 +8,16 @@ class SkillAutocompleteField extends ConsumerStatefulWidget {
   final List<Skill> selectedSkills;
   final ValueChanged<List<Skill>> onChanged;
   final String? errorText;
+  final Color? chipColor;
+  final IconData? icon;
 
   const SkillAutocompleteField({
     super.key,
     required this.selectedSkills,
     required this.onChanged,
     this.errorText,
+    this.chipColor,
+    this.icon,
   });
 
   @override
@@ -46,6 +50,25 @@ class _SkillAutocompleteFieldState
     widget.onChanged(updatedList);
   }
 
+  Widget _buildLabel() {
+    if (widget.icon == null) {
+      return const Text(
+        'Skills',
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      );
+    }
+    return Row(
+      children: [
+        Icon(widget.icon, size: 18, color: Colors.grey.shade700),
+        const SizedBox(width: 6),
+        const Text(
+          'Skills',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final skillsAsync = ref.watch(skillsProvider);
@@ -54,10 +77,7 @@ class _SkillAutocompleteFieldState
       loading: () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Skills',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
+          _buildLabel(),
           const SizedBox(height: 12),
           const Center(child: CircularProgressIndicator()),
         ],
@@ -65,10 +85,7 @@ class _SkillAutocompleteFieldState
       error: (error, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Skills',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
+          _buildLabel(),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -287,11 +304,10 @@ class _SkillAutocompleteFieldState
                     label: Text(skill.skill),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () => _removeSkill(skill.skill),
-                    backgroundColor: AppTheme.successGreen.withValues(
-                      alpha: 0.1,
-                    ),
-                    labelStyle: const TextStyle(
-                      color: AppTheme.successGreen,
+                    backgroundColor: (widget.chipColor ?? AppTheme.successGreen)
+                        .withValues(alpha: 0.1),
+                    labelStyle: TextStyle(
+                      color: widget.chipColor ?? AppTheme.successGreen,
                       fontWeight: FontWeight.w600,
                     ),
                   );

@@ -2,14 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/chip_display_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../../../registration/domain/entities/language.dart';
+import '../../../../../registration/domain/entities/skill.dart';
+import '../../../../../registration/presentation/widgets/language_autocomplete_field.dart';
+import '../../../../../registration/presentation/widgets/skill_autocomplete_field.dart';
 import '../../../../preferences/presentation/viewmodels/preferences_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../preferences/presentation/widgets/chip_selector.dart';
-import '../../../../preferences/presentation/widgets/searchable_toggle_list.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class PreferencesSectionCard extends ConsumerStatefulWidget {
@@ -26,18 +30,22 @@ class _PreferencesSectionCardState
   Set<String> _availabilityTimeIds = {};
   Set<String> _availabilityDayIds = {};
   String? _liftId;
-  Set<String> _languageIds = {};
-  Set<String> _skillIds = {};
+  List<Language> _selectedLanguages = [];
+  List<Skill> _selectedSkills = [];
 
   void _populateFields() {
     final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    final langCatalog = ref.read(languagesProvider).asData?.value ?? [];
     setState(() {
       _availabilityIds = Set.from(profile?.availabilityIds ?? []);
       _availabilityTimeIds = Set.from(profile?.availabilityTimeIds ?? []);
       _availabilityDayIds = Set.from(profile?.availabilityDayIds ?? []);
       _liftId = profile?.liftId;
-      _languageIds = Set.from(profile?.languageIds ?? []);
-      _skillIds = Set.from(profile?.skills ?? []);
+      _selectedLanguages = (profile?.languageIds ?? []).map((id) {
+        final match = langCatalog.where((l) => l.id == id).firstOrNull;
+        return match != null ? Language(id: match.id, value: match.value) : null;
+      }).whereType<Language>().toList();
+      _selectedSkills = (profile?.skills ?? []).map((s) => Skill(skill: s)).toList();
     });
   }
 
@@ -78,9 +86,6 @@ class _PreferencesSectionCardState
         _resolveItems(_availabilityTimeIds, ref.read(availabilityTimeListProvider));
     final availabilityDays =
         _resolveItems(_availabilityDayIds, ref.read(daysOfWeekProvider));
-    final languages =
-        _resolveItems(_languageIds, ref.read(languagesProvider));
-    final skills = _skillIds.toList();
 
     String? liftJson;
     if (_liftId != null) {
@@ -102,8 +107,10 @@ class _PreferencesSectionCardState
       'availabilities': jsonEncode(availabilities),
       'availabilityTimes': jsonEncode(availabilityTimes),
       'availabilityDays': jsonEncode(availabilityDays),
-      'languages': jsonEncode(languages),
-      'skills': jsonEncode(skills),
+      'languages': jsonEncode(
+        _selectedLanguages.map((l) => {'id': l.id, 'value': l.value}).toList(),
+      ),
+      'skills': jsonEncode(_selectedSkills.map((s) => s.skill).toList()),
       // ignore: use_null_aware_elements
       if (liftJson != null) 'lift': liftJson,
     };
@@ -194,6 +201,7 @@ class _PreferencesSectionCardState
       children: [
         ChipSelector(
           label: 'Can you lift up to',
+          icon: Icons.fitness_center_outlined,
           asyncValue: ref.watch(liftingCapacitiesProvider),
           selectedIds: _liftId != null ? {_liftId!} : {},
           singleSelect: true,
@@ -203,6 +211,7 @@ class _PreferencesSectionCardState
         const SizedBox(height: 12),
         ChipSelector(
           label: 'Availability',
+          icon: Icons.schedule_outlined,
           asyncValue: ref.watch(availabilityListProvider),
           selectedIds: _availabilityIds,
           singleSelect: false,
@@ -211,6 +220,7 @@ class _PreferencesSectionCardState
         const SizedBox(height: 12),
         ChipSelector(
           label: 'Available Time',
+          icon: Icons.access_time_outlined,
           asyncValue: ref.watch(availabilityTimeListProvider),
           selectedIds: _availabilityTimeIds,
           singleSelect: false,
@@ -220,6 +230,7 @@ class _PreferencesSectionCardState
         const SizedBox(height: 12),
         ChipSelector(
           label: 'Available Days',
+          icon: Icons.calendar_today_outlined,
           asyncValue: ref.watch(daysOfWeekProvider),
           selectedIds: _availabilityDayIds,
           singleSelect: false,
@@ -227,19 +238,17 @@ class _PreferencesSectionCardState
               _toggle(_availabilityDayIds, id, selected),
         ),
         const SizedBox(height: 12),
-        SearchableToggleList(
-          label: 'Skills',
-          asyncValue: ref.watch(skillsProvider),
-          selectedIds: _skillIds,
-          onToggle: (id, selected) => _toggle(_skillIds, id, selected),
-          onAddCustom: (value) => setState(() => _skillIds.add(value)),
+        SkillAutocompleteField(
+          selectedSkills: _selectedSkills,
+          onChanged: (skills) => setState(() => _selectedSkills = skills),
+          chipColor: AppTheme.secondaryRed,
+          icon: Icons.stars_outlined,
         ),
         const SizedBox(height: 12),
-        SearchableToggleList(
-          label: 'Languages',
-          asyncValue: ref.watch(languagesProvider),
-          selectedIds: _languageIds,
-          onToggle: (id, selected) => _toggle(_languageIds, id, selected),
+        LanguageAutocompleteField(
+          selectedLanguages: _selectedLanguages,
+          onChanged: (langs) => setState(() => _selectedLanguages = langs),
+          icon: Icons.language_outlined,
         ),
       ],
     );

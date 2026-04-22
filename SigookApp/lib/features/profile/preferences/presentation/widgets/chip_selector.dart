@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_theme.dart';
 /// Supports single-select and multi-select via [singleSelect].
 class ChipSelector extends StatelessWidget {
   final String label;
+  final IconData? icon;
   final AsyncValue<dynamic> asyncValue;
   final Set<String> selectedIds;
   final bool singleSelect;
@@ -14,6 +15,7 @@ class ChipSelector extends StatelessWidget {
   const ChipSelector({
     super.key,
     required this.label,
+    this.icon,
     required this.asyncValue,
     required this.selectedIds,
     required this.singleSelect,
@@ -25,13 +27,21 @@ class ChipSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         asyncValue.when(

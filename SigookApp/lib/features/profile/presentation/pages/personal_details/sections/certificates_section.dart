@@ -25,6 +25,30 @@ class _CertificatesSectionCardState
     extends ConsumerState<CertificatesSectionCard> {
   PickedFileData? _pendingFile;
 
+  Future<void> _confirmDelete(String certificateId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Certificate'),
+        content: const Text('Are you sure you want to delete this certificate? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(certificatesViewModelProvider.notifier).delete(certificateId);
+    }
+  }
+
   void _previewDocument(String url, String title) {
     final token = ref.read(authViewModelProvider).token?.accessToken;
     Navigator.of(context).push(
@@ -62,8 +86,13 @@ class _CertificatesSectionCardState
         showProfileSuccess(context, 'Certificate uploaded successfully!');
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
-        showProfileError(
-            context, 'Failed to upload certificate: ${next.uploadError}');
+        showProfileError(context, 'Failed to upload certificate: ${next.uploadError}');
+      }
+      if (next.justDeleted && !(prev?.justDeleted ?? false)) {
+        showProfileSuccess(context, 'Certificate deleted successfully!');
+      }
+      if (next.deleteError != null && next.deleteError != prev?.deleteError) {
+        showProfileError(context, 'Failed to delete certificate: ${next.deleteError}');
       }
     });
 
@@ -79,6 +108,9 @@ class _CertificatesSectionCardState
               onPreview: cert.fileUrl != null
                   ? () => _previewDocument(
                       cert.fileUrl!, cert.description ?? 'Certificate')
+                  : null,
+              onDelete: cert.id != null
+                  ? () => _confirmDelete(cert.id!)
                   : null,
             ),
           ),

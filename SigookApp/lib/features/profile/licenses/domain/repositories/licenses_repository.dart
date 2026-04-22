@@ -8,4 +8,6 @@ abstract class LicensesRepository {
     required String issued,
     required String expires,
   });
+
+  Future<Either<Failure, void>> delete(String licenseId);
 }

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class WorkerLicense extends Equatable {
+  final String? id;
   final String? fileUrl;
   final String? fileName;
   final String? description;
@@ -9,6 +10,7 @@ class WorkerLicense extends Equatable {
   final String? expires;
 
   const WorkerLicense({
+    this.id,
     this.fileUrl,
     this.fileName,
     this.description,
@@ -44,7 +46,7 @@ class WorkerLicense extends Equatable {
   }
 
   @override
-  List<Object?> get props => [fileUrl, fileName, description, number, issued, expires];
+  List<Object?> get props => [id, fileUrl, fileName, description, number, issued, expires];
 }
 
 class WorkerCertificate extends Equatable {

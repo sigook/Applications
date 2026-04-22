@@ -13,6 +13,9 @@ abstract class LicensesState with _$LicensesState {
     @Default(false) bool isUploading,
     String? uploadError,
     @Default(false) bool justUploaded,
+    @Default(false) bool isDeleting,
+    String? deleteError,
+    @Default(false) bool justDeleted,
   }) = _LicensesState;
 }
 
@@ -48,6 +51,23 @@ class LicensesViewModel extends _$LicensesViewModel {
           name: 'profile_section_saved',
           parameters: {'section': 'licenses'},
         );
+      },
+    );
+  }
+
+  Future<void> delete(String licenseId) async {
+    state = state.copyWith(isDeleting: true, deleteError: null, justDeleted: false);
+
+    final result = await ref.read(deleteLicenseUseCaseProvider)(licenseId);
+
+    result.fold(
+      (failure) => state = state.copyWith(
+        isDeleting: false,
+        deleteError: failure.message,
+      ),
+      (_) {
+        state = state.copyWith(isDeleting: false, justDeleted: true);
+        ref.invalidate(cachedWorkerProfileProvider);
       },
     );
   }

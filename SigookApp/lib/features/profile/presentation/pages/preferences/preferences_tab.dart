@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/config/environment.dart';
-import 'sections/diagnostics_section.dart';
 import 'sections/emergency_section.dart';
 import 'sections/preferences_section.dart';
 
@@ -18,10 +16,6 @@ class PreferencesTab extends StatelessWidget {
         const PreferencesSectionCard(),
         const SizedBox(height: 12),
         const EmergencySectionCard(),
-        if (!EnvironmentConfig.isProduction) ...[
-          const SizedBox(height: 12),
-          const DiagnosticsSectionCard(),
-        ],
         const SizedBox(height: 24),
         if (appVersion.isNotEmpty)
           Padding(
