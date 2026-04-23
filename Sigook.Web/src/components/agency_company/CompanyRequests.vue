@@ -6,17 +6,11 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-export default {
-  props: ['company'],
-  data() {
-    return {
-      isLoading: true
-    }
-  },
-  components: {
-    TableRequests: defineAsyncComponent(() => import("../../components/agency_request/TableRequests.vue"))
-  }
-}
+<script setup lang="ts">
+import { ref } from 'vue';
+import TableRequests from '../../components/agency_request/TableRequests.vue';
+
+defineProps<{ company: any }>();
+
+const isLoading = ref(true);
 </script>

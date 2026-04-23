@@ -26,7 +26,7 @@
       <div class="padding-5 color-gray-light" v-else>
         Notes
       </div>
-      <pagination :total-pages="notes.totalPages" :index-page="notes.pageIndex" :size-page="this.size"
+      <pagination :total-pages="notes.totalPages" :index-page="notes.pageIndex" :size-page="size"
         @changePage="(index) => getNotes(index)">
       </pagination>
     </div>
@@ -49,133 +49,146 @@
     <!-- end CREATE custom modal -->
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { emailName, dateFromNow, dateMonth } from '@/utils/filters';
-export default {
-  props: ['requestId', 'userId', 'onGet', 'onCreate', 'onUpdate', 'onDelete', 'canCreate', 'currentNote'],
-  data() {
-    return {
-      isLoading: false,
-      isDisabled: false,
-      notes: null,
-      currentPage: 1,
-      size: 20,
-      showModalUpdate: false,
-      editNoteModel: null,
-      editNoteIndex: null
-    }
-  },
-  components: {
-    NoteForm: defineAsyncComponent(() => import("./NoteForm.vue")),
-    Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue"))
-  },
-  mounted() {
-    this.getNotes(this.currentPage);
-  },
-  methods: {
-    emailName,
-    dateFromNow,
-    dateMonth,
-    getNotes(index) {
-      this.isLoading = true;
-      this.onGet({
-        userId: this.userId,
-        requestId: this.requestId,
-        pagination: { page: index, size: this.size }
-      })
-        .then(response => {
-          this.isLoading = false;
-          this.notes = response
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    addNote(newNote) {
-      this.isLoading = true;
-      this.onCreate({
-        userId: this.userId,
-        requestId: this.requestId,
-        model: newNote
-      })
-        .then(response => {
-          this.isLoading = false;
-          this.notes.items.unshift({
-            id: response.id,
-            note: newNote.note,
-            color: newNote.color,
-            createdAt: response.createdAt,
-            createdBy: response.createdBy
-          })
-          this.$emit("onUpdateNote", { size: this.notes.items.length });
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    deleteNote(id, index) {
-      this.isLoading = true;
-      this.onDelete({
-        userId: this.userId,
-        requestId: this.requestId,
-        id: id
-      })
-        .then(() => {
-          this.isLoading = false;
-          this.notes.items.splice(index, 1)
-          showAlertSuccess('Deleted');
-          this.$emit("onUpdateNote", { size: this.notes.items.length });
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    showModalUpdateNote(item, index) {
-      this.showModalUpdate = true;
-      this.editNoteModel = {
-        id: item.id,
-        note: item.note,
-        color: item.color,
-        createdAt: item.createdAt,
-        createdBy: item.createdBy
-      }
-      this.editNoteIndex = index;
-    },
-    updateNote(model) {
-      this.isLoading = true;
-      this.onUpdate({
-        userId: this.userId,
-        requestId: this.requestId,
-        id: this.editNoteModel.id,
-        model: model
-      })
-        .then(() => {
-          this.isLoading = false;
-          this.notes.items[this.editNoteIndex] = {
-            id: model.id,
-            note: model.note,
-            color: model.color,
-            createdAt: model.createdAt,
-            createdBy: model.createdBy
-          }
-          this.showModalUpdate = false;
-          this.editNoteIndex = null;
-          this.editNoteModel = null;
-          this.$emit("onUpdateNote", { size: this.notes.items.length });
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    onNoteClose() {
-      this.$emit("close")
-    }
-  }
+import NoteForm from "./NoteForm.vue";
+import Pagination from "../../components/Paginator.vue";
+
+const props = defineProps<{
+  requestId?: any;
+  userId?: any;
+  onGet?: (p: any) => Promise<any>;
+  onCreate?: (p: any) => Promise<any>;
+  onUpdate?: (p: any) => Promise<any>;
+  onDelete?: (p: any) => Promise<any>;
+  canCreate?: boolean;
+  currentNote?: any;
+}>();
+
+const emit = defineEmits<{
+  (e: 'onUpdateNote', v: { size: number }): void;
+  (e: 'close'): void;
+}>();
+
+const isLoading = ref(false);
+const notes = ref<any>(null);
+const currentPage = ref(1);
+const size = ref(20);
+const showModalUpdate = ref(false);
+const editNoteModel = ref<any>(null);
+const editNoteIndex = ref<number | null>(null);
+
+function getNotes(index: number) {
+  if (!props.onGet) return;
+  isLoading.value = true;
+  props.onGet({
+    userId: props.userId,
+    requestId: props.requestId,
+    pagination: { page: index, size: size.value },
+  })
+    .then(response => {
+      isLoading.value = false;
+      notes.value = response;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function addNote(newNote: any) {
+  if (!props.onCreate) return;
+  isLoading.value = true;
+  props.onCreate({
+    userId: props.userId,
+    requestId: props.requestId,
+    model: newNote,
+  })
+    .then(response => {
+      isLoading.value = false;
+      notes.value.items.unshift({
+        id: response.id,
+        note: newNote.note,
+        color: newNote.color,
+        createdAt: response.createdAt,
+        createdBy: response.createdBy,
+      });
+      emit('onUpdateNote', { size: notes.value.items.length });
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function deleteNote(id: any, index: number) {
+  if (!props.onDelete) return;
+  isLoading.value = true;
+  props.onDelete({
+    userId: props.userId,
+    requestId: props.requestId,
+    id,
+  })
+    .then(() => {
+      isLoading.value = false;
+      notes.value.items.splice(index, 1);
+      showAlertSuccess('Deleted');
+      emit('onUpdateNote', { size: notes.value.items.length });
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function showModalUpdateNote(item: any, index: number) {
+  showModalUpdate.value = true;
+  editNoteModel.value = {
+    id: item.id,
+    note: item.note,
+    color: item.color,
+    createdAt: item.createdAt,
+    createdBy: item.createdBy,
+  };
+  editNoteIndex.value = index;
+}
+
+function updateNote(model: any) {
+  if (!props.onUpdate) return;
+  isLoading.value = true;
+  props.onUpdate({
+    userId: props.userId,
+    requestId: props.requestId,
+    id: editNoteModel.value.id,
+    model,
+  })
+    .then(() => {
+      isLoading.value = false;
+      notes.value.items[editNoteIndex.value as number] = {
+        id: model.id,
+        note: model.note,
+        color: model.color,
+        createdAt: model.createdAt,
+        createdBy: model.createdBy,
+      };
+      showModalUpdate.value = false;
+      editNoteIndex.value = null;
+      editNoteModel.value = null;
+      emit('onUpdateNote', { size: notes.value.items.length });
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onNoteClose() {
+  emit('close');
+}
+
+onMounted(() => {
+  getNotes(currentPage.value);
+});
 </script>

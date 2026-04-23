@@ -18,33 +18,30 @@
         </button>
     </div>
 </template>
-<script lang="ts">
-export default {
-    data(){
-        return {
-            showColors: false,
-            selected: '#fefefe',
-            colors: [
-                '#fefefe',
-                '#f28c82',
-                '#fcbc05',
-                '#fff475',
-                '#ccff91',
-                '#a7ffeb',
-                '#cbf0f9',
-                '#aecbfa',
-                '#d8aefb',
-                '#fdcfe8',
-                '#e6c9a8',
-                '#e8eaed'
-            ]
-        }
-    },
-    methods: {
-        onSelectColor(color){
-            this.selected = color;
-            this.$emit("onSelectColor", color)
-        }
-    }
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const emit = defineEmits<{ (e: 'onSelectColor', color: string): void }>();
+
+const showColors = ref(false);
+const selected = ref('#fefefe');
+const colors = [
+  '#fefefe',
+  '#f28c82',
+  '#fcbc05',
+  '#fff475',
+  '#ccff91',
+  '#a7ffeb',
+  '#cbf0f9',
+  '#aecbfa',
+  '#d8aefb',
+  '#fdcfe8',
+  '#e6c9a8',
+  '#e8eaed'
+];
+
+function onSelectColor(color: string) {
+  selected.value = color;
+  emit('onSelectColor', color);
 }
 </script>

@@ -43,37 +43,24 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 
-export default {
-  data() {
-    return {
-      expanded: false,
-    };
-  },
-  methods: {
-    expandOrColapse() {
-      this.expanded = !this.expanded;
-    },
-  },
-  computed: {
-    ...mapStores(useSecurityStore),
-    isCompanyProfile() {
-      return this.securityStore.userRoles.some((ur) =>
-        ur.includes(roles.company)
-      );
-    },
-    isWorkerProfile() {
-      return this.securityStore.userRoles.some((ur) =>
-        ur.includes(roles.worker)
-      );
-    },
-  },
-};
+const securityStore = useSecurityStore();
+const expanded = ref(false);
+
+function expandOrColapse() {
+  expanded.value = !expanded.value;
+}
+
+const isCompanyProfile = computed(() =>
+  securityStore.userRoles.some((ur) => ur.includes(roles.company))
+);
+const isWorkerProfile = computed(() =>
+  securityStore.userRoles.some((ur) => ur.includes(roles.worker))
+);
 </script>
 <style lang="scss" scoped>
 u {

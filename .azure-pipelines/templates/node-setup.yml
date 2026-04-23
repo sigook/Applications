@@ -1,0 +1,18 @@
+# Reusable Node.js setup via NVM (pre-installed on self-hosted pool VMs)
+# Installs + activates the requested Node version. Avoids reliance on per-app NVM aliases.
+
+parameters:
+  - name: nodeVersion
+    type: string
+    default: '22'
+    displayName: 'Node.js major version (or exact semver) to install via NVM'
+
+steps:
+  - script: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      nvm install ${{ parameters.nodeVersion }}
+      nvm use ${{ parameters.nodeVersion }}
+      echo "Node version: $(node --version)"
+      echo "NPM version: $(npm --version)"
+    displayName: 'Setup Node.js ${{ parameters.nodeVersion }} via NVM'

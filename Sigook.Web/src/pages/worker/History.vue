@@ -32,11 +32,11 @@
             </template>
             <template v-slot="props">
               {{ dateMonth(props.row.startAt) }}
-              <span v-if="props.row.durationTerm !== $longTerm">
+              <span v-if="props.row.durationTerm !== appGlobals.$longTerm">
                 - {{ dateMonth(props.row.finishAt) }}
               </span>
               <span
-                v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+                v-if="(props.row.status === appGlobals.$statusFilled || props.row.status === appGlobals.$statusCancelled) && props.row.durationTerm === appGlobals.$longTerm">
                 - {{ dateMonth(props.row.finishAt) }}
               </span>
               <i class="fz-2 block">{{ splitCapital(props.row.durationTerm) }}</i>
@@ -60,45 +60,36 @@
   </div>
 </template>
 
-<script lang="ts">
-import { showAlertError } from "@/utils/toast";
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from '@/utils/toast';
 import { getWorkerRequestHistory } from '@/api/workerApi';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
+import { appGlobals } from '@/varaibles';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    };
-  },
-  methods: {
-    dateMonth,
-    splitCapital,
-    currency,
-    getWorkerRequestHistory() {
-      this.isLoading = true;
-      getWorkerRequestHistory(this.serverParams)
-        .then((response) => {
-          this.rows = response.items;
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    }
-  },
-  created() {
-    this.getWorkerRequestHistory();
-  }
-};
+const isLoading = ref(false);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+function fetchWorkerRequestHistory() {
+  isLoading.value = true;
+  getWorkerRequestHistory(serverParams)
+    .then((response: any) => {
+      rows.value = response.items;
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+fetchWorkerRequestHistory();
 </script>

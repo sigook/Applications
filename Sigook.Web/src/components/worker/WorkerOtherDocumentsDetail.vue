@@ -3,27 +3,27 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="button-right">
       <div>
-        <h3 class="fw-700 fz-0">{{ justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
-        <i class="fz-2" v-if="justWhmis">Complete the training following both links below and uplaod your
+        <h3 class="fw-700 fz-0">{{ props.justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
+        <i class="fz-2" v-if="props.justWhmis">Complete the training following both links below and uplaod your
           certificates</i>
       </div>
       <b-button type="is-primary" icon-right="plus" @click="modalDocuments = true">
         Add Document
       </b-button>
     </div>
-    <div v-if="justWhmis">
-      <p v-if="!worker.location.isUSA">
+    <div v-if="props.justWhmis">
+      <p v-if="!props.worker.location.isUSA">
         <a href="https://aixsafety.com/wp-content/uploads/articulate_uploads/WMS3May2024AixSafety23/story.html"
           target="_blank">WHIMS</a>
       </p>
-      <p v-if="!worker.location.isUSA">
+      <p v-if="!props.worker.location.isUSA">
         <a href="https://www.labour.gov.on.ca/english/hs/elearn/worker/foursteps.php" target="_blank">
           HS BOOKLET
         </a>
       </p>
     </div>
     <div class="profile-licenses profile-experience">
-      <div class="container-license hover-actions" v-for="(item, index) in worker.otherDocuments"
+      <div class="container-license hover-actions" v-for="(item, index) in props.worker.otherDocuments"
         v-bind:key="'docs' + index">
         <div class="button-right">
           <a :href="item.pathFile" target="_blank" download>
@@ -58,7 +58,7 @@
               <button @click="modalDocuments = false" type="button" class="cross-icon">
                 {{ "Close" }}
               </button>
-              <documents-form :data="worker" @closeAndUpdate="() => closeAndUpdate()" />
+              <documents-form :data="props.worker" @closeAndUpdate="() => closeAndUpdate()" />
             </div>
           </div>
         </div>
@@ -67,45 +67,39 @@
     <!-- end custom modal -->
   </section>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertConfirm, showAlertError } from "@/utils/toast";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { filename } from '@/utils/filters';
 import { deleteWorkerOtherDocuments } from '@/api/workerApi';
-export default {
-  props: ["worker", 'justWhmis'],
-  data() {
-    return {
-      isLoading: false,
-      modalDocuments: false,
-      documents: []
-    };
-  },
-  methods: {
-    filename,
-    closeAndUpdate() {
-      this.modalDocuments = false;
-      this.$emit('updateProfile', true);
-    },
-    confirmDelete(document) {
-      showAlertConfirm("Are you sure", "You want to delete this document").then((response) => {
-        if (response) {
-          this.isLoading = true;
-          deleteWorkerOtherDocuments(this.worker.id, document.id)
-            .then(() => {
-              this.isLoading = false;
-              this.$emit('updateProfile', true);
-            })
-            .catch((error) => {
-              this.isLoading = false;
-              showAlertError(error);
-            });
-        }
-      })
+import DocumentsForm from './WorkerOtherDocumentsForm.vue';
+
+const props = defineProps<{ worker?: any; justWhmis?: boolean }>();
+const emit = defineEmits<{ (e: 'updateProfile', value: boolean): void }>();
+
+const isLoading = ref(false);
+const modalDocuments = ref(false);
+
+function closeAndUpdate() {
+  modalDocuments.value = false;
+  emit('updateProfile', true);
+}
+
+function confirmDelete(document: any) {
+  showAlertConfirm('Are you sure', 'You want to delete this document').then((response) => {
+    if (response) {
+      isLoading.value = true;
+      deleteWorkerOtherDocuments(props.worker.id, document.id)
+        .then(() => {
+          isLoading.value = false;
+          emit('updateProfile', true);
+        })
+        .catch((error) => {
+          isLoading.value = false;
+          showAlertError(error);
+        });
     }
-  },
-  components: {
-    documentsForm: defineAsyncComponent(() => import("./WorkerOtherDocumentsForm.vue"))
-  }
-};
+  });
+}
+
 </script>

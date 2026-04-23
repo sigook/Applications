@@ -127,96 +127,85 @@
             </table>
             <pagination :total-pages="data.totalPages"
                         :index-page="data.pageIndex"
-                        :size-page="this.size"
+                        :size-page="size"
                         @changePage="(index) => loadBoard(index)">
             </pagination>
         </div>
     </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertError } from "@/utils/toast";
-import dayjs from "dayjs";
-import { getAgencyRequestBoard } from "@/api/agencyRequestApi";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from '@/utils/toast';
+import dayjs from 'dayjs';
+import { getAgencyRequestBoard } from '@/api/agencyRequestApi';
 import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
-  deleteAgencyRequestWorkerNote
-} from "@/api/agencyNoteApi";
+  deleteAgencyRequestWorkerNote,
+} from '@/api/agencyNoteApi';
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
-import { WorkerRequestStatus, DurationTermLabels, RequestStatusLabels } from "@/constants/enums";
+import { WorkerRequestStatus, DurationTermLabels, RequestStatusLabels } from '@/constants/enums';
 import { dateMonth, currency, breakWord } from '@/utils/filters';
-export default {
-    computed: {
-        WorkerRequestStatus: () => WorkerRequestStatus,
-        DurationTermLabels: () => DurationTermLabels,
-        RequestStatusLabels: () => RequestStatusLabels
-    },
-    data() {
-        return {
-            size: 30,
-            currentPage: 1,
-            data: null,
-            isLoading: false,
-            momentFormat: 'YYYY-MM-DD',
-            getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
-            createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
-            updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-            deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id)
-        }
-    },
-    components: {
-        Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue")),
-        ModalNotes: defineAsyncComponent(() => import("../../components/notes/ModalNotes.vue")),
-        AgencyShift: defineAsyncComponent(() => import("../../components/agency_request/AgencyShiftDetail.vue"))
-    },
-    methods: {
-        dateMonth,
-        currency,
-        breakWord,
-        loadBoard(index){
-            this.isLoading = true;
-            getAgencyRequestBoard({page: index, size: this.size})
-            .then(response => {
-                this.data = { ...response, items: response.items.map(i => ({ ...i, showNotes: false, mouseOver: false })) };
-                this.isLoading = false;
-            })
-            .catch(error => {
-                showAlertError(error);
-                this.isLoading = false;
-            })
-        },
-        addBreak(index){
-            if (index === 0){
-                return true;
-            } else if (dayjs(this.data.items[index].weekStartWorking).format(this.momentFormat) === dayjs(this.data.items[index-1].weekStartWorking).format(this.momentFormat)){
-                return false;
-            }
-            return true;
-        },
-        workerColor(worker){
-            if (worker.workerRequestStatus === WorkerRequestStatus.Rejected){
-                return 'Rejected'
-            } else if (worker.isSubcontractor) {
-                return 'Blue'
-            }
-        },
-        showNotesClick(index) {
-            if (!this.data.items[index].showNotes) {
-                this.data.items[index].mouseOver = true;
-            }
-            this.data.items[index].showNotes = true;
-        },
-        hideNotes(index) {
-            if (this.data.items[index].showNotes) {
-                this.data.items[index].mouseOver = false;
-                this.data.items[index].showNotes = false;
-            }
-        }
-    },
-    created() {
-        this.loadBoard(this.currentPage);
-    }
+import Pagination from '@/components/Paginator.vue';
+import ModalNotes from '@/components/notes/ModalNotes.vue';
+import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
+
+const size = ref(30);
+const currentPage = ref(1);
+const data = ref<any>(null);
+const isLoading = ref(false);
+const momentFormat = 'YYYY-MM-DD';
+
+const getNotes = ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination);
+const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model);
+const updateNote = ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model);
+const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id);
+
+loadBoard(currentPage.value);
+
+function loadBoard(index: number) {
+  isLoading.value = true;
+  getAgencyRequestBoard({ page: index, size: size.value })
+    .then((response: any) => {
+      data.value = { ...response, items: response.items.map((i: any) => ({ ...i, showNotes: false, mouseOver: false })) };
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function addBreak(index: number) {
+  if (index === 0) {
+    return true;
+  }
+  if (dayjs(data.value.items[index].weekStartWorking).format(momentFormat) === dayjs(data.value.items[index - 1].weekStartWorking).format(momentFormat)) {
+    return false;
+  }
+  return true;
+}
+
+function workerColor(worker: any) {
+  if (worker.workerRequestStatus === WorkerRequestStatus.Rejected) {
+    return 'Rejected';
+  } else if (worker.isSubcontractor) {
+    return 'Blue';
+  }
+}
+
+function showNotesClick(index: number) {
+  if (!data.value.items[index].showNotes) {
+    data.value.items[index].mouseOver = true;
+  }
+  data.value.items[index].showNotes = true;
+}
+
+function hideNotes(index: number) {
+  if (data.value.items[index].showNotes) {
+    data.value.items[index].mouseOver = false;
+    data.value.items[index].showNotes = false;
+  }
 }
 </script>

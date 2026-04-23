@@ -31,60 +31,52 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { downloadFile } from '@/utils/downloadFile';
 import { date, currency } from '@/utils/filters';
 import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  created() {
-    this.getReport();
-  },
-  methods: {
-    downloadFile,
-    date,
-    currency,
-    onPageChange(page) {
-      this.serverParams.pageIndex = page;
-      this.getReport();
-    },
-    getReport() {
-      this.isLoading = true;
-      getPaymentReport(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map((i) => ({ ...i, actions: null, reportDownloading: false }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    onDownloadWeeklyPayrollReport(row) {
-      row.reportDownloading = true;
-      downloadWeeklyPayrollReport(row.displayWeekEnding)
-        .then(response => {
-          row.reportDownloading = false;
-          this.downloadFile(response, `Payment_${row.displayWeekEnding}`);
-        })
-        .catch(error => {
-          row.reportDownloading = false;
-          showAlertError(error);
-        });
-    }
-  }
+const isLoading = ref(false);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = ref({
+  pageIndex: 1,
+  pageSize: 30
+});
+
+function onPageChange(page: number) {
+  serverParams.value.pageIndex = page;
+  getReport();
 }
+
+function getReport() {
+  isLoading.value = true;
+  getPaymentReport(serverParams.value)
+    .then((response) => {
+      rows.value = response.items.map((i: any) => ({ ...i, actions: null, reportDownloading: false }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onDownloadWeeklyPayrollReport(row: any) {
+  row.reportDownloading = true;
+  downloadWeeklyPayrollReport(row.displayWeekEnding)
+    .then(response => {
+      row.reportDownloading = false;
+      downloadFile(response, `Payment_${row.displayWeekEnding}`);
+    })
+    .catch(error => {
+      row.reportDownloading = false;
+      showAlertError(error);
+    });
+}
+
+getReport();
 </script>

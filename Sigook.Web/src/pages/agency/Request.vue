@@ -6,10 +6,10 @@
       <b>Cancellation detail: </b> {{ request.cancellationDetail }}
     </div>
     <section class="wrapper-request-top" v-if="request">
-      <div class="asap-title-detail" :class="[isDirectHiring ? 'mb-3' : '']" v-if="request.isAsap">
+      <div class="asap-title-detail" :class="[isDirectHiringComputed ? 'mb-3' : '']" v-if="request.isAsap">
         Asap
       </div>
-      <div class="asap-title-detail" :class="[request.isAsap ? 'mt-6' : '']" v-if="isDirectHiring">
+      <div class="asap-title-detail" :class="[request.isAsap ? 'mt-6' : '']" v-if="isDirectHiringComputed">
         DH
       </div>
       <div>
@@ -35,7 +35,7 @@
             <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
           <b-dropdown-item aria-role="listitem"
-            @click="$router.push({ path: `/agency-update-request/${request.companyProfileId}/${request.id}` })">
+            @click="router.push({ path: `/agency-update-request/${request.companyProfileId}/${request.id}` })">
             Edit Request
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" @click="showShiftModal = true">
@@ -74,7 +74,7 @@
       <b-tab-item label="Workers" value="Workers">
         <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
-      <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiring">
+      <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
         <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
     </b-tabs>
@@ -92,234 +92,180 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
-import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import { isDirectHiring } from '@/utils/directHiring';
 import {
   getAgencyRequest,
   cancelAgencyRequest,
   agencyRequestOpen,
-  agencyRequestSendInvitation
-} from "@/api/agencyRequestApi";
-import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
+  agencyRequestSendInvitation,
+} from '@/api/agencyRequestApi';
+import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { breakWord, dateFromNow } from '@/utils/filters';
+import Detail from '@/components/agency_request/AgencyRequestDetail.vue';
+import Workers from '@/components/agency/AgencyWorkers.vue';
+import PunchCard from '@/components/agency_request/MassivePunchCard.vue';
+import CancelList from '@/components/company/CompanyCancelList.vue';
+import Applicants from '@/components/agency_request/Applicants.vue';
+import ShiftModal from '@/components/request/ShiftEditModal.vue';
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      request: null,
-      cancelRequestModal: false,
-      currentTab: "Detail",
-      visitedTabs: ["Detail"],
-      editContentModal: false,
-      editContentTitle: null,
-      editContentData: null,
-      showShiftModal: false,
-      jobTitleModal: false,
-      locationModal: false,
-      canSendInvitation: false,
-      warningMessage: "The invitation must be sent only once every seven days."
-    };
-  },
-  components: {
-    Detail: defineAsyncComponent(() => import("@/components/agency_request/AgencyRequestDetail.vue")),
-    Workers: defineAsyncComponent(() => import("@/components/agency/AgencyWorkers.vue")),
-    PunchCard: defineAsyncComponent(() => import("@/components/agency_request/MassivePunchCard.vue")),
-    CancelList: defineAsyncComponent(() => import("@/components/company/CompanyCancelList.vue")),
-    Applicants: defineAsyncComponent(() => import("@/components/agency_request/Applicants.vue")),
-    ShiftModal: defineAsyncComponent(() => import("@/components/request/ShiftEditModal.vue"))
-  },
-  methods: {
-    breakWord,
-    dateFromNow,
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: `/agency-request/${this.$route.params.id}`,
-        query: {
-          tab: tab
-        }
-      });
-    },
-    canEditRequest(request) {
-      return request.status === RequestStatus.Open ||
-             request.status === RequestStatus.Filled;
-    },
-    canCancelRequest(request) {
-      // Can only cancel orders in Open status without workers
-      return request.status === RequestStatus.Open &&
-             (!request.workersQuantityWorking || request.workersQuantityWorking === 0);
-    },
-    loadRequest() {
-      this.isLoading = true;
-      getAgencyRequest(this.$route.params.id)
-        .then((response) => {
-          const updatedRequest = Object.assign({}, response, {
-            canEdit: this.canEditRequest(response),
-            canCancel: this.canCancelRequest(response)
-          });
-          this.request = updatedRequest;
-          this.setCanSendInvitation(this.request);
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    onCancelRequest(reason) {
-      this.cancelRequestModal = false;
-      this.isLoading = true;
-      cancelAgencyRequest(this.request.id, {
-        cancellationReasonId: reason.reasonId,
-        otherCancellationReason: reason.otherMessage
-      })
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Cancelled");
-          this.$router.push("/agency-requests");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    editContentText(title, data) {
-      this.editContentTitle = title;
-      this.editContentData = data;
-      this.editContentModal = true;
-    },
-    closeTextModal() {
-      this.editContentTitle = null;
-      this.editContentData = null;
-      this.editContentModal = false;
-    },
-    updateShift(shift) {
-      this.request.displayShift = shift;
-      this.showShiftModal = false;
-    },
-    onOpenRequest(id) {
-      this.isLoading = true;
-      agencyRequestOpen(id)
-        .then(() => {
-          this.isLoading = false;
-          this.request.status = RequestStatus.Open;
-          this.request.canEdit = this.canEditRequest(this.request);
-          this.request.canCancel = this.canCancelRequest(this.request);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    setCanSendInvitation(request) {
-      // Cannot send invitations to Filled orders
-      if (request.status === RequestStatus.Filled) {
-        this.canSendInvitation = false;
-        return;
-      }
+const route = useRoute();
+const router = useRouter();
+const appStore = useAppStore();
 
-      if (request && !request.invitationSentItAt) {
-        this.canSendInvitation = true;
-        return;
-      }
+const isLoading = ref(true);
+const request = ref<any>(null);
+const cancelRequestModal = ref(false);
+const currentTab = ref<string>('Detail');
+const visitedTabs = ref<string[]>(['Detail']);
+const showShiftModal = ref(false);
+const canSendInvitation = ref(false);
+const warningMessage = 'The invitation must be sent only once every seven days.';
 
-      this.appStore.getCurrentDate().then((now) => {
-        const invitationSentItAt = new Date(request.invitationSentItAt);
-        invitationSentItAt.setDate(invitationSentItAt.getDate() + 7);
-        if (invitationSentItAt <= now) {
-          this.canSendInvitation = true;
-        } else {
-          this.canSendInvitation = false;
-        }
-      });
-    },
-    onRefreshRequest() {
-      // Refresh the entire request from the API to get updated status
-      this.loadRequest();
-    },
-    sendInvitation(id) {
-      showAlertConfirm("Are you sure?", this.warningMessage).then(
-        (response) => {
-          if (response) {
-            this.isLoading = true;
-            agencyRequestSendInvitation(id)
-              .then(() => {
-                this.canSendInvitation = false;
-                this.isLoading = false;
-                showAlertSuccess("Sent it!");
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                showAlertError(error);
-              });
-          }
-        }
-      );
-    },
-    getStatusColorClass(request) {
-      // Return text color class matching TableRequests visual style
-      // Show blue color (like InProgress) for Open orders with workers but not full
-      if (request.status === RequestStatus.Open &&
-          request.workersQuantityWorking > 0 &&
-          request.workersQuantityWorking < request.workersQuantity) {
-        return 'Book'; // Blue color (similar to InProgress)
-      }
-      // Return standard status color classes by name (Open/Filled/Cancelled)
-      return RequestStatusLabels[request.status];
-    }
-  },
-  created() {
-    this.loadRequest();
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-  },
-  computed: {
-    ...mapStores(useAppStore),
-    isDirectHiring() {
-      return isDirectHiring(this.request);
-    },
-    RequestStatus: () => RequestStatus,
-    RequestStatusLabels: () => RequestStatusLabels,
-    billingTitle() {
-      if (this.request.billingTitle && this.request.jobTitle !== this.request.billingTitle) {
-        return `${this.request.billingTitle}`;
-      } else {
-        return "";
-      }
-    }
-  },
-  watch: {
-    request: {
-      handler(newVal, oldVal) {
-        if (newVal && oldVal) {
-          console.log('👁️ Request data changed:', {
-            old: {
-              workersQuantity: oldVal.workersQuantity,
-              workersQuantityWorking: oldVal.workersQuantityWorking,
-              status: oldVal.status
-            },
-            new: {
-              workersQuantity: newVal.workersQuantity,
-              workersQuantityWorking: newVal.workersQuantityWorking,
-              status: newVal.status
-            },
-            componentKey: newVal.id + '-' + newVal.workersQuantity + '-' + newVal.status
-          });
-        }
-      },
-      deep: true
-    }
+const isDirectHiringComputed = computed(() => isDirectHiring(request.value));
+
+const billingTitle = computed(() => {
+  if (request.value.billingTitle && request.value.jobTitle !== request.value.billingTitle) {
+    return `${request.value.billingTitle}`;
   }
-};
+  return '';
+});
+
+loadRequest();
+if (route.query && route.query.tab) {
+  currentTab.value = route.query.tab as string;
+  if (!visitedTabs.value.includes(route.query.tab as string)) {
+    visitedTabs.value.push(route.query.tab as string);
+  }
+}
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: `/agency-request/${route.params.id}`,
+    query: { tab: tab },
+  });
+}
+
+function canEditRequest(r: any) {
+  return r.status === RequestStatus.Open || r.status === RequestStatus.Filled;
+}
+
+function canCancelRequest(r: any) {
+  return r.status === RequestStatus.Open &&
+    (!r.workersQuantityWorking || r.workersQuantityWorking === 0);
+}
+
+function loadRequest() {
+  isLoading.value = true;
+  getAgencyRequest(route.params.id as any)
+    .then((response: any) => {
+      const updatedRequest = Object.assign({}, response, {
+        canEdit: canEditRequest(response),
+        canCancel: canCancelRequest(response),
+      });
+      request.value = updatedRequest;
+      setCanSendInvitation(request.value);
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onCancelRequest(reason: any) {
+  cancelRequestModal.value = false;
+  isLoading.value = true;
+  cancelAgencyRequest(request.value.id, {
+    cancellationReasonId: reason.reasonId,
+    otherCancellationReason: reason.otherMessage,
+  })
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Cancelled');
+      router.push('/agency-requests');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateShift(shift: any) {
+  request.value.displayShift = shift;
+  showShiftModal.value = false;
+}
+
+function onOpenRequest(id: any) {
+  isLoading.value = true;
+  agencyRequestOpen(id)
+    .then(() => {
+      isLoading.value = false;
+      request.value.status = RequestStatus.Open;
+      request.value.canEdit = canEditRequest(request.value);
+      request.value.canCancel = canCancelRequest(request.value);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function setCanSendInvitation(r: any) {
+  if (r.status === RequestStatus.Filled) {
+    canSendInvitation.value = false;
+    return;
+  }
+  if (r && !r.invitationSentItAt) {
+    canSendInvitation.value = true;
+    return;
+  }
+  appStore.getCurrentDate().then((now: Date) => {
+    const invitationSentItAt = new Date(r.invitationSentItAt);
+    invitationSentItAt.setDate(invitationSentItAt.getDate() + 7);
+    if (invitationSentItAt <= now) {
+      canSendInvitation.value = true;
+    } else {
+      canSendInvitation.value = false;
+    }
+  });
+}
+
+function onRefreshRequest() {
+  loadRequest();
+}
+
+function sendInvitation(id: any) {
+  showAlertConfirm('Are you sure?', warningMessage).then((response) => {
+    if (response) {
+      isLoading.value = true;
+      agencyRequestSendInvitation(id)
+        .then(() => {
+          canSendInvitation.value = false;
+          isLoading.value = false;
+          showAlertSuccess('Sent it!');
+        })
+        .catch((error) => {
+          isLoading.value = false;
+          showAlertError(error);
+        });
+    }
+  });
+}
+
+function getStatusColorClass(r: any) {
+  if (r.status === RequestStatus.Open &&
+    r.workersQuantityWorking > 0 &&
+    r.workersQuantityWorking < r.workersQuantity) {
+    return 'Book';
+  }
+  return RequestStatusLabels[r.status];
+}
 </script>

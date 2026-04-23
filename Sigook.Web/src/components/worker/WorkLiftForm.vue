@@ -22,72 +22,62 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { fetchLifts } from "@/api/catalogApi";
 import { createWorkerOther } from '@/api/workerApi';
 
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
 const schema = yup.object({
   liftId: yup.mixed().required('Lift is required'),
 });
 
-export default {
-  props: ['data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        liftId: null as any,
-      },
-    });
+const form = useStickyForm<{ liftId: any }>({
+  schema,
+  initialValues: {
+    liftId: null,
+  },
+});
+const { liftId } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      lifts: [] as any[],
-    };
-  },
-  methods: {
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        this.createWorkerOther(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    createWorkerOther(values: any) {
-      this.isLoading = true;
-      const payload = { lift: { id: values.liftId } };
-      createWorkerOther((this as any).data.id, payload)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  async created() {
-    this.lifts = await fetchLifts();
-    if ((this as any).data != null && (this as any).data.lift) {
-      this.hydrateForm({
-        liftId: (this as any).data.lift.id || null,
-      });
-    }
-  },
-};
+const isLoading = ref(false);
+const lifts = ref<any[]>([]);
+
+function saveWorkerOther(values: any) {
+  isLoading.value = true;
+  const payload = { lift: { id: values.liftId } };
+  createWorkerOther(props.data.id, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    saveWorkerOther(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+(async () => {
+  lifts.value = await fetchLifts();
+  if (props.data != null && props.data.lift) {
+    form.hydrate({
+      liftId: props.data.lift.id || null,
+    });
+  }
+})();
 </script>

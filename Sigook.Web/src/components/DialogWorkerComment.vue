@@ -37,7 +37,8 @@
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
@@ -46,34 +47,24 @@ const schema = yup.object({
     comment: yup.string().required('Comment is required').min(2, 'Min 2 characters').max(500, 'Max 500 characters'),
 });
 
-export default {
-    setup() {
-        const form = useStickyForm({
-            schema,
-            initialValues: { comment: '' },
-        });
-        return {
-            ...form.fields,
-            formErrors: form.errors,
-            handleSubmit: form.handleSubmit,
-            markInteracted: form.markInteracted,
-        };
-    },
-    data() {
-        return {
-            rating: 1,
-        };
-    },
-    methods: {
-        onComment() {
-            this.markInteracted();
-            this.handleSubmit((values) => {
-                this.$emit('createComment', { comment: values.comment, rating: this.rating });
-            }, () => {
-                showAlertError('Please make sure all required fields are filled out correctly');
-            })();
-        }
-    }
+const emit = defineEmits<{ (e: 'createComment', v: { comment: string; rating: number }): void }>();
+
+const form = useStickyForm<{ comment: string }>({
+    schema,
+    initialValues: { comment: '' },
+});
+const { comment } = form.fields;
+const formErrors = form.errors;
+
+const rating = ref(1);
+
+function onComment() {
+    form.markInteracted();
+    form.handleSubmit((values) => {
+        emit('createComment', { comment: values.comment, rating: rating.value });
+    }, () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+    })();
 }
 </script>
 

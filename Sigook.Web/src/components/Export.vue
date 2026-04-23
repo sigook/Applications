@@ -13,22 +13,25 @@
     </b-dropdown>
   </b-field>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { downloadFile } from "@/utils/downloadFile";
 import { downloadAgencyReport } from "@/api/agencyReportApi";
-export default {
-  props: ["url", "params", "fileName"],
-  methods: {
-    downloadFile,
-    downloadReport() {
-      this.$emit("onDataLoading", true);
-      downloadAgencyReport(this.url, this.params)
-        .then(file => {
-          this.$emit("onDataLoading", false);
-          this.downloadFile(file, `${this.fileName}_${new Date().toLocaleDateString()}`)
-        })
-        .catch(() => this.$emit("onDataLoading", false));
-    }
-  }
+
+const props = defineProps<{
+  url: string;
+  params?: any;
+  fileName?: string;
+}>();
+
+const emit = defineEmits<{ (e: 'onDataLoading', loading: boolean): void }>();
+
+function downloadReport() {
+  emit('onDataLoading', true);
+  downloadAgencyReport(props.url, props.params)
+    .then(file => {
+      emit('onDataLoading', false);
+      downloadFile(file, `${props.fileName}_${new Date().toLocaleDateString()}`);
+    })
+    .catch(() => emit('onDataLoading', false));
 }
 </script>

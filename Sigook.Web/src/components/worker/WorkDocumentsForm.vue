@@ -96,7 +96,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
@@ -105,6 +106,16 @@ import { generateFileName } from "@/utils/buildWorkerFormData";
 import { getIdentificationTypes } from "@/api/catalogApi";
 import { createWorkerDocuments } from '@/api/workerApi';
 
+interface DocsForm {
+  identificationType1: any;
+  identificationNumber1: string;
+  identificationType2: any;
+  identificationNumber2: string;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
 const schema = yup.object({
   identificationType1: yup.mixed().required('Identification type is required'),
   identificationNumber1: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
@@ -112,126 +123,116 @@ const schema = yup.object({
   identificationNumber2: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
 });
 
-export default {
-  props: ["data"],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        identificationType1: null as any,
-        identificationNumber1: '',
-        identificationType2: null as any,
-        identificationNumber2: '',
-      },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-    };
+const form = useStickyForm<DocsForm>({
+  schema,
+  initialValues: {
+    identificationType1: null,
+    identificationNumber1: '',
+    identificationType2: null,
+    identificationNumber2: '',
   },
-  data() {
-    return {
-      isLoading: false,
-      worker: {} as any,
-      identificationTypes: [] as any[],
-      selectedFile1: null as any,
-      selectedFile2: null as any,
-      fileObjects: {
-        identificationType1: null as any,
-        identificationType2: null as any,
-      },
+});
+const { identificationType1, identificationNumber1, identificationType2, identificationNumber2 } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const worker = ref<any>({});
+const identificationTypes = ref<any[]>([]);
+const selectedFile1 = ref<any>(null);
+const selectedFile2 = ref<any>(null);
+const fileObjects = reactive<{ identificationType1: any; identificationType2: any }>({
+  identificationType1: null,
+  identificationType2: null,
+});
+
+function handleFile1Selected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedFile1.value = null;
+    return;
+  }
+  fileObjects.identificationType1 = file;
+  const generatedName = generateFileName('Document', file.name);
+  worker.value.identificationType1File = { fileName: generatedName, description: '' };
+  selectedFile1.value = null;
+}
+
+function handleFile2Selected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedFile2.value = null;
+    return;
+  }
+  fileObjects.identificationType2 = file;
+  const generatedName = generateFileName('Document', file.name);
+  worker.value.identificationType2File = { fileName: generatedName, description: '' };
+  selectedFile2.value = null;
+}
+
+function clearFile1() {
+  fileObjects.identificationType1 = null;
+  worker.value.identificationType1File = null;
+}
+
+function clearFile2() {
+  fileObjects.identificationType2 = null;
+  worker.value.identificationType2File = null;
+}
+
+async function saveDocuments(values: any) {
+  isLoading.value = true;
+  try {
+    const payload = {
+      identificationType1: values.identificationType1,
+      identificationNumber1: values.identificationNumber1,
+      identificationType1File: worker.value.identificationType1File,
+      identificationType2: values.identificationType2,
+      identificationNumber2: values.identificationNumber2,
+      identificationType2File: worker.value.identificationType2File,
+      havePoliceCheckBackground: worker.value.havePoliceCheckBackground,
     };
-  },
-  async created() {
-    this.identificationTypes = await getIdentificationTypes();
-    const data = (this as any).data;
-    if (data != null) {
-      this.worker = { ...data };
-      this.hydrateForm({
-        identificationType1: data.identificationType1 || null,
-        identificationNumber1: data.identificationNumber1 || '',
-        identificationType2: data.identificationType2 || null,
-        identificationNumber2: data.identificationNumber2 || '',
-      });
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (fileObjects.identificationType1) {
+      const fn = worker.value.identificationType1File.fileName;
+      formData.append(fn, fileObjects.identificationType1, fn);
     }
-  },
-  methods: {
-    filename,
-    handleFile1Selected(file: any) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedFile1 = null;
-        return;
-      }
-      this.fileObjects.identificationType1 = file;
-      const generatedName = generateFileName('Document', file.name);
-      this.worker.identificationType1File = { fileName: generatedName, description: '' };
-      this.selectedFile1 = null;
-    },
-    handleFile2Selected(file: any) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedFile2 = null;
-        return;
-      }
-      this.fileObjects.identificationType2 = file;
-      const generatedName = generateFileName('Document', file.name);
-      this.worker.identificationType2File = { fileName: generatedName, description: '' };
-      this.selectedFile2 = null;
-    },
-    clearFile1() {
-      this.fileObjects.identificationType1 = null;
-      this.worker.identificationType1File = null;
-    },
-    clearFile2() {
-      this.fileObjects.identificationType2 = null;
-      this.worker.identificationType2File = null;
-    },
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.saveDocuments(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    async saveDocuments(values: any) {
-      this.isLoading = true;
-      try {
-        const payload = {
-          identificationType1: values.identificationType1,
-          identificationNumber1: values.identificationNumber1,
-          identificationType1File: this.worker.identificationType1File,
-          identificationType2: values.identificationType2,
-          identificationNumber2: values.identificationNumber2,
-          identificationType2File: this.worker.identificationType2File,
-          havePoliceCheckBackground: this.worker.havePoliceCheckBackground,
-        };
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(payload));
-        if (this.fileObjects.identificationType1) {
-          const fn = this.worker.identificationType1File.fileName;
-          formData.append(fn, this.fileObjects.identificationType1, fn);
-        }
-        if (this.fileObjects.identificationType2) {
-          const fn = this.worker.identificationType2File.fileName;
-          formData.append(fn, this.fileObjects.identificationType2, fn);
-        }
-        await createWorkerDocuments(this.worker.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-  },
-};
+    if (fileObjects.identificationType2) {
+      const fn = worker.value.identificationType2File.fileName;
+      formData.append(fn, fileObjects.identificationType2, fn);
+    }
+    await createWorkerDocuments(worker.value.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveDocuments(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+(async () => {
+  identificationTypes.value = await getIdentificationTypes();
+  if (props.data != null) {
+    worker.value = { ...props.data };
+    form.hydrate({
+      identificationType1: props.data.identificationType1 || null,
+      identificationNumber1: props.data.identificationNumber1 || '',
+      identificationType2: props.data.identificationType2 || null,
+      identificationNumber2: props.data.identificationNumber2 || '',
+    });
+  }
+})();
 </script>
 
 <style scoped>

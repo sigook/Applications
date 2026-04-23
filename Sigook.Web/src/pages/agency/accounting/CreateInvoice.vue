@@ -17,9 +17,9 @@
         </div>
 
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-          <b-field label="Company" :type="errors.has('company') ? 'is-danger' : ''"
-            :message="errors.has('company') ? errors.first('company') : ''">
-            <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus v-validate="'required'"
+          <b-field label="Company" :type="formErrors.company ? 'is-danger' : ''"
+            :message="formErrors.company">
+            <b-autocomplete v-model="company" :data="filteredCompanies" open-on-focus
               field="fullName" name="company" placeholder="Company" @select="selectCompany">
             </b-autocomplete>
           </b-field>
@@ -44,9 +44,9 @@
         </div>
 
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-          <b-field label="Email (optional)" :type="errors.has('email') ? 'is-danger' : ''"
-            :message="errors.has('email') ? errors.first('email') : 'Fill this input if the company needs a different email for this specific invoice'">
-            <b-input type="email" v-model="invoice.email" name="email" v-validate="'email'" />
+          <b-field label="Email (optional)" :type="formErrors.email ? 'is-danger' : ''"
+            :message="formErrors.email || 'Fill this input if the company needs a different email for this specific invoice'">
+            <b-input type="email" v-model="email" name="email" />
           </b-field>
         </div>
 
@@ -83,30 +83,29 @@
             <div class="expandable-section-list" v-if="additionalItems.length > 0">
               <div class="container-flex" v-for="(item, i) in additionalItems" :key="i">
                 <div class="col-sm-6 col-md-3 col-lg-4 col-padding">
-                  <b-field label="Description" expanded :type="errors.has('description' + i) ? 'is-danger' : ''"
-                    :message="errors.has('description' + i) ? errors.first('description' + i) : ''">
-                    <b-input v-model="item.description" v-validate="'required'" :name="'description' + i" />
+                  <b-field label="Description" expanded :type="itemErrors['aDesc' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['aDesc' + i]">
+                    <b-input v-model="item.description" :name="'description' + i" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
-                  <b-field label="Quantity" expanded :type="errors.has('quantity' + i) ? 'is-danger' : ''"
-                    :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
+                  <b-field label="Quantity" expanded :type="itemErrors['aQty' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['aQty' + i]">
                     <b-numberinput v-model="item.quantity" :min="0.01" :max="1000000" :step="0.01" :controls="false"
-                      :name="'quantity' + i" v-validate="'required|min_value:0.01'"
+                      :name="'quantity' + i"
                       @update:modelValue="updateTotalAdditionalItems(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
-                  <b-field label="Price" expanded :type="errors.has('unitPrice' + i) ? 'is-danger' : ''"
-                    :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
+                  <b-field label="Price" expanded :type="itemErrors['aPrice' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['aPrice' + i]">
                     <b-numberinput v-model="item.unitPrice" :min="0.01" :max="1000000" :step="0.01" :controls="false"
-                      :name="'unitPrice' + i" v-validate="'required|min_value:0.01'"
+                      :name="'unitPrice' + i"
                       @update:modelValue="updateTotalAdditionalItems(item)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
-                  <b-field label="Total" expanded :type="errors.has('total' + i) ? 'is-danger' : ''"
-                    :message="errors.has('total' + i) ? errors.first('total' + i) : ''">
+                  <b-field label="Total" expanded>
                     <b-input v-model="item.total" disabled></b-input>
                   </b-field>
                 </div>
@@ -139,24 +138,24 @@
             <div class="expandable-section-list" v-if="discounts.length > 0">
               <div class="container-flex" v-for="(discount, i) in discounts" :key="i">
                 <div class="col-sm-6 col-md-3 col-lg-4 col-padding">
-                  <b-field label="Description" expanded :type="errors.has('discountDescription' + i) ? 'is-danger' : ''"
-                    :message="errors.has('discountDescription' + i) ? errors.first('discountDescription' + i) : ''">
-                    <b-input v-model="discount.description" v-validate="'required'" :name="'discountDescription' + i" />
+                  <b-field label="Description" expanded :type="itemErrors['dDesc' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['dDesc' + i]">
+                    <b-input v-model="discount.description" :name="'discountDescription' + i" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
-                  <b-field label="Quantity" expanded :type="errors.has('quantity' + i) ? 'is-danger' : ''"
-                    :message="errors.has('quantity' + i) ? errors.first('quantity' + i) : ''">
+                  <b-field label="Quantity" expanded :type="itemErrors['dQty' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['dQty' + i]">
                     <b-numberinput v-model="discount.quantity" :min="0.01" :max="1000000" :step="0.01" :controls="false"
-                      :name="'quantity' + i" v-validate="'required|min_value:0.01'"
+                      :name="'dQuantity' + i"
                       @update:modelValue="updateTotalDiscounts(discount)" />
                   </b-field>
                 </div>
                 <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
-                  <b-field label="Price" expanded :type="errors.has('unitPrice' + i) ? 'is-danger' : ''"
-                    :message="errors.has('unitPrice' + i) ? errors.first('unitPrice' + i) : ''">
+                  <b-field label="Price" expanded :type="itemErrors['dPrice' + i] ? 'is-danger' : ''"
+                    :message="itemErrors['dPrice' + i]">
                     <b-numberinput v-model="discount.unitPrice" :min="0.01" :max="1000000" :step="0.01"
-                      :controls="false" :name="'unitPrice' + i" v-validate="'required|min_value:0.01'"
+                      :controls="false" :name="'dUnitPrice' + i"
                       @update:modelValue="updateTotalDiscounts(discount)" />
                   </b-field>
                 </div>
@@ -184,7 +183,7 @@
       </div>
 
       <!-- Preview Section -->
-      <div v-if="previewData" class="col-12 mt-4">
+      <div v-if="previewData" class="col-12 mt-4" ref="previewContainer">
         <div class="box">
           <PreviewInvoice :preview="previewData" />
           <div class="buttons is-justify-content-flex-end mt-4">
@@ -201,127 +200,164 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertError } from "@/utils/toast";
+<script setup lang="ts">
+import { ref, reactive, computed, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import * as yup from 'yup';
 import dayjs from 'dayjs';
-import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from "@/api/agencyCompanyApi";
-import { previewAgencyInvoice, createAgencyInvoice } from "@/api/agencyInvoiceApi";
+import { showAlertError } from '@/utils/toast';
+import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from '@/api/agencyCompanyApi';
+import { previewAgencyInvoice, createAgencyInvoice } from '@/api/agencyInvoiceApi';
+import { useStickyForm } from '@/composables/useStickyForm';
+import PreviewInvoice from '@/components/agency_accounting/PreviewInvoice.vue';
 
-export default {
-  name: "CreateInvoice",
-  components: {
-    PreviewInvoice: defineAsyncComponent(() => import("@/components/agency_accounting/PreviewInvoice.vue"))
-  },
-  data() {
-    return {
-      isLoading: false,
-      invoice: {},
-      companies: [],
-      companySelected: '',
-      provinces: [],
-      additionalItems: [],
-      discounts: [],
-      previewData: null,
-      dateSelected: []
-    };
-  },
-  methods: {
-    loadPreview() {
-      this.validateForm();
-    },
-    async onDatesSelected() {
-      this.invoice.from = dayjs(this.dateSelected[0]).format('YYYY-MM-DD');
-      this.invoice.to = dayjs(this.dateSelected[1]).format('YYYY-MM-DD');
-    },
-    async loadCompanies() {
-      this.companies = await getAgencyCompanyProfileWithRequests();
-    },
-    async selectCompany(company) {
-      if (company) {
-        this.invoice.companyId = company.companyId;
-        this.invoice.companyProfileId = company.id;
-        this.provinces = await getCompanyProvinceWithTaxes(this.invoice.companyProfileId);
-      } else {
-        this.invoice = {};
-        this.provinces = [];
-      }
-    },
-    updateTotalAdditionalItems(item) {
-      item.total = item.quantity * item.unitPrice;
-    },
-    updateTotalDiscounts(discount) {
-      discount.total = discount.quantity * discount.unitPrice;
-    },
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.isLoading = true;
-          this.invoice.additionalItems = this.additionalItems;
-          this.invoice.discounts = this.discounts;
-          previewAgencyInvoice(this.invoice)
-            .then((response) => {
-              this.isLoading = false;
-              this.previewData = response;
+const router = useRouter();
 
-              // Scroll to preview section
-              this.$nextTick(() => {
-                const previewElement = this.$el.querySelector('.box');
-                if (previewElement) {
-                  previewElement.scrollIntoView({ behavior: 'smooth' });
-                }
-              });
-            }).catch((error) => {
-              this.isLoading = false;
-              showAlertError(error);
-            });
+const schema = yup.object({
+  company: yup.string().required('Company is required'),
+  email: yup.string().email('Invalid email').nullable().transform((v) => v || null),
+});
+
+const form = useStickyForm<{ company: string; email: string }>({
+  schema,
+  initialValues: { company: '', email: '' },
+});
+const { company, email } = form.fields;
+const formErrors = form.errors;
+
+const itemErrors = reactive<Record<string, string>>({});
+const isLoading = ref(false);
+const invoice = ref<any>({});
+const companies = ref<any[]>([]);
+const provinces = ref<any[]>([]);
+const additionalItems = ref<any[]>([]);
+const discounts = ref<any[]>([]);
+const previewData = ref<any>(null);
+const dateSelected = ref<Date[]>([]);
+const previewContainer = ref<HTMLElement | null>(null);
+
+const filteredCompanies = computed(() =>
+  companies.value.filter((c: any) => c.fullName.toLowerCase().includes((company.value || '').toLowerCase())),
+);
+
+const enabledProvince = computed(() => company.value && provinces.value.length > 0);
+
+(async () => {
+  await loadCompanies();
+})();
+
+function loadPreview() {
+  validateForm();
+}
+
+function onDatesSelected() {
+  if (dateSelected.value && dateSelected.value.length === 2) {
+    invoice.value.from = dayjs(dateSelected.value[0]).format('YYYY-MM-DD');
+    invoice.value.to = dayjs(dateSelected.value[1]).format('YYYY-MM-DD');
+  }
+}
+
+async function loadCompanies() {
+  companies.value = await getAgencyCompanyProfileWithRequests();
+}
+
+async function selectCompany(c: any) {
+  if (c) {
+    invoice.value.companyId = c.companyId;
+    invoice.value.companyProfileId = c.id;
+    provinces.value = await getCompanyProvinceWithTaxes(invoice.value.companyProfileId);
+  } else {
+    invoice.value = {};
+    provinces.value = [];
+  }
+}
+
+function updateTotalAdditionalItems(item: any) {
+  item.total = item.quantity * item.unitPrice;
+}
+
+function updateTotalDiscounts(discount: any) {
+  discount.total = discount.quantity * discount.unitPrice;
+}
+
+function validateItems(): boolean {
+  for (const k of Object.keys(itemErrors)) delete itemErrors[k];
+  let ok = true;
+  additionalItems.value.forEach((it, i) => {
+    if (!it.description) { itemErrors['aDesc' + i] = 'Required'; ok = false; }
+    if (!it.quantity || it.quantity < 0.01) { itemErrors['aQty' + i] = 'Required'; ok = false; }
+    if (!it.unitPrice || it.unitPrice < 0.01) { itemErrors['aPrice' + i] = 'Required'; ok = false; }
+  });
+  discounts.value.forEach((d, i) => {
+    if (!d.description) { itemErrors['dDesc' + i] = 'Required'; ok = false; }
+    if (!d.quantity || d.quantity < 0.01) { itemErrors['dQty' + i] = 'Required'; ok = false; }
+    if (!d.unitPrice || d.unitPrice < 0.01) { itemErrors['dPrice' + i] = 'Required'; ok = false; }
+  });
+  return ok;
+}
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  const itemsOk = validateItems();
+  if (!valid || !itemsOk) return;
+  isLoading.value = true;
+  invoice.value.email = email.value || undefined;
+  invoice.value.additionalItems = additionalItems.value;
+  invoice.value.discounts = discounts.value;
+  previewAgencyInvoice(invoice.value)
+    .then((response) => {
+      isLoading.value = false;
+      previewData.value = response;
+      nextTick(() => {
+        const el = previewContainer.value?.querySelector('.box');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
         }
       });
-    },
-    addItem() {
-      this.additionalItems.push({
-        quantity: 0,
-        unitPrice: 0,
-        total: 0,
-        description: ''
-      });
-    },
-    removeItem(item) {
-      this.additionalItems = this.additionalItems.filter(i => i !== item);
-    },
-    addDiscount() {
-      this.discounts.push({});
-    },
-    removeDiscount(discount) {
-      this.discounts = this.discounts.filter(d => d !== discount);
-    },
-    confirmInvoice() {
-      this.isLoading = true;
-      createAgencyInvoice(this.invoice)
-        .then(() => {
-          this.isLoading = false;
-          this.$router.push('/accounting/invoices');
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    cancelPreview() {
-      this.previewData = null;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  },
-  computed: {
-    filteredCompanies() {
-      return this.companies.filter(company => company.fullName.toLowerCase().includes(this.companySelected.toLowerCase()));
-    },
-    enabledProvince() {
-      return this.companySelected && this.provinces.length > 0;
-    }
-  },
-  async created() {
-    await this.loadCompanies();
-  }
-};
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function addItem() {
+  additionalItems.value.push({
+    quantity: 0,
+    unitPrice: 0,
+    total: 0,
+    description: '',
+  });
+}
+
+function removeItem(item: any) {
+  additionalItems.value = additionalItems.value.filter((i) => i !== item);
+}
+
+function addDiscount() {
+  discounts.value.push({});
+}
+
+function removeDiscount(discount: any) {
+  discounts.value = discounts.value.filter((d) => d !== discount);
+}
+
+function confirmInvoice() {
+  isLoading.value = true;
+  createAgencyInvoice(invoice.value)
+    .then(() => {
+      isLoading.value = false;
+      router.push('/accounting/invoices');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function cancelPreview() {
+  previewData.value = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>

@@ -1,8 +1,8 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <calendar :highlights="data" :workerId="workerId" :requestId="requestId" :startDate="request.startAt"
-      :status="request.status" :worker="worker" @onMonthChange="(args) => onMonthChange(args.startDate, args.endDate)">
+    <Calendar :highlights="data" :workerId="workerId" :requestId="requestId" :startDate="request.startAt"
+      :status="request.status" :worker="worker" @onMonthChange="(args: any) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-2">
           <div class="container-flex">
@@ -67,17 +67,17 @@
           </div>
         </div>
       </template>
-    </calendar>
+    </Calendar>
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <time-sheet-modal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
+      <TimeSheetModal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
         v-model:editable-day="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
     <b-modal v-model="showDetailPunchCard" width="500px">
-      <time-sheet-detail v-if="editableDay" :editable-day="editableDay" />
+      <TimeSheetDetail v-if="editableDay" :editable-day="editableDay" />
     </b-modal>
 
     <!-- Clock in modal -->
@@ -93,230 +93,224 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
+import Calendar from "../calendar/CalendarPunchCard.vue";
+import TimeSheetModal from "../../components/company_request/CompanyRequestTimeSheetModal.vue";
+import TimeSheetDetail from "../../components/company_request/CompanyRequestTimeSheetDetail.vue";
 import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import {
   getCompanyWorkerTimeSheetByDate,
   postCompanyWorkerTimeSheet,
-  deleteCompanyWorkerTimeSheet,
+  deleteCompanyWorkerTimeSheet as deleteCompanyWorkerTimeSheetApi,
   companyTimeSheetClockIn,
   updateCompanyRequestWorkerTimeSheet
 } from '@/api/companyApi';
 
 dayjs.extend(duration);
 
-export default {
-  props: ["workerId", "requestId", "request", "worker"],
-  data() {
-    const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
-    return {
-      startDate: '',
-      endDate: '',
-      data: [],
-      isLoading: false,
-      editableDay: null,
-      showClockIn: false,
-      clockInTime: emptyTime,
-      maxClockInTime: new Date(),
-      showModalPunchCard: false,
-      showDetailPunchCard: false,
-      itemErrors: {} as Record<string, string>,
-    }
-  },
-  computed: {
-    maximumDailyHours() {
-      return maximumHoursPerDay;
-    }
-  },
-  methods: {
-    dateHHmm,
-    hour,
-    timeSheetFastApprove(item, requestId, workerId) {
-      this.isLoading = true;
-      const model = buildTimeSheetApproveModel(item);
-      updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
-        .then(() => {
-          this.updateCell();
-        })
-        .catch((error) => {
-          showAlertError(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getAgencyWorkerTimeSheetByDate() {
-      this.isLoading = true;
-      getCompanyWorkerTimeSheetByDate(this.requestId, this.workerId, { startDate: this.startDate, endDate: this.endDate })
-        .then(response => {
-          this.isLoading = false;
-          this.data = response
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    },
-    onMonthChange(startDate, endDate) {
-      this.startDate = startDate;
-      this.endDate = endDate;
-      this.getAgencyWorkerTimeSheetByDate()
-    },
-    updateCell() {
-      this.getAgencyWorkerTimeSheetByDate();
-      this.showModalPunchCard = false;
-    },
-    isToday(date) {
-      return dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')
-    },
-    onClockIn() {
-      if (!this.clockInTime) return;
-      this.isLoading = true;
-      let model = { "clockIn": dayjs(this.clockInTime).format("HH:mm:ss") }
-      companyTimeSheetClockIn(this.requestId, this.workerId, model)
-        .then(() => {
-          this.isLoading = false;
-          this.showClockIn = false;
-          this.getAgencyWorkerTimeSheetByDate();
-          this.clockInTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    },
-    validatePost(model, index) {
-      const key = String(index);
-      const raw = model.totalHoursApproved;
-      const value = Number(raw);
-      if (raw == null || raw === '' || isNaN(value) || value < 0 || value > this.maximumDailyHours) {
-        this.itemErrors = { ...this.itemErrors, [key]: `Hours must be between 0 and ${this.maximumDailyHours}` };
-        showAlertError('Please make sure all required fields are filled out correctly');
-        return;
-      }
-      if (!/^\d+(\.\d{1,2})?$/.test(String(raw))) {
-        this.itemErrors = { ...this.itemErrors, [key]: 'Max 2 decimal places' };
-        showAlertError('Please make sure all required fields are filled out correctly');
-        return;
-      }
-      const next = { ...this.itemErrors };
-      delete next[key];
-      this.itemErrors = next;
-      this.reportWorkerTimSheet(model);
-    },
-    reportWorkerTimSheet(item) {
-      this.isLoading = true;
-      let model = {
-        hours: this.changeDecimalToHour(item.totalHoursApproved),
-        timeIn: this.todayTimeZero(item.day),
-        missingHours: item.missingHours,
-        missingHoursOvertime: item.missingHoursOvertime,
-        missingRateWorker: item.missingRateWorker,
-        missingRateAgency: item.missingRateAgency,
-        deductionsOthers: item.deductionsOthers,
-        bonusOrOthers: item.bonusOrOthers,
-        deductionsOthersDescription: item.deductionsOthersDescription,
-        bonusOrOthersDescription: item.bonusOrOthersDescription,
-        comments: item.comments
-      };
-      postCompanyWorkerTimeSheet(this.requestId, this.workerId, model)
-        .then(() => {
-          this.isLoading = false;
-          this.getAgencyWorkerTimeSheetByDate();
-        }).catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    confirmDelete(item) {
-      showAlertConfirm('Are you sure', 'You want to delete this item?')
-        .then(response => {
-          if (response) {
-            this.deleteCompanyWorkerTimeSheet(item);
-          }
-        })
-    },
-    deleteCompanyWorkerTimeSheet(item) {
-      this.isLoading = true;
-      deleteCompanyWorkerTimeSheet(this.requestId, this.workerId, item.id)
-        .then(() => {
-          this.isLoading = false;
-          item.id = null;
-          item.totalHoursApproved = null;
-          item.timeIn = null;
-          this.getAgencyWorkerTimeSheetByDate();
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    changeDecimalToHour(time) {
-      return dayjs().startOf('day').add(time, 'hours').format('HH:mm:ss');
-    },
-    todayTimeZero(time) {
-      let date = new Date(time);
-      date.setHours(0);
-      date.setMinutes(0);
-      date.setSeconds(0);
-      return date
-    },
-    openDetail(item) {
-      this.editableDay = item;
-      this.showDetailPunchCard = true;
-    },
-    editPunchCard(day) {
-      this.editableDay = null;
-      /*
-      * Update object to show Modal
-      * */
-      this.editableDay = Object.assign({}, day);
-      this.editableDay.timeInApproved = new Date(day.timeInApproved);
-      this.editableDay.timeOutApproved = new Date(day.timeOutApproved);
-      this.editableDay.missinghoursToDate = this.stringToDate(this.editableDay.missingHours)
-      this.editableDay.missingHoursOvertimeToDate = this.stringToDate(this.editableDay.missingHoursOvertime)
-      this.editableDay.hoursApprovedToDate = this.startTime;
-      this.editableDay.missingRateWorker = day.missingRateWorker;
-      this.editableDay.missingRateAgency = day.missingRateAgency
-      /*
-      * Change hours to format date
-      */
-      let newTime = new Date();
-      let duration = dayjs.duration(day.totalHoursApproved, 'hours');
-      newTime.setHours(duration.hours());
-      let min = duration.minutes();
-      newTime.setMinutes(min);
-      let sec = duration.seconds();
-      newTime.setSeconds(sec);
-      this.editableDay.hoursApprovedToDate = newTime;
+const props = defineProps<{ workerId: any; requestId: any; request: any; worker: any }>();
 
-      /*
-      * Show Modal
-      * */
-      this.showModalPunchCard = true;
-    },
-    stringToDate(value) {
-      if (value) {
-        let tmp = value.split(":");
-        let date = new Date();
-        date.setHours(parseInt(tmp[0]));
-        date.setMinutes(parseInt(tmp[1]));
-        date.setSeconds(0);
-        return date;
-      }
-      return this.startTime;
-    }
-  },
-  components: {
-    Calendar: defineAsyncComponent(() => import("../calendar/CalendarPunchCard.vue")),
-    TimeSheetModal: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestTimeSheetModal.vue")),
-    TimeSheetDetail: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestTimeSheetDetail.vue"))
+const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
+const startDate = ref('');
+const endDate = ref('');
+const data = ref<any[]>([]);
+const isLoading = ref(false);
+const editableDay = ref<any>(null);
+const showClockIn = ref(false);
+const clockInTime = ref<Date>(emptyTime);
+const maxClockInTime = ref<Date>(new Date());
+const showModalPunchCard = ref(false);
+const showDetailPunchCard = ref(false);
+const itemErrors = ref<Record<string, string>>({});
+const startTime = ref<Date | null>(null);
+
+const maximumDailyHours = computed(() => maximumHoursPerDay);
+
+function timeSheetFastApprove(item: any, requestId: any, workerId: any) {
+  isLoading.value = true;
+  const model = buildTimeSheetApproveModel(item);
+  updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
+    .then(() => {
+      updateCell();
+    })
+    .catch((error) => {
+      showAlertError(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function getAgencyWorkerTimeSheetByDate() {
+  isLoading.value = true;
+  getCompanyWorkerTimeSheetByDate(props.requestId, props.workerId, { startDate: startDate.value, endDate: endDate.value })
+    .then((response: any) => {
+      isLoading.value = false;
+      data.value = response;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onMonthChange(sd: string, ed: string) {
+  startDate.value = sd;
+  endDate.value = ed;
+  getAgencyWorkerTimeSheetByDate();
+}
+
+function updateCell() {
+  getAgencyWorkerTimeSheetByDate();
+  showModalPunchCard.value = false;
+}
+
+function isToday(date: any) {
+  return dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
+}
+
+function onClockIn() {
+  if (!clockInTime.value) return;
+  isLoading.value = true;
+  const model = { "clockIn": dayjs(clockInTime.value).format("HH:mm:ss") };
+  companyTimeSheetClockIn(props.requestId, props.workerId, model)
+    .then(() => {
+      isLoading.value = false;
+      showClockIn.value = false;
+      getAgencyWorkerTimeSheetByDate();
+      clockInTime.value = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function validatePost(model: any, index: any) {
+  const key = String(index);
+  const raw = model.totalHoursApproved;
+  const value = Number(raw);
+  if (raw == null || raw === '' || isNaN(value) || value < 0 || value > maximumDailyHours.value) {
+    itemErrors.value = { ...itemErrors.value, [key]: `Hours must be between 0 and ${maximumDailyHours.value}` };
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
   }
+  if (!/^\d+(\.\d{1,2})?$/.test(String(raw))) {
+    itemErrors.value = { ...itemErrors.value, [key]: 'Max 2 decimal places' };
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
+  }
+  const next = { ...itemErrors.value };
+  delete next[key];
+  itemErrors.value = next;
+  reportWorkerTimSheet(model);
+}
+
+function reportWorkerTimSheet(item: any) {
+  isLoading.value = true;
+  const model = {
+    hours: changeDecimalToHour(item.totalHoursApproved),
+    timeIn: todayTimeZero(item.day),
+    missingHours: item.missingHours,
+    missingHoursOvertime: item.missingHoursOvertime,
+    missingRateWorker: item.missingRateWorker,
+    missingRateAgency: item.missingRateAgency,
+    deductionsOthers: item.deductionsOthers,
+    bonusOrOthers: item.bonusOrOthers,
+    deductionsOthersDescription: item.deductionsOthersDescription,
+    bonusOrOthersDescription: item.bonusOrOthersDescription,
+    comments: item.comments,
+  };
+  postCompanyWorkerTimeSheet(props.requestId, props.workerId, model)
+    .then(() => {
+      isLoading.value = false;
+      getAgencyWorkerTimeSheetByDate();
+    }).catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function confirmDelete(item: any) {
+  showAlertConfirm('Are you sure', 'You want to delete this item?')
+    .then(response => {
+      if (response) {
+        doDelete(item);
+      }
+    });
+}
+
+function doDelete(item: any) {
+  isLoading.value = true;
+  deleteCompanyWorkerTimeSheetApi(props.requestId, props.workerId, item.id)
+    .then(() => {
+      isLoading.value = false;
+      item.id = null;
+      item.totalHoursApproved = null;
+      item.timeIn = null;
+      getAgencyWorkerTimeSheetByDate();
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function changeDecimalToHour(time: number) {
+  return dayjs().startOf('day').add(time, 'hours').format('HH:mm:ss');
+}
+
+function todayTimeZero(time: any) {
+  const d = new Date(time);
+  d.setHours(0);
+  d.setMinutes(0);
+  d.setSeconds(0);
+  return d;
+}
+
+function openDetail(item: any) {
+  editableDay.value = item;
+  showDetailPunchCard.value = true;
+}
+
+function editPunchCard(day: any) {
+  editableDay.value = null;
+  editableDay.value = Object.assign({}, day);
+  editableDay.value.timeInApproved = new Date(day.timeInApproved);
+  editableDay.value.timeOutApproved = new Date(day.timeOutApproved);
+  editableDay.value.missinghoursToDate = stringToDate(editableDay.value.missingHours);
+  editableDay.value.missingHoursOvertimeToDate = stringToDate(editableDay.value.missingHoursOvertime);
+  editableDay.value.hoursApprovedToDate = startTime.value;
+  editableDay.value.missingRateWorker = day.missingRateWorker;
+  editableDay.value.missingRateAgency = day.missingRateAgency;
+
+  const newTime = new Date();
+  const dur = dayjs.duration(day.totalHoursApproved, 'hours');
+  newTime.setHours(dur.hours());
+  const min = dur.minutes();
+  newTime.setMinutes(min);
+  const sec = dur.seconds();
+  newTime.setSeconds(sec);
+  editableDay.value.hoursApprovedToDate = newTime;
+
+  showModalPunchCard.value = true;
+}
+
+function stringToDate(value: string) {
+  if (value) {
+    const tmp = value.split(":");
+    const d = new Date();
+    d.setHours(parseInt(tmp[0]));
+    d.setMinutes(parseInt(tmp[1]));
+    d.setSeconds(0);
+    return d;
+  }
+  return startTime.value;
 }
 </script>

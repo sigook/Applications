@@ -29,72 +29,64 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerResume } from '@/api/workerApi';
 
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      selectedResumeFile: null,
-      fileObjects: {
-        resume: null
-      },
-      resume: {
-        fileName: '',
-        description: ''
-      }
-    };
-  },
-  created() {
-    if (this.data != null && this.data.resume) {
-      this.resume = { ...this.data.resume };
-    }
-  },
-  methods: {
-    filename,
-    handleResumeFileSelected(file) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedResumeFile = null;
-        return;
-      }
-      this.fileObjects.resume = file;
-      const generatedName = generateFileName('Resume', file.name);
-      this.resume = { fileName: generatedName, description: '' };
-      this.selectedResumeFile = null;
-    },
-    clearResumeFile() {
-      this.fileObjects.resume = null;
-      this.resume = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.saveResume();
-    },
-    async saveResume() {
-      this.isLoading = true;
-      try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(this.resume));
-        if (this.fileObjects.resume) {
-          const fn = this.resume.fileName;
-          formData.append(fn, this.fileObjects.resume, fn);
-        }
-        await createWorkerResume(this.data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    }
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const selectedResumeFile = ref<any>(null);
+const fileObjects = reactive<{ resume: any }>({ resume: null });
+const resume = ref<any>({ fileName: '', description: '' });
+
+if (props.data != null && props.data.resume) {
+  resume.value = { ...props.data.resume };
+}
+
+function handleResumeFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedResumeFile.value = null;
+    return;
   }
-};
+  fileObjects.resume = file;
+  const generatedName = generateFileName('Resume', file.name);
+  resume.value = { fileName: generatedName, description: '' };
+  selectedResumeFile.value = null;
+}
+
+function clearResumeFile() {
+  fileObjects.resume = null;
+  resume.value = { fileName: '', description: '' };
+}
+
+async function saveResume() {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(resume.value));
+    if (fileObjects.resume) {
+      const fn = resume.value.fileName;
+      formData.append(fn, fileObjects.resume, fn);
+    }
+    await createWorkerResume(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  saveResume();
+}
 </script>
 
 <style scoped>

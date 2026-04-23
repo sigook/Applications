@@ -8,61 +8,43 @@
     </div>
     <div>
       <work-experience-detail
-        v-for="(item, index) in worker.jobExperiences"
+        v-for="(item, index) in props.worker.jobExperiences"
         :key="'workExp' + index"
         :item="item"
-        :workerId="worker.id"
+        :workerId="props.worker.id"
         @getWorker="() => updateExperience()" />
 
       <b-modal v-model="modalWorkExperience" width="800px">
-        <work-experience :workerId="worker.id" @updateExperience="() => updateExperience()" />
+        <work-experience :workerId="props.worker.id" @updateExperience="() => updateExperience()" />
       </b-modal>
     </div>
 
   </form>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { useAppStore } from '@/stores/app';
-export default {
-  props: ['worker'],
-  data() {
-    return {
-      disableStartDate: null,
-      modalWorkExperience: false,
-      isLoading: false
-    }
-  },
-  computed: {
-    ...mapStores(useAppStore),
-  },
-  methods: {
-    disableEndDate(index) {
-      let disabledDates = this.appStore.currentDate;
+import WorkExperience from './WorkExperienceForm.vue';
+import WorkExperienceDetail from '../../components/worker/WorkExperienceDetail.vue';
 
-      if (this.worker.jobExperiences[index].startDate) {
-        disabledDates = this.worker.jobExperiences[index].startDate
-      }
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile'): void }>();
 
-      return disabledDates;
-    },
-    updateExperience() {
-      this.modalWorkExperience = false;
-      this.$emit('updateProfile');
-    }
-  },
-  components: {
-    workExperience: defineAsyncComponent(() => import("./WorkExperienceForm.vue")),
-    workExperienceDetail: defineAsyncComponent(() => import("../../components/worker/WorkExperienceDetail.vue"))
-  },
-  created() {
-    this.appStore.getCurrentDate().then(response => {
-      this.disableStartDate = response;
-    })
-  }
+const appStore = useAppStore();
+
+const disableStartDate = ref<any>(null);
+const modalWorkExperience = ref(false);
+const isLoading = ref(false);
+
+function updateExperience() {
+  modalWorkExperience.value = false;
+  emit('updateProfile');
 }
+
+appStore.getCurrentDate().then(response => {
+  disableStartDate.value = response;
+});
 </script>
 
 <style scoped>

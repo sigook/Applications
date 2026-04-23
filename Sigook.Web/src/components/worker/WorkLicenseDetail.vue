@@ -57,60 +57,56 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertConfirm, showAlertError } from "@/utils/toast";
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { filename, dateMonth } from '@/utils/filters';
 import { deleteWorkerLicenses } from '@/api/workerApi';
-export default {
-  props: ["worker"],
-  data() {
-    return {
-      modalLicense: false,
-      modalEdit: false,
-      isLoading: false,
-      localWorker: JSON.parse(JSON.stringify(this.worker))
-    };
+import LicenseEdit from './WorkLicenseForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{
+  (e: 'updateProfile', value: boolean): void;
+  (e: 'update:worker', value: any): void;
+}>();
+
+const modalLicense = ref(false);
+const isLoading = ref(false);
+const localWorker = ref<any>(JSON.parse(JSON.stringify(props.worker)));
+
+watch(
+  () => props.worker,
+  (newVal) => {
+    localWorker.value = JSON.parse(JSON.stringify(newVal));
   },
-  watch: {
-    worker: {
-      handler(newVal) {
-        this.localWorker = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  methods: {
-    filename,
-    dateMonth,
-    closeModalEdit() {
-      this.$emit("updateProfile", true);
-      this.modalLicense = false;
-    },
-    confirmDelete(license) {
-      showAlertConfirm("Are you sure", "You want to delete this document")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteWorkerLicenses(this.localWorker.id, license.id)
-              .then(() => {
-                this.isLoading = false;
-                this.localWorker.licenses = this.localWorker.licenses.filter(d => d.license.id !== license.id);
-                this.$emit('update:worker', this.localWorker);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          showAlertError(error);
-        });
-    }
-  },
-  components: {
-    licenseEdit: defineAsyncComponent(() => import("./WorkLicenseForm.vue"))
-  }
-};
+  { deep: true }
+);
+
+function closeModalEdit() {
+  emit('updateProfile', true);
+  modalLicense.value = false;
+}
+
+function confirmDelete(license: any) {
+  showAlertConfirm('Are you sure', 'You want to delete this document')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteWorkerLicenses(localWorker.value.id, license.id)
+          .then(() => {
+            isLoading.value = false;
+            localWorker.value.licenses = localWorker.value.licenses.filter((d: any) => d.license.id !== license.id);
+            emit('update:worker', localWorker.value);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
 </script>

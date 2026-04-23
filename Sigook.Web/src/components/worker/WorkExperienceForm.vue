@@ -53,13 +53,24 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import * as yup from 'yup';
-import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { createWorkerWorkExperience, editWorkerWorkExperience } from '@/api/workerApi';
+
+interface ExperienceForm {
+  company: string;
+  supervisor: string;
+  duties: string;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+const props = defineProps<{ workerId?: any; data?: any }>();
+const emit = defineEmits<{ (e: 'updateExperience'): void }>();
 
 const schema = yup.object({
   company: yup.string().required('Company is required')
@@ -71,111 +82,96 @@ const schema = yup.object({
   endDate: yup.mixed().nullable(),
 });
 
-export default {
-  props: ['workerId', 'data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        company: '',
-        supervisor: '',
-        duties: '',
-        startDate: null as Date | null,
-        endDate: null as Date | null,
-      },
-    });
+const form = useStickyForm<ExperienceForm>({
+  schema,
+  initialValues: {
+    company: '',
+    supervisor: '',
+    duties: '',
+    startDate: null,
+    endDate: null,
+  },
+});
+const { company, supervisor, duties, startDate, endDate } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      disableStartDate: null as Date | null,
-      workExperience: {
-        isCurrentJobPosition: true,
-      } as any,
-    };
-  },
-  computed: {
-    ...mapStores(useAppStore),
-  },
-  methods: {
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        if (!this.workExperience.isCurrentJobPosition && !values.endDate) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        const payload = {
-          ...this.workExperience,
-          company: values.company,
-          supervisor: values.supervisor,
-          duties: values.duties,
-          startDate: values.startDate,
-          endDate: this.workExperience.isCurrentJobPosition ? null : values.endDate,
-        };
-        if ((this as any).data) {
-          this.editWorkerWorkExperience(payload);
-        } else {
-          this.createWorkerWorkExperience(payload);
-        }
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    createWorkerWorkExperience(payload: any) {
-      this.isLoading = true;
-      createWorkerWorkExperience((this as any).workerId, payload)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("updateExperience");
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    editWorkerWorkExperience(payload: any) {
-      this.isLoading = true;
-      editWorkerWorkExperience((this as any).workerId, (this as any).data.id, payload)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("updateExperience");
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateData() {
-      const src = (this as any).data;
-      this.workExperience = Object.assign({}, src);
-      const startDate = new Date(src.startDate);
-      const endDate = src.endDate ? new Date(src.endDate) : null;
-      this.hydrateForm({
-        company: src.company || '',
-        supervisor: src.supervisor || '',
-        duties: src.duties || '',
-        startDate,
-        endDate,
-      });
-    },
-  },
-  created() {
-    this.appStore.getCurrentDate().then((response: any) => {
-      this.disableStartDate = response;
+const appStore = useAppStore();
+
+const isLoading = ref(false);
+const disableStartDate = ref<Date | null>(null);
+const workExperience = reactive<any>({
+  isCurrentJobPosition: true,
+});
+
+function saveCreateExperience(payload: any) {
+  isLoading.value = true;
+  createWorkerWorkExperience(props.workerId, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('updateExperience');
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
     });
-    if ((this as any).data) {
-      this.updateData();
+}
+
+function saveEditExperience(payload: any) {
+  isLoading.value = true;
+  editWorkerWorkExperience(props.workerId, props.data.id, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('updateExperience');
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    if (!workExperience.isCurrentJobPosition && !values.endDate) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
     }
-  },
-};
+    const payload = {
+      ...workExperience,
+      company: values.company,
+      supervisor: values.supervisor,
+      duties: values.duties,
+      startDate: values.startDate,
+      endDate: workExperience.isCurrentJobPosition ? null : values.endDate,
+    };
+    if (props.data) {
+      saveEditExperience(payload);
+    } else {
+      saveCreateExperience(payload);
+    }
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function updateData() {
+  const src = props.data;
+  Object.assign(workExperience, src);
+  const sd = new Date(src.startDate);
+  const ed = src.endDate ? new Date(src.endDate) : null;
+  form.hydrate({
+    company: src.company || '',
+    supervisor: src.supervisor || '',
+    duties: src.duties || '',
+    startDate: sd,
+    endDate: ed,
+  });
+}
+
+appStore.getCurrentDate().then((response: any) => {
+  disableStartDate.value = response;
+});
+if (props.data) {
+  updateData();
+}
 </script>

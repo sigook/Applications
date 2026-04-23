@@ -69,19 +69,20 @@
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ currentContact ? 'Save' : 'Create' }}
+          {{ props.currentContact ? 'Save' : 'Create' }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
+import PhoneInput from "../PhoneInput.vue";
 
 const numericExt = yup
   .string()
@@ -99,107 +100,101 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-export default {
-  props: ['currentContact', 'profileId'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        title: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        position: '',
-        officeNumberExt: '',
-        email: '',
-      },
-    });
-    const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      titleOptions,
+const props = defineProps<{ currentContact?: any; profileId: any }>();
+const emit = defineEmits<{ (e: 'updateContent'): void }>();
+
+const form = useStickyForm<{
+  title: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  position: string;
+  officeNumberExt: string;
+  email: string;
+}>({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    position: '',
+    officeNumberExt: '',
+    email: '',
+  },
+});
+const { title, firstName, middleName, lastName, position, officeNumberExt, email } = form.fields;
+const formErrors = form.errors;
+
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+const isLoading = ref(false);
+const contactPerson = ref<any>({
+  mobileNumber: null,
+  officeNumber: null,
+});
+
+function validateForm() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    const payload = {
+      ...contactPerson.value,
+      title: values.title,
+      firstName: values.firstName,
+      middleName: values.middleName,
+      lastName: values.lastName,
+      position: values.position,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+      email: values.email,
     };
-  },
-  data() {
-    return {
-      isLoading: false,
-      contactPerson: {
-        mobileNumber: null as any,
-        officeNumber: null as any,
-      } as any,
-    };
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue")),
-  },
-  methods: {
-    validateForm() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        const payload = {
-          ...this.contactPerson,
-          title: values.title,
-          firstName: values.firstName,
-          middleName: values.middleName,
-          lastName: values.lastName,
-          position: values.position,
-          officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
-          email: values.email,
-        };
-        if (payload.id) {
-          this.updateContactPerson(payload, payload.id);
-        } else {
-          this.createContactPerson(payload);
-        }
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    createContactPerson(payload: any) {
-      this.isLoading = true;
-      createAgencyCompanyContactPerson((this as any).profileId, payload)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Created');
-          this.$emit('updateContent');
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateContactPerson(payload: any, id: any) {
-      this.isLoading = true;
-      updateAgencyCompanyContactPerson((this as any).profileId, id, payload)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Updated');
-          this.$emit('updateContent');
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  created() {
-    const currentContact = (this as any).currentContact;
-    if (currentContact && currentContact.id) {
-      this.contactPerson = Object.assign({}, currentContact);
-      this.hydrateForm({
-        title: currentContact.title || '',
-        firstName: currentContact.firstName || '',
-        middleName: currentContact.middleName || '',
-        lastName: currentContact.lastName || '',
-        position: currentContact.position || '',
-        officeNumberExt: currentContact.officeNumberExt != null ? String(currentContact.officeNumberExt) : '',
-        email: currentContact.email || '',
-      });
+    if (payload.id) {
+      updateContactPerson(payload, payload.id);
+    } else {
+      createContactPerson(payload);
     }
-  },
-};
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function createContactPerson(payload: any) {
+  isLoading.value = true;
+  createAgencyCompanyContactPerson(props.profileId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Created');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateContactPerson(payload: any, id: any) {
+  isLoading.value = true;
+  updateAgencyCompanyContactPerson(props.profileId, id, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+if (props.currentContact && props.currentContact.id) {
+  contactPerson.value = Object.assign({}, props.currentContact);
+  form.hydrate({
+    title: props.currentContact.title || '',
+    firstName: props.currentContact.firstName || '',
+    middleName: props.currentContact.middleName || '',
+    lastName: props.currentContact.lastName || '',
+    position: props.currentContact.position || '',
+    officeNumberExt: props.currentContact.officeNumberExt != null ? String(props.currentContact.officeNumberExt) : '',
+    email: props.currentContact.email || '',
+  });
+}
 </script>

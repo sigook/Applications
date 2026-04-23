@@ -49,8 +49,8 @@
           </b-table-column>
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
@@ -168,11 +168,12 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
-import { phoneMask as mask } from '@/constants/phoneMask';
+import { formatPhone } from '@/utils/phoneFormat';
 import {
   getAgencyRequestsWorkers,
   rejectAgencyRequestWorker,
@@ -188,209 +189,229 @@ import {
   deleteAgencyRequestWorkerNote
 } from "@/api/agencyNoteApi";
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
+import WorkersList from "./AgencyWorkersList.vue";
+import ModalNotes from "../../components/notes/ModalNotes.vue";
+import EditTextarea from "../../components/agency_request/EditTextarea.vue";
+import DatepickerModal from "@/components/agency_request/DatepickerModal.vue";
 
-export default {
-  props: ["request", "id", "showTitle"],
-  data() {
-    return {
-      mask,
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      statuses: [
-        { id: 2, value: 'Rejected' },
-        { id: 3, value: 'Booked' },
-      ],
-      statusesSelected: [],
-      startWorkingDatesSelected: [],
-      createdAtDatesSelected: [],
-      rejectedAtDatesSelected: [],
-      modalManageWorkers: false,
-      currentWorker: null,
-      modalRejectWorker: false,
-      modalStartWorking: false,
-      getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
-      createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
-      updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-      deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id),
-      serverParams: {
-        sortBy: 2,
-        requestId: this.id || this.$route.params.id,
-        pageIndex: 1,
-        pageSize: 30,
-        isDescending: true
-      }
-    };
-  },
-  created() {
-    this.loadRequestWorkers();
-  },
-  components: {
-    WorkersList: defineAsyncComponent(() => import("./AgencyWorkersList.vue")),
-    ModalNotes: defineAsyncComponent(() => import("../../components/notes/ModalNotes.vue")),
-    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue")),
-    DatepickerModal: defineAsyncComponent(() => import("@/components/agency_request/DatepickerModal.vue"))
-  },
-  methods: {
-    downloadFile,
-    dateMonth,
-    emailName,
-    onCellClick(row, column, rowIndex) {
-      switch (column.field) {
-        case 'startWorking':
-          this.onShowModalStartWorking(row);
-          break;
-        case 'notesCount':
-          this.showNotes(rowIndex);
-          break;
-        case 'actions':
-          break;
-        default:
-          this.$router.push(`/agency-workers/worker/${row.workerProfileId}`);
-          break;
-      }
-    },
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadRequestWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'name':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'status':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'startWorking':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'createdBy':
-          this.serverParams.sortBy = 4;
-          break;
-        case 'rejectedBy':
-          this.serverParams.sortBy = 5;
-          break;
-        case 'externalId':
-          this.serverParams.sortBy = 6;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadRequestWorkers();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadRequestWorkers();
-      }
-    },
-    onStatusSelected() {
-      this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.loadRequestWorkers();
-    },
-    onStartWorkingSelected() {
-      this.serverParams.startWorkingFrom = this.startWorkingDatesSelected[0];
-      this.serverParams.startWorkingTo = this.startWorkingDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onStartWorkingCleared() {
-      this.startWorkingDatesSelected = [];
-      this.onStartWorkingSelected();
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onRejectedAtSelected() {
-      this.serverParams.rejectedAtFrom = this.rejectedAtDatesSelected[0];
-      this.serverParams.rejectedAtTo = this.rejectedAtDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onRejectedAtCleared() {
-      this.rejectedAtDatesSelected = [];
-      this.onRejectedAtSelected();
-    },
-    loadRequestWorkers() {
-      this.isLoading = true;
-      getAgencyRequestsWorkers(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map(i => ({
-            ...i,
-            status: WorkerRequestStatusLabels[i.workerRequestStatus],
-            actions: null,
-            showNotes: false
-          }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    confirmDelete(worker) {
-      this.currentWorker = worker;
-      this.modalRejectWorker = true;
-    },
-    rejectWorker(comments) {
-      this.modalRejectWorker = false;
-      this.isLoading = true;
-      rejectAgencyRequestWorker(this.serverParams.requestId, this.currentWorker.workerId, { comments: comments }).then(() => {
-        this.isLoading = false;
-        this.loadRequestWorkers();
-        this.$emit('refreshRequest');
-      }).catch((error) => {
-        this.isLoading = false;
-        showAlertError(error.data);
-      });
-    },
-    showNotes(index) {
-      this.rows[index].showNotes = true;
-    },
-    hideNotes(row) {
-      const index = this.rows.findIndex(r => r.id === row.id);
-      this.rows[index].showNotes = false;
-    },
-    onShowModalStartWorking(worker) {
-      this.currentWorker = worker;
-      this.modalStartWorking = true;
-    },
-    onUpdateRequestWorkerStartDate(date) {
-      this.modalStartWorking = false;
-      this.isLoading = true;
-      updateAgencyRequestWorkerStartDate(this.serverParams.requestId, this.currentWorker.id, { startWorking: date }).then(() => {
-        this.isLoading = false;
-        this.loadRequestWorkers();
-      }).catch((error) => {
-        this.isLoading = false;
-        showAlertError(error.data);
-      });
-    },
-    downloadWorkersReportDocument() {
-      this.isLoading = true;
-      getWorkersReportDocument(this.serverParams.requestId)
-        .then((response) => {
-          this.isLoading = false;
-          this.downloadFile(response, `WorkersReport_${this.serverParams.requestId}`);
-        })
-        .catch((err) => {
-          this.isLoading = false;
-          showAlertError(err);
-        });
-    },
-    onWorkerBooked() {
-      this.modalManageWorkers = false;
-      this.loadRequestWorkers();
-      // Emit event to refresh request status (Open/Filled state may have changed)
-      this.$emit('refreshRequest');
-    }
+const props = defineProps<{
+  request?: any;
+  id?: any;
+  showTitle?: boolean;
+}>();
+
+const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
+
+const route = useRoute();
+const router = useRouter();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const statuses = ref<any[]>([
+  { id: 2, value: 'Rejected' },
+  { id: 3, value: 'Booked' },
+]);
+const statusesSelected = ref<any[]>([]);
+const startWorkingDatesSelected = ref<any[]>([]);
+const createdAtDatesSelected = ref<any[]>([]);
+const rejectedAtDatesSelected = ref<any[]>([]);
+const modalManageWorkers = ref(false);
+const currentWorker = ref<any>(null);
+const modalRejectWorker = ref(false);
+const modalStartWorking = ref(false);
+
+const getNotes = ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination);
+const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model);
+const updateNote = ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model);
+const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id);
+
+const serverParams = reactive<any>({
+  sortBy: 2,
+  requestId: props.id || route.params.id,
+  pageIndex: 1,
+  pageSize: 30,
+  isDescending: true,
+});
+
+function onCellClick(row: any, column: any, rowIndex: number) {
+  switch (column.field) {
+    case 'startWorking':
+      onShowModalStartWorking(row);
+      break;
+    case 'notesCount':
+      showNotes(rowIndex);
+      break;
+    case 'actions':
+      break;
+    default:
+      router.push(`/agency-workers/worker/${row.workerProfileId}`);
+      break;
   }
-};
+}
+
+function onPageChange(params: any) {
+  serverParams.pageIndex = params;
+  loadRequestWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'name':
+      serverParams.sortBy = 1;
+      break;
+    case 'status':
+      serverParams.sortBy = 2;
+      break;
+    case 'startWorking':
+      serverParams.sortBy = 3;
+      break;
+    case 'createdBy':
+      serverParams.sortBy = 4;
+      break;
+    case 'rejectedBy':
+      serverParams.sortBy = 5;
+      break;
+    case 'externalId':
+      serverParams.sortBy = 6;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  loadRequestWorkers();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadRequestWorkers();
+  }
+}
+
+function onStatusSelected() {
+  serverParams.statuses = statusesSelected.value.map(ss => ss.id);
+  loadRequestWorkers();
+}
+
+function onStartWorkingSelected() {
+  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0];
+  serverParams.startWorkingTo = startWorkingDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onStartWorkingCleared() {
+  startWorkingDatesSelected.value = [];
+  onStartWorkingSelected();
+}
+
+function onCreatedAtSelected() {
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onRejectedAtSelected() {
+  serverParams.rejectedAtFrom = rejectedAtDatesSelected.value[0];
+  serverParams.rejectedAtTo = rejectedAtDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onRejectedAtCleared() {
+  rejectedAtDatesSelected.value = [];
+  onRejectedAtSelected();
+}
+
+function loadRequestWorkers() {
+  isLoading.value = true;
+  getAgencyRequestsWorkers(serverParams)
+    .then((response) => {
+      rows.value = response.items.map(i => ({
+        ...i,
+        status: WorkerRequestStatusLabels[i.workerRequestStatus],
+        actions: null,
+        showNotes: false,
+      }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function confirmDelete(worker: any) {
+  currentWorker.value = worker;
+  modalRejectWorker.value = true;
+}
+
+function rejectWorker(comments: string) {
+  modalRejectWorker.value = false;
+  isLoading.value = true;
+  rejectAgencyRequestWorker(serverParams.requestId, currentWorker.value.workerId, { comments }).then(() => {
+    isLoading.value = false;
+    loadRequestWorkers();
+    emit('refreshRequest');
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function showNotes(index: number) {
+  rows.value[index].showNotes = true;
+}
+
+function hideNotes() {
+  rows.value.forEach(r => { r.showNotes = false; });
+}
+
+function onShowModalStartWorking(worker: any) {
+  currentWorker.value = worker;
+  modalStartWorking.value = true;
+}
+
+function onUpdateRequestWorkerStartDate(date: any) {
+  modalStartWorking.value = false;
+  isLoading.value = true;
+  updateAgencyRequestWorkerStartDate(serverParams.requestId, currentWorker.value.id, { startWorking: date }).then(() => {
+    isLoading.value = false;
+    loadRequestWorkers();
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function downloadWorkersReportDocument() {
+  isLoading.value = true;
+  getWorkersReportDocument(serverParams.requestId)
+    .then((response) => {
+      isLoading.value = false;
+      downloadFile(response, `WorkersReport_${serverParams.requestId}`);
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      showAlertError(err);
+    });
+}
+
+function onWorkerBooked() {
+  modalManageWorkers.value = false;
+  loadRequestWorkers();
+  // Emit event to refresh request status (Open/Filled state may have changed)
+  emit('refreshRequest');
+}
+
+function onUpdateNote(row: any, size: number) {
+  row.notesCount = size;
+}
+
+loadRequestWorkers();
 </script>

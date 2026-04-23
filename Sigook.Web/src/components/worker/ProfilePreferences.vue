@@ -2,53 +2,48 @@
   <div>
     <div class="profile-worker">
       <section id="lift">
-        <lift :worker="worker" @updateProfile="() => updateProfile()" />
+        <lift :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
-      <section id="availability" :class="{ 'missing': worker.availabilities.length === 0 }">
-        <availability :worker="worker" @updateProfile="() => updateProfile()" />
+      <section id="availability" :class="{ 'missing': props.worker.availabilities.length === 0 }">
+        <availability :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
-      <section id="availabletime" :class="{ 'missing': worker.availabilityTimes.length === 0 }">
-        <availability-times :worker="worker" @updateProfile="() => updateProfile()" />
-      </section>
-
-      <section id="availabledays" :class="{ 'missing': worker.availabilityDays.length === 0 }">
-        <availability-days :worker="worker" @updateProfile="() => updateProfile()" />
+      <section id="availabletime" :class="{ 'missing': props.worker.availabilityTimes.length === 0 }">
+        <availability-times :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
 
-      <section id="locationpreferences" :class="{ 'missing': worker.locationPreferences.length === 0 }">
-        <location-preferences :worker="worker" @updateProfile="() => updateProfile()" />
+      <section id="availabledays" :class="{ 'missing': props.worker.availabilityDays.length === 0 }">
+        <availability-days :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
-      <emergency-information id="emergencyinformation" :class="{ 'missing': !worker.contactEmergencyPhone }"
-        :worker="worker" @updateProfile="() => updateProfile()" />
-      <section id="skills" :class="{ 'missing': worker.skills.length === 0 }">
-        <skills :worker="worker" @updateProfile="() => updateProfile()" />
+
+      <section id="locationpreferences" :class="{ 'missing': props.worker.locationPreferences.length === 0 }">
+        <location-preferences :worker="props.worker" @updateProfile="() => updateProfile()" />
+      </section>
+      <emergency-information id="emergencyinformation" :class="{ 'missing': !props.worker.contactEmergencyPhone }"
+        :worker="props.worker" @updateProfile="() => updateProfile()" />
+      <section id="skills" :class="{ 'missing': props.worker.skills.length === 0 }">
+        <skills :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
       <section id="languages">
-        <languages :worker="worker" @updateProfile="() => updateProfile()" />
+        <languages :worker="props.worker" @updateProfile="() => updateProfile()" />
       </section>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import Skills from '../../components/worker/WorkSkillsDetail.vue';
+import Languages from '../../components/worker/WorkLanguagesDetail.vue';
+import Lift from '../../components/worker/WorkLiftDetail.vue';
+import Availability from '../../components/worker/WorkAvailabilitiesDetail.vue';
+import AvailabilityTimes from '../../components/worker/WorkAvailabilityTimesDetail.vue';
+import AvailabilityDays from '../../components/worker/WorkAvailabilityDaysDetail.vue';
+import LocationPreferences from '../../components/worker/WorkLocationPreferencesDetail.vue';
+import EmergencyInformation from './WorkEmergencyInformationDetail.vue';
 
-import { defineAsyncComponent } from 'vue';
-export default {
-  props: ['worker'],
-  components: {
-    skills: defineAsyncComponent(() => import("../../components/worker/WorkSkillsDetail.vue")),
-    languages: defineAsyncComponent(() => import("../../components/worker/WorkLanguagesDetail.vue")),
-    lift: defineAsyncComponent(() => import("../../components/worker/WorkLiftDetail.vue")),
-    availability: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilitiesDetail.vue")),
-    availabilityTimes: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityTimesDetail.vue")),
-    availabilityDays: defineAsyncComponent(() => import("../../components/worker/WorkAvailabilityDaysDetail.vue")),
-    locationPreferences: defineAsyncComponent(() => import("../../components/worker/WorkLocationPreferencesDetail.vue")),
-    emergencyInformation: defineAsyncComponent(() => import("./WorkEmergencyInformationDetail.vue"))
-  },
-  methods: {
-    updateProfile() {
-      this.$emit('updateProfile');
-    }
-  }
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile'): void }>();
+
+function updateProfile() {
+  emit('updateProfile');
 }
 </script>

@@ -48,95 +48,56 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { confirmationGuard } from '@/utils/confirmationGuard';
-import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
+import { getAgencyProfile, getPersonnelAgencies } from '@/api/agencyApi';
 import { lowercase } from '@/utils/filters';
+import BusinessInformation from '@/components/agency/ProfileBusiness.vue';
+import BillingInformation from '@/components/agency/ProfileBilling.vue';
+import ContactInformation from '@/components/agency/ProfileContact.vue';
+import AccountSecurity from '@/components/agency/ProfileAccountInformation.vue';
+import UploadImage from '@/components/PreviewImage.vue';
+import UserNotification from '@/components/UserNotification.vue';
+import Users from '@/components/agency/AgencyPersonnel.vue';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      currentTab: "BusinessInformation",
-      visitedTabs: ["BusinessInformation"],
-      isDisabled: true,
-      unsavedChanges: false
-    };
-  },
-  components: {
-    BusinessInformation: defineAsyncComponent(() => import("@/components/agency/ProfileBusiness.vue")),
-    BillingInformation: defineAsyncComponent(() => import("@/components/agency/ProfileBilling.vue")),
-    ContactInformation: defineAsyncComponent(() => import("@/components/agency/ProfileContact.vue")),
-    AccountSecurity: defineAsyncComponent(() => import("@/components/agency/ProfileAccountInformation.vue")),
-    UploadImage: defineAsyncComponent(() => import("@/components/PreviewImage.vue")),
-    UserNotification: defineAsyncComponent(() => import("../../components/UserNotification.vue")),
-    Users: defineAsyncComponent(() => import("../../components/agency/AgencyPersonnel.vue"))
-  },
-  async created() {
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
+const route = useRoute();
+const router = useRouter();
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(false);
+const currentTab = ref<string>('BusinessInformation');
+const visitedTabs = ref<string[]>(['BusinessInformation']);
+const isDisabled = ref(true);
+
+const agency = computed<any>(() => agencyStore.agency);
+
+(async () => {
+  if (route.query && route.query.tab) {
+    currentTab.value = route.query.tab as string;
+    if (!visitedTabs.value.includes(route.query.tab as string)) {
+      visitedTabs.value.push(route.query.tab as string);
     }
-    this.isLoading = true;
-    const agency = await getAgencyProfile();
-    this.agencyStore.setAgency(agency);
-    const personnelAgencies = await getPersonnelAgencies();
-    this.agencyStore.setPersonnelAgencies(personnelAgencies);
-    this.isLoading = false;
-  },
-  methods: {
-    lowercase,
-    editProfile() {
-      this.isDisabled = false;
-    },
-    validateForm() {
-      let isValid = true;
-      this.$validator.validateAll().then((response) => {
-        if (!response || !isValid) {
-          showAlertError("Please make sure all required fields are filled out correctly");
-          return;
-        }
-        this.saveProfile();
-      });
-    },
-    saveProfile() {
-      this.isLoading = true;
-      updateAgency(this.agency)
-        .then(() => {
-          this.isDisabled = true;
-          this.unsavedChanges = false;
-          this.isLoading = false;
-          showAlertSuccess("Updated");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: "/agency-profile",
-        query: { tab: tab }
-      });
-    }
-  },
-  computed: {
-    ...mapStores(useAgencyStore),
-    agency() {
-      return this.agencyStore.agency;
-    }
-  },
-  beforeRouteLeave: confirmationGuard
-};
+  }
+  isLoading.value = true;
+  const agencyData = await getAgencyProfile();
+  agencyStore.setAgency(agencyData);
+  const personnelAgencies = await getPersonnelAgencies();
+  agencyStore.setPersonnelAgencies(personnelAgencies);
+  isLoading.value = false;
+})();
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: '/agency-profile',
+    query: { tab: tab },
+  });
+}
+
 </script>
 
 <style lang="scss" scoped>

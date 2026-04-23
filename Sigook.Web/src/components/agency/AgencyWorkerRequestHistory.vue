@@ -12,46 +12,38 @@
         <pagination v-if="data"
                     :total-pages="data.totalPages"
                     :index-page="data.pageIndex"
-                    :size-page="this.size"
+                    :size-page="size"
                     @changePage="(index) => loadRequestHistory(index)">
         </pagination>
     </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
-    import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
-    export default {
-        props: ['workerId'],
-        data() {
-            return {
-                size: 10,
-                currentPage: 1,
-                data: null,
-                isLoading: false
-            }
-        },
-        methods: {
-            loadRequestHistory(page){
-                this.isLoading = true;
-                getAgencyWorkerProfileRequestHistory(this.workerId, {size: this.size, page: page})
-                .then(response => {
-                    this.data = response;
-                    this.isLoading = false;
-                })
-                .catch(error => {
-                    showAlertError(error);
-                    this.isLoading = false;
-                })
-            }
-        },
-        created() {
-            this.loadRequestHistory(this.currentPage)
-        },
-        components: {
-            Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue")),
-            ContainerRequest: defineAsyncComponent(() => import("../agency/AgencyWorkerRequestHistoryContainer.vue"))
-        }
-    }
+import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
+import Pagination from "../../components/Paginator.vue";
+import ContainerRequest from "../agency/AgencyWorkerRequestHistoryContainer.vue";
+
+const props = defineProps<{ workerId: any }>();
+
+const size = ref(10);
+const currentPage = ref(1);
+const data = ref<any>(null);
+const isLoading = ref(false);
+
+function loadRequestHistory(page: number) {
+  isLoading.value = true;
+  getAgencyWorkerProfileRequestHistory(props.workerId, { size: size.value, page })
+    .then(response => {
+      data.value = response;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+loadRequestHistory(currentPage.value);
 </script>

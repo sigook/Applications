@@ -1,7 +1,7 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    
+
     <div class="container-flex">
       <div class="col-12">
         <b-field label="Availability Times">
@@ -12,48 +12,43 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerAvailabilityTimes()">
+        <b-button type="is-primary" @click="saveWorkerAvailabilityTimes()">
           {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAvailabilityTimes } from "@/api/catalogApi";
 import { createWorkerAvailabilityTimes } from '@/api/workerApi';
 
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      availabilityTimes: [],
-      worker: {
-        availabilityTimes: []
-      }
-    }
-  },
-  methods: {
-    createWorkerAvailabilityTimes() {
-      this.isLoading = true;
-      createWorkerAvailabilityTimes(this.data.id, this.worker.availabilityTimes)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    }
-  },
-  async created() {
-    this.availabilityTimes = await getAvailabilityTimes();
-    if (this.data != null) {
-      this.worker.availabilityTimes = this.data.availabilityTimes;
-    }
-  }
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const availabilityTimes = ref<any[]>([]);
+const worker = reactive<{ availabilityTimes: any[] }>({ availabilityTimes: [] });
+
+function saveWorkerAvailabilityTimes() {
+  isLoading.value = true;
+  createWorkerAvailabilityTimes(props.data.id, worker.availabilityTimes)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+(async () => {
+  availabilityTimes.value = await getAvailabilityTimes();
+  if (props.data != null) {
+    worker.availabilityTimes = props.data.availabilityTimes;
+  }
+})();
 </script>

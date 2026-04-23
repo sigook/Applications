@@ -41,7 +41,7 @@
 
         <button @click="showModal = true" class="sm-save-button">Add</button>
 
-        <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="this.size"
+        <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="size"
           @changePage="(index) => loadDocuments(index)">
         </pagination>
       </div>
@@ -63,75 +63,71 @@
     </transition>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from "@/utils/filters";
 import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
-export default {
-  data() {
-    return {
-      showDocuments: false,
-      isLoading: false,
-      showModal: false,
-      data: null,
-      profileId: this.$route.params.id,
-      size: 10,
-      currentPage: 1
-    };
-  },
-  components: {
-    documentsForm: () =>
-      import("../../components/agency_company/DocumentsForm.vue"),
-    Pagination: defineAsyncComponent(() => import("../../components/Paginator.vue"))
-  },
-  methods: {
-    filename,
-    onShowDocuments() {
-      if (!this.showDocuments) {
-        this.showDocuments = true;
-        this.loadDocuments(this.currentPage);
-      } else {
-        this.showDocuments = false;
-      }
-    },
-    loadDocuments(index) {
-      this.isLoading = true;
-      getAgencyCompanyDocument(this.profileId, { size: this.size, page: index })
-        .then((response) => {
-          this.isLoading = false;
-          this.data = response;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    onCreateDocument() {
-      this.showModal = false;
-      this.loadDocuments(this.currentPage);
-    },
-    onDeleteDocument(id, index) {
-      showAlertConfirm("Are you sure", "You want to delete this document")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyCompanyDocument(this.profileId, id)
-              .then(() => {
-                this.isLoading = false;
-                showAlertSuccess("Deleted");
-                this.data.items.splice(index, 1);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          showAlertError(error);
-        });
-    }
+import DocumentsForm from "../../components/agency_company/DocumentsForm.vue";
+import Pagination from "../../components/Paginator.vue";
+
+const route = useRoute();
+
+const showDocuments = ref(false);
+const isLoading = ref(false);
+const showModal = ref(false);
+const data = ref<any>(null);
+const profileId = route.params.id;
+const size = 10;
+const currentPage = 1;
+
+function onShowDocuments() {
+  if (!showDocuments.value) {
+    showDocuments.value = true;
+    loadDocuments(currentPage);
+  } else {
+    showDocuments.value = false;
   }
-};
+}
+
+function loadDocuments(index: number) {
+  isLoading.value = true;
+  getAgencyCompanyDocument(profileId, { size, page: index })
+    .then((response) => {
+      isLoading.value = false;
+      data.value = response;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onCreateDocument(_item?: any) {
+  showModal.value = false;
+  loadDocuments(currentPage);
+}
+
+function onDeleteDocument(id: any, index: number) {
+  showAlertConfirm("Are you sure", "You want to delete this document")
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyCompanyDocument(profileId, id)
+          .then(() => {
+            isLoading.value = false;
+            showAlertSuccess("Deleted");
+            data.value.items.splice(index, 1);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
 </script>

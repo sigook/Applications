@@ -28,15 +28,10 @@
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { date } from '@/utils/filters';
 
-export default {
-    props: ['data'],
-    methods: {
-        date,
-    }
-}
+defineProps<{ data: any }>();
 </script>
 <style scoped>
 .container-requests {

@@ -34,59 +34,52 @@
 
     <!-- Create user modal-->
     <b-modal v-model="showModal" @close="showModal = false" width="500px">
-      <create-user @updateUsers="updateList" />
+      <CreateUser @updateUsers="updateList" />
     </b-modal>
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import CreateUser from "@/components/CompanyCreateUserModal.vue";
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getCompanyUser, deleteCompanyUser } from '@/api/companyApi';
 
-export default {
-  name: "CompanyUsers",
-  components: {
-    CreateUser: defineAsyncComponent(() => import("@/components/CompanyCreateUserModal.vue"))
-  },
-  data() {
-    return {
-      isLoading: false,
-      showModal: false,
-      pageIndex: 1,
-      pageSize: 30,
-      users: []
-    }
-  },
-  methods: {
-    async getUsers() {
-      this.users = await getCompanyUser();
-      this.users = this.users.map(r => ({ ...r, actions: null }));
-    },
-    deleteUser(id) {
-      showAlertConfirm('Are you sure?', 'You want to delete user.')
-        .then(response => {
-          if (response) {
-            this.isLoading = true;
-            deleteCompanyUser(id)
-              .then(async () => {
-                await this.getUsers(this.initialPage);
-                this.isLoading = false;
-              })
-              .catch(error => {
-                this.isLoading = false;
-                showAlertError(error);
-              })
-          }
-        });
-    },
-    async updateList() {
-      this.showModal = false;
-      await this.getUsers();
-    }
-  },
-  async created() {
-    await this.getUsers();
-  }
+const isLoading = ref(false);
+const showModal = ref(false);
+const pageIndex = ref(1);
+const pageSize = ref(30);
+const users = ref<any[]>([]);
+
+async function getUsers() {
+  const data = await getCompanyUser();
+  users.value = data.map((r: any) => ({ ...r, actions: null }));
 }
+
+function deleteUser(id: any) {
+  showAlertConfirm('Are you sure?', 'You want to delete user.')
+    .then(response => {
+      if (response) {
+        isLoading.value = true;
+        deleteCompanyUser(id)
+          .then(async () => {
+            await getUsers();
+            isLoading.value = false;
+          })
+          .catch(error => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    });
+}
+
+async function updateList() {
+  showModal.value = false;
+  await getUsers();
+}
+
+(async () => {
+  await getUsers();
+})();
 </script>

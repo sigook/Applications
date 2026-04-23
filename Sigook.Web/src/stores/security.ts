@@ -25,22 +25,22 @@ export const useSecurityStore = defineStore('security', {
       this.userRoles = roles;
       this.user = data;
     },
-    getUser(): Promise<UserProfile> {
-      return new Promise((resolve, reject) => {
-        if (this.user) {
-          return resolve(this.user);
+    async getUser(): Promise<UserProfile | null> {
+      try {
+        const current = await mgr.getUser();
+        if (!current || current.expired) {
+          if (this.user) this.setUser(null);
+          return null;
         }
-        mgr.getUser()
-          .then((user) => {
-            const userProfile = user as unknown as UserProfile;
-            this.setUser(userProfile);
-            resolve(userProfile);
-          })
-          .catch((error: unknown) => {
-            this.setUser(null);
-            reject(error);
-          });
-      });
+        const userProfile = current as unknown as UserProfile;
+        if (this.user?.access_token !== userProfile.access_token) {
+          this.setUser(userProfile);
+        }
+        return userProfile;
+      } catch (error) {
+        this.setUser(null);
+        throw error;
+      }
     },
     signIn(): void {
       mgr.signinRedirect().then();
@@ -60,8 +60,5 @@ export const useSecurityStore = defineStore('security', {
           .catch((error: unknown) => reject(error));
       });
     },
-  },
-  persist: {
-    key: 'user',
   },
 });

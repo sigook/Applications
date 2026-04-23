@@ -37,8 +37,6 @@
     </section>
   </div>
 </template>
-<script lang="ts">
-export default {
-  props: ['solutionType']
-}
+<script setup lang="ts">
+defineProps<{ solutionType: string }>();
 </script>

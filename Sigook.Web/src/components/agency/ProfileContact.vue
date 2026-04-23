@@ -96,12 +96,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, ref } from 'vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertSuccess } from "@/utils/toast";
 import { updateAgency } from "@/api/agencyApi";
+import phoneInput from "@/components/PhoneInput.vue";
 
 const numericExt = yup
   .string()
@@ -121,96 +122,87 @@ const schema = yup.object({
   officeNumberExt: numericExt,
 });
 
-export default {
-  props: ['agencyData'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        title: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        email: '',
-        position: '',
-        mobileNumber: '',
-        officeNumber: '',
-        officeNumberExt: '',
-      },
+const props = defineProps<{ agencyData: any }>();
+const emit = defineEmits<{ (e: 'update:agencyData', data: any): void }>();
+
+const form = useStickyForm({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    position: '',
+    mobileNumber: '',
+    officeNumber: '',
+    officeNumberExt: '',
+  },
+});
+const {
+  title, firstName, middleName, lastName, email, position,
+  mobileNumber, officeNumber, officeNumberExt,
+} = form.fields;
+const formErrors = form.errors;
+
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+const isLoading = ref(false);
+const showModal = ref(false);
+const localAgencyData = ref<any>(JSON.parse(JSON.stringify(props.agencyData)));
+const mobileComponent = ref<any>(null);
+const officeComponent = ref<any>(null);
+
+watch(
+  () => props.agencyData,
+  (newVal: any) => {
+    localAgencyData.value = JSON.parse(JSON.stringify(newVal));
+  },
+  { deep: true }
+);
+
+function openAddContactModal() {
+  form.resetAll();
+  showModal.value = true;
+}
+
+async function validateForm() {
+  form.markInteracted();
+  const mobileValid = await mobileComponent.value.validatePhone();
+  const officeValid = await officeComponent.value.validatePhone();
+  form.handleSubmit((values) => {
+    if (!mobileValid || !officeValid) return;
+    isLoading.value = true;
+    const contact = {
+      ...values,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+    };
+    localAgencyData.value.contactInformation.push(contact);
+    emit('update:agencyData', localAgencyData.value);
+    updateAgency(localAgencyData.value)
+      .then(() => {
+        isLoading.value = false;
+        showModal.value = false;
+        form.resetAll();
+        showAlertSuccess('Updated');
+      })
+      .catch(() => {
+        isLoading.value = false;
+      });
+  })();
+}
+
+function removeContact(index: number) {
+  isLoading.value = true;
+  localAgencyData.value.contactInformation.splice(index, 1);
+  emit('update:agencyData', localAgencyData.value);
+  updateAgency(localAgencyData.value)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Updated");
+    })
+    .catch(() => {
+      isLoading.value = false;
     });
-
-    const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
-
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      resetForm: form.resetAll,
-      titleOptions,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      showModal: false,
-      localAgencyData: JSON.parse(JSON.stringify((this as any).agencyData)),
-    };
-  },
-  watch: {
-    agencyData: {
-      handler(newVal) {
-        this.localAgencyData = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true,
-    },
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
-  },
-  methods: {
-    openAddContactModal() {
-      this.resetForm();
-      this.showModal = true;
-    },
-    async validateForm() {
-      this.markInteracted();
-      const mobileValid = await (this.$refs.mobileComponent as any).validatePhone();
-      const officeValid = await (this.$refs.officeComponent as any).validatePhone();
-      this.handleSubmit((values) => {
-        if (!mobileValid || !officeValid) return;
-        this.isLoading = true;
-        const contact = {
-          ...values,
-          officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
-        };
-        this.localAgencyData.contactInformation.push(contact);
-        this.$emit('update:agencyData', this.localAgencyData);
-        updateAgency(this.localAgencyData)
-          .then(() => {
-            this.isLoading = false;
-            this.showModal = false;
-            this.resetForm();
-            showAlertSuccess('Updated');
-          })
-          .catch(() => {
-            this.isLoading = false;
-          });
-      })();
-    },
-    removeContact(index: number) {
-      this.isLoading = true;
-      this.localAgencyData.contactInformation.splice(index, 1);
-      this.$emit('update:agencyData', this.localAgencyData);
-      updateAgency(this.localAgencyData)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Updated");
-        })
-        .catch(() => {
-          this.isLoading = false;
-        });
-    },
-  },
-};
+}
 </script>

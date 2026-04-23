@@ -52,7 +52,7 @@
           </b-table-column>
           <b-table-column field="agencyType" label="Type" sortable searchable>
             <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="$agencyTypes" open-on-focus
+              <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="appGlobals.$agencyTypes" open-on-focus
                 field="label" icon="label" placeholder="Select Type" @update:modelValue="onAgencyTypeSelected" append-to-body>
               </b-taginput>
             </template>
@@ -67,81 +67,76 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { useAgencyStore } from '@/stores/agency';
-import { showAlertError } from "@/utils/toast";
-import { getAgenciesList } from "@/api/agencyApi";
+import { showAlertError } from '@/utils/toast';
+import { getAgenciesList } from '@/api/agencyApi';
 import { agencyType } from '@/utils/filters';
+import { appGlobals } from '@/varaibles';
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      agencyTypesSelected: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  created() {
-    if (this.agencyStore.agencyListFilter) {
-      this.serverParams = this.agencyStore.agencyListFilter;
-    }
-    this.getAgencies();
-  },
-  computed: {
-    ...mapStores(useAgencyStore),
-  },
-  methods: {
-    agencyType,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getAgencies();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'fullName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'email':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'agencyType':
-          this.serverParams.sortBy = 2;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getAgencies();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getAgencies();
-      }
-    },
-    onAgencyTypeSelected() {
-      this.serverParams.agencyTypes = this.agencyTypesSelected.map(t => t.value);
-      this.getAgencies();
-    },
-    getAgencies() {
-      this.isLoading = true;
-      this.agencyStore.updateAgencyListFilter(this.serverParams);
-      getAgenciesList(this.serverParams)
-        .then(agencies => {
-          this.rows = agencies.items;
-          this.totalItems = agencies.totalItems;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    }
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const agencyTypesSelected = ref<any[]>([]);
+const serverParams = ref<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+if (agencyStore.agencyListFilter) {
+  serverParams.value = agencyStore.agencyListFilter;
+}
+getAgencies();
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  getAgencies();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'fullName':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'email':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'agencyType':
+      serverParams.value.sortBy = 2;
+      break;
   }
+  serverParams.value.isDescending = order !== 'asc';
+  getAgencies();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getAgencies();
+  }
+}
+
+function onAgencyTypeSelected() {
+  serverParams.value.agencyTypes = agencyTypesSelected.value.map((t) => t.value);
+  getAgencies();
+}
+
+function getAgencies() {
+  isLoading.value = true;
+  agencyStore.updateAgencyListFilter(serverParams.value);
+  getAgenciesList(serverParams.value)
+    .then((agencies: any) => {
+      rows.value = agencies.items;
+      totalItems.value = agencies.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
 </script>

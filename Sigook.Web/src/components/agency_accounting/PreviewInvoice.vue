@@ -73,27 +73,17 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue';
 import { currency } from '@/utils/filters';
 
-export default {
-  name: "PreviewInvoice",
-  props: ['preview'],
-  computed: {
-    currentDate() {
-      return new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
-  },
-  methods: {
-    currency,
-    formatCurrency(amount) {
-      if (!amount && amount !== 0) return '0.00';
-      return parseFloat(amount).toFixed(2);
-    }
-  }
-};
+defineProps<{ preview: any }>();
+
+const currentDate = computed(() =>
+  new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+);
 </script>

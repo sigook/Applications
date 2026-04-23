@@ -13,50 +13,43 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { computed } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 
-export default {
-  props: ['data', 'title', 'minLength'],
-  setup(props) {
-    const schema = computed(() =>
-      yup.object({
-        dataModel: yup
-          .string()
-          .required(`${props.title} is required`)
-          .min(props.minLength, `Min ${props.minLength} characters`)
-          .max(50000, 'Max 50000 characters'),
-      })
-    );
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        dataModel: (props.data as string) || '',
-      },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-    };
+const props = defineProps<{ data?: string; title: string; minLength: number }>();
+const emit = defineEmits<{ (e: 'updateContent', value: string): void }>();
+
+const schema = computed(() =>
+  yup.object({
+    dataModel: yup
+      .string()
+      .required(`${props.title} is required`)
+      .min(props.minLength, `Min ${props.minLength} characters`)
+      .max(50000, 'Max 50000 characters'),
+  })
+);
+
+const form = useStickyForm<{ dataModel: string }>({
+  schema,
+  initialValues: {
+    dataModel: (props.data as string) || '',
   },
-  created() {
-    this.hydrateForm({ dataModel: this.data || '' });
-  },
-  methods: {
-    onSave() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.$emit("updateContent", values.dataModel);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    }
-  }
+});
+
+const { dataModel } = form.fields;
+const formErrors = form.errors;
+
+form.hydrate({ dataModel: props.data || '' });
+
+function onSave() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    emit('updateContent', values.dataModel);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 </script>

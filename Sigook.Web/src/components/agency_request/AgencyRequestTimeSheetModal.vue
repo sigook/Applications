@@ -127,7 +127,9 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
@@ -193,123 +195,110 @@ function valuesFromEditable(src: any) {
   };
 }
 
-export default {
-  props: ['editableDay', 'worker'],
-  setup(props) {
-    const form = useStickyForm({
-      schema,
-      initialValues: valuesFromEditable(props.editableDay),
-    });
+const props = defineProps<{ editableDay: any; worker: any }>();
+const emit = defineEmits<{
+  (e: 'update:editableDay', value: any): void;
+  (e: 'updateData'): void;
+}>();
 
-    function hydrate(src: any) {
-      form.hydrate(valuesFromEditable(src));
-    }
+const route = useRoute();
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrate,
-    };
-  },
-  data() {
-    const maximumMissing = new Date();
-    maximumMissing.setHours(12);
-    maximumMissing.setMinutes(0);
-    maximumMissing.setSeconds(0);
+const form = useStickyForm<any>({
+  schema,
+  initialValues: valuesFromEditable(props.editableDay),
+});
+const {
+  hoursApproved, missinghours, missingHoursOvertime,
+  deductionsW, deductionsC, deductions, deductionsDes,
+  bonus, bonusDes, reimbursements, reimbursementsDes, comments
+} = form.fields;
+const formErrors = form.errors;
 
-    return {
-      maximumMissing,
-      isLoading: false,
-      localEditableDay: cloneEditable(this.editableDay),
-    };
-  },
-  watch: {
-    editableDay: {
-      handler(newVal) {
-        this.localEditableDay = cloneEditable(newVal);
-        this.hydrate(newVal);
-      },
-      deep: true,
-    },
-  },
-  methods: {
-    dateMonth,
-    dateHHmm,
-    hour,
-    saveHours() {
-      this.markInteracted([
-        'hoursApproved', 'deductionsW', 'deductionsC', 'deductions', 'deductionsDes',
-        'bonus', 'bonusDes', 'reimbursements', 'reimbursementsDes', 'comments'
-      ]);
-      this.handleSubmit((values) => {
-        this.sendValidation(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    sendValidation(values: any) {
-      this.isLoading = true;
-      const timeInZero = dayjs(this.localEditableDay.timeIn).hour(0).minute(0).second(0);
-      const model = {
-        hours: dayjs(values.hoursApproved).format('HH:mm:ss'),
-        timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
-        missingHours: dayjs(values.missinghours).format("HH:mm:ss"),
-        missingHoursOvertime: dayjs(values.missingHoursOvertime).format("HH:mm:ss"),
+function hydrate(src: any) {
+  form.hydrate(valuesFromEditable(src));
+}
+
+const maximumMissingDate = new Date();
+maximumMissingDate.setHours(12);
+maximumMissingDate.setMinutes(0);
+maximumMissingDate.setSeconds(0);
+const maximumMissing = ref(maximumMissingDate);
+
+const isLoading = ref(false);
+const localEditableDay = ref<any>(cloneEditable(props.editableDay));
+
+watch(() => props.editableDay, (newVal) => {
+  localEditableDay.value = cloneEditable(newVal);
+  hydrate(newVal);
+}, { deep: true });
+
+const maximumDailyHours = computed(() => {
+  const maxHours = maximumHoursPerDay;
+  if (maxHours) {
+    const maximum = new Date();
+    maximum.setHours(maxHours);
+    maximum.setMinutes(0);
+    maximum.setSeconds(0);
+    return maximum;
+  }
+  return maximumMissing.value;
+});
+
+function saveHours() {
+  form.markInteracted([
+    'hoursApproved', 'deductionsW', 'deductionsC', 'deductions', 'deductionsDes',
+    'bonus', 'bonusDes', 'reimbursements', 'reimbursementsDes', 'comments'
+  ]);
+  form.handleSubmit((values: any) => {
+    sendValidation(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function sendValidation(values: any) {
+  isLoading.value = true;
+  const timeInZero = dayjs(localEditableDay.value.timeIn).hour(0).minute(0).second(0);
+  const model = {
+    hours: dayjs(values.hoursApproved).format('HH:mm:ss'),
+    timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
+    missingHours: dayjs(values.missinghours).format("HH:mm:ss"),
+    missingHoursOvertime: dayjs(values.missingHoursOvertime).format("HH:mm:ss"),
+    deductionsOthers: values.deductions,
+    deductionsOthersDescription: values.deductionsDes,
+    bonusOrOthers: values.bonus || 0,
+    bonusOrOthersDescription: values.bonusDes || '',
+    comments: values.comments,
+    missingRateAgency: values.deductionsC,
+    missingRateWorker: values.deductionsW,
+    reimbursements: values.reimbursements || 0,
+    reimbursementsDescription: values.reimbursementsDes || '',
+  };
+  updateAgencyWorkerTimeSheet(route.params.id, props.worker.workerId, localEditableDay.value.id, model)
+    .then(() => {
+      isLoading.value = false;
+      const updated = {
+        ...localEditableDay.value,
+        hoursApprovedToDate: values.hoursApproved,
+        missinghoursToDate: values.missinghours,
+        missingHoursOvertimeToDate: values.missingHoursOvertime,
+        missingRateWorker: values.deductionsW,
+        missingRateAgency: values.deductionsC,
         deductionsOthers: values.deductions,
         deductionsOthersDescription: values.deductionsDes,
-        bonusOrOthers: values.bonus || 0,
-        bonusOrOthersDescription: values.bonusDes || '',
-        comments: values.comments,
-        missingRateAgency: values.deductionsC,
-        missingRateWorker: values.deductionsW,
-        reimbursements: values.reimbursements || 0,
-        reimbursementsDescription: values.reimbursementsDes || '',
+        bonusOrOthers: values.bonus,
+        bonusOrOthersDescription: values.bonusDes,
+        reimbursements: values.reimbursements,
+        reimbursementsDescription: values.reimbursementsDes,
+        comment: values.comments,
       };
-      updateAgencyWorkerTimeSheet(this.$route.params.id, this.worker.workerId, this.localEditableDay.id, model)
-        .then(() => {
-          this.isLoading = false;
-          const updated = {
-            ...this.localEditableDay,
-            hoursApprovedToDate: values.hoursApproved,
-            missinghoursToDate: values.missinghours,
-            missingHoursOvertimeToDate: values.missingHoursOvertime,
-            missingRateWorker: values.deductionsW,
-            missingRateAgency: values.deductionsC,
-            deductionsOthers: values.deductions,
-            deductionsOthersDescription: values.deductionsDes,
-            bonusOrOthers: values.bonus,
-            bonusOrOthersDescription: values.bonusDes,
-            reimbursements: values.reimbursements,
-            reimbursementsDescription: values.reimbursementsDes,
-            comment: values.comments,
-          };
-          this.$emit('update:editableDay', updated);
-          showAlertSuccess('Updated');
-          this.$emit("updateData");
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  computed: {
-    maximumDailyHours() {
-      const maxHours = maximumHoursPerDay;
-      if (maxHours) {
-        const maximum = new Date();
-        maximum.setHours(maxHours);
-        maximum.setMinutes(0);
-        maximum.setSeconds(0);
-        return maximum;
-      }
-      return (this as any).maximumMissing;
-    },
-    maximumDailyDecimal() {
-      return maximumHoursPerDay;
-    },
-  },
-};
+      emit('update:editableDay', updated);
+      showAlertSuccess('Updated');
+      emit('updateData');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

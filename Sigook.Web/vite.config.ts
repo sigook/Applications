@@ -23,14 +23,15 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (/[\\/]node_modules[\\/](vue|vue-router|vuex|@vue)[\\/]/.test(id)) return 'vue-vendor';
-            if (/[\\/]node_modules[\\/](buefy|bootstrap|@fortawesome)[\\/]/.test(id)) return 'ui-vendor';
+            if (/[\\/]node_modules[\\/](vue|vue-router|pinia|@vue)[\\/]/.test(id)) return 'vue-vendor';
+            if (/[\\/]node_modules[\\/](@ntohq[\\/]buefy-next|bootstrap|@fortawesome)[\\/]/.test(id)) return 'ui-vendor';
+            if (/[\\/]node_modules[\\/]@vueup[\\/]vue-quill[\\/]/.test(id)) return 'editor-vendor';
+            if (/[\\/]node_modules[\\/](cropperjs|vue-cropperjs|image-compressor\.js)[\\/]/.test(id)) return 'image-vendor';
+            if (/[\\/]node_modules[\\/]google-libphonenumber[\\/]/.test(id)) return 'phone-vendor';
+            if (/[\\/]node_modules[\\/]oidc-client-ts[\\/]/.test(id)) return 'auth-vendor';
+            if (/[\\/]node_modules[\\/](vee-validate|yup|@vee-validate)[\\/]/.test(id)) return 'validation-vendor';
             return 'vendor';
           }
-          if (/[\\/]src[\\/]pages[\\/]agency[\\/]/.test(id)) return 'agency-chunk';
-          if (/[\\/]src[\\/]pages[\\/]company[\\/]/.test(id)) return 'company-chunk';
-          if (/[\\/]src[\\/]pages[\\/]worker[\\/]/.test(id)) return 'worker-chunk';
-          if (/[\\/]src[\\/]pages[\\/]landing[\\/]/.test(id)) return 'landing-chunk';
         },
       },
     },

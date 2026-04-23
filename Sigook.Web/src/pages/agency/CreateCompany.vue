@@ -8,11 +8,11 @@
       <div class="container-flex">
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <div class="container-image margin-10-auto">
-            <upload-image @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
-              @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()"></upload-image>
+            <UploadImage @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
+              @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
           </div>
         </div>
-        <div v-if="isPayrollManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <b-field>
             <b-checkbox v-model="company.requiresPermissionToSeeOrders">
               Requires permission to see orders?
@@ -20,23 +20,26 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="formErrors.fullName ? 'is-danger' : ''" :label="'Full name'"
+          <b-field :type="formErrors.fullName ? 'is-danger' : ''"
             :message="formErrors.fullName || ''">
+            <template #label>Full name <span class="has-text-danger">*</span></template>
             <b-input type="text" v-model="fullName" name="full name" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="formErrors.businessName ? 'is-danger' : ''" :label="'Business Name'"
+          <b-field :type="formErrors.businessName ? 'is-danger' : ''"
             :message="formErrors.businessName || ''">
+            <template #label>Business Name <span class="has-text-danger">*</span></template>
             <b-input type="text" v-model="businessName" name="business name" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="formErrors.industry ? 'is-danger' : ''" :label="'Type of industry'"
+          <b-field :type="formErrors.industry ? 'is-danger' : ''"
             :message="formErrors.industry || ''">
+            <template #label>Type of industry <span class="has-text-danger">*</span></template>
             <b-autocomplete v-model="industry" :data="filteredIndustries" open-on-focus field="value"
               name="industry" placeholder="Industry" selectable-footer
-              @select="selectIndustry" @select-footer="addIndustry">
+              @select="selectIndustry" @select-footer="onAddIndustry">
               <template #footer>
                 <a><span> Add new... </span></a>
               </template>
@@ -45,16 +48,18 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="formErrors.companyStatus ? 'is-danger' : ''" label="Status"
+          <b-field :type="formErrors.companyStatus ? 'is-danger' : ''"
             :message="formErrors.companyStatus || ''">
+            <template #label>Status <span class="has-text-danger">*</span></template>
             <b-select v-model="companyStatus" placeholder="Select option" name="state" expanded>
               <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
             </b-select>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''" label="Sales Representative"
+          <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
             :message="formErrors.salesRepresentative || ''">
+            <template #label>Sales Representative <span class="has-text-danger">*</span></template>
             <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
               v-model="salesRepresentative" open-on-focus name="salesRepresentative"
               :custom-formatter="(option) => `${option.name} - ${option.email}`"
@@ -78,11 +83,11 @@
           </b-field>
         </div>
       </div>
-      <h3 class="fz1 col-padding">{{ "Contact Information" }}</h3>
+      <h3 class="fz1 col-padding">Contact Information</h3>
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <phone-input :required="false" :defaultValue="company.phone" model="Phone"
-            @formattedPhone="(phone) => (company.phone = phone)"></phone-input>
+          <PhoneInput :required="false" :defaultValue="company.phone" label="Phone"
+            @formattedPhone="(phone) => (company.phone = phone)"></PhoneInput>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext"
@@ -91,8 +96,8 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <phone-input :required="false" :defaultValue="company.fax" model="Fax"
-            @formattedPhone="(phone) => (company.fax = phone)"></phone-input>
+          <PhoneInput :required="false" :defaultValue="company.fax" label="Fax"
+            @formattedPhone="(phone) => (company.fax = phone)"></PhoneInput>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext"
@@ -101,14 +106,16 @@
           </b-field>
         </div>
         <div v-if="!isUpdate" class="col-sm-12 col-md-6 col-padding">
-          <b-field :type="formErrors.email ? 'is-danger' : ''" :label="'Email'"
+          <b-field :type="formErrors.email ? 'is-danger' : ''"
             :message="formErrors.email || ''">
+            <template #label>Email <span class="has-text-danger">*</span></template>
             <b-input type="email" v-model="email" name="email" />
           </b-field>
         </div>
         <div v-if="displayPassword" class="col-sm-12 col-md-6 col-padding">
-          <b-field :type="formErrors.password ? 'is-danger' : ''" :label="'Password'"
+          <b-field :type="formErrors.password ? 'is-danger' : ''"
             :message="formErrors.password || ''">
+            <template #label>Password <span class="has-text-danger">*</span></template>
             <b-input type="password" v-model="password" name="password" />
           </b-field>
         </div>
@@ -122,24 +129,32 @@
         </div>
         <div class="col-12 mt-5">
           <b-button v-if="isUpdate" type="is-primary" native-type="submit">Update</b-button>
-          <b-button v-else type="is-primary" native-type="submit">{{ "Create" }}</b-button>
+          <b-button v-else type="is-primary" native-type="submit">Create</b-button>
         </div>
       </div>
     </form>
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, ref, computed, watch } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import * as yup from 'yup';
+import UploadImage from '@/components/PreviewImage.vue';
+import PhoneInput from '@/components/PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { confirmationGuard } from '@/utils/confirmationGuard';
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { usePubSub } from '@/composables/usePubSub';
-import { getIndustries, getCompanyStatus, addIndustry } from "@/api/catalogApi";
-import { getAgencyPersonnel } from "@/api/agencyApi";
-import { createAgencyCompany, updateAgencyCompany } from "@/api/agencyCompanyApi";
+import { getDialog } from '@/utils/buefyProgrammatic';
+import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/api/catalogApi';
+import { getAgencyPersonnel } from '@/api/agencyApi';
+import { createAgencyCompany, updateAgencyCompany } from '@/api/agencyCompanyApi';
+
+const route = useRoute();
+const router = useRouter();
+const billingAdmin = useBillingAdmin();
+const pubSub = usePubSub();
 
 const numericExt = yup
   .string()
@@ -149,252 +164,217 @@ const numericExt = yup
 
 const urlRegex = /^((https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?)$/i;
 
-export default {
-  setup() {
-    const isUpdate = ref(false);
-    const companyStatusValue = ref<number | null>(null);
+const isUpdate = ref(false);
+const companyStatusValue = ref<number | null>(null);
+const displayPassword = computed(() => !isUpdate.value && companyStatusValue.value === 5);
 
-    const displayPassword = computed(() => !isUpdate.value && companyStatusValue.value === 5);
+const validationSchema = computed(() => {
+  const shape: Record<string, any> = {
+    fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
+    businessName: yup.string().required('Business name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
+    industry: yup.string().required('Industry is required'),
+    companyStatus: yup.mixed().required('Status is required'),
+    salesRepresentative: yup.string().required('Sales representative is required'),
+    about: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(2, 'Min 2 characters').max(5000, 'Max 5000 characters'),
+    phoneExt: numericExt,
+    faxExt: numericExt,
+    website: yup
+      .string()
+      .nullable()
+      .transform((v) => (v === '' ? null : v))
+      .max(50, 'Max 50 characters')
+      .matches(urlRegex, { message: 'Invalid URL', excludeEmptyString: true }),
+  };
+  if (!isUpdate.value) {
+    shape.email = yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters');
+  }
+  if (displayPassword.value) {
+    shape.password = yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters');
+  }
+  return yup.object(shape);
+});
 
-    const validationSchema = computed(() => {
-      const shape: Record<string, any> = {
-        fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
-        businessName: yup.string().required('Business name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
-        industry: yup.string().required('Industry is required'),
-        companyStatus: yup.mixed().required('Status is required'),
-        salesRepresentative: yup.string().required('Sales representative is required'),
-        about: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(2, 'Min 2 characters').max(5000, 'Max 5000 characters'),
-        phoneExt: numericExt,
-        faxExt: numericExt,
-        website: yup
-          .string()
-          .nullable()
-          .transform((v) => (v === '' ? null : v))
-          .max(50, 'Max 50 characters')
-          .matches(urlRegex, { message: 'Invalid URL', excludeEmptyString: true }),
-      };
-      if (!isUpdate.value) {
-        shape.email = yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters');
-      }
-      if (displayPassword.value) {
-        shape.password = yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters');
-      }
-      return yup.object(shape);
-    });
-
-    const form = useStickyForm({
-      schema: validationSchema,
-      initialValues: {
-        fullName: '',
-        businessName: '',
-        industry: '',
-        companyStatus: null as number | null,
-        salesRepresentative: '',
-        about: '',
-        phoneExt: '',
-        faxExt: '',
-        email: '',
-        password: '',
-        website: '',
-      },
-    });
-
-    watch(form.fields.companyStatus, (v) => {
-      companyStatusValue.value = (v as number | null) ?? null;
-    });
-
-    return {
-      ...useBillingAdmin(),
-      ...usePubSub(),
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      setFieldValue: form.setFieldValue,
-      setFieldError: form.setFieldError,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      isUpdate,
-      displayPassword,
-    };
+const form = useStickyForm({
+  schema: validationSchema,
+  initialValues: {
+    fullName: '',
+    businessName: '',
+    industry: '',
+    companyStatus: null as number | null,
+    salesRepresentative: '',
+    about: '',
+    phoneExt: '',
+    faxExt: '',
+    email: '',
+    password: '',
+    website: '',
   },
-  data() {
-    return {
-      isLoading: true,
-      statuses: [] as any[],
-      industryOptions: [] as any[],
-      industrySelected: null as any,
-      salesRepresentatives: [] as any[],
-      salesRepresentativeSelected: null as any,
-      company: {
-        companyProfileId: null as any,
-        logo: {} as any,
-        industry: {
-          industry: null as any,
-          otherIndustry: null as any
-        },
-        requiresPermissionToSeeOrders: false,
-      } as any,
-      submitted: false,
-      unsavedChanges: false,
-    };
-  },
-  beforeRouteLeave: confirmationGuard,
-  components: {
-    UploadImage: defineAsyncComponent(() => import("@/components/PreviewImage.vue")),
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
-  },
-  async created() {
-    const company = this.$route.meta.company as any;
-    if (company) {
-      this.company = {
-        ...company,
-        companyProfileId: company.id,
-      };
-      this.statuses = this.$route.meta.companyStatuses as any[];
-      this.industryOptions = this.$route.meta.industryList as any[];
-      this.salesRepresentatives = this.$route.meta.agencyPersonnel as any[];
-      this.isUpdate = true;
+});
+const {
+  fullName, businessName, industry, companyStatus, salesRepresentative,
+  about, phoneExt, faxExt, email, password, website,
+} = form.fields;
+const formErrors = form.errors;
 
-      if (company.industry?.industry) {
-        this.industrySelected = company.industry.industry;
-      }
-      const record = this.salesRepresentatives.find((sr) => sr.id === company.salesRepresentativeId);
-      if (record) {
-        this.salesRepresentativeSelected = record;
-      }
+watch(form.fields.companyStatus, (v) => {
+  companyStatusValue.value = (v as number | null) ?? null;
+});
 
-      this.hydrateForm({
-        fullName: company.fullName || '',
-        businessName: company.businessName || '',
-        industry: company.industry?.industry?.value || '',
-        companyStatus: company.companyStatus ?? null,
-        salesRepresentative: record ? `${record.name} - ${record.email}` : '',
-        about: company.about || '',
-        phoneExt: company.phoneExt != null ? String(company.phoneExt) : '',
-        faxExt: company.faxExt != null ? String(company.faxExt) : '',
-        website: company.website || '',
-      });
-    } else {
-      this.industryOptions = await getIndustries();
-      this.statuses = await getCompanyStatus();
-      this.salesRepresentatives = await getAgencyPersonnel();
+const isLoading = ref(true);
+const statuses = ref<any[]>([]);
+const industryOptions = ref<any[]>([]);
+const industrySelected = ref<any>(null);
+const salesRepresentatives = ref<any[]>([]);
+const salesRepresentativeSelected = ref<any>(null);
+const company = ref<any>({
+  companyProfileId: null,
+  logo: {},
+  industry: { industry: null, otherIndustry: null },
+  requiresPermissionToSeeOrders: false,
+});
+
+const filteredIndustries = computed(() => {
+  const search = (industry.value || '').toLowerCase();
+  return industryOptions.value.filter((option) => (option.value || '').toLowerCase().includes(search));
+});
+
+const filteredSalesRepresentative = computed(() => {
+  const search = (salesRepresentative.value || '').toLowerCase();
+  return salesRepresentatives.value.filter((sr) => `${sr.name} - ${sr.email}`.toLowerCase().includes(search));
+});
+
+async function init() {
+  const meta = route.meta as any;
+  const existing = meta.company;
+  if (existing) {
+    company.value = { ...existing, companyProfileId: existing.id };
+    statuses.value = meta.companyStatuses as any[];
+    industryOptions.value = meta.industryList as any[];
+    salesRepresentatives.value = meta.agencyPersonnel as any[];
+    isUpdate.value = true;
+
+    if (existing.industry?.industry) {
+      industrySelected.value = existing.industry.industry;
     }
-    this.isLoading = false;
-  },
-  methods: {
-    validateAutocompleteSelections() {
-      let valid = true;
-      if (this.industry && (!this.industrySelected || (this.industrySelected.value || '').toLowerCase() !== this.industry.toLowerCase())) {
-        this.setFieldError('industry', 'Please select an industry from the list');
-        valid = false;
-      }
-      if (this.salesRepresentative && (!this.salesRepresentativeSelected ||
-        `${this.salesRepresentativeSelected.name} - ${this.salesRepresentativeSelected.email}`.toLowerCase() !== this.salesRepresentative.toLowerCase())) {
-        this.setFieldError('salesRepresentative', 'Please select a sales representative from the list');
-        valid = false;
-      }
-      return valid;
+    const record = salesRepresentatives.value.find((sr) => sr.id === existing.salesRepresentativeId);
+    if (record) salesRepresentativeSelected.value = record;
+
+    form.hydrate({
+      fullName: existing.fullName || '',
+      businessName: existing.businessName || '',
+      industry: existing.industry?.industry?.value || '',
+      companyStatus: existing.companyStatus ?? null,
+      salesRepresentative: record ? `${record.name} - ${record.email}` : '',
+      about: existing.about || '',
+      phoneExt: existing.phoneExt != null ? String(existing.phoneExt) : '',
+      faxExt: existing.faxExt != null ? String(existing.faxExt) : '',
+      website: existing.website || '',
+    });
+  } else {
+    industryOptions.value = await getIndustries();
+    statuses.value = await getCompanyStatus();
+    salesRepresentatives.value = await getAgencyPersonnel();
+  }
+  isLoading.value = false;
+}
+init();
+
+function validateAutocompleteSelections(): boolean {
+  let valid = true;
+  if (industry.value && (!industrySelected.value || (industrySelected.value.value || '').toLowerCase() !== industry.value.toLowerCase())) {
+    form.setFieldError('industry', 'Please select an industry from the list');
+    valid = false;
+  }
+  if (salesRepresentative.value && (!salesRepresentativeSelected.value ||
+    `${salesRepresentativeSelected.value.name} - ${salesRepresentativeSelected.value.email}`.toLowerCase() !== salesRepresentative.value.toLowerCase())) {
+    form.setFieldError('salesRepresentative', 'Please select a sales representative from the list');
+    valid = false;
+  }
+  return valid;
+}
+
+function validateForm() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    if (!validateAutocompleteSelections()) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
+    }
+    const payload: any = {
+      ...company.value,
+      fullName: values.fullName,
+      businessName: values.businessName,
+      companyStatus: values.companyStatus,
+      about: values.about,
+      phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,
+      faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
+      website: values.website,
+      salesRepresentativeId: salesRepresentativeSelected.value?.id || null,
+      industry: { ...company.value.industry, industry: industrySelected.value },
+    };
+    if (!isUpdate.value) payload.email = values.email;
+    if (displayPassword.value) payload.password = values.password;
+
+    if (isUpdate.value) submitUpdateCompany(payload);
+    else submitCreateCompany(payload);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function submitCreateCompany(payload: any) {
+  isLoading.value = true;
+  createAgencyCompany(payload)
+    .then((response: any) => {
+      isLoading.value = false;
+      showAlertSuccess('Company created');
+      router.push('/agency-companies/company/' + response.id);
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function submitUpdateCompany(payload: any) {
+  isLoading.value = true;
+  updateAgencyCompany(company.value.companyProfileId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Company updated');
+      router.push('/agency-companies/company/' + company.value.companyProfileId);
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function onSalesRepresentativeSelected(option: any) {
+  salesRepresentativeSelected.value = option || null;
+}
+
+function selectIndustry(option: any) {
+  industrySelected.value = option || null;
+}
+
+function onAddIndustry() {
+  getDialog().prompt({
+    message: 'Industry',
+    inputAttrs: {
+      placeholder: 'Industry',
+      maxlength: 100,
+      value: industry.value,
     },
-    validateForm() {
-      this.submitted = true;
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        if (!this.validateAutocompleteSelections()) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        const payload = {
-          ...this.company,
-          fullName: values.fullName,
-          businessName: values.businessName,
-          companyStatus: values.companyStatus,
-          about: values.about,
-          phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,
-          faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
-          website: values.website,
-          salesRepresentativeId: this.salesRepresentativeSelected?.id || null,
-          industry: {
-            ...this.company.industry,
-            industry: this.industrySelected,
-          },
-        };
-        if (!this.isUpdate) {
-          payload.email = values.email;
-        }
-        if (this.displayPassword) {
-          payload.password = values.password;
-        }
-        if (this.isUpdate) {
-          this.submitUpdateCompany(payload);
-        } else {
-          this.submitCreateCompany(payload);
-        }
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
+    closeOnConfirm: false,
+    confirmText: 'Add',
+    onConfirm: async (value: string, dialog: any) => {
+      const newIndustry = await addIndustryApi({ value });
+      industryOptions.value.push(newIndustry);
+      industrySelected.value = newIndustry;
+      form.setFieldValue('industry', newIndustry.value);
+      dialog.close();
     },
-    submitCreateCompany(payload: any) {
-      this.isLoading = true;
-      createAgencyCompany(payload)
-        .then((response: any) => {
-          this.isLoading = false;
-          showAlertSuccess('Company created');
-          this.$router.push('/agency-companies/company/' + response.id);
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    submitUpdateCompany(payload: any) {
-      this.isLoading = true;
-      updateAgencyCompany(this.company.companyProfileId, payload)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Company updated');
-          this.$router.push('/agency-companies/company/' + this.company.companyProfileId);
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    onSalesRepresentativeSelected(option: any) {
-      this.salesRepresentativeSelected = option || null;
-    },
-    selectIndustry(option: any) {
-      this.industrySelected = option || null;
-    },
-    addIndustry() {
-      (this as any).$buefy.dialog.prompt({
-        message: `Industry`,
-        inputAttrs: {
-          placeholder: 'Industry',
-          maxlength: 100,
-          value: this.industry,
-        },
-        closeOnConfirm: false,
-        confirmText: 'Add',
-        onConfirm: async (value: string, dialog: any) => {
-          const payload = { value };
-          const newIndustry = await addIndustry(payload);
-          this.industryOptions.push(newIndustry);
-          this.industrySelected = newIndustry;
-          this.setFieldValue('industry', newIndustry.value);
-          dialog.close();
-        },
-      });
-    },
-  },
-  computed: {
-    filteredIndustries() {
-      const search = (this.industry || '').toLowerCase();
-      return this.industryOptions.filter((option) => (option.value || '').toLowerCase().includes(search));
-    },
-    filteredSalesRepresentative() {
-      const search = (this.salesRepresentative || '').toLowerCase();
-      return this.salesRepresentatives.filter((sr) => `${sr.name} - ${sr.email}`.toLowerCase().includes(search));
-    },
-  },
-};
+  });
+}
 </script>

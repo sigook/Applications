@@ -69,8 +69,8 @@
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container border-radius">
               <button @click="modalRejectWorker = false" class="cross-icon">{{ 'Close' }}</button>
-              <edit-textarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
-                class="sm-edit-textarea" @updateContent="(data) => onRejectWorker(data)" />
+              <EditTextarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
+                class="sm-edit-textarea" @updateContent="(data: string) => onRejectWorker(data)" />
             </div>
           </div>
         </div>
@@ -80,116 +80,116 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRoute } from 'vue-router';
+import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import { showAlertError } from "@/utils/toast";
 import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from '@/constants/enums';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      totalItems: 0,
-      rows: [],
-      statuses: [
-        { id: 2, value: 'Rejected' },
-        { id: 3, value: 'Booked' },
-      ],
-      statusesSelected: [],
-      startWorkingDatesSelected: [],
-      modalRejectWorker: false,
-      currentWorker: null,
-      serverParams: {
-        sortBy: 1,
-        requestId: this.$route.params.id,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  components: {
-    EditTextarea: defineAsyncComponent(() => import("../../components/agency_request/EditTextarea.vue"))
-  },
-  methods: {
-    dateMonth,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'name':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'status':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'startWorking':
-          this.serverParams.sortBy = 3;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getWorkers();
-      }
-    },
-    onStatusSelected() {
-      this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getWorkers();
-    },
-    onStartWorkingSelected() {
-      this.serverParams.startWorkingFrom = this.startWorkingDatesSelected[0];
-      this.serverParams.startWorkingTo = this.startWorkingDatesSelected[1];
-      this.getWorkers();
-    },
-    onStartWorkingCleared() {
-      this.startWorkingDatesSelected = [];
-      this.onStartWorkingSelected();
-    },
-    getWorkers() {
-      this.isLoading = true;
-      getRequestWorkers(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map(i => ({
-            ...i,
-            status: WorkerRequestStatusLabels[i.workerRequestStatus],
-            actions: null
-          }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        })
-    },
-    confirmDelete(worker) {
-      this.currentWorker = worker;
-      this.modalRejectWorker = true;
-    },
-    onRejectWorker(comments) {
-      this.modalRejectWorker = false;
-      this.isLoading = true;
-      rejectCompanyRequestWorker(this.serverParams.requestId, this.currentWorker.workerId, { comments })
-        .then(() => {
-          this.isLoading = false;
-          this.getWorkers();
-        }).catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        })
-    }
-  },
-  created() {
-    this.getWorkers();
+const route = useRoute();
+
+const isLoading = ref(false);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const statuses = ref([
+  { id: 2, value: 'Rejected' },
+  { id: 3, value: 'Booked' },
+]);
+const statusesSelected = ref<any[]>([]);
+const startWorkingDatesSelected = ref<any[]>([]);
+const modalRejectWorker = ref(false);
+const currentWorker = ref<any>(null);
+const serverParams = reactive<any>({
+  sortBy: 1,
+  requestId: route.params.id,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+function onPageChange(params: number) {
+  serverParams.pageIndex = params;
+  getWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'name':
+      serverParams.sortBy = 1;
+      break;
+    case 'status':
+      serverParams.sortBy = 2;
+      break;
+    case 'startWorking':
+      serverParams.sortBy = 3;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  getWorkers();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getWorkers();
   }
 }
+
+function onStatusSelected() {
+  serverParams.statuses = statusesSelected.value.map((ss: any) => ss.id);
+  getWorkers();
+}
+
+function onStartWorkingSelected() {
+  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0];
+  serverParams.startWorkingTo = startWorkingDatesSelected.value[1];
+  getWorkers();
+}
+
+function onStartWorkingCleared() {
+  startWorkingDatesSelected.value = [];
+  onStartWorkingSelected();
+}
+
+function getWorkers() {
+  isLoading.value = true;
+  getRequestWorkers(serverParams)
+    .then((response: any) => {
+      rows.value = response.items.map((i: any) => ({
+        ...i,
+        status: WorkerRequestStatusLabels[i.workerRequestStatus],
+        actions: null,
+      }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function confirmDelete(worker: any) {
+  currentWorker.value = worker;
+  modalRejectWorker.value = true;
+}
+
+function onRejectWorker(comments: string) {
+  modalRejectWorker.value = false;
+  isLoading.value = true;
+  rejectCompanyRequestWorker(serverParams.requestId, currentWorker.value.workerId, { comments })
+    .then(() => {
+      isLoading.value = false;
+      getWorkers();
+    }).catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+getWorkers();
 </script>

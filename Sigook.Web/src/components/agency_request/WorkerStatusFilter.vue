@@ -8,30 +8,29 @@
     </label>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { WorkerRequestStatus, WorkerRequestStatusLabels } from "@/constants/enums";
 
-export default {
-  data() {
-    return {
-      statusList: [
-        { value: WorkerRequestStatus.Booked, checked: false, display: WorkerRequestStatusLabels[WorkerRequestStatus.Booked] },
-        { value: WorkerRequestStatus.Rejected, checked: false, display: WorkerRequestStatusLabels[WorkerRequestStatus.Rejected] }
-      ],
-      statusFilter: []
-    }
-  },
-  methods: {
-    updateStatusFilter() {
-      this.statusFilter = this.statusList.filter(item => item.checked).map(item => item.value);
-      this.$emit('updateFilter', this.statusFilter)
-    },
-    clear() {
-      this.statusFilter = [];
-      for (let i = 0; i < this.statusList.length; i++) {
-        this.statusList[i].checked = false;
-      }
-    }
+const emit = defineEmits<{ (e: 'updateFilter', value: any[]): void }>();
+
+const statusList = ref([
+  { value: WorkerRequestStatus.Booked, checked: false, display: WorkerRequestStatusLabels[WorkerRequestStatus.Booked] },
+  { value: WorkerRequestStatus.Rejected, checked: false, display: WorkerRequestStatusLabels[WorkerRequestStatus.Rejected] }
+]);
+const statusFilter = ref<any[]>([]);
+
+function updateStatusFilter() {
+  statusFilter.value = statusList.value.filter(item => item.checked).map(item => item.value);
+  emit('updateFilter', statusFilter.value);
+}
+
+function clear() {
+  statusFilter.value = [];
+  for (let i = 0; i < statusList.value.length; i++) {
+    statusList.value[i].checked = false;
   }
 }
+
+defineExpose({ clear });
 </script>

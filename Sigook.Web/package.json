@@ -8,7 +8,8 @@
     "staging": "vite build --mode staging",
     "production": "vite build --mode production",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx,vue,js}\""
   },
   "dependencies": {
     "@ntohq/buefy-next": "^0.2.0",
@@ -17,7 +18,6 @@
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.10.0",
     "bootstrap": "^4.3.1",
-    "cleave.js": "^1.6.0",
     "core-js": "^3.49.0",
     "dayjs": "^1.11.13",
     "google-libphonenumber": "^3.2.38",
@@ -40,16 +40,16 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
-    "@typescript-eslint/parser": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
     "autoprefixer": "^10.5.0",
     "esbuild": "^0.28.0",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.32.0",
     "postcss": "^8.5.9",
-    "typescript": "~4.9.5",
+    "typescript": "^6.0.3",
     "vite": "^8.0.8",
-    "vue-eslint-parser": "^9.4.3"
+    "vue-eslint-parser": "^10.4.0"
   },
   "eslintConfig": {
     "root": true,
@@ -57,7 +57,7 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended",
       "plugin:@typescript-eslint/recommended"
     ],
@@ -69,7 +69,7 @@
         "warn",
         {
           "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
+          "varsIgnorePattern": "^(_|[A-Z])"
         }
       ],
       "@typescript-eslint/no-explicit-any": "off",
@@ -85,8 +85,9 @@
       "vue/multi-word-component-names": "off",
       "vue/no-reserved-component-names": "off",
       "vue/no-v-model-argument": "off",
+      "vue/script-setup-uses-vars": "error",
       "no-irregular-whitespace": "warn",
-      "no-undef": "warn"
+      "no-undef": "off"
     },
     "parser": "vue-eslint-parser",
     "parserOptions": {

@@ -43,8 +43,8 @@
           </b-table-column>
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
@@ -108,97 +108,96 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRouter } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
 import { workerFeatures as features } from '@/constants/workerFeatures';
-import { phoneMask as mask } from '@/constants/phoneMask';
+import { formatPhone } from '@/utils/phoneFormat';
 import { dateMonth } from "@/utils/filters";
 import { getAgencyWorkers } from "@/api/agencyWorkerApi";
 
-export default {
-  props: ['company'],
-  data() {
-    const companyProfileId = this.company.id;
-    return {
-      mask,
-      features,
-      isLoading: false,
-      totalItems: 0,
-      createdAtDatesSelected: [],
-      featuresSelected: [],
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30,
-        companyProfileId: companyProfileId
-      }
-    }
-  },
-  methods: {
-    dateMonth,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getAgencyCompanyWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'fullName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'numberId':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'requestsNumberId':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'skills':
-          this.serverParams.sortBy = 4;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
-    },
-    onCellClick(row) {
-      this.$router.push(`/agency-workers/worker/${row.id}`);
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getAgencyCompanyWorkers();
-      }
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getAgencyCompanyWorkers();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onFeatureChange() {
-      this.serverParams.features = this.featuresSelected.map(fs => fs.id);
-      this.getAgencyCompanyWorkers();
-    },
-    getAgencyCompanyWorkers() {
-      this.isLoading = true;
-      getAgencyWorkers(this.serverParams)
-        .then(response => {
-          this.rows = response.items;
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        }).catch((error) => {
-          showAlertError(error);
-          this.isLoading = false;
-        })
-    }
-  },
-  created() {
-    this.getAgencyCompanyWorkers();
+const props = defineProps<{ company: any }>();
+const router = useRouter();
+
+const isLoading = ref(false);
+const totalItems = ref(0);
+const createdAtDatesSelected = ref<any[]>([]);
+const featuresSelected = ref<any[]>([]);
+const rows = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+  companyProfileId: props.company.id,
+});
+
+function onPageChange(params: any) {
+  serverParams.pageIndex = params;
+  getAgencyCompanyWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'fullName':
+      serverParams.sortBy = 0;
+      break;
+    case 'numberId':
+      serverParams.sortBy = 1;
+      break;
+    case 'requestsNumberId':
+      serverParams.sortBy = 2;
+      break;
+    case 'createdAt':
+      serverParams.sortBy = 3;
+      break;
+    case 'skills':
+      serverParams.sortBy = 4;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  getAgencyCompanyWorkers();
+}
+
+function onCellClick(row: any) {
+  router.push(`/agency-workers/worker/${row.id}`);
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getAgencyCompanyWorkers();
   }
 }
+
+function onCreatedAtSelected() {
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  getAgencyCompanyWorkers();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onFeatureChange() {
+  serverParams.features = featuresSelected.value.map(fs => fs.id);
+  getAgencyCompanyWorkers();
+}
+
+function getAgencyCompanyWorkers() {
+  isLoading.value = true;
+  getAgencyWorkers(serverParams)
+    .then(response => {
+      rows.value = response.items;
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    }).catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+getAgencyCompanyWorkers();
 </script>

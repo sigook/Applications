@@ -1,4 +1,6 @@
-import { Route } from 'vue-router';
+import type { RouteLocationNormalized } from 'vue-router';
+
+type Route = RouteLocationNormalized;
 import { getCompanyStatus, getIndustries } from "@/api/catalogApi";
 import { getAgencyPersonnel } from "@/api/agencyApi";
 import {

@@ -14,8 +14,6 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-export default {
-  props: ['jobLocation']
-}
+<script setup lang="ts">
+defineProps<{ jobLocation?: any }>();
 </script>

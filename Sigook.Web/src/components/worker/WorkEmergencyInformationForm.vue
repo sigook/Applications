@@ -41,7 +41,7 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <phone-input ref="emergencyPhoneComponent" :required="true" model="Contact Emergency Phone"
+        <PhoneInput ref="emergencyPhoneComponent" :required="true" model="Contact Emergency Phone"
           :defaultValue="worker.contactEmergencyPhone"
           @formattedPhone="(phone) => worker.contactEmergencyPhone = phone" />
       </div>
@@ -53,12 +53,16 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
-import { defineAsyncComponent } from 'vue';
+import PhoneInput from '../PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { createWorkerEmergencyInformation } from '@/api/workerApi';
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   healthProblem: yup.string().nullable().transform(v => v === '' ? null : v)
@@ -71,86 +75,74 @@ const schema = yup.object({
     .min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
 });
 
-export default {
-  props: ['data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        healthProblem: '',
-        contactEmergencyName: '',
-        contactEmergencyLastName: '',
-      },
-    });
+interface EmergencyForm {
+  healthProblem: string;
+  contactEmergencyName: string;
+  contactEmergencyLastName: string;
+}
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
+const form = useStickyForm<EmergencyForm>({
+  schema,
+  initialValues: {
+    healthProblem: '',
+    contactEmergencyName: '',
+    contactEmergencyLastName: '',
   },
-  data() {
-    return {
-      worker: {} as any,
-      isLoading: false,
-    };
-  },
-  methods: {
-    async validateAll() {
-      this.markInteracted();
-      const phoneComponent = this.$refs.emergencyPhoneComponent as any;
-      let phoneValid = true;
-      if (phoneComponent && typeof phoneComponent.validatePhone === 'function') {
-        phoneValid = await phoneComponent.validatePhone();
-      }
-      if (this.worker.haveAnyHealthProblem && !(this as any).healthProblem) {
-        showAlertError('Please make sure all required fields are filled out correctly');
-        return;
-      }
-      this.handleSubmit((values: any) => {
-        if (!phoneValid) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        this.createWorkerEmergencyInformation(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    createWorkerEmergencyInformation(values: any) {
-      this.isLoading = true;
-      const payload = {
-        ...this.worker,
-        healthProblem: this.worker.haveAnyHealthProblem ? values.healthProblem : null,
-        contactEmergencyName: values.contactEmergencyName,
-        contactEmergencyLastName: values.contactEmergencyLastName,
-      };
-      createWorkerEmergencyInformation((this as any).data.id, payload)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  created() {
-    if ((this as any).data != null) {
-      this.worker = Object.assign({}, (this as any).data);
-      this.hydrateForm({
-        healthProblem: this.worker.healthProblem || '',
-        contactEmergencyName: this.worker.contactEmergencyName || '',
-        contactEmergencyLastName: this.worker.contactEmergencyLastName || '',
-      });
+});
+const { healthProblem, contactEmergencyName, contactEmergencyLastName } = form.fields;
+const formErrors = form.errors;
+
+const worker = ref<any>({});
+const isLoading = ref(false);
+const emergencyPhoneComponent = ref<any>(null);
+
+function saveEmergencyInformation(values: any) {
+  isLoading.value = true;
+  const payload = {
+    ...worker.value,
+    healthProblem: worker.value.haveAnyHealthProblem ? values.healthProblem : null,
+    contactEmergencyName: values.contactEmergencyName,
+    contactEmergencyLastName: values.contactEmergencyLastName,
+  };
+  createWorkerEmergencyInformation(props.data.id, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+async function validateAll() {
+  form.markInteracted();
+  const phoneComponent = emergencyPhoneComponent.value;
+  let phoneValid = true;
+  if (phoneComponent && typeof phoneComponent.validatePhone === 'function') {
+    phoneValid = await phoneComponent.validatePhone();
+  }
+  if (worker.value.haveAnyHealthProblem && !healthProblem.value) {
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
+  }
+  form.handleSubmit((values: any) => {
+    if (!phoneValid) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
     }
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("../PhoneInput.vue")),
-  },
-};
+    saveEmergencyInformation(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data != null) {
+  worker.value = Object.assign({}, props.data);
+  form.hydrate({
+    healthProblem: worker.value.healthProblem || '',
+    contactEmergencyName: worker.value.contactEmergencyName || '',
+    contactEmergencyLastName: worker.value.contactEmergencyLastName || '',
+  });
+}
 </script>

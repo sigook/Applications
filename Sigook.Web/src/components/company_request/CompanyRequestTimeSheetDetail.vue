@@ -50,15 +50,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { dateMonth, dateHHmm, hour } from '@/utils/filters';
 
-export default {
-  props: ['editableDay'],
-  methods: {
-    dateMonth,
-    dateHHmm,
-    hour,
-  },
-}
+defineProps<{ editableDay: any }>();
 </script>

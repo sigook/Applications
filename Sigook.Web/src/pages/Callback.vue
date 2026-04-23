@@ -2,33 +2,24 @@
   <b-loading v-model="isLoading"></b-loading>
 </template>
 
-<script lang="ts">
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';
 import mgr from '@/security/securityService';
-import menu from "@/security/menu";
+import menu from '@/security/menu';
 
-export default {
-  data() {
-    return {
-      isLoading: true
-    }
-  },
-  computed: {
-    ...mapStores(useSecurityStore),
-  },
-  async created() {
-    if (!this.securityStore.user) {
-      await mgr.signinRedirectCallback();
-      await this.securityStore.getUser();
-      const roles = await this.securityStore.userRoles;
-      let homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-      this.$router.push(homePageUrl);
-    } else {
-      const roles = await this.securityStore.userRoles;
-      let homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-      this.$router.push(homePageUrl);
-    }
+const router = useRouter();
+const securityStore = useSecurityStore();
+const isLoading = ref(true);
+
+(async () => {
+  if (!securityStore.user) {
+    await mgr.signinRedirectCallback();
+    await securityStore.getUser();
   }
-}
+  const roles = await securityStore.userRoles;
+  const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
+  router.push(homePageUrl);
+})();
 </script>

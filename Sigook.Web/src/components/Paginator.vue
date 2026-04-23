@@ -20,28 +20,28 @@
     </div>
 </template>
 
-<script lang="ts">
-    export default {
-        props: ['sizePage', 'indexPage', 'totalPages'],
-        methods: {
-            changePage(newPage){
-                this.$emit("changePage", newPage);
-                /*Scroll Top*/
-                let containers = document.getElementsByClassName("scroll-top-on-pagination");
-                for (let i = 0; i < containers.length; i++){
-                    containers[i].scrollTop = 0
-                }
-                /*Body Top*/
-                let bodyTop = document.getElementsByClassName("body-top-on-pagination");
-                if (bodyTop.length > 0){
-                    window.scrollTo(0, 0)
-                }
-            }
-        },
-        computed: {
-            currentPage() {
-                return this.indexPage;
-            }
-        }
-    }
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{
+  sizePage?: number;
+  indexPage?: number;
+  totalPages?: number;
+}>();
+
+const emit = defineEmits<{ (e: 'changePage', page: number): void }>();
+
+const currentPage = computed(() => props.indexPage);
+
+function changePage(newPage: number) {
+  emit('changePage', newPage);
+  const containers = document.getElementsByClassName("scroll-top-on-pagination");
+  for (let i = 0; i < containers.length; i++) {
+    (containers[i] as HTMLElement).scrollTop = 0;
+  }
+  const bodyTop = document.getElementsByClassName("body-top-on-pagination");
+  if (bodyTop.length > 0) {
+    window.scrollTo(0, 0);
+  }
+}
 </script>

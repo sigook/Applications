@@ -6,10 +6,10 @@
               @click="modal = true"></b-button>
         </div>
         <div class="worker-documents">
-            <div v-if="worker.resume">
+            <div v-if="props.worker.resume">
                 <span>{{ 'File' }}</span>
                 <span>
-                    <a :href="worker.resume.pathFile" target="_blank" download>
+                    <a :href="props.worker.resume.pathFile" target="_blank" download>
                         Resume-File
                         <span class="download-button"></span>
                     </a>
@@ -24,7 +24,7 @@
                         <div class="modal-container modal-light">
                             <span class="fz1 fw-700">{{ "Resume" }}</span>
                             <button @click="modal = false" type="button" class="cross-icon">{{ 'Close' }}</button>
-                            <resume-edit :data="worker" @closeModal="() => closeModalEdit()" />
+                            <resume-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
                         </div>
                     </div>
                 </div>
@@ -34,23 +34,17 @@
     </section>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-export default {
-    props: ['worker'],
-    data() {
-        return {
-            modal: false
-        }
-    },
-    methods: {
-        closeModalEdit() {
-            this.$emit('updateProfile', true);
-            this.modal = false
-        }
-    },
-    components: {
-        resumeEdit: defineAsyncComponent(() => import("./WorkResumeForm.vue"))
-    }
+<script setup lang="ts">
+import { ref } from 'vue';
+import ResumeEdit from './WorkResumeForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile', value: boolean): void }>();
+
+const modal = ref(false);
+
+function closeModalEdit() {
+    emit('updateProfile', true);
+    modal.value = false;
 }
 </script>

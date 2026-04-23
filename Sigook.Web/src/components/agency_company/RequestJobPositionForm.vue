@@ -4,9 +4,10 @@
     <h2 class="text-center main-title"> Role </h2>
     <div class="container-flex">
       <div class="col-12">
-        <b-field label="Position">
+        <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
+          :message="formErrors.jobPosition">
           <b-autocomplete :data="filteredPositions" placeholder="Position" v-model="jobPosition" field="value"
-            open-on-focus name="positions" v-validate="'required'">
+            open-on-focus name="positions">
             <template v-slot="props">
               <span class="fz-0">{{ props.option.value }}</span>
               <span v-if="props.option.industry" class="fz-2 d-block">Industry: {{ props.option.industry }}</span>
@@ -15,9 +16,9 @@
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :type="errors.has('message') ? 'is-danger' : ''" label="Message"
-          :message="errors.has('message') ? errors.first('message') : ''">
-          <b-input type="textarea" v-model="model.message" name="message" v-validate="{ max: 1000 }" />
+        <b-field :type="formErrors.message ? 'is-danger' : ''" label="Message"
+          :message="formErrors.message">
+          <b-input type="textarea" v-model="message" name="message" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
@@ -26,58 +27,68 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import * as yup from 'yup';
 import { showAlertError } from "@/utils/toast";
 import { getJobPositions } from "@/api/catalogApi";
 import { petitionAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
-export default {
-  props: ["profileId"],
-  data() {
-    return {
-      isLoading: false,
-      model: {
-        id: null,
-        jobPosition: null,
-        message: ''
-      },
-      jobPositionList: [],
-      jobPosition: ''
-    }
-  },
-  methods: {
-    async validateForm() {
-      this.model.jobPosition = this.jobPosition;
-      const result = await this.$validator.validateAll();
-      if (result) {
-        this.requestAgencyJobPosition();
-      }
-      else {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      }
-    },
-    requestAgencyJobPosition() {
-      this.isLoading = true;
-      petitionAgencyCompanyJobPosition(this.profileId, this.model)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    }
-  },
-  async created() {
-    this.isLoading = true;
-    this.jobPositionList = await getJobPositions();
-    this.isLoading = false;
-  },
-  computed: {
-    filteredPositions() {
-      const position = this.jobPositionList.filter(jpl => jpl.value.toLowerCase().includes(this.jobPosition.toLowerCase()));
-      return position;
-    }
+import { useStickyForm } from '@/composables/useStickyForm';
+
+const schema = yup.object({
+  jobPosition: yup.string().required('Position is required'),
+  message: yup.string().max(1000, 'Max 1000 characters').nullable().transform(v => v || null),
+});
+
+const props = defineProps<{ profileId: any }>();
+const emit = defineEmits<{ (e: 'closeModal'): void }>();
+
+const form = useStickyForm<{ jobPosition: string; message: string }>({
+  schema,
+  initialValues: { jobPosition: '', message: '' },
+});
+const { jobPosition, message } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const jobPositionList = ref<any[]>([]);
+
+const filteredPositions = computed(() => {
+  const q = (jobPosition.value || '').toLowerCase();
+  return jobPositionList.value.filter((jpl: any) => jpl.value.toLowerCase().includes(q));
+});
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
   }
+  requestAgencyJobPosition();
 }
+
+function requestAgencyJobPosition() {
+  isLoading.value = true;
+  const model = {
+    id: null,
+    jobPosition: jobPosition.value,
+    message: message.value,
+  };
+  petitionAgencyCompanyJobPosition(props.profileId, model)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal');
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+(async () => {
+  isLoading.value = true;
+  jobPositionList.value = await getJobPositions();
+  isLoading.value = false;
+})();
 </script>

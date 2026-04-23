@@ -14,37 +14,30 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
+
+const emit = defineEmits<{ (e: 'sendAnotherWorker', comment: string): void }>();
 
 const schema = yup.object({
   comment: yup.string().required('Comment is required'),
 });
 
-export default {
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: { comment: '' },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-    };
-  },
-  methods: {
-    send() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.$emit('sendAnotherWorker', values.comment);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    }
-  }
+const form = useStickyForm<{ comment: string }>({
+  schema,
+  initialValues: { comment: '' },
+});
+const { comment } = form.fields;
+const formErrors = form.errors;
+
+function send() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    emit('sendAnotherWorker', values.comment);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 </script>

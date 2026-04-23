@@ -34,11 +34,15 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { updateAgencyCompanyEmail } from "@/api/agencyCompanyApi";
+
+const props = defineProps<{ companyProfileId: number | string }>();
+const emit = defineEmits<{ (e: 'closeModal', changed: boolean, newEmail: string): void }>();
 
 const schema = yup.object({
   newEmail: yup.string().required('Email is required').email('Invalid email'),
@@ -48,47 +52,34 @@ const schema = yup.object({
     .oneOf([yup.ref('newEmail')], 'Emails must match'),
 });
 
-export default {
-  name: "DialogCompanyUpdateEmail",
-  props: ['companyProfileId'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: { newEmail: '', confirmEmail: '' },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-    }
-  },
-  methods: {
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.updateEmail(values.newEmail);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    updateEmail(newEmail: string) {
-      this.isLoading = true;
-      updateAgencyCompanyEmail(this.companyProfileId, { newEmail }).then(() => {
-        this.isLoading = false;
-        this.$emit('closeModal', true, newEmail);
-      })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    }
-  }
+const form = useStickyForm<{ newEmail: string; confirmEmail: string }>({
+  schema,
+  initialValues: { newEmail: '', confirmEmail: '' },
+});
+const { newEmail, confirmEmail } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    updateEmail(values.newEmail);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 
+function updateEmail(email: string) {
+  isLoading.value = true;
+  updateAgencyCompanyEmail(props.companyProfileId, { newEmail: email })
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true, email);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

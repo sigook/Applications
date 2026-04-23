@@ -40,7 +40,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import {
   getAgencyLocations,
@@ -50,93 +51,94 @@ import {
 } from "@/api/agencyApi";
 import AddressComponent from "@/components/Address.vue";
 
-export default {
-  components: { AddressComponent },
-  data() {
-    return {
-      isLoading: true,
-      locations: [],
-      showModal: false,
-      locationBeingUpdate: {}
+defineProps<{ agencyData?: any }>();
+
+const isLoading = ref(true);
+const locations = ref<any[]>([]);
+const showModal = ref(false);
+const locationBeingUpdate = ref<any>({});
+const addressComponent = ref<any>(null);
+
+async function saveChanges() {
+  const addressValid = await addressComponent.value.validateAddress();
+  if (addressValid) {
+    if (locationBeingUpdate.value.id) {
+      updateLocation(locationBeingUpdate.value);
+    } else {
+      createLocation(locationBeingUpdate.value);
     }
-  },
-  props: ['agencyData'],
-  methods: {
-    async saveChanges() {
-      const addressValid = await this.$refs.addressComponent.validateAddress();
-      if (addressValid) {
-        if (this.locationBeingUpdate.id) {
-          this.updateLocation(this.locationBeingUpdate);
-        } else {
-          this.createLocation(this.locationBeingUpdate);
-        }
-      }
-    },
-    updateLocation(location) {
-      this.isLoading = true;
-      updateAgencyLocation(location.id, location)
-        .then(() => {
-          this.isLoading = false;
-          this.hideModal();
-          location.formattedAddress = this.getFormattedAddress(location);
-        }).catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    createLocation(location) {
-      this.isLoading = true;
-      createAgencyLocation(location).then(r => {
-        location.id = r.id;
-        location.formattedAddress = this.getFormattedAddress(location);
-        this.locations.push(location);
-        this.isLoading = false;
-        this.hideModal();
-      }).catch(error => {
-        this.isLoading = false;
-        showAlertError(error.data);
-      });
-    },
-    getLocations() {
-      this.isLoading = true;
-      getAgencyLocations().then(r => {
-        this.locations = r;
-        this.isLoading = false;
-      });
-    },
-    deleteLocation(location, index) {
-      showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
-        .then(r => {
-          if (!r) return;
-          this.isLoading = true;
-          deleteAgencyLocation(location.id)
-            .then(() => {
-              this.isLoading = false;
-              this.locations.splice(index, 1);
-            }).catch(e => {
-              this.isLoading = false;
-              showAlertError(e.data);
-            });
-        });
-    },
-    addLocation() {
-      this.showModal = true;
-      this.locationBeingUpdate = {};
-    },
-    editLocation(location) {
-      this.locationBeingUpdate = location;
-      this.showModal = true;
-    },
-    hideModal() {
-      this.showModal = false;
-    },
-    getFormattedAddress(location) {
-      if (!location) return "";
-      return `${location.address} ${location.city.value} ${location.province.code} ${location.postalCode}`;
-    }
-  },
-  created() {
-    this.getLocations();
   }
 }
+
+function updateLocation(location: any) {
+  isLoading.value = true;
+  updateAgencyLocation(location.id, location)
+    .then(() => {
+      isLoading.value = false;
+      hideModal();
+      location.formattedAddress = getFormattedAddress(location);
+    }).catch(error => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function createLocation(location: any) {
+  isLoading.value = true;
+  createAgencyLocation(location).then(r => {
+    location.id = r.id;
+    location.formattedAddress = getFormattedAddress(location);
+    locations.value.push(location);
+    isLoading.value = false;
+    hideModal();
+  }).catch(error => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function getLocations() {
+  isLoading.value = true;
+  getAgencyLocations().then(r => {
+    locations.value = r;
+    isLoading.value = false;
+  });
+}
+
+function deleteLocation(location: any, index: number) {
+  showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
+    .then(r => {
+      if (!r) return;
+      isLoading.value = true;
+      deleteAgencyLocation(location.id)
+        .then(() => {
+          isLoading.value = false;
+          locations.value.splice(index, 1);
+        }).catch(e => {
+          isLoading.value = false;
+          showAlertError(e.data);
+        });
+    });
+}
+
+function addLocation() {
+  showModal.value = true;
+  locationBeingUpdate.value = {};
+}
+
+function editLocation(location: any) {
+  locationBeingUpdate.value = location;
+  showModal.value = true;
+}
+
+function hideModal() {
+  showModal.value = false;
+}
+
+function getFormattedAddress(location: any) {
+  if (!location) return "";
+  return `${location.address} ${location.city.value} ${location.province.code} ${location.postalCode}`;
+}
+
+getLocations();
 </script>

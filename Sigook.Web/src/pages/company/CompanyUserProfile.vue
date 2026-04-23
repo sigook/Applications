@@ -39,52 +39,42 @@
   </div>
 </template>
 
-<script lang="ts">
-
-import CompanyUserUpdate from "@/components/company/CompanyUserUpdate.vue";
-import ProfileAccountInformation from "@/components/agency/ProfileAccountInformation.vue";
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import CompanyUserUpdate from '@/components/company/CompanyUserUpdate.vue';
+import ProfileAccountInformation from '@/components/agency/ProfileAccountInformation.vue';
 import { avatarLetters } from '@/utils/filters';
-import { getCompanyUserDetail } from "@/api/companyApi";
+import { getCompanyUserDetail } from '@/api/companyApi';
 
+const tabComponents: Record<string, any> = {
+  CompanyUserUpdate,
+  ProfileAccountInformation,
+};
 
-export default {
-  name: "CompanyUserProfile",
-  components: {
-    CompanyUserUpdate,
-    ProfileAccountInformation,
-  },
-  data() {
-    return {
-      isLoading: false,
-      currentTab: "CompanyUserUpdate",
-      tabs: ["CompanyUserUpdate", "ProfileAccountInformation"],
-      companyUser: {},
-      isDisabled: true
-    }
-  },
-  methods: {
-    avatarLetters,
-    changeTab(newTab) {
-      this.currentTab = newTab;
-    },
-    getCompanyUser() {
-      this.isLoading = true;
-      getCompanyUserDetail()
-        .then(companyUser => {
-          this.companyUser = companyUser;
-          this.isLoading = false;
-        }).catch(() => this.isLoading = false)
-    },
-  },
-  created() {
-    this.getCompanyUser();
-  },
-  computed: {
-    currentTabComponent() {
-      return this.currentTab;
-    },
-  }
+const isLoading = ref(false);
+const currentTab = ref<string>('CompanyUserUpdate');
+const tabs = ref<string[]>(['CompanyUserUpdate', 'ProfileAccountInformation']);
+const companyUser = ref<any>({});
+
+const currentTabComponent = computed(() => tabComponents[currentTab.value]);
+
+function changeTab(newTab: string) {
+  currentTab.value = newTab;
 }
+
+function getCompanyUser() {
+  isLoading.value = true;
+  getCompanyUserDetail()
+    .then((user: any) => {
+      companyUser.value = user;
+      isLoading.value = false;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+
+getCompanyUser();
 </script>
 
 <style lang="scss" scoped>

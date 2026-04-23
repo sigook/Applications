@@ -13,58 +13,53 @@
   </div>
 </template>
 
-<script lang="ts">
-import { getErrorMessage } from "@/utils/toast";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { getErrorMessage } from '@/utils/toast';
 import { workerRequestApply } from '@/api/workerApi';
 
-export default {
-  name: "WorkerApply",
-  data() {
-    return {
-      isLoading: false,
-      errorMessage: null,
-      successMessage: null,
-      defaultSuccessMessage:
-        "Thank you, one of our recruiters will contact you soon."
-    };
-  },
-  methods: {
-    apply() {
-      let workerId = this.$route.query.w;
-      let requestId = this.$route.query.r;
-      if (!workerId || !requestId) {
-        this.redirectToHome();
-        return;
-      }
+const route = useRoute();
 
-      const key = `${workerId}${requestId}`;
-      let alreadyApplied = window.sessionStorage.getItem(key);
-      if (alreadyApplied) {
-        this.successMessage = this.defaultSuccessMessage;
-        return;
-      }
+const isLoading = ref(false);
+const errorMessage = ref<string | null>(null);
+const successMessage = ref<string | null>(null);
+const defaultSuccessMessage = 'Thank you, one of our recruiters will contact you soon.';
 
-      this.isLoading = true;
-      workerRequestApply(workerId, requestId, {})
-        .then(() => {
-          this.isLoading = false;
-          this.successMessage = this.defaultSuccessMessage;
-          window.sessionStorage.setItem(key, "1");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.errorMessage = getErrorMessage(error);
-          window.sessionStorage.setItem(key, "1");
-        });
-    },
-    redirectToHome() {
-      window.location.href = "/";
-    }
-  },
-  created() {
-    this.apply();
+function redirectToHome() {
+  window.location.href = '/';
+}
+
+function apply() {
+  const workerId = route.query.w;
+  const requestId = route.query.r;
+  if (!workerId || !requestId) {
+    redirectToHome();
+    return;
   }
-};
+
+  const key = `${workerId}${requestId}`;
+  const alreadyApplied = window.sessionStorage.getItem(key);
+  if (alreadyApplied) {
+    successMessage.value = defaultSuccessMessage;
+    return;
+  }
+
+  isLoading.value = true;
+  workerRequestApply(workerId as string, requestId as string, {})
+    .then(() => {
+      isLoading.value = false;
+      successMessage.value = defaultSuccessMessage;
+      window.sessionStorage.setItem(key, '1');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      errorMessage.value = getErrorMessage(error);
+      window.sessionStorage.setItem(key, '1');
+    });
+}
+
+apply();
 </script>
 
 <style scoped>

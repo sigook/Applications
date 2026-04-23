@@ -76,12 +76,12 @@
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-            <phone-input ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone) => mobileNumber = phone" />
+            <PhoneInput ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
+              model="Mobile Number" @formattedPhone="(phone: string) => mobileNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-            <phone-input ref="officeComponent" :required="false" :defaultValue="officeNumber"
-              model="Office Number" @formattedPhone="(phone) => officeNumber = phone" />
+            <PhoneInput ref="officeComponent" :required="false" :defaultValue="officeNumber"
+              model="Office Number" @formattedPhone="(phone: string) => officeNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
             <b-field label="Extension" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
@@ -98,12 +98,15 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
+import PhoneInput from "../../components/PhoneInput.vue";
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/api/companyApi';
+
+defineProps<{ companyData?: any; isDisabled?: boolean }>();
 
 const numericExt = yup
   .string()
@@ -123,85 +126,78 @@ const schema = yup.object({
   officeNumberExt: numericExt,
 });
 
-export default {
-  props: ['companyData', 'isDisabled'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        title: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        email: '',
-        position: '',
-        mobileNumber: '',
-        officeNumber: '',
-        officeNumberExt: '',
-      },
-    });
+const form = useStickyForm<{
+  title: string; firstName: string; middleName: string; lastName: string;
+  email: string; position: string; mobileNumber: string; officeNumber: string; officeNumberExt: string;
+}>({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    position: '',
+    mobileNumber: '',
+    officeNumber: '',
+    officeNumberExt: '',
+  },
+});
+const {
+  title, firstName, middleName, lastName, email, position,
+  mobileNumber, officeNumber, officeNumberExt,
+} = form.fields;
+const formErrors = form.errors;
 
-    const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      resetForm: form.resetAll,
-      titleOptions,
+const isLoading = ref(false);
+const showModal = ref(false);
+const contactPeople = ref<any[]>([]);
+const mobileComponent = ref<any>(null);
+const officeComponent = ref<any>(null);
+
+function openAddContactModal() {
+  form.resetAll();
+  showModal.value = true;
+}
+
+async function getContactPersons() {
+  contactPeople.value = await getContactPeople();
+}
+
+async function removeLine(id: any) {
+  await deleteContactPerson(id);
+  await getContactPersons();
+}
+
+async function validateForm() {
+  form.markInteracted();
+  const phoneValid = await mobileComponent.value?.validatePhone();
+  const officeValid = await officeComponent.value?.validatePhone();
+  form.handleSubmit((values) => {
+    if (!phoneValid || !officeValid) return;
+    isLoading.value = true;
+    const contact = {
+      ...values,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
     };
-  },
-  data() {
-    return {
-      isLoading: false,
-      showModal: false,
-      contactPeople: [] as any[],
-    };
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("../../components/PhoneInput.vue")),
-  },
-  methods: {
-    openAddContactModal() {
-      this.resetForm();
-      this.showModal = true;
-    },
-    async getContactPersons() {
-      this.contactPeople = await getContactPeople();
-    },
-    async removeLine(id: any) {
-      await deleteContactPerson(id);
-      await this.getContactPersons();
-    },
-    async validateForm() {
-      this.markInteracted();
-      const phoneValid = await (this.$refs.mobileComponent as any).validatePhone();
-      const officeValid = await (this.$refs.officeComponent as any).validatePhone();
-      this.handleSubmit((values) => {
-        if (!phoneValid || !officeValid) return;
-        this.isLoading = true;
-        const contact = {
-          ...values,
-          officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
-        };
-        saveContactPerson(contact)
-          .then(async () => {
-            this.isLoading = false;
-            this.showModal = false;
-            this.resetForm();
-            await this.getContactPersons();
-            showAlertSuccess('Profile updated');
-          })
-          .catch((error: any) => {
-            this.isLoading = false;
-            showAlertError(error.data);
-          });
-      })();
-    },
-  },
-  async created() {
-    await this.getContactPersons();
-  },
-};
+    saveContactPerson(contact)
+      .then(async () => {
+        isLoading.value = false;
+        showModal.value = false;
+        form.resetAll();
+        await getContactPersons();
+        showAlertSuccess('Profile updated');
+      })
+      .catch((error: any) => {
+        isLoading.value = false;
+        showAlertError(error.data);
+      });
+  })();
+}
+
+(async () => {
+  await getContactPersons();
+})();
 </script>

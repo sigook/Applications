@@ -3,10 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12 col-padding">
-        <b-field label="Worker" :type="errors.has('worker') ? 'is-danger' : ''"
-          :message="errors.has('worker') ? errors.first('worker') : 'Type at least 3 characters to search'">
+        <b-field label="Worker" :message="'Type at least 3 characters to search'">
           <b-autocomplete v-model="workerSelected" :data="workers" placeholder="Worker" name="worker" append-to-body
-            :loading="isLoadingList" @typing="onWorkerInput" v-validate="'required'" @select="selectWorker"
+            :loading="isLoadingList" @typing="onWorkerInput" @select="selectWorker"
             :custom-formatter="(option) => `${option.fullName} | ${option.approvedToWork ? 'Approved' : 'Not Approved'}`">
           </b-autocomplete>
         </b-field>
@@ -18,72 +17,74 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyWorkersDropdown } from "@/api/agencyWorkerApi";
 import { bookAgencyRequestWorker } from "@/api/agencyRequestApi";
+import { getDialog } from '@/utils/buefyProgrammatic';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      requestId: this.$route.params.id,
-      isLoadingList: false,
-      workers: [],
-      workerSelected: null,
-      workerId: null
-    }
-  },
-  methods: {
-    onWorkerInput(text) {
-      if (text.length >= 3) {
-        this.searchWorkers(text);
-      } else {
-        this.workers = [];
-      }
+const emit = defineEmits<{ (e: 'workerBooked'): void }>();
+const route = useRoute();
+
+const isLoading = ref(false);
+const requestId = ref<any>(route.params.id);
+const isLoadingList = ref(false);
+const workers = ref<any[]>([]);
+const workerSelected = ref<any>(null);
+const workerId = ref<any>(null);
+
+function onWorkerInput(text: string) {
+  if (text.length >= 3) {
+    searchWorkers(text);
+  } else {
+    workers.value = [];
+  }
+}
+
+function searchWorkers(text: string) {
+  isLoadingList.value = true;
+  getAgencyWorkersDropdown({ searchTerm: text })
+    .then(response => {
+      isLoadingList.value = false;
+      workers.value = response;
+    })
+    .catch(error => {
+      isLoadingList.value = false;
+      showAlertError(error);
+    });
+}
+
+function selectWorker(worker: any) {
+  if (worker) {
+    workerId.value = worker.id;
+  } else {
+    workerId.value = null;
+  }
+}
+
+async function bookWorker() {
+  getDialog().prompt({
+    message: "Starting Date",
+    inputAttrs: {
+      type: 'date',
+      placeholder: 'Date',
+      required: true
     },
-    searchWorkers(text) {
-      this.isLoadingList = true;
-      getAgencyWorkersDropdown({ searchTerm: text })
-        .then(response => {
-          this.isLoadingList = false;
-          this.workers = response;
-        })
-        .catch(error => {
-          this.isLoadingList = false;
-          showAlertError(error);
-        });
-    },
-    selectWorker(worker) {
-      if (worker) {
-        this.workerId = worker.id;
-      } else {
-        this.workerId = null;
-      }
-    },
-    async bookWorker() {
-      this.$buefy.dialog.prompt({
-        message: "Starting Date",
-        inputAttrs: {
-          type: 'date',
-          placeholder: 'Date',
-          required: true
-        },
-        confirmText: 'Book',
-        onConfirm: async (value, dialog) => {
-          this.isLoading = true;
-          await bookAgencyRequestWorker(this.requestId, this.workerId, { startWorking: value }).then(() => {
-            this.isLoading = false;
-            showAlertSuccess('Booked');
-            this.$emit('workerBooked');
-            dialog.close();
-          }).catch(error => {
-            this.isLoading = false;
-            showAlertError(error);
-          });
-        }
+    confirmText: 'Book',
+    onConfirm: async (value: any, dialog: any) => {
+      isLoading.value = true;
+      await bookAgencyRequestWorker(requestId.value, workerId.value, { startWorking: value }).then(() => {
+        isLoading.value = false;
+        showAlertSuccess('Booked');
+        emit('workerBooked');
+        dialog.close();
+      }).catch(error => {
+        isLoading.value = false;
+        showAlertError(error);
       });
     }
-  }
+  });
 }
 </script>

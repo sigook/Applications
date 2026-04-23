@@ -19,45 +19,35 @@
     </b-tabs>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
-export default {
-  data() {
-    return {
-      tab: null
-    };
-  },
-  components: {
-    SubcontractorsReport: defineAsyncComponent(() => import("@/components/agency_accounting/SubcontractorsReport.vue")),
-    HoursWorkedReport: defineAsyncComponent(() => import("@/components/agency_accounting/HoursWorkedReport.vue")),
-    T4Report: defineAsyncComponent(() => import("@/components/agency_accounting/T4.vue")),
-    CraPayrollReport: defineAsyncComponent(() => import("@/components/agency_accounting/CRAPayroll.vue")),
-    PaymentReport: defineAsyncComponent(() => import("@/components/agency_accounting/PaymentReport.vue"))
-  },
-  created() {
-    if (this.isUsaAgency) {
-      this.tab = '4';
-    } else {
-      this.tab = this.$route.query.tab || '0';
-    }
-  },
-  computed: {
-    ...mapStores(useAgencyStore),
-    isUsaAgency() {
-      return this.agencyStore.usaAgency;
-    }
-  },
-  watch: {
-    tab(tab) {
-      this.$router.push({
-        path: '/accounting/reports',
-        query: {
-          tab: tab
-        }
-      });
-    }
-  }
+import SubcontractorsReport from '@/components/agency_accounting/SubcontractorsReport.vue';
+import HoursWorkedReport from '@/components/agency_accounting/HoursWorkedReport.vue';
+import T4Report from '@/components/agency_accounting/T4.vue';
+import CraPayrollReport from '@/components/agency_accounting/CRAPayroll.vue';
+import PaymentReport from '@/components/agency_accounting/PaymentReport.vue';
+
+const route = useRoute();
+const router = useRouter();
+const agencyStore = useAgencyStore();
+
+const tab = ref<string | null>(null);
+const isUsaAgency = computed(() => agencyStore.usaAgency);
+
+if (isUsaAgency.value) {
+  tab.value = '4';
+} else {
+  tab.value = (route.query.tab as string) || '0';
 }
+
+watch(tab, (value) => {
+  router.push({
+    path: '/accounting/reports',
+    query: {
+      tab: value,
+    },
+  });
+});
 </script>

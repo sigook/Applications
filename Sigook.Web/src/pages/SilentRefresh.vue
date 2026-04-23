@@ -1,12 +1,9 @@
 <template>
   <div></div>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
 import mgr from '../security/securityService';
 
-export default {
-  created() {
-    mgr.signinSilentCallback();
-  }
-}
+mgr.signinSilentCallback();
 </script>

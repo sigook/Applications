@@ -11,18 +11,16 @@ namespace Covenant.Infrastructure.Services
 {
     public class GeocodeService : IGeocodeService
     {
-        private readonly ILocationRepository locationRepository;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<GeocodeService> logger;
         private readonly GeocodeGoogleConfiguration configuration;
+        private static readonly JsonSerializerOptions jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
         public GeocodeService(
-            ILocationRepository locationRepository,
             IOptions<GeocodeGoogleConfiguration> options,
             IHttpClientFactory httpClientFactory,
             ILogger<GeocodeService> logger)
         {
-            this.locationRepository = locationRepository;
             this.httpClientFactory = httpClientFactory;
             this.logger = logger;
             configuration = options.Value;
@@ -36,7 +34,7 @@ namespace Covenant.Infrastructure.Services
                 var client = httpClientFactory.CreateClient();
                 var response = await client.GetAsync($"{configuration.Url}?address={address}&key={configuration.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<GeocodeResponse>(content);
+                var result = JsonSerializer.Deserialize<GeocodeResponse>(content, jsonOptions);
                 if (result.Status.Equals("OK", StringComparison.InvariantCultureIgnoreCase) && result.Results.Any())
                 {
                     return result.Results[0].Geometry.Location;

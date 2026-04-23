@@ -29,11 +29,15 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { updateAgencyWorkerEmail } from "@/api/agencyWorkerApi";
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   newEmail: yup.string()
@@ -45,58 +49,42 @@ const schema = yup.object({
     .oneOf([yup.ref('newEmail')], 'Emails must match'),
 });
 
-export default {
-  props: ['data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        newEmail: '',
-        confirmEmail: '',
-      },
-    });
+const form = useStickyForm<{ newEmail: string; confirmEmail: string }>({
+  schema,
+  initialValues: {
+    newEmail: '',
+    confirmEmail: '',
+  },
+});
+const { newEmail, confirmEmail } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      worker: {} as any,
-    };
-  },
-  methods: {
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        this.updateWorkerEmail(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    updateWorkerEmail(values: any) {
-      this.isLoading = true;
-      updateAgencyWorkerEmail(this.worker.id, { newEmail: values.newEmail })
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  created() {
-    if ((this as any).data != null) {
-      this.worker = Object.assign({}, (this as any).data);
-    }
-  },
-};
+const isLoading = ref(false);
+const worker = ref<any>({});
+
+function updateWorkerEmail(values: any) {
+  isLoading.value = true;
+  updateAgencyWorkerEmail(worker.value.id, { newEmail: values.newEmail })
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    updateWorkerEmail(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data != null) {
+  worker.value = Object.assign({}, props.data);
+}
 </script>

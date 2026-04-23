@@ -21,14 +21,11 @@
     </b-table>
   </div>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
 import { date, time } from '@/utils/filters';
 
-export default {
-  props: ['data'],
-  methods: {
-    date,
-    time,
-  },
-}
+defineProps<{
+  data: any;
+}>();
 </script>

@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="this.sizeComments"
+    <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="sizeComments"
       @changePage="(index) => changePage(index)">
     </pagination>
 
@@ -50,83 +50,81 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import { showAlertError } from "@/utils/toast";
 import roles from "@/security/roles";
 import { agencyCommentWorker } from "@/api/agencyWorkerApi";
 import { companyCommentWorker } from "@/api/companyApi";
 import iconAgency from '@/assets/images/icon_agency.svg';
+import DialogComment from "./DialogWorkerComment.vue";
+import Pagination from "./Paginator.vue";
 
-export default {
-  data() {
-    return {
-      iconAgency,
-      isLoading: false,
-      currentPage: 1,
-      commentary: {
-        comment: "",
-        rate: 0
-      },
-      modalValidation: false
-    }
-  },
-  props: ['userId', 'data', "sizeComments", "onlyView"],
-  components: {
-    DialogComment: defineAsyncComponent(() => import("./DialogWorkerComment.vue")),
-    Pagination: defineAsyncComponent(() => import("./Paginator.vue"))
-  },
-  computed: {
-    ...mapStores(useSecurityStore),
-  },
-  methods: {
-    alertComment() {
-      this.modalValidation = true;
+const props = defineProps<{
+  userId?: any;
+  data?: any;
+  sizeComments?: number;
+  onlyView?: boolean;
+}>();
 
-    },
-    getComment(data) {
-      this.modalValidation = false;
-      if (data.comment && data.rating) {
-        this.commentary.comment = data.comment;
-        this.commentary.rate = data.rating;
-        this.comment();
-      } else {
-        showAlertError("All fields are required")
-      }
-    },
-    comment() {
-      const userRoles = this.securityStore.userRoles;
-      for (let i = 0; i < userRoles.length; i++) {
-        switch (userRoles[i]) {
-          case roles.agency:
-          case roles.agencyPersonnel:
-            this.sendComment(agencyCommentWorker);
-            return;
-          case roles.company:
-          case roles.companyUser:
-            this.sendComment(companyCommentWorker);
-            return;
-        }
-      }
-    },
-    sendComment(commentFn) {
-      this.isLoading = true;
-      commentFn(this.userId, this.commentary)
-        .then(() => {
-          this.$emit('newComment', true);
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    changePage(page) {
-      this.$emit('changePage', page);
+const emit = defineEmits<{
+  (e: 'newComment', v: boolean): void;
+  (e: 'changePage', page: number): void;
+}>();
+
+const securityStore = useSecurityStore();
+
+const isLoading = ref(false);
+const commentary = ref({ comment: '', rate: 0 });
+const modalValidation = ref(false);
+
+function alertComment() {
+  modalValidation.value = true;
+}
+
+function getComment(data: { comment: string; rating: number }) {
+  modalValidation.value = false;
+  if (data.comment && data.rating) {
+    commentary.value.comment = data.comment;
+    commentary.value.rate = data.rating;
+    comment();
+  } else {
+    showAlertError("All fields are required");
+  }
+}
+
+function comment() {
+  const userRoles = securityStore.userRoles;
+  for (let i = 0; i < userRoles.length; i++) {
+    switch (userRoles[i]) {
+      case roles.agency:
+      case roles.agencyPersonnel:
+        sendComment(agencyCommentWorker);
+        return;
+      case roles.company:
+      case roles.companyUser:
+        sendComment(companyCommentWorker);
+        return;
     }
   }
+}
+
+function sendComment(commentFn: (userId: any, c: any) => Promise<any>) {
+  isLoading.value = true;
+  commentFn(props.userId, commentary.value)
+    .then(() => {
+      emit('newComment', true);
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function changePage(page: number) {
+  emit('changePage', page);
 }
 </script>
 

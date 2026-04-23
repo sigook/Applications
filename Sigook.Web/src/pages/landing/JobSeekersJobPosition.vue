@@ -3,13 +3,6 @@
 </template>
 
 
-<script lang="ts">
-
-import { defineAsyncComponent } from 'vue';
-export default {
-  components: {
-    JobPosition: defineAsyncComponent(() => import("@/components/landing/JobPosition.vue"))
-  }
-}
-
+<script setup lang="ts">
+import JobPosition from "@/components/landing/JobPosition.vue";
 </script>

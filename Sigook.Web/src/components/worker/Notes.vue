@@ -25,7 +25,7 @@
                     <div class="modal-wrapper">
                         <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
                             <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
-                            <modal-notes :user-id="this.workerId"
+                            <modal-notes :user-id="workerId"
                                          :on-get="getNotes"
                                          :on-create="createNote"
                                          @onUpdateNote="() => loadNotes(pageIndex)">
@@ -37,52 +37,44 @@
         </transition>
     </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertError } from "@/utils/toast";
-    import { emailName, dateFromNow } from '@/utils/filters';
-    import { getWorkerProfileNotes, createWorkerProfileNote } from '@/api/agencyNoteApi';
-    import type { NotesFetchPayload, NotesCreatePayload } from '@/types/agency';
-    export default {
-        data(){
-            return {
-                workerId: this.$route.params.id,
-                showModalNotes: false,
-                notesList: null,
-                pageSize: 8,
-                pageIndex: 1,
-                isLoading: false,
-                getNotes: ({ userId, pagination }: NotesFetchPayload) => getWorkerProfileNotes(userId, pagination),
-                createNote: ({ userId, model }: NotesCreatePayload) => createWorkerProfileNote(userId, model),
-                updateNote: null,
-                deleteNote: null
-            }
-        },
-        components: {
-            ModalNotes: defineAsyncComponent(() => import("../notes/ModalNotes.vue"))
-        },
-        methods: {
-            emailName,
-            dateFromNow,
-            loadNotes(index){
-                this.isLoading = true
-                getWorkerProfileNotes(this.workerId, {page: index, size: this.pageSize})
-                        .then(response => {
-                            this.isLoading = false
-                            this.notesList = response;
-                        })
-                        .catch(error => {
-                            this.isLoading = false
-                            showAlertError(error);
-                        })
-            },
-            onCloseModalNotes(){
-                this.showModalNotes = false;
-                this.loadNotes(this.pageIndex);
-            }
-        },
-        created(){
-            this.loadNotes(this.pageIndex);
-        }
-    }
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { showAlertError } from '@/utils/toast';
+import { emailName, dateFromNow } from '@/utils/filters';
+import { getWorkerProfileNotes, createWorkerProfileNote } from '@/api/agencyNoteApi';
+import type { NotesFetchPayload, NotesCreatePayload } from '@/types/agency';
+import ModalNotes from '../notes/ModalNotes.vue';
+
+const route = useRoute();
+
+const workerId = route.params.id as string;
+const showModalNotes = ref(false);
+const notesList = ref<any>(null);
+const pageSize = 8;
+const pageIndex = ref(1);
+const isLoading = ref(false);
+
+const getNotes = ({ userId, pagination }: NotesFetchPayload) => getWorkerProfileNotes(userId, pagination);
+const createNote = ({ userId, model }: NotesCreatePayload) => createWorkerProfileNote(userId, model);
+
+function loadNotes(index: number) {
+    isLoading.value = true;
+    getWorkerProfileNotes(workerId, { page: index, size: pageSize })
+        .then(response => {
+            isLoading.value = false;
+            notesList.value = response;
+        })
+        .catch(error => {
+            isLoading.value = false;
+            showAlertError(error);
+        });
+}
+
+function onCloseModalNotes() {
+    showModalNotes.value = false;
+    loadNotes(pageIndex.value);
+}
+
+loadNotes(pageIndex.value);
 </script>

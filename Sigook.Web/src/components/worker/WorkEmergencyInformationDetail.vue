@@ -8,19 +8,19 @@
       <div>
         <span>{{ 'Do you have any health problems / allergies?' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.haveAnyHealthProblem ? "Yes" : "No" }}</p>
+          <p class="fw-200 margin-0">{{ props.worker.haveAnyHealthProblem ? "Yes" : "No" }}</p>
         </span>
       </div>
-      <div v-if="worker.haveAnyHealthProblem">
+      <div v-if="props.worker.haveAnyHealthProblem">
         <span>{{ 'Which' }} ?</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.healthProblem }}</p>
+          <p class="fw-200 margin-0">{{ props.worker.healthProblem }}</p>
         </span>
       </div>
-      <div v-if="worker.haveAnyHealthProblem">
+      <div v-if="props.worker.haveAnyHealthProblem">
         <span>{{ 'Other allergies' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.otherHealthProblem }}</p>
+          <p class="fw-200 margin-0">{{ props.worker.otherHealthProblem }}</p>
         </span>
       </div>
 
@@ -28,39 +28,33 @@
       <div>
         <span>{{ 'Name' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.contactEmergencyName }} {{ worker.contactEmergencyLastName }}</p>
+          <p class="fw-200 margin-0">{{ props.worker.contactEmergencyName }} {{ props.worker.contactEmergencyLastName }}</p>
         </span>
       </div>
       <div>
         <span>{{ 'Phone' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ worker.contactEmergencyPhone }}</p>
+          <p class="fw-200 margin-0">{{ props.worker.contactEmergencyPhone }}</p>
         </span>
       </div>
     </div>
     <b-modal v-model="modalEmergencyInformation" width="800px">
-      <emergency-information-edit :data="worker" @closeModal="() => closeModalEdit()" />
+      <emergency-information-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </section>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-export default {
-  props: ['worker'],
-  data() {
-    return {
-      modalEmergencyInformation: false
-    }
-  },
-  methods: {
-    closeModalEdit() {
-      this.$emit('updateProfile', true);
-      this.modalEmergencyInformation = false
-    }
-  },
-  components: {
-    emergencyInformationEdit: defineAsyncComponent(() => import("./WorkEmergencyInformationForm.vue"))
-  }
+<script setup lang="ts">
+import { ref } from 'vue';
+import EmergencyInformationEdit from './WorkEmergencyInformationForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile', value: boolean): void }>();
+
+const modalEmergencyInformation = ref(false);
+
+function closeModalEdit() {
+  emit('updateProfile', true);
+  modalEmergencyInformation.value = false;
 }
 </script>

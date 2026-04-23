@@ -43,12 +43,13 @@
 
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { updateAgencyCompanyContactInformation } from "@/api/agencyCompanyApi";
+import PhoneInput from "@/components/PhoneInput.vue";
 
 const numericExt = yup
   .string()
@@ -68,76 +69,64 @@ const schema = yup.object({
     .matches(urlRegex, 'Invalid URL'),
 });
 
-export default {
-  name: 'ContactInformationForm',
-  props: ["model"],
-  setup(props: any) {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        phoneExt: props.model?.phoneExt != null ? String(props.model.phoneExt) : '',
-        faxExt: props.model?.faxExt != null ? String(props.model.faxExt) : '',
-        website: props.model?.website || '',
-      },
+const props = defineProps<{ model: any }>();
+const emit = defineEmits<{
+  (e: 'update:model', value: any): void;
+  (e: 'save'): void;
+}>();
+
+const form = useStickyForm<{ phoneExt: string; faxExt: string; website: string }>({
+  schema,
+  initialValues: {
+    phoneExt: props.model?.phoneExt != null ? String(props.model.phoneExt) : '',
+    faxExt: props.model?.faxExt != null ? String(props.model.faxExt) : '',
+    website: props.model?.website || '',
+  },
+});
+const { phoneExt, faxExt, website } = form.fields;
+const formErrors = form.errors;
+
+const phoneComponent = ref<any>(null);
+const faxComponent = ref<any>(null);
+
+const localModel = ref<any>(JSON.parse(JSON.stringify(props.model)));
+
+watch(() => props.model, (newVal) => {
+  localModel.value = JSON.parse(JSON.stringify(newVal));
+  form.hydrate({
+    phoneExt: newVal?.phoneExt != null ? String(newVal.phoneExt) : '',
+    faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
+    website: newVal?.website || '',
+  });
+}, { deep: true });
+
+async function validateForm() {
+  form.markInteracted();
+  const phoneValid = await phoneComponent.value.validatePhone();
+  const faxValid = await faxComponent.value.validatePhone();
+  form.handleSubmit((values) => {
+    if (!phoneValid || !faxValid) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
+    }
+    localModel.value.phoneExt = values.phoneExt ? parseInt(values.phoneExt, 10) : null;
+    localModel.value.faxExt = values.faxExt ? parseInt(values.faxExt, 10) : null;
+    localModel.value.website = values.website;
+    saveContactInformation();
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function saveContactInformation() {
+  emit('update:model', localModel.value);
+  updateAgencyCompanyContactInformation(localModel.value.id, localModel.value)
+    .then(() => {
+      emit('save');
+      showAlertSuccess("Updated");
+    })
+    .catch((error: any) => {
+      showAlertError(error);
     });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-    };
-  },
-  data() {
-    return {
-      localModel: JSON.parse(JSON.stringify((this as any).model)),
-    };
-  },
-  watch: {
-    model: {
-      handler(newVal: any) {
-        this.localModel = JSON.parse(JSON.stringify(newVal));
-        this.hydrateForm({
-          phoneExt: newVal?.phoneExt != null ? String(newVal.phoneExt) : '',
-          faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
-          website: newVal?.website || '',
-        });
-      },
-      deep: true,
-    },
-  },
-  methods: {
-    async validateForm() {
-      this.markInteracted();
-      const phoneValid = await (this.$refs.phoneComponent as any).validatePhone();
-      const faxValid = await (this.$refs.faxComponent as any).validatePhone();
-      this.handleSubmit((values) => {
-        if (!phoneValid || !faxValid) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        this.localModel.phoneExt = values.phoneExt ? parseInt(values.phoneExt, 10) : null;
-        this.localModel.faxExt = values.faxExt ? parseInt(values.faxExt, 10) : null;
-        this.localModel.website = values.website;
-        this.saveContactInformation();
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    saveContactInformation() {
-      this.$emit('update:model', this.localModel);
-      updateAgencyCompanyContactInformation(this.localModel.id, this.localModel)
-        .then(() => {
-          this.$emit('save');
-          showAlertSuccess("Updated");
-        })
-        .catch((error: any) => {
-          showAlertError(error);
-        });
-    },
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
-  },
-};
+}
 </script>

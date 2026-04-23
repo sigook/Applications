@@ -11,9 +11,9 @@
               <span>{{ filename(newDocument.fileName) }}</span>
               <button v-if="newDocument.fileName" @click="deleteDocument" class="button cross-button" type="button" />
             </div>
-            <upload-file v-else id="documentButton" class="input-block inline-100"
-              @fileSelected="(file) => addDocument(file)" :format="'document'" :name="'Candidate_'" :required="true"
-              @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
+            <UploadFile v-else id="documentButton" class="input-block inline-100"
+              @fileSelected="(file: string) => addDocument(file)" :format="'document'" :name="'Candidate_'" :required="true"
+              @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()" />
           </div>
         </div>
         <div class="form-100">
@@ -46,106 +46,99 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import { useForm } from 'vee-validate';
 import * as yup from 'yup';
+import UploadFile from "../../components/UploadFiles.vue";
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { usePubSub } from "@/composables/usePubSub";
 import { deleteFile } from "@/utils/fileUpload";
 import { getCandidateDocuments, addCandidateDocument, deleteCandidateDocument } from "@/api/agencyCandidateApi";
 
-export default {
-  props: ["candidateId"],
-  components: {
-    UploadFile: defineAsyncComponent(() => import("../../components/UploadFiles.vue")),
-  },
-  setup() {
-    const schema = yup.object({
-      description: yup.string().required('Description is required').max(40),
+const props = defineProps<{ candidateId: number | string }>();
+
+const pubSub = usePubSub();
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(40),
+});
+const { handleSubmit, errors, defineField, resetForm } = useForm({
+  validationSchema: schema,
+});
+const [description] = defineField('description');
+
+const isDisabled = ref(false);
+const isLoading = ref(false);
+const documents = ref<any>(null);
+const newDocument = reactive<{ fileName: string | null }>({ fileName: '' });
+
+function loadDocuments() {
+  isLoading.value = true;
+  getCandidateDocuments(props.candidateId)
+    .then((response: any) => {
+      isLoading.value = false;
+      documents.value = response;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
     });
-    const { handleSubmit, errors, defineField, resetForm } = useForm({
-      validationSchema: schema,
+}
+
+function addDocument(file: string) {
+  newDocument.fileName = file;
+}
+
+function deleteDocument() {
+  isLoading.value = true;
+  deleteFile(newDocument.fileName as string)
+    .then(() => { newDocument.fileName = null; })
+    .finally(() => { isLoading.value = false; });
+}
+
+function cleanInput() {
+  newDocument.fileName = "";
+  resetForm();
+}
+
+function submitDocument() {
+  handleSubmit((values: any) => {
+    if (!newDocument.fileName) {
+      showAlertError("Please make sure all required fields are filled out correctly");
+      return;
+    }
+    isLoading.value = true;
+    addCandidateDocument(props.candidateId, {
+      fileName: newDocument.fileName,
+      description: values.description,
+    })
+      .then(() => {
+        isLoading.value = false;
+        loadDocuments();
+        cleanInput();
+      })
+      .catch((error: any) => {
+        isLoading.value = false;
+        showAlertError(error);
+      });
+  })();
+}
+
+function onDeleteDocument(id: number, index: number) {
+  isLoading.value = true;
+  deleteCandidateDocument(props.candidateId, id)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Deleted");
+      documents.value.items.splice(index, 1);
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
     });
-    const [description] = defineField('description');
-    return { ...usePubSub(), description, errors, handleSubmit, resetForm };
-  },
-  data() {
-    return {
-      isDisabled: false,
-      isLoading: false,
-      documents: null as any,
-      newDocument: {
-        fileName: "" as string | null,
-      },
-    };
-  },
-  created() {
-    this.loadDocuments();
-  },
-  methods: {
-    filename,
-    loadDocuments() {
-      this.isLoading = true;
-      getCandidateDocuments(this.candidateId)
-        .then((response: any) => {
-          this.isLoading = false;
-          this.documents = response;
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    addDocument(file: string) {
-      this.newDocument.fileName = file;
-    },
-    deleteDocument() {
-      this.isLoading = true;
-      deleteFile(this.newDocument.fileName as string)
-        .then(() => { this.newDocument.fileName = null; })
-        .finally(() => { this.isLoading = false; });
-    },
-    cleanInput() {
-      this.newDocument.fileName = "";
-      (this as any).resetForm();
-    },
-    submitDocument() {
-      (this as any).handleSubmit((values: any) => {
-        if (!this.newDocument.fileName) {
-          showAlertError("Please make sure all required fields are filled out correctly");
-          return;
-        }
-        this.isLoading = true;
-        addCandidateDocument(this.candidateId, {
-          fileName: this.newDocument.fileName,
-          description: values.description,
-        })
-          .then(() => {
-            this.isLoading = false;
-            this.loadDocuments();
-            this.cleanInput();
-          })
-          .catch((error: any) => {
-            this.isLoading = false;
-            showAlertError(error);
-          });
-      })();
-    },
-    onDeleteDocument(id: number, index: number) {
-      this.isLoading = true;
-      deleteCandidateDocument(this.candidateId, id)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Deleted");
-          this.documents.items.splice(index, 1);
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-};
+}
+
+loadDocuments();
 </script>

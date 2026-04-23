@@ -3,8 +3,8 @@
   <div class="mt-1">
     <b-loading v-model="isLoading"></b-loading>
     <div>
-      <export :url="getTimeSheetUrl" :params="serverParams" :fileName="'Timesheet'"
-        @onDataLoading="(value) => isLoading = value"></export>
+      <Export :url="getTimeSheetUrl" :params="serverParams" :fileName="'Timesheet'"
+        @onDataLoading="(value) => isLoading = value"></Export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
         detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
@@ -66,126 +66,124 @@
           </b-table-column>
         </template>
         <template #detail="props">
-          <punch-card ref="punchCard" :workerId="props.row.workerId" :worker="props.row"
+          <PunchCard ref="punchCard" :workerId="props.row.workerId" :worker="props.row"
             :requestId="serverParams.requestId" :request="request" />
         </template>
       </b-table>
     </div>
     <b-modal v-model="modalPunchCard">
-      <agency-punch-card :requestId="serverParams.requestId" :workerName="currentWorker.name"
+      <AgencyPunchCard :requestId="serverParams.requestId" :workerName="currentWorker.name"
         :workerId="currentWorker.workerId" @created="onModalPunchCardClose" />
     </b-modal>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
+import PunchCard from '@/components/agency_request/AgencyPunchCardWorkerContainer.vue';
+import AgencyPunchCard from '@/components/agency/AgencyPunchCard.vue';
+import Export from '@/components/Export.vue';
 
-export default {
-  props: ['request'],
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      statuses: [
-        { id: 2, value: 'Rejected' },
-        { id: 3, value: 'Booked' },
-      ],
-      statusesSelected: [],
-      filteredStatuses: [],
-      modalPunchCard: false,
-      currentWorker: {},
-      serverParams: {
-        sortBy: 2,
-        requestId: this.$route.params.id,
-        pageIndex: 1,
-        pageSize: 30,
-        isDescending: true
-      }
-    }
-  },
-  components: {
-    PunchCard: defineAsyncComponent(() => import("@/components/agency_request/AgencyPunchCardWorkerContainer.vue")),
-    AgencyPunchCard: defineAsyncComponent(() => import("@/components/agency/AgencyPunchCard.vue")),
-    Export: defineAsyncComponent(() => import("@/components/Export.vue"))
-  },
-  methods: {
-    hour,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadRequestWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'name':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'status':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'externalId':
-          this.serverParams.sortBy = 6;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadRequestWorkers();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadRequestWorkers();
-      }
-    },
-    filterStatuses(text) {
-      this.filteredStatuses = this.statuses.filter(s =>
-        !this.statusesSelected.some(ss => ss.id === s.id) &&
-        s.value.toLowerCase().includes(text.toLowerCase())
-      );
-    },
-    onStatusSelected() {
-      this.filteredStatuses = this.statuses.filter(s =>
-        !this.statusesSelected.some(ss => ss.id === s.id)
-      );
-      this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.loadRequestWorkers();
-    },
-    loadRequestWorkers() {
-      this.isLoading = true;
-      getAgencyRequestsWorkers(this.serverParams)
-        .then(response => {
-          this.rows = response.items.map(i => ({ ...i, actions: null }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    showModalPunchCard(worker) {
-      this.currentWorker = worker;
-      this.modalPunchCard = true
-    },
-    onModalPunchCardClose() {
-      this.modalPunchCard = false;
-      if (this.$refs.punchCard) {
-        this.$refs.punchCard.updateCell();
-      }
-    }
-  },
-  created() {
-    this.filteredStatuses = this.statuses;
-    this.loadRequestWorkers();
-  },
-  computed: {
-    getTimeSheetUrl() {
-      return `/api/AgencyRequest/${this.serverParams.requestId}/TimeSheet`;
-    }
+defineProps<{ request: any }>();
+
+const route = useRoute();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const statuses = [
+  { id: 2, value: 'Rejected' },
+  { id: 3, value: 'Booked' },
+];
+const statusesSelected = ref<any[]>([]);
+const filteredStatuses = ref<any[]>([]);
+const modalPunchCard = ref(false);
+const currentWorker = ref<any>({});
+const serverParams = reactive<any>({
+  sortBy: 2,
+  requestId: route.params.id,
+  pageIndex: 1,
+  pageSize: 30,
+  isDescending: true
+});
+const punchCard = ref<any>(null);
+
+function onPageChange(params: any) {
+  serverParams.pageIndex = params;
+  loadRequestWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'name':
+      serverParams.sortBy = 1;
+      break;
+    case 'status':
+      serverParams.sortBy = 2;
+      break;
+    case 'externalId':
+      serverParams.sortBy = 6;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  loadRequestWorkers();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadRequestWorkers();
   }
 }
+
+function filterStatuses(text: string) {
+  filteredStatuses.value = statuses.filter(s =>
+    !statusesSelected.value.some(ss => ss.id === s.id) &&
+    s.value.toLowerCase().includes(text.toLowerCase())
+  );
+}
+
+function onStatusSelected() {
+  filteredStatuses.value = statuses.filter(s =>
+    !statusesSelected.value.some(ss => ss.id === s.id)
+  );
+  serverParams.statuses = statusesSelected.value.map(ss => ss.id);
+  loadRequestWorkers();
+}
+
+function loadRequestWorkers() {
+  isLoading.value = true;
+  getAgencyRequestsWorkers(serverParams)
+    .then(response => {
+      rows.value = response.items.map((i: any) => ({ ...i, actions: null }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function showModalPunchCard(worker: any) {
+  currentWorker.value = worker;
+  modalPunchCard.value = true;
+}
+
+function onModalPunchCardClose() {
+  modalPunchCard.value = false;
+  if (punchCard.value) {
+    punchCard.value.updateCell();
+  }
+}
+
+const getTimeSheetUrl = computed(() => `/api/AgencyRequest/${serverParams.requestId}/TimeSheet`);
+
+filteredStatuses.value = statuses;
+loadRequestWorkers();
 </script>

@@ -51,70 +51,56 @@
   </section>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertConfirm, showAlertError } from "@/utils/toast";
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { filename } from '@/utils/filters';
-import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
-export default {
-  props: ['worker'],
-  data() {
-    return {
-      modalCertificate: false,
-      modalEdit: false,
-      isLoading: false,
-      localWorker: JSON.parse(JSON.stringify(this.worker))
-    }
+import { deleteWorkerCertificates } from '@/api/workerApi';
+import CertificateEdit from './WorkCertificatesForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{
+  (e: 'updateProfile', value: boolean): void;
+  (e: 'update:worker', value: any): void;
+}>();
+
+const modalCertificate = ref(false);
+const isLoading = ref(false);
+const localWorker = ref<any>(JSON.parse(JSON.stringify(props.worker)));
+
+watch(
+  () => props.worker,
+  (newVal) => {
+    localWorker.value = JSON.parse(JSON.stringify(newVal));
   },
-  watch: {
-    worker: {
-      handler(newVal) {
-        this.localWorker = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  methods: {
-    filename,
-    closeModalEdit() {
-      this.$emit('updateProfile', true);
-      this.modalCertificate = false
-    },
-    confirmDelete(certificate) {
-      showAlertConfirm("Are you sure?", "You want to delete this document")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteWorkerCertificates(this.localWorker.id, certificate.id)
-              .then(() => {
-                this.isLoading = false;
-                this.localWorker.certificates = this.localWorker.certificates.filter(d => d.id !== certificate.id);
-                this.$emit('update:worker', this.localWorker);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          showAlertError(error);
-        });
-    },
-    deleteCertificate(certificateArr) {
-      createWorkerCertificates(this.localWorker.id, certificateArr)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('updateProfile', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    }
-  },
-  components: {
-    certificateEdit: defineAsyncComponent(() => import("./WorkCertificatesForm.vue"))
-  }
+  { deep: true }
+);
+
+function closeModalEdit() {
+  emit('updateProfile', true);
+  modalCertificate.value = false;
 }
+
+function confirmDelete(certificate: any) {
+  showAlertConfirm('Are you sure?', 'You want to delete this document')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteWorkerCertificates(localWorker.value.id, certificate.id)
+          .then(() => {
+            isLoading.value = false;
+            localWorker.value.certificates = localWorker.value.certificates.filter((d: any) => d.id !== certificate.id);
+            emit('update:worker', localWorker.value);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
 </script>

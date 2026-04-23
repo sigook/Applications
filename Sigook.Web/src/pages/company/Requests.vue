@@ -55,8 +55,8 @@
             </template>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
-            <agency-shift class="d-block" :requestId="props.row.id"
-              :displayShift="props.row.displayShift"></agency-shift>
+            <AgencyShift class="d-block" :requestId="props.row.id"
+              :displayShift="props.row.displayShift"></AgencyShift>
           </b-table-column>
           <b-table-column field="workersQuantityWorking" sortable>
             <template v-slot:header>
@@ -84,122 +84,111 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useCompanyStore } from '@/stores/company';
-import { showAlertError } from "@/utils/toast";
+import { showAlertError } from '@/utils/toast';
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
+import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
 
-export default {
-  components: {
-    AgencyShift: defineAsyncComponent(() => import("@/components/agency_request/AgencyShiftDetail.vue"))
-  },
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: true,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    };
-  },
-  methods: {
-    dateFromNow,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getCompanyRequests();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'jobTitle':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'workersQuantityWorking':
-          this.serverParams.sortBy = 6;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getCompanyRequests();
-    },
-    onCellClick(row, column) {
-      switch (column.field) {
-        case 'displayShift':
-          break;
-        case 'workersQuantityWorking':
-          this.$router.push({
-            path: `/request/${row.id}`,
-            query: {
-              tab: 'Workers'
-            }
-          });
-          break;
-        default:
-          this.$router.push(`/request/${row.id}`);
-      }
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getCompanyRequests();
-      }
-    },
-    getStatusClass(row) {
-      if (row.requestStatus === RequestStatus.Open &&
-        row.workersQuantityWorking > 0 &&
-        row.workersQuantityWorking < row.workersQuantity) {
-        return 'status-inprogress';
-      }
-      return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
-    },
-    getCompanyRequests() {
-      this.isLoading = true;
-      this.companyStore.setCompanyRequestFilter(this.serverParams);
-      getRequests(this.serverParams)
-        .then((requests) => {
-          this.rows = requests.items;
-          this.totalItems = requests.totalItems;
-          this.isLoading = false;
-        }).catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    }
-  },
-  created() {
-    if (this.companyStore.companyRequestFilter) {
-      this.serverParams = this.companyStore.companyRequestFilter;
-    }
-    this.getCompanyRequests();
-  },
-  computed: {
-    ...mapStores(useCompanyStore),
-    RequestStatus: () => RequestStatus,
-    RequestStatusLabels: () => RequestStatusLabels,
-    totalQuantityWorking() {
-      if (this.rows.length > 0) {
-        return this.rows
-          .map((r) => r.workersQuantityWorking)
-          .reduce((a, b) => a + b);
-      }
-      return 0;
-    },
-    totalQuantity() {
-      if (this.rows.length > 0) {
-        return this.rows
-          .map((r) => r.workersQuantity)
-          .reduce((a, b) => a + b);
-      }
-      return 0;
-    }
+const router = useRouter();
+const companyStore = useCompanyStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: true,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+const totalQuantityWorking = computed(() => {
+  if (rows.value.length > 0) {
+    return rows.value.map((r: any) => r.workersQuantityWorking).reduce((a: number, b: number) => a + b);
   }
-};
+  return 0;
+});
+
+const totalQuantity = computed(() => {
+  if (rows.value.length > 0) {
+    return rows.value.map((r: any) => r.workersQuantity).reduce((a: number, b: number) => a + b);
+  }
+  return 0;
+});
+
+function getCompanyRequests() {
+  isLoading.value = true;
+  companyStore.setCompanyRequestFilter(serverParams);
+  getRequests(serverParams)
+    .then((requests: any) => {
+      rows.value = requests.items;
+      totalItems.value = requests.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onPageChange(params: number) {
+  serverParams.pageIndex = params;
+  getCompanyRequests();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'jobTitle':
+      serverParams.sortBy = 2;
+      break;
+    case 'workersQuantityWorking':
+      serverParams.sortBy = 6;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  getCompanyRequests();
+}
+
+function onCellClick(row: any, column: any) {
+  switch (column.field) {
+    case 'displayShift':
+      break;
+    case 'workersQuantityWorking':
+      router.push({
+        path: `/request/${row.id}`,
+        query: { tab: 'Workers' },
+      });
+      break;
+    default:
+      router.push(`/request/${row.id}`);
+  }
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getCompanyRequests();
+  }
+}
+
+function getStatusClass(row: any) {
+  if (row.requestStatus === RequestStatus.Open &&
+    row.workersQuantityWorking > 0 &&
+    row.workersQuantityWorking < row.workersQuantity) {
+    return 'status-inprogress';
+  }
+  return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
+}
+
+if (companyStore.companyRequestFilter) {
+  Object.assign(serverParams, companyStore.companyRequestFilter);
+}
+getCompanyRequests();
 </script>

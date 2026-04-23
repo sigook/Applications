@@ -7,9 +7,9 @@
         <div class="fz-1 fw-400">
           Document
           <span class="sign-required"></span>
-          <div class="input-file-edited input-block" v-if="model.fileName">
-            <span>{{ filename(model.fileName) }}</span>
-            <button v-if="model.fileName" @click="deleteDocument()" class="button cross-button" type="button" />
+          <div class="input-file-edited input-block" v-if="fileName">
+            <span>{{ filename(fileName) }}</span>
+            <button v-if="fileName" @click="deleteDocument()" class="button cross-button" type="button" />
           </div>
           <upload-file v-else id="documentButton" class="input-block inline-100"
             @fileSelected="(file) => addDocument(file)" :format="'document'" :name="'Company_'" :required="true"
@@ -18,16 +18,16 @@
       </div>
       <div class="form-100">
         <label class="fz-1 fw-400 sign-required">Description</label>
-        <input type="text" v-model="model.description" class="input-border input-block" :name="'Description'"
-          v-validate="{ required: true, max: 100, min: 2 }" :class="{ 'is-danger': errors.has('Description') }"
+        <input type="text" v-model="description" class="input-border input-block" name="Description"
+          :class="{ 'is-danger': formErrors.description }"
           autocomplete="nope" />
-        <span v-show="errors.has('Description')" class="help is-danger no-margin">
-          {{ errors.first("Description") }}
+        <span v-show="formErrors.description" class="help is-danger no-margin">
+          {{ formErrors.description }}
         </span>
       </div>
       <div class="form-100">
         <label class="fz-1 fw-400">Document Type</label>
-        <b-select v-model="model.documentType" placeholder="Select Document Type" expanded>
+        <b-select v-model="documentType" placeholder="Select Document Type" expanded>
           <option value="1">Contract</option>
         </b-select>
       </div>
@@ -36,77 +36,88 @@
     <div class="text-right pr-3">
       <button class="background-btn md-btn orange-button btn-radius margin-top-15 margin-bottom-10" type="button"
         @click="validateForm" :disabled="disableButton">
-        {{ "Save" }}
+        Save
       </button>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { usePubSub } from "@/composables/usePubSub";
 import { deleteFile } from "@/utils/fileUpload";
 import { filename } from "@/utils/filters";
 import { createAgencyCompanyDocument } from "@/api/agencyCompanyApi";
+import { useStickyForm } from '@/composables/useStickyForm';
+import UploadFile from "../../components/UploadFiles.vue";
 
-export default {
-  setup() {
-    return { ...usePubSub() };
-  },
-  props: ["profileId"],
-  data() {
-    return {
-      isLoading: false,
-      disableButton: false,
-      model: {
-        fileName: null,
-        description: null
-      }
-    };
-  },
-  components: {
-    UploadFile: defineAsyncComponent(() => import("../../components/UploadFiles.vue"))
-  },
-  methods: {
-    filename,
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.submitDocument();
-          return;
-        }
-        showAlertError("Please make sure all required fields are filled out correctly");
-      });
-    },
-    submitDocument() {
-      this.isLoading = true;
-      createAgencyCompanyDocument(this.profileId, this.model)
-        .then((response) => {
-          this.isLoading = false;
-          let newDocument = {
-            id: response.id,
-            fileName: this.model.fileName,
-            description: this.model.description,
-            pathFile: response.pathFile
-          };
-          this.$emit("onCreateDocument", newDocument);
-          showAlertSuccess("Created");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    addDocument(file) {
-      this.model.fileName = file;
-    },
-    deleteDocument() {
-      this.isLoading = true;
-      deleteFile(this.model.fileName)
-        .then(() => { this.model.fileName = null; })
-        .finally(() => { this.isLoading = false; });
-    }
+const schema = yup.object({
+  description: yup.string().required('Description is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+});
+
+const props = defineProps<{ profileId: any }>();
+const emit = defineEmits<{ (e: 'onCreateDocument', value: any): void }>();
+
+const { subscribe, unsubscribe } = usePubSub();
+
+const form = useStickyForm<{ description: string }>({
+  schema,
+  initialValues: { description: '' },
+});
+const { description } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const disableButton = ref(false);
+const fileName = ref<string | null>(null);
+const documentType = ref<string | null>(null);
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError("Please make sure all required fields are filled out correctly");
+    return;
   }
-};
+  submitDocument();
+}
+
+function submitDocument() {
+  isLoading.value = true;
+  const model = {
+    fileName: fileName.value,
+    description: description.value,
+    documentType: documentType.value,
+  };
+  createAgencyCompanyDocument(props.profileId, model)
+    .then((response) => {
+      isLoading.value = false;
+      const newDocument = {
+        id: response.id,
+        fileName: fileName.value,
+        description: description.value,
+        pathFile: response.pathFile,
+      };
+      emit("onCreateDocument", newDocument);
+      showAlertSuccess("Created");
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function addDocument(file: any) {
+  fileName.value = file;
+}
+
+function deleteDocument() {
+  isLoading.value = true;
+  deleteFile(fileName.value)
+    .then(() => { fileName.value = null; })
+    .finally(() => { isLoading.value = false; });
+}
+
 </script>

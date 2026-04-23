@@ -130,24 +130,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import appMobileBusinesses from '@/assets/images/app_mobile_businesses.png';
+import SigookVideo from "@/components/landing/SigookVideo.vue";
+import SubMenu from "@/components/landing/SubMenu.vue";
+import NeedStaff from "@/components/landing/NeedStaff.vue";
 
-export default {
-  components: {
-    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
-    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue")),
-    NeedStaff: defineAsyncComponent(() => import("@/components/landing/NeedStaff.vue"))
-  },
-  data() {
-    return {
-      isLoading: false,
-      appMobileBusinesses
-    }
-  }
-}
-
+const isLoading = ref(false);
 </script>
 
 <style lang="scss">

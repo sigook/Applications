@@ -1,7 +1,7 @@
 <template>
   <div class="container-flex">
     <section class="col-sm-12 col-md-9">
-      <request-detail :request="request" @update:request="$emit('update:request', $event)" @refreshRequest="$emit('refreshRequest')" />
+      <request-detail :request="request" @update:request="emit('update:request', $event)" @refreshRequest="emit('refreshRequest')" />
     </section>
     <aside class="col-sm-12 col-md-3">
       <notes :canEdit="request.canEdit" />
@@ -18,22 +18,17 @@
     </aside>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
 import { emailName, dateFromNow } from '@/utils/filters';
+import RequestDetail from '../request/RequestDetail.vue';
+import Location from '../request/RequestLocation.vue';
+import Notes from '../agency_request/RequestNotes.vue';
+import RequestedBy from './RequestedBy.vue';
+import ReportTo from './ReportTo.vue';
 
-export default {
-  props: ["request"],
-  methods: {
-    emailName,
-    dateFromNow,
-  },
-  components: {
-    RequestDetail: defineAsyncComponent(() => import("../request/RequestDetail.vue")),
-    Location: defineAsyncComponent(() => import("../request/RequestLocation.vue")),
-    Notes: defineAsyncComponent(() => import("../agency_request/RequestNotes.vue")),
-    RequestedBy: defineAsyncComponent(() => import("./RequestedBy.vue")),
-    ReportTo: defineAsyncComponent(() => import("./ReportTo.vue"))
-  }
-}
+defineProps<{ request: any }>();
+const emit = defineEmits<{
+  (e: 'update:request', value: any): void;
+  (e: 'refreshRequest'): void;
+}>();
 </script>

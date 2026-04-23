@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="update-image" :class="{ 'is-danger': !!fileError }">
       <input type="file" id="file" @change="validateImage" accept="image/*" title="logo" name="file"
-        :ref="'file'" />
+        ref="fileInput" />
 
       <label for="file">{{ "Upload Picture" }}</label>
       <img v-if="localImage" :src="localImage" alt="logo" style="z-index: 1;">
@@ -31,120 +31,122 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { compressFile } from '@/utils/compressFile';
+import CropImage from "./CropImage.vue";
+import DefaultImage from "./DefaultImage.vue";
 
 const ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'gif', 'svg'];
 const MAX_SIZE_KB = 10000;
 
-export default {
-  props: [
-    'editedImage',
-    'required',
-    'name',
-    'showDefault'
-  ],
-  data() {
-    return {
-      pathImage: null,
-      isLoading: false,
-      selected: false,
-      localImage: this.editedImage ? this.editedImage.pathFile : null,
-      modalValidation: false,
-      cropImage: '',
-      hasImage: false,
-      fileError: '' as string,
-    }
-  },
-  components: {
-    cropImage: defineAsyncComponent(() => import("./CropImage.vue"))
-  },
-  methods: {
-    compressFile,
-    validateFile(file: File): boolean {
-      this.fileError = '';
-      if (!file) {
-        if (this.required && !this.hasImage) {
-          this.fileError = 'Image is required';
-          return false;
-        }
-        return true;
-      }
-      const ext = file.name.split('.').pop()?.toLowerCase() || '';
-      if (!ALLOWED_EXTENSIONS.includes(ext)) {
-        this.fileError = `Allowed formats: ${ALLOWED_EXTENSIONS.join(', ')}`;
-        return false;
-      }
-      if (file.size / 1024 > MAX_SIZE_KB) {
-        this.fileError = `File exceeds ${MAX_SIZE_KB / 1000}MB limit`;
-        return false;
-      }
-      return true;
-    },
-    showCrop(evt) {
-      if ((document as any).documentMode || /Edge/.test(navigator.userAgent)) {
-        this.showImage(evt.target.files[0])
-      } else {
-        const file = evt.target.files[0];
-        this.cropImage = URL.createObjectURL(file);
-        this.modalValidation = true;
-      }
-    },
-    async showImage(output) {
-      this.isLoading = true;
-      this.hasImage = true;
-      this.localImage = URL.createObjectURL(output);
-      this.modalValidation = false;
-      this.$emit('onUpload', true);
+const props = defineProps<{
+  editedImage?: any;
+  required?: boolean;
+  name?: string;
+  showDefault?: boolean;
+}>();
 
-      try {
-        const compressedImage = await this.compressFile(output);
-        this.cleanInput();
-        this.$emit('finishUpload', true);
-        this.$emit('imageSelected', compressedImage);
-        this.isLoading = false;
-      } catch (e) {
-        showAlertError(e);
-        this.localImage = null;
-        this.cleanInput();
-        this.$emit('finishUpload', true);
-        this.isLoading = false;
-      }
-    },
-    cleanInput() {
-      const input = this.$refs['file'] as HTMLInputElement;
-      input.type = 'text';
-      input.type = 'file';
-    },
-    validateDimensions(evt) {
-      let reader = new FileReader();
-      reader.readAsDataURL(evt.target.files[0]);
-      reader.onload = (e) => {
-        let image = new Image();
-        image.src = (e.target as FileReader).result as string;
-        image.onload = () => {
-          let height = image.height;
-          let width = image.width;
-          if (height < 150 || width < 150) {
-            showAlertError('This file es too small, please select a photo with height and width of at least 150 pixels');
-            this.localImage = null;
-          } else {
-            this.showCrop(evt);
-          }
-        };
-      };
+const emit = defineEmits<{
+  (e: 'onUpload', v: boolean): void;
+  (e: 'finishUpload', v: boolean): void;
+  (e: 'imageSelected', file: File): void;
+}>();
 
-    },
-    validateImage(evt) {
-      const file = evt.target.files[0];
-      if (this.validateFile(file)) {
-        this.validateDimensions(evt);
-      } else {
-        this.localImage = null;
-      }
+const isLoading = ref(false);
+const localImage = ref<string | null>(props.editedImage ? props.editedImage.pathFile : null);
+const modalValidation = ref(false);
+const cropImage = ref<string>('');
+const hasImage = ref(false);
+const fileError = ref('');
+const fileInput = ref<HTMLInputElement | null>(null);
+
+function validateFile(file: File): boolean {
+  fileError.value = '';
+  if (!file) {
+    if (props.required && !hasImage.value) {
+      fileError.value = 'Image is required';
+      return false;
     }
+    return true;
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    fileError.value = `Allowed formats: ${ALLOWED_EXTENSIONS.join(', ')}`;
+    return false;
+  }
+  if (file.size / 1024 > MAX_SIZE_KB) {
+    fileError.value = `File exceeds ${MAX_SIZE_KB / 1000}MB limit`;
+    return false;
+  }
+  return true;
+}
+
+function showCrop(evt: any) {
+  if ((document as any).documentMode || /Edge/.test(navigator.userAgent)) {
+    showImage(evt.target.files[0]);
+  } else {
+    const file = evt.target.files[0];
+    cropImage.value = URL.createObjectURL(file);
+    modalValidation.value = true;
+  }
+}
+
+async function showImage(output: File) {
+  isLoading.value = true;
+  hasImage.value = true;
+  localImage.value = URL.createObjectURL(output);
+  modalValidation.value = false;
+  emit('onUpload', true);
+
+  try {
+    const compressedImage = await compressFile(output);
+    cleanInput();
+    emit('finishUpload', true);
+    emit('imageSelected', compressedImage as File);
+    isLoading.value = false;
+  } catch (e) {
+    showAlertError(e);
+    localImage.value = null;
+    cleanInput();
+    emit('finishUpload', true);
+    isLoading.value = false;
+  }
+}
+
+function cleanInput() {
+  const input = fileInput.value;
+  if (!input) return;
+  input.type = 'text';
+  input.type = 'file';
+}
+
+function validateDimensions(evt: any) {
+  const reader = new FileReader();
+  reader.readAsDataURL(evt.target.files[0]);
+  reader.onload = (e) => {
+    const image = new Image();
+    image.src = (e.target as FileReader).result as string;
+    image.onload = () => {
+      const height = image.height;
+      const width = image.width;
+      if (height < 150 || width < 150) {
+        showAlertError('This file es too small, please select a photo with height and width of at least 150 pixels');
+        localImage.value = null;
+      } else {
+        showCrop(evt);
+      }
+    };
+  };
+}
+
+function validateImage(evt: any) {
+  const file = evt.target.files[0];
+  if (validateFile(file)) {
+    validateDimensions(evt);
+  } else {
+    localImage.value = null;
   }
 }
 </script>

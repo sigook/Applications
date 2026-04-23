@@ -62,15 +62,25 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import * as yup from 'yup';
-import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerLicenses } from '@/api/workerApi';
+
+interface LicenseForm {
+  description: string;
+  number: string;
+  issued: Date | null;
+  expires: Date | null;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   description: yup.string().required('Description is required').max(100, 'Max 100 characters'),
@@ -79,107 +89,92 @@ const schema = yup.object({
   expires: yup.mixed().required('Expires is required'),
 });
 
-export default {
-  props: ["data"],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        description: '',
-        number: '',
-        issued: null as Date | null,
-        expires: null as Date | null,
-      },
-    });
+const form = useStickyForm<LicenseForm>({
+  schema,
+  initialValues: {
+    description: '',
+    number: '',
+    issued: null,
+    expires: null,
+  },
+});
+const { description, number, issued, expires } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
+const appStore = useAppStore();
+
+const todayDate = ref<any>(null);
+const isLoading = ref(false);
+const selectedLicenseFile = ref<any>(null);
+const fileObjects = reactive<{ license: any }>({ license: null });
+const licenseModal = ref<any>({
+  license: { fileName: "", description: "" },
+});
+const licenses = ref<any[]>([]);
+
+function handleLicenseFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedLicenseFile.value = null;
+    return;
+  }
+  fileObjects.license = file;
+  const generatedName = generateFileName('License', file.name);
+  licenseModal.value.license = { fileName: generatedName, description: '' };
+  selectedLicenseFile.value = null;
+}
+
+function clearLicenseFile() {
+  fileObjects.license = null;
+  licenseModal.value.license = { fileName: '', description: '' };
+}
+
+async function saveLicenses(values: any) {
+  isLoading.value = true;
+  try {
+    const newLicense = {
+      license: {
+        fileName: licenseModal.value.license.fileName,
+        description: values.description,
+      },
+      number: values.number,
+      issued: values.issued,
+      expires: values.expires,
     };
-  },
-  data() {
-    return {
-      todayDate: null as any,
-      isLoading: false,
-      selectedLicenseFile: null as any,
-      fileObjects: { license: null as any },
-      licenseModal: {
-        license: { fileName: "", description: "" },
-      } as any,
-      licenses: [] as any[],
-    };
-  },
-  computed: {
-    ...mapStores(useAppStore),
-  },
-  methods: {
-    filename,
-    handleLicenseFileSelected(file: any) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedLicenseFile = null;
-        return;
-      }
-      this.fileObjects.license = file;
-      const generatedName = generateFileName('License', file.name);
-      this.licenseModal.license = { fileName: generatedName, description: '' };
-      this.selectedLicenseFile = null;
-    },
-    clearLicenseFile() {
-      this.fileObjects.license = null;
-      this.licenseModal.license = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.saveLicenses(values);
-      }, () => {
-        showAlertError("Please make sure all required fields are filled out correctly");
-      })();
-    },
-    async saveLicenses(values: any) {
-      this.isLoading = true;
-      try {
-        const newLicense = {
-          license: {
-            fileName: this.licenseModal.license.fileName,
-            description: values.description,
-          },
-          number: values.number,
-          issued: values.issued,
-          expires: values.expires,
-        };
-        const allLicenses = [...this.licenses, newLicense];
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(allLicenses));
-        if (this.fileObjects.license) {
-          const fn = newLicense.license.fileName;
-          formData.append(fn, this.fileObjects.license, fn);
-        }
-        await createWorkerLicenses((this as any).data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-  },
-  created() {
-    const data = (this as any).data;
-    if (data != null) {
-      for (let i = 0; i < data.licenses.length; i++) {
-        this.licenses.push(data.licenses[i]);
-      }
+    const allLicenses = [...licenses.value, newLicense];
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(allLicenses));
+    if (fileObjects.license) {
+      const fn = newLicense.license.fileName;
+      formData.append(fn, fileObjects.license, fn);
     }
-    (this as any).appStore.getCurrentDate().then((response: any) => {
-      this.todayDate = response;
-    });
-  },
-};
+    await createWorkerLicenses(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveLicenses(values);
+  }, () => {
+    showAlertError("Please make sure all required fields are filled out correctly");
+  })();
+}
+
+if (props.data != null) {
+  for (let i = 0; i < props.data.licenses.length; i++) {
+    licenses.value.push(props.data.licenses[i]);
+  }
+}
+appStore.getCurrentDate().then((response: any) => {
+  todayDate.value = response;
+});
 </script>
 
 <style scoped>

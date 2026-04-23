@@ -122,16 +122,28 @@
             <label class="color-red-light"> DEMO TODAY.</label>
           </div>
           <form class="sigook-atas-request-demo-form" id="requestDemo" @submit.prevent="sendMessage">
-            <input type="text" class="control-rounded border-0 sigook-atas-request-demo-large-control"
-              v-model="contact.companyName" placeholder="Company Name" v-validate="'required|max:50'" />
-            <input type="text" class="control-rounded border-0" placeholder="Address" v-model="contact.address"
-              v-validate="'required|max:50'" />
-            <input type="text" class="control-rounded border-0" placeholder="Industry" v-model="contact.industry"
-              v-validate="'required|max:50'" />
-            <input type="text" class="control-rounded border-0" placeholder="Phone" name="phone" v-model="contact.phone"
-              v-validate="{ required: true, phoneCustom: '' }" v-cleave="mask" />
-            <input type="email" class="control-rounded border-0" placeholder="Email" v-model="contact.email"
-              v-validate="'required|max:50|email'" />
+            <div class="sigook-atas-request-demo-large-control">
+              <input type="text" class="control-rounded border-0 w-100"
+                v-model="companyName" placeholder="Company Name" />
+              <span v-if="formErrors.companyName" class="help is-danger">{{ formErrors.companyName }}</span>
+            </div>
+            <div>
+              <input type="text" class="control-rounded border-0 w-100" placeholder="Address" v-model="address" />
+              <span v-if="formErrors.address" class="help is-danger">{{ formErrors.address }}</span>
+            </div>
+            <div>
+              <input type="text" class="control-rounded border-0 w-100" placeholder="Industry" v-model="industry" />
+              <span v-if="formErrors.industry" class="help is-danger">{{ formErrors.industry }}</span>
+            </div>
+            <div>
+              <input type="text" class="control-rounded border-0 w-100" placeholder="Phone" name="phone" v-model="phone"
+                @input="onPhoneInput" maxlength="12" />
+              <span v-if="formErrors.phone" class="help is-danger">{{ formErrors.phone }}</span>
+            </div>
+            <div>
+              <input type="email" class="control-rounded border-0 w-100" placeholder="Email" v-model="email" />
+              <span v-if="formErrors.email" class="help is-danger">{{ formErrors.email }}</span>
+            </div>
             <vue-recaptcha ref="recaptcha" :sitekey="siteKey" @verify="onRecaptchaResponse"></vue-recaptcha>
             <div class="sigook-atas-request-demo-large-control text-right">
               <button class="button-rounded bg-linear-red-blue color-white" type="submit">SEND -></button>
@@ -144,69 +156,98 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { phoneMask as mask } from '@/constants/phoneMask';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import * as yup from 'yup';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
+import { phoneSchema } from '@/utils/validation';
+import { formatPhone } from '@/utils/phoneFormat';
+import { useStickyForm } from '@/composables/useStickyForm';
+import SubMenu from "@/components/landing/SubMenu.vue";
 
-export default {
-  data() {
-    return {
-      mask,
-      isLoading: false,
-      contact: {
-        title: 'CONTACT ATAS SYSTEM ~ NOTIFICATION',
-        subject: 'Request ATAS Demo',
-        emailSetting: import.meta.env.VUE_APP_SIGOOK_NOTIFICATION
-      },
-      solutionType: null,
-      formError: null
-    }
-  },
-  components: {
-    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue"))
-  },
-  created() {
-    this.solutionType = this.$route.query.solutionType;
-  },
-  computed: {
-    siteKey() { return recaptchaSiteKey; }
-  },
-  methods: {
-    onRecaptchaResponse(result) { this.contact.captchaResponse = result; },
-    async sendMessage() {
-      const result = await this.$validator.validateAll();
-      if (!result) {
-        this.formError = this.errors.has('phone') ? 'Please use a valid phone number in the United States' : 'Please check the information provided and re-submit';
-      } else if (!this.contact.captchaResponse) {
-        this.formError = 'reCaptcha invalid';
-      } else {
-        this.isLoading = true;
-        this.formError = null;
-        submitContactForm(this.contact)
-          .then(() => {
-            this.resetContactForm();
-            this.isLoading = false;
-          })
-          .catch(() => {
-            this.resetContactForm();
-            this.isLoading = false;
-          });
-      }
-    },
-    resetContactForm() {
-      this.contact.companyName = null;
-      this.contact.address = null;
-      this.contact.industry = null;
-      this.contact.phone = null;
-      this.contact.email = null;
-      this.contact.captchaResponse = null;
-      this.$refs.recaptcha.reset();
-    }
-  }
+const schema = yup.object({
+  companyName: yup.string().required('Company Name is required').max(50, 'Max 50 characters'),
+  address: yup.string().required('Address is required').max(50, 'Max 50 characters'),
+  industry: yup.string().required('Industry is required').max(50, 'Max 50 characters'),
+  phone: phoneSchema(true),
+  email: yup.string().required('Email is required').email('Invalid email').max(50, 'Max 50 characters'),
+});
+
+const form = useStickyForm<{ companyName: string; address: string; industry: string; phone: string; email: string }>({
+  schema,
+  initialValues: { companyName: '', address: '', industry: '', phone: '', email: '' },
+});
+const { companyName, address, industry, phone, email } = form.fields;
+const formErrors = form.errors;
+
+const route = useRoute();
+
+const isLoading = ref(false);
+const title = 'CONTACT ATAS SYSTEM ~ NOTIFICATION';
+const subject = 'Request ATAS Demo';
+const emailSetting = import.meta.env.VUE_APP_SIGOOK_NOTIFICATION as string;
+const captchaResponse = ref<string | null>(null);
+const solutionType = ref<string | null>(null);
+const formError = ref<string | null>(null);
+const recaptcha = ref<any>(null);
+
+const siteKey = computed(() => recaptchaSiteKey);
+
+solutionType.value = route.query.solutionType as string;
+
+function onPhoneInput(e: Event) {
+  const formatted = formatPhone((e.target as HTMLInputElement).value);
+  form.setFieldValue('phone', formatted);
 }
 
+function onRecaptchaResponse(result: string) {
+  captchaResponse.value = result;
+}
+
+async function sendMessage() {
+  form.markInteracted();
+  const { valid, errors } = await form.validate();
+  if (!valid) {
+    formError.value = errors && (errors as any).phone
+      ? 'Please use a valid phone number in the United States'
+      : 'Please check the information provided and re-submit';
+    return;
+  }
+  if (!captchaResponse.value) {
+    formError.value = 'reCaptcha invalid';
+    return;
+  }
+  isLoading.value = true;
+  formError.value = null;
+  const payload = {
+    title,
+    subject,
+    emailSetting,
+    companyName: companyName.value,
+    address: address.value,
+    industry: industry.value,
+    phone: phone.value,
+    email: email.value,
+    captchaResponse: captchaResponse.value,
+  };
+  submitContactForm(payload as any)
+    .then(() => {
+      resetContactForm();
+      isLoading.value = false;
+    })
+    .catch(() => {
+      resetContactForm();
+      isLoading.value = false;
+    });
+}
+
+function resetContactForm() {
+  form.resetAll();
+  captchaResponse.value = null;
+  recaptcha.value?.reset();
+}
 </script>
 
 

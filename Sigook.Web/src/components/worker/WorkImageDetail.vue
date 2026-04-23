@@ -2,7 +2,7 @@
   <div class="hover-actions">
     <b-loading v-model="isLoading"></b-loading>
     <div class="worker-profile-image">
-      <img v-if="data.profileImage" :src="data.profileImage.pathFile">
+      <img v-if="props.data.profileImage" :src="props.data.profileImage.pathFile">
       <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="showEditModal = true">Edit</button>
     </div>
     <!-- custom modal -->
@@ -16,15 +16,15 @@
                 {{ 'Close' }}
               </button>
               <upload-image v-if="profileImage"
-                @imageSelected="profileImg => this.profileImageFile = profileImg"
-                :edited-image="this.data.profileImage" :required="true" @onUpload="() => subscribe('file')"
-                @finishUpload="() => unsubscribe()" class="margin-10-auto">
+                @imageSelected="(profileImg: File) => profileImageFile = profileImg"
+                :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
+                @finishUpload="() => pubSub.unsubscribe()" class="margin-10-auto">
               </upload-image>
               <div class="text-center">
                 <button class="background-btn md-btn red-button btn-radius margin-top-15 margin-right uppercase"
                   @click="showEditModal = false" type="button">{{ "Cancel" }}</button>
                 <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase"
-                  @click="createWorkerImage()" type="button">{{ "Save" }}</button>
+                  @click="createWorkerImageHandler()" type="button">{{ "Save" }}</button>
               </div>
             </div>
           </div>
@@ -36,69 +36,61 @@
 
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertError } from "@/utils/toast";
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from '@/utils/toast';
+import { generateFileName } from '@/utils/buildWorkerFormData';
+import { compressFile } from '@/utils/compressFile';
 import { usePubSub } from '@/composables/usePubSub';
 import { createWorkerImage } from '@/api/workerApi';
-export default {
-  setup() {
-    return { ...usePubSub() };
-  },
-  props: ['data'],
-    data() {
-    return {
-      showEditModal: false,
-      profileImage: {},
-      profileImageFile: null,
-      isLoading: false
-    }
-  },
-  methods: {
-    async createWorkerImage() {
-      if (!this.profileImageFile) {
-        showAlertError('Please select an image');
-        return;
-      }
+import UploadImage from '../../components/PreviewImage.vue';
 
-      this.isLoading = true;
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile', value: boolean): void }>();
 
-      try {
-        // Generate unique filename with GUID (same pattern as registration)
-        const generatedFileName = generateFileName('ProfileImage', this.profileImageFile.name);
+const pubSub = usePubSub();
 
-        // Compress the image
-        let fileToUpload;
-        try {
-          fileToUpload = await this.compressFile(this.profileImageFile);
-        } catch {
-          fileToUpload = this.profileImageFile;
-        }
+const showEditModal = ref(false);
+const profileImage = ref<any>({});
+const profileImageFile = ref<File | null>(null);
+const isLoading = ref(false);
 
-        // Create FormData
-        const formData = new FormData();
-        formData.append(generatedFileName, fileToUpload, generatedFileName);
-
-        await createWorkerImage(this.data.id, formData);
-
-        this.isLoading = false;
-        this.showEditModal = false;
-        this.$emit('updateProfile', true);
-      } catch (error) {
-        this.isLoading = false;
-        showAlertError(error);
-      }
-    }
-  },
-  components: {
-    UploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue"))
-  },
-  created() {
-    if (this.data != null) {
-      this.profileImage = Object.assign({}, this.data.profileImage);
-    }
+async function createWorkerImageHandler() {
+  if (!profileImageFile.value) {
+    showAlertError('Please select an image');
+    return;
   }
 
+  isLoading.value = true;
+
+  try {
+    // Generate unique filename with GUID (same pattern as registration)
+    const generatedFileName = generateFileName('ProfileImage', profileImageFile.value.name);
+
+    // Compress the image
+    let fileToUpload: Blob | File;
+    try {
+      fileToUpload = await compressFile(profileImageFile.value);
+    } catch {
+      fileToUpload = profileImageFile.value;
+    }
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append(generatedFileName, fileToUpload, generatedFileName);
+
+    await createWorkerImage(props.data.id, formData);
+
+    isLoading.value = false;
+    showEditModal.value = false;
+    emit('updateProfile', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+}
+
+if (props.data != null) {
+  profileImage.value = Object.assign({}, props.data.profileImage);
 }
 </script>

@@ -28,7 +28,9 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
@@ -39,80 +41,70 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-export default {
-  props: ['index', 'item'],
-  setup(props) {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        name: (props.item && props.item.name) || '',
-        email: (props.item && props.item.email) || '',
-      },
+const props = defineProps<{ index?: number; item?: any }>();
+const emit = defineEmits<{ (e: 'updateDataEmailList', index?: number): void }>();
+
+const route = useRoute();
+
+const form = useStickyForm<{ name: string; email: string }>({
+  schema,
+  initialValues: {
+    name: (props.item && props.item.name) || '',
+    email: (props.item && props.item.email) || '',
+  },
+});
+const { name, email } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const disabled = ref(true);
+const localItem = ref<any>(JSON.parse(JSON.stringify(props.item)));
+
+watch(() => props.item, (newVal) => {
+  localItem.value = JSON.parse(JSON.stringify(newVal));
+  form.hydrate({
+    name: newVal?.name || '',
+    email: newVal?.email || '',
+  });
+}, { deep: true });
+
+function onDeleteInvoiceRecipient(item: any, index?: number) {
+  isLoading.value = true;
+  deleteCompanyInvoiceRecipient(route.params.id as any, item.id)
+    .then(() => {
+      isLoading.value = false;
+      emit('updateDataEmailList', index);
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
     });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      disabled: true,
-      localItem: JSON.parse(JSON.stringify(this.item))
-    }
-  },
-  watch: {
-    item: {
-      handler(newVal) {
-        this.localItem = JSON.parse(JSON.stringify(newVal));
-        this.hydrateForm({
-          name: newVal?.name || '',
-          email: newVal?.email || '',
-        });
-      },
-      deep: true
-    }
-  },
-  methods: {
-    onDeleteInvoiceRecipient(item, index) {
-      this.isLoading = true;
-      deleteCompanyInvoiceRecipient(this.$route.params.id, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("updateDataEmailList", index);
-        })
-        .catch(error => {
-          showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    toogleEditInput() {
-      this.disabled = false;
-    },
-    validateUpdate(_index) {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.onUpdateInvoiceRecipient({ ...this.localItem, name: values.name, email: values.email });
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    onUpdateInvoiceRecipient(item) {
-      this.isLoading = true;
-      updateCompanyInvoiceRecipient(this.$route.params.id, item.id, { name: item.name, email: item.email })
-        .then(() => {
-          this.localItem = { ...item };
-          this.disabled = true;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          showAlertError(error);
-          this.isLoading = false;
-        });
-    }
-  }
+}
+
+function toogleEditInput() {
+  disabled.value = false;
+}
+
+function validateUpdate(_index?: number) {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    onUpdateInvoiceRecipient({ ...localItem.value, name: values.name, email: values.email });
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function onUpdateInvoiceRecipient(item: any) {
+  isLoading.value = true;
+  updateCompanyInvoiceRecipient(route.params.id as any, item.id, { name: item.name, email: item.email })
+    .then(() => {
+      localItem.value = { ...item };
+      disabled.value = true;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
 }
 </script>

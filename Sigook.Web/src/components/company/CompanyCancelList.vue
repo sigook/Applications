@@ -24,54 +24,46 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { getReasonCancellationRequest } from "@/api/catalogApi";
 
+const emit = defineEmits<{ (e: 'sendReason', payload: { reasonId: any; otherMessage: string }): void }>();
+
 const schema = yup.object({
   reason: yup.string().required('Reason is required'),
 });
 
-export default {
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: { reason: '' },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-    };
-  },
-  data() {
-    return {
-      isLoading: true,
-      reasonSelected: null as any,
-      cancellationList: [] as any[],
-    }
-  },
-  async created() {
-    this.cancellationList = await getReasonCancellationRequest();
-    this.isLoading = false;
-  },
-  methods: {
-    validateInput() {
-      if (!this.reasonSelected) {
-        showAlertError('Please select a cancellation reason');
-        return;
-      }
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.$emit('sendReason', { reasonId: this.reasonSelected.id, otherMessage: values.reason });
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    }
+const form = useStickyForm<{ reason: string }>({
+  schema,
+  initialValues: { reason: '' },
+});
+const { reason } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(true);
+const reasonSelected = ref<any>(null);
+const cancellationList = ref<any[]>([]);
+
+(async () => {
+  cancellationList.value = await getReasonCancellationRequest();
+  isLoading.value = false;
+})();
+
+function validateInput() {
+  if (!reasonSelected.value) {
+    showAlertError('Please select a cancellation reason');
+    return;
   }
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    emit('sendReason', { reasonId: reasonSelected.value.id, otherMessage: values.reason });
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 </script>
 <style lang="scss" scoped>

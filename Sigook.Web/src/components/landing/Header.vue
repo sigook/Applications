@@ -51,39 +51,25 @@
 </template>
 
 
-<script lang="ts">
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';
-import menu from "@/security/menu";
+import menu from '@/security/menu';
 
-export default {
-  methods: {
-    async login() {
-      const user = this.securityStore.user;
-      if (user) {
-        const roles = this.securityStore.userRoles;
-        const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-        this.$router.push(homePageUrl);
-      } else {
-        await this.securityStore.signIn();
-      }
-    }
-  },
-  computed: {
-    ...mapStores(useSecurityStore),
-    hiddeHeader() {
-      return this.$route.query.hiddeHeader === "true";
-    },
-    loginButton() {
-      if (this.securityStore.user) {
-        return 'Go to Portal'
-      } else {
-        return 'Login'
-      }
-    }
+const router = useRouter();
+const securityStore = useSecurityStore();
+
+const loginButton = computed(() => (securityStore.user ? 'Go to Portal' : 'Login'));
+
+async function login() {
+  if (securityStore.user) {
+    const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
+    router.push(homePageUrl);
+  } else {
+    await securityStore.signIn();
   }
 }
-
 </script>
 
 <style lang="scss">

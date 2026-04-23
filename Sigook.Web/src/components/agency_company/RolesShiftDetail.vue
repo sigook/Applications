@@ -1,47 +1,40 @@
 <template>
     <div class="d-inline-block relative v-top" @mouseleave="showDetail = false">
-        <span>{{displayShift}}</span>
-        <button v-if="displayShift" @click="getShift" class="no-border pl-4 pr-3" :class="{'up': showDetail}">
+        <span>{{ props.displayShift }}</span>
+        <button v-if="props.displayShift" @click="getShift" class="no-border pl-4 pr-3" :class="{ 'up': showDetail }">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px">
         </button>
         <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />
     </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
-export default {
-    props: ['displayShift', 'roleId', 'companyId'],
-    data() {
-        return {
-            shift: null,
-            showDetail: false,
-            isLoading: false
-        }
-    },
-    components: {
-        ShiftDetail: defineAsyncComponent(() => import("../request/ShiftDetail.vue"))
-    },
-    methods: {
-        getShift(){
-            if (!this.showDetail){
-                this.isLoading = true;
-                this.showDetail = true;
-                getAgencyCompanyJobPositionById(this.companyId, this.roleId)
-                        .then(response => {
-                            this.isLoading = false;
-                            this.shift = response.shift;
-                        })
-                        .catch(error => {
-                            this.isLoading = false;
-                            showAlertError(error);
-                        })
-            } else {
-                this.showDetail = false;
-            }
-        }
+import ShiftDetail from "../request/ShiftDetail.vue";
+
+const props = defineProps<{ displayShift?: any; roleId: any; companyId: any }>();
+
+const shift = ref<any>(null);
+const showDetail = ref(false);
+const isLoading = ref(false);
+
+function getShift() {
+    if (!showDetail.value) {
+        isLoading.value = true;
+        showDetail.value = true;
+        getAgencyCompanyJobPositionById(props.companyId, props.roleId)
+            .then(response => {
+                isLoading.value = false;
+                shift.value = response.shift;
+            })
+            .catch(error => {
+                isLoading.value = false;
+                showAlertError(error);
+            });
+    } else {
+        showDetail.value = false;
     }
 }
 </script>

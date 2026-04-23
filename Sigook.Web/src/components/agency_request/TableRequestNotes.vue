@@ -33,8 +33,8 @@
         <!-- end CREATE custom modal -->
     </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { emailName, dateFromNow } from '@/utils/filters';
 import {
@@ -44,42 +44,32 @@ import {
   deleteAgencyRequestNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+import ModalNotes from '../notes/ModalNotes.vue';
 
-export default {
-    props: ['canEdit', 'requestId'],
-    data() {
-        return {
-            showModalNotes: false,
-            profileId: this.requestId,
-            getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
-            createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
-            updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
-            deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
-            notesList: null
-        }
-    },
-    components: {
-        ModalNotes: defineAsyncComponent(() => import("../notes/ModalNotes.vue"))
-    },
-    methods: {
-        emailName,
-        dateFromNow,
-        loadFirstNotes(){
-            getAgencyRequestNotes(this.profileId, {page: 1, size: 1})
-                    .then(response => {
-                        this.notesList = response;
-                    })
-                    .catch(error => {
-                        showAlertError(error)
-                    })
-        },
-        onCloseModalNotes(){
-            this.showModalNotes = false;
-            this.loadFirstNotes();
-        }
-    },
-    created() {
-        this.loadFirstNotes();
-    }
+const props = defineProps<{ canEdit?: boolean; requestId: any }>();
+
+const showModalNotes = ref(false);
+const profileId = props.requestId;
+const getNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination);
+const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model);
+const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model);
+const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id);
+const notesList = ref<any>(null);
+
+function loadFirstNotes() {
+    getAgencyRequestNotes(profileId, { page: 1, size: 1 })
+        .then(response => {
+            notesList.value = response;
+        })
+        .catch(error => {
+            showAlertError(error);
+        });
 }
+
+function onCloseModalNotes() {
+    showModalNotes.value = false;
+    loadFirstNotes();
+}
+
+loadFirstNotes();
 </script>

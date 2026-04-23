@@ -69,10 +69,12 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
+import { getDialog } from '@/utils/buefyProgrammatic';
 import { getTaxCategories } from "@/api/catalogApi";
 import {
   updateWorkerProfileExternalId,
@@ -85,6 +87,9 @@ import {
   addUpdateAgencyWorkerProfileHolidays,
 } from "@/api/agencyWorkerApi";
 
+const props = defineProps<{ worker: any }>();
+const emit = defineEmits<{ (e: 'update:worker', value: any): void }>();
+
 const schema = yup.object({
   cpp: yup.number().nullable().transform((v, o) => o === '' || o === null ? null : v)
     .min(0, 'Must be greater than or equal to 0'),
@@ -92,151 +97,136 @@ const schema = yup.object({
     .min(0, 'Must be greater than or equal to 0'),
 });
 
-export default {
-  props: ['worker'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        cpp: null as number | null,
-        ei: null as number | null,
-      },
-    });
+const form = useStickyForm<{ cpp: number | null; ei: number | null }>({
+  schema,
+  initialValues: {
+    cpp: null,
+    ei: null,
+  },
+});
+const { cpp, ei } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      taxCategories: [] as any[],
-      workerHolidays: [] as any[],
-      workerHolidaySelected: null as any,
-      localWorker: JSON.parse(JSON.stringify((this as any).worker)),
-    };
-  },
-  watch: {
-    worker: {
-      handler(newVal) {
-        this.localWorker = JSON.parse(JSON.stringify(newVal));
-        this.hydrateForm({
-          cpp: newVal?.cpp ?? null,
-          ei: newVal?.ei ?? null,
-        });
-      },
-      deep: true,
-    },
-  },
-  methods: {
-    updateExternalId() {
-      this.isLoading = true;
-      updateWorkerProfileExternalId(this.localWorker)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('update:worker', this.localWorker);
-        }).catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateIsContractor() {
-      this.isLoading = true;
-      updateAgencyWorkerContractor(this.localWorker.id)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('update:worker', this.localWorker);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateIsSubContractor() {
-      this.isLoading = true;
-      updateAgencyWorkerSubContractor(this.localWorker.id)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('update:worker', this.localWorker);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateTaxCategory() {
-      this.isLoading = true;
-      updateWorkerProfileTaxCategory(this.localWorker)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('update:worker', this.localWorker);
-        }).catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateTaxRate() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        this.isLoading = true;
-        this.localWorker.cpp = values.cpp;
-        this.localWorker.ei = values.ei;
-        updateWorkerProfileTaxRate(this.localWorker)
-          .then(() => {
-            this.isLoading = false;
-            this.$emit('update:worker', this.localWorker);
-          }).catch((error) => {
-            this.isLoading = false;
-            showAlertError(error);
-          });
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    async addHoliday() {
-      (this as any).$buefy.dialog.prompt({
-        message: `City`,
-        inputAttrs: {
-          type: 'date',
-          placeholder: 'Date',
-        },
-        closeOnConfirm: false,
-        confirmText: 'Add',
-        onConfirm: async (value: any, dialog: any) => {
-          await addNewHoliday({ workerProfileId: this.localWorker.id, date: value });
-          this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
-          dialog.close();
-        },
+const isLoading = ref(false);
+const taxCategories = ref<any[]>([]);
+const workerHolidays = ref<any[]>([]);
+const workerHolidaySelected = ref<any>(null);
+const localWorker = ref<any>(JSON.parse(JSON.stringify(props.worker)));
+
+watch(() => props.worker, (newVal) => {
+  localWorker.value = JSON.parse(JSON.stringify(newVal));
+  form.hydrate({
+    cpp: newVal?.cpp ?? null,
+    ei: newVal?.ei ?? null,
+  });
+}, { deep: true });
+
+function updateExternalId() {
+  isLoading.value = true;
+  updateWorkerProfileExternalId(localWorker.value)
+    .then(() => {
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    }).catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateIsContractor() {
+  isLoading.value = true;
+  updateAgencyWorkerContractor(localWorker.value.id)
+    .then(() => {
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateIsSubContractor() {
+  isLoading.value = true;
+  updateAgencyWorkerSubContractor(localWorker.value.id)
+    .then(() => {
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateTaxCategory() {
+  isLoading.value = true;
+  updateWorkerProfileTaxCategory(localWorker.value)
+    .then(() => {
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    }).catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateTaxRate() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    isLoading.value = true;
+    localWorker.value.cpp = values.cpp;
+    localWorker.value.ei = values.ei;
+    updateWorkerProfileTaxRate(localWorker.value)
+      .then(() => {
+        isLoading.value = false;
+        emit('update:worker', localWorker.value);
+      }).catch((error) => {
+        isLoading.value = false;
+        showAlertError(error);
       });
-    },
-    onHolidaySelected(date: Date) {
-      this.workerHolidaySelected = this.workerHolidays.find(wh => new Date(wh.date).getDate() === date.getDate());
-    },
-    async addUpdateWorkerHoliday() {
-      this.isLoading = true;
-      await addUpdateAgencyWorkerProfileHolidays(this.localWorker.id, this.workerHolidaySelected);
-      this.isLoading = false;
-    },
-  },
-  async created() {
-    this.taxCategories = await getTaxCategories();
-    this.workerHolidays = await getAgencyWorkerProfileHolidays(this.localWorker.id);
-    this.hydrateForm({
-      cpp: this.localWorker?.cpp ?? null,
-      ei: this.localWorker?.ei ?? null,
-    });
-  },
-  computed: {
-    selectableDates() {
-      const holidays = this.workerHolidays.map((wh: any) => new Date(wh.date));
-      return holidays;
-    },
-  },
-};
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
 
+function addHoliday() {
+  getDialog().prompt({
+    message: `City`,
+    inputAttrs: {
+      type: 'date',
+      placeholder: 'Date',
+    },
+    closeOnConfirm: false,
+    confirmText: 'Add',
+    onConfirm: async (value: any, dialog: any) => {
+      await addNewHoliday({ workerProfileId: localWorker.value.id, date: value });
+      workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
+      dialog.close();
+    },
+  });
+}
+
+function onHolidaySelected(date: Date) {
+  workerHolidaySelected.value = workerHolidays.value.find(wh => new Date(wh.date).getDate() === date.getDate());
+}
+
+async function addUpdateWorkerHoliday() {
+  isLoading.value = true;
+  await addUpdateAgencyWorkerProfileHolidays(localWorker.value.id, workerHolidaySelected.value);
+  isLoading.value = false;
+}
+
+const selectableDates = computed(() => {
+  return workerHolidays.value.map((wh: any) => new Date(wh.date));
+});
+
+(async () => {
+  taxCategories.value = await getTaxCategories();
+  workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
+  form.hydrate({
+    cpp: localWorker.value?.cpp ?? null,
+    ei: localWorker.value?.ei ?? null,
+  });
+})();
 </script>

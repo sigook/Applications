@@ -41,7 +41,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
@@ -49,88 +50,78 @@ import { filename } from '@/utils/filters';
 import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerCertificates } from '@/api/workerApi';
 
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
 const schema = yup.object({
   description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
 });
 
-export default {
-  props: ["data"],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: { description: '' },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      selectedCertFile: null as any,
-      fileObjects: { certificate: null as any },
-      certificate: { fileName: "", description: "" } as any,
-      certificates: [] as any[],
-    };
-  },
-  methods: {
-    filename,
-    handleCertFileSelected(file: any) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedCertFile = null;
-        return;
-      }
-      this.fileObjects.certificate = file;
-      const generatedName = generateFileName('Certificate', file.name);
-      this.certificate = { fileName: generatedName, description: '' };
-      this.selectedCertFile = null;
-    },
-    clearCertFile() {
-      this.fileObjects.certificate = null;
-      this.certificate = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values) => {
-        this.saveCertificates(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    async saveCertificates(values: any) {
-      this.isLoading = true;
-      try {
-        const newCert = { fileName: this.certificate.fileName, description: values.description };
-        const allCertificates = [...this.certificates, newCert];
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(allCertificates));
-        if (this.fileObjects.certificate) {
-          const fn = newCert.fileName;
-          formData.append(fn, this.fileObjects.certificate, fn);
-        }
-        await createWorkerCertificates((this as any).data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-  },
-  created() {
-    const data = (this as any).data;
-    if (data != null) {
-      for (let i = 0; i < data.certificates.length; i++) {
-        this.certificates.push(data.certificates[i]);
-      }
+const form = useStickyForm<{ description: string }>({
+  schema,
+  initialValues: { description: '' },
+});
+const { description } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const selectedCertFile = ref<any>(null);
+const fileObjects = reactive<{ certificate: any }>({ certificate: null });
+const certificate = ref<any>({ fileName: "", description: "" });
+const certificates = ref<any[]>([]);
+
+function handleCertFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedCertFile.value = null;
+    return;
+  }
+  fileObjects.certificate = file;
+  const generatedName = generateFileName('Certificate', file.name);
+  certificate.value = { fileName: generatedName, description: '' };
+  selectedCertFile.value = null;
+}
+
+function clearCertFile() {
+  fileObjects.certificate = null;
+  certificate.value = { fileName: '', description: '' };
+}
+
+async function saveCertificates(values: any) {
+  isLoading.value = true;
+  try {
+    const newCert = { fileName: certificate.value.fileName, description: values.description };
+    const allCertificates = [...certificates.value, newCert];
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(allCertificates));
+    if (fileObjects.certificate) {
+      const fn = newCert.fileName;
+      formData.append(fn, fileObjects.certificate, fn);
     }
-  },
-};
+    await createWorkerCertificates(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveCertificates(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data != null) {
+  for (let i = 0; i < props.data.certificates.length; i++) {
+    certificates.value.push(props.data.certificates[i]);
+  }
+}
 </script>
 
 <style scoped>

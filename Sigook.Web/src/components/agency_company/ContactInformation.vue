@@ -51,62 +51,57 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import DialogCompanyUpdateEmail from "@/components/company/DialogCompanyUpdateEmail.vue";
+import ContactInformationForm from "@/components/agency_company/ContactInformationForm.vue";
 
-import { defineAsyncComponent } from 'vue';
-export default {
-  props: ['company'],
-  data() {
-    return {
-      showModal: false,
-      showModalUpdateEmail: false,
-      localCompany: JSON.parse(JSON.stringify(this.company)),
-      model: {
-        phone: this.company.phone,
-        phoneExt: this.company.phoneExt,
-        fax: this.company.fax,
-        faxExt: this.company.faxExt,
-        website: this.company.website
-      },
-      profileId: this.$route.params.id
-    }
-  },
-  watch: {
-    company: {
-      handler(newVal) {
-        this.localCompany = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  methods: {
-    closeEditModal() {
-      this.showModal = false;
-      this.model = {
-        phone: this.company.phone,
-        phoneExt: this.company.phoneExt,
-        fax: this.company.fax,
-        faxExt: this.company.faxExt,
-        website: this.company.website
-      }
-    },
-    closeEditEmailModal(closeModal, newEmail) {
-      this.showModalUpdateEmail = false;
-      if (newEmail) {
-        this.localCompany.email = newEmail;
-        this.$emit('update:company', this.localCompany);
-      }
-    },
-    getFullUrl(url) {
-      if (url.includes('http')) {
-        return url
-      }
-      return `https://${url}`
-    }
-  },
-  components: {
-    DialogCompanyUpdateEmail: defineAsyncComponent(() => import("@/components/company/DialogCompanyUpdateEmail.vue")),
-    ContactInformationForm: defineAsyncComponent(() => import("@/components/agency_company/ContactInformationForm.vue")),
-  },
+const props = defineProps<{ company: any }>();
+const emit = defineEmits<{ (e: 'update:company', value: any): void }>();
+
+const route = useRoute();
+
+const showModal = ref(false);
+const showModalUpdateEmail = ref(false);
+const localCompany = ref<any>(JSON.parse(JSON.stringify(props.company)));
+const model = reactive<any>({
+  phone: props.company.phone,
+  phoneExt: props.company.phoneExt,
+  fax: props.company.fax,
+  faxExt: props.company.faxExt,
+  website: props.company.website,
+});
+const profileId = route.params.id;
+
+watch(() => props.company, (newVal) => {
+  localCompany.value = JSON.parse(JSON.stringify(newVal));
+}, { deep: true });
+
+function closeEditModal() {
+  showModal.value = false;
+  model.phone = props.company.phone;
+  model.phoneExt = props.company.phoneExt;
+  model.fax = props.company.fax;
+  model.faxExt = props.company.faxExt;
+  model.website = props.company.website;
 }
+
+function closeEditEmailModal(_closeModal: any, newEmail: string) {
+  showModalUpdateEmail.value = false;
+  if (newEmail) {
+    localCompany.value.email = newEmail;
+    emit('update:company', localCompany.value);
+  }
+}
+
+function getFullUrl(url: string) {
+  if (url.includes('http')) {
+    return url;
+  }
+  return `https://${url}`;
+}
+
+// Preserve profileId reference for potential template use
+void profileId;
 </script>

@@ -22,19 +22,10 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import TableRequests from '@/components/agency_request/TableRequests.vue';
 
-import { defineAsyncComponent } from 'vue';
-export default {
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-    };
-  },
-  components: {
-    TableRequests: defineAsyncComponent(() => import("../../components/agency_request/TableRequests.vue")),
-  }
-};
+const isLoading = ref(true);
+const totalItems = ref(0);
 </script>
-

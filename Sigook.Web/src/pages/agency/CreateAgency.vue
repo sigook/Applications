@@ -45,12 +45,17 @@
     </form>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { createAgency } from "@/api/agencyApi";
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import { createAgency } from '@/api/agencyApi';
+import { appGlobals } from '@/varaibles';
+import PhoneInput from '@/components/PhoneInput.vue';
+
+const router = useRouter();
 
 const schema = yup.object({
   fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
@@ -59,69 +64,55 @@ const schema = yup.object({
   password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
 });
 
-export default {
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        fullName: '',
-        email: '',
-        agencyType: null as any,
-        password: '',
-      },
-    });
+const form = useStickyForm({
+  schema,
+  initialValues: {
+    fullName: '',
+    email: '',
+    agencyType: null as any,
+    password: '',
+  },
+});
+const { fullName, email, agencyType, password } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      phoneNumber: "",
-      agencyTypes: (this as any).$agencyTypes,
-    };
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
-  },
-  methods: {
-    async validateForm() {
-      this.markInteracted();
-      const phoneValid = await (this.$refs.phoneComponent as any).validatePhone();
-      this.handleSubmit((values) => {
-        if (!phoneValid) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        this.submitAgency(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    submitAgency(values: any) {
-      this.isLoading = true;
-      const payload = {
-        fullName: values.fullName,
-        email: values.email,
-        agencyType: values.agencyType,
-        password: values.password,
-        phonePrincipal: this.phoneNumber,
-      };
-      createAgency(payload)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Agency created successfully");
-          this.$router.push('/agency-agencies');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-};
+const isLoading = ref(false);
+const phoneNumber = ref('');
+const agencyTypes = appGlobals.$agencyTypes;
+const phoneComponent = ref<any>(null);
+
+async function validateForm() {
+  form.markInteracted();
+  const phoneValid = await phoneComponent.value?.validatePhone();
+  form.handleSubmit((values) => {
+    if (!phoneValid) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
+    }
+    submitAgency(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function submitAgency(values: any) {
+  isLoading.value = true;
+  const payload = {
+    fullName: values.fullName,
+    email: values.email,
+    agencyType: values.agencyType,
+    password: values.password,
+    phonePrincipal: phoneNumber.value,
+  };
+  createAgency(payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Agency created successfully');
+      router.push('/agency-agencies');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

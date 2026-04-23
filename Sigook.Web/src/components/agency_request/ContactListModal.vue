@@ -20,50 +20,51 @@
     </ul>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
-export default {
-  props: ['requestId', 'companyId', 'activeUsers'],
-  data() {
-    return {
-      isLoading: false,
-      data: []
-    }
-  },
-  methods: {
-    loadContactPersons() {
-      this.isLoading = true;
-      getAgencyCompanyContactPerson(this.companyId)
-        .then(response => {
-          this.isLoading = false;
-          this.data = response.map(item => ({ ...item, active: false }));
-          this.updateContacts();
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    },
-    updateContacts() {
-      for (let i = 0; i < this.activeUsers.length; i++) {
-        for (let j = 0; j < this.data.length; j++) {
-          if (this.activeUsers[i].id === this.data[j].id) {
-            this.data[j].active = true;
-          }
-        }
+const props = defineProps<{ requestId?: any; companyId: any; activeUsers: any[] }>();
+const emit = defineEmits<{
+  (e: 'selectContact', item: any): void;
+  (e: 'removeContact', item: any): void;
+}>();
+
+const isLoading = ref(false);
+const data = ref<any[]>([]);
+
+function loadContactPersons() {
+  isLoading.value = true;
+  getAgencyCompanyContactPerson(props.companyId)
+    .then(response => {
+      isLoading.value = false;
+      data.value = response.map((item: any) => ({ ...item, active: false }));
+      updateContacts();
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateContacts() {
+  for (let i = 0; i < props.activeUsers.length; i++) {
+    for (let j = 0; j < data.value.length; j++) {
+      if (props.activeUsers[i].id === data.value[j].id) {
+        data.value[j].active = true;
       }
-    },
-    selectContact(item) {
-      this.$emit('selectContact', item)
-    },
-    removeContactFromActive(item) {
-      this.$emit('removeContact', item)
     }
-  },
-  created() {
-    this.loadContactPersons()
   }
 }
+
+function selectContact(item: any) {
+  emit('selectContact', item);
+}
+
+function removeContactFromActive(item: any) {
+  emit('removeContact', item);
+}
+
+loadContactPersons();
 </script>

@@ -112,168 +112,162 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { useAgencyStore } from '@/stores/agency';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { downloadPDF } from "@/utils/downloadFile";
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import { downloadPDF } from '@/utils/downloadFile';
 import { dateMonth, currency } from '@/utils/filters';
+import { getDialog } from '@/utils/buefyProgrammatic';
 import {
   getAgencyPayStubs,
   downloadPayStubPdf,
   sendPayStubEmail,
-  deleteAgencyPayStub
-} from "@/api/agencyPayStubApi";
+  deleteAgencyPayStub,
+} from '@/api/agencyPayStubApi';
+import Export from '@/components/Export.vue';
+import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
+import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
 
-export default {
-  components: {
-    Export: defineAsyncComponent(() => import("@/components/Export.vue")),
-    GeneratePayStubs: defineAsyncComponent(() => import("@/components/agency_accounting/GeneratePayStubs.vue")),
-    SkipPayrollNumber: defineAsyncComponent(() => import("@/components/agency_accounting/SkipPayrollNumber.vue"))
-  },
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      createdAtDatesSelected: [],
-      serverParams: {
-        sortBy: 0,
-        pageIndex: 1,
-        pageSize: 30,
-        isDescending: true
-      },
-      showGeneratePayStubsModal: false,
-      showSkipPayrollNumberModal: false
-    };
-  },
-  created() {
-    if (this.agencyStore.agencyPayStubFilter) {
-      this.serverParams = this.agencyStore.agencyPayStubFilter;
-      if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
-        this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
-        this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
-      }
-    }
-    this.loadPayStubs();
-  },
-  computed: {
-    ...mapStores(useAgencyStore),
-  },
-  methods: {
-    downloadPDF,
-    dateMonth,
-    currency,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadPayStubs();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'payStubNumber':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'workerFullName':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'numberId':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'totalPaid':
-          this.serverParams.sortBy = 4;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadPayStubs();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadPayStubs();
-      }
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadPayStubs();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    loadPayStubs() {
-      this.isLoading = true;
-      this.agencyStore.updateAgencyPayStubFilter(this.serverParams);
-      getAgencyPayStubs(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map((i) => ({ ...i, emailSending: false, actions: null }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    onDownloadPayStubPdf(payStub) {
-      this.isLoading = true;
-      downloadPayStubPdf(payStub.id)
-        .then(response => {
-          this.isLoading = false;
-          this.downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    onSendPayStubEmail(payStub) {
-      payStub.emailSending = true;
-      sendPayStubEmail(payStub.id)
-        .then(() => {
-          payStub.emailSending = false;
-          payStub.emailSent = true;
-          console.log(payStub);
-          showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
-        })
-        .catch(error => {
-          payStub.emailSending = false;
-          showAlertError(error);
-        });
-    },
-    async onDeletePayStub(payStub) {
-      const message = `You are about to delete the pay stub <b>${payStub.payStubNumber}</b>
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const createdAtDatesSelected = ref<any[]>([]);
+const serverParams = ref<any>({
+  sortBy: 0,
+  pageIndex: 1,
+  pageSize: 30,
+  isDescending: true,
+});
+const showGeneratePayStubsModal = ref(false);
+const showSkipPayrollNumberModal = ref(false);
+
+if (agencyStore.agencyPayStubFilter) {
+  serverParams.value = agencyStore.agencyPayStubFilter;
+  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
+    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+  }
+}
+loadPayStubs();
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  loadPayStubs();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'payStubNumber':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'createdAt':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'workerFullName':
+      serverParams.value.sortBy = 2;
+      break;
+    case 'numberId':
+      serverParams.value.sortBy = 3;
+      break;
+    case 'totalPaid':
+      serverParams.value.sortBy = 4;
+      break;
+  }
+  serverParams.value.isDescending = order !== 'asc';
+  loadPayStubs();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadPayStubs();
+  }
+}
+
+function onCreatedAtSelected() {
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  loadPayStubs();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function loadPayStubs() {
+  isLoading.value = true;
+  agencyStore.updateAgencyPayStubFilter(serverParams.value);
+  getAgencyPayStubs(serverParams.value)
+    .then((response: any) => {
+      rows.value = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function onDownloadPayStubPdf(payStub: any) {
+  isLoading.value = true;
+  downloadPayStubPdf(payStub.id)
+    .then((response) => {
+      isLoading.value = false;
+      downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function onSendPayStubEmail(payStub: any) {
+  payStub.emailSending = true;
+  sendPayStubEmail(payStub.id)
+    .then(() => {
+      payStub.emailSending = false;
+      payStub.emailSent = true;
+      showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
+    })
+    .catch((error) => {
+      payStub.emailSending = false;
+      showAlertError(error);
+    });
+}
+
+function onDeletePayStub(payStub: any) {
+  const message = `You are about to delete the pay stub <b>${payStub.payStubNumber}</b>
         <br>
         <br>
         If you are going to use the pay stub number <b>${payStub.payStubNumber}</b> for the same worker,
         remember that you should not generate any pay stub for any other worker before generate this pay stub again.`;
-      this.$buefy.dialog.confirm({
-        title: "Are you sure you want to delete?",
-        message: message,
-        confirmText: "Yes, I read and I want to delete",
-        type: "is-danger",
-        hasIcon: true,
-        onConfirm: () => {
-          this.isLoading = true;
-          deleteAgencyPayStub(payStub.id)
-            .then(() => {
-              this.isLoading = false;
-              this.loadPayStubs();
-            })
-            .catch(error => {
-              this.isLoading = false;
-              showAlertError(error);
-            });
-        }
-      })
+  getDialog().confirm({
+    title: 'Are you sure you want to delete?',
+    message: message,
+    confirmText: 'Yes, I read and I want to delete',
+    type: 'is-danger',
+    hasIcon: true,
+    onConfirm: () => {
+      isLoading.value = true;
+      deleteAgencyPayStub(payStub.id)
+        .then(() => {
+          isLoading.value = false;
+          loadPayStubs();
+        })
+        .catch((error) => {
+          isLoading.value = false;
+          showAlertError(error);
+        });
     },
-    onPayStubsGenerated() {
-      this.showGeneratePayStubsModal = false;
-      this.loadPayStubs();
-    }
-  }
-};
+  });
+}
+
+function onPayStubsGenerated() {
+  showGeneratePayStubsModal.value = false;
+  loadPayStubs();
+}
 </script>

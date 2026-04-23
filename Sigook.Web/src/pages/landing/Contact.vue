@@ -11,14 +11,16 @@
         <form @submit.prevent="validateContactData">
           <div class="flex-md-column">
             <div class="businesses-staff-form">
-              <input type="text" class="control-borderer" placeholder="Name" v-model="contact.name"
-                v-validate="'required|max:50'" />
-              <input type="tel" class="control-borderer" placeholder="Phone" name="phone" v-model="contact.phone"
-                v-validate="{ required: true, phoneCustom: '' }" v-cleave="mask" />
-              <input type="email" class="control-borderer" placeholder="Email" v-model="contact.email"
-                v-validate="'required|max:50|email'" />
-              <textarea placeholder="Type your message here..." rows="8" v-model="contact.message"
-                v-validate="'required|max:255'" class="businesses-staff-textarea control-borderer"></textarea>
+              <input type="text" class="control-borderer" placeholder="Name" v-model="name" />
+              <span v-if="formErrors.name" class="help is-danger">{{ formErrors.name }}</span>
+              <input type="tel" class="control-borderer" placeholder="Phone" name="phone" v-model="phone"
+                @input="onPhoneInput" maxlength="12" />
+              <span v-if="formErrors.phone" class="help is-danger">{{ formErrors.phone }}</span>
+              <input type="email" class="control-borderer" placeholder="Email" v-model="email" />
+              <span v-if="formErrors.email" class="help is-danger">{{ formErrors.email }}</span>
+              <textarea placeholder="Type your message here..." rows="8" v-model="message"
+                class="businesses-staff-textarea control-borderer"></textarea>
+              <span v-if="formErrors.message" class="help is-danger">{{ formErrors.message }}</span>
               <vue-recaptcha ref="recaptcha" :sitekey="siteKey" @verify="onRecaptchaResponse"></vue-recaptcha>
             </div>
             <button class="bg-red-light color-white button-borderer mt-1" type="submit">
@@ -106,68 +108,97 @@
   </div>
 </template>
 
-<script lang="ts">
-import { phoneMask as mask } from '@/constants/phoneMask';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import * as yup from 'yup';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
 import { submitContactForm } from "@/api/websiteApi";
 import appMobile from '@/assets/images/app_mobile.png';
+import { phoneSchema } from '@/utils/validation';
+import { formatPhone } from '@/utils/phoneFormat';
+import { useStickyForm } from '@/composables/useStickyForm';
 
-export default {
-  data() {
-    return {
-      mask,
-      appMobile,
-      isLoading: false,
-      contact: {
-        title: "CONTACT FORM ~ NOTIFICATION",
-        subject: "Contact From Sigook™",
-        emailSetting: import.meta.env.VUE_APP_SIGOOK_NOTIFICATION,
-      },
-      formError: null,
-      showConfirmationModal: false,
-    };
-  },
-  computed: {
-    siteKey() { return recaptchaSiteKey; }
-  },
-  methods: {
-    onRecaptchaResponse(result) { this.contact.captchaResponse = result; },
-    async validateContactData() {
-      const result = await this.$validator.validateAll();
-      if (!result) {
-        this.formError = this.errors.has("phone")
-          ? "Please use a valid phone number in the United States"
-          : "Please check the information provided and re-submit";
-      } else if (!this.contact.captchaResponse) {
-        this.formError = "reCaptcha invalid";
-      } else {
-        this.showConfirmationModal = true;
-      }
-    },
-    async sendMessage() {
-      this.showConfirmationModal = false;
-      this.isLoading = true;
-      this.formError = null;
-      submitContactForm(this.contact)
-        .then(() => {
-          this.resetContactForm();
-          this.isLoading = false;
-        })
-        .catch(() => {
-          this.resetContactForm();
-          this.isLoading = false;
-        });
-    },
-    resetContactForm() {
-      this.contact.name = null;
-      this.contact.phone = null;
-      this.contact.email = null;
-      this.contact.message = null;
-      this.contact.captchaResponse = null;
-      this.$refs.recaptcha.reset();
-    },
-  },
-};
+const schema = yup.object({
+  name: yup.string().required('Name is required').max(50, 'Max 50 characters'),
+  phone: phoneSchema(true),
+  email: yup.string().required('Email is required').email('Invalid email').max(50, 'Max 50 characters'),
+  message: yup.string().required('Message is required').max(255, 'Max 255 characters'),
+});
+
+const form = useStickyForm<{ name: string; phone: string; email: string; message: string }>({
+  schema,
+  initialValues: { name: '', phone: '', email: '', message: '' },
+});
+const { name, phone, email, message } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const title = "CONTACT FORM ~ NOTIFICATION";
+const subject = "Contact From Sigook™";
+const emailSetting = import.meta.env.VUE_APP_SIGOOK_NOTIFICATION as string;
+const captchaResponse = ref<string | null>(null);
+const formError = ref<string | null>(null);
+const showConfirmationModal = ref(false);
+const recaptcha = ref<any>(null);
+
+const siteKey = computed(() => recaptchaSiteKey);
+
+function onPhoneInput(e: Event) {
+  const formatted = formatPhone((e.target as HTMLInputElement).value);
+  form.setFieldValue('phone', formatted);
+}
+
+function onRecaptchaResponse(result: string) {
+  captchaResponse.value = result;
+}
+
+async function validateContactData() {
+  form.markInteracted();
+  const { valid, errors } = await form.validate();
+  if (!valid) {
+    formError.value = errors && (errors as any).phone
+      ? "Please use a valid phone number in the United States"
+      : "Please check the information provided and re-submit";
+    return;
+  }
+  if (!captchaResponse.value) {
+    formError.value = "reCaptcha invalid";
+    return;
+  }
+  formError.value = null;
+  showConfirmationModal.value = true;
+}
+
+function sendMessage() {
+  showConfirmationModal.value = false;
+  isLoading.value = true;
+  formError.value = null;
+  const payload = {
+    title,
+    subject,
+    emailSetting,
+    name: name.value,
+    phone: phone.value,
+    email: email.value,
+    message: message.value,
+    captchaResponse: captchaResponse.value,
+  };
+  submitContactForm(payload as any)
+    .then(() => {
+      resetContactForm();
+      isLoading.value = false;
+    })
+    .catch(() => {
+      resetContactForm();
+      isLoading.value = false;
+    });
+}
+
+function resetContactForm() {
+  form.resetAll();
+  captchaResponse.value = null;
+  recaptcha.value?.reset();
+}
 </script>
 
 <style lang="scss">

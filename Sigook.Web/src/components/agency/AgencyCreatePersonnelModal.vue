@@ -7,62 +7,68 @@
     </b-message>
     <div class="container-flex">
       <div class="col-6">
-        <b-field :type="errors.has('name') ? 'is-danger' : ''" label="Name"
-          :message="errors.has('name') ? errors.first('name') : ''">
-          <b-input type="text" v-model="user.name" :name="'name'" v-validate="'required|max:20|min:2'" />
+        <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
+          :message="formErrors.name">
+          <b-input type="text" v-model="name" name="name" />
         </b-field>
       </div>
       <div class="col-6">
-        <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
-          :message="errors.has('email') ? errors.first('email') : ''">
-          <b-input type="email" v-model="user.email" :name="'email'" v-validate="'required|max:50|email|min:6'" />
+        <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+          :message="formErrors.email">
+          <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="validateForm">{{ 'Create' }}</b-button>
+        <b-button type="is-primary" @click="validateForm">Create</b-button>
       </div>
     </div>
   </div>
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
 import { showAlertError } from "@/utils/toast";
 import { createAgencyPersonnel } from "@/api/agencyApi";
+import { useStickyForm } from '@/composables/useStickyForm';
 
-export default {
-  name: "CompanyUsersForm",
-  data() {
-    return {
-      isLoading: false,
-      user: {
-        name: null,
-        email: null
-      }
-    }
-  },
-  methods: {
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.createUser()
-          return;
-        }
-        showAlertError('Please make sure all required fields are filled out correctly');
-      });
-    },
-    createUser() {
-      this.isLoading = true;
-      createAgencyPersonnel(this.user)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("updateUsers")
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    }
+const schema = yup.object({
+  name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+});
+
+const emit = defineEmits<{ (e: 'updateUsers'): void }>();
+
+const form = useStickyForm<{ name: string; email: string }>({
+  schema,
+  initialValues: { name: '', email: '' },
+});
+const { name, email } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
   }
+  createUser();
+}
+
+function createUser() {
+  isLoading.value = true;
+  createAgencyPersonnel({ name: name.value, email: email.value })
+    .then(() => {
+      isLoading.value = false;
+      emit("updateUsers");
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
 </script>

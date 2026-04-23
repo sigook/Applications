@@ -26,15 +26,14 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, onUnmounted, ref, computed, watch } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import axios from 'axios';
-
-const NavBarLogged = defineAsyncComponent(() => import('@/components/NavBarLogged.vue'));
-const Header = defineAsyncComponent(() => import('@/components/landing/Header.vue'));
-const Footer = defineAsyncComponent(() => import('@/components/landing/Footer.vue'));
+import NavBarLogged from '@/components/NavBarLogged.vue';
+import Header from '@/components/landing/Header.vue';
+import Footer from '@/components/landing/Footer.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -70,11 +69,12 @@ async function updateAppVersion() {
 }
 
 async function setIsLogged(currentRoute: RouteLocationNormalizedLoaded) {
+  const user = await securityStore.getUser().catch(() => null);
   if (!currentRoute.meta.requiresAuth) {
     isLogged.value = false;
     return;
   }
-  isLogged.value = !!(await securityStore.getUser());
+  isLogged.value = !!user;
 }
 
 if (MOBILE_REGEX.test(navigator.userAgent)) {

@@ -51,13 +51,22 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
 import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerSin } from '@/api/workerApi';
+
+interface SinForm {
+  socialInsurance: string;
+  dueDate: Date | null;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   socialInsurance: yup.string()
@@ -67,108 +76,91 @@ const schema = yup.object({
   dueDate: yup.mixed().nullable(),
 });
 
-export default {
-  props: ['data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        socialInsurance: '',
-        dueDate: null as Date | null,
-      },
-    });
+const form = useStickyForm<SinForm>({
+  schema,
+  initialValues: {
+    socialInsurance: '',
+    dueDate: null,
+  },
+});
+const { socialInsurance, dueDate } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
+const isLoading = ref(false);
+const selectedSinFile = ref<any>(null);
+const fileObjects = reactive<{ sinFile: any }>({ sinFile: null });
+const sin = reactive<any>({
+  socialInsurance: "",
+  socialInsuranceExpire: false,
+  dueDate: null as Date | null,
+  socialInsuranceFile: {
+    fileName: "",
+    description: "",
+  },
+});
+
+function handleSinFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedSinFile.value = null;
+    return;
+  }
+  fileObjects.sinFile = file;
+  const generatedName = generateFileName('SIN-SSN', file.name);
+  sin.socialInsuranceFile = { fileName: generatedName, description: '' };
+  selectedSinFile.value = null;
+}
+
+function clearSinFile() {
+  fileObjects.sinFile = null;
+  sin.socialInsuranceFile = { fileName: '', description: '' };
+}
+
+async function saveWorkerSin(values: any) {
+  isLoading.value = true;
+  try {
+    const payload = {
+      ...sin,
+      socialInsurance: values.socialInsurance,
+      dueDate: sin.socialInsuranceExpire ? values.dueDate : null,
     };
-  },
-  data() {
-    return {
-      isLoading: false,
-      selectedSinFile: null as any,
-      fileObjects: {
-        sinFile: null as any,
-      },
-      sin: {
-        socialInsurance: "",
-        socialInsuranceExpire: false,
-        dueDate: null as Date | null,
-        socialInsuranceFile: {
-          fileName: "",
-          description: "",
-        },
-      },
-    };
-  },
-  methods: {
-    filename,
-    handleSinFileSelected(file: any) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        showAlertError('File exceeds 15MB limit');
-        this.selectedSinFile = null;
-        return;
-      }
-      this.fileObjects.sinFile = file;
-      const generatedName = generateFileName('SIN-SSN', file.name);
-      this.sin.socialInsuranceFile = { fileName: generatedName, description: '' };
-      this.selectedSinFile = null;
-    },
-    clearSinFile() {
-      this.fileObjects.sinFile = null;
-      this.sin.socialInsuranceFile = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        if (this.sin.socialInsuranceExpire && !values.dueDate) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        this.createWorkerSin(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    async createWorkerSin(values: any) {
-      this.isLoading = true;
-      try {
-        const payload = {
-          ...this.sin,
-          socialInsurance: values.socialInsurance,
-          dueDate: this.sin.socialInsuranceExpire ? values.dueDate : null,
-        };
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(payload));
-        if (this.fileObjects.sinFile) {
-          const fn = payload.socialInsuranceFile.fileName;
-          formData.append(fn, this.fileObjects.sinFile, fn);
-        }
-        await createWorkerSin((this as any).data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-  },
-  created() {
-    if ((this as any).data.socialInsurance !== null && (this as any).data.socialInsurance !== "") {
-      this.sin = { ...(this as any).data };
-      this.sin.dueDate = (this as any).data.dueDate ? new Date((this as any).data.dueDate) : null;
-      this.hydrateForm({
-        socialInsurance: this.sin.socialInsurance || '',
-        dueDate: this.sin.dueDate,
-      });
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (fileObjects.sinFile) {
+      const fn = payload.socialInsuranceFile.fileName;
+      formData.append(fn, fileObjects.sinFile, fn);
     }
-  },
-};
+    await createWorkerSin(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    if (sin.socialInsuranceExpire && !values.dueDate) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
+    }
+    saveWorkerSin(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data && props.data.socialInsurance !== null && props.data.socialInsurance !== "") {
+  Object.assign(sin, props.data);
+  sin.dueDate = props.data.dueDate ? new Date(props.data.dueDate) : null;
+  form.hydrate({
+    socialInsurance: sin.socialInsurance || '',
+    dueDate: sin.dueDate,
+  });
+}
 </script>
 
 <style scoped>

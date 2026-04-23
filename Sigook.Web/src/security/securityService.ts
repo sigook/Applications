@@ -1,4 +1,4 @@
-import { UserManager, Log } from "oidc-client-ts";
+import { UserManager, WebStorageStateStore, Log } from "oidc-client-ts";
 
 const redirectUrl = window.location.origin;
 const securityServerUrl = import.meta.env.VUE_APP_SECURITY_SERVER;
@@ -19,6 +19,7 @@ const mgr = new UserManager({
   automaticSilentRenew: true,
   silent_redirect_uri: redirectUrl + "/silent-refresh",
   loadUserInfo: true,
+  userStore: new WebStorageStateStore({ store: window.localStorage }),
 });
 
 export default mgr;

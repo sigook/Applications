@@ -32,42 +32,36 @@
 
     </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, defineAsyncComponent } from 'vue';
 import 'cropperjs/dist/cropper.css';
-    export default {
-        props: ['image'],
-        data(){
-          return {
-              imgSrc: null,
-              cropImage: null
-          }
-        },
-        components: {
-            VueCropper: defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as any).default))
-        },
-        methods: {
-            uploadCroppedImage() {
-                this.$refs.cropper.getCroppedCanvas().toBlob((blob) => {
-                    let extension = blob.type.split("/");
-                    extension = extension[1];
 
-                    let file = new File([blob], "uploaded_file." + extension, { type: blob.type, lastModified: Date.now() });
-                    this.$emit('onCrop', file);
+const VueCropper = defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as any).default));
 
-                });
-            },
-            rotate(rotationAngle) {
-                this.$refs.cropper.rotate(rotationAngle);
-            },
-            closeModal(){
-                this.$emit('closeModal');
-            },
+defineProps<{ image?: string }>();
+const emit = defineEmits<{
+  (e: 'onCrop', file: File): void;
+  (e: 'closeModal'): void;
+}>();
 
+const cropper = ref<any>(null);
 
+function uploadCroppedImage() {
+  cropper.value.getCroppedCanvas().toBlob((blob: Blob) => {
+    const parts = blob.type.split("/");
+    const extension = parts[1];
+    const file = new File([blob], "uploaded_file." + extension, { type: blob.type, lastModified: Date.now() });
+    emit('onCrop', file);
+  });
+}
 
-        }
-    }
+function rotate(rotationAngle: number) {
+  cropper.value.rotate(rotationAngle);
+}
+
+function closeModal() {
+  emit('closeModal');
+}
 </script>
 <style lang="scss">
 
@@ -104,7 +98,7 @@ import 'cropperjs/dist/cropper.css';
                 margin-left: 5px;
             }
         }
-        
+
         @media(max-width: 767px){
             .actions {
                 display: flex;}

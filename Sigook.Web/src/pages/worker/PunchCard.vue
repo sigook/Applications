@@ -1,7 +1,7 @@
 <template>
   <div class="white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
-    <data-entry-terms></data-entry-terms>
+    <DataEntryTerms></DataEntryTerms>
     <section class="punch-card">
       <div class="left-60">
         <b-datepicker inline v-model="dateSelected" :events="highlights" indicators="dots"></b-datepicker>
@@ -41,122 +41,122 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useAppStore } from '@/stores/app';
-import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
-import dayjs from "dayjs";
-import { workerRegisterTime, getClockType } from '@/api/workerApi';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
+import dayjs from 'dayjs';
+import { workerRegisterTime, getClockType as getClockTypeApi } from '@/api/workerApi';
 import { date, time } from '@/utils/filters';
+import DataEntryTerms from '../../components/DataEntryTerms.vue';
 
-export default {
-  props: ['requestId', 'timesheet'],
-  data() {
-    return {
-      isLoading: false,
-      dateSelected: null,
-      currentHour: null,
-      isEntryTime: false,
-      position: null,
-      canBeRegistered: false
-    }
-  },
-  methods: {
-    date,
-    time,
-    getTimeFromNow() {
-      this.currentHour = dayjs(this.created).format('HH:mm:ss');
-    },
-    registerHour() {
-      this.isLoading = true;
-      return workerRegisterTime(this.requestId, this.position.coords.latitude, this.position.coords.longitude).then(async () => {
-        this.$parent.getTimeSheet();
-        const clockType = await this.getClockType();
-        this.isEntryTime = clockType === 1;
-        this.canBeRegistered = clockType !== 0;
-        this.isLoading = false;
-        if (this.entryTime) {
-          showAlertSuccess("Enjoy your shift!");
-        } else {
-          showAlertSuccess("Thanks for your job!");
-        }
-      }).catch(error => {
-        this.isLoading = false;
-        showAlertError(error.data);
-      });
-    },
-    registerEntryHour() {
-      if (this.position) {
-        showAlertConfirm("Starting Job")
-          .then(response => {
-            if (response) {
-              this.registerHour();
-            }
-          })
+const props = defineProps<{
+  requestId?: any;
+  timesheet?: any;
+}>();
+
+const emit = defineEmits<{
+  (e: 'refreshTimeSheet'): void;
+}>();
+
+const appStore = useAppStore();
+
+const isLoading = ref(false);
+const dateSelected = ref<Date | null>(null);
+const currentHour = ref<string | null>(null);
+const isEntryTime = ref(false);
+const position = ref<GeolocationPosition | null>(null);
+const canBeRegistered = ref(false);
+
+const highlights = computed(() => {
+  if (props.timesheet && props.timesheet.items && props.timesheet.items.length > 0) {
+    return props.timesheet.items.map((i: any) => new Date(i.day));
+  }
+  return [];
+});
+
+const todayData = computed(() => {
+  if (!props.timesheet || !props.timesheet.items) return null;
+  const today = props.timesheet.items.find((item: any) => {
+    return dayjs(item.day).format('DD-MM-YYYY') === dayjs(dateSelected.value).format('DD-MM-YYYY');
+  });
+  return today || null;
+});
+
+function getTimeFromNow() {
+  currentHour.value = dayjs().format('HH:mm:ss');
+}
+
+async function getClockType() {
+  return await getClockTypeApi(props.requestId, dayjs(dateSelected.value).format('YYYY-MM-DD'));
+}
+
+function registerHour() {
+  if (!position.value) return;
+  isLoading.value = true;
+  return workerRegisterTime(props.requestId, position.value.coords.latitude, position.value.coords.longitude)
+    .then(async () => {
+      emit('refreshTimeSheet');
+      const clockType = await getClockType();
+      isEntryTime.value = clockType === 1;
+      canBeRegistered.value = clockType !== 0;
+      isLoading.value = false;
+      if (isEntryTime.value) {
+        showAlertSuccess('Enjoy your shift!');
       } else {
-        showAlertError('Please enable to know your location in the browser');
+        showAlertSuccess('Thanks for your job!');
       }
-    },
-    registerDepartureHour() {
-      if (this.position) {
-        showAlertConfirm("Ending Work", "")
-        .then(response => {
-          if (response) {
-            this.registerHour();
-          }
-        });
-      } else {
-        showAlertError('Please enable to know your location in the browser');
-      }
-    },
-    async getClockType() {
-      return (await getClockType(this.requestId, dayjs(this.dateSelected).format('YYYY-MM-DD')));
-    }
-  },
-  async created() {
-    this.getTimeFromNow();
-    setInterval(this.getTimeFromNow, 1000);
-    this.dateSelected = await this.appStore.getCurrentDate();
-    navigator.geolocation.watchPosition((position) => this.position = position, () => this.position = null);
-  },
-  destroyed() {
-    clearInterval(this.getTimeFromNow)
-  },
-  components: {
-    DataEntryTerms: defineAsyncComponent(() => import("../../components/DataEntryTerms.vue"))
-  },
-  computed: {
-    ...mapStores(useAppStore),
-    highlights() {
-      if (this.timesheet && this.timesheet.items.length > 0) {
-        return this.timesheet.items.map(i => new Date(i.day));
-      }
-      return [];
-    },
-    todayData() {
-      let today = this.timesheet.items.find(item => {
-        return dayjs(item.day).format('DD-MM-YYYY') === dayjs(this.dateSelected).format('DD-MM-YYYY');
-      });
-      if (today) {
-        return today;
-      } else {
-        return null;
-      }
-    }
-  },
-  watch: {
-    dateSelected: async function (value) {
-      if (value) {
-        this.isLoading = true;
-        const clockType = await this.getClockType();
-        this.isEntryTime = clockType === 1;
-        this.canBeRegistered = clockType !== 0;
-        this.isLoading = false;
-      }
-    }
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function registerEntryHour() {
+  if (position.value) {
+    showAlertConfirm('Starting Job').then((response: boolean) => {
+      if (response) registerHour();
+    });
+  } else {
+    showAlertError('Please enable to know your location in the browser');
   }
 }
+
+function registerDepartureHour() {
+  if (position.value) {
+    showAlertConfirm('Ending Work', '').then((response: boolean) => {
+      if (response) registerHour();
+    });
+  } else {
+    showAlertError('Please enable to know your location in the browser');
+  }
+}
+
+getTimeFromNow();
+const timerId = setInterval(getTimeFromNow, 1000);
+
+(async () => {
+  dateSelected.value = await appStore.getCurrentDate();
+  navigator.geolocation.watchPosition(
+    (p) => (position.value = p),
+    () => (position.value = null)
+  );
+})();
+
+onUnmounted(() => {
+  clearInterval(timerId);
+});
+
+watch(dateSelected, async (value) => {
+  if (value) {
+    isLoading.value = true;
+    const clockType = await getClockType();
+    isEntryTime.value = clockType === 1;
+    canBeRegistered.value = clockType !== 0;
+    isLoading.value = false;
+  }
+});
 </script>
 
 <style lang="scss">

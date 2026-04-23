@@ -4,7 +4,7 @@
     <h2 class="text-center main-title">{{ "Location" }}</h2>
 
     <div class="container-flex">
-      <cvn-address ref="addressComponent" v-model:model="location" :enableProvinceSettings="enableProvinceSettings" />
+      <cvn-address ref="addressComponent" v-model:model="location" :enableProvinceSettings="props.enableProvinceSettings" />
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Latitude">
           <b-input v-model="location.latitude" />
@@ -37,18 +37,18 @@
     </div>
     <div class="col-12 mt-5">
       <b-button type="is-primary" @click="validateForm">
-        {{ currentLocation ? 'Save' : 'Create' }}
+        {{ props.currentLocation ? 'Save' : 'Create' }}
       </b-button>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import CvnAddress from "@/components/Address.vue";
-import { createProfileLocation } from '@/api/companyApi';
 import { createAgencyCompanyLocation, updateAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 
 const schema = yup.object({
@@ -56,101 +56,81 @@ const schema = yup.object({
   entrance: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
 });
 
-export default {
-  components: { CvnAddress },
-  props: ['currentLocation', 'currentIndex', 'profileId', 'enableProvinceSettings'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        mainIntersection: '',
-        entrance: '',
-      },
-    });
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-    };
+const props = defineProps<{
+  currentLocation?: any;
+  currentIndex?: any;
+  profileId: any;
+  enableProvinceSettings?: boolean;
+}>();
+const emit = defineEmits<{ (e: 'updateContent'): void }>();
+
+const form = useStickyForm<{ mainIntersection: string; entrance: string }>({
+  schema,
+  initialValues: {
+    mainIntersection: '',
+    entrance: '',
   },
-  data() {
-    return {
-      isLoading: false,
-      provinces: [] as any[],
-      cities: [] as any[],
-      location: {} as any,
-    };
-  },
-  methods: {
-    async validateForm() {
-      this.markInteracted();
-      const addressValid = await (this.$refs.addressComponent as any).validateAddress();
-      this.handleSubmit((values) => {
-        if (!addressValid) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          return;
-        }
-        this.location.mainIntersection = values.mainIntersection;
-        this.location.entrance = values.entrance;
-        if (this.location.id) {
-          this.updateLocation(this.location.id);
-        } else {
-          this.createLocation();
-        }
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    createLocation() {
-      this.isLoading = true;
-      createAgencyCompanyLocation((this as any).profileId, this.location)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Created');
-          this.$emit('updateContent');
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    createCompanyLocation() {
-      this.isLoading = true;
-      createProfileLocation(this.location)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Created');
-          this.$emit('updateContent');
-        }).catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    updateLocation(id: any) {
-      this.isLoading = true;
-      updateAgencyCompanyLocation((this as any).profileId, id, this.location)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Updated');
-          this.$emit('updateContent');
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  created() {
-    const currentLocation = (this as any).currentLocation;
-    if (currentLocation) {
-      this.location = Object.assign({}, currentLocation);
-      this.hydrateForm({
-        mainIntersection: currentLocation.mainIntersection || '',
-        entrance: currentLocation.entrance || '',
-      });
+});
+const { mainIntersection, entrance } = form.fields;
+const formErrors = form.errors;
+
+const addressComponent = ref<any>(null);
+const isLoading = ref(false);
+const location = ref<any>({});
+
+async function validateForm() {
+  form.markInteracted();
+  const addressValid = await addressComponent.value.validateAddress();
+  form.handleSubmit((values) => {
+    if (!addressValid) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
     }
-  },
-};
+    location.value.mainIntersection = values.mainIntersection;
+    location.value.entrance = values.entrance;
+    if (location.value.id) {
+      updateLocation(location.value.id);
+    } else {
+      createLocation();
+    }
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function createLocation() {
+  isLoading.value = true;
+  createAgencyCompanyLocation(props.profileId, location.value)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Created');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateLocation(id: any) {
+  isLoading.value = true;
+  updateAgencyCompanyLocation(props.profileId, id, location.value)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+if (props.currentLocation) {
+  location.value = Object.assign({}, props.currentLocation);
+  form.hydrate({
+    mainIntersection: props.currentLocation.mainIntersection || '',
+    entrance: props.currentLocation.entrance || '',
+  });
+}
 </script>

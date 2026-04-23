@@ -8,8 +8,8 @@
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class=" container-image margin-10-auto">
-                <upload-image @imageSelected="(profileImg) => saveImage(profileImg)" :edited-image="worker.profileImage"
-                  @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()"
+                <UploadImage @imageSelected="(profileImg) => saveImage(profileImg)" :edited-image="worker.profileImage"
+                  @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"
                   class="upload-image-spacing" />
                 <p class="fz-2">
                   <i>Please upload a photo taken in front of a plain white or off-white background</i>
@@ -59,11 +59,11 @@
               </b-field>
             </div>
           </div>
-          <address-component ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
+          <AddressComponent ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <phone-input ref="phoneComponent" :required="true" model="Mobile Number"
+              <PhoneInput ref="phoneComponent" :required="true" model="Mobile Number"
                 :defaultValue="worker.mobileNumber" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
             </div>
           </div>
@@ -92,10 +92,10 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <b-field :label="'Available Time'">
                 <div class="container-flex">
-                  <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-for="time in availabilityTimes"
-                    v-bind:key="time.id">
-                    <b-checkbox v-model="worker.availabilityTimes" :native-value="time">
-                      {{ time.value }}
+                  <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-for="t in availabilityTimes"
+                    v-bind:key="t.id">
+                    <b-checkbox v-model="worker.availabilityTimes" :native-value="t">
+                      {{ t.value }}
                     </b-checkbox>
                   </div>
                 </div>
@@ -589,483 +589,456 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, reactive, ref, computed, watch, toRefs } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { reactive, ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import dayjs from "dayjs";
-import { registerWorker } from "@/api/workerApi";
-import { useCreateWorker } from "@/composables/useCreateWorker";
-import { usePubSub } from "@/composables/usePubSub";
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import dayjs from 'dayjs';
+import { registerWorker } from '@/api/workerApi';
+import { useCreateWorker } from '@/composables/useCreateWorker';
+import { usePubSub } from '@/composables/usePubSub';
 import { filename } from '@/utils/filters';
-import { confirmationGuard } from '@/utils/confirmationGuard';
-import { createMultipartFormData, generateFileName } from "@/utils/buildWorkerFormData";
+import { createMultipartFormData } from '@/utils/buildWorkerFormData';
+import UploadImage from '../../components/PreviewImage.vue';
+import AddressComponent from '../../components/Address.vue';
+import PhoneInput from '../../components/PhoneInput.vue';
 
-const alphaNumericSpacesRegex = /^[-_ a-zA-Z0-9]+$/;
+const router = useRouter();
+const appStore = useAppStore();
+const securityStore = useSecurityStore();
+const createWorker = useCreateWorker();
+const pubSub = usePubSub();
 
-export default {
-  setup() {
-    const createWorker = useCreateWorker();
-    const pubSub = usePubSub();
-    const securityStore = useSecurityStore();
+const {
+  skills,
+  filteredSkills,
+  filteredLanguages,
+  genders,
+  identificationTypes,
+  availabilities,
+  availabilityTimes,
+  days,
+  lifts,
+  worker,
+  allDaysSelected,
+  loadCatalogs,
+  changeDaysSelected,
+  changeAllDays,
+  getFilteredSkills,
+  getFilteredLanguages,
+} = createWorker;
 
-    const worker = createWorker.worker;
-    const isLogin = computed(() => !!securityStore.user);
-    const hasSecondId = computed(() => !!worker.identificationType2File);
+const isLogin = computed(() => !!securityStore.user);
+const hasSecondId = computed(() => !!worker.identificationType2File);
 
-    const validationSchema = computed(() => {
-      const shape: Record<string, any> = {
-        firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
-        lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
-        birthDay: yup.mixed().required('Date of birth is required'),
-        gender: yup.mixed().required('Gender is required'),
-        identificationType1: yup.mixed().required('Identification type is required'),
-        identificationNumber1: yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
-        email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
-        password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
-        confirmPassword: yup
-          .string()
-          .required('Confirm password is required')
-          .oneOf([yup.ref('password')], 'Passwords must match'),
-      };
-      if (hasSecondId.value) {
-        shape.identificationType2 = yup.mixed().required('Identification type is required');
-        shape.identificationNumber2 = yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters');
-      }
-      if (!isLogin.value) {
-        shape.agreeTermsAndConditions = yup
-          .boolean()
-          .oneOf([true], 'You must accept the Terms & Conditions to continue');
-      }
-      return yup.object(shape);
-    });
-
-    const { errors: formErrors, setFieldValue, setFieldError, validateField } = useForm({
-      validationSchema,
-      initialValues: {
-        firstName: '',
-        lastName: '',
-        birthDay: null,
-        gender: null,
-        identificationType1: null,
-        identificationNumber1: '',
-        identificationType2: null,
-        identificationNumber2: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        agreeTermsAndConditions: false,
-      },
-    });
-
-    const { value: firstName } = useField<string>('firstName');
-    const { value: lastName } = useField<string>('lastName');
-    const { value: birthDay } = useField<any>('birthDay');
-    const { value: gender } = useField<any>('gender');
-    const { value: identificationType1 } = useField<any>('identificationType1');
-    const { value: identificationNumber1 } = useField<string>('identificationNumber1');
-    const { value: identificationType2 } = useField<any>('identificationType2');
-    const { value: identificationNumber2 } = useField<string>('identificationNumber2');
-    const { value: email } = useField<string>('email');
-    const { value: password } = useField<string>('password');
-    const { value: confirmPassword } = useField<string>('confirmPassword');
-    const { value: agreeTermsAndConditions } = useField<boolean>('agreeTermsAndConditions');
-
-    const interacted = reactive<Record<string, boolean>>({});
-    watch(firstName, () => { interacted.firstName = true; });
-    watch(lastName, () => { interacted.lastName = true; });
-    watch(birthDay, () => { interacted.birthDay = true; });
-    watch(gender, () => { interacted.gender = true; });
-    watch(identificationType1, () => { interacted.identificationType1 = true; });
-    watch(identificationNumber1, () => { interacted.identificationNumber1 = true; });
-    watch(identificationType2, () => { interacted.identificationType2 = true; });
-    watch(identificationNumber2, () => { interacted.identificationNumber2 = true; });
-    watch(email, () => { interacted.email = true; });
-    watch(password, () => { interacted.password = true; });
-    watch(confirmPassword, () => { interacted.confirmPassword = true; });
-    watch(agreeTermsAndConditions, () => { interacted.agreeTermsAndConditions = true; });
-
-    const errors = computed(() => {
-      const out: Record<string, string> = {};
-      for (const key of Object.keys(formErrors.value)) {
-        out[key] = interacted[key] ? (formErrors.value[key] || '') : '';
-      }
-      return out;
-    });
-
-    function markInteracted(fields: string[]) {
-      for (const f of fields) interacted[f] = true;
-    }
-
-    const itemErrors = reactive<Record<string, string>>({});
-
-    return {
-      ...createWorker,
-      ...pubSub,
-      errors,
-      setFieldValue,
-      setFieldError,
-      validateField,
-      markInteracted,
-      firstName,
-      lastName,
-      birthDay,
-      gender,
-      identificationType1,
-      identificationNumber1,
-      identificationType2,
-      identificationNumber2,
-      email,
-      password,
-      confirmPassword,
-      agreeTermsAndConditions,
-      itemErrors,
-      isLogin,
-    };
-  },
-  components: {
-    uploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue")),
-    addressComponent: defineAsyncComponent(() => import("../../components/Address.vue")),
-    phoneInput: defineAsyncComponent(() => import("../../components/PhoneInput.vue"))
-  },
-  data() {
-    return {
-      activeStep: 0,
-      unsavedChanges: false,
-      showWorkInformationTab: true,
-      disableStartDate: null,
-      submitted: false,
-      isLoading: true,
-      disabledDates: null,
-      isCanada: false,
-      selectedDocumentFile: null,
-      selectedLicenseFile: null,
-      selectedCertificateFile: null,
-      selectedResumeFile: null,
-      selectedOtherDocFile: null,
-      documentsError: null,
-      fileObjects: {
-        profileImage: null,
-        identificationType1: null,
-        identificationType2: null,
-        licenses: [],
-        certificates: [],
-        resume: null,
-        otherDocuments: []
-      }
-    };
-  },
-  methods: {
-    filename,
-    async validateForm() {
-      const fields = ['email', 'password', 'confirmPassword'];
-      if (!this.isLogin) fields.push('agreeTermsAndConditions');
-      this.markInteracted(fields);
-      const results = await Promise.all(fields.map(f => this.validateField(f)));
-      const allValid = results.every((r: any) => r.valid);
-      if (allValid) {
-        this.registerWorker();
-      } else {
-        showAlertError("Please make sure all required fields are filled out correctly");
-      }
-    },
-    goToPreviousStep() {
-      if (this.activeStep > 0) {
-        this.activeStep--;
-        if (this.isLogin && this.activeStep === 1) {
-          this.activeStep--;
-        }
-      }
-    },
-    async validateAndGoToStep(currentStep) {
-      let valid = false;
-      if (currentStep === 1) {
-        valid = await this.validateStep1();
-      } else if (currentStep === 2) {
-        valid = true;
-      } else if (currentStep === 3) {
-        valid = await this.validateStep3();
-      }
-      if (valid) {
-        this.activeStep++;
-        if (this.isLogin && this.activeStep === 1) {
-          this.activeStep++;
-        }
-      } else {
-        showAlertError("Please make sure all required fields are filled out correctly");
-      }
-    },
-    async validateStep1() {
-      const fields = ['firstName', 'lastName', 'birthDay', 'gender'];
-      this.markInteracted(fields);
-      const results = await Promise.all(fields.map(f => this.validateField(f)));
-      const fieldsValid = results.every((r: any) => r.valid);
-      const addressValid = await this.$refs.addressComponent.validateAddress();
-      const phoneValid = await this.$refs.phoneComponent.validatePhone();
-      return fieldsValid && addressValid && phoneValid;
-    },
-    async validateStep3() {
-      this.documentsError = !this.worker.identificationType1File;
-      if (this.documentsError) return false;
-
-      const fields = ['identificationType1', 'identificationNumber1'];
-      if (this.worker.identificationType2File) {
-        fields.push('identificationType2', 'identificationNumber2');
-      }
-      this.markInteracted(fields);
-      const results = await Promise.all(fields.map(f => this.validateField(f)));
-      let valid = results.every((r: any) => r.valid);
-
-      const next: Record<string, string> = {};
-      this.worker.licenses.forEach((item: any, i: number) => {
-        const desc = item?.license?.description || '';
-        if (!desc) {
-          next['description' + i] = 'Description is required';
-          valid = false;
-        } else if (desc.length > 100) {
-          next['description' + i] = 'Max 100 characters';
-          valid = false;
-        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
-          next['description' + i] = 'Only letters, numbers, spaces and -_';
-          valid = false;
-        }
-        if (!item.expires) {
-          next['licenseExpires' + i] = 'Expiration date is required';
-          valid = false;
-        }
-      });
-      this.worker.certificates.forEach((item: any, i: number) => {
-        const desc = item?.description || '';
-        if (!desc) {
-          next['descriptioncer' + i] = 'Description is required';
-          valid = false;
-        } else if (desc.length > 100) {
-          next['descriptioncer' + i] = 'Max 100 characters';
-          valid = false;
-        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
-          next['descriptioncer' + i] = 'Only letters, numbers, spaces and -_';
-          valid = false;
-        }
-      });
-      this.worker.otherDocuments.forEach((item: any, i: number) => {
-        const desc = item?.description || '';
-        if (!desc) {
-          next['descriptionOther' + i] = 'Description is required';
-          valid = false;
-        } else if (desc.length > 100) {
-          next['descriptionOther' + i] = 'Max 100 characters';
-          valid = false;
-        } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
-          next['descriptionOther' + i] = 'Only letters, numbers, spaces and -_';
-          valid = false;
-        }
-      });
-      Object.keys(this.itemErrors).forEach(k => delete this.itemErrors[k]);
-      Object.assign(this.itemErrors, next);
-      return valid;
-    },
-    async registerWorker() {
-      this.isLoading = true;
-      this.worker.firstName = this.firstName;
-      this.worker.lastName = this.lastName;
-      this.worker.birthDay = this.birthDay;
-      this.worker.identificationType1 = this.identificationType1;
-      this.worker.identificationNumber1 = this.identificationNumber1;
-      this.worker.identificationType2 = this.identificationType2;
-      this.worker.identificationNumber2 = this.identificationNumber2;
-      this.worker.email = this.email;
-      this.worker.password = this.password;
-      this.worker.confirmPassword = this.confirmPassword;
-      this.worker.agreeTermsAndConditions = this.agreeTermsAndConditions;
-      this.worker.gender = { id: this.gender };
-
-      try {
-        const formData = await createMultipartFormData(this.worker, this.fileObjects);
-        const id = await registerWorker(formData);
-        this.isLoading = false;
-        showAlertSuccess("Your account has been created");
-        const route = this.isLogin ? `/agency-workers/worker/${id}` : '/home'
-        this.$router.push(route);
-      } catch (error) {
-        this.isLoading = false;
-        showAlertError(error.data);
-      }
-    },
-    validateDocumentFile(file, maxSizeKB = 15500) {
-      if (!file) return false;
-
-      if (file.size / 1024 > maxSizeKB) {
-        showAlertError('File exceeds 15MB limit');
-        return false;
-      }
-
-      return true;
-    },
-    handleIdentificationUpload(file) {
-      if (this.validateDocumentFile(file)) {
-        this.addDocument(file);
-        this.selectedDocumentFile = null;
-      }
-    },
-    handleLicenseUpload(file) {
-      if (this.validateDocumentFile(file)) {
-        this.addLicense(file);
-        this.selectedLicenseFile = null;
-      }
-    },
-    handleCertificateUpload(file) {
-      if (this.validateDocumentFile(file)) {
-        this.addCertificate(file);
-        this.selectedCertificateFile = null;
-      }
-    },
-    handleResumeUpload(file) {
-      if (this.validateDocumentFile(file)) {
-        this.addResume(file);
-        this.selectedResumeFile = null;
-      }
-    },
-    handleOtherDocumentUpload(file) {
-      if (this.validateDocumentFile(file)) {
-        this.addOtherDocument(file);
-        this.selectedOtherDocFile = null;
-      }
-    },
-    addDocument(file) {
-      if (!this.worker.identificationType1File) {
-        this.fileObjects.identificationType1 = file;
-        this.worker.identificationType1File = {
-          fileName: file.name,
-          description: ""
-        };
-        this.setFieldValue('identificationType1', null);
-        this.setFieldValue('identificationNumber1', '');
-      } else {
-        this.fileObjects.identificationType2 = file;
-        this.worker.identificationType2File = {
-          fileName: file.name,
-          description: ""
-        };
-        this.setFieldValue('identificationType2', null);
-        this.setFieldValue('identificationNumber2', '');
-      }
-      this.documentsError = false;
-    },
-    deleteDocument(file) {
-      const isFile1 =
-        this.worker.identificationType1File.fileName === file.fileName;
-      if (isFile1 && this.worker.identificationType2File) {
-        this.worker.identificationType1File = {
-          ...this.worker.identificationType2File
-        };
-        this.fileObjects.identificationType1 = this.fileObjects.identificationType2;
-        this.setFieldValue('identificationType1', this.identificationType2);
-        this.setFieldValue('identificationNumber1', this.identificationNumber2);
-        this.fileObjects.identificationType2 = null;
-        this.worker.identificationType2File = null;
-        this.setFieldValue('identificationType2', null);
-        this.setFieldValue('identificationNumber2', '');
-      } else if (isFile1) {
-        this.fileObjects.identificationType1 = null;
-        this.worker.identificationType1File = null;
-        this.setFieldValue('identificationType1', null);
-        this.setFieldValue('identificationNumber1', '');
-      } else {
-        this.fileObjects.identificationType2 = null;
-        this.worker.identificationType2File = null;
-        this.setFieldValue('identificationType2', null);
-        this.setFieldValue('identificationNumber2', '');
-      }
-    },
-    addLicense(file) {
-      this.fileObjects.licenses.push(file);
-      this.worker.licenses.push({
-        license: {
-          fileName: file.name,
-          description: ""
-        }
-      });
-    },
-    deleteLicense(index) {
-      this.fileObjects.licenses.splice(index, 1);
-      this.worker.licenses.splice(index, 1);
-    },
-    addCertificate(file) {
-      this.fileObjects.certificates.push(file);
-      this.worker.certificates.push({
-        fileName: file.name,
-        description: ""
-      });
-    },
-    deleteCertificate(index) {
-      this.fileObjects.certificates.splice(index, 1);
-      this.worker.certificates.splice(index, 1);
-    },
-    addResume(file) {
-      this.fileObjects.resume = file;
-      this.worker.resume = {
-        fileName: file.name
-      };
-    },
-    deleteResume() {
-      this.fileObjects.resume = null;
-      this.worker.resume = null;
-    },
-    addOtherDocument(file) {
-      this.fileObjects.otherDocuments.push(file);
-      this.worker.otherDocuments.push({
-        fileName: file.name,
-        description: ""
-      });
-    },
-    deleteOtherDocument(index) {
-      this.fileObjects.otherDocuments.splice(index, 1);
-      this.worker.otherDocuments.splice(index, 1);
-    },
-    saveImage(image) {
-      this.fileObjects.profileImage = image;
-      if (!this.worker.profileImage) {
-        this.worker.profileImage = { fileName: image.name };
-      } else {
-        this.worker.profileImage.fileName = image.name;
-      }
-    },
-    addSkill(skill) {
-      if (!skill.skill) {
-        skill = { skill };
-        this.skills.push(skill);
-      }
-      return skill;
-    },
-    isCanadaSelected(value) {
-      this.isCanada = value;
-      this.isLoading = true;
-      if (value === false && this.worker.otherDocuments.length > 0) {
-        this.fileObjects.otherDocuments = [];
-        this.worker.otherDocuments = [];
-      }
-      this.isLoading = false;
-    }
-  },
-    beforeRouteLeave: confirmationGuard,
-  async created() {
-    await this.loadCatalogs();
-    this.isLoading = false;
-    this.appStore.getCurrentDate().then((response) => {
-      this.disableStartDate = response;
-      this.disabledDates = dayjs(response)
-        .subtract(18, "years")
-        .toDate();
-    });
-  },
-  computed: {
-    ...mapStores(useAppStore, useSecurityStore)
+const validationSchema = computed(() => {
+  const shape: Record<string, any> = {
+    firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+    lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+    birthDay: yup.mixed().required('Date of birth is required'),
+    gender: yup.mixed().required('Gender is required'),
+    identificationType1: yup.mixed().required('Identification type is required'),
+    identificationNumber1: yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+    email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
+    password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
+    confirmPassword: yup
+      .string()
+      .required('Confirm password is required')
+      .oneOf([yup.ref('password')], 'Passwords must match'),
+  };
+  if (hasSecondId.value) {
+    shape.identificationType2 = yup.mixed().required('Identification type is required');
+    shape.identificationNumber2 = yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters');
   }
-};
+  if (!isLogin.value) {
+    shape.agreeTermsAndConditions = yup
+      .boolean()
+      .oneOf([true], 'You must accept the Terms & Conditions to continue');
+  }
+  return yup.object(shape);
+});
+
+const { errors: formErrors, setFieldValue, validateField } = useForm({
+  validationSchema,
+  initialValues: {
+    firstName: '',
+    lastName: '',
+    birthDay: null,
+    gender: null,
+    identificationType1: null,
+    identificationNumber1: '',
+    identificationType2: null,
+    identificationNumber2: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreeTermsAndConditions: false,
+  },
+});
+
+const { value: firstName } = useField<string>('firstName');
+const { value: lastName } = useField<string>('lastName');
+const { value: birthDay } = useField<any>('birthDay');
+const { value: gender } = useField<any>('gender');
+const { value: identificationType1 } = useField<any>('identificationType1');
+const { value: identificationNumber1 } = useField<string>('identificationNumber1');
+const { value: identificationType2 } = useField<any>('identificationType2');
+const { value: identificationNumber2 } = useField<string>('identificationNumber2');
+const { value: email } = useField<string>('email');
+const { value: password } = useField<string>('password');
+const { value: confirmPassword } = useField<string>('confirmPassword');
+const { value: agreeTermsAndConditions } = useField<boolean>('agreeTermsAndConditions');
+
+const interacted = reactive<Record<string, boolean>>({});
+watch(firstName, () => { interacted.firstName = true; });
+watch(lastName, () => { interacted.lastName = true; });
+watch(birthDay, () => { interacted.birthDay = true; });
+watch(gender, () => { interacted.gender = true; });
+watch(identificationType1, () => { interacted.identificationType1 = true; });
+watch(identificationNumber1, () => { interacted.identificationNumber1 = true; });
+watch(identificationType2, () => { interacted.identificationType2 = true; });
+watch(identificationNumber2, () => { interacted.identificationNumber2 = true; });
+watch(email, () => { interacted.email = true; });
+watch(password, () => { interacted.password = true; });
+watch(confirmPassword, () => { interacted.confirmPassword = true; });
+watch(agreeTermsAndConditions, () => { interacted.agreeTermsAndConditions = true; });
+
+const errors = computed(() => {
+  const out: Record<string, string> = {};
+  for (const key of Object.keys(formErrors.value)) {
+    out[key] = interacted[key] ? (formErrors.value[key] || '') : '';
+  }
+  return out;
+});
+
+function markInteracted(fields: string[]) {
+  for (const f of fields) interacted[f] = true;
+}
+
+const itemErrors = reactive<Record<string, string>>({});
+
+const activeStep = ref(0);
+const disableStartDate = ref<any>(null);
+const isLoading = ref(true);
+const disabledDates = ref<any>(null);
+const isCanada = ref(false);
+const selectedDocumentFile = ref<File | null>(null);
+const selectedLicenseFile = ref<File | null>(null);
+const selectedCertificateFile = ref<File | null>(null);
+const selectedResumeFile = ref<File | null>(null);
+const selectedOtherDocFile = ref<File | null>(null);
+const documentsError = ref<boolean | null>(null);
+const fileObjects = reactive<any>({
+  profileImage: null,
+  identificationType1: null,
+  identificationType2: null,
+  licenses: [],
+  certificates: [],
+  resume: null,
+  otherDocuments: [],
+});
+
+const addressComponent = ref<any>(null);
+const phoneComponent = ref<any>(null);
+
+async function registerWorkerFn() {
+  isLoading.value = true;
+  worker.firstName = firstName.value;
+  worker.lastName = lastName.value;
+  worker.birthDay = birthDay.value;
+  worker.identificationType1 = identificationType1.value;
+  worker.identificationNumber1 = identificationNumber1.value;
+  worker.identificationType2 = identificationType2.value;
+  worker.identificationNumber2 = identificationNumber2.value;
+  worker.email = email.value;
+  worker.password = password.value;
+  worker.confirmPassword = confirmPassword.value;
+  worker.agreeTermsAndConditions = agreeTermsAndConditions.value;
+  worker.gender = { id: gender.value };
+
+  try {
+    const formData = await createMultipartFormData(worker, fileObjects);
+    const id = await registerWorker(formData);
+    isLoading.value = false;
+    showAlertSuccess('Your account has been created');
+    const route = isLogin.value ? `/agency-workers/worker/${id}` : '/home';
+    router.push(route);
+  } catch (error: any) {
+    isLoading.value = false;
+    showAlertError(error.data);
+  }
+}
+
+async function validateForm() {
+  const fields = ['email', 'password', 'confirmPassword'];
+  if (!isLogin.value) fields.push('agreeTermsAndConditions');
+  markInteracted(fields);
+  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const allValid = results.every((r: any) => r.valid);
+  if (allValid) {
+    registerWorkerFn();
+  } else {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  }
+}
+
+function goToPreviousStep() {
+  if (activeStep.value > 0) {
+    activeStep.value--;
+    if (isLogin.value && activeStep.value === 1) {
+      activeStep.value--;
+    }
+  }
+}
+
+async function validateStep1() {
+  const fields = ['firstName', 'lastName', 'birthDay', 'gender'];
+  markInteracted(fields);
+  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const fieldsValid = results.every((r: any) => r.valid);
+  const addressValid = await addressComponent.value.validateAddress();
+  const phoneValid = await phoneComponent.value.validatePhone();
+  return fieldsValid && addressValid && phoneValid;
+}
+
+async function validateStep3() {
+  documentsError.value = !worker.identificationType1File;
+  if (documentsError.value) return false;
+
+  const fields = ['identificationType1', 'identificationNumber1'];
+  if (worker.identificationType2File) {
+    fields.push('identificationType2', 'identificationNumber2');
+  }
+  markInteracted(fields);
+  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  let valid = results.every((r: any) => r.valid);
+
+  const next: Record<string, string> = {};
+  worker.licenses.forEach((item: any, i: number) => {
+    const desc = item?.license?.description || '';
+    if (!desc) {
+      next['description' + i] = 'Description is required';
+      valid = false;
+    } else if (desc.length > 100) {
+      next['description' + i] = 'Max 100 characters';
+      valid = false;
+    } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+      next['description' + i] = 'Only letters, numbers, spaces and -_';
+      valid = false;
+    }
+    if (!item.expires) {
+      next['licenseExpires' + i] = 'Expiration date is required';
+      valid = false;
+    }
+  });
+  worker.certificates.forEach((item: any, i: number) => {
+    const desc = item?.description || '';
+    if (!desc) {
+      next['descriptioncer' + i] = 'Description is required';
+      valid = false;
+    } else if (desc.length > 100) {
+      next['descriptioncer' + i] = 'Max 100 characters';
+      valid = false;
+    } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+      next['descriptioncer' + i] = 'Only letters, numbers, spaces and -_';
+      valid = false;
+    }
+  });
+  worker.otherDocuments.forEach((item: any, i: number) => {
+    const desc = item?.description || '';
+    if (!desc) {
+      next['descriptionOther' + i] = 'Description is required';
+      valid = false;
+    } else if (desc.length > 100) {
+      next['descriptionOther' + i] = 'Max 100 characters';
+      valid = false;
+    } else if (!/^[-_ a-zA-Z0-9]+$/.test(desc)) {
+      next['descriptionOther' + i] = 'Only letters, numbers, spaces and -_';
+      valid = false;
+    }
+  });
+  Object.keys(itemErrors).forEach((k) => delete itemErrors[k]);
+  Object.assign(itemErrors, next);
+  return valid;
+}
+
+async function validateAndGoToStep(currentStep: number) {
+  let valid = false;
+  if (currentStep === 1) {
+    valid = await validateStep1();
+  } else if (currentStep === 2) {
+    valid = true;
+  } else if (currentStep === 3) {
+    valid = await validateStep3();
+  }
+  if (valid) {
+    activeStep.value++;
+    if (isLogin.value && activeStep.value === 1) {
+      activeStep.value++;
+    }
+  } else {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  }
+}
+
+function validateDocumentFile(file: File | null, maxSizeKB = 15500): boolean {
+  if (!file) return false;
+  if (file.size / 1024 > maxSizeKB) {
+    showAlertError('File exceeds 15MB limit');
+    return false;
+  }
+  return true;
+}
+
+function addDocument(file: File) {
+  if (!worker.identificationType1File) {
+    fileObjects.identificationType1 = file;
+    worker.identificationType1File = { fileName: file.name, description: '' };
+    setFieldValue('identificationType1', null);
+    setFieldValue('identificationNumber1', '');
+  } else {
+    fileObjects.identificationType2 = file;
+    worker.identificationType2File = { fileName: file.name, description: '' };
+    setFieldValue('identificationType2', null);
+    setFieldValue('identificationNumber2', '');
+  }
+  documentsError.value = false;
+}
+
+function handleIdentificationUpload(file: File | null) {
+  if (!file || !validateDocumentFile(file)) return;
+  addDocument(file);
+  selectedDocumentFile.value = null;
+}
+
+function addLicense(file: File) {
+  fileObjects.licenses.push(file);
+  worker.licenses.push({ license: { fileName: file.name, description: '' } });
+}
+
+function handleLicenseUpload(file: File | null) {
+  if (!file || !validateDocumentFile(file)) return;
+  addLicense(file);
+  selectedLicenseFile.value = null;
+}
+
+function addCertificate(file: File) {
+  fileObjects.certificates.push(file);
+  worker.certificates.push({ fileName: file.name, description: '' });
+}
+
+function handleCertificateUpload(file: File | null) {
+  if (!file || !validateDocumentFile(file)) return;
+  addCertificate(file);
+  selectedCertificateFile.value = null;
+}
+
+function addResume(file: File) {
+  fileObjects.resume = file;
+  worker.resume = { fileName: file.name };
+}
+
+function handleResumeUpload(file: File | null) {
+  if (!file || !validateDocumentFile(file)) return;
+  addResume(file);
+  selectedResumeFile.value = null;
+}
+
+function addOtherDocument(file: File) {
+  fileObjects.otherDocuments.push(file);
+  worker.otherDocuments.push({ fileName: file.name, description: '' });
+}
+
+function handleOtherDocumentUpload(file: File | null) {
+  if (!file || !validateDocumentFile(file)) return;
+  addOtherDocument(file);
+  selectedOtherDocFile.value = null;
+}
+
+function deleteDocument(file: any) {
+  if (!worker.identificationType1File) return;
+  const isFile1 = worker.identificationType1File.fileName === file.fileName;
+  if (isFile1 && worker.identificationType2File) {
+    worker.identificationType1File = { ...worker.identificationType2File };
+    fileObjects.identificationType1 = fileObjects.identificationType2;
+    setFieldValue('identificationType1', identificationType2.value);
+    setFieldValue('identificationNumber1', identificationNumber2.value);
+    fileObjects.identificationType2 = null;
+    worker.identificationType2File = null;
+    setFieldValue('identificationType2', null);
+    setFieldValue('identificationNumber2', '');
+  } else if (isFile1) {
+    fileObjects.identificationType1 = null;
+    worker.identificationType1File = null;
+    setFieldValue('identificationType1', null);
+    setFieldValue('identificationNumber1', '');
+  } else {
+    fileObjects.identificationType2 = null;
+    worker.identificationType2File = null;
+    setFieldValue('identificationType2', null);
+    setFieldValue('identificationNumber2', '');
+  }
+}
+
+function deleteLicense(index: number) {
+  fileObjects.licenses.splice(index, 1);
+  worker.licenses.splice(index, 1);
+}
+
+function deleteCertificate(index: number) {
+  fileObjects.certificates.splice(index, 1);
+  worker.certificates.splice(index, 1);
+}
+
+function deleteResume() {
+  fileObjects.resume = null;
+  worker.resume = null;
+}
+
+function deleteOtherDocument(index: number) {
+  fileObjects.otherDocuments.splice(index, 1);
+  worker.otherDocuments.splice(index, 1);
+}
+
+function saveImage(image: any) {
+  fileObjects.profileImage = image;
+  if (!worker.profileImage) {
+    worker.profileImage = { fileName: image.name };
+  } else {
+    (worker.profileImage as any).fileName = image.name;
+  }
+}
+
+function addSkill(skill: any) {
+  if (!skill.skill) {
+    skill = { skill };
+    skills.value.push(skill);
+  }
+  return skill;
+}
+
+function isCanadaSelected(value: boolean) {
+  isCanada.value = value;
+  isLoading.value = true;
+  if (value === false && worker.otherDocuments.length > 0) {
+    fileObjects.otherDocuments = [];
+    worker.otherDocuments = [];
+  }
+  isLoading.value = false;
+}
+
+(async () => {
+  await loadCatalogs();
+  isLoading.value = false;
+  appStore.getCurrentDate().then((response: any) => {
+    disableStartDate.value = response;
+    disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
+  });
+})();
 </script>
 
 <style lang="scss" scoped>

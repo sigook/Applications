@@ -208,23 +208,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
 import bannerTestimonials1 from '@/assets/images/home_carousel/banner_testimonials_1.png';
 import bannerTestimonials2 from '@/assets/images/home_carousel/banner_testimonials_2.png';
 import bannerTestimonials3 from '@/assets/images/home_carousel/banner_testimonials_3.png';
 import appMobile from '@/assets/images/app_mobile.png';
-
-export default {
-  data() {
-    return { bannerTestimonials1, bannerTestimonials2, bannerTestimonials3, appMobile };
-  },
-  components: {
-    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
-    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue"))
-  },
-}
-
+import SigookVideo from "@/components/landing/SigookVideo.vue";
+import JobSearch from "@/components/landing/JobSearch.vue";
 </script>
 
 <style lang="scss">

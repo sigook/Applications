@@ -33,70 +33,64 @@
     <!-- end Select custom modal -->
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import {
   getAgencyRequestRequestedBy,
   postAgencyRequestRequestedBy,
   deleteAgencyRequestRequestedBy
 } from "@/api/agencyRequestApi";
+import ContactList from './ContactListModal.vue';
 
-export default {
-  props: ['requestId', 'companyId', 'activeUsers', 'canEdit'],
-  data() {
-    return {
-      showModal: false,
-      isLoading: false,
-      data: null
-    }
-  },
-  components: {
-    ContactList: defineAsyncComponent(() => import("./ContactListModal.vue"))
-  },
-  methods: {
-    loadRequestedBy() {
-      getAgencyRequestRequestedBy(this.requestId)
-        .then(response => {
-          this.data = response;
-        })
-        .catch(error => {
-          showAlertError(error)
-        })
-    },
-    updateContactList(item) {
-      this.data.items.push(item)
-      this.showModal = false;
-    },
-    addRequestedBy(item) {
-      this.isLoading = true;
-      postAgencyRequestRequestedBy(this.requestId, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.updateContactList(item)
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    },
-    removeRequestedBy(item) {
-      let index = this.data.items.findIndex(x => x.id === item.id);
-      this.isLoading = true;
-      deleteAgencyRequestRequestedBy(this.requestId, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.showModal = false;
-          this.data.items.splice(index, 1)
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    }
-  },
-  created() {
-    this.loadRequestedBy();
-  }
+const props = defineProps<{ requestId: any; companyId: any; activeUsers?: any[]; canEdit?: boolean }>();
+
+const showModal = ref(false);
+const isLoading = ref(false);
+const data = ref<any>(null);
+
+function loadRequestedBy() {
+  getAgencyRequestRequestedBy(props.requestId)
+    .then(response => {
+      data.value = response;
+    })
+    .catch(error => {
+      showAlertError(error);
+    });
 }
+
+function updateContactList(item: any) {
+  data.value.items.push(item);
+  showModal.value = false;
+}
+
+function addRequestedBy(item: any) {
+  isLoading.value = true;
+  postAgencyRequestRequestedBy(props.requestId, item.id)
+    .then(() => {
+      isLoading.value = false;
+      updateContactList(item);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function removeRequestedBy(item: any) {
+  const index = data.value.items.findIndex((x: any) => x.id === item.id);
+  isLoading.value = true;
+  deleteAgencyRequestRequestedBy(props.requestId, item.id)
+    .then(() => {
+      isLoading.value = false;
+      showModal.value = false;
+      data.value.items.splice(index, 1);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+loadRequestedBy();
 </script>

@@ -57,15 +57,27 @@
     </form>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
-import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getGenders } from "@/api/catalogApi";
 import { createWorkerBasicInformation } from '@/api/workerApi';
+
+interface BasicInfoForm {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  secondLastName: string;
+  birthDay: Date | null;
+  gender: any;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
@@ -76,88 +88,74 @@ const schema = yup.object({
   gender: yup.mixed().required('Gender is required'),
 });
 
-export default {
-  props: ['data'],
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        secondLastName: '',
-        birthDay: null as Date | null,
-        gender: null as any,
-      },
-    });
+const form = useStickyForm<BasicInfoForm>({
+  schema,
+  initialValues: {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    secondLastName: '',
+    birthDay: null,
+    gender: null,
+  },
+});
+const { firstName, middleName, lastName, secondLastName, birthDay, gender } = form.fields;
+const formErrors = form.errors;
 
-    function hydrate(src: any) {
-      form.hydrate({
-        firstName: src?.firstName || '',
-        middleName: src?.middleName || '',
-        lastName: src?.lastName || '',
-        secondLastName: src?.secondLastName || '',
-        birthDay: src?.birthDay ? new Date(src.birthDay) : null,
-        gender: src?.gender || null,
-      });
-    }
+const appStore = useAppStore();
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrate,
-    };
-  },
-  data() {
-    return {
-      isLoading: false,
-      workerId: null as any,
-      hasVehicle: false,
-      disabledDates: null as any,
-      genders: [] as any[],
-    };
-  },
-  computed: {
-    ...mapStores(useAppStore),
-  },
-  methods: {
-    validateAll() {
-      this.markInteracted(['firstName', 'middleName', 'lastName', 'secondLastName', 'birthDay', 'gender']);
-      this.handleSubmit((values) => {
-        this.submitWorkerBasicInformation(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    submitWorkerBasicInformation(values: any) {
-      this.isLoading = true;
-      const payload = {
-        ...values,
-        hasVehicle: this.hasVehicle,
-      };
-      createWorkerBasicInformation(this.workerId, payload)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    }
-  },
-  async created() {
-    if (this.data != null) {
-      this.workerId = this.data.id;
-      this.hasVehicle = !!this.data.hasVehicle;
-      this.hydrate(this.data);
-    }
-    this.appStore.getCurrentDate().then(response => {
-      this.disabledDates = dayjs(response).subtract(18, 'years').toDate();
-    });
-    this.genders = await getGenders();
-  }
+const isLoading = ref(false);
+const workerId = ref<any>(null);
+const hasVehicle = ref(false);
+const disabledDates = ref<any>(null);
+const genders = ref<any[]>([]);
+
+function hydrate(src: any) {
+  form.hydrate({
+    firstName: src?.firstName || '',
+    middleName: src?.middleName || '',
+    lastName: src?.lastName || '',
+    secondLastName: src?.secondLastName || '',
+    birthDay: src?.birthDay ? new Date(src.birthDay) : null,
+    gender: src?.gender || null,
+  });
 }
+
+function submitWorkerBasicInformation(values: any) {
+  isLoading.value = true;
+  const payload = {
+    ...values,
+    hasVehicle: hasVehicle.value,
+  };
+  createWorkerBasicInformation(workerId.value, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function validateAll() {
+  form.markInteracted(['firstName', 'middleName', 'lastName', 'secondLastName', 'birthDay', 'gender']);
+  form.handleSubmit((values) => {
+    submitWorkerBasicInformation(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data != null) {
+  workerId.value = props.data.id;
+  hasVehicle.value = !!props.data.hasVehicle;
+  hydrate(props.data);
+}
+appStore.getCurrentDate().then(response => {
+  disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
+});
+(async () => {
+  genders.value = await getGenders();
+})();
 </script>

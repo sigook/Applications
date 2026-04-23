@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button v-if="isPayrollManager" type="is-ghost" icon-right="plus-circle"
+        <b-button v-if="billingAdmin.isPayrollManager" type="is-ghost" icon-right="plus-circle"
           @click="showModal = true">Add</b-button>
         <b-button v-else type="is-ghost" icon-right="forum" @click="showModalRole = true">Ask for a new
           role</b-button>
@@ -18,7 +18,7 @@
           <b-table-column field="value" label="Role" v-slot="props">
             {{ props.row.value }}
           </b-table-column>
-          <b-table-column field="rate" label="Agency Rate" :visible="isPayrollManager" v-slot="props">
+          <b-table-column field="rate" label="Agency Rate" :visible="billingAdmin.isPayrollManager" v-slot="props">
             {{ currency(props.row.rate) }}
           </b-table-column>
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
@@ -63,81 +63,75 @@
     </b-modal>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
+import PositionForm from "@/components/agency_company/JobPositionForm.vue";
+import RequestPositionForm from "../../components/agency_company/RequestJobPositionForm.vue";
+import RolesShift from "../agency_company/RolesShiftDetail.vue";
 
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      pageIndex: 1,
-      pageSize: 30,
-      profileId: this.$route.params.id,
-      showModal: false,
-      currentPosition: null,
-      showModalRole: false
-    };
-  },
-  components: {
-    PositionForm: defineAsyncComponent(() => import("@/components/agency_company/JobPositionForm.vue")),
-    RequestPositionForm: defineAsyncComponent(() => import("../../components/agency_company/RequestJobPositionForm.vue")),
-    RolesShift: defineAsyncComponent(() => import("../agency_company/RolesShiftDetail.vue"))
-  },
-  methods: {
-    currency,
-    emailName,
-    dateMonth,
-    async loadJobPositions() {
-      this.isLoading = true;
-      this.rows = await getAgencyCompanyJobPositions(this.profileId);
-      this.rows = this.rows.map(i => ({ ...i, actions: null }));
-      this.isLoading = false;
-    },
-    openEditModal(item) {
-      this.currentPosition = item;
-      this.showModal = true;
-    },
-    async onUpdateModal() {
-      this.closeVueModal();
-      await this.loadJobPositions();
-    },
-    closeVueModal() {
-      this.showModal = false;
-      this.currentPosition = null;
-    },
-    onDeleteJobPosition(id) {
-      showAlertConfirm("Are you sure", "You want to delete this position")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyCompanyJobPosition(this.profileId, id)
-              .then(async () => {
-                this.isLoading = false;
-                showAlertSuccess("Deleted");
-                await this.loadJobPositions();
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                showAlertError(error);
-              });
-          }
-        });
-    },
-    closeRequestPositionModal() {
-      this.showModalRole = false;
-    }
-  },
-  async created() {
-    await this.loadJobPositions();
-  }
-};
+const route = useRoute();
+const billingAdmin = useBillingAdmin();
+
+const isLoading = ref(true);
+const rows = ref<any[]>([]);
+const pageIndex = ref(1);
+const pageSize = 30;
+const profileId = route.params.id;
+const showModal = ref(false);
+const currentPosition = ref<any>(null);
+const showModalRole = ref(false);
+
+async function loadJobPositions() {
+  isLoading.value = true;
+  const data = await getAgencyCompanyJobPositions(profileId);
+  rows.value = data.map((i: any) => ({ ...i, actions: null }));
+  isLoading.value = false;
+}
+
+function openEditModal(item: any) {
+  currentPosition.value = item;
+  showModal.value = true;
+}
+
+async function onUpdateModal() {
+  closeVueModal();
+  await loadJobPositions();
+}
+
+function closeVueModal() {
+  showModal.value = false;
+  currentPosition.value = null;
+}
+
+function onDeleteJobPosition(id: any) {
+  showAlertConfirm("Are you sure", "You want to delete this position")
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyCompanyJobPosition(profileId, id)
+          .then(async () => {
+            isLoading.value = false;
+            showAlertSuccess("Deleted");
+            await loadJobPositions();
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    });
+}
+
+function closeRequestPositionModal() {
+  showModalRole.value = false;
+}
+
+(async () => {
+  await loadJobPositions();
+})();
 </script>

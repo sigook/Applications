@@ -66,48 +66,44 @@
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getUserNotifications, updateUserNotification } from "@/api/userNotificationApi";
 
-    export default {
-        props: ['isDisabled'],
-        data(){
-            return {
-                data: null,
-                isLoading: false
-            }
-        },
-        methods: {
-            loadNotifications(){
-                this.isLoading = true;
-                getUserNotifications()
-                    .then(response => {
-                        this.data = response;
-                        this.isLoading = false;
-                    })
-                    .catch(error => {
-                        showAlertError(error);
-                        this.isLoading = false;
-                    })
-            },
-            saveNotification(item){
-                this.isLoading = true;
-                updateUserNotification(item)
-                    .then(() => {
-                        this.isLoading = false;
-                    })
-                    .catch(error => {
-                        showAlertError(error);
-                        this.isLoading = false;
-                    })
-            }
-        },
-        created(){
-            this.$emit('hideEditButton', true);
-            this.loadNotifications();
-        }
-    }
+defineProps<{ isDisabled?: boolean }>();
+const emit = defineEmits<{ (e: 'hideEditButton', v: boolean): void }>();
+
+const data = ref<any[] | null>(null);
+const isLoading = ref(false);
+
+function loadNotifications() {
+  isLoading.value = true;
+  getUserNotifications()
+    .then(response => {
+      data.value = response;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function saveNotification(item: any) {
+  isLoading.value = true;
+  updateUserNotification(item)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+emit('hideEditButton', true);
+loadNotifications();
 </script>
 
 <style lang="scss">

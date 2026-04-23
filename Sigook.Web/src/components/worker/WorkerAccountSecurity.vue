@@ -61,12 +61,13 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
-import { mapStores } from 'pinia';
 import { useSecurityStore } from '@/stores/security';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
+import { getDialog } from '@/utils/buefyProgrammatic';
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
 
@@ -76,117 +77,104 @@ const schema = yup.object({
     .oneOf([yup.ref('userEmail')], 'Emails must match'),
 });
 
-export default {
-  setup() {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        userEmail: '',
-        confirmNewEmail: '',
-      },
-    });
+const form = useStickyForm<{ userEmail: string; confirmNewEmail: string }>({
+  schema,
+  initialValues: {
+    userEmail: '',
+    confirmNewEmail: '',
+  },
+});
+const { userEmail, confirmNewEmail } = form.fields;
+const formErrors = form.errors;
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
-      resetForm: form.resetAll,
-    };
-  },
-  data() {
-    return {
-      isLoading: true,
-      notifications: null as any,
-    };
-  },
-  computed: {
-    ...mapStores(useSecurityStore),
-  },
-  methods: {
-    onChangeEmail() {
-      this.markInteracted();
-      this.handleSubmit((values: any) => {
-        this.isLoading = true;
-        changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
-          .then(() => {
-            this.isLoading = false;
-            showAlertSuccess("Updated");
-          })
-          .catch(error => {
-            this.isLoading = false;
-            showAlertError(error);
-          });
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    confirmDeactivation() {
-      (this as any).$buefy.dialog.confirm({
-        title: 'Are you sure?',
-        message: 'This action will deactivate your account. You will be signed out and will no longer be able to access the platform. Do you want to proceed?',
-        confirmText: 'Yes, Deactivate',
-        cancelText: 'Cancel',
-        type: 'is-danger',
-        hasIcon: true,
-        onConfirm: () => {
-          this.onDeactivateAccount();
-        },
-      });
-    },
-    loadNotifications() {
-      getUserNotifications()
-        .then(response => {
-          this.notifications = response;
-        })
-        .catch(error => {
-          showAlertError(error);
-        });
-    },
-    saveNotification(item: any) {
-      this.isLoading = true;
-      updateUserNotification(item)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(error => {
-          showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    onDeactivateAccount() {
-      this.isLoading = true;
-      deactivateAccount()
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
-          setTimeout(() => {
-            this.securityStore.signOut();
-          }, 2000);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-  created() {
-    getEmail()
-      .then(response => {
-        this.hydrateForm({
-          userEmail: response.email || '',
-          confirmNewEmail: '',
-        });
-        this.isLoading = false;
+const securityStore = useSecurityStore();
+
+const isLoading = ref(true);
+const notifications = ref<any>(null);
+
+function onChangeEmail() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    isLoading.value = true;
+    changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
+      .then(() => {
+        isLoading.value = false;
+        showAlertSuccess("Updated");
       })
       .catch(error => {
+        isLoading.value = false;
         showAlertError(error);
-        this.isLoading = false;
       });
-    this.loadNotifications();
-  },
-};
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function onDeactivateAccount() {
+  isLoading.value = true;
+  deactivateAccount()
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
+      setTimeout(() => {
+        securityStore.signOut();
+      }, 2000);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function confirmDeactivation() {
+  getDialog().confirm({
+    title: 'Are you sure?',
+    message: 'This action will deactivate your account. You will be signed out and will no longer be able to access the platform. Do you want to proceed?',
+    confirmText: 'Yes, Deactivate',
+    cancelText: 'Cancel',
+    type: 'is-danger',
+    hasIcon: true,
+    onConfirm: () => {
+      onDeactivateAccount();
+    },
+  });
+}
+
+function loadNotifications() {
+  getUserNotifications()
+    .then(response => {
+      notifications.value = response;
+    })
+    .catch(error => {
+      showAlertError(error);
+    });
+}
+
+function saveNotification(item: any) {
+  isLoading.value = true;
+  updateUserNotification(item)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+getEmail()
+  .then(response => {
+    form.hydrate({
+      userEmail: response.email || '',
+      confirmNewEmail: '',
+    });
+    isLoading.value = false;
+  })
+  .catch(error => {
+    showAlertError(error);
+    isLoading.value = false;
+  });
+loadNotifications();
 </script>
 
 <style lang="scss">

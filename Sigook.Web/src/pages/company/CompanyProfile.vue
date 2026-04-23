@@ -4,10 +4,10 @@
 
     <div class="profile-content">
       <div class="profile-top">
-        <upload-image v-if="companyProfile && companyProfile.logo"
+        <UploadImage v-if="companyProfile && companyProfile.logo"
           @imageSelected="(profileImg) => (companyProfile.logo.fileName = profileImg)"
           :edited-image="companyProfile.logo" :class="{ disabled: isDisabled }" :required="false">
-        </upload-image>
+        </UploadImage>
         <div v-if="companyProfile">
           <h1 class="capitalize fz2">
             {{ lowercase(companyProfile.businessName) }}
@@ -44,103 +44,60 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { confirmationGuard } from '@/utils/confirmationGuard';
-import { getCompanyProfile, updateProfile } from '@/api/companyApi';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showAlertError } from '@/utils/toast';
+import { getCompanyProfile } from '@/api/companyApi';
 import { lowercase } from '@/utils/filters';
+import BusinessInformation from '../../components/company/ProfileBusiness.vue';
+import ContactInformation from '../../components/company/ProfileContact.vue';
+import LocationInformation from '../../components/company/ProfileLocation.vue';
+import UploadImage from '../../components/PreviewImage.vue';
+import AccountSecurity from '../../components/agency/ProfileAccountInformation.vue';
+import UserNotification from '../../components/UserNotification.vue';
+import CompanyUsers from '../../components/company/CompanyUsers.vue';
 
-export default {
-  components: {
-    BusinessInformation: defineAsyncComponent(() => import("../../components/company/ProfileBusiness.vue")),
-    ContactInformation: defineAsyncComponent(() => import("../../components/company/ProfileContact.vue")),
-    LocationInformation: defineAsyncComponent(() => import("../../components/company/ProfileLocation.vue")),
-    UploadImage: defineAsyncComponent(() => import("../../components/PreviewImage.vue")),
-    AccountSecurity: defineAsyncComponent(() => import("../../components/agency/ProfileAccountInformation.vue")),
-    UserNotification: defineAsyncComponent(() => import("../../components/UserNotification.vue")),
-    CompanyUsers: defineAsyncComponent(() => import("../../components/company/CompanyUsers.vue"))
-  },
-  data() {
-    return {
-      isLoading: false,
-      companyProfile: null,
-      currentTab: "BusinessInformation",
-      visitedTabs: ["BusinessInformation"],
-      isDisabled: true,
-      validForm: "",
-      changeForm: false,
-      unsavedChanges: false
-    };
-  },
-  methods: {
-    lowercase,
-    editProfile() {
-      this.isDisabled = false;
-    },
-    validateForm() {
-      this.$validator.validateAll().then((response) => {
-        if (!response) {
-          showAlertError("Please make sure all required fields are filled out correctly");
-          return;
-        }
-        this.saveProfile();
-      });
-    },
-    saveProfile() {
-      this.isLoading = true;
-      const id = this.companyProfile.id;
-      updateProfile(id, this.companyProfile)
-        .then(() => {
-          this.unsavedChanges = false;
-          this.isDisabled = true;
-          this.isLoading = false;
-          showAlertSuccess("Updated");
-          this.changeForm = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error.data);
-        });
-    },
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: "/company-profile",
-        query: { tab: tab }
-      });
-    },
-    resetForm() {
-      this.isDisabled = true;
-      this.changeForm = false;
-      this.unsavedChanges = false;
-    },
-    onGetProfile() {
-      this.isLoading = true;
-      getCompanyProfile()
-        .then((data) => {
-          this.companyProfile = data;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          showAlertError(error.data);
-          this.isLoading = false;
-        });
-    }
-  },
-  created() {
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-    this.onGetProfile();
-  },
-  beforeRouteLeave: confirmationGuard
-};
+const route = useRoute();
+const router = useRouter();
+
+const isLoading = ref(false);
+const companyProfile = ref<any>(null);
+const currentTab = ref<string>('BusinessInformation');
+const visitedTabs = ref<string[]>(['BusinessInformation']);
+const isDisabled = ref(true);
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: '/company-profile',
+    query: { tab: tab },
+  });
+}
+
+function onGetProfile() {
+  isLoading.value = true;
+  getCompanyProfile()
+    .then((data: any) => {
+      companyProfile.value = data;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      showAlertError(error.data);
+      isLoading.value = false;
+    });
+}
+
+if (route.query && route.query.tab) {
+  const tab = route.query.tab as string;
+  currentTab.value = tab;
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+}
+onGetProfile();
 </script>
 
 <style lang="scss" scoped>

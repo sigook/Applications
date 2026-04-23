@@ -8,7 +8,7 @@
   </b-field>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useForm } from 'vee-validate';
 import { phoneSchema } from '@/utils/validation';
@@ -23,67 +23,67 @@ function formatPhone(raw: string): string {
   return `${a} ${b}-${c}`;
 }
 
-export default {
-  props: {
-    name: { type: String, default: 'mobileNumber' },
-    label: { type: String, default: 'Mobile Number' },
-    model: { type: String, default: '' },
-    defaultValue: { type: String, default: '' },
-    disabled: Boolean,
-    required: Boolean,
-    placeholder: String,
+const props = withDefaults(defineProps<{
+  name?: string;
+  label?: string;
+  model?: string;
+  defaultValue?: string;
+  disabled?: boolean;
+  required?: boolean;
+  placeholder?: string;
+}>(), {
+  name: 'mobileNumber',
+  label: 'Mobile Number',
+  model: '',
+  defaultValue: '',
+});
+
+const emit = defineEmits<{ (e: 'formattedPhone', v: string | null): void }>();
+
+const schema = computed(() => ({
+  phone: phoneSchema(props.required),
+}));
+
+const { errors: formErrors, defineField, setFieldValue, validate } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    phone: formatPhone(props.defaultValue || ''),
   },
-  emits: ['formattedPhone'],
-  setup(props, { emit }) {
-    const schema = computed(() => {
-      return {
-        phone: phoneSchema(props.required),
-      };
-    });
+});
 
-    const { errors: formErrors, defineField, setFieldValue, validate } = useForm({
-      validationSchema: schema,
-      initialValues: {
-        phone: formatPhone(props.defaultValue || ''),
-      },
-    });
+const [phone] = defineField('phone');
+const interacted = ref(false);
 
-    const [phone] = defineField('phone');
-    const interacted = ref(false);
+watch(phone, (val) => {
+  interacted.value = true;
+  const formatted = formatPhone(val || '');
+  if (formatted !== val) {
+    setFieldValue('phone', formatted);
+    return;
+  }
+  emit('formattedPhone', formatted || null);
+});
 
-    watch(phone, (val) => {
-      interacted.value = true;
-      const formatted = formatPhone(val || '');
-      if (formatted !== val) {
-        setFieldValue('phone', formatted);
-        return;
-      }
-      emit('formattedPhone', formatted || null);
-    });
+watch(() => props.defaultValue, (val) => {
+  const formatted = formatPhone(val || '');
+  if (formatted !== phone.value) {
+    setFieldValue('phone', formatted);
+  }
+});
 
-    watch(() => props.defaultValue, (val) => {
-      const formatted = formatPhone(val || '');
-      if (formatted !== phone.value) {
-        setFieldValue('phone', formatted);
-      }
-    });
+const errors = computed(() => ({
+  phone: interacted.value ? ((formErrors.value as any).phone || '') : '',
+}));
 
-    const errors = computed(() => ({
-      phone: interacted.value ? (formErrors.value.phone || '') : '',
-    }));
+function markInteracted() {
+  interacted.value = true;
+}
 
-    function markInteracted() {
-      interacted.value = true;
-    }
+async function validatePhone(): Promise<boolean> {
+  markInteracted();
+  const result = await validate();
+  return result.valid;
+}
 
-    return { errors, phone, validate, markInteracted };
-  },
-  methods: {
-    async validatePhone(): Promise<boolean> {
-      (this as any).markInteracted();
-      const result = await (this as any).validate();
-      return result.valid;
-    },
-  },
-};
+defineExpose({ validatePhone, markInteracted });
 </script>

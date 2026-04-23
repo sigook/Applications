@@ -22,7 +22,7 @@
             <b-icon icon="file-plus"></b-icon>
             <span>Bulk Data</span>
           </b-dropdown-item>
-          <b-dropdown-item v-if="isPayrollManager" aria-role="listitem" @click="exportWithDetails">
+          <b-dropdown-item v-if="billingAdmin.isPayrollManager" aria-role="listitem" @click="exportWithDetails">
             <b-icon icon="file-excel"></b-icon>
             <span>Export with details</span>
           </b-dropdown-item>
@@ -169,161 +169,164 @@
     </b-modal>
   </div>
 </template>
-<script lang="ts">
-
-import { defineAsyncComponent } from 'vue';
-import { mapStores } from 'pinia';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useAppStore } from '@/stores/app';
-import { downloadFile } from "@/utils/downloadFile";
+import { downloadFile } from '@/utils/downloadFile';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
-import { getAgencyCompanies, bulkAgencyCompanies } from "@/api/agencyCompanyApi";
-import { downloadAgencyReport } from "@/api/agencyReportApi";
-import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from "@/api/agencyNoteApi";
+import { getAgencyCompanies, bulkAgencyCompanies } from '@/api/agencyCompanyApi';
+import { downloadAgencyReport } from '@/api/agencyReportApi';
+import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from '@/api/agencyNoteApi';
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 import { dateMonth } from '@/utils/filters';
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  components: {
-    Export: defineAsyncComponent(() => import("@/components/Export.vue")),
-    ModalNotes: defineAsyncComponent(() => import("@/components/notes/ModalNotes.vue")),
-    BulkData: defineAsyncComponent(() => import("@/components/agency/BulkData.vue")),
-  },
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      statuses: [],
-      statusesSelected: [],
-      createdAtDatesSelected: [],
-      updatedAtDatesSelected: [],
-      rows: [],
-      addFile: false,
-      bulkAgencyCompanies,
-      getCompanyNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination),
-      createCompanyNote: ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model),
-      deleteCompanyNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id),
-      serverParams: {
-        sortBy: 3,
-        isDescending: true,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  created() {
-    this.statuses = this.$route.meta.companyStatuses;
-    if (this.agencyStore.agencyCompanyProfileFilter) {
-      this.serverParams = this.agencyStore.agencyCompanyProfileFilter;
-      if (this.serverParams.companyStatuses) {
-        this.statusesSelected = this.statuses.filter(s => this.serverParams.companyStatuses.some(sps => sps == s.id));
-      }
-      if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
-        this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
-        this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
-      }
-    }
-    this.loadCompanies();
-  },
-  methods: {
-    downloadFile,
-    dateMonth,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadCompanies();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'businessName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'industry':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'updatedAt':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'salesRepresentative':
-          this.serverParams.sortBy = 4;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadCompanies();
-    },
-    onStatusSelected() {
-      this.serverParams.companyStatuses = this.statusesSelected.map(ss => ss.id);
-      this.loadCompanies();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadCompanies();
-      }
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadCompanies();
-    },
-    onUpdatedAtCleared() {
-      this.updatedAtDatesSelected = [];
-      this.onUpdatedAtSelected();
-    },
-    onUpdatedAtSelected() {
-      this.serverParams.updatedAtFrom = this.updatedAtDatesSelected[0];
-      this.serverParams.updatedAtTo = this.updatedAtDatesSelected[1];
-      this.loadCompanies();
-    },
-    onCellClick(row, column) {
-      switch (column.field) {
-        case 'notesCount':
-        case 'email':
-          break;
-        default:
-          this.$router.push({ path: `/agency-companies/company/${row.id}` });
-      }
-    },
-    onNote(row, status) {
-      const index = this.rows.findIndex(r => r.id === row.id);
-      this.rows[index].showNotes = status;
-    },
-    exportWithDetails() {
-      this.isLoading = true;
-      downloadAgencyReport("/api/v2/AgencyCompanyProfile/FileWithDetails", this.serverParams)
-        .then(file => {
-          this.isLoading = false;
-          this.downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
-        })
-        .catch(() => this.isLoading = false);
-    },
-    loadCompanies() {
-      this.isLoading = true;
-      this.agencyStore.updateAgencyCompanyProfileFilter(this.serverParams);
-      getAgencyCompanies(this.serverParams)
-        .then(companies => {
-          this.rows = companies.items.map(c => ({ ...c, showNotes: false }));
-          this.totalItems = companies.totalItems;
-          this.isLoading = false;
-        })
-        .catch(() => {
-          this.isLoading = false;
-        });
-    }
-  },
-  computed: {
-    ...mapStores(useAgencyStore, useAppStore),
-    isMobile() {
-      return this.appStore.isMobile;
-    }
+import Export from '@/components/Export.vue';
+import ModalNotes from '@/components/notes/ModalNotes.vue';
+import BulkData from '@/components/agency/BulkData.vue';
+
+const route = useRoute();
+const router = useRouter();
+const agencyStore = useAgencyStore();
+const appStore = useAppStore();
+const billingAdmin = useBillingAdmin();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const statuses = ref<any[]>([]);
+const statusesSelected = ref<any[]>([]);
+const createdAtDatesSelected = ref<any[]>([]);
+const updatedAtDatesSelected = ref<any[]>([]);
+const rows = ref<any[]>([]);
+const addFile = ref(false);
+const serverParams = ref<any>({
+  sortBy: 3,
+  isDescending: true,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+const getCompanyNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination);
+const createCompanyNote = ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model);
+const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id);
+
+const isMobile = computed(() => appStore.isMobile);
+
+statuses.value = (route.meta as any).companyStatuses;
+if (agencyStore.agencyCompanyProfileFilter) {
+  serverParams.value = agencyStore.agencyCompanyProfileFilter;
+  if (serverParams.value.companyStatuses) {
+    statusesSelected.value = statuses.value.filter((s: any) => serverParams.value.companyStatuses.some((sps: any) => sps == s.id));
   }
+  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
+    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+  }
+}
+loadCompanies();
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  loadCompanies();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'businessName':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'industry':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'createdAt':
+      serverParams.value.sortBy = 2;
+      break;
+    case 'updatedAt':
+      serverParams.value.sortBy = 3;
+      break;
+    case 'salesRepresentative':
+      serverParams.value.sortBy = 4;
+      break;
+  }
+  serverParams.value.isDescending = order !== 'asc';
+  loadCompanies();
+}
+
+function onStatusSelected() {
+  serverParams.value.companyStatuses = statusesSelected.value.map((ss) => ss.id);
+  loadCompanies();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadCompanies();
+  }
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onCreatedAtSelected() {
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  loadCompanies();
+}
+
+function onUpdatedAtCleared() {
+  updatedAtDatesSelected.value = [];
+  onUpdatedAtSelected();
+}
+
+function onUpdatedAtSelected() {
+  serverParams.value.updatedAtFrom = updatedAtDatesSelected.value[0];
+  serverParams.value.updatedAtTo = updatedAtDatesSelected.value[1];
+  loadCompanies();
+}
+
+function onCellClick(row: any, column: any) {
+  switch (column.field) {
+    case 'notesCount':
+    case 'email':
+      break;
+    default:
+      router.push({ path: `/agency-companies/company/${row.id}` });
+  }
+}
+
+function onNote(row: any, status: boolean) {
+  const index = rows.value.findIndex((r) => r.id === row.id);
+  rows.value[index].showNotes = status;
+}
+
+function onUpdateNote(row: any, size: number) {
+  const index = rows.value.findIndex((r) => r.id === row.id);
+  rows.value[index].notesCount = size;
+}
+
+function exportWithDetails() {
+  isLoading.value = true;
+  downloadAgencyReport('/api/v2/AgencyCompanyProfile/FileWithDetails', serverParams.value)
+    .then((file) => {
+      isLoading.value = false;
+      downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
+    })
+    .catch(() => (isLoading.value = false));
+}
+
+function loadCompanies() {
+  isLoading.value = true;
+  agencyStore.updateAgencyCompanyProfileFilter(serverParams.value);
+  getAgencyCompanies(serverParams.value)
+    .then((companies: any) => {
+      rows.value = companies.items.map((c: any) => ({ ...c, showNotes: false }));
+      totalItems.value = companies.totalItems;
+      isLoading.value = false;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
 }
 </script>
 <style lang="scss">

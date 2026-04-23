@@ -36,23 +36,23 @@
 
     <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :request="request" class="p-2 p-sm-0" />
+        <Detail v-if="visitedTabs.includes('Detail')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
-        <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" />
+        <Workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
-      <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiring">
-        <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
+      <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
+        <PunchCard v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
     </b-tabs>
 
     <b-modal v-model="modalValidation" width="500px">
-      <cancel-list @sendReason="(reason) => cancelRequest(reason)"></cancel-list>
+      <CancelList @sendReason="(reason) => onCancelRequest(reason)"></CancelList>
     </b-modal>
 
     <b-modal v-model="modalValidationRequestAnotherWorker" width="500px">
-      <request-another-worker
-      @sendAnotherWorker="(comment) => requestAnotherWorker(comment)"></request-another-worker>
+      <RequestAnotherWorker
+        @sendAnotherWorker="(comment) => onRequestAnotherWorker(comment)"></RequestAnotherWorker>
     </b-modal>
 
     <b-modal v-model="editContentModal" width="800px">
@@ -75,160 +75,144 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, computed } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { confirmationGuard } from '@/utils/confirmationGuard';
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { isDirectHiring } from '@/utils/directHiring';
-import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
-import { getRequest, cancelRequest, editRequest, requestAnotherWorker } from "@/api/companyApi";
+import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
+import {
+  getRequest,
+  cancelRequest as cancelRequestApi,
+  editRequest,
+  requestAnotherWorker as requestAnotherWorkerApi,
+} from '@/api/companyApi';
+import CancelList from '../../components/company/CompanyCancelList.vue';
+import RequestAnotherWorker from '../../components/company/DialogRequestWorker.vue';
+import Detail from '../../components/company_request/CompanyRequestDetail.vue';
+import Workers from '../../components/company_request/CompanyRequestWorkers.vue';
+import PunchCard from '../../components/company_request/CompanyRequestPunchCard.vue';
+
+const route = useRoute();
+const router = useRouter();
 
 const requirementsSchema = yup.object({
   requirements: yup.string().test('min-text', 'Requirements must be at least 100 characters', (v) => {
     const text = (v || '').replace(/<[^>]*>/g, '').trim();
     return text.length >= 100;
-  })
+  }),
 });
 
-export default {
-  setup() {
-    const form = useStickyForm({
-      schema: requirementsSchema,
-      initialValues: { requirements: '' },
+const form = useStickyForm({
+  schema: requirementsSchema,
+  initialValues: { requirements: '' },
+});
+const { requirements } = form.fields;
+const requirementsError = computed(() => form.errors.value.requirements || '');
+
+const request = ref<any>({});
+const isLoading = ref(true);
+const modalValidation = ref(false);
+const modalValidationRequestAnotherWorker = ref(false);
+const currentTab = ref<string>('Detail');
+const visitedTabs = ref<string[]>(['Detail']);
+const editContentModal = ref(false);
+
+const isDirectHiringComputed = computed(() => isDirectHiring(request.value));
+const canEdit = computed(() =>
+  request.value.status === RequestStatus.Open ||
+  request.value.status === RequestStatus.Filled
+);
+const canCancel = computed(() =>
+  request.value.status === RequestStatus.Open &&
+  (!request.value.workersQuantityWorking || request.value.workersQuantityWorking === 0)
+);
+
+function onCancelRequest(reason: any) {
+  modalValidation.value = false;
+  isLoading.value = true;
+  cancelRequestApi(request.value.id, reason.reasonId, reason.otherMessage)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Cancelled');
+      router.push('/company-requests');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
     });
+}
 
-    const requirementsError = computed(() => form.errors.value.requirements || '');
+function getData() {
+  getRequest(route.params.id)
+    .then((response: any) => {
+      isLoading.value = false;
+      request.value = response;
+    })
+    .catch((error: any) => {
+      showAlertError(error.data);
+      isLoading.value = false;
+    });
+}
 
-    return {
-      requirements: form.fields.requirements,
-      requirementsError,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateRequirements: (value: string) => form.hydrate({ requirements: value || '' }),
-    };
-  },
-  data() {
-    return {
-      request: {},
-      isLoading: true,
-      modalValidation: false,
-      modalValidationRequestAnotherWorker: false,
-      currentTab: "Detail",
-      visitedTabs: ["Detail"],
-      editContentModal: false,
-      unsavedChanges: false,
-    };
-  },
-  components: {
-    CancelList: defineAsyncComponent(() => import("../../components/company/CompanyCancelList.vue")),
-    RequestAnotherWorker: defineAsyncComponent(() => import("../../components/company/DialogRequestWorker.vue")),
-    Detail: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestDetail.vue")),
-    Workers: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestWorkers.vue")),
-    PunchCard: defineAsyncComponent(() => import("../../components/company_request/CompanyRequestPunchCard.vue"))
-  },
-  beforeRouteLeave: confirmationGuard,
-  methods: {
-    cancelRequest(reason) {
-      this.modalValidation = false;
-      this.isLoading = true;
-      cancelRequest(this.request.id, reason.reasonId, reason.otherMessage)
-        .then(() => {
-          this.isLoading = false;
-          this.unsavedChanges = false;
-          showAlertSuccess("Cancelled");
-          this.$router.push("/company-requests");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    getData() {
-      getRequest(this.$route.params.id)
-        .then((response) => {
-          this.isLoading = false;
-          this.request = response;
-        })
-        .catch((error) => {
-          showAlertError(error.data);
-          this.isLoading = false;
-        });
-    },
-    alertRequestAnotherWorker() {
-      this.modalValidationRequestAnotherWorker = true;
-    },
-    requestAnotherWorker(comment) {
-      this.modalValidationRequestAnotherWorker = false;
-      this.isLoading = true;
-      requestAnotherWorker(this.$route.params.id, { comments: comment })
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess("Requested");
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    onUpdateRequirements() {
-      this.markInteracted(['requirements']);
-      this.handleSubmit((values) => {
-        this.isLoading = true;
-        editRequest(this.$route.params.id, { requirements: values.requirements })
-          .then(() => {
-            this.isLoading = false;
-            showAlertSuccess("Updated");
-            this.request.requirements = values.requirements;
-            this.editContentModal = false;
-          }).catch((error) => {
-            this.isLoading = false;
-            showAlertError(error.data);
-          });
-      })();
-    },
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: `/request/${this.$route.params.id}`,
-        query: {
-          tab: tab
-        }
+function alertRequestAnotherWorker() {
+  modalValidationRequestAnotherWorker.value = true;
+}
+
+function onRequestAnotherWorker(comment: string) {
+  modalValidationRequestAnotherWorker.value = false;
+  isLoading.value = true;
+  requestAnotherWorkerApi(route.params.id, { comments: comment })
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Requested');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onUpdateRequirements() {
+  form.markInteracted(['requirements']);
+  form.handleSubmit((values) => {
+    isLoading.value = true;
+    editRequest(route.params.id, { requirements: values.requirements })
+      .then(() => {
+        isLoading.value = false;
+        showAlertSuccess('Updated');
+        request.value.requirements = values.requirements;
+        editContentModal.value = false;
+      })
+      .catch((error: any) => {
+        isLoading.value = false;
+        showAlertError(error.data);
       });
-    }
-  },
-  created() {
-    this.getData();
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-  },
-  watch: {
-    editContentModal(val) {
-      if (val) this.hydrateRequirements(this.request.requirements);
-    }
-  },
-  computed: {
-    isDirectHiring() {
-      return isDirectHiring(this.request);
-    },
-    RequestStatus: () => RequestStatus,
-    RequestStatusLabels: () => RequestStatusLabels,
-    canEdit() {
-      return this.request.status === RequestStatus.Open ||
-             this.request.status === RequestStatus.Filled;
-    },
-    canCancel() {
-      // Can only cancel orders in Open status without workers
-      return this.request.status === RequestStatus.Open &&
-             (!this.request.workersQuantityWorking || this.request.workersQuantityWorking === 0);
-    }
+  })();
+}
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
   }
-};
+  router.push({
+    path: `/request/${route.params.id}`,
+    query: { tab: tab },
+  });
+}
+
+getData();
+if (route.query && route.query.tab) {
+  const tab = route.query.tab as string;
+  currentTab.value = tab;
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+}
+
+watch(editContentModal, (val) => {
+  if (val) form.hydrate({ requirements: request.value.requirements || '' });
+});
 </script>

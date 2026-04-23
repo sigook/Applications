@@ -11,52 +11,47 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
 import { fetchRequestShift } from "@/api/requestApi";
 import { updateAgencyRequestShift } from "@/api/agencyRequestApi";
-export default {
-  data() {
-    return {
-      isLoading: false,
-      shift: null,
-      requestId: this.$route.params.id
-    }
-  },
-  components: {
-    ShiftForm: defineAsyncComponent(() => import("../../components/request/ShiftsForm.vue"))
-  },
-  created() {
-    this.getRequestShift();
-  },
-  methods: {
-    getRequestShift() {
-      this.isLoading = true;
-      fetchRequestShift(this.requestId)
-        .then(response => {
-          this.isLoading = false;
-          console.log(response);
-          this.shift = response;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        })
-    },
-    saveShift(model) {
-      console.log(model);
-      this.isLoading = true;
-      updateAgencyRequestShift(this.requestId, model)
-        .then(response => {
-          this.isLoading = false;
-          this.$emit("onUpdateShift", response.displayShift)
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error)
-        })
-    }
-  }
+import ShiftForm from "../../components/request/ShiftsForm.vue";
+
+const emit = defineEmits<{ (e: 'onUpdateShift', displayShift: any): void }>();
+
+const route = useRoute();
+
+const isLoading = ref(false);
+const shift = ref<any>(null);
+const requestId = route.params.id;
+
+function getRequestShift() {
+  isLoading.value = true;
+  fetchRequestShift(requestId as any)
+    .then(response => {
+      isLoading.value = false;
+      shift.value = response;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function saveShift(model: any) {
+  isLoading.value = true;
+  updateAgencyRequestShift(requestId as any, model)
+    .then(response => {
+      isLoading.value = false;
+      emit('onUpdateShift', response.displayShift);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+getRequestShift();
 </script>

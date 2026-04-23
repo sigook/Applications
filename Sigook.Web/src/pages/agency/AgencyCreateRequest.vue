@@ -51,7 +51,7 @@
               @select-footer="() => showRolesModal = true">
               <template #footer>
                 <a>
-                  <span v-if="isPayrollManager">Add new...</span>
+                  <span v-if="billingAdmin.isPayrollManager">Add new...</span>
                   <span v-else>Request new...</span>
                 </a>
               </template>
@@ -73,7 +73,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isPayrollManager">
+        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="billingAdmin.isPayrollManager">
           <b-field label="Sales Representative">
             <b-autocomplete :data="filteredSalesRepresentative" placeholder="Sales Rep." v-model="salesRepresentative"
               open-on-focus :custom-formatter="(option) => `${option.name} - ${option.email}`"
@@ -90,7 +90,7 @@
               </template>
               <template #selected="props">
                 <b-tag v-for="(tag, index) in props.tags" :key="index" tabstop ellipsis closable
-                  @close="$refs.companyUserTagInput.removeTag(index, $event)">
+                  @close="companyUserTagInput?.removeTag(index, $event)">
                   {{ tag.name }} {{ tag.lastName }} - {{ tag.email }}
                 </b-tag>
               </template>
@@ -215,7 +215,7 @@
     </form>
 
     <b-modal v-model="showRolesModal" @close="showRolesModal = false" width="850px">
-      <position-form v-if="isPayrollManager" :profile-id="companyProfileId"
+      <position-form v-if="billingAdmin.isPayrollManager" :profile-id="companyProfileId"
         @updateContent="onUpdateRolesModal"></position-form>
       <request-position-form v-else :profile-id="companyProfileId" @closeModal="() => showRolesModal = false" />
     </b-modal>
@@ -226,370 +226,365 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, ref, computed } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import * as yup from 'yup';
+import dayjs from 'dayjs';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import dayjs from "dayjs";
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
-import { getAgencyPersonnel } from "@/api/agencyApi";
-import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from "@/api/agencyCompanyApi";
-import { postAgencyRequest, updateAgencyRequest } from "@/api/agencyRequestApi";
+import { getAgencyPersonnel } from '@/api/agencyApi';
+import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from '@/api/agencyCompanyApi';
+import { postAgencyRequest, updateAgencyRequest } from '@/api/agencyRequestApi';
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentType,
-  EmploymentTypeLabels
-} from "@/constants/enums";
+  EmploymentTypeLabels,
+} from '@/constants/enums';
+import PositionForm from '@/components/agency_company/JobPositionForm.vue';
+import RequestPositionForm from '@/components/agency_company/RequestJobPositionForm.vue';
+import LocationForm from '@/components/agency_company/LocationForm.vue';
 
-export default {
-  setup() {
-    const directHiring = ref(false);
+const route = useRoute();
+const router = useRouter();
+const billingAdmin = useBillingAdmin();
 
-    const validationSchema = computed(() => {
-      const shape: Record<string, any> = {
-        jobTitle: yup.string().required('Job title is required').min(1).max(100, 'Max 100 characters'),
-        billingTitle: yup.string().required('Billing title is required').min(1).max(100, 'Max 100 characters'),
-        workersQuantity: yup
-          .number()
-          .typeError('Workers quantity is required')
-          .required('Workers quantity is required')
-          .min(1, 'Must be at least 1'),
-        branchOffice: yup.string().required('Branch office is required'),
-        description: yup.string().required('Description is required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
-        requirements: yup.string().required('Requirements are required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
-        incentive: yup
-          .number()
-          .nullable()
-          .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
-          .test('decimal2', 'Max 2 decimals', (v) => v == null || /^-?\d+(\.\d{1,2})?$/.test(String(v))),
-        incentiveDescription: yup.string().nullable().max(5000, 'Max 5000 characters'),
-        startAt: yup.mixed().required('Start date is required'),
-      };
-      if (directHiring.value) {
-        shape.workerSalary = yup
-          .number()
-          .typeError('Worker salary is required')
-          .required('Worker salary is required');
-      } else {
-        shape.jobPosition = yup.string().required('Job type is required');
-      }
-      return yup.object(shape);
-    });
+const directHiring = ref(false);
 
-    const form = useStickyForm({
-      schema: validationSchema,
-      initialValues: {
-        jobTitle: '',
-        billingTitle: '',
-        workersQuantity: 1,
-        workerSalary: null as number | null,
-        jobPosition: '',
-        branchOffice: '',
-        description: '',
-        requirements: '',
-        incentive: null as number | null,
-        incentiveDescription: '',
-        startAt: null as Date | null,
-      },
-    });
+const validationSchema = computed(() => {
+  const shape: Record<string, any> = {
+    jobTitle: yup.string().required('Job title is required').min(1).max(100, 'Max 100 characters'),
+    billingTitle: yup.string().required('Billing title is required').min(1).max(100, 'Max 100 characters'),
+    workersQuantity: yup
+      .number()
+      .typeError('Workers quantity is required')
+      .required('Workers quantity is required')
+      .min(1, 'Must be at least 1'),
+    branchOffice: yup.string().required('Branch office is required'),
+    description: yup.string().required('Description is required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+    requirements: yup.string().required('Requirements are required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+    incentive: yup
+      .number()
+      .nullable()
+      .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
+      .test('decimal2', 'Max 2 decimals', (v) => v == null || /^-?\d+(\.\d{1,2})?$/.test(String(v))),
+    incentiveDescription: yup.string().nullable().max(5000, 'Max 5000 characters'),
+    startAt: yup.mixed().required('Start date is required'),
+  };
+  if (directHiring.value) {
+    shape.workerSalary = yup
+      .number()
+      .typeError('Worker salary is required')
+      .required('Worker salary is required');
+  } else {
+    shape.jobPosition = yup.string().required('Job type is required');
+  }
+  return yup.object(shape);
+});
 
-    return {
-      ...useBillingAdmin(),
-      directHiring,
-      ...form.fields,
-      errors: form.errors,
-      handleSubmit: form.handleSubmit,
-      setFieldValue: form.setFieldValue,
-      setFieldError: form.setFieldError,
-      resetForm: form.hydrate,
-      markInteracted: form.markInteracted,
-    };
+const form = useStickyForm({
+  schema: validationSchema,
+  initialValues: {
+    jobTitle: '',
+    billingTitle: '',
+    workersQuantity: 1,
+    workerSalary: null as number | null,
+    jobPosition: '',
+    branchOffice: '',
+    description: '',
+    requirements: '',
+    incentive: null as number | null,
+    incentiveDescription: '',
+    startAt: null as Date | null,
   },
-  components: {
-    PositionForm: defineAsyncComponent(() => import("@/components/agency_company/JobPositionForm.vue")),
-    RequestPositionForm: defineAsyncComponent(() => import("@/components/agency_company/RequestJobPositionForm.vue")),
-    LocationForm: defineAsyncComponent(() => import("@/components/agency_company/LocationForm.vue"))
-  },
-  name: "AgencyCreateRequest",
-  data() {
-    const maxBreak = new Date();
-    maxBreak.setHours(1);
-    maxBreak.setMinutes(0);
-    let timeZero = dayjs().subtract(14, "days").toDate();
-    timeZero.setHours(0);
-    timeZero.setMinutes(0);
-    return {
-      maxBreak: maxBreak,
-      timeZero: timeZero,
-      isLoading: false,
-      companyProfileId: this.$route.params.companyProfileId,
-      companyJobPositions: [],
-      jobPositionSelected: null,
-      locations: [],
-      locationSelected: null,
-      salesRepresentatives: [],
-      salesRepresentative: '',
-      salesRepresentativeSelected: null,
-      companyUsers: [],
-      companyUsersSelected: [],
-      request: {
-        durationBreak: dayjs().startOf('day').toDate(),
-        durationTerm: DurationTerm.LongTerm,
-        employmentType: EmploymentType.FullTime
-      },
-      sameBillingTitle: true,
-      totalHours: 0,
-      errorMessage: "Please make sure all required fields are filled out correctly",
-      showRolesModal: false,
-      showLocationModal: false,
-      isUpdate: false
-    };
-  },
-  methods: {
-    onJobPositionSelected(option) {
-      this.jobPositionSelected = option;
-      if (option) {
-        this.request.shift = option.shift;
-        this.request.rate = option.workerRate;
-        this.request.jobPositionRateId = option.id;
-      } else {
-        this.request.shift = null;
-        this.request.rate = null
-        this.request.jobPositionRateId = null
-      }
-    },
-    onLocationSelected(option) {
-      this.locationSelected = option;
-      if (option) {
-        this.request.locationId = option.id;
-      } else {
-        this.request.locationId = null;
-      }
-    },
-    onSalesRepresentativeSelected(option) {
-      this.salesRepresentativeSelected = option;
-      if (option) {
-        this.request.salesRepresentativeId = option.id;
-      } else {
-        this.request.salesRepresentativeId = null;
-      }
-    },
-    validateAutocompleteSelections() {
-      let valid = true;
+});
 
-      if (!this.directHiring && this.jobPosition && (!this.jobPositionSelected || this.jobPositionSelected.value.toLowerCase() !== this.jobPosition.toLowerCase())) {
-        this.setFieldError('jobPosition', 'Please select a role from the list');
-        valid = false;
-      }
+const {
+  jobTitle, billingTitle, workersQuantity, workerSalary, jobPosition,
+  branchOffice, description, requirements, incentive, incentiveDescription, startAt,
+} = form.fields;
+const errors = form.errors;
 
-      if (this.branchOffice && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.branchOffice.toLowerCase())) {
-        this.setFieldError('branchOffice', 'Please select a location from the list');
-        valid = false;
-      }
+const maxBreak = new Date();
+maxBreak.setHours(1);
+maxBreak.setMinutes(0);
+const timeZero = dayjs().subtract(14, 'days').toDate();
+timeZero.setHours(0);
+timeZero.setMinutes(0);
 
-      return valid;
-    },
-    onSubmit() {
-      this.markInteracted([
-        'jobTitle', 'billingTitle', 'workersQuantity', 'workerSalary',
-        'jobPosition', 'branchOffice', 'description', 'requirements',
-        'incentive', 'incentiveDescription', 'startAt'
-      ]);
-      this.handleSubmit((values) => {
-        if (!this.validateAutocompleteSelections()) {
-          showAlertError(this.errorMessage);
-          return;
-        }
-        const payload = {
-          ...this.request,
-          jobTitle: values.jobTitle,
-          billingTitle: values.billingTitle,
-          workersQuantity: values.workersQuantity,
-          workerSalary: this.directHiring ? values.workerSalary : null,
-          description: values.description,
-          requirements: values.requirements,
-          incentive: values.incentive,
-          incentiveDescription: values.incentiveDescription,
-          startAt: values.startAt,
-          durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
-        };
-        if (this.isUpdate) {
-          this.updateRequest(payload);
-        } else {
-          this.createRequest(payload);
-        }
-      }, () => {
-        showAlertError(this.errorMessage);
-      })();
-    },
-    createRequest(payload) {
-      this.isLoading = true;
-      postAgencyRequest(payload)
-        .then((response) => {
-          showAlertSuccess("Request created");
-          this.$router.push("/agency-request/" + response.id);
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    async onUpdateRolesModal() {
-      this.showRolesModal = false;
-      this.companyJobPositions = await getAgencyCompanyJobPositions(this.companyProfileId);
-    },
-    async onUpdateLocationModal() {
-      this.showLocationModal = false;
-      this.locations = await getAgencyCompanyLocation(this.companyProfileId);
-    },
-    updateRequest(payload) {
-      this.isLoading = true;
-      updateAgencyRequest(this.request.id, payload)
-        .then((response) => {
-          this.isLoading = false;
-          showAlertSuccess("Request updated");
-          this.$router.push("/agency-request/" + response.id);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    onSameBillingChecked(value) {
-      if (value) {
-        this.setFieldValue('billingTitle', this.jobTitle);
-      } else {
-        this.setFieldValue('billingTitle', '');
-      }
-    }
-  },
-  async created() {
-    const agencyRequest = this.$route.meta.agencyRequest;
-    this.request.companyProfileId = this.companyProfileId;
-    if (agencyRequest) {
-      this.companyJobPositions = this.$route.meta.companyJobPositions;
-      this.locations = this.$route.meta.companyLocations;
-      this.salesRepresentatives = this.$route.meta.agencyPersonnel;
-      this.companyUsers = this.$route.meta.companyUsers;
-      this.isUpdate = true;
-      this.request = {
-        ...agencyRequest,
-        durationBreak: agencyRequest.breakIsPaid ? dayjs().add(agencyRequest.durationBreak, "hours").toDate() : dayjs().startOf('day').toDate(),
-        jobPositionRateId: agencyRequest.jobPositionId,
-        rate: agencyRequest.workerRate,
-        finishAt: new Date(agencyRequest.finishAt || "")
-      };
-      this.directHiring = agencyRequest.workerSalary ? true : false;
-      this.sameBillingTitle = agencyRequest.jobTitle === agencyRequest.billingTitle;
-      this.companyUsersSelected = this.companyUsers.filter(cu => agencyRequest.companyUserIds.some(ar => cu.id == ar));
+const isLoading = ref(false);
+const companyProfileId = ref<any>(route.params.companyProfileId);
+const companyJobPositions = ref<any[]>([]);
+const jobPositionSelected = ref<any>(null);
+const locations = ref<any[]>([]);
+const locationSelected = ref<any>(null);
+const salesRepresentatives = ref<any[]>([]);
+const salesRepresentative = ref('');
+const salesRepresentativeSelected = ref<any>(null);
+const companyUsers = ref<any[]>([]);
+const companyUsersSelected = ref<any[]>([]);
+const request = ref<any>({
+  durationBreak: dayjs().startOf('day').toDate(),
+  durationTerm: DurationTerm.LongTerm,
+  employmentType: EmploymentType.FullTime,
+});
+const sameBillingTitle = ref(true);
+const errorMessage = 'Please make sure all required fields are filled out correctly';
+const showRolesModal = ref(false);
+const showLocationModal = ref(false);
+const isUpdate = ref(false);
+const companyUserTagInput = ref<any>(null);
 
-      let record = this.companyJobPositions.find(cjp => cjp.id === agencyRequest.jobPositionId);
-      if (record) {
-        this.setFieldValue('jobPosition', record.value);
-        this.jobPositionSelected = record;
-      }
-      record = this.locations.find(l => l.address === agencyRequest.jobLocation.address);
-      if (record) {
-        this.request.locationId = record.id;
-      }
-      record = this.locations.find(l => l.id === this.request.locationId);
-      if (record) {
-        this.setFieldValue('branchOffice', record.formattedAddress);
-        this.locationSelected = record;
-      }
-      record = this.salesRepresentatives.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
-      if (record) {
-        this.salesRepresentative = `${record.name} - ${record.email}`;
-        this.salesRepresentativeSelected = record;
-      }
+const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
 
-      this.resetForm({
-        jobTitle: agencyRequest.jobTitle,
-        billingTitle: agencyRequest.billingTitle,
-        workersQuantity: agencyRequest.workersQuantity,
-        workerSalary: agencyRequest.workerSalary,
-        jobPosition: this.jobPosition,
-        branchOffice: this.branchOffice,
-        description: agencyRequest.description,
-        requirements: agencyRequest.requirements,
-        incentive: agencyRequest.incentive,
-        incentiveDescription: agencyRequest.incentiveDescription,
-        startAt: new Date(agencyRequest.startAt),
-      });
-    } else {
-      this.companyJobPositions = await getAgencyCompanyJobPositions(this.companyProfileId);
-      this.locations = await getAgencyCompanyLocation(this.companyProfileId);
-      this.salesRepresentatives = await getAgencyPersonnel();
-      this.companyUsers = await getCompanyUsers(this.companyProfileId);
-    }
-    this.isLoading = false;
-  },
-  computed: {
-    DurationTerm: () => DurationTerm,
-    DurationTermLabels: () => DurationTermLabels,
-    EmploymentType: () => EmploymentType,
-    EmploymentTypeLabels: () => EmploymentTypeLabels,
-    finishDate() {
-      return dayjs(this.startAt).add(1, "year").toDate();
-    },
-    filteredCompanyJobPositions() {
-      const search = (this.jobPosition || '').toLowerCase();
-      return this.companyJobPositions.filter(cjp => cjp.value.toLowerCase().includes(search));
-    },
-    filteredLocations() {
-      const search = (this.branchOffice || '').toLowerCase();
-      return this.locations.filter(l => l.formattedAddress.toLowerCase().includes(search));
-    },
-    filteredSalesRepresentative() {
-      return this.salesRepresentatives
-        .filter(sr => `${sr.name} - ${sr.email}`.toLowerCase().includes(this.salesRepresentative.toLowerCase()));
-    }
-  },
-  watch: {
-    jobPosition(newVal) {
-      if (this.jobPositionSelected && this.jobPositionSelected.value !== newVal) {
-        this.jobPositionSelected = null;
-        this.request.shift = null;
-        this.request.rate = null;
-        this.request.jobPositionRateId = null;
-      }
-    },
-    branchOffice(newVal) {
-      if (this.locationSelected && this.locationSelected.formattedAddress !== newVal) {
-        this.locationSelected = null;
-        this.request.locationId = null;
-      }
-    },
-    salesRepresentative(newVal) {
-      if (this.salesRepresentativeSelected) {
-        const formatted = `${this.salesRepresentativeSelected.name} - ${this.salesRepresentativeSelected.email}`;
-        if (formatted !== newVal) {
-          this.salesRepresentativeSelected = null;
-          this.request.salesRepresentativeId = null;
-        }
-      }
-    },
-    directHiring(val) {
-      if (!val) {
-        this.setFieldValue('workerSalary', null);
-      }
-    },
-    sameBillingTitle(val) {
-      if (val) {
-        this.setFieldValue('billingTitle', this.jobTitle);
-      }
-    },
-    companyUsersSelected(val) {
-      this.request.companyUserIds = val.map(cus => cus.id);
-    },
-    jobTitle(val) {
-      if (this.sameBillingTitle) {
-        this.setFieldValue('billingTitle', val);
-      }
+const filteredCompanyJobPositions = computed(() => {
+  const search = (jobPosition.value || '').toLowerCase();
+  return companyJobPositions.value.filter((cjp) => cjp.value.toLowerCase().includes(search));
+});
+
+const filteredLocations = computed(() => {
+  const search = (branchOffice.value || '').toLowerCase();
+  return locations.value.filter((l) => l.formattedAddress.toLowerCase().includes(search));
+});
+
+const filteredSalesRepresentative = computed(() =>
+  salesRepresentatives.value
+    .filter((sr) => `${sr.name} - ${sr.email}`.toLowerCase().includes(salesRepresentative.value.toLowerCase())),
+);
+
+watch(jobPosition, (newVal) => {
+  if (jobPositionSelected.value && jobPositionSelected.value.value !== newVal) {
+    jobPositionSelected.value = null;
+    request.value.shift = null;
+    request.value.rate = null;
+    request.value.jobPositionRateId = null;
+  }
+});
+
+watch(branchOffice, (newVal) => {
+  if (locationSelected.value && locationSelected.value.formattedAddress !== newVal) {
+    locationSelected.value = null;
+    request.value.locationId = null;
+  }
+});
+
+watch(salesRepresentative, (newVal) => {
+  if (salesRepresentativeSelected.value) {
+    const formatted = `${salesRepresentativeSelected.value.name} - ${salesRepresentativeSelected.value.email}`;
+    if (formatted !== newVal) {
+      salesRepresentativeSelected.value = null;
+      request.value.salesRepresentativeId = null;
     }
   }
-};
+});
+
+watch(directHiring, (val) => {
+  if (!val) {
+    form.setFieldValue('workerSalary', null);
+  }
+});
+
+watch(sameBillingTitle, (val) => {
+  if (val) {
+    form.setFieldValue('billingTitle', jobTitle.value);
+  }
+});
+
+watch(companyUsersSelected, (val) => {
+  request.value.companyUserIds = val.map((cus: any) => cus.id);
+});
+
+watch(jobTitle, (val) => {
+  if (sameBillingTitle.value) {
+    form.setFieldValue('billingTitle', val);
+  }
+});
+
+(async () => {
+  const agencyRequest = (route.meta as any).agencyRequest;
+  request.value.companyProfileId = companyProfileId.value;
+  if (agencyRequest) {
+    companyJobPositions.value = (route.meta as any).companyJobPositions;
+    locations.value = (route.meta as any).companyLocations;
+    salesRepresentatives.value = (route.meta as any).agencyPersonnel;
+    companyUsers.value = (route.meta as any).companyUsers;
+    isUpdate.value = true;
+    request.value = {
+      ...agencyRequest,
+      durationBreak: agencyRequest.breakIsPaid ? dayjs().add(agencyRequest.durationBreak, 'hours').toDate() : dayjs().startOf('day').toDate(),
+      jobPositionRateId: agencyRequest.jobPositionId,
+      rate: agencyRequest.workerRate,
+      finishAt: new Date(agencyRequest.finishAt || ''),
+    };
+    directHiring.value = agencyRequest.workerSalary ? true : false;
+    sameBillingTitle.value = agencyRequest.jobTitle === agencyRequest.billingTitle;
+    companyUsersSelected.value = companyUsers.value.filter((cu) => agencyRequest.companyUserIds.some((ar: any) => cu.id == ar));
+
+    let record: any = companyJobPositions.value.find((cjp) => cjp.id === agencyRequest.jobPositionId);
+    if (record) {
+      form.setFieldValue('jobPosition', record.value);
+      jobPositionSelected.value = record;
+    }
+    record = locations.value.find((l) => l.address === agencyRequest.jobLocation.address);
+    if (record) {
+      request.value.locationId = record.id;
+    }
+    record = locations.value.find((l) => l.id === request.value.locationId);
+    if (record) {
+      form.setFieldValue('branchOffice', record.formattedAddress);
+      locationSelected.value = record;
+    }
+    record = salesRepresentatives.value.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
+    if (record) {
+      salesRepresentative.value = `${record.name} - ${record.email}`;
+      salesRepresentativeSelected.value = record;
+    }
+
+    form.hydrate({
+      jobTitle: agencyRequest.jobTitle,
+      billingTitle: agencyRequest.billingTitle,
+      workersQuantity: agencyRequest.workersQuantity,
+      workerSalary: agencyRequest.workerSalary,
+      jobPosition: jobPosition.value,
+      branchOffice: branchOffice.value,
+      description: agencyRequest.description,
+      requirements: agencyRequest.requirements,
+      incentive: agencyRequest.incentive,
+      incentiveDescription: agencyRequest.incentiveDescription,
+      startAt: new Date(agencyRequest.startAt),
+    });
+  } else {
+    companyJobPositions.value = await getAgencyCompanyJobPositions(companyProfileId.value);
+    locations.value = await getAgencyCompanyLocation(companyProfileId.value);
+    salesRepresentatives.value = await getAgencyPersonnel();
+    companyUsers.value = await getCompanyUsers(companyProfileId.value);
+  }
+  isLoading.value = false;
+})();
+
+function onJobPositionSelected(option: any) {
+  jobPositionSelected.value = option;
+  if (option) {
+    request.value.shift = option.shift;
+    request.value.rate = option.workerRate;
+    request.value.jobPositionRateId = option.id;
+  } else {
+    request.value.shift = null;
+    request.value.rate = null;
+    request.value.jobPositionRateId = null;
+  }
+}
+
+function onLocationSelected(option: any) {
+  locationSelected.value = option;
+  if (option) {
+    request.value.locationId = option.id;
+  } else {
+    request.value.locationId = null;
+  }
+}
+
+function onSalesRepresentativeSelected(option: any) {
+  salesRepresentativeSelected.value = option;
+  if (option) {
+    request.value.salesRepresentativeId = option.id;
+  } else {
+    request.value.salesRepresentativeId = null;
+  }
+}
+
+function validateAutocompleteSelections(): boolean {
+  let valid = true;
+  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.value.toLowerCase() !== jobPosition.value.toLowerCase())) {
+    form.setFieldError('jobPosition', 'Please select a role from the list');
+    valid = false;
+  }
+  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress.toLowerCase() !== branchOffice.value.toLowerCase())) {
+    form.setFieldError('branchOffice', 'Please select a location from the list');
+    valid = false;
+  }
+  return valid;
+}
+
+function onSubmit() {
+  form.markInteracted([
+    'jobTitle', 'billingTitle', 'workersQuantity', 'workerSalary',
+    'jobPosition', 'branchOffice', 'description', 'requirements',
+    'incentive', 'incentiveDescription', 'startAt',
+  ]);
+  form.handleSubmit((values) => {
+    if (!validateAutocompleteSelections()) {
+      showAlertError(errorMessage);
+      return;
+    }
+    const payload: any = {
+      ...request.value,
+      jobTitle: values.jobTitle,
+      billingTitle: values.billingTitle,
+      workersQuantity: values.workersQuantity,
+      workerSalary: directHiring.value ? values.workerSalary : null,
+      description: values.description,
+      requirements: values.requirements,
+      incentive: values.incentive,
+      incentiveDescription: values.incentiveDescription,
+      startAt: values.startAt,
+      durationBreak: dayjs(request.value.durationBreak).format('HH:mm'),
+    };
+    if (isUpdate.value) {
+      updateRequest(payload);
+    } else {
+      createRequest(payload);
+    }
+  }, () => {
+    showAlertError(errorMessage);
+  })();
+}
+
+function createRequest(payload: any) {
+  isLoading.value = true;
+  postAgencyRequest(payload)
+    .then((response: any) => {
+      showAlertSuccess('Request created');
+      router.push('/agency-request/' + response.id);
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+async function onUpdateRolesModal() {
+  showRolesModal.value = false;
+  companyJobPositions.value = await getAgencyCompanyJobPositions(companyProfileId.value);
+}
+
+async function onUpdateLocationModal() {
+  showLocationModal.value = false;
+  locations.value = await getAgencyCompanyLocation(companyProfileId.value);
+}
+
+function updateRequest(payload: any) {
+  isLoading.value = true;
+  updateAgencyRequest(request.value.id, payload)
+    .then((response: any) => {
+      isLoading.value = false;
+      showAlertSuccess('Request updated');
+      router.push('/agency-request/' + response.id);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onSameBillingChecked(value: boolean) {
+  if (value) {
+    form.setFieldValue('billingTitle', jobTitle.value);
+  } else {
+    form.setFieldValue('billingTitle', '');
+  }
+}
 </script>

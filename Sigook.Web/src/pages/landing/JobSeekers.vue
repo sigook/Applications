@@ -63,7 +63,7 @@
               <h6>by Sigook<label class="superscript">®</label></h6>
               <div class="d-flex justify-content-between align-items-center">
                 <h4 class="m-0"><strong>{{ jobSelected.title }} - {{ jobSelected.numberId }}</strong></h4>
-                <button class="button-rounded bg-blue-light color-white" @click="applyNow()">APPLY NOW</button>
+                <button class="button-rounded bg-blue-light color-white" @click="openApplyNowModal()">APPLY NOW</button>
               </div>
               <div class="d-flex justify-content-start color-grey-light mt-2">
                 <h6>{{ jobSelected.location }}</h6>
@@ -81,7 +81,7 @@
               <h4>Requirements</h4>
               <article class="color-grey-dark" v-html="jobSelected.requirements"></article>
               <hr />
-              <button class="button-rounded bg-blue-light color-white mb-2" @click="applyNow()">APPLY NOW</button>
+              <button class="button-rounded bg-blue-light color-white mb-2" @click="openApplyNowModal()">APPLY NOW</button>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
                     <h6 class="m-0">by Sigook<label class="superscript">®</label></h6>
-                    <button class="button-rounded bg-blue-light color-white" @click="applyNow()">APPLY NOW</button>
+                    <button class="button-rounded bg-blue-light color-white" @click="openApplyNowModal()">APPLY NOW</button>
                   </div>
                   <div class="d-flex color-grey-light mt-2">
                     <h6>{{ job.location }}</h6>
@@ -129,7 +129,7 @@
                   <h4>Requirements</h4>
                   <article class="color-grey-dark" v-html="job.requirements"></article>
                   <hr />
-                  <button class="button-rounded bg-blue-light color-white mb-2" @click="applyNow()">APPLY NOW</button>
+                  <button class="button-rounded bg-blue-light color-white mb-2" @click="openApplyNowModal()">APPLY NOW</button>
                 </div>
               </div>
             </div>
@@ -145,70 +145,68 @@
 </template>
 
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { getJobs } from "@/api/websiteApi";
 import VueScrollTo from 'vue-scrollto';
+import SubMenu from "@/components/landing/SubMenu.vue";
+import SigookVideo from "@/components/landing/SigookVideo.vue";
+import JobSearch from "@/components/landing/JobSearch.vue";
+import ApplyNow from "@/components/landing/ApplyNow.vue";
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      jobs: [],
-      jobSelected: null,
-      showApplyNowModal: false,
-      jobToApply: null
-    }
-  },
-  components: {
-    SubMenu: defineAsyncComponent(() => import("@/components/landing/SubMenu.vue")),
-    SigookVideo: defineAsyncComponent(() => import("@/components/landing/SigookVideo.vue")),
-    JobSearch: defineAsyncComponent(() => import("@/components/landing/JobSearch.vue")),
-    ApplyNow: defineAsyncComponent(() => import("@/components/landing/ApplyNow.vue")),
-  },
-  async created() {
-    this.isLoading = true;
-    this.jobs = await getJobs(this.$route.query);
+const route = useRoute();
+const router = useRouter();
 
-    const jobIdFromQuery = this.$route.query.jobId;
-    if (jobIdFromQuery) {
-      const targetJob = this.jobs.find(j => String(j.numberId) === String(jobIdFromQuery));
-      this.selectJob(targetJob || this.jobs[0]);
-    } else {
-      this.selectJob(this.jobs[0]);
-    }
+const isLoading = ref(false);
+const jobs = ref<any[]>([]);
+const jobSelected = ref<any>(null);
+const showApplyNowModal = ref(false);
+const jobToApply = ref<any>(null);
 
-    this.isLoading = false;
-
-    this.$nextTick(() => {
-      if (jobIdFromQuery) {
-        VueScrollTo.scrollTo("#jobsContainer", 500, { offset: -20 });
-      } else {
-        VueScrollTo.scrollTo("#jobsContainer");
-      }
+function selectJob(job: any) {
+  if (job) {
+    jobSelected.value = job;
+    jobToApply.value = job;
+    router.replace({
+      query: { jobId: job.numberId }
     });
-  },
-  methods: {
-    selectJob(job) {
-      if (job) {
-        this.jobSelected = job;
-        this.jobToApply = job;
-        this.$router.replace({
-          query: { jobId: job.numberId }
-        });
-      }
-    },
-    async searchJob(jobSearch) {
-      this.isLoading = true;
-      this.jobs = await getJobs(jobSearch);
-      this.isLoading = false;
-    },
-    applyNow() {
-      this.showApplyNowModal = true;
-    }
   }
 }
 
+async function searchJob(jobSearch: any) {
+  isLoading.value = true;
+  jobs.value = await getJobs(jobSearch);
+  isLoading.value = false;
+}
+
+function openApplyNowModal() {
+
+  showApplyNowModal.value = true;
+}
+
+(async () => {
+  isLoading.value = true;
+  jobs.value = await getJobs(route.query);
+
+  const jobIdFromQuery = route.query.jobId;
+  if (jobIdFromQuery) {
+    const targetJob = jobs.value.find(j => String(j.numberId) === String(jobIdFromQuery));
+    selectJob(targetJob || jobs.value[0]);
+  } else {
+    selectJob(jobs.value[0]);
+  }
+
+  isLoading.value = false;
+
+  nextTick(() => {
+    if (jobIdFromQuery) {
+      VueScrollTo.scrollTo("#jobsContainer", 500, { offset: -20 });
+    } else {
+      VueScrollTo.scrollTo("#jobsContainer");
+    }
+  });
+})();
 </script>
 
 <style lang="scss">

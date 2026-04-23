@@ -63,13 +63,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertSuccess } from "@/utils/toast";
 import { getWsibGroups } from "@/api/catalogApi";
 import { updateAgency } from "@/api/agencyApi";
+import phoneInput from "@/components/PhoneInput.vue";
 
 const numericExt = yup
   .string()
@@ -93,97 +94,84 @@ const schema = yup.object({
     .matches(urlRegex, { message: 'Invalid URL', excludeEmptyString: true }),
 });
 
-export default {
-  props: ["agencyData"],
-  setup(props: any) {
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        fullName: props.agencyData?.fullName || '',
-        hstNumber: props.agencyData?.hstNumber || '',
-        businessNumber: props.agencyData?.businessNumber || '',
-        phonePrincipalExt: props.agencyData?.phonePrincipalExt != null ? String(props.agencyData.phonePrincipalExt) : '',
-        faxExt: props.agencyData?.faxExt != null ? String(props.agencyData.faxExt) : '',
-        webPage: props.agencyData?.webPage || '',
-      },
-    });
+const props = defineProps<{ agencyData: any }>();
+const emit = defineEmits<{ (e: 'update:agencyData', data: any): void }>();
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      hydrateForm: form.hydrate,
+const form = useStickyForm({
+  schema,
+  initialValues: {
+    fullName: props.agencyData?.fullName || '',
+    hstNumber: props.agencyData?.hstNumber || '',
+    businessNumber: props.agencyData?.businessNumber || '',
+    phonePrincipalExt: props.agencyData?.phonePrincipalExt != null ? String(props.agencyData.phonePrincipalExt) : '',
+    faxExt: props.agencyData?.faxExt != null ? String(props.agencyData.faxExt) : '',
+    webPage: props.agencyData?.webPage || '',
+  },
+});
+const { fullName, hstNumber, businessNumber, phonePrincipalExt, faxExt, webPage } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const localAgencyData = ref<any>(JSON.parse(JSON.stringify(props.agencyData)));
+const wsibGroups = ref<any[]>([]);
+const phoneComponent = ref<any>(null);
+const faxComponent = ref<any>(null);
+
+watch(
+  () => props.agencyData,
+  (newVal: any) => {
+    localAgencyData.value = JSON.parse(JSON.stringify(newVal));
+    form.hydrate({
+      fullName: newVal?.fullName || '',
+      hstNumber: newVal?.hstNumber || '',
+      businessNumber: newVal?.businessNumber || '',
+      phonePrincipalExt: newVal?.phonePrincipalExt != null ? String(newVal.phonePrincipalExt) : '',
+      faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
+      webPage: newVal?.webPage || '',
+    });
+  },
+  { deep: true }
+);
+
+async function validateForm() {
+  form.markInteracted();
+  const phoneValid = await phoneComponent.value.validatePhone();
+  const faxValid = await faxComponent.value.validatePhone();
+  form.handleSubmit((values) => {
+    if (!phoneValid || !faxValid) return;
+    isLoading.value = true;
+    const updated = {
+      ...localAgencyData.value,
+      fullName: values.fullName,
+      hstNumber: values.hstNumber,
+      businessNumber: values.businessNumber,
+      phonePrincipalExt: values.phonePrincipalExt ? parseInt(values.phonePrincipalExt, 10) : null,
+      faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
+      webPage: values.webPage,
     };
-  },
-  data() {
-    return {
-      isLoading: false,
-      localAgencyData: JSON.parse(JSON.stringify((this as any).agencyData)),
-      wsibGroups: [] as any[],
-    };
-  },
-  watch: {
-    agencyData: {
-      handler(newVal: any) {
-        this.localAgencyData = JSON.parse(JSON.stringify(newVal));
-        this.hydrateForm({
-          fullName: newVal?.fullName || '',
-          hstNumber: newVal?.hstNumber || '',
-          businessNumber: newVal?.businessNumber || '',
-          phonePrincipalExt: newVal?.phonePrincipalExt != null ? String(newVal.phonePrincipalExt) : '',
-          faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
-          webPage: newVal?.webPage || '',
-        });
-      },
-      deep: true,
-    },
-  },
-  components: {
-    phoneInput: defineAsyncComponent(() => import("@/components/PhoneInput.vue")),
-  },
-  methods: {
-    async validateForm() {
-      this.markInteracted();
-      const phoneValid = await (this.$refs.phoneComponent as any).validatePhone();
-      const faxValid = await (this.$refs.faxComponent as any).validatePhone();
-      this.handleSubmit((values) => {
-        if (!phoneValid || !faxValid) return;
-        this.isLoading = true;
-        const updated = {
-          ...this.localAgencyData,
-          fullName: values.fullName,
-          hstNumber: values.hstNumber,
-          businessNumber: values.businessNumber,
-          phonePrincipalExt: values.phonePrincipalExt ? parseInt(values.phonePrincipalExt, 10) : null,
-          faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
-          webPage: values.webPage,
-        };
-        this.$emit('update:agencyData', updated);
-        updateAgency(updated)
-          .then(() => {
-            this.isLoading = false;
-            showAlertSuccess("Updated");
-          })
-          .catch(() => {
-            this.isLoading = false;
-          });
-      })();
-    },
-    beforeWsibBeingSelected(tag: any) {
-      return !this.localAgencyData.wsibGroup.some((item: any) => item.value === tag.value);
-    },
-  },
-  created() {
-    this.isLoading = true;
-    getWsibGroups()
-      .then((response: any) => {
-        this.isLoading = false;
-        this.wsibGroups = response;
+    emit('update:agencyData', updated);
+    updateAgency(updated)
+      .then(() => {
+        isLoading.value = false;
+        showAlertSuccess("Updated");
       })
       .catch(() => {
-        this.isLoading = false;
+        isLoading.value = false;
       });
-  },
-};
+  })();
+}
+
+function beforeWsibBeingSelected(tag: any) {
+  return !localAgencyData.value.wsibGroup.some((item: any) => item.value === tag.value);
+}
+
+isLoading.value = true;
+getWsibGroups()
+  .then((response: any) => {
+    isLoading.value = false;
+    wsibGroups.value = response;
+  })
+  .catch(() => {
+    isLoading.value = false;
+  });
 </script>

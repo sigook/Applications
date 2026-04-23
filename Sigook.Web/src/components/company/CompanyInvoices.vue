@@ -29,81 +29,75 @@
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { datetime, date, currency } from '@/utils/filters';
 import { downloadPDF } from '@/utils/downloadFile';
 import { fetchInvoicePdf } from "@/api/downloadApi";
 import { getCompanyInvoice } from "@/api/companyApi";
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      invoiceId: null,
-      invoiceNumber: null,
-      showModalCompanyInvoicePay: false,
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  methods: {
-    downloadPDF,
-    datetime,
-    date,
-    currency,
-    onGetCompanyInvoice() {
-      this.isLoading = true;
-      getCompanyInvoice(this.serverParams)
-        .then(response => {
-          this.rows = response.items;
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(e => {
-          this.isLoading = false;
-          showAlertError(e);
-        })
-    },
-    downloadInvoicePdf(item) {
-      this.isLoading = true;
-      fetchInvoicePdf(item.id)
-        .then((response) => {
-          this.isLoading = false;
-          this.downloadPDF(response, "Invoice_" + item.numberId);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-    openCompanyInvoicePay(invoiceId, invoiceNumber) {
-      this.invoiceId = invoiceId;
-      this.showModalCompanyInvoicePay = true;
-      this.invoiceNumber = invoiceNumber;
-    },
-    openPaymentSupportModal(invoiceId, invoiceNumber) {
-      this.showModalPaymentSupport = true;
-      this.invoiceId = invoiceId;
-      this.invoiceNumber = invoiceNumber;
-    },
-    onModalCompanyInvoicePayClose(change) {
-      this.showModalCompanyInvoicePay = false;
-      if (change) {
-        this.showAll()
-      }
-    }
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const invoiceId = ref<any>(null);
+const invoiceNumber = ref<any>(null);
+const showModalCompanyInvoicePay = ref(false);
+const showModalPaymentSupport = ref(false);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
 
-  },
-  created() {
-    this.onGetCompanyInvoice();
+function onGetCompanyInvoice() {
+  isLoading.value = true;
+  getCompanyInvoice(serverParams)
+    .then((response: any) => {
+      rows.value = response.items;
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch((e: any) => {
+      isLoading.value = false;
+      showAlertError(e);
+    });
+}
+
+function downloadInvoicePdf(item: any) {
+  isLoading.value = true;
+  fetchInvoicePdf(item.id)
+    .then((response: any) => {
+      isLoading.value = false;
+      downloadPDF(response, "Invoice_" + item.numberId);
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function openCompanyInvoicePay(id: any, num: any) {
+  invoiceId.value = id;
+  showModalCompanyInvoicePay.value = true;
+  invoiceNumber.value = num;
+}
+
+function openPaymentSupportModal(id: any, num: any) {
+  showModalPaymentSupport.value = true;
+  invoiceId.value = id;
+  invoiceNumber.value = num;
+}
+
+function onModalCompanyInvoicePayClose(change: boolean) {
+  showModalCompanyInvoicePay.value = false;
+  if (change) {
+    onGetCompanyInvoice();
   }
 }
 
+onGetCompanyInvoice();
+
+defineExpose({ downloadInvoicePdf, openCompanyInvoicePay, openPaymentSupportModal, onModalCompanyInvoicePayClose });
 </script>

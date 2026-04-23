@@ -130,13 +130,22 @@
     </transition>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { getAgencyWorkerTimeSheet, postAgencyWorkerTimeSheet } from "@/api/agencyTimeSheetApi";
 import { date, time } from '@/utils/filters';
+
+const props = defineProps<{
+  workerId: any;
+  workerName?: string;
+  requestId: any;
+}>();
+
+const emit = defineEmits<{ (e: 'created'): void }>();
 
 const optionalNumber = (max: number) =>
   yup
@@ -163,107 +172,97 @@ const schema = yup.object({
   reimbursementsDescription: optionalText(1000),
 });
 
-export default {
-  props: ["workerId", "workerName", "requestId"],
-  setup() {
-    const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
+const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
 
-    const form = useStickyForm({
-      schema,
-      initialValues: {
-        newDate: null as Date | null,
-        newDateHour: emptyTime as Date | null,
-        missingHours: emptyTime as Date | null,
-        missingHoursOvertime: emptyTime as Date | null,
-        deductionsW: null as number | null,
-        deductionsC: null as number | null,
-        deductions: null as number | null,
-        deductionsDes: '',
-        bonus: null as number | null,
-        bonusDes: '',
-        reimbursements: null as number | null,
-        reimbursementsDescription: '',
-      },
+const form = useStickyForm({
+  schema,
+  initialValues: {
+    newDate: null as Date | null,
+    newDateHour: emptyTime as Date | null,
+    missingHours: emptyTime as Date | null,
+    missingHoursOvertime: emptyTime as Date | null,
+    deductionsW: null as number | null,
+    deductionsC: null as number | null,
+    deductions: null as number | null,
+    deductionsDes: '',
+    bonus: null as number | null,
+    bonusDes: '',
+    reimbursements: null as number | null,
+    reimbursementsDescription: '',
+  },
+});
+
+const {
+  newDate, newDateHour, missingHours, missingHoursOvertime,
+  deductionsW, deductionsC, deductions, deductionsDes,
+  bonus, bonusDes, reimbursements, reimbursementsDescription,
+} = form.fields;
+const formErrors = form.errors;
+
+const maximumMissing = dayjs().hour(12).minute(0).second(0).millisecond(0).toDate();
+
+const showOptions = ref(false);
+const punchCard = ref(true);
+const isLoading = ref(false);
+const size = ref(30);
+const currentPage = ref(1);
+const rows = ref<any[]>([]);
+
+function showTimeSheet() {
+  isLoading.value = true;
+  getAgencyWorkerTimeSheet(props.requestId, props.workerId)
+    .then((response: any) => {
+      isLoading.value = false;
+      rows.value = response;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
     });
+  punchCard.value = false;
+}
 
-    return {
-      ...form.fields,
-      formErrors: form.errors,
-      handleSubmit: form.handleSubmit,
-      markInteracted: form.markInteracted,
-      clearForm: form.resetAll,
-    };
-  },
-  data() {
-    const maximumMissing = dayjs().hour(12).minute(0).second(0).millisecond(0).toDate();
-    return {
-      showOptions: false,
-      punchCard: true,
-      isLoading: false,
-      size: 30,
-      currentPage: 1,
-      maximumMissing,
-      rows: [] as any[],
-    };
-  },
-  methods: {
-    date,
-    time,
-    showTimeSheet() {
-      this.isLoading = true;
-      getAgencyWorkerTimeSheet(this.requestId, this.workerId)
-        .then((response: any) => {
-          this.isLoading = false;
-          this.rows = response;
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-      this.punchCard = false;
-    },
-    reportWorkerTimSheet() {
-      this.markInteracted([
-        'newDate', 'newDateHour', 'deductionsW', 'deductionsC',
-        'deductions', 'deductionsDes', 'bonus', 'bonusDes',
-        'reimbursements', 'reimbursementsDescription',
-      ]);
-      this.handleSubmit((values) => {
-        this.submitTimeSheet(values);
-      }, () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-      })();
-    },
-    submitTimeSheet(values: any) {
-      this.isLoading = true;
-      const dateStr = dayjs(values.newDate).format('YYYY-MM-DD');
-      const hours = dayjs(values.newDateHour).format('HH:mm:ss');
-      const payload = {
-        hours,
-        timeIn: dayjs(dateStr + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
-        missingHours: dayjs(values.missingHours).format('HH:mm:ss'),
-        missingHoursOvertime: dayjs(values.missingHoursOvertime).format('HH:mm:ss'),
-        missingRateWorker: values.deductionsW,
-        missingRateAgency: values.deductionsC,
-        deductionsOthers: values.deductions,
-        deductionsOthersDescription: values.deductionsDes,
-        bonusOrOthers: values.bonus,
-        bonusOrOthersDescription: values.bonusDes,
-        reimbursements: values.reimbursements,
-        reimbursementsDescription: values.reimbursementsDescription,
-      };
-      postAgencyWorkerTimeSheet(this.requestId, this.workerId, payload)
-        .then(() => {
-          this.isLoading = false;
-          showAlertSuccess('Created');
-          this.clearForm();
-          this.$emit('created');
-        })
-        .catch((error: any) => {
-          this.isLoading = false;
-          showAlertError(error);
-        });
-    },
-  },
-};
+function reportWorkerTimSheet() {
+  form.markInteracted([
+    'newDate', 'newDateHour', 'deductionsW', 'deductionsC',
+    'deductions', 'deductionsDes', 'bonus', 'bonusDes',
+    'reimbursements', 'reimbursementsDescription',
+  ]);
+  form.handleSubmit((values) => {
+    submitTimeSheet(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function submitTimeSheet(values: any) {
+  isLoading.value = true;
+  const dateStr = dayjs(values.newDate).format('YYYY-MM-DD');
+  const hours = dayjs(values.newDateHour).format('HH:mm:ss');
+  const payload = {
+    hours,
+    timeIn: dayjs(dateStr + ' ' + hours).format('YYYY-MM-DDTHH:mm:ss'),
+    missingHours: dayjs(values.missingHours).format('HH:mm:ss'),
+    missingHoursOvertime: dayjs(values.missingHoursOvertime).format('HH:mm:ss'),
+    missingRateWorker: values.deductionsW,
+    missingRateAgency: values.deductionsC,
+    deductionsOthers: values.deductions,
+    deductionsOthersDescription: values.deductionsDes,
+    bonusOrOthers: values.bonus,
+    bonusOrOthersDescription: values.bonusDes,
+    reimbursements: values.reimbursements,
+    reimbursementsDescription: values.reimbursementsDescription,
+  };
+  postAgencyWorkerTimeSheet(props.requestId, props.workerId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Created');
+      form.resetAll();
+      emit('created');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>
