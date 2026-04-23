@@ -1,21 +1,21 @@
-# Reusable Node.js setup via NVM (pre-installed on self-hosted pool VMs)
-# Installs + activates the requested Node version. Avoids reliance on per-app NVM aliases.
+# Reusable Node.js setup via the official NodeTool task.
+# Downloads + activates the requested Node version on any agent (no NVM dependency).
 
 parameters:
   - name: nodeVersion
     type: string
-    default: '22'
-    displayName: 'Node.js major version (or exact semver) to install via NVM'
+    default: '22.x'
+    displayName: 'Node.js version spec (e.g. 22.x, 20.19.0)'
 
 steps:
+  - task: NodeTool@0
+    displayName: 'Setup Node.js ${{ parameters.nodeVersion }}'
+    inputs:
+      versionSpec: '${{ parameters.nodeVersion }}'
+
   - script: |
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      nvm install ${{ parameters.nodeVersion }}
-      nvm use ${{ parameters.nodeVersion }}
-      NODE_BIN="$(dirname "$(nvm which current)")"
-      echo "##vso[task.prependpath]$NODE_BIN"
       echo "Node version: $(node --version)"
       echo "NPM version: $(npm --version)"
-      echo "Prepended to PATH: $NODE_BIN"
-    displayName: 'Setup Node.js ${{ parameters.nodeVersion }} via NVM'
+      echo "Which node: $(which node)"
+      echo "Which npm: $(which npm)"
+    displayName: 'Verify Node.js Installation'
