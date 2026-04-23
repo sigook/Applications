@@ -12,6 +12,12 @@
         allowfullscreen width="100%" height="400px" frameborder="0"
         style="border:0; height: calc(100% + 110px); margin-top: -110px;"></iframe>
     </div>
+    <p class="p-1" v-if="jobLocation.latitude && jobLocation.longitude">
+      <a :href="'https://www.google.com/maps/search/?api=1&query=' + jobLocation.latitude + ',' + jobLocation.longitude"
+        target="_blank" rel="noopener noreferrer">
+        Open in Google Maps
+      </a>
+    </p>
   </div>
 </template>
 <script setup lang="ts">
