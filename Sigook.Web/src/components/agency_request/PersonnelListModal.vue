@@ -15,67 +15,70 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getAgencyPersonnel } from "@/api/agencyApi";
 import { postAgencyRequestRecruiter, deleteAgencyRequestRecruiter } from "@/api/agencyRequestApi";
 
-export default {
-  props: ["request", "recruiters"],
-  data() {
-    return {
-      isLoading: false,
-      data: null
-    };
-  },
-  methods: {
-    loadAgencyPersonnel() {
-      this.isLoading = true;
-      getAgencyPersonnel()
-        .then((response) => {
-          this.isLoading = false;
-          this.data = response.map(item => ({ ...item, active: false, recruiterId: null }));
-          this.updateRecruiters(this.recruiters);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    updateRecruiters(items) {
-      for (let i = 0; i < items.length; i++) {
-        for (let j = 0; j < this.data.length; j++) {
-          if (items[i].toLowerCase() === this.data[j].name.toLowerCase()) {
-            this.data[j].active = true;
-          }
-        }
+const props = defineProps<{ request: any; recruiters: any[] }>();
+const emit = defineEmits<{
+  (e: 'selectUser', item: any): void;
+  (e: 'removeUser', item: any): void;
+}>();
+
+const isLoading = ref(false);
+const data = ref<any[] | null>(null);
+
+function loadAgencyPersonnel() {
+  isLoading.value = true;
+  getAgencyPersonnel()
+    .then((response) => {
+      isLoading.value = false;
+      data.value = response.map((item: any) => ({ ...item, active: false, recruiterId: null }));
+      updateRecruiters(props.recruiters);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateRecruiters(items: any[]) {
+  if (!data.value) return;
+  for (let i = 0; i < items.length; i++) {
+    for (let j = 0; j < data.value.length; j++) {
+      if (items[i].toLowerCase() === data.value[j].name.toLowerCase()) {
+        data.value[j].active = true;
       }
-    },
-    addRequestRecruiter(item) {
-      this.isLoading = true;
-      postAgencyRequestRecruiter(this.request.id, { recruiterId: item.id }).then(() => {
-        this.isLoading = false;
-        item.active = true;
-        item.recruiterId = item.id;
-        this.$emit("selectUser", item);
-      }).catch((error) => {
-        this.isLoading = false;
-        this.showAlertError(error);
-      });
-    },
-    removeRequestRecruiter(item) {
-      this.isLoading = true;
-      deleteAgencyRequestRecruiter(this.request.id, item.id).then(() => {
-        this.isLoading = false;
-        item.active = false;
-        this.$emit("removeUser", item);
-      }).catch((error) => {
-        this.isLoading = false;
-        this.showAlertError(error);
-      });
-    },
-  },
-  created() {
-    this.loadAgencyPersonnel();
-  },
-};
+    }
+  }
+}
+
+function addRequestRecruiter(item: any) {
+  isLoading.value = true;
+  postAgencyRequestRecruiter(props.request.id, { recruiterId: item.id }).then(() => {
+    isLoading.value = false;
+    item.active = true;
+    item.recruiterId = item.id;
+    emit('selectUser', item);
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error);
+  });
+}
+
+function removeRequestRecruiter(item: any) {
+  isLoading.value = true;
+  deleteAgencyRequestRecruiter(props.request.id, item.id).then(() => {
+    isLoading.value = false;
+    item.active = false;
+    emit('removeUser', item);
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error);
+  });
+}
+
+loadAgencyPersonnel();
 </script>

@@ -55,10 +55,10 @@ builder.Services.AddIdentity<CovenantUser, CovenantRole>(options =>
 var issuerUri = builder.Configuration.GetValue<string>("IssuerUri") ?? "https://accounts.com";
 var identityBuilder = builder.Services.AddIdentityServer(options => options.IssuerUri = issuerUri)
     .AddDeveloperSigningCredential()
-    .AddConfigurationStore(options => options.ConfigureDbContext = b => b.UseNpgsql(connectionString))
+    .AddConfigurationStore(options => options.ConfigureDbContext = b => b.UseNpgsql(connectionString, o => o.MigrationsAssembly("Covenant.IdentityServer")))
     .AddOperationalStore(options =>
     {
-        options.ConfigureDbContext = b => b.UseNpgsql(connectionString);
+        options.ConfigureDbContext = b => b.UseNpgsql(connectionString, o => o.MigrationsAssembly("Covenant.IdentityServer"));
         options.EnableTokenCleanup = true;
         options.TokenCleanupInterval = 30;
     })

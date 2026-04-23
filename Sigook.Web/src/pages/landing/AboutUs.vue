@@ -102,14 +102,8 @@
 </template>
 
 
-<script lang="ts">
-
-export default {
-  components: {
-    JobSearch: () => import("@/components/landing/JobSearch.vue")
-  }
-}
-
+<script setup lang="ts">
+import JobSearch from "@/components/landing/JobSearch.vue";
 </script>
 
 

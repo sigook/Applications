@@ -25,51 +25,53 @@
     <div v-else>
       <b-field>
         <b-button type="is-ghost" icon-right="file-excel"
-          @click="() => downloadFile(this.fileError, errorFileName)">See Details</b-button>
+          @click="() => downloadFile(fileError, errorFileName)">See Details</b-button>
       </b-field>
       <b-button type="is-primary" rounded @click="fileError = null">Try again</b-button>
     </div>
   </div>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
 
-export default {
-  name: 'BulkData',
-  props: ['uploadFn', 'errorFileName', 'title', 'fileLabel'],
-  data() {
-    return {
-      isLoading: false,
-      bulkFile: null,
-      agencySelected: null,
-      fileError: null,
-    }
-  },
-  methods: {
-    downloadFile,
-    bulkUpload() {
-      this.isLoading = true;
-      this.uploadFn(this.agencySelected, this.bulkFile)
-        .then((file) => {
-          if (file.size > 0) {
-            this.fileError = file;
-            this.showAlertError("Some records could not be uploaded, please check the file");
-          } else {
-            this.$emit("close");
-          }
-          this.bulkFile = null;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-  computed: {
-    agencies() {
-      return this.$store.state.agency.personnelAgencies;
-    }
-  }
+const props = defineProps<{
+  uploadFn: (agencyId: any, file: any) => Promise<any>;
+  errorFileName: string;
+  title: string;
+  fileLabel: string;
+}>();
+
+const emit = defineEmits<{ (e: 'close'): void }>();
+
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(false);
+const bulkFile = ref<any>(null);
+const agencySelected = ref<any>(null);
+const fileError = ref<any>(null);
+
+const agencies = computed(() => agencyStore.personnelAgencies);
+
+function bulkUpload() {
+  isLoading.value = true;
+  props.uploadFn(agencySelected.value, bulkFile.value)
+    .then((file: any) => {
+      if (file.size > 0) {
+        fileError.value = file;
+        showAlertError("Some records could not be uploaded, please check the file");
+      } else {
+        emit("close");
+      }
+      bulkFile.value = null;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
-</script> 
+</script>

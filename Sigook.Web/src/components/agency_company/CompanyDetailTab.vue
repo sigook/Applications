@@ -4,21 +4,21 @@
     <!-- Detail -->
     <section class="col-md-8 col-sm-12 p-3 pr-5">
       <!-- Highlight -->
-      <contact-information v-if="company" :company="company" @update:company="$emit('update:company', $event)" />
+      <contact-information v-if="props.company" :company="props.company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
-      <table class="table-detail" v-if="company">
-        <tr v-if="company.industry">
+      <table class="table-detail" v-if="props.company">
+        <tr v-if="props.company.industry">
           <td><span class="fw-700">Industry </span></td>
           <td>
             <span>
-              {{ company.industry.industry ? company.industry.industry.value : company.industry.otherIndustry }}
+              {{ props.company.industry.industry ? props.company.industry.industry.value : props.company.industry.otherIndustry }}
             </span>
           </td>
         </tr>
         <tr>
           <td>
-            <span class="fw-700">{{ $t("VaccinationRequired") }}</span>
+            <span class="fw-700">{{ "Vaccination Required" }}</span>
           </td>
           <td>
             {{ getLabelVaccinationRequired(localCompany.vaccinationRequired) }}
@@ -30,14 +30,14 @@
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4" v-if="company">
+      <section class="margin-top-15 mb-4" v-if="props.company">
         <span class="fw-700">About</span>
-        <pre class="long-description">{{ company.about }} </pre>
+        <pre class="long-description">{{ props.company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4" v-if="company">
+      <section class="margin-top-15 mb-4" v-if="props.company">
         <span class="fw-700">Internal Info</span>
-        <pre class="long-description" v-html="company.internalInfo"></pre>
+        <pre class="long-description" v-html="props.company.internalInfo"></pre>
       </section>
 
       <span class="line-gray mb-5"></span>
@@ -50,7 +50,7 @@
 
       <div class="mb-5">
         <div class="button-right">
-          <span class="fw-700">{{ $t("InvoiceNotes") }}</span>
+          <span class="fw-700">{{ "Invoice notes " }}</span>
           <button class="show-notes-btn" @click="showNotesEditor()">
             <img src="../../assets/images/right-arrow.svg" alt="edit" :class="{ open: showEditor }" />
           </button>
@@ -60,10 +60,10 @@
         <div class="vue-trix-editor">
           <transition name="fade">
             <div v-if="showEditor">
-              <vue-editor v-model="editorContent" :editorToolbar="customToolbar"></vue-editor>
+              <QuillEditor theme="snow" content-type="html" v-model:content="editorContent" :toolbar="customToolbar" />
               <br />
               <button class="sm-save-button" v-if="editorContent" @click="saveInvoiceNotes()">
-                {{ $t("Save") }}
+                {{ "Save" }}
               </button>
             </div>
           </transition>
@@ -89,19 +89,19 @@
                 </li>
                 <li class="newRecipient">
                   <div class="container-card">
-                    <label>{{ $t("Name") }}:
-                      <input type="text" v-model="newRecipient.name" placeholder="Name" name="name"
-                        v-validate="'required|max:50|min:3'" :class="{ 'is-danger': errors.has('name') }" />
-                      <span v-show="errors.has('name')" class="help is-danger no-margin">
-                        {{ errors.first("name") }}
+                    <label>{{ "Name" }}:
+                      <input type="text" v-model="name" placeholder="Name" name="name"
+                        :class="{ 'is-danger': !!formErrors.name }" />
+                      <span v-show="formErrors.name" class="help is-danger no-margin">
+                        {{ formErrors.name }}
                       </span>
                     </label>
 
-                    <label>{{ $t("Email") }}:
-                      <input type="text" v-model="newRecipient.email" placeholder="Email" name="email"
-                        v-validate="'required|max:50|min:6|email'" :class="{ 'is-danger': errors.has('email') }" />
-                      <span v-show="errors.has('email')" class="help is-danger no-margin">
-                        {{ errors.first("email") }}
+                    <label>{{ "Email" }}:
+                      <input type="text" v-model="email" placeholder="Email" name="email"
+                        :class="{ 'is-danger': !!formErrors.email }" />
+                      <span v-show="formErrors.email" class="help is-danger no-margin">
+                        {{ formErrors.email }}
                       </span>
                     </label>
                   </div>
@@ -117,8 +117,8 @@
         </div>
       </div>
 
-      <i class="fz-1 op5" v-if="company && company.createdAt">
-        Created: {{ date(company.createdAt) }}
+      <i class="fz-1 op5" v-if="props.company && props.company.createdAt">
+        Created: {{ date(props.company.createdAt) }}
       </i>
     </section>
 
@@ -127,191 +127,176 @@
       <location />
     </aside>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
-      <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
-        :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
+    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="props.company">
+      <edit-vaccination-required :company-profile-id="props.company.id" :vaccination-required="props.company.vaccinationRequired"
+        :vaccination-comments="props.company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
     </b-modal>
   </div>
 </template>
 
-<script lang="ts">
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { date } from "@/utils/filters";
 import {
   getInvoiceNotes,
   postInvoiceNotes,
   getCompanyInvoiceRecipients,
   postCompanyInvoiceRecipient,
-  updatePermissionToSeeOrders,
 } from "@/api/agencyCompanyApi";
+import EmailCard from "@/components/EmailCard.vue";
+import Location from "../../components/agency_company/LocationDetail.vue";
+import ContactInformation from "./ContactInformation.vue";
+import Documents from "../../components/agency_company/Documents.vue";
+import Notes from "../../components/agency_company/CompanyNotes.vue";
+import EditVaccinationRequired from "@/components/agency_company/EditVaccinationRequired.vue";
 
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  props: ["company"],
-  data() {
-    return {
-      isLoading: false,
-      localCompany: JSON.parse(JSON.stringify(this.company)),
-      editorContent: null,
-      showEditor: false,
-      showRecipients: false,
-      showEditVaccinationRequired: false,
-      customToolbar: [
-        ["bold", "italic", "underline", "strike"],
-        [
-          { align: "" },
-          { align: "center" },
-          { align: "right" },
-          { align: "justify" },
-        ],
-        [{ header: 1 }, { header: 2 }],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ script: "sub" }, { script: "super" }],
-        ["clean"],
-      ],
-      companyRecipients: [],
-      newRecipient: {
-        name: "",
-        email: "",
-      },
-    };
-  },
-  components: {
-    EmailCard: () => import("@/components/EmailCard.vue"),
-    Location: () => import("../../components/agency_company/LocationDetail.vue"),
-    ContactInformation: () => import("./ContactInformation.vue"),
-    Documents: () => import("../../components/agency_company/Documents.vue"),
-    Notes: () => import("../../components/agency_company/CompanyNotes.vue"),
-    EditVaccinationRequired: () => import("@/components/agency_company/EditVaccinationRequired.vue")
-  },
-  watch: {
-    company: {
-      handler(newVal) {
-        this.localCompany = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
+const recipientSchema = yup.object({
+  name: yup.string().required('Name is required').min(3, 'Min 3 characters').max(50, 'Max 50 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
+});
+
+const props = defineProps<{ company: any }>();
+const emit = defineEmits<{ (e: 'update:company', value: any): void }>();
+
+const route = useRoute();
+
+const form = useStickyForm<{ name: string; email: string }>({
+  schema: recipientSchema,
+  initialValues: { name: '', email: '' },
+});
+const { name, email } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const localCompany = ref<any>(JSON.parse(JSON.stringify(props.company)));
+const editorContent = ref<string | null>(null);
+const showEditor = ref(false);
+const showRecipients = ref(false);
+const showEditVaccinationRequired = ref(false);
+const customToolbar = [
+  ["bold", "italic", "underline", "strike"],
+  [
+    { align: "" },
+    { align: "center" },
+    { align: "right" },
+    { align: "justify" },
+  ],
+  [{ header: 1 }, { header: 2 }],
+  [{ list: "ordered" }, { list: "bullet" }],
+  [{ script: "sub" }, { script: "super" }],
+  ["clean"],
+];
+const companyRecipients = ref<any[]>([]);
+
+watch(() => props.company, (newVal) => {
+  localCompany.value = JSON.parse(JSON.stringify(newVal));
+}, { deep: true });
+
+function showNotesEditor() {
+  if (showEditor.value) {
+    showEditor.value = false;
+  } else {
+    if (!editorContent.value) {
+      loadInvoiceNotes();
+    } else {
+      showEditor.value = true;
     }
-  },
-  methods: {
-    date,
-    showNotesEditor() {
-      if (this.showEditor) {
-        this.showEditor = false;
-      } else {
-        if (!this.editorContent) {
-          this.loadInvoiceNotes();
-        } else {
-          this.showEditor = true;
-        }
-      }
-    },
-    loadInvoiceNotes() {
-      this.isLoading = true;
-      getInvoiceNotes(this.$route.params.id)
-        .then((response) => {
-          this.editorContent = response.htmlNotes;
-          this.showEditor = true;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    saveInvoiceNotes() {
-      // to check the size
-      let result = this.editorContent.replace(/(<([^>]+)>)/gi, "");
-      if (result.length > 500) {
-        this.showAlertError(this.$t("ErrorLong"));
-      } else {
-        this.isLoading = true;
-        postInvoiceNotes(this.$route.params.id, { htmlNotes: this.editorContent })
-          .then(() => {
-            this.showAlertSuccess(this.$t("Updated"));
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            this.showAlertError(error);
-            this.isLoading = false;
-          });
-      }
-    },
-    loadCompanyInvoiceRecipients() {
-      if (!this.showRecipients) {
-        this.isLoading = true;
-        this.showRecipients = true;
-        getCompanyInvoiceRecipients(this.$route.params.id)
-          .then((response) => {
-            this.isLoading = false;
-            this.companyRecipients = response;
-          })
-          .catch((error) => {
-            this.showAlertError(error);
-            this.isLoading = false;
-          });
-      } else {
-        this.showRecipients = false;
-        this.newRecipient = { name: "", email: "" };
-      }
-    },
-    saveCompanyInvoiceRecipient() {
-      this.isLoading = true;
-      postCompanyInvoiceRecipient(this.$route.params.id, this.newRecipient)
-        .then((response) => {
-          this.companyRecipients.push({
-            id: response.id,
-            name: this.newRecipient.name,
-            email: this.newRecipient.email,
-          });
-          this.newRecipient = { name: "", email: "" };
-          this.$validator.reset();
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    deleteCompanyInvoiceRecipientArray(index) {
-      this.companyRecipients.splice(index, 1);
-    },
-    validateCreateEmail() {
-      let valid = true;
-      Promise.all([
-        this.$validator.validate("email"),
-        this.$validator.validate("name"),
-      ]).then((isValid) => {
-        isValid.forEach(function (value) {
-          if (value === false) {
-            valid = false;
-          }
-        });
-        if (valid) {
-          this.saveCompanyInvoiceRecipient();
-        }
+  }
+}
+
+function loadInvoiceNotes() {
+  isLoading.value = true;
+  getInvoiceNotes(route.params.id)
+    .then((response) => {
+      editorContent.value = response.htmlNotes;
+      showEditor.value = true;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function saveInvoiceNotes() {
+  const result = (editorContent.value || '').replace(/(<([^>]+)>)/gi, "");
+  if (result.length > 500) {
+    showAlertError("Notes can't be greater that 500 characters.");
+  } else {
+    isLoading.value = true;
+    postInvoiceNotes(route.params.id, { htmlNotes: editorContent.value })
+      .then(() => {
+        showAlertSuccess("Updated");
+        isLoading.value = false;
+      })
+      .catch((error) => {
+        showAlertError(error);
+        isLoading.value = false;
       });
-    },
-    getLabelVaccinationRequired(vaccinationRequired) {
-      if (vaccinationRequired == null) return "";
-      return vaccinationRequired ? "Yes" : "No";
-    },
-    vaccinationRequiredUpdated(model) {
-      this.showEditVaccinationRequired = false;
-      this.localCompany.vaccinationRequired = model.required;
-      this.localCompany.vaccinationRequiredComments = model.comments;
-      this.$emit('update:company', this.localCompany);
-    },
-    updateRequiresPermissionToSee(e) {
-      this.isLoading = true;
-      updatePermissionToSeeOrders(this.company.id, { requiresPermissionToSeeOrders: e.target.checked })
-        .then(() => this.isLoading = false)
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-  },
-};
+  }
+}
+
+function loadCompanyInvoiceRecipients() {
+  if (!showRecipients.value) {
+    isLoading.value = true;
+    showRecipients.value = true;
+    getCompanyInvoiceRecipients(route.params.id)
+      .then((response) => {
+        isLoading.value = false;
+        companyRecipients.value = response;
+      })
+      .catch((error) => {
+        showAlertError(error);
+        isLoading.value = false;
+      });
+  } else {
+    showRecipients.value = false;
+    form.resetAll();
+  }
+}
+
+function saveCompanyInvoiceRecipient(values: { name: string; email: string }) {
+  isLoading.value = true;
+  postCompanyInvoiceRecipient(route.params.id, values)
+    .then((response) => {
+      companyRecipients.value.push({
+        id: response.id,
+        name: values.name,
+        email: values.email,
+      });
+      form.resetAll();
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function deleteCompanyInvoiceRecipientArray(index: number) {
+  companyRecipients.value.splice(index, 1);
+}
+
+function validateCreateEmail() {
+  form.markInteracted(['name', 'email']);
+  form.handleSubmit((values) => {
+    saveCompanyInvoiceRecipient(values);
+  })();
+}
+
+function getLabelVaccinationRequired(vaccinationRequired: boolean | null | undefined) {
+  if (vaccinationRequired == null) return "";
+  return vaccinationRequired ? "Yes" : "No";
+}
+
+function vaccinationRequiredUpdated(model: { required: boolean; comments: string | null }) {
+  showEditVaccinationRequired.value = false;
+  localCompany.value.vaccinationRequired = model.required;
+  localCompany.value.vaccinationRequiredComments = model.comments;
+  emit('update:company', localCompany.value);
+}
 </script>

@@ -3,16 +3,15 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerSocialInsuranceNumber')"
-          :type="errors.has('social insurance #') ? 'is-danger' : ''"
-          :message="errors.has('social insurance #') ? errors.first('social insurance #') : ''">
-          <b-input type="text" v-model="sin.socialInsurance" name="social insurance #"
-            v-validate="'required|max:15|min:9'">
+        <b-field :label="'SIN/SSN#'"
+          :type="formErrors.socialInsurance ? 'is-danger' : ''"
+          :message="formErrors.socialInsurance || ''">
+          <b-input type="text" v-model="socialInsurance" name="social insurance #">
           </b-input>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('WorkerSocialInsuranceFile')">
+        <b-field :label="'SIN/SSN (Upload file)'">
           <div v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
             <span class="selected-file-name">{{ filename(sin.socialInsuranceFile.fileName) }}</span>
@@ -20,117 +19,148 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedSinFile }">
             <b-upload v-model="selectedSinFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleSinFileSelected" class="file-label" rounded>
+              @update:modelValue="handleSinFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedSinFile ? selectedSinFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :label="$t('Expire')" class="has-text-weight-normal">
+        <b-field :label="'Expire'" class="has-text-weight-normal">
           <b-switch v-model="sin.socialInsuranceExpire" :true-value="true" :false-value="false">
-            {{ sin.socialInsuranceExpire ? $t("Yes") : $t("No") }}
+            {{ sin.socialInsuranceExpire ? "Yes" : "No" }}
           </b-switch>
         </b-field>
       </div>
       <div class="col-12" v-if="sin.socialInsuranceExpire === true">
-        <b-field :label="$t('WorkerDueDate')" :type="errors.has('due date') ? 'is-danger' : ''"
-          :message="errors.has('due date') ? errors.first('due date') : ''">
-          <b-datepicker v-model="sin.dueDate" name="due date" v-validate="'required'" append-to-body position="is-top-right">
+        <b-field :label="'Expire'" :type="formErrors.dueDate ? 'is-danger' : ''"
+          :message="formErrors.dueDate || ''">
+          <b-datepicker v-model="dueDate" name="due date" append-to-body position="is-top-right">
           </b-datepicker>
         </b-field>
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerSin } from '@/api/workerApi';
 
-export default {
-  props: ['data'],
-  mixins: [toastMixin, multipartUploadMixin],
-  data() {
-    return {
-      isLoading: false,
-      selectedSinFile: null,
-      fileObjects: {
-        sinFile: null
-      },
-      sin: {
-        socialInsurance: "",
-        socialInsuranceExpire: false,
-        dueDate: null,
-        socialInsuranceFile: {
-          fileName: "",
-          description: ""
-        }
-      }
-    };
+interface SinForm {
+  socialInsurance: string;
+  dueDate: Date | null;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const schema = yup.object({
+  socialInsurance: yup.string()
+    .required('SIN/SSN is required')
+    .min(9, 'Min 9 characters')
+    .max(15, 'Max 15 characters'),
+  dueDate: yup.mixed().nullable(),
+});
+
+const form = useStickyForm<SinForm>({
+  schema,
+  initialValues: {
+    socialInsurance: '',
+    dueDate: null,
   },
-  methods: {
-    filename,
-    handleSinFileSelected(file) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
-        this.selectedSinFile = null;
-        return;
-      }
-      this.fileObjects.sinFile = file;
-      const generatedName = this.generateFileName('SIN-SSN', file.name);
-      this.sin.socialInsuranceFile = { fileName: generatedName, description: '' };
-      this.selectedSinFile = null;
-    },
-    clearSinFile() {
-      this.fileObjects.sinFile = null;
-      this.sin.socialInsuranceFile = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.createWorkerSin();
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    async createWorkerSin() {
-      this.isLoading = true;
-      try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(this.sin));
-        if (this.fileObjects.sinFile) {
-          const fn = this.sin.socialInsuranceFile.fileName;
-          formData.append(fn, this.fileObjects.sinFile, fn);
-        }
-        await createWorkerSin(this.data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        this.showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    }
+});
+const { socialInsurance, dueDate } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const selectedSinFile = ref<any>(null);
+const fileObjects = reactive<{ sinFile: any }>({ sinFile: null });
+const sin = reactive<any>({
+  socialInsurance: "",
+  socialInsuranceExpire: false,
+  dueDate: null as Date | null,
+  socialInsuranceFile: {
+    fileName: "",
+    description: "",
   },
-  created() {
-    if (this.data.socialInsurance !== null && this.data.socialInsurance !== "") {
-      this.sin = { ...this.data };
-      this.sin.dueDate = this.data.dueDate ? new Date(this.sin.dueDate) : null;
-    }
+});
+
+function handleSinFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedSinFile.value = null;
+    return;
   }
-};
+  fileObjects.sinFile = file;
+  const generatedName = generateFileName('SIN-SSN', file.name);
+  sin.socialInsuranceFile = { fileName: generatedName, description: '' };
+  selectedSinFile.value = null;
+}
+
+function clearSinFile() {
+  fileObjects.sinFile = null;
+  sin.socialInsuranceFile = { fileName: '', description: '' };
+}
+
+async function saveWorkerSin(values: any) {
+  isLoading.value = true;
+  try {
+    const payload = {
+      ...sin,
+      socialInsurance: values.socialInsurance,
+      dueDate: sin.socialInsuranceExpire ? values.dueDate : null,
+    };
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (fileObjects.sinFile) {
+      const fn = payload.socialInsuranceFile.fileName;
+      formData.append(fn, fileObjects.sinFile, fn);
+    }
+    await createWorkerSin(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    if (sin.socialInsuranceExpire && !values.dueDate) {
+      showAlertError('Please make sure all required fields are filled out correctly');
+      return;
+    }
+    saveWorkerSin(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+if (props.data && props.data.socialInsurance !== null && props.data.socialInsurance !== "") {
+  Object.assign(sin, props.data);
+  sin.dueDate = props.data.dueDate ? new Date(props.data.dueDate) : null;
+  form.hydrate({
+    socialInsurance: sin.socialInsurance || '',
+    dueDate: sin.dueDate,
+  });
+}
 </script>
 
 <style scoped>

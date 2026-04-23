@@ -3,17 +3,16 @@
         <i>{{ user.address }} <span class="uppercase">{{user.postalCode}}</span></i>
     </a>
 </template>
-<script lang="ts">
-export default {
-    props: ['user'],
-    computed: {
-        url() {
-            if (this.user.postalCode){
-                return this.user.postalCode
-            } else {
-                return this.user.address
-            }
-        }
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{ user: any }>();
+
+const url = computed(() => {
+    if (props.user.postalCode) {
+        return props.user.postalCode;
+    } else {
+        return props.user.address;
     }
-}
+});
 </script>

@@ -11,64 +11,64 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerSkills()">
-          {{ $t("Save") }}
+        <b-button type="is-primary" @click="saveWorkerSkills()">
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getSkills } from "@/api/catalogApi";
 import { createWorkerSkills } from '@/api/workerApi';
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      skills: [],
-      selectedSkills: [],
-      filteredSkills: [],
-    }
-  },
-  methods: {
-    createWorkerSkills() {
-      this.isLoading = true;
-      const skillsToInsert = this.selectedSkills.map(skill => skill.skill);
-      createWorkerSkills(this.data.id, skillsToInsert)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    createTag(skill) {
-      if (!skill.skill) {
-        skill = { skill };
-        this.skills.push(skill);
-      }
-      return skill;
-    },
-    getSkills() {
-      this.isLoading = true;
-      getSkills().then(response => {
-        this.isLoading = false;
-        this.skills = response;
-        this.filteredSkills = this.skills;
-      });
-    },
-    getFilteredSkills(text) {
-      this.filteredSkills = this.skills.filter((option) => option.skill.toLowerCase().includes(text.toLowerCase()));
-    }
-  },
-  created() {
-    if (this.data != null) {
-      this.selectedSkills = this.data.skills;
-      this.getSkills();
-    }
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const skills = ref<any[]>([]);
+const selectedSkills = ref<any[]>([]);
+const filteredSkills = ref<any[]>([]);
+
+function saveWorkerSkills() {
+  isLoading.value = true;
+  const skillsToInsert = selectedSkills.value.map(skill => skill.skill);
+  createWorkerSkills(props.data.id, skillsToInsert)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function createTag(skill: any) {
+  if (!skill.skill) {
+    skill = { skill };
+    skills.value.push(skill);
   }
+  return skill;
+}
+
+function loadSkills() {
+  isLoading.value = true;
+  getSkills().then(response => {
+    isLoading.value = false;
+    skills.value = response;
+    filteredSkills.value = skills.value;
+  });
+}
+
+function getFilteredSkills(text: string) {
+  filteredSkills.value = skills.value.filter((option) => option.skill.toLowerCase().includes(text.toLowerCase()));
+}
+
+if (props.data != null) {
+  selectedSkills.value = props.data.skills;
+  loadSkills();
 }
 </script>

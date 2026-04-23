@@ -6,18 +6,11 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
-export default {
-  props: ['company'],
-  mixins: [toastMixin],
-  data() {
-    return {
-      isLoading: true,
-    }
-  },
-  components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
-  }
-}
+<script setup lang="ts">
+import { ref } from 'vue';
+import TableRequests from '../../components/agency_request/TableRequests.vue';
+
+defineProps<{ company: any }>();
+
+const isLoading = ref(true);
 </script>

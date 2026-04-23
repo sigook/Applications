@@ -4,14 +4,14 @@
     <div>
       <b-field grouped position="is-right">
         <b-button @click="modalManageWorkers = true" icon-right="calendar-start">
-          {{ $t("AgencyManageWorkers") }}
+          {{ "Manage Workers" }}
         </b-button>
         <b-button type="is-ghost" icon-right="file-excel"
           @click="downloadWorkersReportDocument">Export</b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick" @mouseleave="hideNotes">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -25,7 +25,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -34,14 +34,14 @@
           <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">{{ props.row.externalId }}</template>
           </b-table-column>
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.name }}
@@ -49,15 +49,15 @@
           </b-table-column>
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
           <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.socialInsurance" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.socialInsurance">
@@ -72,7 +72,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-                @input="onStartWorkingSelected" append-to-body>
+                @update:modelValue="onStartWorkingSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -85,11 +85,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @input="onCreatedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -101,11 +101,11 @@
             <template v-slot:searchable>
               <b-field>
                 <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.rejectedBy"
-                  @keypress.native="onInputEntered"></b-input>
+                  @keypress="onInputEntered"></b-input>
                 <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
                   :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
                   v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
-                  @input="onRejectedAtSelected" append-to-body></b-datepicker>
+                  @update:modelValue="onRejectedAtSelected" append-to-body></b-datepicker>
               </b-field>
             </template>
             <template v-slot="props">
@@ -131,7 +131,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -162,19 +162,22 @@
     </b-modal>
 
     <b-modal v-model="modalStartWorking" width="415px">
-      <datepicker-modal v-if="currentWorker" :start-working.sync="currentWorker.startWorking"
+      <datepicker-modal v-if="currentWorker" v-model:start-working="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
-import { phoneMask as mask } from '@/constants/phoneMask';
+import { formatPhone } from '@/utils/phoneFormat';
 import {
   getAgencyRequestsWorkers,
   rejectAgencyRequestWorker,
-  updateAgencyRequestWorkerStartDate,
+  updateAgencyRequestWorkerStartDate
 } from "@/api/agencyRequestApi";
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 import { getWorkersReportDocument } from "@/api/agencyReportApi";
@@ -183,212 +186,232 @@ import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
-  deleteAgencyRequestWorkerNote,
+  deleteAgencyRequestWorkerNote
 } from "@/api/agencyNoteApi";
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
+import WorkersList from "./AgencyWorkersList.vue";
+import ModalNotes from "../../components/notes/ModalNotes.vue";
+import EditTextarea from "../../components/agency_request/EditTextarea.vue";
+import DatepickerModal from "@/components/agency_request/DatepickerModal.vue";
 
-export default {
-  props: ["request", "id", "showTitle"],
-  data() {
-    return {
-      mask,
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      statuses: [
-        { id: 2, value: 'Rejected' },
-        { id: 3, value: 'Booked' },
-      ],
-      statusesSelected: [],
-      startWorkingDatesSelected: [],
-      createdAtDatesSelected: [],
-      rejectedAtDatesSelected: [],
-      modalManageWorkers: false,
-      currentWorker: null,
-      modalRejectWorker: false,
-      modalStartWorking: false,
-      getNotes: ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination),
-      createNote: ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model),
-      updateNote: ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model),
-      deleteNote: ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id),
-      serverParams: {
-        sortBy: 2,
-        requestId: this.id || this.$route.params.id,
-        pageIndex: 1,
-        pageSize: 30,
-        isDescending: true,
-      }
-    };
-  },
-  created() {
-    this.loadRequestWorkers();
-  },
-  components: {
-    WorkersList: () => import("./AgencyWorkersList.vue"),
-    ModalNotes: () => import("../../components/notes/ModalNotes.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
-    DatepickerModal: () => import("@/components/agency_request/DatepickerModal.vue"),
-  },
-  methods: {
-    downloadFile,
-    dateMonth,
-    emailName,
-    onCellClick(row, column, rowIndex) {
-      switch (column._props.field) {
-        case 'startWorking':
-          this.onShowModalStartWorking(row);
-          break;
-        case 'notesCount':
-          this.showNotes(rowIndex);
-          break;
-        case 'actions':
-          break;
-        default:
-          this.$router.push(`/agency-workers/worker/${row.workerProfileId}`);
-          break;
-      }
-    },
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadRequestWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'name':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'status':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'startWorking':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'createdBy':
-          this.serverParams.sortBy = 4;
-          break;
-        case 'rejectedBy':
-          this.serverParams.sortBy = 5;
-          break;
-        case 'externalId':
-          this.serverParams.sortBy = 6;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadRequestWorkers();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadRequestWorkers();
-      }
-    },
-    onStatusSelected() {
-      this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.loadRequestWorkers();
-    },
-    onStartWorkingSelected() {
-      this.serverParams.startWorkingFrom = this.startWorkingDatesSelected[0];
-      this.serverParams.startWorkingTo = this.startWorkingDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onStartWorkingCleared() {
-      this.startWorkingDatesSelected = [];
-      this.onStartWorkingSelected();
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onRejectedAtSelected() {
-      this.serverParams.rejectedAtFrom = this.rejectedAtDatesSelected[0];
-      this.serverParams.rejectedAtTo = this.rejectedAtDatesSelected[1];
-      this.loadRequestWorkers();
-    },
-    onRejectedAtCleared() {
-      this.rejectedAtDatesSelected = [];
-      this.onRejectedAtSelected();
-    },
-    loadRequestWorkers() {
-      this.isLoading = true;
-      getAgencyRequestsWorkers(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map(i => ({
-            ...i,
-            status: WorkerRequestStatusLabels[i.workerRequestStatus],
-            actions: null,
-            showNotes: false,
-          }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error.data);
-        });
-    },
-    confirmDelete(worker) {
-      this.currentWorker = worker;
-      this.modalRejectWorker = true;
-    },
-    rejectWorker(comments) {
-      this.modalRejectWorker = false;
-      this.isLoading = true;
-      rejectAgencyRequestWorker(this.serverParams.requestId, this.currentWorker.workerId, { comments: comments }).then(() => {
-        this.isLoading = false;
-        this.loadRequestWorkers();
-        this.$emit('refreshRequest');
-      }).catch((error) => {
-        this.isLoading = false;
-        this.showAlertError(error.data);
-      });
-    },
-    showNotes(index) {
-      this.rows[index].showNotes = true;
-    },
-    hideNotes(row) {
-      const index = this.rows.findIndex(r => r.id === row.id);
-      this.rows[index].showNotes = false;
-    },
-    onShowModalStartWorking(worker) {
-      this.currentWorker = worker;
-      this.modalStartWorking = true;
-    },
-    onUpdateRequestWorkerStartDate(date) {
-      this.modalStartWorking = false;
-      this.isLoading = true;
-      updateAgencyRequestWorkerStartDate(this.serverParams.requestId, this.currentWorker.id, { startWorking: date }).then(() => {
-        this.isLoading = false;
-        this.loadRequestWorkers();
-      }).catch((error) => {
-        this.isLoading = false;
-        this.showAlertError(error.data);
-      });
-    },
-    downloadWorkersReportDocument() {
-      this.isLoading = true;
-      getWorkersReportDocument(this.serverParams.requestId)
-        .then((response) => {
-          this.isLoading = false;
-          this.downloadFile(response, `WorkersReport_${this.serverParams.requestId}`);
-        })
-        .catch((err) => {
-          this.isLoading = false;
-          this.showAlertError(err);
-        });
-    },
-    onWorkerBooked() {
-      this.modalManageWorkers = false;
-      this.loadRequestWorkers();
-      // Emit event to refresh request status (Open/Filled state may have changed)
-      this.$emit('refreshRequest');
-    }
-  },
-};
+const props = defineProps<{
+  request?: any;
+  id?: any;
+  showTitle?: boolean;
+}>();
+
+const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
+
+const route = useRoute();
+const router = useRouter();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const statuses = ref<any[]>([
+  { id: 2, value: 'Rejected' },
+  { id: 3, value: 'Booked' },
+]);
+const statusesSelected = ref<any[]>([]);
+const startWorkingDatesSelected = ref<any[]>([]);
+const createdAtDatesSelected = ref<any[]>([]);
+const rejectedAtDatesSelected = ref<any[]>([]);
+const modalManageWorkers = ref(false);
+const currentWorker = ref<any>(null);
+const modalRejectWorker = ref(false);
+const modalStartWorking = ref(false);
+
+const getNotes = ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination);
+const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model);
+const updateNote = ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model);
+const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id);
+
+const serverParams = reactive<any>({
+  sortBy: 2,
+  requestId: props.id || route.params.id,
+  pageIndex: 1,
+  pageSize: 30,
+  isDescending: true,
+});
+
+function onCellClick(row: any, column: any, rowIndex: number) {
+  switch (column.field) {
+    case 'startWorking':
+      onShowModalStartWorking(row);
+      break;
+    case 'notesCount':
+      showNotes(rowIndex);
+      break;
+    case 'actions':
+      break;
+    default:
+      router.push(`/agency-workers/worker/${row.workerProfileId}`);
+      break;
+  }
+}
+
+function onPageChange(params: any) {
+  serverParams.pageIndex = params;
+  loadRequestWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'name':
+      serverParams.sortBy = 1;
+      break;
+    case 'status':
+      serverParams.sortBy = 2;
+      break;
+    case 'startWorking':
+      serverParams.sortBy = 3;
+      break;
+    case 'createdBy':
+      serverParams.sortBy = 4;
+      break;
+    case 'rejectedBy':
+      serverParams.sortBy = 5;
+      break;
+    case 'externalId':
+      serverParams.sortBy = 6;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  loadRequestWorkers();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadRequestWorkers();
+  }
+}
+
+function onStatusSelected() {
+  serverParams.statuses = statusesSelected.value.map(ss => ss.id);
+  loadRequestWorkers();
+}
+
+function onStartWorkingSelected() {
+  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0];
+  serverParams.startWorkingTo = startWorkingDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onStartWorkingCleared() {
+  startWorkingDatesSelected.value = [];
+  onStartWorkingSelected();
+}
+
+function onCreatedAtSelected() {
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onRejectedAtSelected() {
+  serverParams.rejectedAtFrom = rejectedAtDatesSelected.value[0];
+  serverParams.rejectedAtTo = rejectedAtDatesSelected.value[1];
+  loadRequestWorkers();
+}
+
+function onRejectedAtCleared() {
+  rejectedAtDatesSelected.value = [];
+  onRejectedAtSelected();
+}
+
+function loadRequestWorkers() {
+  isLoading.value = true;
+  getAgencyRequestsWorkers(serverParams)
+    .then((response) => {
+      rows.value = response.items.map(i => ({
+        ...i,
+        status: WorkerRequestStatusLabels[i.workerRequestStatus],
+        actions: null,
+        showNotes: false,
+      }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function confirmDelete(worker: any) {
+  currentWorker.value = worker;
+  modalRejectWorker.value = true;
+}
+
+function rejectWorker(comments: string) {
+  modalRejectWorker.value = false;
+  isLoading.value = true;
+  rejectAgencyRequestWorker(serverParams.requestId, currentWorker.value.workerId, { comments }).then(() => {
+    isLoading.value = false;
+    loadRequestWorkers();
+    emit('refreshRequest');
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function showNotes(index: number) {
+  rows.value[index].showNotes = true;
+}
+
+function hideNotes() {
+  rows.value.forEach(r => { r.showNotes = false; });
+}
+
+function onShowModalStartWorking(worker: any) {
+  currentWorker.value = worker;
+  modalStartWorking.value = true;
+}
+
+function onUpdateRequestWorkerStartDate(date: any) {
+  modalStartWorking.value = false;
+  isLoading.value = true;
+  updateAgencyRequestWorkerStartDate(serverParams.requestId, currentWorker.value.id, { startWorking: date }).then(() => {
+    isLoading.value = false;
+    loadRequestWorkers();
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function downloadWorkersReportDocument() {
+  isLoading.value = true;
+  getWorkersReportDocument(serverParams.requestId)
+    .then((response) => {
+      isLoading.value = false;
+      downloadFile(response, `WorkersReport_${serverParams.requestId}`);
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      showAlertError(err);
+    });
+}
+
+function onWorkerBooked() {
+  modalManageWorkers.value = false;
+  loadRequestWorkers();
+  // Emit event to refresh request status (Open/Filled state may have changed)
+  emit('refreshRequest');
+}
+
+function onUpdateNote(row: any, size: number) {
+  row.notesCount = size;
+}
+
+loadRequestWorkers();
 </script>

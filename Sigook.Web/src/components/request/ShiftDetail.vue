@@ -27,25 +27,17 @@
         </ul>
     </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import { hourminutes } from '@/utils/filters';
 
-export default {
-    props: ['shift', 'isLoading'],
-    data() {
-        return {
-            localIsLoading: this.isLoading
-        }
-    },
-    methods: {
-        hourminutes,
-    },
-    watch: {
-        isLoading(newVal) {
-            this.localIsLoading = newVal;
-        }
-    }
-}
+const props = defineProps<{ shift?: any; isLoading?: boolean }>();
+
+const localIsLoading = ref<boolean>(!!props.isLoading);
+
+watch(() => props.isLoading, (newVal) => {
+  localIsLoading.value = !!newVal;
+});
 </script>
 <style lang="scss">
 .table-shift-detail {

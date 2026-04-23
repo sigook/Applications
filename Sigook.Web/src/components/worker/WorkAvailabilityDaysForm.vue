@@ -3,15 +3,15 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerAvailableDays')">
+        <b-field :label="'Available days'">
           <div class="container-flex">
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-              <b-checkbox v-model="allDaysSelected" @input="changeDaysSelected">
+              <b-checkbox v-model="allDaysSelected" @update:modelValue="changeDaysSelected">
                 All Days
               </b-checkbox>
             </div>
             <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-for="day in days" v-bind:key="day.id">
-              <b-checkbox v-model="worker.availabilityDays" :native-value="day" @input="changeAllDays">
+              <b-checkbox v-model="worker.availabilityDays" :native-value="day" @update:modelValue="changeAllDays">
                 {{ day.value }}
               </b-checkbox>
             </div>
@@ -19,61 +19,60 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerAvailabilityDays()">
-          {{ $t("Save") }}
+        <b-button type="is-primary" @click="saveWorkerAvailabilityDays()">
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getDays } from "@/api/catalogApi";
 import { createWorkerAvailabilityDays } from '@/api/workerApi';
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      allDaysSelected: false,
-      days: [],
-      worker: {
-        availabilityDays: []
-      }
-    }
-  },
-  methods: {
-    createWorkerAvailabilityDays() {
-      this.isLoading = true;
-      createWorkerAvailabilityDays(this.data.id, this.worker.availabilityDays)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    changeDaysSelected() {
-      this.worker.availabilityDays = [];
-      if (this.allDaysSelected) {
-        for (let i = 0; i < this.days.length; i++) {
-          this.worker.availabilityDays.push(this.days[i]);
-        }
-      }
-    },
-    changeAllDays() {
-      for (let i = 0; i < this.worker.availabilityDays.length; i++) {
-        this.allDaysSelected = this.worker.availabilityDays.length === this.days.length;
-      }
-    }
-  },
-  async created() {
-    this.days = await getDays();
-    if (this.data != null) {
-      this.worker.availabilityDays = this.data.availabilityDays;
-      this.changeAllDays()
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const allDaysSelected = ref(false);
+const days = ref<any[]>([]);
+const worker = reactive<{ availabilityDays: any[] }>({ availabilityDays: [] });
+
+function saveWorkerAvailabilityDays() {
+  isLoading.value = true;
+  createWorkerAvailabilityDays(props.data.id, worker.availabilityDays)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function changeDaysSelected() {
+  worker.availabilityDays = [];
+  if (allDaysSelected.value) {
+    for (let i = 0; i < days.value.length; i++) {
+      worker.availabilityDays.push(days.value[i]);
     }
   }
 }
+
+function changeAllDays() {
+  for (let i = 0; i < worker.availabilityDays.length; i++) {
+    allDaysSelected.value = worker.availabilityDays.length === days.value.length;
+  }
+}
+
+(async () => {
+  days.value = await getDays();
+  if (props.data != null) {
+    worker.availabilityDays = props.data.availabilityDays;
+    changeAllDays();
+  }
+})();
 </script>

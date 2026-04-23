@@ -3,9 +3,10 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field label="Position">
+        <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
+          :message="formErrors.jobPosition || ''">
           <b-autocomplete :data="filteredPositions" placeholder="Position" v-model="jobPosition" field="value"
-            open-on-focus name="positions" v-validate="'required'">
+            open-on-focus name="positions">
             <template v-slot="props">
               <span class="fz-0">{{ props.option.value }}</span>
               <span v-if="props.option.industry" class="fz-2 d-block">Industry: {{ props.option.industry }}</span>
@@ -13,161 +14,209 @@
           </b-autocomplete>
         </b-field>
       </div>
-      <div v-if="isPayrollManager" class="col-sm-12 col-md-4 col-lg-4 col-padding">
-        <b-field :label="'Agency Rate'" :type="errors.has('rate') ? 'is-danger' : ''"
-          :message="errors.has('rate') ? errors.first('rate') : ''">
-          <b-numberinput v-model="model.rate" name="rate" controls-alignment="right"
-            v-validate="{ required: true, max_value: 999999, min_value: 0.1 }" step="0.01" placeholder="10.00">
+      <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-4 col-lg-4 col-padding">
+        <b-field :label="'Agency Rate'" :type="formErrors.rate ? 'is-danger' : ''"
+          :message="formErrors.rate || ''">
+          <b-numberinput v-model="rate" name="rate" controls-alignment="right" step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
       <div
-        :class="isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
-        <b-field :label="'Worker Rate'" :type="errors.has('workerRate') ? 'is-danger' : ''"
-          :message="errors.has('workerRate') ? errors.first('workerRate') : ''">
-          <b-numberinput v-model="model.workerRate" :disabled="!isPayrollManager" name="workerRate"
-            controls-alignment="right"
-            v-validate="{ required: true, max_value: model.rate > 0 ? model.rate : 50, min_value: 0.1 }" step="0.01"
-            placeholder="10.00">
+        :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        <b-field :label="'Worker Rate'" :type="formErrors.workerRate ? 'is-danger' : ''"
+          :message="formErrors.workerRate || ''">
+          <b-numberinput v-model="workerRate" :disabled="!billingAdmin.isPayrollManager" name="workerRate"
+            controls-alignment="right" step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
       <div
-        :class="isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
-        <b-field :label="'Worker Rate Max'" :type="errors.has('workerRateMax') ? 'is-danger' : ''"
-          :message="errors.has('workerRateMax') ? errors.first('workerRateMax') : ''">
-          <b-numberinput v-model="model.workerRateMax" name="workerRateMax" controls-alignment="right"
-            v-validate="{ required: false, max_value: model.rate > 0 ? model.rate : 50, min_value: model.workerRate > 0 ? model.workerRate : 0 }"
+        :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        <b-field :label="'Worker Rate Max'" :type="formErrors.workerRateMax ? 'is-danger' : ''"
+          :message="formErrors.workerRateMax || ''">
+          <b-numberinput v-model="workerRateMax" name="workerRateMax" controls-alignment="right"
             step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="'Description'" :type="errors.has('description') ? 'is-danger' : ''"
-          :message="errors.has('description') ? errors.first('description') : ''">
-          <b-input type="textarea" v-model="model.description" name="description" v-validate="{ max: 1000 }">
+        <b-field :label="'Description'" :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
+          <b-input type="textarea" v-model="description" name="description">
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="currentPosition">
-        <!-- UPDATE -->
+      <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="props.currentPosition">
         <shift v-if="model.shift" :is-update="true" :current-shift="model.shift"
           @updateModel="(shift) => model.shift = shift" />
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-else>
-        <!-- CREATE -->
         <shift :is-update="false" @updateModel="(shift) => model.shift = shift" />
       </div>
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ currentPosition ? $t('Save') : $t('Create') }}
+          {{ props.currentPosition ? 'Save' : 'Create' }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getJobPositions } from "@/api/catalogApi";
 import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
+import Shift from "../request/ShiftsForm.vue";
+
+const props = defineProps<{ currentPosition?: any; profileId: any }>();
+const emit = defineEmits<{ (e: 'updateContent'): void }>();
+
+const billingAdmin = useBillingAdmin();
+
+const rateRef = ref<number | null>(null);
+const workerRateRef = ref<number | null>(null);
+
+const schema = computed(() => {
+  return yup.object({
+    jobPosition: yup.string().required('Position is required'),
+    rate: yup.number().typeError('Rate is required').required('Rate is required').min(0.1, 'Minimum is 0.1').max(999999),
+    workerRate: yup
+      .number()
+      .typeError('Worker rate is required')
+      .required('Worker rate is required')
+      .min(0.1, 'Minimum is 0.1')
+      .max(rateRef.value && rateRef.value > 0 ? rateRef.value : 50, 'Cannot exceed agency rate'),
+    workerRateMax: yup
+      .number()
+      .nullable()
+      .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
+      .min(workerRateRef.value && workerRateRef.value > 0 ? workerRateRef.value : 0, 'Must be >= worker rate')
+      .max(rateRef.value && rateRef.value > 0 ? rateRef.value : 50, 'Cannot exceed agency rate'),
+    description: yup.string().nullable().transform((v) => (v === '' ? null : v)).max(1000, 'Max 1000 characters'),
+  });
+});
+
+const form = useStickyForm<{
+  jobPosition: string;
+  rate: number | null;
+  workerRate: number | null;
+  workerRateMax: number | null;
+  description: string;
+}>({
+  schema,
+  initialValues: {
+    jobPosition: '',
+    rate: null,
+    workerRate: null,
+    workerRateMax: null,
+    description: '',
   },
-  props: ['currentPosition', 'profileId'],
-  data() {
-    return {
-      isLoading: false,
-      model: {
-        id: null,
-        jobPosition: null,
-        rate: null,
-        otherJobPosition: null,
-        workerRate: null,
-        description: null,
-        workerRateMin: null,
-        workerRateMax: null,
-        shift: null,
-      },
-      jobPositionList: [],
-      jobPosition: ''
+});
+const { jobPosition, rate, workerRate, workerRateMax, description } = form.fields;
+const formErrors = form.errors;
+
+watch(rate, (v) => { rateRef.value = (v as number | null) ?? null; });
+watch(workerRate, (v) => { workerRateRef.value = (v as number | null) ?? null; });
+
+const isLoading = ref(false);
+const model = ref<any>({
+  id: null,
+  jobPosition: null,
+  rate: null,
+  otherJobPosition: null,
+  workerRate: null,
+  description: null,
+  workerRateMin: null,
+  workerRateMax: null,
+  shift: null,
+});
+const jobPositionList = ref<any[]>([]);
+
+const filteredPositions = computed(() => {
+  const search = (jobPosition.value || '').toLowerCase();
+  return jobPositionList.value.filter((jpl: any) => jpl.value.toLowerCase().includes(search));
+});
+
+function validateForm() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    const existingJobPosition = jobPositionList.value.find((jpl: any) => jpl.value === values.jobPosition);
+    const payload = {
+      ...model.value,
+      rate: values.rate,
+      workerRate: values.workerRate,
+      workerRateMin: values.workerRate,
+      workerRateMax: values.workerRateMax,
+      description: values.description,
+      jobPosition: existingJobPosition || null,
+      otherJobPosition: existingJobPosition ? null : values.jobPosition,
+    };
+    if (props.currentPosition) {
+      updateJobPosition(payload, props.currentPosition.id);
+    } else {
+      createJobPosition(payload);
     }
-  },
-  components: {
-    Shift: () => import("../request/ShiftsForm.vue")
-  },
-  methods: {
-    async validateForm() {
-      const existingJobPosition = this.jobPositionList.find(jpl => jpl.value === this.jobPosition);
-      if (existingJobPosition) {
-        this.model.jobPosition = existingJobPosition;
-      } else {
-        this.model.otherJobPosition = this.jobPosition;
-      }
-      this.model.workerRateMin = this.model.workerRate;
-      const result = await this.$validator.validateAll();
-      if (result) {
-        if (this.currentPosition) {
-          this.updateJobPosition(this.currentPosition.id);
-        } else {
-          this.createJobPosition();
-        }
-      } else {
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      }
-    },
-    createJobPosition() {
-      this.isLoading = true;
-      createAgencyCompanyJobPosition(this.profileId, this.model)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('updateContent');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    updateJobPosition(id) {
-      this.isLoading = true;
-      updateAgencyCompanyJobPosition(this.profileId, id, this.model)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('updateContent');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    loadJobPositionById(id) {
-      this.isLoading = true;
-      getAgencyCompanyJobPositionById(this.profileId, id)
-        .then(response => {
-          this.model = response;
-          this.jobPosition = response.value;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-  },
-  async created() {
-    this.isLoading = true;
-    this.jobPositionList = await getJobPositions()
-    if (this.currentPosition && this.currentPosition.id) {
-      this.loadJobPositionById(this.currentPosition.id);
-    }
-    this.isLoading = false;
-  },
-  computed: {
-    filteredPositions() {
-      const position = this.jobPositionList.filter(jpl => jpl.value.toLowerCase().includes(this.jobPosition.toLowerCase()));
-      return position
-    }
-  }
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
+
+function createJobPosition(payload: any) {
+  isLoading.value = true;
+  createAgencyCompanyJobPosition(props.profileId, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateJobPosition(payload: any, id: any) {
+  isLoading.value = true;
+  updateAgencyCompanyJobPosition(props.profileId, id, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function loadJobPositionById(id: any) {
+  isLoading.value = true;
+  getAgencyCompanyJobPositionById(props.profileId, id)
+    .then((response: any) => {
+      model.value = response;
+      form.hydrate({
+        jobPosition: response.value || '',
+        rate: response.rate ?? null,
+        workerRate: response.workerRate ?? null,
+        workerRateMax: response.workerRateMax ?? null,
+        description: response.description || '',
+      });
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+(async () => {
+  isLoading.value = true;
+  jobPositionList.value = await getJobPositions();
+  if (props.currentPosition && props.currentPosition.id) {
+    loadJobPositionById(props.currentPosition.id);
+  }
+  isLoading.value = false;
+})();
 </script>

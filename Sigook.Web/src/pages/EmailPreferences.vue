@@ -2,7 +2,7 @@
   <div class="unsubscribe-container">
     <b-loading v-model="isLoading"></b-loading>
     <h3 class="text-center">Would you like to unsubscribe from these emails?</h3>
-    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage">
+    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage"></p>
     <div>
       <button v-on:click="redirectToHome" type="button" class="background-btn create-btn btn-radius">Cancel
       </button>
@@ -12,51 +12,47 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { getErrorMessage } from '@/utils/toast';
 import { unsubscribe } from '@/api/sharedApi';
 
-export default {
-  name: "EmailPreferences",
-  data() {
-    return {
-      isLoading: false,
-      errorMessage: null
-    }
-  },
-  methods: {
-    async onUnsubscribe() {
+const route = useRoute();
+const isLoading = ref(false);
+const errorMessage = ref<string | null>(null);
 
-      let typeOfUser = this.$route.query.u;
-      let userId = this.$route.query.id;
-      let subscriptionType = this.$route.query.t;
+function redirectToHome() {
+  window.location.href = '/';
+}
 
-      if (!typeOfUser || !userId || !subscriptionType) {
-        this.redirectToHome();
-        return;
-      }
+async function onUnsubscribe() {
+  const typeOfUser = route.query.u;
+  const userId = route.query.id;
+  const subscriptionType = route.query.t;
 
-      const key = `${typeOfUser}${userId}${subscriptionType}`;
-      let alreadyUnsubscribe = window.sessionStorage.getItem(key)
-      if (alreadyUnsubscribe) {
-        this.redirectToHome();
-        return;
-      }
+  if (!typeOfUser || !userId || !subscriptionType) {
+    redirectToHome();
+    return;
+  }
 
-      this.isLoading = true;
-      try {
-        await unsubscribe({ userId: userId as string, typeId: subscriptionType as string });
-        this.isLoading = false;
-        window.sessionStorage.setItem(key, '1');
-        this.redirectToHome();
-      } catch (error) {
-        this.isLoading = false;
-        this.errorMessage = this.getErrorMessage(error);
-        window.sessionStorage.setItem(key, '1');
-      }
-    },
-    redirectToHome() {
-      window.location.href = "/";
-    }
+  const key = `${typeOfUser}${userId}${subscriptionType}`;
+  const alreadyUnsubscribe = window.sessionStorage.getItem(key);
+  if (alreadyUnsubscribe) {
+    redirectToHome();
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    await unsubscribe({ userId: userId as string, typeId: subscriptionType as string });
+    isLoading.value = false;
+    window.sessionStorage.setItem(key, '1');
+    redirectToHome();
+  } catch (error) {
+    isLoading.value = false;
+    errorMessage.value = getErrorMessage(error);
+    window.sessionStorage.setItem(key, '1');
   }
 }
 </script>

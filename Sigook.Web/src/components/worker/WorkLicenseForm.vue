@@ -5,7 +5,7 @@
       <div class="col-12">
         <b-field>
           <template #label>
-            {{ $t("File") }} <span class="has-text-danger">*</span>
+            {{ "File" }} <span class="has-text-danger">*</span>
           </template>
           <div v-if="licenseModal.license && licenseModal.license.fileName" class="selected-file-display">
             <b-icon icon="certificate" size="is-small"></b-icon>
@@ -14,141 +14,167 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedLicenseFile }">
             <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleLicenseFileSelected" class="file-label" rounded>
+              @update:modelValue="handleLicenseFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
-        <b-field :type="errors.has('license description') ? 'is-danger' : ''"
-          :message="errors.has('license description') ? errors.first('license description') : ''">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
           <template #label>
-            {{ $t("Description") }} <span class="has-text-danger">*</span>
+            {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
-          <b-input type="text" v-model="licenseModal.license.description" name="license description"
-            v-validate="'required|max:100'" />
+          <b-input type="text" v-model="description" name="license description" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field label="Number">
-          <b-input type="text" v-model="licenseModal.number" />
+          <b-input type="text" v-model="number" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Issued">
-          <b-datepicker v-model="licenseModal.issued" :focused-date="todayDate" :max-date="todayDate"
+          <b-datepicker v-model="issued" :focused-date="todayDate" :max-date="todayDate"
             position="is-top-left" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('licenseExpires') ? 'is-danger' : ''"
-          :message="errors.has('licenseExpires') ? errors.first('licenseExpires') : ''">
+        <b-field :type="formErrors.expires ? 'is-danger' : ''"
+          :message="formErrors.expires || ''">
           <template #label>
             Expires <span class="has-text-danger">*</span>
           </template>
-          <b-datepicker v-model="licenseModal.expires" :focused-date="todayDate" :min-date="todayDate"
-            position="is-top-left" name="licenseExpires" v-validate="'required'" />
+          <b-datepicker v-model="expires" :focused-date="todayDate" :min-date="todayDate"
+            position="is-top-left" name="licenseExpires" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import * as yup from 'yup';
+import { useAppStore } from '@/stores/app';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerLicenses } from '@/api/workerApi';
 
-export default {
-  props: ["data"],
-  data() {
-    return {
-      todayDate: null,
-      isLoading: false,
-      selectedLicenseFile: null,
-      fileObjects: {
-        license: null
+interface LicenseForm {
+  description: string;
+  number: string;
+  issued: Date | null;
+  expires: Date | null;
+}
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(100, 'Max 100 characters'),
+  number: yup.string().nullable(),
+  issued: yup.mixed().nullable(),
+  expires: yup.mixed().required('Expires is required'),
+});
+
+const form = useStickyForm<LicenseForm>({
+  schema,
+  initialValues: {
+    description: '',
+    number: '',
+    issued: null,
+    expires: null,
+  },
+});
+const { description, number, issued, expires } = form.fields;
+const formErrors = form.errors;
+
+const appStore = useAppStore();
+
+const todayDate = ref<any>(null);
+const isLoading = ref(false);
+const selectedLicenseFile = ref<any>(null);
+const fileObjects = reactive<{ license: any }>({ license: null });
+const licenseModal = ref<any>({
+  license: { fileName: "", description: "" },
+});
+const licenses = ref<any[]>([]);
+
+function handleLicenseFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedLicenseFile.value = null;
+    return;
+  }
+  fileObjects.license = file;
+  const generatedName = generateFileName('License', file.name);
+  licenseModal.value.license = { fileName: generatedName, description: '' };
+  selectedLicenseFile.value = null;
+}
+
+function clearLicenseFile() {
+  fileObjects.license = null;
+  licenseModal.value.license = { fileName: '', description: '' };
+}
+
+async function saveLicenses(values: any) {
+  isLoading.value = true;
+  try {
+    const newLicense = {
+      license: {
+        fileName: licenseModal.value.license.fileName,
+        description: values.description,
       },
-      licenseModal: {
-        license: {
-          fileName: "",
-          description: "",
-        },
-        number: "",
-        issued: null,
-        expires: null,
-      },
-      licenses: [],
+      number: values.number,
+      issued: values.issued,
+      expires: values.expires,
     };
-  },
-  mixins: [toastMixin, multipartUploadMixin],
-  methods: {
-    filename,
-    handleLicenseFileSelected(file) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
-        this.selectedLicenseFile = null;
-        return;
-      }
-      this.fileObjects.license = file;
-      const generatedName = this.generateFileName('License', file.name);
-      this.licenseModal.license = { fileName: generatedName, description: this.licenseModal.license.description || '' };
-      this.selectedLicenseFile = null;
-    },
-    clearLicenseFile() {
-      this.fileObjects.license = null;
-      this.licenseModal.license = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveLicenses();
-          return;
-        }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
-      });
-    },
-    async saveLicenses() {
-      this.isLoading = true;
-      try {
-        const allLicenses = [...this.licenses, this.licenseModal];
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(allLicenses));
-        if (this.fileObjects.license) {
-          const fn = this.licenseModal.license.fileName;
-          formData.append(fn, this.fileObjects.license, fn);
-        }
-        await createWorkerLicenses(this.data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        this.showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
+    const allLicenses = [...licenses.value, newLicense];
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(allLicenses));
+    if (fileObjects.license) {
+      const fn = newLicense.license.fileName;
+      formData.append(fn, fileObjects.license, fn);
     }
-  },
-  created() {
-    if (this.data != null) {
-      for (let i = 0; i < this.data.licenses.length; i++) {
-        this.licenses.push(this.data.licenses[i]);
-      }
-    }
-    this.$store.dispatch("getCurrentDate").then((response) => {
-      this.todayDate = response;
-    });
-  },
-};
+    await createWorkerLicenses(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveLicenses(values);
+  }, () => {
+    showAlertError("Please make sure all required fields are filled out correctly");
+  })();
+}
+
+if (props.data != null) {
+  for (let i = 0; i < props.data.licenses.length; i++) {
+    licenses.value.push(props.data.licenses[i]);
+  }
+}
+appStore.getCurrentDate().then((response: any) => {
+  todayDate.value = response;
+});
 </script>
 
 <style scoped>

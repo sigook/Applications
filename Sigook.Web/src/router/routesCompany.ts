@@ -1,4 +1,4 @@
-import { RouteConfig } from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 import roles from "@/security/roles";
 
 // Lazy loading para rutas de empresa
@@ -12,7 +12,7 @@ const CompanyUserProfile = () => import("@/pages/company/CompanyUserProfile.vue"
 const companyUser = roles.companyUser;
 const company = roles.company;
 
-const routesCompany: RouteConfig[] = [
+const routesCompany: RouteRecordRaw[] = [
   {
     path: "/company-requests",
     component: CompanyRequests,

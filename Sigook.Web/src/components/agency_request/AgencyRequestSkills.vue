@@ -3,68 +3,61 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="col-8 col-padding">
       <b-field label="Skills">
-        <skills-form :existingSkills="data" v-if="request.canEdit" @onPressAdd="(item) => addSkill(item)"
+        <skills-form :existingSkills="data" v-if="props.request.canEdit" @onPressAdd="(item) => addSkill(item)"
           @onDelete="(item) => removeSkill(item)" />
       </b-field>
     </div>
   </section>
 </template>
 
-<script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getAgencyRequestSkill, postAgencyRequestSkill, deleteAgencyRequestSkill } from "@/api/agencyRequestApi";
+import SkillsForm from '../FormSkillAdd.vue';
 
-export default {
-  props: ['request'],
-  data() {
-    return {
-      isLoading: false,
-      data: []
-    }
-  },
-  mixins: [toastMixin],
-  components: {
-    SkillsForm: () => import("../FormSkillAdd.vue")
-  },
-  methods: {
-    loadSkills() {
-      this.isLoading = true;
-      getAgencyRequestSkill(this.request.id)
-        .then(response => {
-          this.isLoading = false;
-          this.data = response;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    addSkill(item) {
-      this.isLoading = true;
-      postAgencyRequestSkill(this.request.id, { skill: item.skill })
-        .then(() => {
-          this.isLoading = false;
-          this.loadSkills()
-        }).catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    removeSkill(item) {
-      this.isLoading = true;
-      deleteAgencyRequestSkill(this.request.id, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.loadSkills()
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    }
-  },
-  created() {
-    this.loadSkills()
-  }
+const props = defineProps<{ request: any }>();
+
+const isLoading = ref(false);
+const data = ref<any[]>([]);
+
+function loadSkills() {
+  isLoading.value = true;
+  getAgencyRequestSkill(props.request.id)
+    .then(response => {
+      isLoading.value = false;
+      data.value = response;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function addSkill(item: any) {
+  isLoading.value = true;
+  postAgencyRequestSkill(props.request.id, { skill: item.skill })
+    .then(() => {
+      isLoading.value = false;
+      loadSkills();
+    }).catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function removeSkill(item: any) {
+  isLoading.value = true;
+  deleteAgencyRequestSkill(props.request.id, item.id)
+    .then(() => {
+      isLoading.value = false;
+      loadSkills();
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+loadSkills();
 </script>

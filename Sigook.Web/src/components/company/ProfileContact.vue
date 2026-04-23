@@ -2,7 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
+      <b-button type="is-ghost" icon-right="plus-circle" @click="openAddContactModal">Add</b-button>
     </b-field>
     <b-table :data="contactPeople" narrowed hoverable :mobile-cards="false" paginated
       pagination-rounded>
@@ -36,57 +36,57 @@
       <div class="p-3">
         <div class="container-flex">
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Title" :type="errors.has('title') ? 'is-danger' : ''"
-              :message="errors.has('title') ? errors.first('title') : ''">
-              <b-select v-model="contact.title" v-validate="'required'" name="title" expanded>
-                <option v-for="(item, index) in $t('TitleList')" :key="'title' + index" :value="item">
+            <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
+              :message="formErrors.title || ''">
+              <b-select v-model="title" name="title" expanded>
+                <option v-for="(item, index) in titleOptions" :key="'title' + index" :value="item">
                   {{ item }}
                 </option>
               </b-select>
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="First Name" :type="errors.has('first name') ? 'is-danger' : ''"
-              :message="errors.has('first name') ? errors.first('first name') : ''">
-              <b-input v-model="contact.firstName" v-validate="'required|max:20|min:2'" name="first name" />
+            <b-field label="First Name" :type="formErrors.firstName ? 'is-danger' : ''"
+              :message="formErrors.firstName || ''">
+              <b-input v-model="firstName" name="first name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Middle Name" :type="errors.has('middle name') ? 'is-danger' : ''"
-              :message="errors.has('middle name') ? errors.first('middle name') : ''">
-              <b-input v-model="contact.middleName" v-validate="'max:20|min:1'" name="middle name" />
+            <b-field label="Middle Name" :type="formErrors.middleName ? 'is-danger' : ''"
+              :message="formErrors.middleName || ''">
+              <b-input v-model="middleName" name="middle name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Last Name" :type="errors.has('last name') ? 'is-danger' : ''"
-              :message="errors.has('last name') ? errors.first('last name') : ''">
-              <b-input v-model="contact.lastName" v-validate="'required|max:20|min:2'" name="last name" />
+            <b-field label="Last Name" :type="formErrors.lastName ? 'is-danger' : ''"
+              :message="formErrors.lastName || ''">
+              <b-input v-model="lastName" name="last name" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Email" :type="errors.has('email') ? 'is-danger' : ''"
-              :message="errors.has('email') ? errors.first('email') : ''">
-              <b-input v-model="contact.email" v-validate="'required|email'" name="email" />
+            <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
+              :message="formErrors.email || ''">
+              <b-input v-model="email" name="email" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-            <b-field label="Position" :type="errors.has('position') ? 'is-danger' : ''"
-              :message="errors.has('position') ? errors.first('position') : ''">
-              <b-input v-model="contact.position" v-validate="'required|max:100|min:3'" name="position" />
+            <b-field label="Position" :type="formErrors.position ? 'is-danger' : ''"
+              :message="formErrors.position || ''">
+              <b-input v-model="position" name="position" />
             </b-field>
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-            <phone-input ref="mobileComponent" :required="true" :defaultValue="contact.mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone) => contact.mobileNumber = phone" />
+            <PhoneInput ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
+              model="Mobile Number" @formattedPhone="(phone: string) => mobileNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-            <phone-input ref="officeComponent" :required="false" :defaultValue="contact.officeNumber"
-              model="Office Number" @formattedPhone="(phone) => contact.officeNumber = phone" />
+            <PhoneInput ref="officeComponent" :required="false" :defaultValue="officeNumber"
+              model="Office Number" @formattedPhone="(phone: string) => officeNumber = phone" />
           </div>
           <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-            <b-field label="Extension" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
-              :message="errors.has('officeNumberExt') ? errors.first('officeNumberExt') : ''">
-              <b-input v-model="contact.officeNumberExt" v-validate="'max:8|min:1|numeric'" name="officeNumberExt" />
+            <b-field label="Extension" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
+              :message="formErrors.officeNumberExt || ''">
+              <b-input v-model="officeNumberExt" name="officeNumberExt" />
             </b-field>
           </div>
         </div>
@@ -98,51 +98,106 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import PhoneInput from "../../components/PhoneInput.vue";
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/api/companyApi';
 
-export default {
-  props: ['companyData', 'isDisabled'],
-  data() {
-    return {
-      isLoading: false,
-      showModal: false,
-      contactPeople: [],
-      contact: {}
-    }
+defineProps<{ companyData?: any; isDisabled?: boolean }>();
+
+const numericExt = yup
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+  .matches(/^\d{1,8}$/, { message: 'Must be 1-8 digits', excludeEmptyString: true });
+
+const schema = yup.object({
+  title: yup.string().required('Title is required'),
+  firstName: yup.string().required('First name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(1, 'Min 1 character').max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  email: yup.string().required('Email is required').email('Invalid email'),
+  position: yup.string().required('Position is required').min(3, 'Min 3 characters').max(100, 'Max 100 characters'),
+  mobileNumber: yup.string().nullable(),
+  officeNumber: yup.string().nullable(),
+  officeNumberExt: numericExt,
+});
+
+const form = useStickyForm<{
+  title: string; firstName: string; middleName: string; lastName: string;
+  email: string; position: string; mobileNumber: string; officeNumber: string; officeNumberExt: string;
+}>({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    position: '',
+    mobileNumber: '',
+    officeNumber: '',
+    officeNumberExt: '',
   },
-  components: {
-    phoneInput: () => import("../../components/PhoneInput.vue")
-  },
-  methods: {
-    async getContactPersons() {
-      this.contactPeople = await getContactPeople();
-    },
-    async removeLine(id) {
-      await deleteContactPerson(id);
-      await this.getContactPersons();
-    },
-    async validateForm() {
-      const phoneValid = await this.$refs.mobileComponent.validatePhone();
-      const officeValid = await this.$refs.officeComponent.validatePhone();
-      const mainFormValid = await this.$validator.validateAll();
-      if (mainFormValid && phoneValid && officeValid) {
-        this.isLoading = true;
-        saveContactPerson(this.contact)
-          .then(async () => {
-            this.isLoading = false;
-            await this.getContactPersons();
-            this.showAlertSuccess('Profile updated');
-          })
-          .catch((error) => {
-            this.isLoading = false;
-            this.showAlertError(error.data);
-          });
-      }
-    }
-  },
-  async created() {
-    await this.getContactPersons();
-  }
+});
+const {
+  title, firstName, middleName, lastName, email, position,
+  mobileNumber, officeNumber, officeNumberExt,
+} = form.fields;
+const formErrors = form.errors;
+
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+const isLoading = ref(false);
+const showModal = ref(false);
+const contactPeople = ref<any[]>([]);
+const mobileComponent = ref<any>(null);
+const officeComponent = ref<any>(null);
+
+function openAddContactModal() {
+  form.resetAll();
+  showModal.value = true;
 }
+
+async function getContactPersons() {
+  contactPeople.value = await getContactPeople();
+}
+
+async function removeLine(id: any) {
+  await deleteContactPerson(id);
+  await getContactPersons();
+}
+
+async function validateForm() {
+  form.markInteracted();
+  const phoneValid = await mobileComponent.value?.validatePhone();
+  const officeValid = await officeComponent.value?.validatePhone();
+  form.handleSubmit((values) => {
+    if (!phoneValid || !officeValid) return;
+    isLoading.value = true;
+    const contact = {
+      ...values,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+    };
+    saveContactPerson(contact)
+      .then(async () => {
+        isLoading.value = false;
+        showModal.value = false;
+        form.resetAll();
+        await getContactPersons();
+        showAlertSuccess('Profile updated');
+      })
+      .catch((error: any) => {
+        isLoading.value = false;
+        showAlertError(error.data);
+      });
+  })();
+}
+
+(async () => {
+  await getContactPersons();
+})();
 </script>

@@ -1,4 +1,4 @@
-import { RouteConfig } from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 import roles from "@/security/roles";
 import {
   loadAgencyCompaniesResolver,
@@ -32,7 +32,7 @@ const agencyPersonnel = roles.agencyPersonnel;
 const payroll = roles.payroll;
 const admin = roles.admin;
 
-const routesAgency: RouteConfig[] = [
+const routesAgency: RouteRecordRaw[] = [
   {
     path: "/agency-requests",
     component: AgencyRequests,

@@ -21,19 +21,20 @@
         </div>
       </div>
       <div>
-        <floating-menu class="is-inline-block">
-          <template slot="options">
-            <button class="floating-menu-item" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
-              <span>Approve to work</span>
-            </button>
-            <button class="floating-menu-item" v-if="worker.approvedToWork" @click="confirmDelete(worker)">
-              <span>Reject to work</span>
-            </button>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block">
+          <template #trigger>
+            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
-        </floating-menu>
+          <b-dropdown-item aria-role="listitem" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
+            Approve to work
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" v-if="worker.approvedToWork" @click="confirmDelete(worker)">
+            Reject to work
+          </b-dropdown-item>
+        </b-dropdown>
       </div>
     </section>
-    <b-tabs v-model="currentTab" @input="changeTab">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Profile" value="profile">
         <div v-if="visitedTabs.includes('profile')" class="wrapper-request">
         <div class="container-flex">
@@ -56,7 +57,7 @@
 
             <span class="line-gray" />
             <section class="worker-information">
-              <h3>{{ $t("WorkerWorkInformation") }}</h3>
+              <h3>{{ "Work information" }}</h3>
               <availability :worker="worker" @updateProfile="() => loadWorker()" />
               <availability-times :worker="worker" @updateProfile="() => loadWorker()" />
               <availability-days :worker="worker" @updateProfile="() => loadWorker()" />
@@ -69,16 +70,16 @@
             <skills :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <b-checkbox v-model="worker.dnu" @input="toggleWorkerProfileDNU"
+            <b-checkbox v-model="worker.dnu" @update:modelValue="toggleWorkerProfileDNU"
               :disabled="hasDnuPermission">
-              {{ $t("DNU") }}
+              {{ "DNU" }}
             </b-checkbox>
 
             <span class="line-gray" />
-            <licenses :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <licenses v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
-            <certificates :worker.sync="worker" @updateProfile="() => loadWorker()" />
+            <certificates v-model:worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray"></span>
             <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
@@ -86,7 +87,7 @@
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
               <div class="button-right">
-                <h3>{{ $t("WorkerWorkExperience") }}</h3>
+                <h3>{{ "Work Experience" }}</h3>
                 <button class="outline-btn md-btn orange-button btn-radius" @click="modalWorkExperience = true">
                   Add experience +
                 </button>
@@ -106,7 +107,7 @@
                       <div class="modal-container modal-light overflow-initial">
                         <span class="fz1 fw-700">Work Experience</span>
                         <button @click="modalWorkExperience = false" class="cross-icon">
-                          {{ $t("Close") }}
+                          {{ "Close" }}
                         </button>
                         <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
                       </div>
@@ -119,7 +120,7 @@
             <span class="line-gray" />
 
             <span class="line-gray" id="comments" />
-            <comments v-if="comments" :user-id="this.worker.workerId" :data="comments" :size-comments="this.commentSize"
+            <comments v-if="commentsData" :user-id="worker.workerId" :data="commentsData" :size-comments="commentSize"
               @newComment="() => updateComments()" @changePage="(page) => changePageComments(page)" />
           </section>
           <aside class="col-md-3 col-sm-12 section-right">
@@ -128,10 +129,10 @@
         </div>
         </div>
       </b-tab-item>
-      <b-tab-item label="Settings" value="workerSettings" v-if="isPayrollManager">
-        <worker-settings v-if="visitedTabs.includes('workerSettings')" :worker.sync="worker" />
+      <b-tab-item label="Settings" value="workerSettings" v-if="billingAdmin.isPayrollManager">
+        <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
       </b-tab-item>
-      <b-tab-item label="PayStubs" value="wageHistory" v-if="isPayrollManager">
+      <b-tab-item label="PayStubs" value="wageHistory" v-if="billingAdmin.isPayrollManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
       </b-tab-item>
       <b-tab-item label="Timesheet" value="timeSheetHistory">
@@ -144,174 +145,164 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { lowercase } from '@/utils/filters';
+import imageDetail from '@/components/worker/WorkImageDetail.vue';
+import Comments from '@/components/Comments.vue';
+import workExperienceForm from '@/components/worker/WorkExperienceForm.vue';
+import workExperienceDetail from '@/components/worker/WorkExperienceDetail.vue';
+import socialInsurance from '@/components/worker/WorkSinDetail.vue';
+import basicInformation from '@/components/worker/WorkBasicInformationDetail.vue';
+import emergencyInformation from '@/components/worker/WorkEmergencyInformationDetail.vue';
+import documents from '@/components/worker/WorkDocumentsDetail.vue';
+import resume from '@/components/worker/WorkResumeDetail.vue';
+import contactInformation from '@/components/worker/WorkContactInformationDetail.vue';
+import emailDetail from '@/components/worker/WorkEmailDetail.vue';
+import availability from '@/components/worker/WorkAvailabilitiesDetail.vue';
+import availabilityTimes from '@/components/worker/WorkAvailabilityTimesDetail.vue';
+import availabilityDays from '@/components/worker/WorkAvailabilityDaysDetail.vue';
+import locationPreferences from '@/components/worker/WorkLocationPreferencesDetail.vue';
+import lift from '@/components/worker/WorkLiftDetail.vue';
+import languages from '@/components/worker/WorkLanguagesDetail.vue';
+import skills from '@/components/worker/WorkSkillsDetail.vue';
+import licenses from '@/components/worker/WorkLicenseDetail.vue';
+import certificates from '@/components/worker/WorkCertificatesDetail.vue';
+import workerSettings from '@/components/worker/WorkerSettings.vue';
+import wageHistory from '@/components/worker/WorkWageHistory.vue';
+import requestHistory from '@/components/agency/AgencyWorkerRequestHistory.vue';
+import timeSheetHistory from '@/components/worker/TimeSheetHistory.vue';
+import notes from '@/components/worker/Notes.vue';
+import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
 
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  data() {
-    return {
-      currentJobEx: 0,
-      isLoading: true,
-      commentSize: 10,
-      commentPageIndex: 1,
-      modalWorkExperience: false,
-      currentTab: "profile",
-      visitedTabs: ["profile"],
-      worker: null,
-      comments: {}
-    };
-  },
-  components: {
-    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
-    Comments: () => import("../../components/Comments.vue"),
-    workExperienceForm: () => import("../../components/worker/WorkExperienceForm.vue"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue"),
-    socialInsurance: () => import("../../components/worker/WorkSinDetail.vue"),
-    basicInformation: () => import("../../components/worker/WorkBasicInformationDetail.vue"),
-    emergencyInformation: () => import("../../components/worker/WorkEmergencyInformationDetail.vue"),
-    documents: () => import("../../components/worker/WorkDocumentsDetail.vue"),
-    resume: () => import("../../components/worker/WorkResumeDetail.vue"),
-    contactInformation: () => import("../../components/worker/WorkContactInformationDetail.vue"),
-    emailDetail: () => import("../../components/worker/WorkEmailDetail.vue"),
-    availability: () => import("../../components/worker/WorkAvailabilitiesDetail.vue"),
-    availabilityTimes: () => import("../../components/worker/WorkAvailabilityTimesDetail.vue"),
-    availabilityDays: () => import("../../components/worker/WorkAvailabilityDaysDetail.vue"),
-    locationPreferences: () => import("../../components/worker/WorkLocationPreferencesDetail.vue"),
-    lift: () => import("../../components/worker/WorkLiftDetail.vue"),
-    languages: () => import("../../components/worker/WorkLanguagesDetail.vue"),
-    skills: () => import("../../components/worker/WorkSkillsDetail.vue"),
-    licenses: () => import("../../components/worker/WorkLicenseDetail.vue"),
-    certificates: () => import("../../components/worker/WorkCertificatesDetail.vue"),
-    workerSettings: () => import('@/components/worker/WorkerSettings.vue'),
-    wageHistory: () => import("../../components/worker/WorkWageHistory.vue"),
-    requestHistory: () => import("../../components/agency/AgencyWorkerRequestHistory.vue"),
-    timeSheetHistory: () => import("../../components/worker/TimeSheetHistory.vue"),
-    notes: () => import("../../components/worker/Notes.vue"),
-    FloatingMenu: () => import("../../components/FloatingMenuDots.vue"),
-    otherDocuments: () => import("../../components/worker/WorkerOtherDocumentsDetail.vue"),
-  },
-  async created() {
-    this.loadWorker();
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-  },
-  methods: {
-    lowercase,
-    workerColor,
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: `/agency-workers/worker/${this.$route.params.id}`,
-        query: {
-          tab: tab,
-        },
-      });
-    },
-    updateComments() {
-      this.isLoading = true;
-      getCommentsWorker({
-        workerId: this.worker.workerId,
-        size: this.commentSize,
-        pageIndex: this.commentPageIndex,
-      })
-        .then((data) => {
-          this.comments = data;
-          this.isLoading = false;
-        });
-    },
-    updateExperience() {
-      this.modalWorkExperience = false;
-      this.loadWorker();
-    },
-    changePageComments(page) {
-      this.commentPageIndex = page;
-      this.updateComments();
-    },
-    loadWorker() {
-      this.isLoading = true;
-      getAgencyWorker(this.$route.params.id)
-        .then((worker) => {
-          this.isLoading = false;
-          this.worker = worker;
-          this.updateComments();
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    toggleWorkerProfileDNU() {
-      this.isLoading = true;
-      updateAgencyWorkerProfileDNU(this.worker.id)
-        .then(() => {
-          this.showAlertSuccess(this.$t("Updated"));
-          this.isLoading = false;
-          this.loadWorker();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-          this.loadWorker();
-        });
-    },
-    confirmDelete(worker) {
-      this.showAlertConfirm(
-        this.$t("AreYouSure"),
-        this.$t("YouWantToDisableTheWorker") +
-        ". " +
-        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
-      )
-        .then((response) => {
-          if (response) {
-            this.onUpdateApprovedToWork(worker);
-          }
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-    onUpdateApprovedToWork(worker) {
-      this.isLoading = true;
-      updateApprovedToWork(worker.id)
-        .then(() => {
-          this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
-          this.loadWorker();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-          this.loadWorker();
-        });
-    },
-  },
-  computed: {
-    hasDnuPermission() {
-      if (!this.worker.dnu) {
-        return false;
-      } else if (
-        this.worker.dnu && this.isPayrollManager
-      ) {
-        return false;
-      } else {
-        return true;
-      }
-    },
+const route = useRoute();
+const router = useRouter();
+const billingAdmin = useBillingAdmin();
+
+const currentJobEx = ref(0);
+const isLoading = ref(true);
+const commentSize = ref(10);
+const commentPageIndex = ref(1);
+const modalWorkExperience = ref(false);
+const currentTab = ref<string>('profile');
+const visitedTabs = ref<string[]>(['profile']);
+const worker = ref<any>(null);
+const commentsData = ref<any>({});
+
+const hasDnuPermission = computed(() => {
+  if (!worker.value.dnu) {
+    return false;
+  } else if (worker.value.dnu && billingAdmin.isPayrollManager) {
+    return false;
   }
-};
+  return true;
+});
+
+loadWorker();
+if (route.query && route.query.tab) {
+  currentTab.value = route.query.tab as string;
+  if (!visitedTabs.value.includes(route.query.tab as string)) {
+    visitedTabs.value.push(route.query.tab as string);
+  }
+}
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: `/agency-workers/worker/${route.params.id}`,
+    query: { tab: tab },
+  });
+}
+
+function updateComments() {
+  isLoading.value = true;
+  getCommentsWorker({
+    workerId: worker.value.workerId,
+    size: commentSize.value,
+    pageIndex: commentPageIndex.value,
+  }).then((data) => {
+    commentsData.value = data;
+    isLoading.value = false;
+  });
+}
+
+function updateExperience() {
+  modalWorkExperience.value = false;
+  loadWorker();
+}
+
+function changePageComments(page: number) {
+  commentPageIndex.value = page;
+  updateComments();
+}
+
+function loadWorker() {
+  isLoading.value = true;
+  getAgencyWorker(route.params.id as any)
+    .then((w: any) => {
+      isLoading.value = false;
+      worker.value = w;
+      updateComments();
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function toggleWorkerProfileDNU() {
+  isLoading.value = true;
+  updateAgencyWorkerProfileDNU(worker.value.id)
+    .then(() => {
+      showAlertSuccess('Updated');
+      isLoading.value = false;
+      loadWorker();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+      loadWorker();
+    });
+}
+
+function confirmDelete(w: any) {
+  showAlertConfirm(
+    'Are you sure?',
+    'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
+  )
+    .then((response) => {
+      if (response) {
+        onUpdateApprovedToWork(w);
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
+function onUpdateApprovedToWork(w: any) {
+  isLoading.value = true;
+  updateApprovedToWork(w.id)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      loadWorker();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+      loadWorker();
+    });
+}
 </script>
 
 <style lang="scss" scoped>

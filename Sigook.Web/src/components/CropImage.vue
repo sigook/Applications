@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2 class="bg-dark">{{ $t("MoveAndScale")}}</h2>
+        <h2 class="bg-dark">{{ "Move and scale"}}</h2>
         <vue-cropper
                 ref='cropper'
                 :guides="true"
@@ -24,48 +24,44 @@
             </div>
 
             <div class="actions">
-                <button @click="closeModal" type="button" class="background-btn gray-light-button sm-btn">{{ $t("Cancel")}}</button>
-                <button @click="uploadCroppedImage()" type="button" class="background-btn primary-button sm-btn">{{ $t("CropAndUpload")}}</button>
+                <button @click="closeModal" type="button" class="background-btn gray-light-button sm-btn">{{ "Cancel"}}</button>
+                <button @click="uploadCroppedImage()" type="button" class="background-btn primary-button sm-btn">{{ "Crop and Upload"}}</button>
             </div>
 
         </div>
 
     </div>
 </template>
-<script lang="ts">
-    export default {
-        props: ['image'],
-        data(){
-          return {
-              imgSrc: null,
-              cropImage: null
-          }
-        },
-        components: {
-            VueCropper: () => import("vue-cropperjs")
-        },
-        methods: {
-            uploadCroppedImage() {
-                this.$refs.cropper.getCroppedCanvas().toBlob((blob) => {
-                    let extension = blob.type.split("/");
-                    extension = extension[1];
+<script setup lang="ts">
+import { ref, defineAsyncComponent } from 'vue';
+import 'cropperjs/dist/cropper.css';
 
-                    let file = new File([blob], "uploaded_file." + extension, { type: blob.type, lastModified: Date.now() });
-                    this.$emit('onCrop', file);
+const VueCropper = defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as any).default));
 
-                });
-            },
-            rotate(rotationAngle) {
-                this.$refs.cropper.rotate(rotationAngle);
-            },
-            closeModal(){
-                this.$emit('closeModal');
-            },
+defineProps<{ image?: string }>();
+const emit = defineEmits<{
+  (e: 'onCrop', file: File): void;
+  (e: 'closeModal'): void;
+}>();
 
+const cropper = ref<any>(null);
 
+function uploadCroppedImage() {
+  cropper.value.getCroppedCanvas().toBlob((blob: Blob) => {
+    const parts = blob.type.split("/");
+    const extension = parts[1];
+    const file = new File([blob], "uploaded_file." + extension, { type: blob.type, lastModified: Date.now() });
+    emit('onCrop', file);
+  });
+}
 
-        }
-    }
+function rotate(rotationAngle: number) {
+  cropper.value.rotate(rotationAngle);
+}
+
+function closeModal() {
+  emit('closeModal');
+}
 </script>
 <style lang="scss">
 
@@ -102,7 +98,7 @@
                 margin-left: 5px;
             }
         }
-        
+
         @media(max-width: 767px){
             .actions {
                 display: flex;}

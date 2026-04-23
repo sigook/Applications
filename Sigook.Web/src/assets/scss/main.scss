@@ -24,7 +24,7 @@ body {
 }
 
 .app-section-bg {
-  background: url("assets/images/app_mobile_home_bg.png") no-repeat center;
+  background: url("../images/app_mobile_home_bg.png") no-repeat center;
   background-size: contain;
 
   @include only-mobile {
@@ -47,7 +47,7 @@ body {
 }
 
 .start-working-section {
-  background: url("assets/images/start_working_home_section.png") center no-repeat;
+  background: url("../images/start_working_home_section.png") center no-repeat;
   background-size: cover;
 }
 
@@ -61,7 +61,7 @@ body {
 }
 
 .looking-for-worker-section {
-  background: url("assets/images/looking_for_worker_home_section.png") center no-repeat;
+  background: url("../images/looking_for_worker_home_section.png") center no-repeat;
   background-size: cover;
 
   > div {

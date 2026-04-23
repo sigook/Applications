@@ -4,7 +4,7 @@
     <div>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -17,7 +17,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -26,7 +26,7 @@
           <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.fullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">
@@ -43,15 +43,15 @@
           </b-table-column>
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
           <b-table-column field="requestsNumberId" label="Request ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.requestId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.requests && props.row.requests.length > 0">
@@ -68,7 +68,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">{{ dateMonth(props.row.createdAt) }}</template>
@@ -76,7 +76,7 @@
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.skills.length > 0">
@@ -91,7 +91,7 @@
           <b-table-column field="isCurrentlyWorking" label="Details" searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="featuresSelected" autocomplete :data="features" open-on-focus
-                field="value" icon="label" placeholder="Select Details" @input="onFeatureChange" append-to-body>
+                field="value" icon="label" placeholder="Select Details" @update:modelValue="onFeatureChange" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -108,96 +108,96 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRouter } from 'vue-router';
+import { showAlertError } from "@/utils/toast";
 import { workerFeatures as features } from '@/constants/workerFeatures';
-import { phoneMask as mask } from '@/constants/phoneMask';
+import { formatPhone } from '@/utils/phoneFormat';
 import { dateMonth } from "@/utils/filters";
 import { getAgencyWorkers } from "@/api/agencyWorkerApi";
 
-export default {
-  props: ['company'],
-  data() {
-    const companyProfileId = this.company.id;
-    return {
-      mask,
-      features,
-      isLoading: false,
-      totalItems: 0,
-      createdAtDatesSelected: [],
-      featuresSelected: [],
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30,
-        companyProfileId: companyProfileId
-      }
-    }
-  },
-  methods: {
-    dateMonth,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getAgencyCompanyWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'fullName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'numberId':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'requestsNumberId':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'skills':
-          this.serverParams.sortBy = 4;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
-    },
-    onCellClick(row) {
-      this.$router.push(`/agency-workers/worker/${row.id}`);
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getAgencyCompanyWorkers();
-      }
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.getAgencyCompanyWorkers();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onFeatureChange() {
-      this.serverParams.features = this.featuresSelected.map(fs => fs.id);
-      this.getAgencyCompanyWorkers();
-    },
-    getAgencyCompanyWorkers() {
-      this.isLoading = true;
-      getAgencyWorkers(this.serverParams)
-        .then(response => {
-          this.rows = response.items;
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        }).catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        })
-    },
-  },
-  created() {
-    this.getAgencyCompanyWorkers();
+const props = defineProps<{ company: any }>();
+const router = useRouter();
+
+const isLoading = ref(false);
+const totalItems = ref(0);
+const createdAtDatesSelected = ref<any[]>([]);
+const featuresSelected = ref<any[]>([]);
+const rows = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+  companyProfileId: props.company.id,
+});
+
+function onPageChange(params: any) {
+  serverParams.pageIndex = params;
+  getAgencyCompanyWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'fullName':
+      serverParams.sortBy = 0;
+      break;
+    case 'numberId':
+      serverParams.sortBy = 1;
+      break;
+    case 'requestsNumberId':
+      serverParams.sortBy = 2;
+      break;
+    case 'createdAt':
+      serverParams.sortBy = 3;
+      break;
+    case 'skills':
+      serverParams.sortBy = 4;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  getAgencyCompanyWorkers();
+}
+
+function onCellClick(row: any) {
+  router.push(`/agency-workers/worker/${row.id}`);
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getAgencyCompanyWorkers();
   }
 }
+
+function onCreatedAtSelected() {
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  getAgencyCompanyWorkers();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onFeatureChange() {
+  serverParams.features = featuresSelected.value.map(fs => fs.id);
+  getAgencyCompanyWorkers();
+}
+
+function getAgencyCompanyWorkers() {
+  isLoading.value = true;
+  getAgencyWorkers(serverParams)
+    .then(response => {
+      rows.value = response.items;
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    }).catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+getAgencyCompanyWorkers();
 </script>

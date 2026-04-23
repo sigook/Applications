@@ -1,0 +1,21 @@
+# Reusable Node.js setup via the official NodeTool task.
+# Downloads + activates the requested Node version on any agent (no NVM dependency).
+
+parameters:
+  - name: nodeVersion
+    type: string
+    default: '22.x'
+    displayName: 'Node.js version spec (e.g. 22.x, 20.19.0)'
+
+steps:
+  - task: NodeTool@0
+    displayName: 'Setup Node.js ${{ parameters.nodeVersion }}'
+    inputs:
+      versionSpec: '${{ parameters.nodeVersion }}'
+
+  - script: |
+      echo "Node version: $(node --version)"
+      echo "NPM version: $(npm --version)"
+      echo "Which node: $(which node)"
+      echo "Which npm: $(which npm)"
+    displayName: 'Verify Node.js Installation'

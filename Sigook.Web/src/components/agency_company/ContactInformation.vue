@@ -3,39 +3,39 @@
     <div class="highlight-content" v-if="company">
       <div class="d-inline-flex relative mr-3">
         <div class="item">
-          <span class="fw-700">{{ $t('Phone') }}</span>
+          <span class="fw-700">{{ 'Phone' }}</span>
           <p v-if="company.phone">
             {{ company.phone }}
             <i v-show="company.phoneExt">
-              {{ $t('Ext') }} {{ company.phoneExt }}
+              {{ 'Ext.' }} {{ company.phoneExt }}
             </i>
           </p>
           <p v-else class="op3">Phone</p>
         </div>
 
         <div class="item" v-if="company.fax">
-          <span class="fw-700">{{ $t('Fax') }}</span>
+          <span class="fw-700">{{ 'Fax' }}</span>
           <p>{{ company.fax }}
             <i v-show="company.faxExt">
-              {{ $t('Ext') }} {{ company.faxExt }}</i>
+              {{ 'Ext.' }} {{ company.faxExt }}</i>
           </p>
         </div>
 
         <div class="item" v-if="company.website">
-          <span class="fw-700">{{ $t('CompanyWebsite') }}</span>
+          <span class="fw-700">{{ 'Website' }}</span>
           <p class="ellipsis-150 block">
             <a :href="getFullUrl(company.website)" target="_blank">{{ company.website }}</a>
           </p>
         </div>
-        <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModal = true">{{ $t("Edit") }}</button>
+        <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModal = true">{{ "Edit" }}</button>
       </div>
       <div class="d-inline-flex relative">
         <div class="item">
-          <span class="fw-700">{{ $t('Email') }}</span>
+          <span class="fw-700">{{ 'Email' }}</span>
           <p class="word-break">{{ company.email }}</p>
         </div>
         <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModalUpdateEmail = true">
-          {{ $t("Edit") }}
+          {{ "Edit" }}
         </button>
       </div>
     </div>
@@ -51,61 +51,57 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import DialogCompanyUpdateEmail from "@/components/company/DialogCompanyUpdateEmail.vue";
+import ContactInformationForm from "@/components/agency_company/ContactInformationForm.vue";
 
-export default {
-  props: ['company'],
-  data() {
-    return {
-      showModal: false,
-      showModalUpdateEmail: false,
-      localCompany: JSON.parse(JSON.stringify(this.company)),
-      model: {
-        phone: this.company.phone,
-        phoneExt: this.company.phoneExt,
-        fax: this.company.fax,
-        faxExt: this.company.faxExt,
-        website: this.company.website
-      },
-      profileId: this.$route.params.id
-    }
-  },
-  watch: {
-    company: {
-      handler(newVal) {
-        this.localCompany = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  methods: {
-    closeEditModal() {
-      this.showModal = false;
-      this.model = {
-        phone: this.company.phone,
-        phoneExt: this.company.phoneExt,
-        fax: this.company.fax,
-        faxExt: this.company.faxExt,
-        website: this.company.website
-      }
-    },
-    closeEditEmailModal(closeModal, newEmail) {
-      this.showModalUpdateEmail = false;
-      if (newEmail) {
-        this.localCompany.email = newEmail;
-        this.$emit('update:company', this.localCompany);
-      }
-    },
-    getFullUrl(url) {
-      if (url.includes('http')) {
-        return url
-      }
-      return `https://${url}`
-    }
-  },
-  components: {
-    DialogCompanyUpdateEmail: () => import("@/components/company/DialogCompanyUpdateEmail.vue"),
-    ContactInformationForm: () => import("@/components/agency_company/ContactInformationForm.vue"),
-  },
+const props = defineProps<{ company: any }>();
+const emit = defineEmits<{ (e: 'update:company', value: any): void }>();
+
+const route = useRoute();
+
+const showModal = ref(false);
+const showModalUpdateEmail = ref(false);
+const localCompany = ref<any>(JSON.parse(JSON.stringify(props.company)));
+const model = reactive<any>({
+  phone: props.company.phone,
+  phoneExt: props.company.phoneExt,
+  fax: props.company.fax,
+  faxExt: props.company.faxExt,
+  website: props.company.website,
+});
+const profileId = route.params.id;
+
+watch(() => props.company, (newVal) => {
+  localCompany.value = JSON.parse(JSON.stringify(newVal));
+}, { deep: true });
+
+function closeEditModal() {
+  showModal.value = false;
+  model.phone = props.company.phone;
+  model.phoneExt = props.company.phoneExt;
+  model.fax = props.company.fax;
+  model.faxExt = props.company.faxExt;
+  model.website = props.company.website;
 }
+
+function closeEditEmailModal(_closeModal: any, newEmail: string) {
+  showModalUpdateEmail.value = false;
+  if (newEmail) {
+    localCompany.value.email = newEmail;
+    emit('update:company', localCompany.value);
+  }
+}
+
+function getFullUrl(url: string) {
+  if (url.includes('http')) {
+    return url;
+  }
+  return `https://${url}`;
+}
+
+// Preserve profileId reference for potential template use
+void profileId;
 </script>

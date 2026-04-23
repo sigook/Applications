@@ -47,14 +47,10 @@ stages:
           - checkout: self
             displayName: 'Checkout Repository'
 
-          # Setup Node.js via NVM (pre-installed on VM)
-          - script: |
-              export NVM_DIR="$HOME/.nvm"
-              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm use sigook-web  # Alias for Node.js 18
-              echo "Node version: $(node --version)"
-              echo "NPM version: $(npm --version)"
-            displayName: 'Setup Node.js 18 via NVM'
+          # Setup Node.js (shared template — Vite 8 requires Node ^20.19 || >=22.12)
+          - template: templates/node-setup.yml
+            parameters:
+              nodeVersion: '22'
 
           # Cache node_modules for faster builds
           - task: Cache@2
@@ -104,14 +100,16 @@ stages:
               environmentVariableName: 'buildEnvironment'
               stepName: 'SetDockerTag'
 
-          # Replace tokens in public files (version number)
+          # Replace tokens in index.html (root) + public/*.json (version.json etc.)
+          # Vite 3+ moved index.html to the project root — previously was in public/.
           - task: qetza.replacetokens.replacetokens-task.replacetokens@6
             displayName: 'Set Version in index.html and version.json'
             inputs:
-              root: '$(Build.SourcesDirectory)/Sigook.Web/public'
+              root: '$(Build.SourcesDirectory)/Sigook.Web'
               sources: |
-                **/*.html
-                **/*.json
+                index.html
+                public/**/*.html
+                public/**/*.json
               tokenPattern: 'custom'
               tokenPrefix: '#{'
               tokenSuffix: '}#'

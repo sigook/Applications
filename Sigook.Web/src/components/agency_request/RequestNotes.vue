@@ -40,53 +40,46 @@
         <!-- end CREATE custom modal -->
     </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { showAlertError } from "@/utils/toast";
 import { emailName, dateFromNow } from '@/utils/filters';
-import toastMixin from "@/mixins/toastMixin";
 import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
   updateAgencyRequestNote,
-  deleteAgencyRequestNote,
+  deleteAgencyRequestNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+import ModalNotes from '../notes/ModalNotes.vue';
 
-export default {
-    props: ['canEdit'],
-    data() {
-        return {
-            showModalNotes: false,
-            profileId: this.$route.params.id,
-            getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination),
-            createNote: ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model),
-            updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model),
-            deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id),
-            notesList: null
-        }
-    },
-    mixins: [toastMixin],
-    components: {
-        ModalNotes: () => import("../notes/ModalNotes.vue")
-    },
-    methods: {
-        emailName,
-        dateFromNow,
-        loadFirstNotes(){
-            getAgencyRequestNotes(this.profileId, {page: 1, size: 3})
-                    .then(response => {
-                        this.notesList = response;
-                    })
-                    .catch(error => {
-                        this.showAlertError(error)
-                    })
-        },
-        onCloseModalNotes(){
-            this.showModalNotes = false;
-            this.loadFirstNotes();
-        }
-    },
-    created() {
-        this.loadFirstNotes();
-    }
+defineProps<{ canEdit?: boolean }>();
+
+const route = useRoute();
+
+const showModalNotes = ref(false);
+const profileId = route.params.id as string;
+const getNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination);
+const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model);
+const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model);
+const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id);
+const notesList = ref<any>(null);
+
+function loadFirstNotes() {
+    getAgencyRequestNotes(profileId, { page: 1, size: 3 })
+        .then(response => {
+            notesList.value = response;
+        })
+        .catch(error => {
+            showAlertError(error);
+        });
 }
+
+function onCloseModalNotes() {
+    showModalNotes.value = false;
+    loadFirstNotes();
+}
+
+loadFirstNotes();
 </script>

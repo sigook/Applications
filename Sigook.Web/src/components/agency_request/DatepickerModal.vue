@@ -13,37 +13,31 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
 import dayjs from "dayjs";
 
-export default {
-  props: ['startWorking'],
-  data() {
-    return {
-      today: new Date(),
-      localStartWorking: this.startWorking ? new Date(this.startWorking) : dayjs().toDate(),
-    }
-  },
-  watch: {
-    startWorking(newVal) {
-      this.localStartWorking = newVal ? new Date(newVal) : dayjs().toDate();
-    }
-  },
-  methods: {
-    bookWorker() {
-      this.$emit('update:startWorking', this.localStartWorking);
-      this.$emit('onSelectCalendar', this.localStartWorking)
-    }
-  },
-  computed: {
-    minDate() {
-      return dayjs().subtract(1, 'month').toDate();
-    }
-  },
-  created() {
-    if (!this.startWorking) {
-      this.localStartWorking = dayjs().toDate();
-    }
-  }
+const props = defineProps<{ startWorking?: any }>();
+const emit = defineEmits<{
+  (e: 'update:startWorking', value: Date): void;
+  (e: 'onSelectCalendar', value: Date): void;
+}>();
+
+const today = new Date();
+const localStartWorking = ref<Date>(props.startWorking ? new Date(props.startWorking) : dayjs().toDate());
+
+watch(() => props.startWorking, (newVal) => {
+  localStartWorking.value = newVal ? new Date(newVal) : dayjs().toDate();
+});
+
+const minDate = computed(() => dayjs().subtract(1, 'month').toDate());
+
+function bookWorker() {
+  emit('update:startWorking', localStartWorking.value);
+  emit('onSelectCalendar', localStartWorking.value);
+}
+
+if (!props.startWorking) {
+  localStartWorking.value = dayjs().toDate();
 }
 </script>

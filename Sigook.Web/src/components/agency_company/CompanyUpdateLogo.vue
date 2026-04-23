@@ -1,68 +1,62 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <transition name="modal">
-      <div class="vue-modal">
+    <div class="vue-modal">
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container update-logo-modal">
               <span class="fz1 fw-700 ">Logo</span>
-              <button @click="cancelUpdate" type="button" class="cross-icon">{{ $t('Close') }}</button>
+              <button @click="cancelUpdate" type="button" class="cross-icon">{{ 'Close' }}</button>
 
-              <upload-image v-if="newLogo" @imageSelected="profileImg => this.newLogo = { fileName: profileImg }"
-                :edited-image="this.logo" :required="false" @onUpload="() => subscribe('file')"
+              <upload-image v-if="newLogo" @imageSelected="profileImg => newLogo = { fileName: profileImg }"
+                :edited-image="props.logo" :required="false" @onUpload="() => subscribe('file')"
                 @finishUpload="() => unsubscribe()" class="margin-10-auto">
               </upload-image>
               <div class="text-center">
                 <button class="background-btn md-btn red-button btn-radius margin-top-15 margin-right uppercase"
-                  @click="cancelUpdate" type="button">{{ $t("Cancel") }}
+                  @click="cancelUpdate" type="button">{{ "Cancel" }}
                 </button>
                 <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase"
-                  @click="updateLogo()" type="button">{{ $t("Save") }}
+                  @click="updateLogo()" type="button">{{ "Save" }}
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </transition>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import UploadImage from "@/components/PreviewImage.vue";
 import { usePubSub } from "@/composables/usePubSub";
 
-export default {
-  name: "CompanyUpdateLogo",
-  setup() {
-    return { ...usePubSub() };
-  },
-  components: { UploadImage },
-  props: ["logo"],
-  data() {
-    return {
-      newLogo: {},
-      isLoading: false
-    }
-  },
-  methods: {
-    updateLogo() {
-      if (!this.newLogo || this.logo.fileName === this.newLogo.fileName) {
-        this.$emit("cancel");
-      } else {
-        this.$emit("save", this.newLogo);
-      }
-    },
-    cancelUpdate() {
-      this.$emit("cancel");
-    }
-  },
-  created() {
-    if (this.logo != null) {
-      this.newLogo = Object.assign({}, this.logo);
-    }
+const props = defineProps<{ logo?: any }>();
+const emit = defineEmits<{
+  (e: 'save', value: any): void;
+  (e: 'cancel'): void;
+}>();
+
+const { subscribe, unsubscribe } = usePubSub();
+
+const newLogo = ref<any>({});
+const isLoading = ref(false);
+
+function updateLogo() {
+  if (!newLogo.value || props.logo.fileName === newLogo.value.fileName) {
+    emit("cancel");
+  } else {
+    emit("save", newLogo.value);
   }
+}
+
+function cancelUpdate() {
+  emit("cancel");
+}
+
+if (props.logo != null) {
+  newLogo.value = Object.assign({}, props.logo);
 }
 </script>
 <style lang="scss">

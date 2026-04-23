@@ -14,13 +14,13 @@
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button tag="router-link" to="/agency-workers/register-worker" icon-left="plus">
-            {{ $t('Create') }}
+            {{ 'Create' }}
           </b-button>
         </template>
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -33,7 +33,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -42,14 +42,14 @@
           <b-table-column field="externalId" label="External ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">{{ props.row.externalId }}</template>
           </b-table-column>
           <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.fullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">
@@ -68,22 +68,22 @@
           </b-table-column>
           <b-table-column field="mobileNumber" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">{{ props.row.mobileNumber }}</template>
           </b-table-column>
           <b-table-column field="location" label="Location" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">{{ props.row.address }}</template>
           </b-table-column>
           <b-table-column field="requests" label="Request ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.requestId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.requests && props.row.requests.length > 0">
@@ -102,7 +102,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">{{ dateMonth(props.row.createdAt) }}</template>
@@ -110,7 +110,7 @@
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.skills.length > 0" class="skills-inline">
@@ -126,7 +126,7 @@
           <b-table-column field="isCurrentlyWorking" label="Details" searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="featuresSelected" autocomplete :data="features" open-on-focus
-                field="value" icon="label" placeholder="Select Feature" @input="onFeatureChange" append-to-body>
+                field="value" icon="label" placeholder="Select Feature" @update:modelValue="onFeatureChange" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -143,7 +143,7 @@
               <template #trigger>
                 <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-              <b-dropdown-item aria-role="listitem" @click="$router.push(`/agency-workers/worker/${props.row.id}`)">
+              <b-dropdown-item aria-role="listitem" @click="router.push(`/agency-workers/worker/${props.row.id}`)">
                 Edit
               </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" v-if="!props.row.approvedToWork" @click="deleteWorker(props.row)">
@@ -159,154 +159,154 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import { workerFeatures as features } from '@/constants/workerFeatures';
-import { phoneMask as mask } from '@/constants/phoneMask';
-import { getAgencyWorkers, updateApprovedToWork } from "@/api/agencyWorkerApi";
+import { formatPhone } from '@/utils/phoneFormat';
+import { getAgencyWorkers, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { dateMonth } from '@/utils/filters';
+import Export from '@/components/Export.vue';
 
-export default {
-  data() {
-    return {
-      mask,
-      features,
-      isLoading: true,
-      totalItems: 0,
-      createdAtDatesSelected: [],
-      featuresSelected: [],
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
+const router = useRouter();
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const createdAtDatesSelected = ref<any[]>([]);
+const featuresSelected = ref<any[]>([]);
+const rows = ref<any[]>([]);
+const serverParams = ref<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+if (agencyStore.agencyWorkerProfileFilter) {
+  serverParams.value = agencyStore.agencyWorkerProfileFilter;
+  if (serverParams.value.features) {
+    featuresSelected.value = features.filter((s: any) => serverParams.value.features.some((sps: any) => sps == s.id));
+  }
+  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
+    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+  }
+}
+loadWorkers();
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  loadWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'fullName':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'numberId':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'requests':
+      serverParams.value.sortBy = 2;
+      break;
+    case 'createdAt':
+      serverParams.value.sortBy = 3;
+      break;
+    case 'skills':
+      serverParams.value.sortBy = 4;
+      break;
+    case 'externalId':
+      serverParams.value.sortBy = 5;
+      break;
+  }
+  serverParams.value.isDescending = order !== 'asc';
+  loadWorkers();
+}
+
+function onCellClick(row: any, column: any) {
+  switch (column.field) {
+    case 'actions':
+      break;
+    case 'requests':
+      break;
+    default:
+      router.push(`/agency-workers/worker/${row.id}`);
+  }
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadWorkers();
+  }
+}
+
+function onCreatedAtSelected() {
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  loadWorkers();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onFeatureChange() {
+  serverParams.value.features = featuresSelected.value.map((fs: any) => fs.id);
+  loadWorkers();
+}
+
+function goToApplicants(item: any) {
+  router.push({
+    path: `/agency-request/${item.id}`,
+    query: { tab: 'Applicants' },
+  });
+}
+
+function loadWorkers() {
+  isLoading.value = true;
+  agencyStore.updateAgencyWorkerProfileFilter(serverParams.value);
+  getAgencyWorkers(serverParams.value)
+    .then((workers: any) => {
+      rows.value = workers.items.map((w: any) => ({ ...w, actions: null }));
+      totalItems.value = workers.totalItems;
+      isLoading.value = false;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+
+function deleteWorker(worker: any) {
+  isLoading.value = true;
+  updateApprovedToWork(worker.id)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      loadWorkers();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+      loadWorkers();
+    });
+}
+
+function confirmDelete(worker: any) {
+  showAlertConfirm(
+    'Are you sure?',
+    'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
+  ).then((response) => {
+    if (response) {
+      deleteWorker(worker);
     }
-  },
-  components: {
-    Export: () => import("@/components/Export.vue")
-  },
-  methods: {
-    dateMonth,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'fullName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'numberId':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'requests':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'skills':
-          this.serverParams.sortBy = 4;
-          break;
-        case 'externalId':
-          this.serverParams.sortBy = 5;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadWorkers();
-    },
-    onCellClick(row, column) {
-      switch (column._props.field) {
-        case 'actions':
-          break;
-        case 'requests':
-          break;
-        default:
-          this.$router.push(`/agency-workers/worker/${row.id}`);
-      }
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.loadWorkers();
-      }
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadWorkers();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onFeatureChange() {
-      this.serverParams.features = this.featuresSelected.map(fs => fs.id);
-      this.loadWorkers();
-    },
-    goToApplicants(item) {
-      this.$router.push({
-        path: `/agency-request/${item.id}`,
-        query: { tab: 'Applicants' }
-      });
-    },
-    loadWorkers() {
-      this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyWorkerProfileFilter", this.serverParams);
-      getAgencyWorkers(this.serverParams)
-        .then(workers => {
-          this.rows = workers.items.map(w => ({ ...w, actions: null }));
-          this.totalItems = workers.totalItems;
-          this.isLoading = false;
-        })
-        .catch(() => {
-          this.isLoading = false;
-        });
-    },
-    deleteWorker(worker) {
-      this.isLoading = true;
-      updateApprovedToWork(worker.id)
-        .then(() => {
-          this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
-          this.loadWorkers();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-          this.loadWorkers();
-        });
-    },
-    confirmDelete(worker) {
-      this.showAlertConfirm(
-        this.$t("AreYouSure"),
-        this.$t("YouWantToDisableTheWorker") +
-        ". " +
-        this.$t("ThisWorkerWillNotBeAbleToApplyToNewRequests")
-      ).then((response) => {
-        if (response) {
-          this.deleteWorker(worker);
-        }
-      })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-  },
-  created() {
-    if (this.$store.state.agency.agencyWorkerProfileFilter) {
-      this.serverParams = this.$store.state.agency.agencyWorkerProfileFilter;
-      if (this.serverParams.features) {
-        this.featuresSelected = this.features.filter(s => this.serverParams.features.some(sps => sps == s.id));
-      }
-      if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
-        this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
-        this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
-      }
-    }
-    this.loadWorkers();
-  },
+  }).catch((error) => {
+    showAlertError(error);
+  });
 }
 </script>
 <style lang="scss" scoped>

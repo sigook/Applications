@@ -7,88 +7,101 @@
     </b-message>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('name') ? 'is-danger' : ''" label="Name"
-          :message="errors.has('name') ? errors.first('name') : ''">
-          <b-input type="text" v-model="user.name" :name="'name'" v-validate="'required|max:20|min:2'" />
+        <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
+          :message="formErrors.name">
+          <b-input type="text" v-model="name" name="name" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('lastname') ? 'is-danger' : ''" label="Last Name"
-          :message="errors.has('lastname') ? errors.first('lastname') : ''">
-          <b-input type="text" v-model="user.lastname" :name="'lastname'" v-validate="'required|max:20|min:2'" />
+        <b-field :type="formErrors.lastname ? 'is-danger' : ''" label="Last Name"
+          :message="formErrors.lastname">
+          <b-input type="text" v-model="lastname" name="lastname" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('position') ? 'is-danger' : ''" label="Position"
-          :message="errors.has('position') ? errors.first('position') : ''">
-          <b-input type="text" v-model="user.position" :name="'position'" v-validate="'max:100|min:2'" />
+        <b-field :type="formErrors.position ? 'is-danger' : ''" label="Position"
+          :message="formErrors.position">
+          <b-input type="text" v-model="position" name="position" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <phone-input :required="false" :model="'Mobile'"
-          @formattedPhone="(phone) => user.mobileNumber = phone"></phone-input>
+          @formattedPhone="(phone) => mobileNumber = phone"></phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
-          :message="errors.has('email') ? errors.first('email') : ''">
-          <b-input type="email" v-model="user.email" :name="'email'"
-            v-validate="'required|max:50|email|min:6'" />
+        <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+          :message="formErrors.email">
+          <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding mt-5">
-        <b-button type="is-primary" @click="validateForm">{{ $t('Create') }}</b-button>
+        <b-button type="is-primary" @click="validateForm">Create</b-button>
       </div>
     </div>
   </div>
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { showAlertError } from "@/utils/toast";
 import { createCompanyUser } from '@/api/companyApi';
 import { createCompanyProfileUser } from '@/api/agencyCompanyApi';
+import { useStickyForm } from '@/composables/useStickyForm';
+import PhoneInput from "@/components/PhoneInput.vue";
 
-export default {
-  props: ['companyId'],
-  components: {
-    PhoneInput: () => import("@/components/PhoneInput.vue")
-  },
-  data() {
-    return {
-      isLoading: false,
-      user: {
-        name: null,
-        lastname: null,
-        mobileNumber: null,
-        position: null,
-        email: null
-      }
-    }
-  },
-  methods: {
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.onCreateUser()
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    onCreateUser() {
-      this.isLoading = true;
-      const action = this.companyId ?
-        createCompanyProfileUser(this.companyId, this.user) :
-        createCompanyUser(this.user);
-      action
-        .then(() => {
-          this.isLoading = false;
-          this.$emit("updateUsers")
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error.data);
-        })
-    }
+const schema = yup.object({
+  name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  lastname: yup.string().required('Last Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  position: yup.string().nullable().transform(v => v || null)
+    .min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+});
+
+const props = defineProps<{ companyId?: any }>();
+const emit = defineEmits<{ (e: 'updateUsers'): void }>();
+
+const form = useStickyForm<{ name: string; lastname: string; position: string; email: string }>({
+  schema,
+  initialValues: { name: '', lastname: '', position: '', email: '' },
+});
+const { name, lastname, position, email } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const mobileNumber = ref<string | null>(null);
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
   }
+  onCreateUser();
+}
+
+function onCreateUser() {
+  isLoading.value = true;
+  const user = {
+    name: name.value,
+    lastname: lastname.value,
+    position: position.value || null,
+    email: email.value,
+    mobileNumber: mobileNumber.value,
+  };
+  const action = props.companyId ?
+    createCompanyProfileUser(props.companyId, user) :
+    createCompanyUser(user);
+  action
+    .then(() => {
+      isLoading.value = false;
+      emit('updateUsers');
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
 }
 </script>

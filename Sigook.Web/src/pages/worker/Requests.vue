@@ -28,14 +28,14 @@
     <div>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @click="onRowClick">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @click="onRowClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Order ID" v-slot="props">
             {{ props.row.numberId }}
-            <p v-if="props.row.isAsap" class="asap">{{ $t("Asap") }}</p>
+            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
           </b-table-column>
           <b-table-column field="jobTitle" label="Position" v-slot="props">
             {{ props.row.jobTitle }}
@@ -51,11 +51,11 @@
             </template>
             <template v-slot="props">
               {{ dateMonth(props.row.startAt) }}
-              <span v-if="props.row.durationTerm !== $longTerm">
+              <span v-if="props.row.durationTerm !== appGlobals.$longTerm">
                 - {{ dateMonth(props.row.finishAt) }}
               </span>
               <span
-                v-if="(props.row.status === $statusFilled || props.row.status === $statusCancelled) && props.row.durationTerm === $longTerm">
+                v-if="(props.row.status === appGlobals.$statusFilled || props.row.status === appGlobals.$statusCancelled) && props.row.durationTerm === appGlobals.$longTerm">
                 - {{ dateMonth(props.row.finishAt) }}
               </span>
               <i class="fz-2 block">{{ splitCapital(props.row.durationTerm) }}</i>
@@ -70,7 +70,7 @@
           <b-table-column field="status" v-slot="props">
             <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-700 text-center"
               :class="props.row.status">
-              {{ $t(props.row.status) }}
+              {{ props.row.status }}
             </div>
           </b-table-column>
         </template>
@@ -79,71 +79,68 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useWorkerStore } from '@/stores/worker';
 import { getJobs } from '@/api/workerApi';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
+import { appGlobals } from '@/varaibles';
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    };
-  },
-  created() {
-    this.getWorkerRequests();
-  },
-  methods: {
-    dateMonth,
-    splitCapital,
-    currency,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getWorkerRequests();
-    },
-    onRowClick(row) {
-      switch (row.status) {
-        case this.$statusApply:
-        case this.$statusBook:
-          this.$router.push({ path: `/worker-request-applied/${row.id}` });
-          break;
-        default:
-          this.$router.push({ path: `/worker-request/${row.id}` });
-      }
-    },
-    getWorkerRequests() {
-      this.isLoading = true;
-      getJobs(this.serverParams)
-        .then((response) => {
-          this.rows = response.items;
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(() => this.isLoading = false)
-    }
-  },
-  computed: {
-    currentUser() {
-      return this.$store.state.worker.workerProfile;
-    },
-    hasMissingDocuments() {
-      if (!this.currentUser.hasSocialInsurance || !this.currentUser.hasSocialInsuranceFile) {
-        return true;
-      } else if (!this.currentUser.hasIdentificationType1File || !this.currentUser.hasIdentificationNumber1) {
-        return true;
-      } else if (!this.currentUser.hasIdentificationType2File || !this.currentUser.hasIdentificationNumber2) {
-        return true;
-      } else {
-        return !this.currentUser.hasResume;
-      }
-    },
-  },
-};
+const router = useRouter();
+const workerStore = useWorkerStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+const currentUser = computed<any>(() => workerStore.workerProfile);
+const hasMissingDocuments = computed(() => {
+  if (!currentUser.value.hasSocialInsurance || !currentUser.value.hasSocialInsuranceFile) {
+    return true;
+  } else if (!currentUser.value.hasIdentificationType1File || !currentUser.value.hasIdentificationNumber1) {
+    return true;
+  } else if (!currentUser.value.hasIdentificationType2File || !currentUser.value.hasIdentificationNumber2) {
+    return true;
+  } else {
+    return !currentUser.value.hasResume;
+  }
+});
+
+function onPageChange(params: number) {
+  serverParams.pageIndex = params;
+  getWorkerRequests();
+}
+
+function onRowClick(row: any) {
+  switch (row.status) {
+    case appGlobals.$statusApply:
+    case appGlobals.$statusBook:
+      router.push({ path: `/worker-request-applied/${row.id}` });
+      break;
+    default:
+      router.push({ path: `/worker-request/${row.id}` });
+  }
+}
+
+function getWorkerRequests() {
+  isLoading.value = true;
+  getJobs(serverParams)
+    .then((response: any) => {
+      rows.value = response.items;
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+
+getWorkerRequests();
 </script>

@@ -19,20 +19,12 @@
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import JobPosition from "@/components/landing/JobPosition.vue";
+import NeedStaff from "@/components/landing/NeedStaff.vue";
 
-export default {
-  components: {
-    JobPosition: () => import("@/components/landing/JobPosition.vue"),
-    NeedStaff: () => import("@/components/landing/NeedStaff.vue")
-  },
-  data() {
-    return {
-      isLoading: false
-    }
-  }
-}
-
+const isLoading = ref(false);
 </script>
 <style lang="scss">
 @import "../../assets/scss/mixins";

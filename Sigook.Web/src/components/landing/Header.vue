@@ -51,36 +51,25 @@
 </template>
 
 
-<script lang="ts">
-import menu from "@/security/menu";
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useSecurityStore } from '@/stores/security';
+import menu from '@/security/menu';
 
-export default {
-  methods: {
-    async login() {
-      const user = this.$store.state.security.user;
-      if (user) {
-        const roles = this.$store.state.security.userRoles;
-        const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-        this.$router.push(homePageUrl);
-      } else {
-        await this.$store.dispatch('signIn');
-      }
-    }
-  },
-  computed: {
-    hiddeHeader() {
-      return this.$route.query.hiddeHeader === "true";
-    },
-    loginButton() {
-      if (this.$store.state.security.user) {
-        return 'Go to Portal'
-      } else {
-        return 'Login'
-      }
-    }
+const router = useRouter();
+const securityStore = useSecurityStore();
+
+const loginButton = computed(() => (securityStore.user ? 'Go to Portal' : 'Login'));
+
+async function login() {
+  if (securityStore.user) {
+    const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
+    router.push(homePageUrl);
+  } else {
+    await securityStore.signIn();
   }
 }
-
 </script>
 
 <style lang="scss">

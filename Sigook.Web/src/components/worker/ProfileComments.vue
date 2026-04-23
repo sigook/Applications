@@ -2,49 +2,40 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <section class="worker-comments">
-      <comments v-if="comments" :user-id="this.worker.workerId" :data="comments" :size-comments="this.commentSize"
+      <comments v-if="commentsData" :user-id="props.worker.workerId" :data="commentsData" :size-comments="commentSize"
         only-view="true" @newComment="() => updateComments()" @changePage="page => changePageComments(page)"></comments>
     </section>
   </div>
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import { getCommentsWorker } from '@/api/workerApi';
+import Comments from '../../components/Comments.vue';
 
-export default {
-  props: ['worker'],
-  data() {
-    return {
-      isLoading: true,
-      commentSize: 10,
-      commentPageIndex: 1,
-      comments: []
-    }
-  },
-  components: {
-    Comments: () => import("../../components/Comments.vue")
-  },
-  methods: {
-    updateComments() {
-      this.isLoading = true;
-      getCommentsWorker({ workerId: this.worker.workerId, size: this.commentSize, pageIndex: this.commentPageIndex })
-        .then((data) => {
-          this.comments = data;
-          this.isLoading = false;
-        });
+const props = defineProps<{ worker?: any }>();
 
-    },
-    changePageComments(page) {
-      this.commentPageIndex = page;
-      this.updateComments();
-    }
-  },
-  created() {
-    this.updateComments();
-  }
+const isLoading = ref(true);
+const commentSize = 10;
+const commentPageIndex = ref(1);
+const commentsData = ref<any>([]);
+
+function updateComments() {
+  isLoading.value = true;
+  getCommentsWorker({ workerId: props.worker.workerId, size: commentSize, pageIndex: commentPageIndex.value })
+    .then((data) => {
+      commentsData.value = data;
+      isLoading.value = false;
+    });
 }
 
+function changePageComments(page: number) {
+  commentPageIndex.value = page;
+  updateComments();
+}
+
+updateComments();
 </script>
 
 <style lang="scss">

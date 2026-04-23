@@ -84,172 +84,171 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { distributeHours } from "@/utils/distributeHours";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
 import { WorkerRequestStatus } from "@/constants/enums";
-export default {
-  props: ["highlights", "workerId", "requestId", "startDate", "status", "worker"],
-  data() {
-    return {
-      windowWidth: window.innerWidth,
-      calendar: [],
-      selectDate: null,
-      today: null,
-      weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      momentFormat: 'YYYY-MM-DD'
+
+const props = defineProps<{
+  highlights?: any[];
+  workerId?: any;
+  requestId?: any;
+  startDate?: any;
+  status?: any;
+  worker?: any;
+}>();
+
+const emit = defineEmits<{ (e: 'onMonthChange', v: { startDate: string; endDate: string }): void }>();
+
+const windowWidth = ref(window.innerWidth);
+const calendar = ref<any[]>([]);
+const selectDate = ref<any>(null);
+const today = ref<any>(null);
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const momentFormat = 'YYYY-MM-DD';
+
+function onlyMonth(value: any) {
+  return value ? dayjs(value).format('MMMM').toString() : String(value);
+}
+function onlyYear(value: any) {
+  return value ? dayjs(value).format('YYYY').toString() : String(value);
+}
+function onlyDay(value: any) {
+  return value ? dayjs(value).format('DD').toString() : String(value);
+}
+
+function updateParent(startDay: any, endDay: any) {
+  const start = startDay.format(momentFormat);
+  const end = endDay.format(momentFormat);
+  emit('onMonthChange', { startDate: start, endDate: end });
+}
+
+function getCurrentMonth() {
+  calendar.value = [];
+  const startDay = dayjs(selectDate.value).startOf('month').startOf('week');
+  const endDay = dayjs(selectDate.value).endOf('month').endOf('week');
+  let date = startDay;
+  while (date.isBefore(endDay, 'day') || date.isSame(endDay, 'day')) {
+    const week: any = { totalHoursWeek: 0, days: [] };
+    for (let i = 0; i < 7; i++) {
+      week.days.push({ id: null, day: date.toDate(), totalHoursApproved: 0 });
+      date = date.add(1, 'day');
     }
-  },
-  created() {
-    this.today = dayjs().toDate();
-    this.selectDate = this.today;
-    this.getTodayMonth();
-  },
-  mounted() {
-    window.addEventListener('resize', this.handleResize);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  },
-  methods: {
-    onlyMonth(value) {
-      return value ? dayjs(value).format('MMMM').toString() : String(value);
-    },
-    onlyYear(value) {
-      return value ? dayjs(value).format('YYYY').toString() : String(value);
-    },
-    onlyDay(value) {
-      return value ? dayjs(value).format('DD').toString() : String(value);
-    },
-    getCurrentMonth() {
-      this.calendar = [];
-      const startDay = dayjs(this.selectDate).startOf('month').startOf('week');
-      const endDay = dayjs(this.selectDate).endOf('month').endOf('week');
-      let date = startDay;
-      while (date.isBefore(endDay, 'day') || date.isSame(endDay, 'day')) {
-        const week = {
-          totalHoursWeek: 0,
-          days: []
-        };
-        for (let i = 0; i < 7; i++) {
-          week.days.push({
-            id: null,
-            day: date.toDate(),
-            totalHoursApproved: 0
-          });
-          date = date.add(1, 'day');
-        }
-        this.calendar.push(week);
-      }
-      this.updateParent(startDay, endDay);
-    },
-    getTodayMonth() {
-      this.selectDate = dayjs(this.today).startOf('month').format(this.momentFormat);
-      this.getCurrentMonth();
-    },
-    getNextMonth() {
-      this.selectDate = dayjs(this.selectDate).add(1, 'month');
-      this.getCurrentMonth();
-    },
-    getPreviousMonth() {
-      this.selectDate = dayjs(this.selectDate).subtract(1, 'month');
-      this.getCurrentMonth();
-    },
-    isToday(date) {
-      return dayjs(date).format(this.momentFormat) === dayjs(this.today).format(this.momentFormat);
-    },
-    notCurrentMonth(date) {
-      return dayjs(date).format('MMMM') !== dayjs(this.selectDate).format('MMMM');
-    },
-    toMomentFormat(date) {
-      return dayjs(date).format(this.momentFormat).toString();
-    },
-    isAvailableToUpdate(date) {
-      const start = dayjs(this.startDate).subtract(1, 'day');
-      const oneMonth = dayjs().add(1, 'month');
-      if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
-        return true;
-      }
-      return false;
-    },
-    handleResize() {
-      this.windowWidth = window.innerWidth;
-    },
-    distributeWeekHours(week) {
-      const hours = distributeHours(week.days.length, week.totalHoursWeek, maximumHoursPerDay);
-      if (hours.length > 0) {
-        for (let i = 0; i < hours.length; i++) {
-          week.days[i].totalHoursApproved = hours[i] || 0;
-        }
-      } else {
-        this.showAlertError("Total hours is invalid");
-      }
-    },
-    updateParent(startDay, endDay) {
-      let start = startDay.format(this.momentFormat)
-      let end = endDay.format(this.momentFormat)
-      this.$emit("onMonthChange", { startDate: start, endDate: end })
-    },
-    isAvailableToUpdateWorker(date) {
-      if (this.worker && this.worker.workerRequestStatus === WorkerRequestStatus.Rejected && this.worker.rejectedAt) {
-        let start = dayjs(this.startDate).subtract(1, 'day');
-        let oneMonth = dayjs(this.worker.rejectedAt).add(1, 'month');
-        if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
-          return true;
-        }
-        return false;
-      }
-      return true;
-    },
-    syncHighlightsWithCalendar() {
-      if (!this.highlights || !this.calendar.length) return;
-      for (let iWeek = 0; iWeek < this.calendar.length; iWeek++) {
-        this.calendar[iWeek].totalHoursWeek = this.calendar[iWeek].days.reduce((acc, day) => {
-          if (day.totalHoursApproved) {
-            return acc + day.totalHoursApproved
-          }
-          return acc;
-        }, 0);
-        for (let iDay = 0; iDay < this.calendar[iWeek].days.length; iDay++) {
-          let currentDay = this.toMomentFormat(this.calendar[iWeek].days[iDay].day);
-          let indexDay = this.highlights.findIndex(d => {
-            return this.toMomentFormat(d.day) === currentDay
-          })
-          if (indexDay >= 0) {
-            this.calendar[iWeek].days[iDay] = this.highlights[indexDay];
-          }
-        }
-      }
-      this.calendar.forEach(week => {
-        week.totalHoursWeek = week.days.reduce((acc, day) => {
-          if (day.totalHoursApproved) {
-            return acc + day.totalHoursApproved
-          }
-          return acc;
-        }, 0);
-      });
+    calendar.value.push(week);
+  }
+  updateParent(startDay, endDay);
+}
+
+function getTodayMonth() {
+  selectDate.value = dayjs(today.value).startOf('month').format(momentFormat);
+  getCurrentMonth();
+}
+
+function getNextMonth() {
+  selectDate.value = dayjs(selectDate.value).add(1, 'month');
+  getCurrentMonth();
+}
+
+function getPreviousMonth() {
+  selectDate.value = dayjs(selectDate.value).subtract(1, 'month');
+  getCurrentMonth();
+}
+
+function isToday(date: any) {
+  return dayjs(date).format(momentFormat) === dayjs(today.value).format(momentFormat);
+}
+
+function notCurrentMonth(date: any) {
+  return dayjs(date).format('MMMM') !== dayjs(selectDate.value).format('MMMM');
+}
+
+function toMomentFormat(date: any) {
+  return dayjs(date).format(momentFormat).toString();
+}
+
+function isAvailableToUpdate(date: any) {
+  const start = dayjs(props.startDate).subtract(1, 'day');
+  const oneMonth = dayjs().add(1, 'month');
+  if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
+    return true;
+  }
+  return false;
+}
+
+function handleResize() {
+  windowWidth.value = window.innerWidth;
+}
+
+function distributeWeekHours(week: any) {
+  const hours = distributeHours(week.days.length, week.totalHoursWeek, maximumHoursPerDay);
+  if (hours.length > 0) {
+    for (let i = 0; i < hours.length; i++) {
+      week.days[i].totalHoursApproved = hours[i] || 0;
     }
-  },
-  computed: {
-    WorkerRequestStatus: () => WorkerRequestStatus,
-    isMobile() {
-      return this.windowWidth <= 768;
-    },
-    hasEvents() {
-      return this.highlights && this.highlights.length > 0;
-    }
-  },
-  watch: {
-    highlights: {
-      handler() {
-        this.syncHighlightsWithCalendar();
-      },
-      immediate: true
-    }
+  } else {
+    showAlertError("Total hours is invalid");
   }
 }
+
+function isAvailableToUpdateWorker(date: any) {
+  if (props.worker && props.worker.workerRequestStatus === WorkerRequestStatus.Rejected && props.worker.rejectedAt) {
+    const start = dayjs(props.startDate).subtract(1, 'day');
+    const oneMonth = dayjs(props.worker.rejectedAt).add(1, 'month');
+    if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
+
+function syncHighlightsWithCalendar() {
+  if (!props.highlights || !calendar.value.length) return;
+  for (let iWeek = 0; iWeek < calendar.value.length; iWeek++) {
+    calendar.value[iWeek].totalHoursWeek = calendar.value[iWeek].days.reduce((acc: number, day: any) => {
+      if (day.totalHoursApproved) return acc + day.totalHoursApproved;
+      return acc;
+    }, 0);
+    for (let iDay = 0; iDay < calendar.value[iWeek].days.length; iDay++) {
+      const currentDay = toMomentFormat(calendar.value[iWeek].days[iDay].day);
+      const indexDay = props.highlights.findIndex((d: any) => toMomentFormat(d.day) === currentDay);
+      if (indexDay >= 0) {
+        calendar.value[iWeek].days[iDay] = props.highlights[indexDay];
+      }
+    }
+  }
+  calendar.value.forEach((week: any) => {
+    week.totalHoursWeek = week.days.reduce((acc: number, day: any) => {
+      if (day.totalHoursApproved) return acc + day.totalHoursApproved;
+      return acc;
+    }, 0);
+  });
+}
+
+const isMobile = computed(() => windowWidth.value <= 768);
+const hasEvents = computed(() => props.highlights && props.highlights.length > 0);
+
+watch(() => props.highlights, () => {
+  syncHighlightsWithCalendar();
+}, { immediate: true });
+
+// created()
+today.value = dayjs().toDate();
+selectDate.value = today.value;
+getTodayMonth();
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
+
+defineExpose({ WorkerRequestStatus });
 </script>
 
 <style scoped>

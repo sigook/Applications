@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('Resume')">
+        <b-field :label="'Resume'">
           <div v-if="resume && resume.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
             <span class="selected-file-name">{{ filename(resume.fileName) }}</span>
@@ -11,10 +11,10 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedResumeFile }">
             <b-upload v-model="selectedResumeFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleResumeFileSelected" class="file-label" rounded>
+              @update:modelValue="handleResumeFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedResumeFile ? selectedResumeFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedResumeFile ? selectedResumeFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
@@ -22,86 +22,71 @@
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerResume } from '@/api/workerApi';
 
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      selectedResumeFile: null,
-      fileObjects: {
-        resume: null
-      },
-      resume: {
-        fileName: '',
-        description: ''
-      }
-    };
-  },
-  mixins: [toastMixin, multipartUploadMixin],
-  created() {
-    if (this.data != null && this.data.resume) {
-      this.resume = { ...this.data.resume };
-    }
-  },
-  methods: {
-    filename,
-    handleResumeFileSelected(file) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
-        this.selectedResumeFile = null;
-        return;
-      }
-      this.fileObjects.resume = file;
-      const generatedName = this.generateFileName('Resume', file.name);
-      this.resume = { fileName: generatedName, description: '' };
-      this.selectedResumeFile = null;
-    },
-    clearResumeFile() {
-      this.fileObjects.resume = null;
-      this.resume = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveResume();
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    async saveResume() {
-      this.isLoading = true;
-      try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(this.resume));
-        if (this.fileObjects.resume) {
-          const fn = this.resume.fileName;
-          formData.append(fn, this.fileObjects.resume, fn);
-        }
-        await createWorkerResume(this.data.id, formData);
-        this.$emit('closeModal', true);
-      } catch (error) {
-        this.showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
-    }
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const selectedResumeFile = ref<any>(null);
+const fileObjects = reactive<{ resume: any }>({ resume: null });
+const resume = ref<any>({ fileName: '', description: '' });
+
+if (props.data != null && props.data.resume) {
+  resume.value = { ...props.data.resume };
+}
+
+function handleResumeFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedResumeFile.value = null;
+    return;
   }
-};
+  fileObjects.resume = file;
+  const generatedName = generateFileName('Resume', file.name);
+  resume.value = { fileName: generatedName, description: '' };
+  selectedResumeFile.value = null;
+}
+
+function clearResumeFile() {
+  fileObjects.resume = null;
+  resume.value = { fileName: '', description: '' };
+}
+
+async function saveResume() {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(resume.value));
+    if (fileObjects.resume) {
+      const fn = resume.value.fileName;
+      formData.append(fn, fileObjects.resume, fn);
+    }
+    await createWorkerResume(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  saveResume();
+}
 </script>
 
 <style scoped>

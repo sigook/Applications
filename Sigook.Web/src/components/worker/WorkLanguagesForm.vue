@@ -10,53 +10,51 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerLanguages()">
-          {{ $t("Save") }}
+        <b-button type="is-primary" @click="saveWorkerLanguages()">
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { fetchLanguages } from "@/api/catalogApi";
 import { createWorkerLanguages } from '@/api/workerApi';
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      languages: [],
-      filteredLanguages: [],
-      worker: {
-        languages: []
-      }
-    }
-  },
-  methods: {
-    createWorkerLanguages() {
-      this.isLoading = true;
-      createWorkerLanguages(this.data.id, this.worker.languages)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    getFilteredLanguages(text) {
-      this.filteredLanguages = this.languages.filter((option) => 
-        option.value.toLowerCase().includes(text.toLowerCase())
-      );
-    }
-  },
-  async created() {
-    this.languages = await fetchLanguages();
-    this.filteredLanguages = this.languages;
-    if (this.data != null) {
-      this.worker.languages = this.data.languages;
-    }
-  }
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const languages = ref<any[]>([]);
+const filteredLanguages = ref<any[]>([]);
+const worker = reactive<{ languages: any[] }>({ languages: [] });
+
+function saveWorkerLanguages() {
+  isLoading.value = true;
+  createWorkerLanguages(props.data.id, worker.languages)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function getFilteredLanguages(text: string) {
+  filteredLanguages.value = languages.value.filter((option) =>
+    option.value.toLowerCase().includes(text.toLowerCase())
+  );
+}
+
+(async () => {
+  languages.value = await fetchLanguages();
+  filteredLanguages.value = languages.value;
+  if (props.data != null) {
+    worker.languages = props.data.languages;
+  }
+})();
 </script>

@@ -37,52 +37,44 @@
     <!-- end CREATE custom modal -->
   </div>
 </template>
-<script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { showAlertError } from "@/utils/toast";
 import { emailName, dateFromNow } from "@/utils/filters";
 import {
   getAgencyCompanyNotes,
   createAgencyCompanyNote,
   updateAgencyCompanyNote,
-  deleteAgencyCompanyNote,
+  deleteAgencyCompanyNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
+import ModalNotes from "../notes/ModalNotes.vue";
 
-export default {
-  data() {
-    return {
-      showModalNotes: false,
-      profileId: this.$route.params.id,
-      getNotes: ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination),
-      createNote: ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model),
-      updateNote: ({ userId, id, model }: NotesUpdatePayload) => updateAgencyCompanyNote(userId, id, model),
-      deleteNote: ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id),
-      notesList: null
-    }
-  },
-  mixins: [toastMixin],
-  components: {
-    ModalNotes: () => import("../notes/ModalNotes.vue")
-  },
-  methods: {
-    emailName,
-    dateFromNow,
-    loadFirstNotes() {
-      getAgencyCompanyNotes(this.profileId, { page: 1, size: 3 })
-        .then(response => {
-          this.notesList = response;
-        })
-        .catch(error => {
-          this.showAlertError(error)
-        })
-    },
-    onCloseModalNotes() {
-      this.showModalNotes = false;
-      this.loadFirstNotes();
-    }
-  },
-  created() {
-    this.loadFirstNotes();
-  }
+const route = useRoute();
+
+const showModalNotes = ref(false);
+const profileId = route.params.id as string;
+const getNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination);
+const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model);
+const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyCompanyNote(userId, id, model);
+const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id);
+const notesList = ref<any>(null);
+
+function loadFirstNotes() {
+  getAgencyCompanyNotes(profileId, { page: 1, size: 3 })
+    .then(response => {
+      notesList.value = response;
+    })
+    .catch(error => {
+      showAlertError(error);
+    });
 }
+
+function onCloseModalNotes() {
+  showModalNotes.value = false;
+  loadFirstNotes();
+}
+
+loadFirstNotes();
 </script>

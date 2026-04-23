@@ -5,7 +5,7 @@
       <b-button type="is-ghost" icon-right="plus-circle" @click="addLocation">Add</b-button>
     </b-field>
     <b-table :data="locations" narrowed hoverable paginated pagination-rounded :per-page="pageSize"
-      :current-page.sync="pageIndex">
+      v-model:current-page="pageIndex">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -28,12 +28,12 @@
       </template>
     </b-table>
     <b-modal v-model="showModal" width="500px">
-      <address-component ref="addressComponent" :model.sync="locationBeingUpdate"
+      <AddressComponent ref="addressComponent" v-model:model="locationBeingUpdate"
         :enableProvinceSettings="true"
-        @isLoading="(value) => isLoading = value" />
+        @isLoading="(value: boolean) => isLoading = value" />
       <div class="container-flex">
         <div class="col-12 col-padding">
-          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ $t('CompanyUseAsBillingAddress') }}</b-checkbox>
+          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
         </div>
         <div class="col-12 col-padding">
           <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
@@ -43,109 +43,112 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import AddressComponent from "@/components/Address.vue";
 import {
   getProfileLocations,
   createProfileLocation,
   updateProfileLocation,
-  deleteProfileLocation,
+  deleteProfileLocation
 } from "@/api/companyApi";
 
-export default {
-  components: { AddressComponent },
-  data() {
-    return {
-      locations: [],
-      isLoading: false,
-      showModal: false,
-      locationBeingUpdate: {},
-      pageSize: 30,
-      pageIndex: 1,
-    }
-  },
-  props: ['companyData'],
-  methods: {
-    addLocation() {
-      this.locationBeingUpdate = {};
-      this.showModal = true;
-    },
-    editLocation(location) {
-      this.locationBeingUpdate = location;
-      this.showModal = true;
-    },
-    closeModal() {
-      this.showModal = false;
-      this.locationBeingUpdate = {};
-    },
-    deleteLocation(id) {
-      this.showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
-        if (!r) return;
-        this.isLoading = true;
-        deleteProfileLocation(id)
-          .then(() => {
-            this.isLoading = false;
-            this.getLocations();
-          }).catch(e => {
-            this.isLoading = false;
-            this.showAlertError(e.data);
-          });
+defineProps<{ companyData?: any }>();
+
+const locations = ref<any[]>([]);
+const isLoading = ref(false);
+const showModal = ref(false);
+const locationBeingUpdate = ref<any>({});
+const pageSize = ref(30);
+const pageIndex = ref(1);
+const addressComponent = ref<any>(null);
+
+function addLocation() {
+  locationBeingUpdate.value = {};
+  showModal.value = true;
+}
+
+function editLocation(location: any) {
+  locationBeingUpdate.value = location;
+  showModal.value = true;
+}
+
+function closeModal() {
+  showModal.value = false;
+  locationBeingUpdate.value = {};
+}
+
+function deleteLocation(id: any) {
+  showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
+    if (!r) return;
+    isLoading.value = true;
+    deleteProfileLocation(id)
+      .then(() => {
+        isLoading.value = false;
+        getLocations();
+      }).catch(e => {
+        isLoading.value = false;
+        showAlertError(e.data);
       });
-    },
-    async saveChanges() {
-      const addressValid = await this.$refs.addressComponent.validateAddress();
-      if (addressValid) {
-        if (this.locationBeingUpdate.id) {
-          this.updateLocation(this.locationBeingUpdate);
-        } else {
-          this.createLocation(this.locationBeingUpdate);
-        }
-      }
-    },
-    updateLocation(location) {
-      this.isLoading = true;
-      updateProfileLocation(location.id, location)
-        .then(() => {
-          this.isLoading = false;
-          this.closeModal();
-          this.getLocations();
-        }).catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error.data);
-        });
-    },
-    createLocation(location) {
-      this.isLoading = true;
-      createProfileLocation(location)
-        .then(() => {
-          this.isLoading = false;
-          this.closeModal();
-          this.getLocations();
-        }).catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error.data);
-        });
-    },
-    getLocations() {
-      this.isLoading = true;
-      getProfileLocations()
-        .then(r => {
-          this.locations = r;
-          this.isLoading = false;
-        });
-    },
-    onSearchLocation(row, searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      return (
-        row.address.toLowerCase().includes(lowerSearchTerm) ||
-        row.city.value.toLowerCase().includes(lowerSearchTerm) ||
-        row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
-        row.postalCode.toLowerCase().includes(lowerSearchTerm)
-      );
-    },
-  },
-  created() {
-    this.getLocations();
+  });
+}
+
+async function saveChanges() {
+  const addressValid = await addressComponent.value?.validateAddress();
+  if (addressValid) {
+    if (locationBeingUpdate.value.id) {
+      updateLocation(locationBeingUpdate.value);
+    } else {
+      createLocation(locationBeingUpdate.value);
+    }
   }
 }
+
+function updateLocation(location: any) {
+  isLoading.value = true;
+  updateProfileLocation(location.id, location)
+    .then(() => {
+      isLoading.value = false;
+      closeModal();
+      getLocations();
+    }).catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function createLocation(location: any) {
+  isLoading.value = true;
+  createProfileLocation(location)
+    .then(() => {
+      isLoading.value = false;
+      closeModal();
+      getLocations();
+    }).catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function getLocations() {
+  isLoading.value = true;
+  getProfileLocations()
+    .then((r: any) => {
+      locations.value = r;
+      isLoading.value = false;
+    });
+}
+
+function onSearchLocation(row: any, searchTerm: string) {
+  const lowerSearchTerm = searchTerm.toLowerCase();
+  return (
+    row.address.toLowerCase().includes(lowerSearchTerm) ||
+    row.city.value.toLowerCase().includes(lowerSearchTerm) ||
+    row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
+    row.postalCode.toLowerCase().includes(lowerSearchTerm)
+  );
+}
+
+getLocations();
 </script>

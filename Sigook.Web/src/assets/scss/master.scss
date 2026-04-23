@@ -5,7 +5,6 @@
 @import "./main";
 @import './base-calendar';
 @import "./base-forms";
-@import "./toast";
 
 @import "./register";
 @import "./register-banner";
@@ -34,4 +33,6 @@
 
 // mobile
 @import '_m-base.scss';
+
+@import './buefy-overrides';
 

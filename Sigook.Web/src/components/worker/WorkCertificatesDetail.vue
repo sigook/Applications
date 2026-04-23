@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ $t('WorkerCertificates') }}</h3>
+      <h3 class="fw-700 fz-0">{{ 'Certificates' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalCertificate = true">
         Add Certificate
       </b-button>
@@ -19,7 +19,7 @@
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button" @click="confirmDelete(item)">
-                {{ $t("Delete") }}
+                {{ "Delete" }}
               </button>
             </b-tooltip>
           </div>
@@ -37,9 +37,9 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ $t("WorkerCertificates") }}</span>
+              <span class="fz1 fw-700">{{ "Certificates" }}</span>
               <button @click="modalCertificate = false" type="button" class="cross-icon">
-                {{ $t('Close') }}
+                {{ 'Close' }}
               </button>
               <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
@@ -51,70 +51,56 @@
   </section>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import { deleteWorkerCertificates, createWorkerCertificates } from '@/api/workerApi';
-export default {
-  props: ['worker'],
-  mixins: [toastMixin],
-  data() {
-    return {
-      modalCertificate: false,
-      modalEdit: false,
-      isLoading: false,
-      localWorker: JSON.parse(JSON.stringify(this.worker))
-    }
+import { deleteWorkerCertificates } from '@/api/workerApi';
+import CertificateEdit from './WorkCertificatesForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{
+  (e: 'updateProfile', value: boolean): void;
+  (e: 'update:worker', value: any): void;
+}>();
+
+const modalCertificate = ref(false);
+const isLoading = ref(false);
+const localWorker = ref<any>(JSON.parse(JSON.stringify(props.worker)));
+
+watch(
+  () => props.worker,
+  (newVal) => {
+    localWorker.value = JSON.parse(JSON.stringify(newVal));
   },
-  watch: {
-    worker: {
-      handler(newVal) {
-        this.localWorker = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  methods: {
-    filename,
-    closeModalEdit() {
-      this.$emit('updateProfile', true);
-      this.modalCertificate = false
-    },
-    confirmDelete(certificate) {
-      this.showAlertConfirm(this.$t("AreYouSure"), "You want to delete this document")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteWorkerCertificates(this.localWorker.id, certificate.id)
-              .then(() => {
-                this.isLoading = false;
-                this.localWorker.certificates = this.localWorker.certificates.filter(d => d.id !== certificate.id);
-                this.$emit('update:worker', this.localWorker);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                this.showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-    deleteCertificate(certificateArr) {
-      createWorkerCertificates(this.localWorker.id, certificateArr)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('updateProfile', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    }
-  },
-  components: {
-    certificateEdit: () => import("./WorkCertificatesForm.vue")
-  }
+  { deep: true }
+);
+
+function closeModalEdit() {
+  emit('updateProfile', true);
+  modalCertificate.value = false;
 }
+
+function confirmDelete(certificate: any) {
+  showAlertConfirm('Are you sure?', 'You want to delete this document')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteWorkerCertificates(localWorker.value.id, certificate.id)
+          .then(() => {
+            isLoading.value = false;
+            localWorker.value.certificates = localWorker.value.certificates.filter((d: any) => d.id !== certificate.id);
+            emit('update:worker', localWorker.value);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
 </script>

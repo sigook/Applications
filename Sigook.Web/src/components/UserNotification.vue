@@ -17,7 +17,7 @@
                 <div class="text-center contain-switch form-100">
                     <p>{{item.description}}</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox"
@@ -26,7 +26,7 @@
 
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
 
@@ -35,26 +35,26 @@
                 <div class="text-center contain-switch form-100">
                     <p>Push Notifications</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox" v-model="item.pushNotification"/>
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
 
                 <div class="text-center contain-switch form-100">
                     <p>Sms Notifications</p>
                     <p class="switch-container-flex">
-                        {{$t('No')}}
+                        {{'No'}}
                         <label class="fz0 fw-400 switch">
 
                             <input type="checkbox" v-model="item.smsNotification"/>
                             <span class="slider round"></span>
                         </label>
-                        {{$t('Yes')}}
+                        {{'Yes'}}
                     </p>
                 </div>
                 -->
@@ -66,47 +66,44 @@
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getUserNotifications, updateUserNotification } from "@/api/userNotificationApi";
 
-    export default {
-        props: ['isDisabled'],
-        data(){
-            return {
-                data: null,
-                isLoading: false
-            }
-        },
-        methods: {
-            loadNotifications(){
-                this.isLoading = true;
-                getUserNotifications()
-                    .then(response => {
-                        this.data = response;
-                        this.isLoading = false;
-                    })
-                    .catch(error => {
-                        this.showAlertError(error);
-                        this.isLoading = false;
-                    })
-            },
-            saveNotification(item){
-                this.isLoading = true;
-                updateUserNotification(item)
-                    .then(() => {
-                        this.isLoading = false;
-                    })
-                    .catch(error => {
-                        this.showAlertError(error);
-                        this.isLoading = false;
-                    })
-            }
-        },
-        created(){
-            this.$emit('hideEditButton', true);
-            this.loadNotifications();
-        }
-    }
+defineProps<{ isDisabled?: boolean }>();
+const emit = defineEmits<{ (e: 'hideEditButton', v: boolean): void }>();
+
+const data = ref<any[] | null>(null);
+const isLoading = ref(false);
+
+function loadNotifications() {
+  isLoading.value = true;
+  getUserNotifications()
+    .then(response => {
+      data.value = response;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function saveNotification(item: any) {
+  isLoading.value = true;
+  updateUserNotification(item)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+emit('hideEditButton', true);
+loadNotifications();
 </script>
 
 <style lang="scss">

@@ -1,0 +1,14 @@
+// Bootstrap ships its own `.toast` component that leaks into Buefy's toast
+// (both use the same class name). Unset Bootstrap's sizing/styling for
+// toasts rendered inside Buefy's `.notices` container.
+.notices .toast {
+  flex-basis: auto;
+  max-width: none;
+  font-size: inherit;
+  background-color: initial;
+  background-clip: initial;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  opacity: 0.92;
+  border-radius: 2em;
+}

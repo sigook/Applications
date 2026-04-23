@@ -3,15 +3,15 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field label="Email" :type="errors.has('email') ? 'is-danger' : ''"
-          :message="errors.has('email') ? errors.first('email') : ''">
-          <b-input v-model="userEmail" v-validate="'required|email'" name="email" ref="email" data-vv-as="Email" />
+        <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
+          :message="formErrors.email">
+          <b-input v-model="email" name="email" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field label="Confirm Email" :type="errors.has('confirmNewEmail') ? 'is-danger' : ''"
-          :message="errors.has('confirmNewEmail') ? errors.first('confirmNewEmail') : ''">
-          <b-input v-model="confirmNewEmail" name="confirmNewEmail" v-validate="'required|email|confirmed:email'" />
+        <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
+          :message="formErrors.confirmNewEmail">
+          <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -21,44 +21,51 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { changeEmail, getEmail } from '@/api/accountApi';
+import { useStickyForm } from '@/composables/useStickyForm';
 
-export default {
-  data() {
-    return {
-      userEmail: null,
-      confirmNewEmail: '',
-      isLoading: true
-    }
-  },
-  methods: {
-    onChangeEmail() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
-            .then(() => {
-              this.isLoading = false;
-              this.showAlertSuccess("Updated");
-            })
-            .catch(error => {
-              this.isLoading = false;
-              this.showAlertError(error);
-            })
-        }
-      })
-    }
-  },
-  created() {
-    getEmail()
-      .then(response => {
-        this.userEmail = response.email;
-        this.isLoading = false;
-      })
-      .catch(error => {
-        this.showAlertError(error);
-        this.isLoading = false;
-      })
-  }
+const schema = yup.object({
+  email: yup.string().required('Email is required').email('Invalid email'),
+  confirmNewEmail: yup.string().required('Confirm Email is required').email('Invalid email')
+    .oneOf([yup.ref('email')], 'Emails must match'),
+});
+
+const form = useStickyForm<{ email: string; confirmNewEmail: string }>({
+  schema,
+  initialValues: { email: '', confirmNewEmail: '' },
+});
+const { email, confirmNewEmail } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(true);
+
+async function onChangeEmail() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) return;
+  isLoading.value = true;
+  changeEmail({ newEmail: email.value, confirmNewEmail: confirmNewEmail.value })
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Updated");
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+getEmail()
+  .then(response => {
+    form.setFieldValue('email', response.email);
+    isLoading.value = false;
+  })
+  .catch(error => {
+    showAlertError(error);
+    isLoading.value = false;
+  });
 </script>

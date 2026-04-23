@@ -1,10 +1,10 @@
 <template>
   <div class="white-container-mobile">
     <b-loading v-model="isLoading"></b-loading>
-    <form class="form-md" @submit.prevent="validateForm">
+    <form class="form-md" @submit.prevent="onSubmit">
       <div class="col-12 col-padding">
         <div>
-          <h2 class="main-title">{{ $t("CreateCandidateRequest") }}</h2>
+          <h2 class="main-title">{{ "Create Candidate Request" }}</h2>
           <span class="line-orange"></span>
         </div>
       </div>
@@ -17,41 +17,39 @@
         </div>
         <div
           :class="[directHiring ? 'col-sm-12 col-md-6 col-lg-4 col-padding' : 'col-sm-12 col-md-8 col-lg-8 col-padding']">
-          <b-field :label="`${$t('JobTitle')} *`" :message="errors.first('job title')"
-            :type="errors.has('job title') ? 'is-danger' : ''">
-            <b-input v-model="request.jobTitle" name="job title" v-validate="'required|max:100|min:1'" />
+          <b-field :label="`${'Job title'} *`" :message="formErrors.jobTitle || ''"
+            :type="formErrors.jobTitle ? 'is-danger' : ''">
+            <b-input v-model="jobTitle" name="job title" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
-          <b-field :type="errors.has('workerSalary') ? 'is-danger' : ''" label="Worker Salary *"
-            :message="errors.has('workerSalary') ? errors.first('workerSalary') : ''">
-            <b-numberinput v-model="request.workerSalary" name="workerSalary" v-validate="'required'"
-              controls-alignment="right"></b-numberinput>
+          <b-field :type="formErrors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
+            :message="formErrors.workerSalary || ''">
+            <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
-          <b-field :type="errors.has('worker quantity') ? 'is-danger' : ''" :label="`${$t('WorkersQuantity')} *`"
-            :message="errors.has('worker quantity') ? errors.first('worker quantity') : ''">
-            <b-numberinput v-model="request.workersQuantity" name="worker quantity"
-              v-validate="'required|min_value:1|numeric'" controls-alignment="right" expanded></b-numberinput>
+          <b-field :type="formErrors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
+            :message="formErrors.workersQuantity || ''">
+            <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!directHiring">
-          <b-field :label="`${$t('RequestJobType')} *`" :message="errors.first('job type')"
-            :type="errors.has('job type') ? 'is-danger' : ''">
+          <b-field :label="`${'Job type'} *`" :message="formErrors.jobPosition || ''"
+            :type="formErrors.jobPosition ? 'is-danger' : ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
-              open-on-focus name="job type" v-validate="'required'" @select="onJobPositionSelected">
+              open-on-focus name="job type" @select="onJobPositionSelected">
               <template #empty>You don't have any roles created</template>
             </b-autocomplete>
           </b-field>
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
         <div :class="[directHiring ? 'col-12 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding']">
-          <b-field :label="`${$t('RequestBranchOffice')} *`"
-            :message="errors.has('branchOffice') ? errors.first('branchOffice') : ''"
-            :type="errors.has('branchOffice') ? 'is-danger' : ''">
-            <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="jobLocation" open-on-focus
-              name="branchOffice" v-validate="'required'" selectable-footer field="formattedAddress"
+          <b-field :label="`${'Branch office'} *`"
+            :message="formErrors.branchOffice || ''"
+            :type="formErrors.branchOffice ? 'is-danger' : ''">
+            <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="branchOffice" open-on-focus
+              name="branchOffice" selectable-footer field="formattedAddress"
               @select="onLocationSelected" @select-footer="() => showLocationModal = true">
               <template #footer>
                 <a><span> Add new... </span></a>
@@ -61,48 +59,44 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="`${$t('Description')} *`" :message="errors.first('description')"
-            :type="errors.has('description') ? 'is-danger' : ''">
+          <b-field :label="`${'Description'} *`" :message="formErrors.description || ''"
+            :type="formErrors.description ? 'is-danger' : ''">
             <div class="vue-trix-editor">
-              <vue-editor id="description-input" v-model="request.description" :name="'description'"
-                v-validate="'required|max:5000|min:10'" />
+              <QuillEditor theme="snow" content-type="html" v-model:content="description" />
             </div>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
           <b-field label="Responsibilities">
             <div class="vue-trix-editor">
-              <vue-editor id="responsibilities-input" v-model="request.responsibilities" />
+              <QuillEditor theme="snow" content-type="html" v-model:content="request.responsibilities" />
             </div>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-12 col-lg-4 col-padding">
-          <b-field :label="`${$t('Requirements')} *`" :message="errors.first('requirements')"
-            :type="errors.has('requirements') ? 'is-danger' : ''">
+          <b-field :label="`${'Requirements'} *`" :message="formErrors.requirements || ''"
+            :type="formErrors.requirements ? 'is-danger' : ''">
             <div class="vue-trix-editor">
-              <vue-editor id="requirements-input" v-model="request.requirements" :name="'requirements'"
-                v-validate="'required|max:5000|min:10'" />
+              <QuillEditor theme="snow" content-type="html" v-model:content="requirements" />
             </div>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" disabled="!directHiring">
-          <b-field :type="errors.has('incentive') ? 'is-danger' : ''" :label="$t('Incentive')"
-            :message="errors.has('incentive') ? errors.first('incentive') : ''">
-            <b-numberinput controls-alignment="right" v-model="request.incentive" name="incentive"
-              v-validate="'decimal:2'" step="0.01" />
+          <b-field :type="formErrors.incentive ? 'is-danger' : ''" :label="'Incentive'"
+            :message="formErrors.incentive || ''">
+            <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-9 col-padding">
-          <b-field :type="errors.has('incentiveDes') ? 'is-danger' : ''" :label="$t('IncentiveDescription')"
-            :message="errors.has('incentiveDes') ? errors.first('incentiveDes') : ''">
-            <b-input v-model="request.incentiveDescription" name="incentiveDes" v-validate="'max:5000|min:0'"
-              :disabled="!request.incentive" />
+          <b-field :type="formErrors.incentiveDescription ? 'is-danger' : ''" :label="'Incentive Description'"
+            :message="formErrors.incentiveDescription || ''">
+            <b-input v-model="incentiveDescription" name="incentiveDes" :disabled="!incentive" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="!directHiring">
-          <b-field :label="$t('DurationBreakIsPaid')">
+          <b-field :label="'Duration break is paid'">
             <b-switch v-model="request.breakIsPaid" :true-value="true" :false-value="false">
-              {{ request.breakIsPaid ? $t("Yes") : $t("No") }}
+              {{ request.breakIsPaid ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
@@ -144,194 +138,247 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
-          <b-field label="Start *" :type="errors.has('from') ? 'is-danger' : ''"
-            :message="errors.has('from') ? errors.first('from') : ''">
-            <b-datepicker v-model="request.startAt" name="from" :min-date="timeZero" v-validate="'required'">
+          <b-field label="Start *" :type="formErrors.startAt ? 'is-danger' : ''"
+            :message="formErrors.startAt || ''">
+            <b-datepicker v-model="startAt" name="from" :min-date="timeZero">
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
-            <b-datepicker v-model="request.finishAt" name="from" :min-date="request.startAt" :max-date="finishDate">
+            <b-datepicker v-model="request.finishAt" name="from" :min-date="startAt" :max-date="finishDate">
             </b-datepicker>
           </b-field>
         </div>
         <div class="col-12 mt-5">
           <b-button type="is-primary" native-type="submit">
-            {{ $t("Create") }}
+            {{ "Create" }}
           </b-button>
         </div>
       </div>
     </form>
 
     <b-modal v-model="showLocationModal" @close="showLocationModal = false" width="500px">
-      <location-form @updateContent="onUpdateLocationModal"></location-form>
+      <LocationForm @updateContent="onUpdateLocationModal"></LocationForm>
     </b-modal>
   </div>
 </template>
 
-<script lang="ts">
-import dayjs from "dayjs";
-import { confirmationGuard } from '@/utils/confirmationGuard';
+<script setup lang="ts">
+import { ref, reactive, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import * as yup from 'yup';
+import dayjs from 'dayjs';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentType,
   EmploymentTypeLabels,
-} from "@/constants/enums";
-import { getLocations, getCompanyJobPositions, createRequest } from "@/api/companyApi";
+} from '@/constants/enums';
+import { getLocations, getCompanyJobPositions, createRequest } from '@/api/companyApi';
+import LocationForm from '@/components/agency_company/LocationForm.vue';
 
-export default {
-  components: {
-    LocationForm: () => import("@/components/agency_company/LocationForm.vue"),
+const router = useRouter();
+const errorMessage = 'Please make sure all required fields are filled out correctly';
+
+const directHiring = ref(false);
+
+const validationSchema = computed(() => {
+  const shape: Record<string, any> = {
+    jobTitle: yup.string().required('Job title is required').min(1).max(100, 'Max 100 characters'),
+    workersQuantity: yup
+      .number()
+      .typeError('Workers quantity is required')
+      .required('Workers quantity is required')
+      .min(1, 'Must be at least 1'),
+    branchOffice: yup.string().required('Branch office is required'),
+    description: yup.string().required('Description is required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+    requirements: yup.string().required('Requirements are required').min(10, 'Min 10 characters').max(5000, 'Max 5000 characters'),
+    incentive: yup
+      .number()
+      .nullable()
+      .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
+      .test('decimal2', 'Max 2 decimals', (v) => v == null || /^-?\d+(\.\d{1,2})?$/.test(String(v))),
+    incentiveDescription: yup.string().nullable().max(5000, 'Max 5000 characters'),
+    startAt: yup.mixed().required('Start date is required'),
+  };
+  if (directHiring.value) {
+    shape.workerSalary = yup
+      .number()
+      .typeError('Worker salary is required')
+      .required('Worker salary is required');
+  } else {
+    shape.jobPosition = yup.string().required('Job type is required');
+  }
+  return yup.object(shape);
+});
+
+const form = useStickyForm({
+  schema: validationSchema,
+  initialValues: {
+    jobTitle: '',
+    workersQuantity: 1,
+    workerSalary: null as number | null,
+    jobPosition: '',
+    branchOffice: '',
+    description: '',
+    requirements: '',
+    incentive: null as number | null,
+    incentiveDescription: '',
+    startAt: null as Date | null,
   },
-  data() {
-    let breakDate = new Date();
-    breakDate.setHours(0);
-    breakDate.setMinutes(0);
+});
+const {
+  jobTitle, workersQuantity, workerSalary, jobPosition, branchOffice,
+  description, requirements, incentive, incentiveDescription, startAt,
+} = form.fields;
+const formErrors = form.errors;
 
-    const maxBreak = new Date();
-    maxBreak.setHours(1);
-    maxBreak.setMinutes(0);
+const maxBreak = new Date();
+maxBreak.setHours(1);
+maxBreak.setMinutes(0);
 
-    let timeZero = dayjs().subtract(14, "days").toDate();
-    timeZero.setHours(0);
-    timeZero.setMinutes(0);
-    return {
-      isLoading: true,
-      locations: [],
-      companyJobPositions: [],
-      timeZero: timeZero,
-      maxBreak: maxBreak,
-      request: {
-        durationBreak: dayjs().startOf('day').toDate(),
-        durationTerm: DurationTerm.LongTerm,
-        employmentType: EmploymentType.FullTime,
-      },
-      errorMessage: this.$t("PleaseVerifyThatTheFieldsAreCorrect"),
-      directHiring: false,
-      jobPosition: '',
-      jobPositionSelected: null,
-      jobLocation: '',
-      locationSelected: null,
-      showLocationModal: false,
-      unsavedChanges: false,
+const timeZero = dayjs().subtract(14, 'days').toDate();
+timeZero.setHours(0);
+timeZero.setMinutes(0);
+
+const isLoading = ref(true);
+const locations = ref<any[]>([]);
+const companyJobPositions = ref<any[]>([]);
+const request = reactive<any>({
+  durationBreak: dayjs().startOf('day').toDate(),
+  durationTerm: DurationTerm.LongTerm,
+  employmentType: EmploymentType.FullTime,
+});
+const jobPositionSelected = ref<any>(null);
+const locationSelected = ref<any>(null);
+const showLocationModal = ref(false);
+
+(async () => {
+  locations.value = await getLocations();
+  companyJobPositions.value = await getCompanyJobPositions();
+  isLoading.value = false;
+})();
+
+const filteredCompanyJobPositions = computed(() => {
+  const search = (jobPosition.value || '').toLowerCase();
+  return companyJobPositions.value.filter((cjp: any) => cjp.value.toLowerCase().includes(search));
+});
+
+const filteredLocations = computed(() => {
+  const search = (branchOffice.value || '').toLowerCase();
+  return locations.value.filter((l: any) => l.formattedAddress.toLowerCase().includes(search));
+});
+
+const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
+
+function validateAutocompleteSelections(): boolean {
+  let valid = true;
+
+  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.value.toLowerCase() !== jobPosition.value.toLowerCase())) {
+    form.setFieldError('jobPosition', 'Please select a role from the list');
+    valid = false;
+  }
+
+  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress.toLowerCase() !== branchOffice.value.toLowerCase())) {
+    form.setFieldError('branchOffice', 'Please select a location from the list');
+    valid = false;
+  }
+
+  return valid;
+}
+
+function submitRequest(payload: any) {
+  isLoading.value = true;
+  createRequest(payload)
+    .then(() => {
+      showAlertSuccess('Request created');
+      router.push('company-requests');
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function onSubmit() {
+  form.markInteracted([
+    'jobTitle', 'workersQuantity', 'workerSalary', 'jobPosition',
+    'branchOffice', 'description', 'requirements', 'incentive',
+    'incentiveDescription', 'startAt',
+  ]);
+  form.handleSubmit((values) => {
+    if (!validateAutocompleteSelections()) {
+      showAlertError(errorMessage);
+      return;
+    }
+    const payload: any = {
+      ...request,
+      jobTitle: values.jobTitle,
+      workersQuantity: values.workersQuantity,
+      workerSalary: directHiring.value ? values.workerSalary : null,
+      description: values.description,
+      requirements: values.requirements,
+      incentive: values.incentive,
+      incentiveDescription: values.incentiveDescription,
+      startAt: values.startAt,
+      durationBreak: dayjs(request.durationBreak).format('HH:mm'),
     };
-  },
-  beforeRouteLeave: confirmationGuard,
-  async created() {
-    this.locations = await getLocations();
-    this.companyJobPositions = await getCompanyJobPositions();
-    this.isLoading = false;
-  },
-  methods: {
-    validateAutocompleteSelections() {
-      let valid = true;
+    submitRequest(payload);
+  }, () => {
+    showAlertError(errorMessage);
+  })();
+}
 
-      if (!this.directHiring && this.jobPosition && (!this.jobPositionSelected || this.jobPositionSelected.value.toLowerCase() !== this.jobPosition.toLowerCase())) {
-        this.errors.add({ field: 'job type', msg: 'Please select a role from the list' });
-        valid = false;
-      }
+function onJobPositionSelected(option: any) {
+  jobPositionSelected.value = option;
+  if (option) {
+    request.shift = option.shift;
+    request.rate = option.workerRate;
+    request.jobPositionRateId = option.id;
+  } else {
+    request.shift = null;
+    request.rate = null;
+    request.jobPositionRateId = null;
+  }
+}
 
-      if (this.jobLocation && (!this.locationSelected || this.locationSelected.formattedAddress.toLowerCase() !== this.jobLocation.toLowerCase())) {
-        this.errors.add({ field: 'branchOffice', msg: 'Please select a location from the list' });
-        valid = false;
-      }
+function onLocationSelected(option: any) {
+  locationSelected.value = option;
+  if (option) {
+    request.locationId = option.id;
+  } else {
+    request.locationId = null;
+  }
+}
 
-      return valid;
-    },
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        const selectionsValid = this.validateAutocompleteSelections();
-        if (result && selectionsValid) {
-          this.submitRequest();
-          return;
-        }
-        this.showAlertError(this.errorMessage);
-      });
-    },
-    submitRequest() {
-      this.isLoading = true;
-      createRequest({
-        ...this.request,
-        durationBreak: dayjs(this.request.durationBreak).format("HH:mm"),
-      })
-        .then(() => {
-          this.showAlertSuccess(this.$t("RequestCreated"));
-          this.$router.push("company-requests");
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    onJobPositionSelected(option) {
-      this.jobPositionSelected = option;
-      if (option) {
-        this.request.shift = option.shift;
-        this.request.rate = option.workerRate;
-        this.request.jobPositionRateId = option.id;
-      } else {
-        this.request.shift = null;
-        this.request.rate = null
-        this.request.jobPositionRateId = null
-      }
-    },
-    onLocationSelected(option) {
-      this.locationSelected = option;
-      if (option) {
-        this.request.locationId = option.id;
-      } else {
-        this.request.locationId = null;
-      }
-    },
-    async onUpdateLocationModal() {
-      this.showLocationModal = false;
-      this.locations = await getLocations();
-    },
-  },
-  computed: {
-    DurationTerm: () => DurationTerm,
-    DurationTermLabels: () => DurationTermLabels,
-    EmploymentType: () => EmploymentType,
-    EmploymentTypeLabels: () => EmploymentTypeLabels,
-    filteredCompanyJobPositions() {
-      const jobPositions = this.companyJobPositions
-        .filter(cjp => cjp.value.toLowerCase().includes(this.jobPosition.toLowerCase()));
-      return jobPositions;
-    },
-    filteredLocations() {
-      const locations = this.locations
-        .filter(location => location.formattedAddress.toLowerCase().includes(this.jobLocation.toLowerCase()));
-      return locations;
-    },
-    finishDate() {
-      return dayjs(this.request.startAt).add(1, "year").toDate();
-    },
-  },
-  watch: {
-    jobPosition(newVal) {
-      if (this.jobPositionSelected && this.jobPositionSelected.value !== newVal) {
-        this.jobPositionSelected = null;
-        this.request.shift = null;
-        this.request.rate = null;
-        this.request.jobPositionRateId = null;
-      }
-    },
-    jobLocation(newVal) {
-      if (this.locationSelected && this.locationSelected.formattedAddress !== newVal) {
-        this.locationSelected = null;
-        this.request.locationId = null;
-      }
-    },
-    directHiring: function (val) {
-      if (val) {
-        this.$validator.detach("job type");
-      } else {
-        this.request.workerSalary = null;
-      }
-    },
-  },
-};
+async function onUpdateLocationModal() {
+  showLocationModal.value = false;
+  locations.value = await getLocations();
+}
+
+watch(jobPosition, (newVal) => {
+  if (jobPositionSelected.value && jobPositionSelected.value.value !== newVal) {
+    jobPositionSelected.value = null;
+    request.shift = null;
+    request.rate = null;
+    request.jobPositionRateId = null;
+  }
+});
+
+watch(branchOffice, (newVal) => {
+  if (locationSelected.value && locationSelected.value.formattedAddress !== newVal) {
+    locationSelected.value = null;
+    request.locationId = null;
+  }
+});
+
+watch(directHiring, (val) => {
+  if (!val) {
+    form.setFieldValue('workerSalary', null);
+  }
+});
 </script>

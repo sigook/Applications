@@ -2,7 +2,7 @@
     <div class="container-requests">
         <!--<router-link :to="'/agency-request/' + data.id">-->
         <div class="container-requests-top">
-            <span class="asap" v-if="data.isAsap">{{ $t('Asap') }}</span>
+            <span class="asap" v-if="data.isAsap">{{ 'Asap' }}</span>
             <img :src="data.logo" class="request-logo" />
             <div class="container-title">
                 <h3 class="light-title">
@@ -22,21 +22,16 @@
                 <b>Finish:</b> {{ date(data.finishWorking) }}
             </div>
             <div v-if="data.status" class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
-                v-status="{ status: data.status }"> {{ $t(data.status) }}</div>
+                v-status="{ status: data.status }"> {{ data.status }}</div>
         </div>
         <!--</router-link>-->
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { date } from '@/utils/filters';
 
-export default {
-    props: ['data'],
-    methods: {
-        date,
-    }
-}
+defineProps<{ data: any }>();
 </script>
 <style scoped>
 .container-requests {

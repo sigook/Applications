@@ -6,7 +6,7 @@
       <!-- Profile Top -->
       <div class="profile-top" v-if="workerProfile">
         <div>
-          <image-detail :data="workerProfile" @updateProfile="() => updateProfile()" />
+          <ImageDetail :data="workerProfile" @updateProfile="() => updateProfile()" />
         </div>
         <div>
           <h1 class="capitalize">
@@ -26,114 +26,112 @@
       </div>
 
       <!-- Buefy Tabs -->
-      <b-tabs v-model="currentTab" @input="changeTab" v-if="workerProfile">
-      <b-tab-item value="PersonalDetails">
-        <template #header>
-          <span>Personal Details</span>
-          <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
-        </template>
-        <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" @updateProfile="updateProfile()" />
-      </b-tab-item>
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="workerProfile">
+        <b-tab-item value="PersonalDetails">
+          <template #header>
+            <span>Personal Details</span>
+            <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
+          </template>
+          <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" @updateProfile="updateProfile()" />
+        </b-tab-item>
 
-      <b-tab-item label="Work Experience" value="WorkExperience">
-        <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" @updateProfile="updateProfile()" />
-      </b-tab-item>
+        <b-tab-item label="Work Experience" value="WorkExperience">
+          <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" @updateProfile="updateProfile()" />
+        </b-tab-item>
 
-      <b-tab-item label="Preferences" value="Preferences">
-        <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" @updateProfile="updateProfile()" />
-      </b-tab-item>
+        <b-tab-item label="Preferences" value="Preferences">
+          <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" @updateProfile="updateProfile()" />
+        </b-tab-item>
 
-      <b-tab-item label="Comments" value="Comments">
-        <Comments v-if="visitedTabs.includes('Comments')" :worker="workerProfile" />
-      </b-tab-item>
+        <b-tab-item label="Comments" value="Comments">
+          <Comments v-if="visitedTabs.includes('Comments')" :worker="workerProfile" />
+        </b-tab-item>
 
-      <b-tab-item label="Account" value="AccountSecurity">
-        <WorkerAccountSecurity v-if="visitedTabs.includes('AccountSecurity')" />
-      </b-tab-item>
-    </b-tabs>
+        <b-tab-item label="Account" value="AccountSecurity">
+          <WorkerAccountSecurity v-if="visitedTabs.includes('AccountSecurity')" />
+        </b-tab-item>
+      </b-tabs>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useWorkerStore } from '@/stores/worker';
+import { showAlertError } from '@/utils/toast';
 import { getMyProfile } from '@/api/workerApi';
 import { lowercase } from '@/utils/filters';
+import PersonalDetails from '../../components/worker/ProfilePersonal.vue';
+import Preferences from '../../components/worker/ProfilePreferences.vue';
+import WorkExperience from '../../components/worker/ProfileExperience.vue';
+import Comments from '../../components/worker/ProfileComments.vue';
+import WorkerAccountSecurity from '../../components/worker/WorkerAccountSecurity.vue';
+import ImageDetail from '../../components/worker/WorkImageDetail.vue';
 
-export default {
-  components: {
-    PersonalDetails: () => import("../../components/worker/ProfilePersonal.vue"),
-    Preferences: () => import("../../components/worker/ProfilePreferences.vue"),
-    WorkExperience: () => import("../../components/worker/ProfileExperience.vue"),
-    Comments: () => import("../../components/worker/ProfileComments.vue"),
-    WorkerAccountSecurity: () => import("../../components/worker/WorkerAccountSecurity.vue"),
-    imageDetail: () => import("../../components/worker/WorkImageDetail.vue"),
-  },
-  data() {
-    return {
-      currentTab: "PersonalDetails",
-      visitedTabs: ["PersonalDetails"],
-      isLoading: false,
-    };
-  },
-  methods: {
-    lowercase,
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: "/worker-profile",
-        query: { tab: tab },
-      });
-    },
-    getProfile() {
-        this.isLoading = true;
-        getMyProfile()
-          .then((data) => {
-            this.$store.commit('worker/setWorkerProfile', data);
-            this.isLoading = false;
-          })
-          .catch((error) => {
-            this.isLoading = false;
-            this.showAlertError(error);
-          });
-    },
-    updateProfile() {
-      this.isLoading = true;
-      getMyProfile()
-        .then((data) => {
-          this.$store.commit('worker/setWorkerProfile', data);
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-  computed: {
-    workerProfile() {
-      return this.$store.state.worker.workerProfile;
-    },
-    hasPersonalDetailsMissing() {
-      if (!this.workerProfile) return false;
-      return !this.workerProfile.socialInsurance
-        || !this.workerProfile.socialInsuranceFile
-        || !this.workerProfile.identificationType1File
-        || !this.workerProfile.identificationType2File
-        || !this.workerProfile.resume;
-    },
-  },
-  created() {
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-    this.getProfile();
-  },
-};
+const route = useRoute();
+const router = useRouter();
+const workerStore = useWorkerStore();
+
+const currentTab = ref<string>('PersonalDetails');
+const visitedTabs = ref<string[]>(['PersonalDetails']);
+const isLoading = ref(false);
+
+const workerProfile = computed<any>(() => workerStore.workerProfile);
+
+const hasPersonalDetailsMissing = computed(() => {
+  if (!workerProfile.value) return false;
+  return !workerProfile.value.socialInsurance
+    || !workerProfile.value.socialInsuranceFile
+    || !workerProfile.value.identificationType1File
+    || !workerProfile.value.identificationType2File
+    || !workerProfile.value.resume;
+});
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: '/worker-profile',
+    query: { tab: tab },
+  });
+}
+
+function getProfile() {
+  isLoading.value = true;
+  getMyProfile()
+    .then((data: any) => {
+      workerStore.setWorkerProfile(data);
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateProfile() {
+  isLoading.value = true;
+  getMyProfile()
+    .then((data: any) => {
+      workerStore.setWorkerProfile(data);
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+if (route.query && route.query.tab) {
+  const tab = route.query.tab as string;
+  currentTab.value = tab;
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+}
+getProfile();
 </script>
 
 <style lang="scss">

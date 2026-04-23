@@ -7,16 +7,15 @@
       <h3 class="section-title">Change Email</h3>
       <div class="container-flex">
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field label="Email" :type="errors.has('email') ? 'is-danger' : ''"
-            :message="errors.has('email') ? errors.first('email') : ''">
-            <b-input v-model="userEmail" v-validate="'required|email'" name="email" ref="email" data-vv-as="Email" />
+          <b-field label="Email" :type="formErrors.userEmail ? 'is-danger' : ''"
+            :message="formErrors.userEmail || ''">
+            <b-input v-model="userEmail" name="email" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field label="Confirm Email" :type="errors.has('confirmNewEmail') ? 'is-danger' : ''"
-            :message="errors.has('confirmNewEmail') ? errors.first('confirmNewEmail') : ''">
-            <b-input v-model="confirmNewEmail" name="confirmNewEmail"
-              v-validate="'required|email|confirmed:email'" />
+          <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
+            :message="formErrors.confirmNewEmail || ''">
+            <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -35,8 +34,8 @@
             <span>{{ item.description }}</span>
           </div>
           <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
-            <b-switch v-model="item.emailNotification" @input="saveNotification(item)">
-              {{ item.emailNotification ? $t('Yes') : $t('No') }}
+            <b-switch v-model="item.emailNotification" @update:modelValue="saveNotification(item)">
+              {{ item.emailNotification ? 'Yes' : 'No' }}
             </b-switch>
           </div>
         </div>
@@ -62,98 +61,120 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { useSecurityStore } from '@/stores/security';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
+import { getDialog } from '@/utils/buefyProgrammatic';
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
 
-export default {
-  data() {
-    return {
-      userEmail: null,
-      confirmNewEmail: '',
-      isLoading: true,
-      notifications: null
-    }
+const schema = yup.object({
+  userEmail: yup.string().required('Email is required').email('Invalid email'),
+  confirmNewEmail: yup.string().required('Confirm Email is required').email('Invalid email')
+    .oneOf([yup.ref('userEmail')], 'Emails must match'),
+});
+
+const form = useStickyForm<{ userEmail: string; confirmNewEmail: string }>({
+  schema,
+  initialValues: {
+    userEmail: '',
+    confirmNewEmail: '',
   },
-  methods: {
-    onChangeEmail() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.isLoading = true;
-          changeEmail({ newEmail: this.userEmail, confirmNewEmail: this.confirmNewEmail })
-            .then(() => {
-              this.isLoading = false;
-              this.showAlertSuccess("Updated");
-            })
-            .catch(error => {
-              this.isLoading = false;
-              this.showAlertError(error);
-            })
-        }
-      })
-    },
-    confirmDeactivation() {
-      this.$buefy.dialog.confirm({
-        title: 'Are you sure?',
-        message: 'This action will deactivate your account. You will be signed out and will no longer be able to access the platform. Do you want to proceed?',
-        confirmText: 'Yes, Deactivate',
-        cancelText: 'Cancel',
-        type: 'is-danger',
-        hasIcon: true,
-        onConfirm: () => {
-          this.onDeactivateAccount();
-        }
-      });
-    },
-    loadNotifications() {
-      getUserNotifications()
-        .then(response => {
-          this.notifications = response;
-        })
-        .catch(error => {
-          this.showAlertError(error);
-        })
-    },
-    saveNotification(item) {
-      this.isLoading = true;
-      updateUserNotification(item)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        })
-    },
-    onDeactivateAccount() {
-      this.isLoading = true;
-      deactivateAccount()
-        .then(() => {
-          this.isLoading = false;
-          this.showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
-          setTimeout(() => {
-            this.$store.dispatch('signOut');
-          }, 2000);
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    }
-  },
-  created() {
-    getEmail()
-      .then(response => {
-        this.userEmail = response.email;
-        this.isLoading = false;
+});
+const { userEmail, confirmNewEmail } = form.fields;
+const formErrors = form.errors;
+
+const securityStore = useSecurityStore();
+
+const isLoading = ref(true);
+const notifications = ref<any>(null);
+
+function onChangeEmail() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    isLoading.value = true;
+    changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
+      .then(() => {
+        isLoading.value = false;
+        showAlertSuccess("Updated");
       })
       .catch(error => {
-        this.showAlertError(error);
-        this.isLoading = false;
+        isLoading.value = false;
+        showAlertError(error);
       });
-    this.loadNotifications();
-  }
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
+
+function onDeactivateAccount() {
+  isLoading.value = true;
+  deactivateAccount()
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
+      setTimeout(() => {
+        securityStore.signOut();
+      }, 2000);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function confirmDeactivation() {
+  getDialog().confirm({
+    title: 'Are you sure?',
+    message: 'This action will deactivate your account. You will be signed out and will no longer be able to access the platform. Do you want to proceed?',
+    confirmText: 'Yes, Deactivate',
+    cancelText: 'Cancel',
+    type: 'is-danger',
+    hasIcon: true,
+    onConfirm: () => {
+      onDeactivateAccount();
+    },
+  });
+}
+
+function loadNotifications() {
+  getUserNotifications()
+    .then(response => {
+      notifications.value = response;
+    })
+    .catch(error => {
+      showAlertError(error);
+    });
+}
+
+function saveNotification(item: any) {
+  isLoading.value = true;
+  updateUserNotification(item)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch(error => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+getEmail()
+  .then(response => {
+    form.hydrate({
+      userEmail: response.email || '',
+      confirmNewEmail: '',
+    });
+    isLoading.value = false;
+  })
+  .catch(error => {
+    showAlertError(error);
+    isLoading.value = false;
+  });
+loadNotifications();
 </script>
 
 <style lang="scss">

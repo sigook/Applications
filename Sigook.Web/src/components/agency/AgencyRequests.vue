@@ -9,24 +9,20 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-export default {
-  props: ['agency'],
-  data() {
-    return {
-      isLoading: true,
-      tableConfig: {
-        showMyOrdersCheckbox: false,
-        showQuickActions: false,
-        enableCheckable: false,
-        showRecruiterModal: false,
-        showSalesRepColumn: false,
-        showNotesColumn: false,
-      }
-    }
-  },
-  components: {
-    TableRequests: () => import("../../components/agency_request/TableRequests.vue"),
-  }
-}
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import TableRequests from "../../components/agency_request/TableRequests.vue";
+
+defineProps<{ agency: any }>();
+
+const isLoading = ref(true);
+const tableConfig = ref({
+  showMyOrdersCheckbox: false,
+  showQuickActions: false,
+  enableCheckable: false,
+  showRecruiterModal: false,
+  showSalesRepColumn: false,
+  showNotesColumn: false,
+});
 </script>

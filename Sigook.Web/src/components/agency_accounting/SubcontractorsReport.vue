@@ -2,7 +2,7 @@
   <div>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
       backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
+      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -27,63 +27,56 @@
     </b-table>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { date, currency } from '@/utils/filters';
 import { getPayrollSubcontractors, downloadSubcontractorReport } from "@/api/agencyPayStubApi";
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        sortBy: 3,
-        isDescending: true,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    };
-  },
-  methods: {
-    downloadFile,
-    date,
-    currency,
-    onPageChange(page) {
-      this.serverParams.pageIndex = page;
-      this.loadSubcontractors();
-    },
-    loadSubcontractors() {
-      this.isLoading = true;
-      getPayrollSubcontractors(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map((item) => ({ ...item, actions: null, reportDownloading: false }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error.data);
-        });
-    },
-    downloadSubcontractor(subcontractor) {
-      const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
-      subcontractor.reportDownloading = true;
-      downloadSubcontractorReport(weekEnding)
-        .then(response => {
-          subcontractor.reportDownloading = false;
-          this.downloadFile(response, `Subcontractor_${weekEnding}`);
-        })
-        .catch(error => {
-          subcontractor.reportDownloading = false;
-          this.showAlertError(error.data);
-        });
-    }
-  },
-  created() {
-    this.loadSubcontractors();
-  }
-};
+const isLoading = ref(false);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = ref({
+  sortBy: 3,
+  isDescending: true,
+  pageIndex: 1,
+  pageSize: 30
+});
+
+function onPageChange(page: number) {
+  serverParams.value.pageIndex = page;
+  loadSubcontractors();
+}
+
+function loadSubcontractors() {
+  isLoading.value = true;
+  getPayrollSubcontractors(serverParams.value)
+    .then((response) => {
+      rows.value = response.items.map((item: any) => ({ ...item, actions: null, reportDownloading: false }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error.data);
+    });
+}
+
+function downloadSubcontractor(subcontractor: any) {
+  const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
+  subcontractor.reportDownloading = true;
+  downloadSubcontractorReport(weekEnding)
+    .then(response => {
+      subcontractor.reportDownloading = false;
+      downloadFile(response, `Subcontractor_${weekEnding}`);
+    })
+    .catch(error => {
+      subcontractor.reportDownloading = false;
+      showAlertError(error.data);
+    });
+}
+
+loadSubcontractors();
 </script>

@@ -1,10 +1,11 @@
 import { computed, ComputedRef } from 'vue';
-import store from '@/store';
+import { useSecurityStore } from '@/stores/security';
 import roles from '@/security/roles';
 
 export function useBillingAdmin(): { isPayrollManager: ComputedRef<boolean> } {
+  const securityStore = useSecurityStore();
   const isPayrollManager = computed(() =>
-    store.state.security.userRoles.some(
+    securityStore.userRoles.some(
       (ur: string) => ur === roles.admin || ur === roles.payroll || ur === roles.agency
     )
   );

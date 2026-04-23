@@ -4,7 +4,7 @@
       <h3 class="fw-700">Location</h3>
       <button @click="showModal = true" class="fw-700 fz-1 sm-btn outline-btn orange-button btn-radius">Add</button>
     </div>
-    <b-table :data="data" narrowed hoverable paginated :per-page="pageSize" :current-page.sync="pageIndex"
+    <b-table :data="data" narrowed hoverable paginated :per-page="pageSize" v-model:current-page="pageIndex"
       pagination-rounded @cellclick="onCellClick">
       <b-table-column field="id" v-slot="props" searchable :custom-search="onSearchLocation">
         <span>
@@ -13,7 +13,7 @@
           {{ props.row.city.province.code }},
           {{ props.row.postalCode }}
         </span>
-        <span v-if="props.row.isBilling" class="billing-address">{{ $t('AgencyBillingAddress') }}</span>
+        <span v-if="props.row.isBilling" class="billing-address">{{ 'Billing Address' }}</span>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-button type="is-danger" outlined rounded icon-right="delete"
@@ -33,78 +33,83 @@
     </b-modal>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyLocation, deleteAgencyCompanyLocation } from "@/api/agencyCompanyApi";
-export default {
-  data() {
-    return {
-      pageIndex: 1,
-      pageSize: 8,
-      profileId: this.$route.params.id,
-      data: [],
-      showModal: false,
-      currentLocation: null,
-    }
-  },
-  methods: {
-    onCellClick(row, column) {
-      switch (column._props.field) {
-        case 'id':
-          this.openEditModal(row);
-          break;
-      }
-    },
-    onSearchLocation(row, searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      return (
-        row.address.toLowerCase().includes(lowerSearchTerm) ||
-        row.city.value.toLowerCase().includes(lowerSearchTerm) ||
-        row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
-        row.postalCode.toLowerCase().includes(lowerSearchTerm)
-      );
-    },
-    async loadCompanyLocations() {
-      this.data = await getAgencyCompanyLocation(this.profileId);
-      this.data = this.data.map(d => ({ ...d, actions: null }));
-    },
-    async onUpdateModal() {
-      await this.loadCompanyLocations();
-      this.closeModal();
-    },
-    closeModal() {
-      this.currentLocation = null;
-      this.showModal = false;
-    },
-    openEditModal(item) {
-      this.currentLocation = item;
-      this.showModal = true;
-    },
-    onDeleteLocation(id, index) {
-      this.showAlertConfirm("Are you sure", "You want to delete this location")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyCompanyLocation(this.profileId, id)
-              .then(() => {
-                this.isLoading = false;
-                this.showAlertSuccess('Deleted')
-                this.data.splice(index, 1);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                this.showAlertError(error)
-              })
-          }
-        }).catch((error) => {
-          this.showAlertError(error)
-        })
-    }
-  },
-  async created() {
-    await this.loadCompanyLocations();
-  },
-  components: {
-    LocationForm: () => import("./LocationForm.vue")
+import LocationForm from "./LocationForm.vue";
+
+const route = useRoute();
+
+const pageIndex = ref(1);
+const pageSize = 8;
+const profileId = route.params.id;
+const data = ref<any[]>([]);
+const showModal = ref(false);
+const currentLocation = ref<any>(null);
+const isLoading = ref(false);
+
+function onCellClick(row: any, column: any) {
+  switch (column.field) {
+    case 'id':
+      openEditModal(row);
+      break;
   }
 }
+
+function onSearchLocation(row: any, searchTerm: string) {
+  const lowerSearchTerm = searchTerm.toLowerCase();
+  return (
+    row.address.toLowerCase().includes(lowerSearchTerm) ||
+    row.city.value.toLowerCase().includes(lowerSearchTerm) ||
+    row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
+    row.postalCode.toLowerCase().includes(lowerSearchTerm)
+  );
+}
+
+async function loadCompanyLocations() {
+  const response = await getAgencyCompanyLocation(profileId);
+  data.value = response.map((d: any) => ({ ...d, actions: null }));
+}
+
+async function onUpdateModal() {
+  await loadCompanyLocations();
+  closeModal();
+}
+
+function closeModal() {
+  currentLocation.value = null;
+  showModal.value = false;
+}
+
+function openEditModal(item: any) {
+  currentLocation.value = item;
+  showModal.value = true;
+}
+
+function onDeleteLocation(id: any, index: number) {
+  showAlertConfirm("Are you sure", "You want to delete this location")
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyCompanyLocation(profileId, id)
+          .then(() => {
+            isLoading.value = false;
+            showAlertSuccess('Deleted');
+            data.value.splice(index, 1);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    }).catch((error) => {
+      showAlertError(error);
+    });
+}
+
+(async () => {
+  await loadCompanyLocations();
+})();
 </script>

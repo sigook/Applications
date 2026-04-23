@@ -1,29 +1,25 @@
 <template>
-  <b-loading active></b-loading>
+  <b-loading v-model="isLoading"></b-loading>
 </template>
 
-<script lang="ts">
-import Oidc from 'oidc-client';
-import menu from "@/security/menu";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useSecurityStore } from '@/stores/security';
+import mgr from '@/security/securityService';
+import menu from '@/security/menu';
 
-export default {
-  data() {
-    return {
-      userManager: new Oidc.UserManager({} as any)
-    }
-  },
-  async created() {
-    if (!this.$store.state.security.user) {
-      await this.userManager.signinRedirectCallback();
-      await this.$store.dispatch("getUser");
-      const roles = await this.$store.state.security.userRoles;
-      let homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-      this.$router.push(homePageUrl);
-    } else {
-      const roles = await this.$store.state.security.userRoles;
-      let homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-      this.$router.push(homePageUrl);
-    }
+const router = useRouter();
+const securityStore = useSecurityStore();
+const isLoading = ref(true);
+
+(async () => {
+  if (!securityStore.user) {
+    await mgr.signinRedirectCallback();
+    await securityStore.getUser();
   }
-}
+  const roles = await securityStore.userRoles;
+  const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
+  router.push(homePageUrl);
+})();
 </script>

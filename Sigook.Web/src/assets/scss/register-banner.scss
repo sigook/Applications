@@ -15,7 +15,7 @@
     display: flex;
     .banner-register {
       flex-basis: 30%;
-      background-image: url('assets/images/bg1.jpg');
+      background-image: url('../images/bg1.jpg');
     }
 
     form {
@@ -102,19 +102,19 @@
     */
     /*
     .about:before {
-      background-image: url("assets/images/icon_user.png");
+      background-image: url("../images/icon_user.png");
     }
 
     .documents:before {
-      background-image: url("assets/images/icon_report.svg");
+      background-image: url("../images/icon_report.svg");
     }
 
     .work:before {
-      background-image: url("assets/images/icon_industry.png");
+      background-image: url("../images/icon_industry.png");
     }
 
     .experience:before {
-      background-image: url("assets/images/icon_time.png");
+      background-image: url("../images/icon_time.png");
     }
     */
   }

@@ -3,12 +3,6 @@
 </template>
 
 
-<script lang="ts">
-
-export default {
-  components: {
-    JobPosition: () => import("@/components/landing/JobPosition.vue")
-  }
-}
-
+<script setup lang="ts">
+import JobPosition from "@/components/landing/JobPosition.vue";
 </script>

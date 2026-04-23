@@ -1,23 +1,25 @@
-import Oidc from "oidc-client";
+import { UserManager, WebStorageStateStore, Log } from "oidc-client-ts";
 
 const redirectUrl = window.location.origin;
-const securityServerUrl = process.env.VUE_APP_SECURITY_SERVER;
-const client = process.env.VUE_APP_CLIENT;
+const securityServerUrl = import.meta.env.VUE_APP_SECURITY_SERVER;
+const client = import.meta.env.VUE_APP_CLIENT;
 
-if (process.env.NODE_ENV !== "production") {
-  Oidc.Log.logger = console;
-  Oidc.Log.level = Oidc.Log.ERROR;
+if (import.meta.env.MODE !== "production") {
+  Log.setLogger(console);
+  Log.setLevel(Log.ERROR);
 }
 
-const mgr = new Oidc.UserManager({
+const mgr = new UserManager({
   authority: securityServerUrl,
   client_id: client,
   redirect_uri: redirectUrl + "/callback",
-  response_type: "id_token token",
-  scope: "openid profile api1 roles",
+  response_type: "code",
+  scope: "openid profile api1 roles offline_access",
   post_logout_redirect_uri: redirectUrl + "/callback",
   automaticSilentRenew: true,
   silent_redirect_uri: redirectUrl + "/silent-refresh",
+  loadUserInfo: true,
+  userStore: new WebStorageStateStore({ store: window.localStorage }),
 });
 
 export default mgr;
