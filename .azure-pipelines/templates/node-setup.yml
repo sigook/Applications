@@ -13,6 +13,9 @@ steps:
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       nvm install ${{ parameters.nodeVersion }}
       nvm use ${{ parameters.nodeVersion }}
+      NODE_BIN="$(dirname "$(nvm which current)")"
+      echo "##vso[task.prependpath]$NODE_BIN"
       echo "Node version: $(node --version)"
       echo "NPM version: $(npm --version)"
+      echo "Prepended to PATH: $NODE_BIN"
     displayName: 'Setup Node.js ${{ parameters.nodeVersion }} via NVM'
