@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -16,6 +16,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using static Covenant.Api.AgencyModule.AgencyWorkerProfileRequestHistory.Controllers.AgencyWorkerProfileRequestHistoryController;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHistory
 {
@@ -31,7 +32,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
             HttpResponseMessage response = await _client.GetAsync(
                 RouteUrl.Replace("{workerProfileId}", Startup.FakeWorkerProfile.Id.ToString()));
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<RequestListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestListModel>>();
             Assert.NotEmpty(list.Items);
         }
         public class Startup

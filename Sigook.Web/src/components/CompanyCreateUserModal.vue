@@ -7,13 +7,13 @@
     </b-message>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
+        <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name *"
           :message="formErrors.name">
           <b-input type="text" v-model="name" name="name" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.lastname ? 'is-danger' : ''" label="Last Name"
+        <b-field :type="formErrors.lastname ? 'is-danger' : ''" label="Last Name *"
           :message="formErrors.lastname">
           <b-input type="text" v-model="lastname" name="lastname" />
         </b-field>
@@ -29,7 +29,7 @@
           @formattedPhone="(phone) => mobileNumber = phone"></phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+        <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email *"
           :message="formErrors.email">
           <b-input type="email" v-model="email" name="email" />
         </b-field>

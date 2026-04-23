@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCompanyProfileLocation.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCompanyProfileLocation.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -14,6 +14,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileLocation;
 
@@ -45,7 +46,7 @@ public class AgencyCompanyProfileLocationControllerTest : IClassFixture<CustomWe
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadAsJsonAsync<CompanyProfileLocationDetailModel>();
+        var detail = await response.Content.ReadFromJsonAsync<CompanyProfileLocationDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         CompanyProfileLocation entity = await context.Set<CompanyProfileLocation>().SingleAsync(c => c.LocationId == detail.Id);
         Assert.Equal(model.Address, entity.Location.Address);
@@ -86,7 +87,7 @@ public class AgencyCompanyProfileLocationControllerTest : IClassFixture<CustomWe
     {
         var response = await _client.GetAsync(RequestUri());
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadAsJsonAsync<List<LocationDetailModel>>();
+        var list = await response.Content.ReadFromJsonAsync<List<LocationDetailModel>>();
         Assert.NotEmpty(list);
         var entity = Startup.FakeLocation;
         var model = list.Single(c =>
@@ -110,7 +111,7 @@ public class AgencyCompanyProfileLocationControllerTest : IClassFixture<CustomWe
         CompanyProfileLocation entity = Startup.FakeLocation;
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.LocationId}");
         response.EnsureSuccessStatusCode();
-        var model = await response.Content.ReadAsJsonAsync<CompanyProfileLocationDetailModel>();
+        var model = await response.Content.ReadFromJsonAsync<CompanyProfileLocationDetailModel>();
         Assert.Equal(entity.LocationId, model.Id);
         Assert.Equal(entity.Location.Address, model.Address);
         Assert.Equal(entity.Location.PostalCode, model.PostalCode);

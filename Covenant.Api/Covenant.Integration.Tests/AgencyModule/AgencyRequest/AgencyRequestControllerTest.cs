@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequest.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequest.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -31,6 +31,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest;
 
@@ -53,7 +54,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Request entity = Data.FakeRequest;
         HttpResponseMessage response = await _client.GetAsync(RequestUri());
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadAsJsonAsync<PaginatedList<AgencyRequestListModel>>();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyRequestListModel>>();
         AgencyRequestListModel model = list.Items.Single(c => c.Id == entity.Id);
         AssertListModelEntity(model, entity);
     }
@@ -85,7 +86,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/Board");
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadAsJsonAsync<PaginatedList<WorkerRequestAgencyBoardModel>>();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestAgencyBoardModel>>();
         Assert.NotEmpty(list.Items);
         Request entity = Data.FakeRequest;
         var workerRequest = entity.Workers.First();
@@ -127,7 +128,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeRequest.Id}");
         response.EnsureSuccessStatusCode();
-        AgencyRequestDetailModel model = await response.Content.ReadAsJsonAsync<AgencyRequestDetailModel>();
+        AgencyRequestDetailModel model = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
         Assert.Equal(model.Id, Data.FakeRequest.Id);
         Assert.Equal(model.JobTitle, Data.FakeRequest.JobTitle);
         Assert.EndsWith(Data.FakeCompany.Logo.FileName, model.CompanyLogo);
@@ -183,7 +184,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         };
         var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadAsJsonAsync<AgencyRequestDetailModel>();
+        var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Request.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
@@ -234,7 +235,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         };
         var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadAsJsonAsync<AgencyRequestDetailModel>();
+        var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Request.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
@@ -318,7 +319,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         var model = new RequestCancellationDetailModel { OtherCancellationReason = "Contact finished" };
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{updateUrl}/Cancel", model);
         response.EnsureSuccessStatusCode();
-        Assert.Equal(model.OtherCancellationReason, (await (await _client.GetAsync(updateUrl)).Content.ReadAsJsonAsync<AgencyRequestDetailModel>()).CancellationDetail);
+        Assert.Equal(model.OtherCancellationReason, (await (await _client.GetAsync(updateUrl)).Content.ReadFromJsonAsync<AgencyRequestDetailModel>()).CancellationDetail);
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         Assert.Equal(RequestStatus.Cancelled, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
         var detail = await context.RequestCancellationDetail.SingleAsync(c => c.RequestId == request.Id);

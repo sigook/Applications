@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyRequest.Controllers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -29,6 +29,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
 {
@@ -51,7 +52,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             Assert.NotNull(response.Headers.Location);
             response = await _client.GetAsync(response.Headers.Location);
             response.EnsureSuccessStatusCode();
-            CompanyRequestDetailModel detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
+            CompanyRequestDetailModel detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
             Assert.NotNull(detail);
             Data.AssertModel(Data.NewRequest, detail);
         }
@@ -65,7 +66,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             Assert.NotNull(response.Headers.Location);
             response = await _client.GetAsync(response.Headers.Location);
             response.EnsureSuccessStatusCode();
-            CompanyRequestDetailModel detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
+            CompanyRequestDetailModel detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
             Assert.NotNull(detail);
             Data.AssertModel(model, detail);
         }
@@ -75,7 +76,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
         {
             HttpResponseMessage response = await _client.GetAsync(Url);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<RequestListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestListModel>>();
             Assert.NotEmpty(list.Items);
             foreach (RequestListModel item in list.Items) Assert.NotEqual(Guid.Empty, item.Id);
         }
@@ -88,7 +89,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, model);
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(updateUrl);
-            CompanyRequestDetailModel detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
+            CompanyRequestDetailModel detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
             Assert.Equal(model.Requirements, detail.Requirements);
         }
 
@@ -99,7 +100,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{updateUrl}/Cancel", new RequestCancellationDetailModel { CancellationReasonId = Data.ReasonCancellationRequest.Id });
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(updateUrl);
-            CompanyRequestDetailModel detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
+            CompanyRequestDetailModel detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
             Assert.Equal(RequestStatus.Cancelled, detail.Status);
         }
 
@@ -114,7 +115,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             context.CompanyProfileJobPositionRate.UpdateRange(rates);
             await context.SaveChangesAsync();
             response = await _client.GetAsync(response.Headers.Location);
-            var detail = await response.Content.ReadAsJsonAsync<CompanyRequestDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
             Assert.NotNull(detail);
             Assert.NotNull(detail.JobPositionRate);
         }

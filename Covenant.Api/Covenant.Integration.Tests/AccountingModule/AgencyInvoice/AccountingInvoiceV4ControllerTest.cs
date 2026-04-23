@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -19,6 +19,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AccountingModule.AgencyInvoice;
 
@@ -46,7 +47,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"api/agency/accounting/Invoices/Preview", model);
         response.EnsureSuccessStatusCode();
-        var preview = await response.Content.ReadAsJsonAsync<InvoicePreviewModel>();
+        var preview = await response.Content.ReadFromJsonAsync<InvoicePreviewModel>();
         Assert.NotNull(preview);
         Assert.NotEmpty(preview.Items);
         Assert.NotEmpty(preview.Discounts);

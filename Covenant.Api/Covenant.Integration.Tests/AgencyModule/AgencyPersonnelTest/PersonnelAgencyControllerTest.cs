@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -12,6 +12,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
 {
@@ -33,7 +34,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<PersonnelAgencyModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<PersonnelAgencyModel>>();
             AgencyPersonnel entity = Startup.FakeAgencyPersonnel1;
             var model = list.Single(c => c.Id == entity.Id);
             Assert.Equal(entity.Agency.FullName, model.Name);

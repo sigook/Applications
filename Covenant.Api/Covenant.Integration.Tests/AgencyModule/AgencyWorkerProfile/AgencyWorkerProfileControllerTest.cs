@@ -1,4 +1,4 @@
-using Covenant.Api;
+﻿using Covenant.Api;
 using Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
 {
@@ -170,7 +171,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{FakeWorkerProfileToFilter.Id}");
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<WorkerProfileDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<WorkerProfileDetailModel>();
             WorkerProfile entity = FakeWorkerProfileToFilter;
             AssertEntityAndModel(entity, detail);
         }
@@ -180,7 +181,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         {
             var response = await _client.GetAsync($"{RequestUri()}/{FakeWorkerProfileToFilter.Id}/OtherDocument");
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<List<CovenantFileModel>>();
+            var list = await response.Content.ReadFromJsonAsync<List<CovenantFileModel>>();
             Assert.NotEmpty(list);
             var entity = FakeWorkerProfileToFilter.OtherDocuments.Single();
             var model = list.Single(s => s.Id == entity.Id);

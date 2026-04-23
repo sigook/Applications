@@ -88,6 +88,12 @@ async function validateForm() {
     }
     location.value.mainIntersection = values.mainIntersection;
     location.value.entrance = values.entrance;
+    location.value.latitude = location.value.latitude === '' || location.value.latitude == null
+      ? null
+      : Number(location.value.latitude);
+    location.value.longitude = location.value.longitude === '' || location.value.longitude == null
+      ? null
+      : Number(location.value.longitude);
     if (location.value.id) {
       updateLocation(location.value.id);
     } else {

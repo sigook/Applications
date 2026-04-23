@@ -333,12 +333,12 @@ public class CompanyService : ICompanyService
                 BaseModel<Guid> industry = industries.FirstOrDefault(i => i.Value.Equals(record.PrimaryIndustry, StringComparison.OrdinalIgnoreCase));
                 if (industry is null)
                 {
-                   bulkValidation.Errors.Add(new ValidationFailure("PrimaryIndustry", $"The industry '{record.PrimaryIndustry}' does not exist in the system. Please create it before proceeding with the bulk upload."));
+                    bulkValidation.Errors.Add(new ValidationFailure("PrimaryIndustry", $"The industry '{record.PrimaryIndustry}' does not exist in the system. Please create it before proceeding with the bulk upload."));
                 }
 
-                CityModel city = await catalogRepository.GetCity(record.CompanyCity); 
+                CityModel city = await catalogRepository.GetCity(record.CompanyCity);
 
-                if(city is null)
+                if (city is null)
                 {
                     bulkValidation.Errors.Add(new ValidationFailure("CompanyCity", $"The City '{record.CompanyCity}' does not exist in the system. Please create it before proceeding with the bulk upload."));
                 }

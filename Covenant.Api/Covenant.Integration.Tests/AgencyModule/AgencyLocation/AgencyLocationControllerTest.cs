@@ -1,4 +1,4 @@
-using Covenant.Api;
+﻿using Covenant.Api;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Sigook.Agency;
 using Covenant.Common.Entities;
@@ -13,6 +13,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
 {
@@ -74,7 +75,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
             };
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<LocationDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<LocationDetailModel>();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
             Covenant.Common.Entities.Agency.AgencyLocation entity = await context.Set<Covenant.Common.Entities.Agency.AgencyLocation>().SingleAsync(c => c.LocationId == detail.Id);
             Assert.Equal(model.Address, entity.Location.Address);
@@ -109,7 +110,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<List<LocationDetailModel>>();
+            var list = await response.Content.ReadFromJsonAsync<List<LocationDetailModel>>();
             Assert.NotEmpty(list);
             var entity = FakeLocation;
             Assert.NotNull(list.Single(c =>
@@ -130,7 +131,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
             var entity = FakeLocation;
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.LocationId}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<LocationDetailModel>();
+            var model = await response.Content.ReadFromJsonAsync<LocationDetailModel>();
             Assert.Equal(entity.LocationId, model.Id);
             Assert.Equal(entity.Location.Address, model.Address);
             Assert.Equal(entity.Location.PostalCode, model.PostalCode);

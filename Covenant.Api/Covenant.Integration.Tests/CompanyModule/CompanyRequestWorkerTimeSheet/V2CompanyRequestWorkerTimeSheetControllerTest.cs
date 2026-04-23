@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Models;
+﻿using Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Models;
 using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers;
 using Covenant.Common.Configuration;
@@ -25,6 +25,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
 {
@@ -48,7 +49,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
         {
             HttpResponseMessage response = await _client.GetAsync(_requestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<TimeSheetListModel>>();
             Assert.NotEmpty(list);
             foreach (TimeSheet entity in Data.TimeSheets)
             {
@@ -91,7 +92,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             };
             HttpResponseMessage response = await _client.PostAsJsonAsync(_requestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<TimeSheetListModel>();
+            var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
             TimeSheet entity = await context.TimeSheet.SingleAsync(s => s.Id == detail.Id);
             Assert.Equal(model.TimeIn.Date, entity.Date);
@@ -143,7 +144,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             };
             HttpResponseMessage response = await _client.PostAsJsonAsync($"{_requestUri()}/ClockIn", model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<RegisterTimeSheetResultModel>();
+            var detail = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
             TimeSheet entity = await context.TimeSheet.SingleAsync(s => s.Id == detail.TimeSheetId);
             Assert.Equal(model.ClockIn, entity.ClockIn.GetValueOrDefault().TimeOfDay);

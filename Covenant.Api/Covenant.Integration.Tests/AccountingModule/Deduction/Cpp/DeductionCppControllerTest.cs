@@ -1,4 +1,4 @@
-using Covenant.Api.AccountingModule.Deduction;
+﻿using Covenant.Api.AccountingModule.Deduction;
 using Covenant.Api.AccountingModule.Deduction.Cpp;
 using Covenant.Common.Entities.Deductions;
 using Covenant.Common.Interfaces;
@@ -13,6 +13,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AccountingModule.Deduction.Cpp
 {
@@ -77,7 +78,7 @@ namespace Covenant.Integration.Tests.AccountingModule.Deduction.Cpp
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{period}?Year={Startup.Year}");
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<CppModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<CppModel>>();
             Assert.NotEmpty(list.Items);
         }
 

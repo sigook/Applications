@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyRequestWorker.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -28,6 +28,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
 {
@@ -49,7 +50,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             var requestUri = $"{RequestUri()}?{nameof(GetWorkersRequestFilter.Statuses)}={Data.FakeWorkerRequest.WorkerRequestStatus}";
             HttpResponseMessage response = await _client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
             Assert.NotEmpty(list.Items);
             var item = list.Items[0];
             Assert.NotNull(item);
@@ -64,7 +65,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeWorkerRequest.WorkerId}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<AgencyWorkerRequestModel>();
+            var model = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
             Assert.NotNull(model);
             Assert.NotEqual(Guid.Empty, model.WorkerProfileId);
         }
@@ -89,7 +90,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             Assert.Equal(model.Comments, entity.RejectComments);
 
             response = await _client.GetAsync(RequestUri());
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
             Assert.Equal(model.Comments, list.Items.Single(w => w.Id == worker.Id).RejectComments);
         }
 

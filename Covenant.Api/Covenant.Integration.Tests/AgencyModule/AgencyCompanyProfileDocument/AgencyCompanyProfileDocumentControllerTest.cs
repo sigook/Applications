@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCompanyProfileDocument.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCompanyProfileDocument.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -13,6 +13,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileDocument
 {
@@ -36,7 +37,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileDocument
             var model = new CovenantFileModel("contract.pdf", "Contract 2021");
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<Guid>();
+            var detail = await response.Content.ReadFromJsonAsync<Guid>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CompanyProfileDocuments.SingleAsync(c => c.DocumentId == detail);
             Assert.NotNull(entity.CreatedBy);
@@ -50,7 +51,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileDocument
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<CovenantFileModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<CovenantFileModel>>();
             Assert.NotEmpty(list.Items);
             var entity = Startup.FakeDocument;
             var model = list.Items.Single(c => c.Id == entity.DocumentId);

@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Models;
@@ -11,6 +11,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
 {
@@ -32,7 +33,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
             Assert.NotEmpty(list);
             var entity = Startup.FakePosition;
             var model = list.Single(c =>
@@ -50,7 +51,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
             CompanyProfileJobPositionRate entity = Startup.FakePosition;
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.Id}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<CompanyProfileJobPositionRateModel>();
+            var model = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.Rate, model.Rate);
             Assert.Equal(entity.Description, model.Description);

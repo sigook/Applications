@@ -1,4 +1,4 @@
-using Covenant.Api.Shared.WorkerComment.Models;
+﻿using Covenant.Api.Shared.WorkerComment.Models;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Worker;
@@ -15,6 +15,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.Shared.WorkerComment
 {
@@ -41,7 +42,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(response.Headers.Location);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<WorkerCommentModel>();
+            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
             Assert.Equal(model.Comment, detail.Comment);
             Assert.Equal(model.Rate, detail.Rate);
         }
@@ -54,7 +55,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(response.Headers.Location);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<WorkerCommentModel>();
+            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
             Assert.Equal(model.Comment, detail.Comment);
             Assert.Equal(model.Rate, detail.Rate);
         }
@@ -67,7 +68,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
             HttpResponseMessage response = await _client.PutAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(url);
-            var detail = await response.Content.ReadAsJsonAsync<WorkerCommentModel>();
+            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
             Assert.Equal(model.Comment, detail.Comment);
             Assert.Equal(model.Rate, detail.Rate);
         }
@@ -77,7 +78,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
         {
             HttpResponseMessage response = await _client.GetAsync(Uri(Data.WorkerProfile.Worker.Id));
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<WorkerCommentModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerCommentModel>>();
             Assert.NotEmpty(list.Items);
             Assert.All(list.Items, m => Assert.NotNull(m.Logo));
         }

@@ -1,4 +1,4 @@
-using Covenant.Api.Shared.RequestShift.Controllers;
+﻿using Covenant.Api.Shared.RequestShift.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
@@ -13,6 +13,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.Shared.RequestShift
 {
@@ -26,7 +27,7 @@ namespace Covenant.Integration.Tests.Shared.RequestShift
         {
             HttpResponseMessage response = await _client.GetAsync(RequestShiftController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString()));
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<ShiftModel>();
+            var model = await response.Content.ReadFromJsonAsync<ShiftModel>();
             Assert.Equal(Data.FakeRequest.Shift.Monday, model.Monday);
             Assert.Equal(Data.FakeRequest.Shift.MondayStart, model.MondayStart);
             Assert.Equal(Data.FakeRequest.Shift.MondayFinish, model.MondayFinish);

@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Models.Location;
@@ -11,6 +11,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
 {
@@ -24,7 +25,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
         {
             HttpResponseMessage response = await _client.GetAsync("api/CompanyLocation");
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<List<LocationDetailModel>>();
+            var list = await response.Content.ReadFromJsonAsync<List<LocationDetailModel>>();
             Assert.NotEmpty(list);
             ICollection<CompanyProfileLocation> locations = Data.CompanyProfile.Locations;
             foreach (CompanyProfileLocation item in locations)

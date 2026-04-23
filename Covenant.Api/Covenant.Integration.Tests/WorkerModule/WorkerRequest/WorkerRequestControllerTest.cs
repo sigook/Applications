@@ -1,4 +1,4 @@
-using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
+﻿using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
 {
@@ -40,7 +41,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             context.SaveChanges();
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<WorkerRequestListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
             Assert.NotEmpty(list.Items);
             Request request = Data.FakeRequest;
             WorkerRequestListModel model = list.Items.Single(r => r.Id == request.Id);
@@ -61,7 +62,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeRequest.Id}");
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<WorkerRequestDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<WorkerRequestDetailModel>();
             Assert.NotNull(detail);
             Assert.Equal(Data.FakeRequest.Id, detail.Id);
             Assert.Equal(Data.FakeRequest.JobTitle, detail.JobTitle);
@@ -95,7 +96,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             var url = $"{RequestUri()}/{Data.FakeRequest.Id}/Apply";
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<RequestApplicantDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicant.SingleAsync(s => s.Id == detail.Id);
             Assert.Equal(detail.WorkerProfileId, entity.WorkerProfileId);

@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Notification;
+﻿using Covenant.Common.Entities.Notification;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Utils.Extensions;
@@ -9,6 +9,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.Notifications.Tests
 {
@@ -24,7 +25,7 @@ namespace Covenant.Integration.Tests.Notifications.Tests
         {
             HttpResponseMessage response = await _client.GetAsync(Url);
             response.EnsureSuccessStatusCode();
-            List<UserNotificationListModel> list = await response.Content.ReadAsJsonAsync<List<UserNotificationListModel>>();
+            List<UserNotificationListModel> list = await response.Content.ReadFromJsonAsync<List<UserNotificationListModel>>();
             Assert.NotEmpty(list);
             Assert.All(list, m => Assert.False(m.EmailNotification));
         }
@@ -37,7 +38,7 @@ namespace Covenant.Integration.Tests.Notifications.Tests
             int id = NotificationType.NewRequestNotifyWorker.Id;
             HttpResponseMessage response = await _client.PutAsJsonAsync(Url, new UserNotificationUpdateModel { Id = id, EmailNotification = emailNotifications });
             response.EnsureSuccessStatusCode();
-            List<UserNotificationListModel> list = await (await _client.GetAsync(Url)).Content.ReadAsJsonAsync<List<UserNotificationListModel>>();
+            List<UserNotificationListModel> list = await (await _client.GetAsync(Url)).Content.ReadFromJsonAsync<List<UserNotificationListModel>>();
             Assert.Equal(emailNotifications, list.First(m => m.Id == id).EmailNotification);
         }
 

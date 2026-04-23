@@ -4,7 +4,7 @@
 
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="'Title'" :type="formErrors.title ? 'is-danger' : ''"
+        <b-field :label="'Title *'" :type="formErrors.title ? 'is-danger' : ''"
           :message="formErrors.title || ''">
           <b-select v-model="title" name="title" expanded :placeholder="'Select'">
             <option :value="item" v-for="(item, index) in titleOptions" :key="'companyContactPersons' + index">
@@ -15,7 +15,7 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Name'" :type="formErrors.firstName ? 'is-danger' : ''"
+        <b-field :label="'Name *'" :type="formErrors.firstName ? 'is-danger' : ''"
           :message="formErrors.firstName || ''">
           <b-input v-model="firstName" name="name" />
         </b-field>
@@ -29,21 +29,21 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Last Name'" :type="formErrors.lastName ? 'is-danger' : ''"
+        <b-field :label="'Last Name *'" :type="formErrors.lastName ? 'is-danger' : ''"
           :message="formErrors.lastName || ''">
           <b-input v-model="lastName" name="lastname" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Position'" :type="formErrors.position ? 'is-danger' : ''"
+        <b-field :label="'Position *'" :type="formErrors.position ? 'is-danger' : ''"
           :message="formErrors.position || ''">
           <b-input v-model="position" name="position" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="false" :model="'Office Number'" :defaultValue="contactPerson.officeNumber"
+        <phone-input :required="false" :model="'Office Number'" label="Office Number" :defaultValue="contactPerson.officeNumber"
           @formattedPhone="(phone) => contactPerson.officeNumber = phone">
         </phone-input>
       </div>
@@ -55,13 +55,13 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="false" :model="'Mobile Number'" :defaultValue="contactPerson.mobileNumber"
+        <phone-input :required="false" :model="'Mobile Number'" label="Mobile Number" :defaultValue="contactPerson.mobileNumber"
           @formattedPhone="(phone) => contactPerson.mobileNumber = phone">
         </phone-input>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="'Email'" :type="formErrors.email ? 'is-danger' : ''"
+        <b-field :label="'Email *'" :type="formErrors.email ? 'is-danger' : ''"
           :message="formErrors.email || ''">
           <b-input type="email" v-model="email" name="email" />
         </b-field>
