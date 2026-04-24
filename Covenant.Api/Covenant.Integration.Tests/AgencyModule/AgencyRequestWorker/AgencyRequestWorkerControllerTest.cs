@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestWorker.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestWorker.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
@@ -14,6 +14,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker;
 
@@ -39,7 +40,7 @@ public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFi
         if (filter.Equals("Filter")) requestUri = $"{requestUri}?status={workerRequest.WorkerRequestStatus}&filter=name";
         HttpResponseMessage response = await _client.GetAsync(requestUri);
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadAsJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
         Assert.NotEmpty(list.Items);
         AgencyWorkerRequestModel model = list.Items.Single(w => w.Id == workerRequest.Id);
         Assert.Equal(model.Id, workerRequest.Id);
@@ -66,7 +67,7 @@ public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFi
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeWorkerRequestList.Id}");
         response.EnsureSuccessStatusCode();
-        AgencyWorkerRequestModel model = await response.Content.ReadAsJsonAsync<AgencyWorkerRequestModel>();
+        AgencyWorkerRequestModel model = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
         Assert.Equal(Data.FakeWorkerRequestList.Id, model.Id);
     }
 
@@ -76,7 +77,7 @@ public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFi
         WorkerProfile worker = Data.FakeWorkerToBook;
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/{worker.WorkerId}/Book", new { });
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadAsJsonAsync<AgencyWorkerRequestModel>();
+        var detail = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequest.SingleAsync(s => s.Id == detail.Id);
         Assert.Equal(worker.WorkerId, entity.WorkerId);
@@ -97,7 +98,7 @@ public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFi
         Assert.NotNull(entity.RejectedAt);
 
         response = await _client.GetAsync(RequestUri());
-        var list = await response.Content.ReadAsJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
         AgencyWorkerRequestModel detail = list.Items.Single(w => w.Id == worker.Id);
         Assert.Equal(model.Comments, detail.RejectComments);
         Assert.Equal(entity.RejectedAt, detail.RejectedAt);

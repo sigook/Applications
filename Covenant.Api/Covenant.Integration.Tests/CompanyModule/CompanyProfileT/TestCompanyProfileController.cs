@@ -21,6 +21,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
 {
@@ -44,7 +45,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
             HttpResponseMessage response = await _client.PostAsJsonAsync("api/CompanyProfile", model);
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(response.Headers.Location);
-            var detail = await response.Content.ReadAsJsonAsync<CompanyProfileDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             Assert.NotNull(detail);
             Assert.Equal(model.Name, detail.BusinessName);
             Assert.Equal(model.Name, detail.FullName);

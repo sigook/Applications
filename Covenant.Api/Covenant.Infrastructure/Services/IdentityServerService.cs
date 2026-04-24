@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
@@ -53,16 +54,16 @@ public class IdentityServerService : IIdentityServerService
             var content = JsonSerializer.Serialize(model);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PostAsync("CreateUser", stringContent);
-            var stringResponse = await response.Content.ReadAsStringAsync();
+            var result = await response.Content.ReadFromJsonAsync<IdModel>();
             if (response.IsSuccessStatusCode)
             {
-                var result = JsonSerializer.Deserialize<IdModel>(stringResponse);
                 var newUser = new User(model.Email, result.Id);
                 await userRepository.Create(newUser);
                 await userRepository.SaveChangesAsync();
                 return Result.Ok(newUser);
             }
-            return Result.Fail<User>(stringResponse);
+            var error = await response.Content.ReadAsStringAsync();
+            return Result.Fail<User>(error);
         }
         catch (Exception ex)
         {

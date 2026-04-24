@@ -5,7 +5,7 @@
       <div class="col-12">
         <b-field>
           <template #label>
-            {{ $t("File") }} <span class="has-text-danger">*</span>
+            {{ "File" }} <span class="has-text-danger">*</span>
           </template>
           <div v-if="otherDocument && otherDocument.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -14,102 +14,106 @@
           </div>
           <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedDocFile }">
             <b-upload v-model="selectedDocFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
-              @input="handleDocFileSelected" class="file-label" rounded>
+              @update:modelValue="handleDocFileSelected" class="file-label" rounded>
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">{{ selectedDocFile ? selectedDocFile.name : $t('AddFile') }}</span>
+                <span class="file-label">{{ selectedDocFile ? selectedDocFile.name : 'Add file' }}</span>
               </span>
             </b-upload>
           </b-field>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field :type="errors.has('Description') ? 'is-danger' : ''"
-          :message="errors.has('Description') ? errors.first('Description') : ''">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
           <template #label>
-            {{ $t("Description") }} <span class="has-text-danger">*</span>
+            {{ "Description" }} <span class="has-text-danger">*</span>
           </template>
-          <b-input type="text" v-model="otherDocument.description" name="Description"
-            v-validate="'required|max:20'" />
+          <b-input type="text" v-model="description" name="Description" />
         </b-field>
       </div>
       <div class="col-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
-import multipartUploadMixin from "../../mixins/multipartUploadMixin";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { createWorkerOtherDocuments } from '@/api/workerApi';
 
-export default {
-  props: ["data"],
-  data() {
-    return {
-      isLoading: false,
-      selectedDocFile: null,
-      fileObjects: {
-        otherDocument: null
-      },
-      otherDocument: {
-        fileName: "",
-        description: "",
-      },
-    };
-  },
-  mixins: [toastMixin, multipartUploadMixin],
-  methods: {
-    filename,
-    handleDocFileSelected(file) {
-      if (!file) return;
-      if (file.size / 1024 > 15500) {
-        this.showAlertError('File exceeds 15MB limit');
-        this.selectedDocFile = null;
-        return;
-      }
-      this.fileObjects.otherDocument = file;
-      const generatedName = this.generateFileName('OtherDoc', file.name);
-      this.otherDocument = { fileName: generatedName, description: this.otherDocument.description || '' };
-      this.selectedDocFile = null;
-    },
-    clearDocFile() {
-      this.fileObjects.otherDocument = null;
-      this.otherDocument = { fileName: '', description: '' };
-    },
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.saveOtherDocument();
-          return;
-        }
-        this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
-      });
-    },
-    async saveOtherDocument() {
-      this.isLoading = true;
-      try {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(this.otherDocument));
-        if (this.fileObjects.otherDocument) {
-          const fn = this.otherDocument.fileName;
-          formData.append(fn, this.fileObjects.otherDocument, fn);
-        }
-        await createWorkerOtherDocuments(this.data.id, formData);
-        this.$emit('closeAndUpdate', true);
-      } catch (error) {
-        this.showAlertError(error);
-      } finally {
-        this.isLoading = false;
-      }
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeAndUpdate', value: boolean): void }>();
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
+});
+
+const form = useStickyForm<{ description: string }>({
+  schema,
+  initialValues: { description: '' },
+});
+const { description } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const selectedDocFile = ref<any>(null);
+const fileObjects = reactive<{ otherDocument: any }>({ otherDocument: null });
+const otherDocument = ref<any>({ fileName: "", description: "" });
+
+function handleDocFileSelected(file: any) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedDocFile.value = null;
+    return;
+  }
+  fileObjects.otherDocument = file;
+  const generatedName = generateFileName('OtherDoc', file.name);
+  otherDocument.value = { fileName: generatedName, description: '' };
+  selectedDocFile.value = null;
+}
+
+function clearDocFile() {
+  fileObjects.otherDocument = null;
+  otherDocument.value = { fileName: '', description: '' };
+}
+
+async function saveOtherDocument(values: any) {
+  isLoading.value = true;
+  try {
+    const payload = { fileName: otherDocument.value.fileName, description: values.description };
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (fileObjects.otherDocument) {
+      const fn = payload.fileName;
+      formData.append(fn, fileObjects.otherDocument, fn);
     }
-  },
-};
+    await createWorkerOtherDocuments(props.data.id, formData);
+    emit('closeAndUpdate', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveOtherDocument(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
 </script>
 
 <style scoped>

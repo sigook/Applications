@@ -24,33 +24,32 @@
   </div>
 </template>
 
-<script lang="ts">
-import { getSkills } from "@/api/catalogApi";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { getSkills } from '@/api/catalogApi';
+import type { Skill } from '@/types/common';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      skills: [],
-      job: null,
-      location: null
-    }
-  },
-  async created() {
-    this.isLoading = true;
-    this.skills = await getSkills();
-    this.isLoading = false;
-  },
-  methods: {
-    searchJob() {
-      const query = { jobTitle: this.job, location: this.location };
-      this.$emit("onSearch", query);
-      this.$router.push({
-        path: '/jobSeekers',
-        query: query
-      });
-    }
-  }
+const emit = defineEmits<{ (e: 'onSearch', query: { jobTitle: string | null; location: string | null }): void }>();
+
+const router = useRouter();
+
+const isLoading = ref(false);
+const skills = ref<Skill[]>([]);
+const job = ref<string | null>(null);
+const location = ref<string | null>(null);
+
+async function loadSkills() {
+  isLoading.value = true;
+  skills.value = await getSkills();
+  isLoading.value = false;
 }
 
+function searchJob() {
+  const query = { jobTitle: job.value, location: location.value };
+  emit('onSearch', query);
+  router.push({ path: '/jobSeekers', query });
+}
+
+loadSkills();
 </script>

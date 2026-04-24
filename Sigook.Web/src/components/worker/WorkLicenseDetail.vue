@@ -2,7 +2,7 @@
   <section>
     <b-loading v-model="isLoading"></b-loading>
     <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ $t("WorkerLicenses") }}</h3>
+      <h3 class="fw-700 fz-0">{{ "Licenses" }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalLicense = true">
         Add License
       </b-button>
@@ -20,7 +20,7 @@
           <div class="actions text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item.license)">
-                {{ $t("Delete") }}
+                {{ "Delete" }}
               </button>
             </b-tooltip>
           </div>
@@ -43,9 +43,9 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ $t("WorkerLicenses") }}</span>
+              <span class="fz1 fw-700">{{ "Licenses" }}</span>
               <button @click="modalLicense = false" type="button" class="cross-icon">
-                {{ $t("Close") }}
+                {{ "Close" }}
               </button>
               <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
             </div>
@@ -57,60 +57,56 @@
   </section>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { filename, dateMonth } from '@/utils/filters';
-import toastMixin from "../../mixins/toastMixin";
 import { deleteWorkerLicenses } from '@/api/workerApi';
-export default {
-  props: ["worker"],
-  data() {
-    return {
-      modalLicense: false,
-      modalEdit: false,
-      isLoading: false,
-      localWorker: JSON.parse(JSON.stringify(this.worker)),
-    };
+import LicenseEdit from './WorkLicenseForm.vue';
+
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{
+  (e: 'updateProfile', value: boolean): void;
+  (e: 'update:worker', value: any): void;
+}>();
+
+const modalLicense = ref(false);
+const isLoading = ref(false);
+const localWorker = ref<any>(JSON.parse(JSON.stringify(props.worker)));
+
+watch(
+  () => props.worker,
+  (newVal) => {
+    localWorker.value = JSON.parse(JSON.stringify(newVal));
   },
-  watch: {
-    worker: {
-      handler(newVal) {
-        this.localWorker = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  mixins: [toastMixin],
-  methods: {
-    filename,
-    dateMonth,
-    closeModalEdit() {
-      this.$emit("updateProfile", true);
-      this.modalLicense = false;
-    },
-    confirmDelete(license) {
-      this.showAlertConfirm("Are you sure", "You want to delete this document")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteWorkerLicenses(this.localWorker.id, license.id)
-              .then(() => {
-                this.isLoading = false;
-                this.localWorker.licenses = this.localWorker.licenses.filter(d => d.license.id !== license.id);
-                this.$emit('update:worker', this.localWorker);
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                this.showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-  },
-  components: {
-    licenseEdit: () => import("./WorkLicenseForm.vue"),
-  },
-};
+  { deep: true }
+);
+
+function closeModalEdit() {
+  emit('updateProfile', true);
+  modalLicense.value = false;
+}
+
+function confirmDelete(license: any) {
+  showAlertConfirm('Are you sure', 'You want to delete this document')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteWorkerLicenses(localWorker.value.id, license.id)
+          .then(() => {
+            isLoading.value = false;
+            localWorker.value.licenses = localWorker.value.licenses.filter((d: any) => d.license.id !== license.id);
+            emit('update:worker', localWorker.value);
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
 </script>

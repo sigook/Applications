@@ -13,7 +13,7 @@
       <export :url="'/api/AgencyCandidate/File'" :params="serverParams" :fileName="'Candidates'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button @click="createCandidate = true" icon-left="plus">{{ $t('Create') }}</b-button>
+          <b-button @click="showCreateCandidate = true" icon-left="plus">{{ 'Create' }}</b-button>
         </template>
         <template v-slot:dropdown-actions>
           <b-dropdown-item aria-role="listitem" @click="addFile = true">
@@ -24,7 +24,7 @@
       </export>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="name"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -34,8 +34,8 @@
             <template v-slot:searchable>
               <b-field grouped>
                 <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" expanded
-                  @keypress.native="onInputEntered"></b-input>
-                <b-checkbox v-model="serverParams.resumeOnly" @input="onInputEntered" size="is-small">
+                  @keypress="onInputEntered"></b-input>
+                <b-checkbox v-model="serverParams.resumeOnly" @update:modelValue="onInputEntered" size="is-small">
                   <b-icon icon="file-download" size="is-small"></b-icon>
                 </b-checkbox>
               </b-field>
@@ -55,12 +55,12 @@
           </b-table-column>
           <b-table-column field="phoneNumbers" label="Phone" searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered" v-cleave="mask"></b-input>
+              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
             </template>
             <template v-slot="props">
-              <b-taginput size="is-small" v-model="props.row.phoneNumbers" v-cleave="mask" placeholder="Add Phone"
-                field="phoneNumber" allow-new @add="addCandidatePhoneNumber(props.row.id, $event)"
+              <b-taginput size="is-small" v-model="props.row.phoneNumbers" :before-adding="formatPhone" placeholder="Add Phone"
+                field="phoneNumber" allow-new @add="addCandidatePhoneNumberHandler(props.row.id, $event)"
                 @remove="deleteCandidateNumber(props.row.id, $event)">
               </b-taginput>
             </template>
@@ -68,7 +68,7 @@
           <b-table-column field="address" label="Address" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.address" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <p class="capitalize">{{ props.row.address }}</p>
@@ -80,7 +80,7 @@
           <b-table-column field="skills" label="Skills" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <skills-form :existingSkills="props.row.skills"
@@ -91,7 +91,7 @@
           <b-table-column field="requests" label="Order ID" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div v-if="props.row.requests && props.row.requests.length > 0">
@@ -103,14 +103,14 @@
                 </b-taglist>
               </div>
               <b-button size="is-small" type="primary" icon-right="plus" rounded
-                @click="showCandidateRequests(props.row.id, props.row.index)">
+                @click="showCandidateRequests(props.row.id)">
               </b-button>
             </template>
           </b-table-column>
           <b-table-column field="source" label="Source" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.source" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">{{ props.row.source }}</span>
@@ -121,7 +121,7 @@
               <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
                 :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
                 @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @input="onCreatedAtSelected" append-to-body>
+                @update:modelValue="onCreatedAtSelected" append-to-body>
               </b-datepicker>
             </template>
             <template v-slot="props">
@@ -131,7 +131,7 @@
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.recruiter" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <div class="capitalize is-inline-block v-middle pr-0" v-if="props.row.recruiter">
@@ -151,16 +151,16 @@
               </b-tag>
             </div>
             <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotes"
-                :on-create="addCandidateNote" :on-delete="deleteCandidateNote"
+              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotesFn"
+                :on-create="addCandidateNoteFn" :on-delete="deleteCandidateNoteFn"
                 @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
               </modal-notes>
             </div>
           </b-table-column>
           <b-table-column field="residencyStatus" label="Status" sortable searchable>
             <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyList" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyListValue" open-on-focus
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -198,11 +198,11 @@
     </b-modal>
 
 
-    <b-modal v-model="createCandidate" @close="createCandidate = false" width="500px">
+    <b-modal v-model="showCreateCandidate" @close="showCreateCandidate = false" width="500px">
       <create-candidate @onClose="onCandidateCreated()"></create-candidate>
     </b-modal>
 
-    <b-modal v-model="detailCandidate" @close="detailCandidate = false" width="500px">
+    <b-modal v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
       <detail-candidate :candidate-id="detailId" @onUpdateWorker="() => updateCandidate()"></detail-candidate>
     </b-modal>
 
@@ -216,10 +216,13 @@
     </b-modal>
   </div>
 </template>
-<script lang="ts">
-import { phoneMask as mask } from '@/constants/phoneMask';
-import phoneFormat from "@/mixins/phoneFormatMixin";
-import { residencyList } from "@/constants/catalog";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
+import { formatPhone } from '@/utils/phoneFormat';
+import { residencyList } from '@/constants/catalog';
 import {
   getAgencyCandidates,
   addCandidatePhoneNumber,
@@ -230,285 +233,290 @@ import {
   updateAgencyCandidateRecruiter,
   convertCandidateToWorker,
   bulkAgencyCandidates,
-} from "@/api/agencyCandidateApi";
+} from '@/api/agencyCandidateApi';
 import { dateMonth, emailName } from '@/utils/filters';
 import {
   getCandidateNotes,
   createCandidateNote,
   deleteCandidateNote,
-} from "@/api/agencyNoteApi";
+} from '@/api/agencyNoteApi';
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
+import CreateCandidate from '@/components/candidate/CreateCandidate.vue';
+import DetailCandidate from '@/components/candidate/DetailCandidate.vue';
+import ModalDocuments from '@/components/candidate/ModalDocuments.vue';
+import ModalNotes from '@/components/notes/ModalNotes.vue';
+import SkillsForm from '@/components/FormSkillAdd.vue';
+import CandidateRequest from '@/components/candidate/ModalCandidateRequests.vue';
+import BulkData from '@/components/agency/BulkData.vue';
+import Export from '@/components/Export.vue';
 
-export default {
-  data() {
-    return {
-      mask,
-      isLoading: false,
-      totalItems: 0,
-      createdAtDatesSelected: [],
-      statusesSelected: [],
-      createCandidate: false,
-      addFile: false,
-      bulkAgencyCandidates,
-      getCandidateNotes: ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination),
-      addCandidateNote: ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model),
-      deleteCandidateNote: ({ userId, id }: NotesDeletePayload) => deleteCandidateNote(userId, id),
-      detailCandidate: false,
-      detailId: null,
-      showDocuments: false,
-      showRequestModal: false,
-      rows: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    };
-  },
-  mixins: [phoneFormat],
-  components: {
-    CreateCandidate: () => import("@/components/candidate/CreateCandidate.vue"),
-    DetailCandidate: () => import("@/components/candidate/DetailCandidate.vue"),
-    ModalDocuments: () => import("@/components/candidate/ModalDocuments.vue"),
-    ModalNotes: () => import("@/components/notes/ModalNotes.vue"),
-    SkillsForm: () => import("@/components/FormSkillAdd.vue"),
-    CandidateRequest: () => import("@/components/candidate/ModalCandidateRequests.vue"),
-    BulkData: () => import("@/components/agency/BulkData.vue"),
-    Export: () => import("@/components/Export.vue")
-  },
-  methods: {
-    dateMonth,
-    emailName,
-    onCellClick(row, column) {
-      if (column._props.field === 'name' && row.hasDocuments) {
-        this.showDocumentsCandidate(row.id);
-      }
-    },
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.loadCandidates();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'name':
-          this.serverParams.sortBy = 0;
-          break
-        case 'address':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'skills':
-          this.serverParams.sortBy = 2;
-          break;
-        case 'createdAt':
-          this.serverParams.sortBy = 3;
-          break;
-        case 'recruiter':
-          this.serverParams.sortBy = 4;
-          break;
-        case 'residencyStatus':
-          this.serverParams.sortBy = 5;
-          break;
-        case 'source':
-          this.serverParams.sortBy = 6;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.loadCandidates();
-    },
-    onCreatedAtSelected() {
-      this.serverParams.createdAtFrom = this.createdAtDatesSelected[0];
-      this.serverParams.createdAtTo = this.createdAtDatesSelected[1];
-      this.loadCandidates();
-    },
-    onCreatedAtCleared() {
-      this.createdAtDatesSelected = [];
-      this.onCreatedAtSelected();
-    },
-    onStatusSelected() {
-      this.serverParams.statuses = this.statusesSelected;
-      this.loadCandidates();
-    },
-    onInputEntered(event) {
-      if (typeof event === 'boolean') {
-        this.loadCandidates();
-      }
-      else if (event.key === 'Enter') {
-        this.loadCandidates();
-      }
-    },
-    loadCandidates() {
-      this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyCandidateFilter", this.serverParams);
-      getAgencyCandidates(this.serverParams)
-        .then(candidates => {
-          this.rows = candidates.items.map(c => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
-          this.totalItems = candidates.totalItems;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    showCandidateDetail(id) {
-      this.detailId = id;
-      this.detailCandidate = true;
-    },
-    onNote(row, status) {
-      const index = this.rows.findIndex(r => r.id === row.id);
-      this.rows[index].showNotes = status;
-    },
-    onUpdateNote(row, size) {
-      const index = this.rows.findIndex(r => r.id === row.id);
-      this.rows[index].notesCount = size;
-    },
-    showDocumentsCandidate(id) {
-      this.detailId = id;
-      this.showDocuments = true;
-    },
-    showCandidateRequests(id) {
-      this.detailId = id;
-      this.showRequestModal = true;
-    },
-    onSelectRequest() {
-      this.showRequestModal = false;
-      this.loadCandidates();
-    },
-    addCandidatePhoneNumber(candidateId, phone) {
-      this.isLoading = true;
-      addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
-        .then(() => {
-          this.loadCandidates();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    deleteCandidateNumber(candidateId, number) {
-      this.isLoading = true;
-      deleteCandidatePhoneNumber(candidateId, number.id)
-        .then(() => {
-          this.isLoading = false;
-          this.loadCandidates();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    addCandidateSkills(id, model) {
-      this.isLoading = true;
-      addCandidateSkill(id, model)
-        .then(() => {
-          this.isLoading = false;
-          this.loadCandidates();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    onDeleteCandidateSkill(candidateId, skill) {
-      this.isLoading = true;
-      deleteCandidateSkill(candidateId, skill.id)
-        .then(() => {
-          this.isLoading = false;
-          this.loadCandidates();
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    onDeleteCandidate(candidateId) {
-      this.showAlertConfirm("Are you sure", "You want to delete this candidate")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyCandidate(candidateId)
-              .then(() => {
-                this.isLoading = false;
-                this.loadCandidates();
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                this.showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-    updateCandidateRecruiter(candidateId) {
-      this.showAlertConfirm("Do you want to manage this candidate?", "")
-        .then((response) => {
-          if (response) {
-            this.isLoading = true;
-            updateAgencyCandidateRecruiter(candidateId)
-              .then(() => {
-                this.isLoading = false;
-                this.loadCandidates();
-              })
-              .catch((error) => {
-                this.isLoading = false;
-                this.showAlertError(error);
-              });
-          }
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-        });
-    },
-    convertToWorker(candidateId) {
-      this.isLoading = true;
-      convertCandidateToWorker(candidateId)
-        .then(() => {
-          this.isLoading = false;
-          this.loadCandidates();
-        })
-        .catch((error) => {
-          this.isLoading = false
-          this.showAlertError(error);
-        })
-    },
-    goToApplicants(item) {
-      this.$router.push({
-        path: `/agency-request/${item.id}`,
-        query: { tab: 'Applicants' }
-      });
-    },
-    onCandidateCreated() {
-      this.createCandidate = false;
-      this.loadCandidates();
-    },
-    updateCandidate() {
-      this.detailCandidate = false
-      this.loadCandidates();
-    },
-  },
-  created() {
-    if (this.$store.state.agency.agencyCandidateFilter) {
-      this.serverParams = this.$store.state.agency.agencyCandidateFilter;
-      if (this.serverParams.statuses) {
-        this.statusesSelected = this.residencyList.filter(s => this.serverParams.statuses.some(sps => sps == s));
-      }
-      if (this.serverParams.createdAtFrom && this.serverParams.createdAtTo) {
-        this.createdAtDatesSelected[0] = this.serverParams.createdAtFrom;
-        this.createdAtDatesSelected[1] = this.serverParams.createdAtTo;
-      }
-    }
-    this.loadCandidates();
-  },
-  computed: {
-    residencyList() {
-      return residencyList;
-    },
-    agencies() {
-      return this.$store.state.agency.personnelAgencies;
-    }
+const router = useRouter();
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(false);
+const totalItems = ref(0);
+const createdAtDatesSelected = ref<any[]>([]);
+const statusesSelected = ref<any[]>([]);
+const showCreateCandidate = ref(false);
+const addFile = ref(false);
+const showDetailCandidate = ref(false);
+const detailId = ref<any>(null);
+const showDocuments = ref(false);
+const showRequestModal = ref(false);
+const rows = ref<any[]>([]);
+const serverParams = ref<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+const residencyListValue = residencyList;
+
+const getCandidateNotesFn = ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination);
+const addCandidateNoteFn = ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model);
+const deleteCandidateNoteFn = ({ userId, id }: NotesDeletePayload) => deleteCandidateNote(userId, id);
+
+if (agencyStore.agencyCandidateFilter) {
+  serverParams.value = agencyStore.agencyCandidateFilter;
+  if (serverParams.value.statuses) {
+    statusesSelected.value = residencyList.filter((s: any) => serverParams.value.statuses.some((sps: any) => sps == s));
   }
-};
+  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
+    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+  }
+}
+loadCandidates();
+
+function onCellClick(row: any, column: any) {
+  if (column.field === 'name' && row.hasDocuments) {
+    showDocumentsCandidate(row.id);
+  }
+}
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  loadCandidates();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'name':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'address':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'skills':
+      serverParams.value.sortBy = 2;
+      break;
+    case 'createdAt':
+      serverParams.value.sortBy = 3;
+      break;
+    case 'recruiter':
+      serverParams.value.sortBy = 4;
+      break;
+    case 'residencyStatus':
+      serverParams.value.sortBy = 5;
+      break;
+    case 'source':
+      serverParams.value.sortBy = 6;
+      break;
+  }
+  serverParams.value.isDescending = order !== 'asc';
+  loadCandidates();
+}
+
+function onCreatedAtSelected() {
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  loadCandidates();
+}
+
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
+}
+
+function onStatusSelected() {
+  serverParams.value.statuses = statusesSelected.value;
+  loadCandidates();
+}
+
+function onInputEntered(event: any) {
+  if (typeof event === 'boolean') {
+    loadCandidates();
+  } else if (event.key === 'Enter') {
+    loadCandidates();
+  }
+}
+
+function loadCandidates() {
+  isLoading.value = true;
+  agencyStore.updateAgencyCandidateFilter(serverParams.value);
+  getAgencyCandidates(serverParams.value)
+    .then((candidates: any) => {
+      rows.value = candidates.items.map((c: any) => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
+      totalItems.value = candidates.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function showCandidateDetail(id: any) {
+  detailId.value = id;
+  showDetailCandidate.value = true;
+}
+
+function onNote(row: any, status: boolean) {
+  const index = rows.value.findIndex((r) => r.id === row.id);
+  rows.value[index].showNotes = status;
+}
+
+function onUpdateNote(row: any, size: number) {
+  const index = rows.value.findIndex((r) => r.id === row.id);
+  rows.value[index].notesCount = size;
+}
+
+function showDocumentsCandidate(id: any) {
+  detailId.value = id;
+  showDocuments.value = true;
+}
+
+function showCandidateRequests(id: any) {
+  detailId.value = id;
+  showRequestModal.value = true;
+}
+
+function onSelectRequest() {
+  showRequestModal.value = false;
+  loadCandidates();
+}
+
+function addCandidatePhoneNumberHandler(candidateId: any, phone: any) {
+  isLoading.value = true;
+  addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
+    .then(() => {
+      loadCandidates();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function deleteCandidateNumber(candidateId: any, number: any) {
+  isLoading.value = true;
+  deleteCandidatePhoneNumber(candidateId, number.id)
+    .then(() => {
+      isLoading.value = false;
+      loadCandidates();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function addCandidateSkills(id: any, model: any) {
+  isLoading.value = true;
+  addCandidateSkill(id, model)
+    .then(() => {
+      isLoading.value = false;
+      loadCandidates();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onDeleteCandidateSkill(candidateId: any, skill: any) {
+  isLoading.value = true;
+  deleteCandidateSkill(candidateId, skill.id)
+    .then(() => {
+      isLoading.value = false;
+      loadCandidates();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onDeleteCandidate(candidateId: any) {
+  showAlertConfirm('Are you sure', 'You want to delete this candidate')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyCandidate(candidateId)
+          .then(() => {
+            isLoading.value = false;
+            loadCandidates();
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
+function updateCandidateRecruiter(candidateId: any) {
+  showAlertConfirm('Do you want to manage this candidate?', '')
+    .then((response) => {
+      if (response) {
+        isLoading.value = true;
+        updateAgencyCandidateRecruiter(candidateId)
+          .then(() => {
+            isLoading.value = false;
+            loadCandidates();
+          })
+          .catch((error) => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    })
+    .catch((error) => {
+      showAlertError(error);
+    });
+}
+
+function convertToWorker(candidateId: any) {
+  isLoading.value = true;
+  convertCandidateToWorker(candidateId)
+    .then(() => {
+      isLoading.value = false;
+      loadCandidates();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function goToApplicants(item: any) {
+  router.push({
+    path: `/agency-request/${item.id}`,
+    query: { tab: 'Applicants' },
+  });
+}
+
+function onCandidateCreated() {
+  showCreateCandidate.value = false;
+  loadCandidates();
+}
+
+function updateCandidate() {
+  showDetailCandidate.value = false;
+  loadCandidates();
+}
 </script>

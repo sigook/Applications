@@ -50,18 +50,18 @@
       <div class="item">
         <span class="fw-700">Is Asap</span>
         <p>
-          <b-checkbox v-model="localRequest.isAsap" @input="onToggleIsAsap()"></b-checkbox>
+          <b-checkbox v-model="localRequest.isAsap" @update:modelValue="onToggleIsAsap()"></b-checkbox>
         </p>
       </div>
       <div class="item">
         <span class="fw-700">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @input="onTogglePunchCardVisibility()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
         </p>
       </div>
       <div class="item">
         <span class="fw-700">Vaccination</span>
-        <router-link :to="'/agency-companies/company/' + this.request.companyProfileId">
+        <router-link :to="'/agency-companies/company/' + request.companyProfileId">
           <p>
             {{ request.vaccinationRequired ? "yes" : "No" }}
             <b-icon icon="needle" class="ml-2"></b-icon>
@@ -116,105 +116,88 @@
       <span class="fw-700 mr-2">Break</span>
       <span class="fw-400">{{ request.durationBreak }}</span>
       <span v-if="request.breakIsPaid" class="fw-400">
-        | {{ $t("RequestBreakPaid") }}</span>
+        | {{ "Break paid" }}</span>
     </section>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { currency, dateMonth } from '@/utils/filters';
-import toastMixin from "@/mixins/toastMixin";
 import {
   increaseWorkersQuantityByOne,
   reduceWorkersQuantityByOne,
   updateAgencyRequestIsAsap,
-  updateAgencyPunchCardVisibilityStatusInApp,
+  updateAgencyPunchCardVisibilityStatusInApp
 } from "@/api/agencyRequestApi";
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentTypeLabels,
-  RequestStatus,
+  RequestStatus
 } from "@/constants/enums";
-export default {
-  props: ["request"],
-  computed: {
-    DurationTerm: () => DurationTerm,
-    DurationTermLabels: () => DurationTermLabels,
-    EmploymentTypeLabels: () => EmploymentTypeLabels,
-    RequestStatus: () => RequestStatus,
-  },
-  data() {
-    return {
-      isLoading: false,
-      localRequest: JSON.parse(JSON.stringify(this.request)),
-    };
-  },
-  watch: {
-    request: {
-      handler(newVal) {
-        this.localRequest = JSON.parse(JSON.stringify(newVal));
-      },
-      deep: true
-    }
-  },
-  mixins: [toastMixin],
-  components: {
-    Skills: () => import("../agency_request/AgencyRequestSkills.vue"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
-  },
-  methods: {
-    currency,
-    dateMonth,
-    onIncreaseWorkersQuantity() {
-      this.isLoading = true;
-      increaseWorkersQuantityByOne(this.request.id)
-        .then(() => {
-          this.isLoading = false;
-          // Emit event to refresh request data from API to get updated status
-          this.$emit('refreshRequest');
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    onReduceWorkersQuantity() {
-      this.isLoading = true;
-      reduceWorkersQuantityByOne(this.request.id)
-        .then(() => {
-          this.isLoading = false;
-          // Emit event to refresh request data from API to get updated status
-          this.$emit('refreshRequest');
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    onToggleIsAsap() {
-      this.isLoading = true;
-      updateAgencyRequestIsAsap(this.request.id)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    onTogglePunchCardVisibility() {
-      this.isLoading = true;
-      updateAgencyPunchCardVisibilityStatusInApp(this.request.id)
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-};
+import Skills from "../agency_request/AgencyRequestSkills.vue";
+import AgencyShift from "../agency_request/AgencyShiftDetail.vue";
+
+const props = defineProps<{ request?: any }>();
+const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
+
+const isLoading = ref(false);
+const localRequest = ref<any>(JSON.parse(JSON.stringify(props.request)));
+
+watch(() => props.request, (newVal) => {
+  localRequest.value = JSON.parse(JSON.stringify(newVal));
+}, { deep: true });
+
+function onIncreaseWorkersQuantity() {
+  isLoading.value = true;
+  increaseWorkersQuantityByOne(props.request.id)
+    .then(() => {
+      isLoading.value = false;
+      emit('refreshRequest');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onReduceWorkersQuantity() {
+  isLoading.value = true;
+  reduceWorkersQuantityByOne(props.request.id)
+    .then(() => {
+      isLoading.value = false;
+      emit('refreshRequest');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onToggleIsAsap() {
+  isLoading.value = true;
+  updateAgencyRequestIsAsap(props.request.id)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onTogglePunchCardVisibility() {
+  isLoading.value = true;
+  updateAgencyPunchCardVisibilityStatusInApp(props.request.id)
+    .then(() => {
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>
 <style lang="scss">
 .bullet-list {

@@ -123,28 +123,21 @@
             </a>
           </div>
         </div>
-        <img v-lazy="require('@/assets/images/app_mobile_businesses.png')" class="w-100 grid-item-start hide-on-mobile"
+        <img v-lazy="appMobileBusinesses" class="w-100 grid-item-start hide-on-mobile"
           alt="app mobile" />
       </div>
     </section>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import appMobileBusinesses from '@/assets/images/app_mobile_businesses.png';
+import SigookVideo from "@/components/landing/SigookVideo.vue";
+import SubMenu from "@/components/landing/SubMenu.vue";
+import NeedStaff from "@/components/landing/NeedStaff.vue";
 
-export default {
-  components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
-    SubMenu: () => import("@/components/landing/SubMenu.vue"),
-    NeedStaff: () => import("@/components/landing/NeedStaff.vue")
-  },
-  data() {
-    return {
-      isLoading: false
-    }
-  }
-}
-
+const isLoading = ref(false);
 </script>
 
 <style lang="scss">

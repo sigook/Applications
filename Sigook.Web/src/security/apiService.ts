@@ -1,8 +1,9 @@
 import axios, { AxiosError } from 'axios';
-import store from '../store';
+import pinia from '@/stores';
+import { useSecurityStore } from '@/stores/security';
 import qs from 'qs';
 
-const apiUrl: string = process.env.VUE_APP_URL_API as string;
+const apiUrl: string = import.meta.env.VUE_APP_URL_API as string;
 
 const http = axios.create({
   baseURL: apiUrl,
@@ -15,7 +16,8 @@ const http = axios.create({
 });
 
 http.interceptors.request.use(async (config: any) => {
-  const user: any = await store.dispatch("getUser");
+  const securityStore = useSecurityStore(pinia);
+  const user: any = await securityStore.getUser();
   if (user) {
     config.headers.Authorization = `${user.token_type} ${user.access_token}`;
   }
@@ -33,15 +35,17 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
     originalRequest._retry = true;
 
     try {
-      await store.dispatch('silentSignin');
-      const newUser: any = await store.dispatch('getUser');
+      const securityStore = useSecurityStore(pinia);
+      await securityStore.silentSignin();
+      const newUser: any = await securityStore.getUser();
       if (newUser) {
         originalRequest.headers.Authorization = `${newUser.token_type} ${newUser.access_token}`;
       }
       originalRequest.headers['accept-language'] = localStorage.getItem('language') && localStorage.getItem('language') !== 'en' ? localStorage.getItem('language') : 'en-US';
       return http(originalRequest);
     } catch (e) {
-      await store.dispatch('signIn');
+      const securityStore = useSecurityStore(pinia);
+      securityStore.signIn();
       return Promise.reject(e);
     }
   } else {

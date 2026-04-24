@@ -16,21 +16,18 @@
     </button>
   </div>
 </template>
-<script lang="ts">
-export default {
-  props: ["current", "value"],
-  data() {
-    return {
-      isDesc: true,
-    };
-  },
-  methods: {
-    onClickSort(desc) {
-      this.isDesc = desc;
-      this.$emit("updateOrderBy", { value: this.value, desc: desc });
-    },
-  },
-};
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const props = defineProps<{ current?: any; value?: any }>();
+const emit = defineEmits<{ (e: 'updateOrderBy', payload: { value: any; desc: boolean }): void }>();
+
+const isDesc = ref(true);
+
+function onClickSort(desc: boolean) {
+  isDesc.value = desc;
+  emit('updateOrderBy', { value: props.value, desc });
+}
 </script>
 <style lang="scss">
 .button-sort {

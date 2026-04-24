@@ -15,25 +15,27 @@
         </h2>
       </div>
 
-      <floating-menu>
-        <template slot="options">
-          <button v-if="isClient" class="floating-menu-item"
-            @click="$router.push({ path: `/agency-create-request/${company.id}` })">
-            Create Order
-          </button>
-          <button class="floating-menu-item" @click="$router.push({ path: `/update-company/${company.id}` })">
-            <span>Edit Company</span>
-          </button>
+      <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+        <template #trigger>
+          <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
         </template>
-      </floating-menu>
+        <b-dropdown-item v-if="isClient" aria-role="listitem"
+          @click="router.push({ path: `/agency-create-request/${company.id}` })">
+          Create Order
+        </b-dropdown-item>
+        <b-dropdown-item aria-role="listitem"
+          @click="router.push({ path: `/update-company/${company.id}` })">
+          Edit Company
+        </b-dropdown-item>
+      </b-dropdown>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="company">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="company">
       <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" :company.sync="company" class="p-2" />
+        <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
       </b-tab-item>
-      <b-tab-item label="Settings" value="Settings" v-if="isPayrollManager">
-        <settings v-if="visitedTabs.includes('Settings')" :company.sync="company" class="p-2" />
+      <b-tab-item label="Settings" value="Settings" v-if="billingAdmin.isPayrollManager">
+        <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
         <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />
@@ -51,7 +53,7 @@
         <requests v-if="visitedTabs.includes('Requests')" :company="company" class="p-2" />
       </b-tab-item>
     </b-tabs>
-    
+
     <!-- update logo -->
     <company-update-logo v-if="showUpdateLogo" :logo="company.logo" v-on:save="updateLogo"
       v-on:cancel="showUpdateLogo = false" />
@@ -59,99 +61,86 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showAlertError } from '@/utils/toast';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
-import { getAgencyCompany, updateAgencyCompanyProfileLogo } from "@/api/agencyCompanyApi";
+import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/api/agencyCompanyApi';
 import { lowercase } from '@/utils/filters';
+import Detail from '@/components/agency_company/CompanyDetailTab.vue';
+import Settings from '@/components/agency_company/CompanySettings.vue';
+import Users from '@/components/agency_company/UserList.vue';
+import ContactPerson from '@/components/agency_company/ContactPersonList.vue';
+import JobPosition from '@/components/agency_company/JobPositionList.vue';
+import Requests from '@/components/agency_company/CompanyRequests.vue';
+import Workers from '@/components/agency_company/CompanyWorkers.vue';
+import CompanyUpdateLogo from '@/components/agency_company/CompanyUpdateLogo.vue';
 
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  data() {
-    return {
-      currentTab: "Detail",
-      visitedTabs: ["Detail"],
-      company: null,
-      isLoading: true,
-      showMenuTop: false,
-      editNameModal: false,
-      showUpdateLogo: false,
-    };
-  },
-  components: {
-    Detail: () => import("@/components/agency_company/CompanyDetailTab.vue"),
-    Settings: () => import("@/components/agency_company/CompanySettings.vue"),
-    Users: () => import("@/components/agency_company/UserList.vue"),
-    ContactPerson: () => import("@/components/agency_company/ContactPersonList.vue"),
-    JobPosition: () => import("@/components/agency_company/JobPositionList.vue"),
-    Requests: () => import("@/components/agency_company/CompanyRequests.vue"),
-    Workers: () => import("@/components/agency_company/CompanyWorkers.vue"),
-    FloatingMenu: () => import("@/components/FloatingMenuDots.vue"),
-    CompanyUpdateLogo: () => import("@/components/agency_company/CompanyUpdateLogo.vue")
-  },
-  methods: {
-    lowercase,
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: `/agency-companies/company/${this.$route.params.id}`,
-        query: {
-          tab: tab,
-        },
-      });
-    },
-    loadCompany() {
-      getAgencyCompany(this.$route.params.id)
-        .then((response) => {
-          this.company = response;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.showAlertError(error);
-          this.isLoading = false;
-        });
-    },
-    updateLogo(newLogo) {
-      this.showUpdateLogo = false;
-      this.isLoading = true;
-      updateAgencyCompanyProfileLogo(this.company.id, newLogo)
-        .then(() => {
-          this.isLoading = false;
-          this.company.logo.pathFile = this.company.logo.pathFile.replace(
-            this.company.logo.fileName,
-            newLogo.fileName
-          );
-          this.company.logo.fileName = newLogo.fileName;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-  created() {
-    this.loadCompany();
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-  },
-  computed: {
-    requiresPayrollPermission() {
-      if (this.company && this.company.requiresPermissionToSeeOrders) {
-        return !this.isPayrollManager;
-      } else {
-        return false;
-      }
-    },
-    isClient() {
-      return this.company && this.company.companyStatus === 5;
-    }
-  },
-};
+const route = useRoute();
+const router = useRouter();
+const billingAdmin = useBillingAdmin();
+
+const currentTab = ref<string>('Detail');
+const visitedTabs = ref<string[]>(['Detail']);
+const company = ref<any>(null);
+const isLoading = ref(true);
+const showUpdateLogo = ref(false);
+
+const requiresPayrollPermission = computed(() => {
+  if (company.value && company.value.requiresPermissionToSeeOrders) {
+    return !billingAdmin.isPayrollManager;
+  }
+  return false;
+});
+
+const isClient = computed(() => company.value && company.value.companyStatus === 5);
+
+loadCompany();
+if (route.query && route.query.tab) {
+  currentTab.value = route.query.tab as string;
+  if (!visitedTabs.value.includes(route.query.tab as string)) {
+    visitedTabs.value.push(route.query.tab as string);
+  }
+}
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: `/agency-companies/company/${route.params.id}`,
+    query: { tab: tab },
+  });
+}
+
+function loadCompany() {
+  getAgencyCompany(route.params.id as any)
+    .then((response: any) => {
+      company.value = response;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      showAlertError(error);
+      isLoading.value = false;
+    });
+}
+
+function updateLogo(newLogo: any) {
+  showUpdateLogo.value = false;
+  isLoading.value = true;
+  updateAgencyCompanyProfileLogo(company.value.id, newLogo)
+    .then(() => {
+      isLoading.value = false;
+      company.value.logo.pathFile = company.value.logo.pathFile.replace(
+        company.value.logo.fileName,
+        newLogo.fileName,
+      );
+      company.value.logo.fileName = newLogo.fileName;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

@@ -3,62 +3,48 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="tab-actions">
       <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
-        {{ $t("AddExperience") }}
+        {{ "Add Experience" }}
       </b-button>
     </div>
     <div>
       <work-experience-detail
-        v-for="(item, index) in worker.jobExperiences"
+        v-for="(item, index) in props.worker.jobExperiences"
         :key="'workExp' + index"
         :item="item"
-        :workerId="worker.id"
+        :workerId="props.worker.id"
         @getWorker="() => updateExperience()" />
 
       <b-modal v-model="modalWorkExperience" width="800px">
-        <work-experience :workerId="worker.id" @updateExperience="() => updateExperience()" />
+        <work-experience :workerId="props.worker.id" @updateExperience="() => updateExperience()" />
       </b-modal>
     </div>
 
   </form>
 </template>
 
-<script lang="ts">
-import utilsWorkerMixin from '@/mixins/utilsWorkerMixin';
-export default {
-  props: ['worker'],
-  data() {
-    return {
-      disableStartDate: null,
-      modalWorkExperience: false,
-      isLoading: false
-    }
-  },
-  mixins: [utilsWorkerMixin],
-  methods: {
-    disableEndDate(index) {
-      let disabledDates = this.$store.state.currentDate;
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useAppStore } from '@/stores/app';
+import WorkExperience from './WorkExperienceForm.vue';
+import WorkExperienceDetail from '../../components/worker/WorkExperienceDetail.vue';
 
-      if (this.worker.jobExperiences[index].startDate) {
-        disabledDates = this.worker.jobExperiences[index].startDate
-      }
+const props = defineProps<{ worker?: any }>();
+const emit = defineEmits<{ (e: 'updateProfile'): void }>();
 
-      return disabledDates;
-    },
-    updateExperience() {
-      this.modalWorkExperience = false;
-      this.$emit('updateProfile');
-    }
-  },
-  components: {
-    workExperience: () => import("./WorkExperienceForm.vue"),
-    workExperienceDetail: () => import("../../components/worker/WorkExperienceDetail.vue")
-  },
-  created() {
-    this.$store.dispatch('getCurrentDate').then(response => {
-      this.disableStartDate = response;
-    })
-  }
+const appStore = useAppStore();
+
+const disableStartDate = ref<any>(null);
+const modalWorkExperience = ref(false);
+const isLoading = ref(false);
+
+function updateExperience() {
+  modalWorkExperience.value = false;
+  emit('updateProfile');
 }
+
+appStore.getCurrentDate().then(response => {
+  disableStartDate.value = response;
+});
 </script>
 
 <style scoped>

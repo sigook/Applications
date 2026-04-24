@@ -69,21 +69,6 @@ android {
         multiDexEnabled = true
     }
 
-    flavorDimensions.add("environment")
-
-    productFlavors {
-        create("staging") {
-            dimension = "environment"
-            applicationId = "com.sigook.sigook"
-            resValue("string", "app_name", "SIGOOK")
-        }
-        create("production") {
-            dimension = "environment"
-            applicationId = "com.sigook.sigook"
-            resValue("string", "app_name", "SIGOOK")
-        }
-    }
-
     buildTypes {
         debug {
             // Debug builds don't need signing

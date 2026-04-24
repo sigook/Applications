@@ -4,11 +4,10 @@
 
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field :label="$t('Title')" :type="errors.has('title') ? 'is-danger' : ''"
-          :message="errors.has('title') ? errors.first('title') : ''">
-          <b-select v-model="contactPerson.title" :name="'title'" v-validate="'required'" expanded
-            :placeholder="$t('Select')">
-            <option :value="item" v-for="(item, index) in $t('TitleList')" :key="'companyContactPersons' + index">
+        <b-field :label="'Title *'" :type="formErrors.title ? 'is-danger' : ''"
+          :message="formErrors.title || ''">
+          <b-select v-model="title" name="title" expanded :placeholder="'Select'">
+            <option :value="item" v-for="(item, index) in titleOptions" :key="'companyContactPersons' + index">
               {{ item }}
             </option>
           </b-select>
@@ -16,141 +15,186 @@
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Name')" :type="errors.has('name') ? 'is-danger' : ''"
-          :message="errors.has('name') ? errors.first('name') : ''">
-          <b-input v-model="contactPerson.firstName" :name="'name'" v-validate="'required|max:20|min:2'">
-          </b-input>
+        <b-field :label="'Name *'" :type="formErrors.firstName ? 'is-danger' : ''"
+          :message="formErrors.firstName || ''">
+          <b-input v-model="firstName" name="name" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('MiddleName')" :type="errors.has('middlename') ? 'is-danger' : ''"
-          :message="errors.has('middlename') ? errors.first('middlename') : ''">
-          <b-input v-model="contactPerson.middleName" :name="'middlename'" v-validate="'max:20|min:1'">
-          </b-input>
+        <b-field :label="'Middle Name'" :type="formErrors.middleName ? 'is-danger' : ''"
+          :message="formErrors.middleName || ''">
+          <b-input v-model="middleName" name="middlename" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('LastName')" :type="errors.has('lastname') ? 'is-danger' : ''"
-          :message="errors.has('lastname') ? errors.first('lastname') : ''">
-          <b-input v-model="contactPerson.lastName" :name="'lastname'" v-validate="'required|max:20|min:2'">
-          </b-input>
+        <b-field :label="'Last Name *'" :type="formErrors.lastName ? 'is-danger' : ''"
+          :message="formErrors.lastName || ''">
+          <b-input v-model="lastName" name="lastname" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Position')" :type="errors.has('position') ? 'is-danger' : ''"
-          :message="errors.has('position') ? errors.first('position') : ''">
-          <b-input v-model="contactPerson.position" :name="'position'" v-validate="'required|max:100|min:2'">
-          </b-input>
+        <b-field :label="'Position *'" :type="formErrors.position ? 'is-danger' : ''"
+          :message="formErrors.position || ''">
+          <b-input v-model="position" name="position" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="false" :model="'Office Number'" :defaultValue="contactPerson.officeNumber"
+        <phone-input :required="false" :model="'Office Number'" label="Office Number" :defaultValue="contactPerson.officeNumber"
           @formattedPhone="(phone) => contactPerson.officeNumber = phone">
         </phone-input>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Ext')" :type="errors.has('officeNumberExt') ? 'is-danger' : ''"
-          :message="errors.has('officeNumberExt') ? errors.first('officeNumberExt') : ''">
-          <b-input v-model="contactPerson.officeNumberExt" :name="'officeNumberExt'" v-validate="'max:8|min:1|numeric'">
-          </b-input>
+        <b-field :label="'Ext.'" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
+          :message="formErrors.officeNumberExt || ''">
+          <b-input v-model="officeNumberExt" name="officeNumberExt" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <phone-input :required="false" :model="'Mobile Number'" :defaultValue="contactPerson.mobileNumber"
+        <phone-input :required="false" :model="'Mobile Number'" label="Mobile Number" :defaultValue="contactPerson.mobileNumber"
           @formattedPhone="(phone) => contactPerson.mobileNumber = phone">
         </phone-input>
       </div>
 
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :label="$t('Email')" :type="errors.has('email') ? 'is-danger' : ''"
-          :message="errors.has('email') ? errors.first('email') : ''">
-          <b-input type="email" v-model="contactPerson.email" :name="'email'"
-            v-validate="'required|max:50|email|min:6'">
-          </b-input>
+        <b-field :label="'Email *'" :type="formErrors.email ? 'is-danger' : ''"
+          :message="formErrors.email || ''">
+          <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateForm">
-          {{ currentContact ? $t('Save') : $t('Create') }}
+          {{ props.currentContact ? 'Save' : 'Create' }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
-export default {
-  props: ['currentContact', 'profileId'],
-  data() {
-    return {
-      isLoading: false,
-      contactPerson: {
-        title: null,
-        firstName: null,
-        middleName: null,
-        lastName: null,
-        position: null,
-        mobileNumber: null,
-        officeNumber: null,
-        officeNumberExt: null,
-        email: null
-      }
+import PhoneInput from "../PhoneInput.vue";
+
+const numericExt = yup
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+  .matches(/^\d{1,8}$/, { message: 'Must be 1-8 digits', excludeEmptyString: true });
+
+const schema = yup.object({
+  title: yup.string().required('Title is required'),
+  firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(1, 'Min 1 character').max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  position: yup.string().required('Position is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+  officeNumberExt: numericExt,
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+});
+
+const props = defineProps<{ currentContact?: any; profileId: any }>();
+const emit = defineEmits<{ (e: 'updateContent'): void }>();
+
+const form = useStickyForm<{
+  title: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  position: string;
+  officeNumberExt: string;
+  email: string;
+}>({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    position: '',
+    officeNumberExt: '',
+    email: '',
+  },
+});
+const { title, firstName, middleName, lastName, position, officeNumberExt, email } = form.fields;
+const formErrors = form.errors;
+
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+const isLoading = ref(false);
+const contactPerson = ref<any>({
+  mobileNumber: null,
+  officeNumber: null,
+});
+
+function validateForm() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    const payload = {
+      ...contactPerson.value,
+      title: values.title,
+      firstName: values.firstName,
+      middleName: values.middleName,
+      lastName: values.lastName,
+      position: values.position,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+      email: values.email,
+    };
+    if (payload.id) {
+      updateContactPerson(payload, payload.id);
+    } else {
+      createContactPerson(payload);
     }
-  },
-  components: {
-    phoneInput: () => import("../PhoneInput.vue")
-  },
-  methods: {
-    validateForm() {
-      this.submitted = true;
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          if (this.contactPerson.id) {
-            this.updateContactPerson(this.contactPerson.id);
-          } else {
-            this.createContactPerson();
-          }
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    createContactPerson() {
-      this.isLoading = true;
-      createAgencyCompanyContactPerson(this.profileId, this.contactPerson)
-        .then(() => {
-          this.isLoading = false;
-          this.showAlertSuccess('Created')
-          this.$emit('updateContent');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    updateContactPerson(id) {
-      this.isLoading = true;
-      updateAgencyCompanyContactPerson(this.profileId, id, this.contactPerson)
-        .then(() => {
-          this.isLoading = false;
-          this.showAlertSuccess('Updated')
-          this.$emit('updateContent');
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-  },
-  created() {
-    if (this.currentContact && this.currentContact.id) this.contactPerson = Object.assign({}, this.currentContact);
-  }
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+function createContactPerson(payload: any) {
+  isLoading.value = true;
+  createAgencyCompanyContactPerson(props.profileId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Created');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateContactPerson(payload: any, id: any) {
+  isLoading.value = true;
+  updateAgencyCompanyContactPerson(props.profileId, id, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      emit('updateContent');
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+if (props.currentContact && props.currentContact.id) {
+  contactPerson.value = Object.assign({}, props.currentContact);
+  form.hydrate({
+    title: props.currentContact.title || '',
+    firstName: props.currentContact.firstName || '',
+    middleName: props.currentContact.middleName || '',
+    lastName: props.currentContact.lastName || '',
+    position: props.currentContact.position || '',
+    officeNumberExt: props.currentContact.officeNumberExt != null ? String(props.currentContact.officeNumberExt) : '',
+    email: props.currentContact.email || '',
+  });
 }
 </script>

@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -17,6 +17,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestRecruiter
 {
@@ -41,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestRecruiter
             var model = new RequestRecruiterModel { RecruiterId = Data.FakeRecruiter.Id };
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<RequestRecruiterDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<RequestRecruiterDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestRecruiter entity = await context.RequestRecruiter.SingleAsync(c => c.RecruiterId == detail.RecruiterId);
             Assert.Equal(model.RecruiterId, entity.RecruiterId);
@@ -53,7 +54,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestRecruiter
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<RequestRecruiterDetailModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestRecruiterDetailModel>>();
             Assert.NotEmpty(list.Items);
             RequestRecruiter entity = Data.FakeRequestRecruiter;
             RequestRecruiterDetailModel model = list.Items.Single(c => c.RecruiterId == entity.RecruiterId);

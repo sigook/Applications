@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('Availabilities')" class="has-text-weight-normal">
+        <b-field :label="'Availabilities'" class="has-text-weight-normal">
           <b-checkbox v-for="item in availabilities" :key="item.id" v-model="worker.availabilities" :native-value="item"
             class="mb-2">
             {{ item.value }}
@@ -11,48 +11,43 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerAvailabilities()">
-          {{ $t("Save") }}
+        <b-button type="is-primary" @click="saveWorkerAvailabilities()">
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
-import toastMixin from "../../mixins/toastMixin";
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getAvailability } from "@/api/catalogApi";
 import { createWorkerAvailabilities } from '@/api/workerApi';
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      availabilities: [],
-      worker: {
-        availabilities: []
-      }
-    }
-  },
-  mixins: [toastMixin],
-  methods: {
-    createWorkerAvailabilities() {
-      this.isLoading = true;
-      createWorkerAvailabilities(this.data.id, this.worker.availabilities)
-        .then(() => {
-          this.isLoading = false;
-          this.$emit('closeModal', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    }
-  },
-  async created() {
-    this.availabilities = await getAvailability();
-    if (this.data != null) {
-      this.worker.availabilities = this.data.availabilities;
-    }
-  }
+
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const isLoading = ref(false);
+const availabilities = ref<any[]>([]);
+const worker = reactive<{ availabilities: any[] }>({ availabilities: [] });
+
+function saveWorkerAvailabilities() {
+  isLoading.value = true;
+  createWorkerAvailabilities(props.data.id, worker.availabilities)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+(async () => {
+  availabilities.value = await getAvailability();
+  if (props.data != null) {
+    worker.availabilities = props.data.availabilities;
+  }
+})();
 </script>

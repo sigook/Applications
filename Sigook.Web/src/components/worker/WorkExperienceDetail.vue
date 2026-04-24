@@ -1,7 +1,7 @@
 <template>
     <div class="experience-item">
         <div class="button-right">
-            <h4>{{item.company}}  | <span class="fw-200"> {{item.supervisor}} </span>
+            <h4>{{props.item.company}}  | <span class="fw-200"> {{props.item.supervisor}} </span>
             </h4>
             <div class="actions text-right">
                 <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
@@ -13,61 +13,58 @@
 
         <div class="experience-body">
             <p class="margin-0 date-range">
-                <span>{{toDateMMYYYY(item.startDate)}} -
-                    <span v-if="item.isCurrentJobPosition">{{$t('Present')}}</span>
-                    <span v-else>{{toDateMMYYYY(item.endDate)}}</span>
+                <span>{{toDateMMYYYY(props.item.startDate)}} -
+                    <span v-if="props.item.isCurrentJobPosition">{{'Present'}}</span>
+                    <span v-else>{{toDateMMYYYY(props.item.endDate)}}</span>
                 </span>
             </p>
-            <p class="margin-0 duties-text">{{item.duties}}</p>
+            <p class="margin-0 duties-text">{{props.item.duties}}</p>
         </div>
 
         <b-modal v-model="modalEdit" width="800px">
-            <work-experience-form :workerId="workerId" :data="item" @updateExperience="updateExperience" />
+            <work-experience-form :workerId="props.workerId" :data="props.item" @updateExperience="updateExperience" />
         </b-modal>
 
     </div>
 </template>
-<script lang="ts">
-import dayjs from "dayjs";
-import toastMixin from "../../mixins/toastMixin";
-import { deleteWorkerWorkExperience } from '@/api/workerApi';
-export default {
-    props: ['workerId', 'item'],
-    data() {
-        return {
-            modalEdit: false
-        }
-    },
-    mixins: [toastMixin],
-    methods: {
-        toDateMMYYYY(date){
-            return date ? dayjs(date).format('MM/YYYY') : date;
-        },
-        confirmDelete(){
-            this.showAlertConfirm('Are you sure', 'that you want to delete this item?')
-            .then((response) => {
-                if (response){
-                    this.deleteWorkerWorkExperience();
-                }
-            })
-        },
-        deleteWorkerWorkExperience(){
-            deleteWorkerWorkExperience(this.workerId, this.item.id)
-            .then(() => {
-                this.$emit("getWorker", true)
-            })
-            .catch(error => {
-                this.showAlertError(error);
-            })
-        },
-        updateExperience(){
-            this.$emit("getWorker", true);
-            this.modalEdit = false;
-        }
-    },
-    components: {
-        workExperienceForm: () => import("./WorkExperienceForm.vue")
-    }
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertConfirm, showAlertError } from '@/utils/toast';
+import dayjs from 'dayjs';
+import { deleteWorkerWorkExperience as apiDeleteWorkerWorkExperience } from '@/api/workerApi';
+import WorkExperienceForm from './WorkExperienceForm.vue';
+
+const props = defineProps<{ workerId?: any; item?: any }>();
+const emit = defineEmits<{ (e: 'getWorker', value: boolean): void }>();
+
+const modalEdit = ref(false);
+
+function toDateMMYYYY(date: any) {
+    return date ? dayjs(date).format('MM/YYYY') : date;
+}
+
+function confirmDelete() {
+    showAlertConfirm('Are you sure', 'that you want to delete this item?')
+        .then((response) => {
+            if (response) {
+                deleteWorkerWorkExperience();
+            }
+        });
+}
+
+function deleteWorkerWorkExperience() {
+    apiDeleteWorkerWorkExperience(props.workerId, props.item.id)
+        .then(() => {
+            emit('getWorker', true);
+        })
+        .catch(error => {
+            showAlertError(error);
+        });
+}
+
+function updateExperience() {
+    emit('getWorker', true);
+    modalEdit.value = false;
 }
 </script>
 

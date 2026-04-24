@@ -26,6 +26,7 @@ using Moq;
 using System.Net;
 using System.Text.Json;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
 {

@@ -31,21 +31,21 @@ public class WorkerProfile :
 
     public Guid Id { get; set; } = Guid.NewGuid();
     public int NumberId { get; set; }
-    public Guid WorkerId { get; private set; }
+    public Guid WorkerId { get; set; }
     public Guid AgencyId { get; set; }
-    public Guid? ProfileImageId { get; private set; }
-    public string FirstName { get; private set; }
-    public string MiddleName { get; private set; }
-    public string LastName { get; private set; }
-    public string SecondLastName { get; private set; }
-    public DateTime BirthDay { get; private set; }
-    public Guid? GenderId { get; private set; }
-    public bool HasVehicle { get; private set; }
+    public Guid? ProfileImageId { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleName { get; set; }
+    public string LastName { get; set; }
+    public string SecondLastName { get; set; }
+    public DateTime BirthDay { get; set; }
+    public Guid? GenderId { get; set; }
+    public bool HasVehicle { get; set; }
     public string SocialInsurance { get; set; }
     public string MaskedSocialInsurance => SocialInsurance.MaskSIN();
-    public bool SocialInsuranceExpire { get; private set; }
-    public DateTime? DueDate { get; private set; }
-    public Guid? SocialInsuranceFileId { get; private set; }
+    public bool SocialInsuranceExpire { get; set; }
+    public DateTime? DueDate { get; set; }
+    public Guid? SocialInsuranceFileId { get; set; }
     public string IdentificationNumber1 { get; set; }
     public Guid? IdentificationType1Id { get; set; }
     public Guid? IdentificationType1FileId { get; set; }
@@ -75,11 +75,11 @@ public class WorkerProfile :
     public bool IsContractor { get; set; } = false;
     public string ExternalId { get; set; }
     public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; set; }
-    public Gender Gender { get; private set; }
+    public Gender Gender { get; set; }
     public User Worker { get; set; }
     public Agency.Agency Agency { get; set; }
-    public CovenantFile ProfileImage { get; private set; }
-    public CovenantFile SocialInsuranceFile { get; private set; }
+    public CovenantFile ProfileImage { get; set; }
+    public CovenantFile SocialInsuranceFile { get; set; }
     public IdentificationType IdentificationType1 { get; set; }
     public CovenantFile IdentificationType1File { get; set; }
     public CovenantFile IdentificationType2File { get; set; }
@@ -101,6 +101,12 @@ public class WorkerProfile :
     public List<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
 
     public event EventHandler<CovenantFile> OnNewDocumentAdded;
+
+    public string FullName =>
+        FirstName +
+        (string.IsNullOrWhiteSpace(MiddleName) ? string.Empty : $" {MiddleName}") +
+        $" {LastName}" +
+        (string.IsNullOrWhiteSpace(SecondLastName) ? string.Empty : $" {SecondLastName}");
 
     public Result PatchContactInformation<TLocation, TCity>(IWorkerContactInformation<TLocation, TCity> contactInformation)
         where TLocation : ILocation<TCity>
@@ -532,30 +538,6 @@ public class WorkerProfile :
         return Result.Ok();
     }
 
-    public Result CanApply(DateTime now)
-    {
-        if (!ApprovedToWork) return Result.Fail("You aren't approved to work");
-
-        if (string.IsNullOrEmpty(SocialInsurance))
-            return Result.Fail("Please add your social insurance number");
-        if (SocialInsuranceFileId is null)
-            return Result.Fail("Please add your social insurance document file");
-
-        if (string.IsNullOrEmpty(IdentificationNumber1))
-            return Result.Fail("Please add the required documents (document number 1)");
-        if (!IdentificationType1FileId.HasValue)
-            return Result.Fail("Please add the required documents (document file 1)");
-
-        if (string.IsNullOrEmpty(IdentificationNumber2))
-            return Result.Fail("Please add the required documents (document number 2)");
-        if (!IdentificationType2FileId.HasValue)
-            return Result.Fail("Please add the required documents (document file 2)");
-
-        if (!SocialInsuranceExpire) return Result.Ok();
-        if (DueDate.GetValueOrDefault().Date < now.Date) return Result.Fail("Your social insurance has expired");
-        return Result.Ok();
-    }
-
     public Result CanBeBook(DateTime now)
     {
         if (IsSubcontractor) return Result.Ok(); //Every subcontractor can be book because the partner already validate the documents
@@ -611,13 +593,6 @@ public class WorkerProfile :
         }
         return Result.Ok();
     }
-
-    public string FullName =>
-        FirstName +
-        (string.IsNullOrWhiteSpace(MiddleName) ? string.Empty : $" {MiddleName}") +
-        $" {LastName}" +
-        (string.IsNullOrWhiteSpace(SecondLastName) ? string.Empty : $" {SecondLastName}");
-
 
     private static void IfIsNotInRemove<T>(List<T> list, Func<T, bool> filter)
     {

@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -22,6 +22,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerTimeSheet
 {
@@ -57,7 +58,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerTimeSheet
             };
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<TimeSheetListModel>();
+            var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             TimeSheet entity = await context.TimeSheet.SingleAsync(c => c.Id == detail.Id);
             var totalHours = model.Hours;
@@ -79,7 +80,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerTimeSheet
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<TimeSheetListModel>>();
             Assert.NotEmpty(list);
             foreach (TimeSheet entity in Data.TimeSheets)
             {

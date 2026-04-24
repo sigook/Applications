@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCandidate.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCandidate.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -22,6 +22,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
 {
@@ -63,7 +64,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
 
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri, model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<CandidateDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CandidateDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             var entity = await context.Candidates.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.Name, entity.Name);
@@ -83,7 +84,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<CandidateListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<CandidateListModel>>();
             Assert.NotEmpty(list.Items);
             CandidateListModel model = list.Items.Single(s => s.Id == Startup.FakeCandidate.Id);
             Assert.Equal(Startup.FakeCandidate.Name, model.Name);
@@ -101,7 +102,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             var entity = Startup.FakeCandidate;
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri}/{entity.Id.ToString()}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var result = await response.Content.ReadAsJsonAsync<CandidateDetailModel>();
+            var result = await response.Content.ReadFromJsonAsync<CandidateDetailModel>();
             Assert.Equal(entity.Id, result.Id);
             Assert.Equal(entity.NumberId, result.NumberId);
             Assert.Equal(entity.Name, result.Name);

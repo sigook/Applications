@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/widgets/navbar_logo.dart';
+import '../../../../core/services/analytics_service.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/get_job_details.dart';
 import '../providers/jobs_providers.dart';
@@ -56,6 +58,11 @@ class _JobPageState extends ConsumerState<JobPage> {
           _jobDetails = jobDetails;
           _isLoading = false;
         });
+        JobAnalyticsEvents.logJobViewed(
+          ref.read(analyticsServiceProvider),
+          jobId: widget.jobId,
+          jobTitle: jobDetails.jobTitle,
+        );
       },
     );
   }
@@ -66,7 +73,7 @@ class _JobPageState extends ConsumerState<JobPage> {
       return Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
-          backgroundColor: AppTheme.primaryBlue,
+          backgroundColor: AppTheme.secondaryRed,
           title: const NavbarLogo(),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -77,7 +84,7 @@ class _JobPageState extends ConsumerState<JobPage> {
       return Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
-          backgroundColor: AppTheme.primaryBlue,
+          backgroundColor: AppTheme.secondaryRed,
           title: const NavbarLogo(),
         ),
         body: Center(
@@ -117,7 +124,7 @@ class _JobPageState extends ConsumerState<JobPage> {
                 title: const NavbarLogo(),
                 expandedHeight: 100,
                 pinned: true,
-                backgroundColor: AppTheme.primaryBlue,
+                backgroundColor: AppTheme.secondaryRed,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () {

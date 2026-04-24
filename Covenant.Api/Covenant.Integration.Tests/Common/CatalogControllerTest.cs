@@ -1,4 +1,4 @@
-using Covenant.Api.Controllers.Sigook;
+﻿using Covenant.Api.Controllers.Sigook;
 using Covenant.Common.Entities;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories;
@@ -10,6 +10,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.Common;
 
@@ -28,7 +29,7 @@ public class CatalogControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
     {
         HttpResponseMessage response = await _client.GetAsync($"{Url}/jobPosition");
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadAsJsonAsync<List<JobPositionDetailModel>>();
+        var list = await response.Content.ReadFromJsonAsync<List<JobPositionDetailModel>>();
         Assert.NotEmpty(list);
         Assert.Single(list, l =>
             l.Id == Startup.FaeJobPosition.Id &&

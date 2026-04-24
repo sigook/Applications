@@ -2,7 +2,7 @@
   <div class="container-requests">
     <router-link :to="'/agency-request/' + data.id">
       <div class="container-requests-top">
-        <span class="asap" v-if="data.isAsap">{{ $t('Asap') }}</span>
+        <span class="asap" v-if="data.isAsap">{{ 'Asap' }}</span>
         <img :src="data.logo" class="request-logo"/>
         <div class="container-title">
           <h3 class="light-title">
@@ -31,50 +31,46 @@
         </div>
 
         <div class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
-             v-status="{status: data.status}"> {{ $t(data.status) }}
+             v-status="{status: data.status}"> {{ data.status }}
         </div>
       </div>
     </router-link>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useAppStore } from '@/stores/app';
 import { dateFromNow } from '@/utils/filters';
 
-export default {
-  props: ['data'],
-  data() {
-    return {
-      now: new Date()
-    }
-  },
-  methods: {
-    dateFromNow,
-    showFinishAt(date){
-      try {
-        if (!date) return false;
-        let date1 = new Date(date);
-        if (!date1) return false;
-        return date1 >= this.now;
-      }catch (e) {
-        return false;
-      }
-    },
-    showFinishWarning(date) {
-      try {
-        if(!this.showFinishAt(date)) return false;
-        let milliseconds = Math.abs(new Date(date).getTime() - (this as any).now.getTime());
-        let days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
-        return days <= 7;
-      } catch {
-        return false;
-      }
-    }
-  },
-  created() {
-    this.$store.dispatch('getCurrentDate').then(response => {
-      this.now = response;
-    })
+defineProps<{ data: any }>();
+
+const appStore = useAppStore();
+const now = ref<Date>(new Date());
+
+function showFinishAt(date: any): boolean {
+  try {
+    if (!date) return false;
+    const date1 = new Date(date);
+    if (!date1) return false;
+    return date1 >= now.value;
+  } catch {
+    return false;
   }
 }
+
+function showFinishWarning(date: any): boolean {
+  try {
+    if (!showFinishAt(date)) return false;
+    const milliseconds = Math.abs(new Date(date).getTime() - now.value.getTime());
+    const days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
+    return days <= 7;
+  } catch {
+    return false;
+  }
+}
+
+appStore.getCurrentDate().then(response => {
+  now.value = response;
+});
 </script>

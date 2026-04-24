@@ -63,7 +63,7 @@
         <span class="fw-700 mr-2">Break</span>
         <span class="fw-400">{{ request.durationBreak }}</span>
         <span v-if="request.breakIsPaid" class="fw-400">
-          | {{ $t("RequestBreakPaid") }}</span>
+          | {{ "Break paid" }}</span>
       </section>
     </section>
     <aside class="col-md-3 col-sm-12 section-right">
@@ -71,22 +71,12 @@
     </aside>
   </div>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
 import { dateFromNow, currency } from '@/utils/filters';
 import { DurationTermLabels } from "@/constants/enums";
+import Location from "../request/RequestLocation.vue";
+import AgencyShift from "../agency_request/AgencyShiftDetail.vue";
 
-export default {
-  props: ["request"],
-  components: {
-    Location: () => import("../request/RequestLocation.vue"),
-    AgencyShift: () => import("../agency_request/AgencyShiftDetail.vue"),
-  },
-  methods: {
-    dateFromNow,
-    currency,
-  },
-  computed: {
-    DurationTermLabels: () => DurationTermLabels,
-  },
-};
+defineProps<{ request: any }>();
 </script>

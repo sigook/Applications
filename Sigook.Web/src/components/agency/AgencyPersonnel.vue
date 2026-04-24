@@ -5,7 +5,7 @@
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
     <b-table :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="pageSize"
-      :current-page.sync="pageIndex">
+      v-model:current-page="pageIndex">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
@@ -30,60 +30,53 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getAgencyPersonnel, deleteAgencyPersonnel } from "@/api/agencyApi";
+import CreateUser from "./AgencyCreatePersonnelModal.vue";
 
-export default {
-  name: "AgencyUsers",
-  components: {
-    CreateUser: () => import("./AgencyCreatePersonnelModal.vue")
-  },
-  data() {
-    return {
-      isLoading: false,
-      pageIndex: 1,
-      pageSize: 30,
-      showModal: false,
-      users: []
-    }
-  },
-  methods: {
-    getUsers() {
-      this.isLoading = true;
-      getAgencyPersonnel()
-        .then((response) => {
-          this.isLoading = false;
-          this.users = response.map(r => ({ ...r, actions: null }))
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    updateList() {
-      this.showModal = false;
-      this.getUsers();
-    },
-    deleteUser(id) {
-      this.showAlertConfirm(this.$t('AreYouSure'), this.$t('YouWantToDeleteUser'))
-        .then(response => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyPersonnel(id)
-              .then(() => {
-                this.isLoading = false;
-                this.getUsers();
-              })
-              .catch(error => {
-                this.isLoading = false;
-                this.showAlertError(error);
-              })
-          }
-        });
-    },
-  },
-  created() {
-    this.getUsers()
-  }
+const isLoading = ref(false);
+const pageIndex = ref(1);
+const pageSize = ref(30);
+const showModal = ref(false);
+const users = ref<any[]>([]);
+
+function getUsers() {
+  isLoading.value = true;
+  getAgencyPersonnel()
+    .then((response) => {
+      isLoading.value = false;
+      users.value = response.map(r => ({ ...r, actions: null }));
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function updateList() {
+  showModal.value = false;
+  getUsers();
+}
+
+function deleteUser(id: any) {
+  showAlertConfirm('Are you sure?', 'You want to delete user.')
+    .then(response => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyPersonnel(id)
+          .then(() => {
+            isLoading.value = false;
+            getUsers();
+          })
+          .catch(error => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    });
+}
+
+getUsers();
 </script>

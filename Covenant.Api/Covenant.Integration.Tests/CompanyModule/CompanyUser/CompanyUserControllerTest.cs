@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyUser.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces;
@@ -19,6 +19,7 @@ using Moq.Protected;
 using System.Net;
 using System.Text.Json;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
 {
@@ -105,7 +106,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
         public async Task Get()
         {
             var response = await _client.GetAsync(RequestUri());
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<CompanyUserModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyUserModel>>();
             Assert.NotEmpty(list);
             var entity = Startup.FakeCompanyUser;
             var detail = list.Single(s => s.Id == entity.Id);
@@ -121,7 +122,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
         public async Task GetDetail()
         {
             var response = await _client.GetAsync($"{RequestUri()}/detail");
-            var detail = await response.Content.ReadAsJsonAsync<CompanyUserModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CompanyUserModel>();
             var entity = Startup.FakeCompanyUser;
             Assert.Equal(entity.Id, detail.Id);
             Assert.Equal(entity.User.Email, detail.Email);

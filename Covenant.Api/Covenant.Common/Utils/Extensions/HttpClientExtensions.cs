@@ -23,9 +23,4 @@ public static class HttpClientExtensions
         return httpClient.PutAsync(url, content);
     }
 
-    public static async Task<T> ReadAsJsonAsync<T>(this HttpContent content)
-    {
-        string dataAsString = await content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<T>(dataAsString, Options);
-    }
 }

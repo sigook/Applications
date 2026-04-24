@@ -3,25 +3,25 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
-      :current-page.sync="serverParams.pageIndex" @page-change="onPageChange">
+      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>
       <template>
-        <b-table-column field="payStubNumber" v-slot="props">
-          <i>{{ props.row.payStubNumber }}</i>
-          <p v-for="(company, idx) in props.row.companies" :key="idx">
+        <b-table-column field="payStubNumber" v-slot="tableProps">
+          <i>{{ tableProps.row.payStubNumber }}</i>
+          <p v-for="(company, idx) in tableProps.row.companies" :key="idx">
             {{ company }}
           </p>
         </b-table-column>
-        <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
-          {{ dateMonth(props.row.weekEnding) }}
+        <b-table-column field="weekEnding" label="Week Ending" v-slot="tableProps">
+          {{ dateMonth(tableProps.row.weekEnding) }}
           <br />
-          <i class="fz-1">From: {{ dateMonth(props.row.start) }}</i>
+          <i class="fz-1">From: {{ dateMonth(tableProps.row.start) }}</i>
           <br />
-          <i class="fz-1">To: {{ dateMonth(props.row.end) }}</i>
+          <i class="fz-1">To: {{ dateMonth(tableProps.row.end) }}</i>
         </b-table-column>
-        <b-table-column field="items" v-slot="props">
+        <b-table-column field="items" v-slot="tableProps">
           <table class="no-border-bottom">
             <thead>
               <tr>
@@ -31,31 +31,31 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, idx) in props.row.items" :key="idx">
+              <tr v-for="(item, idx) in tableProps.row.items" :key="idx">
                 <td width="120px">{{ item.description }}</td>
                 <td width="80px">{{ item.quantity }}</td>
                 <td width="80px">{{ currency(item.total) }}</td>
               </tr>
               <tr>
                 <td width="120px">Total:</td>
-                <td width="80px">{{ getTotalQuantity(props.row.items) }}</td>
-                <td width="80px">{{ currency(getTotal(props.row.items)) }}</td>
+                <td width="80px">{{ getTotalQuantity(tableProps.row.items) }}</td>
+                <td width="80px">{{ currency(getTotal(tableProps.row.items)) }}</td>
               </tr>
             </tbody>
           </table>
         </b-table-column>
-        <b-table-column field="vacations" label="Vacations" v-slot="props">
-          {{ currency(props.row.vacations) }}
+        <b-table-column field="vacations" label="Vacations" v-slot="tableProps">
+          {{ currency(tableProps.row.vacations) }}
         </b-table-column>
-        <b-table-column field="totalEarnings" label="Total Earnings" v-slot="props">
-          {{ currency(props.row.totalEarnings) }}
+        <b-table-column field="totalEarnings" label="Total Earnings" v-slot="tableProps">
+          {{ currency(tableProps.row.totalEarnings) }}
         </b-table-column>
-        <b-table-column field="totalPaid" label="Total Paid" v-slot="props">
-          <p>{{ currency(props.row.totalPaid) }}</p>
+        <b-table-column field="totalPaid" label="Total Paid" v-slot="tableProps">
+          <p>{{ currency(tableProps.row.totalPaid) }}</p>
         </b-table-column>
-        <b-table-column field="actions" v-slot="props">
+        <b-table-column field="actions" v-slot="tableProps">
           <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
-            @open="getAccumulated(props.row)" @close="rowDetail = {}" append-to-body>
+            @open="getAccumulated(tableProps.row)" @close="rowDetail = {}" append-to-body>
             <template v-slot:content>
               <div><strong>Qty: </strong>{{ rowDetail.quantity }}</div>
               <div><strong>Total: </strong>{{ currency(rowDetail.total) }}</div>
@@ -71,63 +71,60 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from '@/utils/toast';
 import { dateMonth, currency } from '@/utils/filters';
-import { getWorkerProfileWageHistory, getWorkerProfileWageHistoryAccumulated } from '@/api/workerApi';
+import { getWorkerProfileWageHistory as apiGetWorkerProfileWageHistory, getWorkerProfileWageHistoryAccumulated } from '@/api/workerApi';
 
-export default {
-  props: ["workerId"],
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      serverParams: {
-        profileId: this.workerId,
-        sortBy: 3,
-        isDescending: true,
-        pageIndex: 1,
-        pageSize: 30
-      },
-      rowDetail: {}
-    };
-  },
-  methods: {
-    dateMonth,
-    currency,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getWorkerProfileWageHistory();
-    },
-    getWorkerProfileWageHistory() {
-      this.isLoading = true;
-      getWorkerProfileWageHistory(this.serverParams)
-        .then((response) => {
-          this.isLoading = false;
-          this.rows = response.items.map(c => ({ ...c, actions: null }));
-          this.totalItems = response.totalItems;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    getTotalQuantity(items) {
-      const total = items.reduce((acc, item) => acc + item.quantity, 0);
-      return total;
-    },
-    getTotal(items) {
-      const total = items.reduce((acc, item) => acc + item.total, 0);
-      return total;
-    },
-    getAccumulated(row) {
-      getWorkerProfileWageHistoryAccumulated(this.workerId, row.rowNumber)
-        .then((response) => this.rowDetail = response)
-        .catch((error) => this.showAlertError(error));
-    },
-  },
-  created() {
-    this.getWorkerProfileWageHistory();
-  },
-};
+const props = defineProps<{ workerId?: any }>();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const serverParams = reactive({
+  profileId: props.workerId,
+  sortBy: 3,
+  isDescending: true,
+  pageIndex: 1,
+  pageSize: 30,
+});
+const rowDetail = ref<any>({});
+
+function onPageChange(params: number) {
+  serverParams.pageIndex = params;
+  fetchWageHistory();
+}
+
+function fetchWageHistory() {
+  isLoading.value = true;
+  apiGetWorkerProfileWageHistory(serverParams)
+    .then((response) => {
+      isLoading.value = false;
+      rows.value = response.items.map((c: any) => ({ ...c, actions: null }));
+      totalItems.value = response.totalItems;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function getTotalQuantity(items: any[]) {
+  const total = items.reduce((acc, item) => acc + item.quantity, 0);
+  return total;
+}
+
+function getTotal(items: any[]) {
+  const total = items.reduce((acc, item) => acc + item.total, 0);
+  return total;
+}
+
+function getAccumulated(row: any) {
+  getWorkerProfileWageHistoryAccumulated(props.workerId, row.rowNumber)
+    .then((response) => (rowDetail.value = response))
+    .catch((error) => showAlertError(error));
+}
+
+fetchWageHistory();
 </script>

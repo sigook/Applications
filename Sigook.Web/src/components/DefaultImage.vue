@@ -3,41 +3,28 @@
         <span>{{ name ? name.substring(0, 2) : '' }}</span>
     </span>
 </template>
-<script lang="ts">
-export default {
-    props: ['name'],
-    data() {
-        return {
-            purple: '156,39,176',
-            indigo: '63,81,181',
-            lightBlue: '3,169,244',
-            teal: '0,150,136',
-            lime: '205,220,57',
-            amber: '255,193,7'
-        }
-    },
-    computed: {
-        backgroundColor() {
-            let letter = this.name ? this.name.charAt(this.name.length - 1) : 'a';
-            if (letter < 'd') {
-                return this.purple;
-            } else if (letter < 'h') {
-                return this.indigo;
-            } else if (letter < 'l') {
-                return this.lightBlue;
-            } else if (letter < 'p') {
-                return this.lightBlue;
-            } else if (letter < 't') {
-                return this.teal;
-            } else if (letter < 'w') {
-                return this.lime;
-            } else {
-                return this.amber;
-            }
-        }
-    }
-}
+<script setup lang="ts">
+import { computed } from 'vue';
 
+const props = defineProps<{ name?: string }>();
+
+const purple = '156,39,176';
+const indigo = '63,81,181';
+const lightBlue = '3,169,244';
+const teal = '0,150,136';
+const lime = '205,220,57';
+const amber = '255,193,7';
+
+const backgroundColor = computed(() => {
+  const letter = props.name ? props.name.charAt(props.name.length - 1) : 'a';
+  if (letter < 'd') return purple;
+  if (letter < 'h') return indigo;
+  if (letter < 'l') return lightBlue;
+  if (letter < 'p') return lightBlue;
+  if (letter < 't') return teal;
+  if (letter < 'w') return lime;
+  return amber;
+});
 </script>
 <style lang="scss" scoped>
 .container-default-image {

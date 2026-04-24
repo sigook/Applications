@@ -8,50 +8,46 @@
             <b-step-item step="1" label="Personal Info" :clickable="false">
               <div class="container-flex">
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('fullName') ? 'is-danger' : ''"
-                    :message="errors.has('fullName') ? errors.first('fullName') : ''">
+                  <b-field :type="formErrors.fullName ? 'is-danger' : ''"
+                    :message="formErrors.fullName">
                     <template #label>
                       Full Name <span class="has-text-danger">*</span>
                     </template>
-                    <b-input v-model="candidate.fullName" name="fullName" has-counter maxLength="50"
-                      v-validate="{ required: isNewApplicantTab, max: 50 }"></b-input>
+                    <b-input v-model="fullName" name="fullName" has-counter maxLength="50"></b-input>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('email') ? 'is-danger' : ''"
-                    :message="errors.has('email') ? errors.first('email') : ''">
+                  <b-field :type="formErrors.email ? 'is-danger' : ''"
+                    :message="formErrors.email">
                     <template #label>
                       Email <span class="has-text-danger">*</span>
                     </template>
-                    <b-input type="email" v-model="candidate.email" has-counter name="email" maxLength="50"
-                      v-validate="{ email: true, required: isNewApplicantTab, max: 50 }"></b-input>
+                    <b-input type="email" v-model="email" has-counter name="email" maxLength="50"></b-input>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <phone-input ref="phoneComponent" model="Phone" :required="isNewApplicantTab" :defaultValue="candidate.phone"
-                    @formattedPhone="(phone) => candidate.phone = phone"></phone-input>
+                  <phone-input ref="phoneComponent" model="Phone" :required="isNewApplicantTab" :defaultValue="phoneValue"
+                    @formattedPhone="(p) => phoneValue = p"></phone-input>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('country') ? 'is-danger' : ''"
-                    :message="errors.has('country') ? errors.first('country') : ''">
+                  <b-field :type="formErrors.countryId ? 'is-danger' : ''"
+                    :message="formErrors.countryId">
                     <template #label>
                       Country <span class="has-text-danger">*</span>
                     </template>
-                    <b-select v-model="candidate.countryId" expanded name="country"
-                      v-validate="{ required: isNewApplicantTab }">
+                    <b-select v-model="countryId" expanded name="country">
                       <option v-for="country in countries" :key="country.id" :value="country.id">{{ country.value }}
                       </option>
                     </b-select>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('address') ? 'is-danger' : ''"
-                    :message="errors.has('address') ? errors.first('address') : ''">
+                  <b-field :type="formErrors.address ? 'is-danger' : ''"
+                    :message="formErrors.address">
                     <template #label>
                       City <span class="has-text-danger">*</span>
                     </template>
-                    <b-input v-model="candidate.address" name="address" maxLength="50" has-counter
-                      v-validate="{ required: isNewApplicantTab, max: 50 }"></b-input>
+                    <b-input v-model="address" name="address" maxLength="50" has-counter></b-input>
                   </b-field>
                 </div>
               </div>
@@ -64,13 +60,12 @@
             <b-step-item step="2" label="Additional Details" :clickable="false">
               <div class="container-flex">
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('status') ? 'is-danger' : ''"
-                    :message="errors.has('status') ? errors.first('status') : ''">
+                  <b-field :type="formErrors.status ? 'is-danger' : ''"
+                    :message="formErrors.status">
                     <template #label>
                       Immigration Status <span class="has-text-danger">*</span>
                     </template>
-                    <b-select v-model="candidate.status" name="status" expanded
-                      v-validate="{ required: isNewApplicantTab }">
+                    <b-select v-model="status" name="status" expanded>
                       <option value="Citizen">Citizen</option>
                       <option value="Work Permit">Work Permit</option>
                       <option value="Student">Student</option>
@@ -91,10 +86,8 @@
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('skills') ? 'is-danger' : ''"
-                    label="Roles of Interest (you may type more than one)"
-                    :message="errors.has('skills') ? errors.first('skills') : ''">
-                    <b-taginput v-model="candidate.skills" open-on-focus icon="label" :maxlength="20" ellipsis
+                  <b-field label="Roles of Interest (you may type more than one)">
+                    <b-taginput v-model="skills" open-on-focus icon="label" :maxlength="20" ellipsis
                       placeholder="Select or Add Skill" allow-new name="skills">
                     </b-taginput>
                   </b-field>
@@ -102,8 +95,8 @@
 
                 <div class="col-12 col-padding">
                   <b-field label="Transportation">
-                    <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
-                      {{ candidate.hasVehicle ? "Own Vehicle" : "Public Transit" }}
+                    <b-switch v-model="hasVehicle" :true-value="true" :false-value="false">
+                      {{ hasVehicle ? "Own Vehicle" : "Public Transit" }}
                     </b-switch>
                   </b-field>
                 </div>
@@ -116,12 +109,10 @@
 
             <b-step-item step="3" label="Review & Submit" :clickable="false">
               <div class="container-flex">
-                <!-- Terms and Conditions -->
                 <div class="col-12 col-padding">
-                  <b-field :type="errors.has('termsAndConditions') ? 'is-danger' : ''"
-                    :message="errors.has('termsAndConditions') ? errors.first('termsAndConditions') : ''">
-                    <b-checkbox v-model="termnsAndConditions" v-validate="{ required: isNewApplicantTab }"
-                      name="termsAndConditions">
+                  <b-field :type="formErrors.termsAndConditions ? 'is-danger' : ''"
+                    :message="formErrors.termsAndConditions">
+                    <b-checkbox v-model="termsAndConditions" name="termsAndConditions">
                       I agree to the
                       <router-link to="/terms-and-conditions" target="_blank">Terms and Conditions</router-link>
                       &
@@ -130,21 +121,20 @@
                   </b-field>
                 </div>
 
-                <!-- Application Summary -->
                 <div class="col-12 col-padding">
                   <div class="box">
                     <h3 class="title is-5 mb-3">Application Summary</h3>
                     <div class="content">
-                      <p><strong>Full Name:</strong> {{ candidate.fullName || 'Not provided' }}</p>
-                      <p><strong>Email:</strong> {{ candidate.email || 'Not provided' }}</p>
-                      <p><strong>Phone:</strong> {{ candidate.phone || 'Not provided' }}</p>
+                      <p><strong>Full Name:</strong> {{ fullName || 'Not provided' }}</p>
+                      <p><strong>Email:</strong> {{ email || 'Not provided' }}</p>
+                      <p><strong>Phone:</strong> {{ phoneValue || 'Not provided' }}</p>
                       <p><strong>Country:</strong> {{ selectedCountryName || 'Not selected' }}</p>
-                      <p><strong>City:</strong> {{ candidate.address || 'Not provided' }}</p>
-                      <p><strong>Immigration Status:</strong> {{ candidate.status || 'Not selected' }}</p>
-                      <p><strong>Transportation:</strong> {{ candidate.hasVehicle ? 'Own Vehicle' : 'Public Transit' }}</p>
-                      <p v-if="candidate.skills && candidate.skills.length > 0">
+                      <p><strong>City:</strong> {{ address || 'Not provided' }}</p>
+                      <p><strong>Immigration Status:</strong> {{ status || 'Not selected' }}</p>
+                      <p><strong>Transportation:</strong> {{ hasVehicle ? 'Own Vehicle' : 'Public Transit' }}</p>
+                      <p v-if="skills && skills.length > 0">
                         <strong>Skills:</strong>
-                        <span v-for="(skill, index) in candidate.skills" :key="index">
+                        <span v-for="(skill, index) in skills" :key="index">
                           <b-tag type="is-info" class="ml-1">{{ skill }}</b-tag>
                         </span>
                       </p>
@@ -155,8 +145,7 @@
               </div>
               <div class="step-navigation-buttons">
                 <b-button @click="goToPreviousStep()">Previous</b-button>
-                <b-button type="is-primary" native-type="submit"
-                  :disabled="errors.items.length > 0 || !termnsAndConditions">Submit Application</b-button>
+                <b-button type="is-primary" native-type="submit" :disabled="!termsAndConditions">Submit Application</b-button>
               </div>
             </b-step-item>
           </b-steps>
@@ -164,10 +153,9 @@
         <b-tab-item label="Already Registered" :visible="jobToApply">
           <div class="container-flex">
             <div class="col-12 col-padding">
-              <b-field :type="errors.has('emailRegistered') ? 'is-danger' : ''" label="Email"
-                :message="errors.has('emailRegistered') ? errors.first('emailRegistered') : ''">
-                <b-input type="email" v-model="candidate.email" maxlength="50" has-counter name="emailRegistered"
-                  v-validate="{ email: true, required: !isNewApplicantTab, max: 50 }" ></b-input>
+              <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+                :message="formErrors.email">
+                <b-input type="email" v-model="email" maxlength="50" has-counter name="emailRegistered"></b-input>
               </b-field>
             </div>
           </div>
@@ -178,139 +166,167 @@
   </div>
 </template>
 
-<script lang="ts">
-import multipartUploadMixin from "@/mixins/multipartUploadMixin";
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import * as yup from 'yup';
+import { showAlertError } from "@/utils/toast";
+import { generateFileName } from "@/utils/buildWorkerFormData";
 import { getCountries } from "@/api/locationApi";
 import { submitCandidate } from "@/api/websiteApi";
+import { useStickyForm } from '@/composables/useStickyForm';
+import PhoneInput from "@/components/PhoneInput.vue";
 
-export default {
-  props: ['jobToApply'],
-  mixins: [multipartUploadMixin],
-  components: {
-    phoneInput: () => import("@/components/PhoneInput.vue")
+type ApplyFields = {
+  fullName: string;
+  email: string;
+  countryId: string | null;
+  address: string;
+  status: string;
+  termsAndConditions: boolean;
+};
+
+const props = defineProps<{ jobToApply?: any }>();
+const emit = defineEmits<{ (e: 'candidateCreated'): void }>();
+
+const activeTab = ref(0);
+const isNewApplicantTab = computed(() => activeTab.value === 0);
+
+const schema = computed(() => yup.object({
+  fullName: isNewApplicantTab.value
+    ? yup.string().required('Full Name is required').max(50, 'Max 50 characters')
+    : yup.string().nullable().transform(v => v || null).max(50, 'Max 50 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').max(50, 'Max 50 characters'),
+  countryId: isNewApplicantTab.value
+    ? yup.string().nullable().required('Country is required')
+    : yup.string().nullable(),
+  address: isNewApplicantTab.value
+    ? yup.string().required('City is required').max(50, 'Max 50 characters')
+    : yup.string().nullable().transform(v => v || null),
+  status: isNewApplicantTab.value
+    ? yup.string().required('Immigration Status is required')
+    : yup.string().nullable().transform(v => v || null),
+  termsAndConditions: isNewApplicantTab.value
+    ? yup.boolean().oneOf([true], 'You must accept the Terms and Conditions').required()
+    : yup.boolean(),
+}));
+
+const form = useStickyForm<ApplyFields>({
+  schema: schema as any,
+  initialValues: {
+    fullName: '',
+    email: '',
+    countryId: null,
+    address: '',
+    status: '',
+    termsAndConditions: false,
   },
-  data() {
-    return {
-      activeTab: 0,
-      activeStep: 0,
-      isLoading: false,
-      countries: [],
-      skill: null,
-      skillsSelected: [],
-      alreadyRegistered: false,
-      file: null,
-      candidate: {},
-      termnsAndConditions: false
-    }
-  },
-  async created() {
-    this.countries = await getCountries();
-  },
-  methods: {
-    goToPreviousStep() {
-      if (this.activeStep > 0) {
-        this.activeStep--;
-      }
-    },
-    async validateAndGoToStep(currentStep) {
-      let valid = false;
-      if (currentStep === 1) {
-        valid = await this.validateStep1();
-      } else if (currentStep === 2) {
-        valid = await this.validateStep2();
-      }
-      if (valid) {
-        this.activeStep++;
-      } else {
-        this.showAlertError("Please verify that the required fields are correctly filled in.");
-      }
-    },
-    async validateStep1() {
-      const step1Fields = ['fullName', 'email', 'country', 'address'];
-      const results = await Promise.all(step1Fields.map(f => this.$validator.validate(f)));
-      const phoneValid = await this.$refs.phoneComponent.validatePhone();
-      return results.every(r => r) && phoneValid;
-    },
-    async validateStep2() {
-      const step2Fields = ['status'];
-      const results = await Promise.all(step2Fields.map(f => this.$validator.validate(f)));
-      return results.every(r => r);
-    },
-    async createCandidate() {
-      const result = await this.$validator.validateAll();
-      if (result) {
-        this.isLoading = true;
+});
+const { fullName, email, countryId, address, status, termsAndConditions } = form.fields;
+const formErrors = form.errors;
 
-        // Set requestId if applying to a specific job
-        if (this.jobToApply) {
-          this.candidate.requestId = this.jobToApply.requestId;
-        }
+watch(isNewApplicantTab, (newVal) => {
+  form.setFieldValue('termsAndConditions', !newVal as any);
+});
 
-        let formData;
+const activeStep = ref(0);
+const isLoading = ref(false);
+const countries = ref<any[]>([]);
+const file = ref<File | null>(null);
+const skills = ref<string[]>([]);
+const hasVehicle = ref(false);
+const phoneValue = ref<string | null>(null);
+const requestId = ref<any>(null);
+const phoneComponent = ref<any>(null);
 
-        if (this.isNewApplicantTab) {
-          // New applicant - create FormData with all fields and file
-          formData = new FormData();
+const selectedCountryName = computed(() => {
+  const country = countries.value.find((c: any) => c.id === countryId.value);
+  return country ? country.value : '';
+});
 
-          // Generate file name if resume is present
-          let fileName = null;
-          if (this.file) {
-            fileName = this.generateFileName('Resume', this.file.name);
-          }
+(async () => {
+  countries.value = await getCountries();
+})();
 
-          // Build candidate data object (similar to CandidateViewModel in covenantWeb)
-          const candidateData = {
-            fullName: this.candidate.fullName,
-            email: this.candidate.email,
-            phone: this.candidate.phone,
-            skills: this.candidate.skills,
-            status: this.candidate.status || '',
-            countryId: this.candidate.countryId,
-            address: this.candidate.address,
-            fileName: fileName,
-            hasVehicle: this.candidate.hasVehicle,
-            requestId: this.candidate.requestId
-          };
-
-          // Append data field with candidate JSON
-          formData.append('data', JSON.stringify(candidateData));
-
-          // Append resume file with generated filename as key
-          if (this.file && fileName) {
-            formData.append(fileName, this.file, fileName);
-          }
-        } else {
-          // Already registered - only send email and requestId
-          formData = new FormData();
-          const candidateData = {
-            email: this.candidate.email,
-            requestId: this.candidate.requestId
-          };
-          formData.append('data', JSON.stringify(candidateData));
-        }
-
-        await submitCandidate(formData);
-        this.$emit('candidateCreated');
-        this.isLoading = false;
-      }
-    },
-  },
-  computed: {
-    isNewApplicantTab() {
-      return this.activeTab === 0;
-    },
-    selectedCountryName() {
-      const country = this.countries.find(c => c.id === this.candidate.countryId);
-      return country ? country.value : '';
-    }
-  },
-  watch: {
-    activeTab() {
-      this.termnsAndConditions = !this.isNewApplicantTab;
-    }
+function goToPreviousStep() {
+  if (activeStep.value > 0) {
+    activeStep.value--;
   }
 }
 
+async function validateAndGoToStep(currentStep: number) {
+  let valid = false;
+  if (currentStep === 1) {
+    valid = await validateStep1();
+  } else if (currentStep === 2) {
+    valid = await validateStep2();
+  }
+  if (valid) {
+    activeStep.value++;
+  } else {
+    showAlertError("Please verify that the required fields are correctly filled in.");
+  }
+}
+
+async function validateStep1() {
+  const fields = ['fullName', 'email', 'countryId', 'address'];
+  form.markInteracted(fields);
+  const results = await Promise.all(fields.map((f: any) => form.validateField(f)));
+  const phoneValid = await phoneComponent.value.validatePhone();
+  return results.every((r: any) => r.valid) && phoneValid;
+}
+
+async function validateStep2() {
+  form.markInteracted(['status']);
+  const r = await form.validateField('status');
+  return r.valid;
+}
+
+async function createCandidate() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) return;
+  isLoading.value = true;
+
+  if (props.jobToApply) {
+    requestId.value = props.jobToApply.requestId;
+  }
+
+  let formData: FormData;
+  if (isNewApplicantTab.value) {
+    formData = new FormData();
+    let fileName: string | null = null;
+    if (file.value) {
+      fileName = generateFileName('Resume', file.value.name);
+    }
+    const candidateData = {
+      fullName: fullName.value,
+      email: email.value,
+      phone: phoneValue.value,
+      skills: skills.value,
+      status: status.value || '',
+      countryId: countryId.value,
+      address: address.value,
+      fileName,
+      hasVehicle: hasVehicle.value,
+      requestId: requestId.value,
+    };
+    formData.append('data', JSON.stringify(candidateData));
+    if (file.value && fileName) {
+      formData.append(fileName, file.value, fileName);
+    }
+  } else {
+    formData = new FormData();
+    const candidateData = {
+      email: email.value,
+      requestId: requestId.value,
+    };
+    formData.append('data', JSON.stringify(candidateData));
+  }
+
+  await submitCandidate(formData);
+  emit('candidateCreated');
+  isLoading.value = false;
+}
 </script>
 
 <style scoped>

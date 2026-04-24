@@ -39,6 +39,7 @@ namespace Covenant.Tests.Worker
 
             _sut = new WorkerService(
                 _workerRepository.Object,
+                Mock.Of<IAgencyRepository>(),
                 Mock.Of<IUserRepository>(),
                 Mock.Of<INotificationRepository>(),
                 Mock.Of<IRequestRepository>(),

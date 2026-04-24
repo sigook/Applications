@@ -11,10 +11,10 @@
       <div>
         <div v-if="request.status && request.status !== 'None'"
           class="option-request-top capitailized fw-700 is-inline-block" :class="request.status">
-          {{ $t(request.status) }}
+          {{ request.status }}
         </div>
         <div v-else class="option-request-top capitailized fw-700 is-inline-block" :class="request.requestStatus">
-          {{ $t(request.requestStatus) }}
+          {{ request.requestStatus }}
         </div>
         <div v-if="currentUser.approvedToWork" class="d-inline-block">
           <button v-if="canApply" class="orange-button md-btn background-btn btn-radius" @click="modalMessage = true">
@@ -30,7 +30,7 @@
 
     <div class="container-flex">
       <section class="col-md-9 col-sm-12 section-left">
-        <request-detail v-if="request" :request="request"></request-detail>
+        <RequestDetail v-if="request" :request="request"></RequestDetail>
         <div v-if="currentUser.approvedToWork" class="mt-5">
           <div v-if="canApply">
             <button class="orange-button md-btn background-btn btn-radius" @click="modalMessage = true">
@@ -43,7 +43,7 @@
         </div>
       </section>
       <aside class="col-md-3 col-sm-12 section-right">
-        <location :jobLocation="request.jobLocation" />
+        <Location :jobLocation="request.jobLocation" />
       </aside>
     </div>
 
@@ -56,7 +56,7 @@
               <button @click="modalMessage = false" type="button" class="cross-icon">
                 close
               </button>
-              <edit-textarea :title="'Additional Comments'" subtitle="Comments" :min-length="0" class="sm-edit-textarea"
+              <EditTextarea :title="'Additional Comments'" subtitle="Comments" :min-length="0" class="sm-edit-textarea"
                 @updateContent="(data) => applyToRequest(data)" />
             </div>
           </div>
@@ -67,104 +67,93 @@
   </div>
 </template>
 
-<script lang="ts">
-import toast from "../../mixins/toastMixin";
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useWorkerStore } from '@/stores/worker';
+import { showAlertError } from '@/utils/toast';
 import { getWorkerRequest, getWorkerRequestHistoryDetail, workerRequestApplySelf } from '@/api/workerApi';
+import { appGlobals } from '@/varaibles';
+import RequestDetail from '../../components/worker/RequestDetail.vue';
+import Location from '../../components/request/RequestLocation.vue';
+import EditTextarea from '../../components/agency_request/EditTextarea.vue';
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      request: {},
-      modalMessage: false,
-    };
-  },
-  components: {
-    RequestDetail: () => import("../../components/worker/RequestDetail.vue"),
-    Location: () => import("../../components/request/RequestLocation.vue"),
-    EditTextarea: () => import("../../components/agency_request/EditTextarea.vue"),
-  },
-  mixins: [toast],
-  methods: {
-    getWorkerHistoryRequest() {
-      getWorkerRequestHistoryDetail(this.$route.params.id)
-        .then((response) => {
-          this.isLoading = false;
-          this.request = response;
-        })
-        .catch(() => {
-          this.isLoading = false;
-        });
-    },
-    getWorkerRequest() {
-      getWorkerRequest(this.$route.params.id)
-        .then((response) => {
-          this.isLoading = false;
-          this.request = response;
-        })
-        .catch(() => {
-          this.isLoading = false;
-        });
-    },
-    applyToRequest(comment) {
-      this.isLoading = true;
-      let model = {
-        comments: comment,
-      };
-      workerRequestApplySelf(this.request.id, model)
-        .then(() => {
-          this.isLoading = false;
-          this.$router.push({
-            path: "/worker-request-applied/" + this.request.id,
-          });
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-  created() {
-    if (this.$route.query.history) {
-      this.getWorkerHistoryRequest();
-    } else {
-      this.getWorkerRequest();
-    }
-  },
-  computed: {
-    canApply() {
-      let available = false;
-      switch (this.request.requestStatus) {
-        case this.$statusOpen:
-          available = true;
-          break;
+const route = useRoute();
+const router = useRouter();
+const workerStore = useWorkerStore();
 
-        case this.$statusFilled:
-        case this.$statusCancelled:
-          available = false;
-          break;
+const isLoading = ref(true);
+const request = ref<any>({});
+const modalMessage = ref(false);
 
-        default:
-          available = false;
-          break;
-      }
-      switch (this.request.status) {
-        case this.$statusReject:
-        case this.$statusInQueue:
-        case this.$statusDecline:
-          available = false;
-          break;
-      }
+const currentUser = computed<any>(() => workerStore.workerProfile);
 
-      if (this.request.isApplicant) {
-        available = false;
-      }
+const canApply = computed(() => {
+  let available = false;
+  switch (request.value.requestStatus) {
+    case appGlobals.$statusOpen:
+      available = true;
+      break;
+    case appGlobals.$statusFilled:
+    case appGlobals.$statusCancelled:
+      available = false;
+      break;
+    default:
+      available = false;
+      break;
+  }
+  switch (request.value.status) {
+    case appGlobals.$statusReject:
+    case appGlobals.$statusInQueue:
+    case appGlobals.$statusDecline:
+      available = false;
+      break;
+  }
+  if (request.value.isApplicant) {
+    available = false;
+  }
+  return available;
+});
 
-      return available;
-    },
-    currentUser() {
-      return this.$store.state.worker.workerProfile;
-    },
-  },
-};
+function getWorkerHistoryRequest() {
+  getWorkerRequestHistoryDetail(route.params.id)
+    .then((response: any) => {
+      isLoading.value = false;
+      request.value = response;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+
+function getWorkerRequestFn() {
+  getWorkerRequest(route.params.id)
+    .then((response: any) => {
+      isLoading.value = false;
+      request.value = response;
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+
+function applyToRequest(comment: string) {
+  isLoading.value = true;
+  const model = { comments: comment };
+  workerRequestApplySelf(request.value.id, model)
+    .then(() => {
+      isLoading.value = false;
+      router.push({ path: '/worker-request-applied/' + request.value.id });
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+if (route.query.history) {
+  getWorkerHistoryRequest();
+} else {
+  getWorkerRequestFn();
+}
 </script>

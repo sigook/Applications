@@ -63,54 +63,55 @@
     </section>
   </div>
 </template>
-<script lang="ts">
-import { getLandingJobPositions } from "@/api/websiteApi";
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import SubMenu from '@/components/landing/SubMenu.vue';
+import { getLandingJobPositions } from '@/api/websiteApi';
+import type { LandingJobCategory } from '@/types/website';
 
-export default {
-  props: ['solutionType'],
-  data() {
-    return {
-      currentPosition: {}
-    }
-  },
-  components: {
-    SubMenu: () => import("@/components/landing/SubMenu.vue")
-  },
-  async created() {
-    if (this.$route.params.position) {
-      await this.loadInfo(this.$route.params.position);
-    }
-  },
-  methods: {
-    async loadInfo(positionType) {
-      const positions = await getLandingJobPositions();
-      const position = positions[this.solutionType].find(p => p.id === positionType);
-      if (position) {
-        this.currentPosition = position;
-      }
-    },
-    getPositionImage(imageName) {
-      return require(`@/assets/images/positions/${this.solutionType}/${imageName}`);
-    },
-    scrollToRequestStaffForm() {
-      // no-op
-    },
-  },
-  computed: {
-    bannerImage() {
-      if (this.currentPosition.backgroundImage) {
-        return require(`@/assets/images/banners/${this.currentPosition.backgroundImage}`);
-      } else {
-        return ''
-      }
-    }
-  },
-  watch: {
-    '$route.params.position': async function (value) {
-      await this.loadInfo(value);
-    }
+const props = defineProps<{ solutionType: string }>();
+
+const positionImages = import.meta.glob('@/assets/images/positions/**', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const bannerImages = import.meta.glob('@/assets/images/banners/**', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+
+function resolvePositionImage(solutionType: string, imageName: string): string {
+  const key = Object.keys(positionImages).find((k) => k.endsWith(`/positions/${solutionType}/${imageName}`));
+  return key ? positionImages[key] : '';
+}
+
+function resolveBannerImage(imageName: string): string {
+  const key = Object.keys(bannerImages).find((k) => k.endsWith(`/banners/${imageName}`));
+  return key ? bannerImages[key] : '';
+}
+
+const route = useRoute();
+const currentPosition = ref<LandingJobCategory | Record<string, never>>({});
+
+const bannerImage = computed(() => {
+  const bg = (currentPosition.value as LandingJobCategory).backgroundImage;
+  return bg ? resolveBannerImage(bg) : '';
+});
+
+async function loadInfo(positionType: string) {
+  const positions = await getLandingJobPositions();
+  const position = positions[props.solutionType].find((p) => p.id === positionType);
+  if (position) {
+    currentPosition.value = position;
   }
 }
+
+function getPositionImage(imageName: string): string {
+  return resolvePositionImage(props.solutionType, imageName);
+}
+
+watch(
+  () => route.params.position,
+  (value) => {
+    if (value) loadInfo(value as string);
+  },
+  { immediate: true },
+);
 </script>
 <style lang="scss">
 @import "../../assets/scss/mixins";

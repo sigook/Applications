@@ -1,114 +1,137 @@
-﻿using Covenant.Common.Entities.Worker;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
+using Covenant.Common.Entities;
+using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models.Security;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Resources;
-using Microsoft.AspNetCore.Http;
-using UserType = Covenant.Common.Enums.UserType;
 
 namespace Covenant.Core.BL.Adapters;
 
 public class WorkerAdapter : IWorkerAdapter
 {
-    private readonly IAgencyRepository agencyRepository;
-    private readonly IIdentityServerService identityServerService;
-    private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly IFilesContainer filesContainer;
-
-    public WorkerAdapter(
-        IAgencyRepository agencyRepository,
-        IIdentityServerService identityServerService,
-        IHttpContextAccessor httpContextAccessor,
-        IFilesContainer filesContainer)
+    public WorkerProfile MapToWorkerProfile(WorkerProfileCreateModel model, Common.Entities.Agency.Agency agency, User user)
     {
-        this.agencyRepository = agencyRepository;
-        this.identityServerService = identityServerService;
-        this.httpContextAccessor = httpContextAccessor;
-        this.filesContainer = filesContainer;
-    }
+        var entity = new WorkerProfile
+        {
+            AgencyId = agency.Id,
+            Agency = agency,
+            Worker = user,
+            WorkerId = user.Id,
+            ApprovedToWork = false,
+            FirstName = model.FirstName,
+            MiddleName = model.MiddleName,
+            LastName = model.LastName,
+            SecondLastName = model.SecondLastName,
+            BirthDay = model.BirthDay,
+            GenderId = model.Gender?.Id == Guid.Empty ? null : model.Gender?.Id,
+            HasVehicle = model.HasVehicle,
+            MobileNumber = model.MobileNumber,
+            Phone = model.Phone,
+            PhoneExt = model.PhoneExt,
+            Location = new Location
+            {
+                CityId = model.Location.City.Id,
+                Address = model.Location.Address,
+                PostalCode = model.Location.PostalCode
+            },
+            LiftId = model.Lift?.Id,
+            IdentificationNumber1 = model.IdentificationNumber1,
+            IdentificationType1Id = model.IdentificationType1?.Id,
+            IdentificationNumber2 = model.IdentificationNumber2,
+            IdentificationType2Id = model.IdentificationType2?.Id,
+            HaveAnyHealthProblem = model.HaveAnyHealthProblem,
+            HealthProblem = model.HealthProblem,
+            OtherHealthProblem = model.OtherHealthProblem,
+            ContactEmergencyName = model.ContactEmergencyName,
+            ContactEmergencyLastName = model.ContactEmergencyLastName,
+            ContactEmergencyPhone = model.ContactEmergencyPhone
+        };
+        entity.LocationId = entity.Location.Id;
 
-    public async Task<Result<WorkerProfile>> MapToWorkerProfile(WorkerProfileCreateModel model)
-    {
-        var request = httpContextAccessor.HttpContext.Request;
-        var entity = new WorkerProfile();
-        var validationResult = entity.PatchBasicInformation(model);
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchContactInformation(model);
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchAvailabilities(model.Availabilities.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchAvailabilityTimes(model.AvailabilityTimes.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchAvailabilityDays(model.AvailabilityDays.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchLocationPreferences(model.LocationPreferences.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchLanguages(model.Languages.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchSkills(model.Skills.Select(m => m.Skill).ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchOtherInformation(model);
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchDocuments(model);
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchLicenses(model.Licenses.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchCertificates(model.Certificates.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.AddOtherDocuments(model.OtherDocuments.ToList());
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        validationResult = entity.PatchProfileImage(model.ProfileImage);
-        if (!validationResult) return Result.Fail<WorkerProfile>(validationResult.Errors);
-        var agency = default(Common.Entities.Agency.Agency);
-        var agencyId = identityServerService.GetAgencyId();
-        if (agencyId == Guid.Empty)
+        if (!string.IsNullOrEmpty(model.ProfileImage?.FileName))
         {
-            agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
-            if (agency is null) return Result.Fail<WorkerProfile>(ApiResources.AgencyNotFound);
+            entity.ProfileImage = new CovenantFile(model.ProfileImage.FileName, model.ProfileImage.Description);
+            entity.ProfileImageId = entity.ProfileImage.Id;
         }
-        else
+
+        if (!string.IsNullOrEmpty(model.IdentificationType1File?.FileName))
         {
-            agency = await agencyRepository.GetAgency(agencyId);
+            entity.IdentificationType1File = new CovenantFile(model.IdentificationType1File.FileName, model.IdentificationType1File.Description);
+            entity.IdentificationType1FileId = entity.IdentificationType1File.Id;
         }
-        entity.AgencyId = agencyId;
-        entity.Agency = agency;
-        entity.ApprovedToWork = false;
-        var user = await identityServerService.CreateUser(new CreateUserModel
+
+        if (!string.IsNullOrEmpty(model.IdentificationType2File?.FileName))
         {
-            Email = model.Email,
-            Password = model.Password,
-            ConfirmPassword = model.ConfirmPassword,
-            UserType = UserType.Worker
-        });
-        if (!user) return Result.Fail<WorkerProfile>(user.Errors);
-        entity.Worker = user.Value;
-        var profileImageFile = request.Form.Files[entity.ProfileImage?.FileName];
-        if (profileImageFile != null) await filesContainer.UploadAsync(profileImageFile.OpenReadStream(), profileImageFile.FileName);
-        var identificationType1File = request.Form.Files[entity.IdentificationType1File.FileName];
-        if (identificationType1File != null) await filesContainer.UploadAsync(identificationType1File.OpenReadStream(), identificationType1File.FileName);
-        var identificationType2File = request.Form.Files[entity.IdentificationType2File?.FileName];
-        if (identificationType2File != null) await filesContainer.UploadAsync(identificationType2File.OpenReadStream(), identificationType2File.FileName);
-        var resume = request.Form.Files[entity.Resume?.FileName];
-        if (resume != null) await filesContainer.UploadAsync(resume.OpenReadStream(), entity.Resume.FileName);
-        foreach (var license in entity.Licenses)
-        {
-            var licenseFile = request.Form.Files[license.License?.FileName];
-            if (licenseFile != null) await filesContainer.UploadAsync(licenseFile.OpenReadStream(), license.License.FileName);
+            entity.IdentificationType2File = new CovenantFile(model.IdentificationType2File.FileName, model.IdentificationType2File.Description);
+            entity.IdentificationType2FileId = entity.IdentificationType2File.Id;
         }
-        foreach (var certificate in entity.Certificates)
+
+        if (!string.IsNullOrEmpty(model.PoliceCheckBackGround?.FileName))
         {
-            var certificateFile = request.Form.Files[certificate.Certificate?.FileName];
-            if (certificateFile != null) await filesContainer.UploadAsync(certificateFile.OpenReadStream(), certificate.Certificate.FileName);
+            entity.PoliceCheckBackGround = new CovenantFile(model.PoliceCheckBackGround.FileName, model.PoliceCheckBackGround.Description);
+            entity.PoliceCheckBackGroundId = entity.PoliceCheckBackGround.Id;
         }
-        foreach (var otherDocument in entity.OtherDocuments)
+
+        if (!string.IsNullOrEmpty(model.Resume?.FileName))
         {
-            var otherDocumentFile = request.Form.Files[otherDocument.Document?.FileName];
-            if (otherDocumentFile != null) await filesContainer.UploadAsync(otherDocumentFile.OpenReadStream(), otherDocument.Document.FileName);
+            entity.Resume = new CovenantFile(model.Resume.FileName, model.Resume.Description);
+            entity.ResumeId = entity.Resume.Id;
         }
-        return Result.Ok(entity);
+
+        entity.Availabilities = [.. model.Availabilities
+            .Where(a => a.Id != Guid.Empty)
+            .Select(a => new WorkerProfileAvailability { AvailabilityId = a.Id, WorkerProfile = entity })];
+
+        entity.AvailabilityTimes = [.. model.AvailabilityTimes
+            .Where(t => t.Id != Guid.Empty)
+            .Select(t => new WorkerProfileAvailabilityTime { AvailabilityTimeId = t.Id, WorkerProfile = entity })];
+
+        entity.AvailabilityDays = [.. model.AvailabilityDays
+            .Where(d => d.Id != Guid.Empty)
+            .Select(d => new WorkerProfileAvailabilityDay { DayId = d.Id, WorkerProfile = entity })];
+
+        entity.LocationPreferences = [.. model.LocationPreferences
+            .Where(c => c.Id != Guid.Empty)
+            .Select(c => new WorkerProfileLocationPreference { CityId = c.Id, WorkerProfile = entity })];
+
+        entity.Languages = [.. model.Languages
+            .Where(l => l.Id != Guid.Empty)
+            .Select(l => new WorkerProfileLanguage { LanguageId = l.Id, WorkerProfile = entity })];
+
+        entity.Skills = [.. model.Skills.Select(s => new WorkerProfileSkill { Skill = s.Skill, WorkerProfile = entity })];
+
+        entity.Licenses = [.. model.Licenses
+            .Select(l =>
+            {
+                var file = new CovenantFile(l.License.FileName, l.License.Description);
+                return new WorkerProfileLicense
+                {
+                    License = file,
+                    LicenseId = file.Id,
+                    Number = l.Number,
+                    Issued = l.Issued,
+                    Expires = l.Expires,
+                    WorkerProfile = entity
+                };
+            })];
+
+        entity.Certificates = [.. model.Certificates
+            .Select(c =>
+            {
+                var file = new CovenantFile(c.FileName, c.Description);
+                return new WorkerProfileCertificate
+                {
+                    Certificate = file,
+                    CertificateId = file.Id,
+                    WorkerProfile = entity
+                };
+            })];
+
+        foreach (var document in model.OtherDocuments)
+        {
+            if (string.IsNullOrEmpty(document?.FileName)) continue;
+            var file = new CovenantFile(document.FileName, document.Description);
+            entity.OtherDocuments.Add(WorkerProfileOtherDocument.Create(entity.Id, file).Value);
+        }
+
+        return entity;
     }
 }

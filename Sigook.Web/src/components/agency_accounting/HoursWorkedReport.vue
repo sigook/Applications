@@ -3,15 +3,14 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12 col-md-6 col-lg-4 col-padding">
-        <b-field label="Dates (From - To)" :type="errors.has('dates') ? 'is-danger' : ''"
-          :message="errors.has('dates') ? errors.first('dates') : ''">
-          <b-datepicker v-model="datesSelected" v-validate="'required'" name="dates" range
-            @input="onDatesSelected" />
+        <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
+          :message="formErrors.dates">
+          <b-datepicker v-model="dates" name="dates" range
+            @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
       <div class="col-12 col-md-6 col-lg-4 col-padding">
-        <b-field label="Company" :type="errors.has('company') ? 'is-danger' : ''"
-          :message="errors.has('company') ? errors.first('company') : ''">
+        <b-field label="Company">
           <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus
             field="fullName" name="company" placeholder="Company" @select="selectCompany">
           </b-autocomplete>
@@ -32,11 +31,11 @@
         <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
       <div v-if="reportGenerated" class="col-12 col-padding">
-        <export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
+        <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
-        </export>
+        </Export>
         <b-table :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
-          :current-page.sync="pageIndex" pagination-rounded>
+          v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
           </template>
@@ -95,99 +94,112 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import * as yup from 'yup';
+import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
 import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
+import { useStickyForm } from '@/composables/useStickyForm';
+import Export from "@/components/Export.vue";
 
-export default {
-  components: {
-    Export: () => import("@/components/Export.vue")
-  },
-  data() {
-    return {
-      isLoading: false,
-      isLoadingJobPositions: false,
-      isLoadingReport: false,
-      datesSelected: [],
-      companies: [],
-      companySelected: '',
-      jobPositions: [],
-      jobPositionSelected: '',
-      pageIndex: 1,
-      pageSize: 30,
-      serverParams: {},
-      reportGenerated: false,
-      report: {
-        rows: []
-      }
-    }
-  },
-  async created() {
-    await this.loadCompanies();
-  },
-  methods: {
-    currency,
-    async loadCompanies() {
-      this.isLoading = true;
-      this.companies = await getAgencyCompanyProfileWithRequests();
-      this.isLoading = false;
-    },
-    async onDatesSelected() {
-      this.serverParams.startDate = dayjs(this.datesSelected[0]).format('YYYY-MM-DD');
-      this.serverParams.endDate = dayjs(this.datesSelected[1]).format('YYYY-MM-DD');
-      await this.loadJobPositions();
-    },
-    async selectCompany(company) {
-      if (company) {
-        this.serverParams.companyId = company.companyId;
-        await this.loadJobPositions();
-      } else {
-        this.serverParams.companyId = null;
-        this.jobPositions = [];
-      }
-    },
-    async loadJobPositions() {
-      if (this.serverParams.companyId && this.datesSelected.length === 2) {
-        this.isLoadingJobPositions = true;
-        this.jobPositions = await getJobPositionsHoursWorked(this.serverParams);
-        this.isLoadingJobPositions = false;
-      }
-    },
-    selectJobPosition(jobPosition) {
-      if (jobPosition) {
-        this.serverParams.jobPositionRateId = jobPosition.id;
-      } else {
-        this.serverParams.jobPositionRateId = null;
-      }
-    },
-    async getReport() {
-      const result = await this.$validator.validateAll();
-      if (result) {
-        this.isLoadingReport = true;
-        getHoursWorkedReport(this.serverParams)
-          .then((response) => {
-            this.isLoadingReport = false;
-            this.report = {
-              ...response,
-              rows: response.detail,
-            }
-            this.reportGenerated = true;
-          }).catch(error => {
-            this.isLoadingReport = false;
-            this.showAlertError(error);
-          });
-      }
-    },
-  },
-  computed: {
-    filteredCompanies() {
-      return this.companies.filter(company => company.fullName.toLowerCase().includes(this.companySelected.toLowerCase()));
-    },
-    filteredJobPositions() {
-      return this.jobPositions.filter(jp => jp.jobPosition.value.toLowerCase().includes(this.jobPositionSelected.toLowerCase()));
-    }
+const schema = yup.object({
+  dates: yup
+    .array()
+    .of(yup.date())
+    .min(2, 'Dates are required')
+    .required('Dates are required'),
+});
+
+const form = useStickyForm<{ dates: Date[] }>({
+  schema,
+  initialValues: { dates: [] },
+});
+const { dates } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const isLoadingJobPositions = ref(false);
+const isLoadingReport = ref(false);
+const companies = ref<any[]>([]);
+const companySelected = ref('');
+const jobPositions = ref<any[]>([]);
+const jobPositionSelected = ref('');
+const pageIndex = ref(1);
+const pageSize = ref(30);
+const serverParams = ref<any>({});
+const reportGenerated = ref(false);
+const report = ref<any>({ rows: [] });
+
+async function loadCompanies() {
+  isLoading.value = true;
+  companies.value = await getAgencyCompanyProfileWithRequests();
+  isLoading.value = false;
+}
+
+async function onDatesSelected() {
+  if (dates.value && dates.value.length === 2) {
+    serverParams.value.startDate = dayjs(dates.value[0]).format('YYYY-MM-DD');
+    serverParams.value.endDate = dayjs(dates.value[1]).format('YYYY-MM-DD');
+    await loadJobPositions();
   }
 }
+
+async function selectCompany(company: any) {
+  if (company) {
+    serverParams.value.companyId = company.companyId;
+    await loadJobPositions();
+  } else {
+    serverParams.value.companyId = null;
+    jobPositions.value = [];
+  }
+}
+
+async function loadJobPositions() {
+  if (serverParams.value.companyId && dates.value && dates.value.length === 2) {
+    isLoadingJobPositions.value = true;
+    jobPositions.value = await getJobPositionsHoursWorked(serverParams.value);
+    isLoadingJobPositions.value = false;
+  }
+}
+
+function selectJobPosition(jobPosition: any) {
+  if (jobPosition) {
+    serverParams.value.jobPositionRateId = jobPosition.id;
+  } else {
+    serverParams.value.jobPositionRateId = null;
+  }
+}
+
+async function getReport() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) return;
+  isLoadingReport.value = true;
+  getHoursWorkedReport(serverParams.value)
+    .then((response) => {
+      isLoadingReport.value = false;
+      report.value = {
+        ...response,
+        rows: response.detail
+      };
+      reportGenerated.value = true;
+    }).catch(error => {
+      isLoadingReport.value = false;
+      showAlertError(error);
+    });
+}
+
+const filteredCompanies = computed(() =>
+  companies.value.filter((company: any) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
+);
+const filteredJobPositions = computed(() =>
+  jobPositions.value.filter((jp: any) => jp.jobPosition.value.toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
+);
+
+(async () => {
+  await loadCompanies();
+})();
 </script>

@@ -4,6 +4,7 @@ import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../network/api_client.dart';
 import '../network/network_info.dart';
+import 'analytics_providers.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError(
@@ -18,7 +19,9 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  return ApiClient(
+    crashReportingService: ref.read(crashReportingServiceProvider),
+  );
 });
 
 final networkInfoProvider = Provider<NetworkInfo>((ref) {

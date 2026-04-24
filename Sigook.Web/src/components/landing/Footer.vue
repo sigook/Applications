@@ -75,16 +75,8 @@
 </template>
 
 
-<script lang="ts">
-
-export default {
-  data() {
-    return {
-      year: new Date().getFullYear()
-    }
-  }
-}
-
+<script setup lang="ts">
+const year = new Date().getFullYear();
 </script>
 
 <style lang="scss">

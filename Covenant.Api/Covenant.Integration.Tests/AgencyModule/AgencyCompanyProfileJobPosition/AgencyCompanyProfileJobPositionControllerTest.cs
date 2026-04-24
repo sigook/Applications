@@ -1,4 +1,4 @@
-using Covenant.Api;
+﻿using Covenant.Api;
 using Covenant.Api.AgencyModule.AgencyCompanyProfileJobPosition.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
@@ -21,6 +21,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPosition
 {
@@ -108,7 +109,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
             };
             var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<CompanyProfileJobPositionRateModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CompanyProfileJobPositionRate.SingleAsync(c => c.Id == detail.Id);
             AssertEntityAndModel(model, entity);
@@ -206,7 +207,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}");
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
             Assert.NotEmpty(list);
             var entity = FakePosition;
             var model = list.Single(c =>
@@ -229,7 +230,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
             var entity = FakePosition;
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.Id}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<CompanyProfileJobPositionRateModel>();
+            var model = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
             Assert.Equal(entity.Id, model.Id);
             Assert.True(entity.CreatedAt <= DateTime.Now);
             Assert.NotNull(entity.CreatedBy);

@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCompanyProfile.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCompanyProfile.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -19,6 +19,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
 {
@@ -41,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
             var model = CreateModel();
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<CompanyProfileDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.FullName, entity.FullName);
@@ -80,7 +81,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
             Guid id = Startup.FakeCompanyProfile.Id;
             HttpResponseMessage response = await _client.GetAsync(RequestUri(id));
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<CompanyProfileDetailModel>();
+            var model = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             Assert.NotNull(model);
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);

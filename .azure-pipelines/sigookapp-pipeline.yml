@@ -50,12 +50,6 @@ variables:
     value: 'production'
   ${{ else }}:
     value: 'staging'
-# Flutter build flavor (matches branch: main → production, dev → staging)
-- name: flavor
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    value: 'production'
-  ${{ else }}:
-    value: 'staging'
 # Flutter entry point file
 - name: entryPoint
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -107,6 +101,14 @@ stages:
           flutter analyze --no-fatal-infos
           echo "✅ Code analysis passed"
     - task: CmdLine@2
+      displayName: 'Flutter Test'
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          echo "Running flutter test..."
+          flutter test
+          echo "✅ All tests passed"
+    - task: CmdLine@2
       displayName: 'Verify Build Configuration (Fast)'
       inputs:
         script: |
@@ -116,7 +118,7 @@ stages:
           echo "========================================"
 
           echo "Verifying Android build configuration..."
-          flutter build apk --debug --flavor $(flavor) -t $(entryPoint) --dry-run
+          flutter build apk --debug -t $(entryPoint) --dry-run
           echo "✅ Android build configuration valid"
 
           echo ""
@@ -344,7 +346,6 @@ stages:
           echo "Building with Version Code: ${VERSION_CODE}"
 
           flutter build appbundle \
-            --flavor $(flavor) \
             -t $(entryPoint) \
             --release \
             --build-name="${VERSION_NAME}" \
@@ -357,10 +358,11 @@ stages:
             --dart-define="POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
             --dart-define="SCOPES=$(SCOPES)" \
             --dart-define="APP_NAME=$(APP_NAME)"
+            --dart-define="APP_INSIGHTS_CONNECTION_STRING=$(APP_INSIGHTS_CONNECTION_STRING)"
 
           echo "✅ Android AAB built successfully for $(environment)"
           echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
-          ls -la build/app/outputs/bundle/$(flavor)Release/
+          ls -la build/app/outputs/bundle/release/
     - task: Bash@3
       displayName: 'Verify Android AAB Signing'
       inputs:

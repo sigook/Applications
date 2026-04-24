@@ -1,5 +1,10 @@
 # Sigook.Web — Vue 2 Agency Portal (Main Platform)
 
+## Reference Docs (read these first)
+
+- `.docs/technical/SIGOOK_WEB_API_MAP.md` — every `src/api/*.ts` file → backend endpoint, types, Vuex wiring
+- `.docs/technical/SIGOOK_WEB_STRUCTURE.md` — folder layout, routes, views by feature, global plumbing
+
 ## Code Navigation
 
 ```

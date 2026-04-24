@@ -91,6 +91,13 @@ class AuthViewModel extends _$AuthViewModel {
           state = state.copyWith(isLoading: false, error: null);
         } else {
           state = state.copyWith(isLoading: false, error: failure.message);
+          ref.read(analyticsServiceProvider).logEvent(
+            name: 'sign_in_failed',
+            parameters: {
+              'error': failure.message,
+              'timestamp': DateTime.now().toIso8601String(),
+            },
+          );
         }
       },
       (token) async {
@@ -115,6 +122,7 @@ class AuthViewModel extends _$AuthViewModel {
                 isAuthenticated: true,
                 error: null,
               );
+              _trackLogin(token);
             },
             (role) async {
               if (role.toLowerCase() == 'worker') {
@@ -125,9 +133,17 @@ class AuthViewModel extends _$AuthViewModel {
                   isAuthenticated: true,
                   error: null,
                 );
+                _trackLogin(token);
               } else {
                 debugPrint(
                   '🔑 [AUTH] User role is "$role" - access denied, logging out',
+                );
+                ref.read(analyticsServiceProvider).logEvent(
+                  name: 'sign_in_access_denied',
+                  parameters: {
+                    'role': role,
+                    'timestamp': DateTime.now().toIso8601String(),
+                  },
                 );
                 final logoutUseCase = ref.read(logoutProvider);
                 await logoutUseCase(NoParams());
@@ -152,6 +168,7 @@ class AuthViewModel extends _$AuthViewModel {
             isAuthenticated: true,
             error: null,
           );
+          _trackLogin(token);
         }
       },
     );
@@ -193,6 +210,37 @@ class AuthViewModel extends _$AuthViewModel {
         error: null,
       ),
     );
+  }
+
+  Future<void> deactivateAccount() async {
+    final accessToken = state.token?.accessToken;
+    if (accessToken == null) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    final result = await ref
+        .read(authRepositoryProvider)
+        .deactivateAccount(accessToken);
+
+    if (!ref.mounted) return;
+
+    result.fold(
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
+      (_) {
+        ref.read(analyticsServiceProvider).logEvent(name: 'account_deactivated');
+        state = const AuthState();
+      },
+    );
+  }
+
+  void _trackLogin(AuthToken token) {
+    final subject = token.userInfo?.sub ?? token.accessToken ?? '';
+    if (subject.isNotEmpty) {
+      ref.read(analyticsServiceProvider).setUserId(subject);
+      ref.read(crashReportingServiceProvider).setUserId(subject);
+    }
+    ref.read(analyticsServiceProvider).logLogin(method: 'oidc');
   }
 
   Future<void> logout() async {

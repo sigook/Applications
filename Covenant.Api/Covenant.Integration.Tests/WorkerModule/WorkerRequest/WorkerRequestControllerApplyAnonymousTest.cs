@@ -1,4 +1,4 @@
-using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
+﻿using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest;
 
@@ -37,7 +38,7 @@ public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFi
         var url = $"{RequestUri()}/{Data.WorkerProfile.Worker.Id}/{Data.FakeRequest.Id}/Apply";
         HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadAsJsonAsync<RequestApplicantDetailModel>();
+        var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.RequestApplicant.SingleAsync(s => s.Id == detail.Id);
         Assert.Equal(detail.WorkerProfileId, entity.WorkerProfileId);

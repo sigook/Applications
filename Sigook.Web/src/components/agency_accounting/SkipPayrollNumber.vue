@@ -16,50 +16,49 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import { getSkipPayrollNumbers, addSkipPayrollNumber } from "@/api/agencyPayStubApi";
+import { getDialog } from '@/utils/buefyProgrammatic';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      numbers: [],
-      selectedNumber: null
-    }
-  },
-  methods: {
-    onInputEntered(text) {
-      this.getAllNumbers(text);
+const isLoading = ref(false);
+const numbers = ref<any[]>([]);
+const selectedNumber = ref<any>(null);
+const autoCompleteNumbers = ref<any>(null);
+
+function onInputEntered(text: string) {
+  getAllNumbers(text);
+}
+
+function getAllNumbers(text: string) {
+  isLoading.value = true;
+  getSkipPayrollNumbers({ searchTerm: text })
+    .then(response => {
+      isLoading.value = false;
+      numbers.value = response;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onSelectFooter() {
+  getDialog().prompt({
+    message: "Number",
+    inputAttrs: {
+      type: "text",
+      placeholder: "Number",
+      value: selectedNumber.value
     },
-    getAllNumbers(text) {
-      this.isLoading = true;
-      getSkipPayrollNumbers({ searchTerm: text })
-        .then(response => {
-          this.isLoading = false;
-          this.numbers = response;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    onSelectFooter() {
-      this.$buefy.dialog.prompt({
-        message: "Number",
-        inputAttrs: {
-          type: "text",
-          placeholder: "Number",
-          value: this.selectedNumber
-        },
-        closeOnConfirm: false,
-        confirmText: 'Add',
-        onConfirm: async (value, dialog) => {
-          await addSkipPayrollNumber({ value: value });
-          this.$refs.autoCompleteNumbers.setSelected(value);
-          dialog.close();
-        }
-      });
+    closeOnConfirm: false,
+    confirmText: 'Add',
+    onConfirm: async (value: string, dialog: any) => {
+      await addSkipPayrollNumber({ value: value });
+      autoCompleteNumbers.value?.setSelected(value);
+      dialog.close();
     }
-  }
+  });
 }
 </script>

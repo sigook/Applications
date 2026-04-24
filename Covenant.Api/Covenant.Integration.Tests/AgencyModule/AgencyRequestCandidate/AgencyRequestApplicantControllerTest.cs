@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -16,6 +16,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
 {
@@ -39,7 +40,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
             var model = new RequestApplicantModel { CandidateId = Startup.FakeCandidatePost.Id, Comments = "Pending documents" };
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<RequestApplicantDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicant.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.CandidateId, entity.CandidateId);
@@ -56,7 +57,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
             var model = new RequestApplicantModel { WorkerProfileId = Startup.FakeWorkerPost.Id, Comments = "Waiting for work permit" };
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<RequestApplicantDetailModel>();
+            var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicant.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.WorkerProfileId, entity.WorkerProfileId);
@@ -71,7 +72,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<RequestApplicantDetailModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestApplicantDetailModel>>();
             Assert.NotEmpty(list.Items);
             RequestApplicant entity = Startup.FakeRequestApplicantList1;
             RequestApplicantDetailModel model = list.Items.Single(c => c.Id == entity.Id);

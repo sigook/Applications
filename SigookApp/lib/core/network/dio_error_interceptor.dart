@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/error_messages.dart';
+import '../error/exceptions.dart';
 
 class DioErrorInterceptor extends Interceptor {
   @override
@@ -69,6 +70,25 @@ class DioErrorInterceptor extends Interceptor {
       );
     }
     super.onResponse(response, handler);
+  }
+}
+
+/// Translates a [DioException] into a domain [NetworkException] or [ServerException].
+/// Use this inside datasource catch blocks instead of repeating the mapping inline.
+Never handleDioException(DioException e) {
+  if (e.type == DioExceptionType.connectionTimeout ||
+      e.type == DioExceptionType.sendTimeout ||
+      e.type == DioExceptionType.receiveTimeout) {
+    throw NetworkException('Connection timeout');
+  } else if (e.type == DioExceptionType.connectionError) {
+    throw NetworkException('No internet connection');
+  } else if (e.response != null) {
+    throw ServerException(
+      message: 'Server error: ${e.response?.statusCode}',
+      statusCode: e.response?.statusCode,
+    );
+  } else {
+    throw NetworkException('Network error: ${e.message}');
   }
 }
 

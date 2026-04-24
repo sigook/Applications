@@ -3,8 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/config/environment.dart';
+import 'core/providers/analytics_providers.dart';
 import 'core/providers/core_providers.dart';
+import 'package:go_router/go_router.dart';
 import 'core/routing/app_router.dart';
+import 'core/services/azure_app_insights_client.dart';
+import 'core/services/azure_crash_reporting_service.dart';
+import 'core/services/crash_reporting_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/error_messages.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -17,6 +22,15 @@ Future<void> mainCommon() async {
     EnvironmentConfig.printConfigSource();
 
     EnvironmentConfig.validateRequiredConfig();
+
+    // Set up crash reporting before runApp so uncaught errors are captured.
+    // Uses a standalone instance — Riverpod is not available yet.
+    final crashService = AzureCrashReportingService(
+      AzureAppInsightsClient(
+        connectionString: EnvironmentConfig.appInsightsConnectionString,
+      ),
+    );
+    setupCrashReporting(crashService);
 
     debugPrint('📦 Loading SharedPreferences...');
     final sharedPreferences = await SharedPreferences.getInstance();
@@ -56,7 +70,7 @@ class _InitErrorApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: const Color(0xFFEA1D25),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -96,6 +110,14 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.buildRouter(ref.read(analyticsServiceProvider));
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authViewModelProvider, (previous, next) {
@@ -112,7 +134,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     return MaterialApp.router(
       title: 'Sigook',
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
+      routerConfig: _router,
       theme: AppTheme.lightTheme,
       builder: (context, child) {
         return GestureDetector(

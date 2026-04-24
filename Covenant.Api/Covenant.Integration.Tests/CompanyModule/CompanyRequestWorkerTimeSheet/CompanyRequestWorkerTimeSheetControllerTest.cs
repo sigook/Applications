@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -15,6 +15,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
 {
@@ -30,7 +31,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
         {
             HttpResponseMessage response = await _client.GetAsync(_requestUri);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IList<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IList<TimeSheetListModel>>();
             Assert.NotEmpty(list);
             var model = list[0];
             Assert.Equal(model.Id, Data.TimeSheet.Id);
@@ -56,7 +57,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(_requestUri);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<TimeSheetListModel>>();
             foreach (TimeSheetListModel item in list)
             {
                 Assert.NotNull(item.TimeInApproved);

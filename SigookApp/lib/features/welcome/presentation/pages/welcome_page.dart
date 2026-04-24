@@ -449,23 +449,20 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                             ),
                             const SizedBox(height: 7),
                             // Already have an account row
-                            SizedBox(
-                              width: 300,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Already have an account?',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.85,
-                                      ),
-                                      fontSize: 16,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Already have an account?',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.85,
                                     ),
+                                    fontSize: 16,
                                   ),
-                                  Spacer(),
-                                  TextButton(
+                                ),
+                                TextButton(
                                     onPressed: authState.isLoading
                                         ? null
                                         : _signIn,
@@ -499,10 +496,8 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                             ),
                                           ),
                                   ),
-                                  SizedBox(width: 10),
                                 ],
                               ),
-                            ),
                           ],
                         ),
                       ),

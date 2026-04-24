@@ -12,12 +12,12 @@
     <div>
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/create-agency" icon-left="plus">
-          {{ $t('Create') }}
+          {{ 'Create' }}
         </b-button>
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
-        :current-page.sync="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
+        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -25,7 +25,7 @@
           <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.fullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/agency-detail/' + props.row.id }">
@@ -44,7 +44,7 @@
           <b-table-column field="email" label="Email" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.email" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span class="d-block">{{ props.row.email }}</span>
@@ -52,8 +52,8 @@
           </b-table-column>
           <b-table-column field="agencyType" label="Type" sortable searchable>
             <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="$agencyTypes" open-on-focus
-                field="label" icon="label" placeholder="Select Type" @input="onAgencyTypeSelected" append-to-body>
+              <b-taginput size="is-small" v-model="agencyTypesSelected" autocomplete :data="appGlobals.$agencyTypes" open-on-focus
+                field="label" icon="label" placeholder="Select Type" @update:modelValue="onAgencyTypeSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -67,75 +67,76 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { getAgenciesList } from "@/api/agencyApi";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useAgencyStore } from '@/stores/agency';
+import { showAlertError } from '@/utils/toast';
+import { getAgenciesList } from '@/api/agencyApi';
 import { agencyType } from '@/utils/filters';
+import { appGlobals } from '@/varaibles';
 
-export default {
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      agencyTypesSelected: [],
-      serverParams: {
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  created() {
-    if (this.$store.state.agency.agencyListFilter) {
-      this.serverParams = this.$store.state.agency.agencyListFilter;
-    }
-    this.getAgencies();
-  },
-  methods: {
-    agencyType,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getAgencies();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'fullName':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'email':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'agencyType':
-          this.serverParams.sortBy = 2;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getAgencies();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getAgencies();
-      }
-    },
-    onAgencyTypeSelected() {
-      this.serverParams.agencyTypes = this.agencyTypesSelected.map(t => t.value);
-      this.getAgencies();
-    },
-    getAgencies() {
-      this.isLoading = true;
-      this.$store.dispatch("agency/updateAgencyListFilter", this.serverParams);
-      getAgenciesList(this.serverParams)
-        .then(agencies => {
-          this.rows = agencies.items;
-          this.totalItems = agencies.totalItems;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    }
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const agencyTypesSelected = ref<any[]>([]);
+const serverParams = ref<any>({
+  sortBy: 0,
+  isDescending: false,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+if (agencyStore.agencyListFilter) {
+  serverParams.value = agencyStore.agencyListFilter;
+}
+getAgencies();
+
+function onPageChange(params: number) {
+  serverParams.value.pageIndex = params;
+  getAgencies();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'fullName':
+      serverParams.value.sortBy = 0;
+      break;
+    case 'email':
+      serverParams.value.sortBy = 1;
+      break;
+    case 'agencyType':
+      serverParams.value.sortBy = 2;
+      break;
   }
+  serverParams.value.isDescending = order !== 'asc';
+  getAgencies();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getAgencies();
+  }
+}
+
+function onAgencyTypeSelected() {
+  serverParams.value.agencyTypes = agencyTypesSelected.value.map((t) => t.value);
+  getAgencies();
+}
+
+function getAgencies() {
+  isLoading.value = true;
+  agencyStore.updateAgencyListFilter(serverParams.value);
+  getAgenciesList(serverParams.value)
+    .then((agencies: any) => {
+      rows.value = agencies.items;
+      totalItems.value = agencies.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
 </script>

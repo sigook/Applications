@@ -7,7 +7,7 @@
 
       <div class="grid-header">Day</div>
       <div v-for="(item, dayKey) in weekShift" :key="'header-' + dayKey" class="grid-header">
-        <b-checkbox size="is-small" v-model="item.going" @input="updateModel">
+        <b-checkbox size="is-small" v-model="item.going" @update:modelValue="updateModel">
           {{ item.day }}
         </b-checkbox>
       </div>
@@ -18,7 +18,7 @@
         </b-button>
       </div>
       <div v-for="(item, dayKey) in weekShift" :key="'from-' + dayKey" class="grid-cell">
-        <b-timepicker size="is-small" v-if="item.going" v-model="item.start" hour-format="24" @input="updateModel">
+        <b-timepicker size="is-small" v-if="item.going" v-model="item.start" hour-format="24" @update:modelValue="updateModel">
         </b-timepicker>
       </div>
 
@@ -35,7 +35,7 @@
         </b-button>
       </div>
       <div v-for="(item, dayKey) in weekShift" :key="'to-' + dayKey" class="grid-cell">
-        <b-timepicker size="is-small" v-if="item.going" v-model="item.finish" hour-format="24" @input="updateModel">
+        <b-timepicker size="is-small" v-if="item.going" v-model="item.finish" hour-format="24" @update:modelValue="updateModel">
         </b-timepicker>
       </div>
 
@@ -48,219 +48,144 @@
     </div>
 
     <div class="col-sm-12 col-md-12 col-lg-12 col-padding pt-1">
-      <b-field :type="errors.has('description') ? 'is-danger' : ''" label="Comments"
-        :message="errors.has('description') ? errors.first('description') : ''">
-        <b-input type="textarea" v-model="comments" name="description" @input="updateModel" />
+      <b-field label="Comments">
+        <b-input type="textarea" v-model="comments" name="description" @update:modelValue="updateModel" />
       </b-field>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive, watch, onMounted } from 'vue';
 import dayjs from "dayjs";
 
-export default {
-  props: ['currentShift', 'isUpdate'],
-  data() {
-    let start = new Date()
+const props = defineProps<{ currentShift?: any; isUpdate?: boolean }>();
+const emit = defineEmits<{ (e: 'updateModel', shift: any): void }>();
 
-    start.setMinutes(0);
-    start.setHours(8);
-    start.setSeconds(0);
+const start = new Date();
+start.setMinutes(0);
+start.setHours(8);
+start.setSeconds(0);
 
-    let finish = new Date()
-    finish.setMinutes(0);
-    finish.setHours(17);
-    finish.setSeconds(0);
+const finish = new Date();
+finish.setMinutes(0);
+finish.setHours(17);
+finish.setSeconds(0);
 
-    let zeroHour = new Date();
-    zeroHour.setMinutes(0);
-    zeroHour.setHours(0);
-    zeroHour.setSeconds(0);
+const zeroHour = new Date();
+zeroHour.setMinutes(0);
+zeroHour.setHours(0);
+zeroHour.setSeconds(0);
 
-    return {
-      zeroHour: zeroHour,
-      startMain: start,
-      showStart: false,
-      finishMain: finish,
-      showFinish: false,
-      weekShift: {
-        sun: {
-          day: 'Sun',
-          going: null,
-          start: zeroHour,
-          finish: zeroHour
-        },
-        mon: {
-          day: 'Mon',
-          going: true,
-          start: start,
-          finish: finish
-        },
-        tue: {
-          day: 'Tue',
-          going: true,
-          start: start,
-          finish: finish
-        },
-        wed: {
-          day: 'Wed',
-          going: true,
-          start: start,
-          finish: finish
-        },
-        thu: {
-          day: 'Thu',
-          going: true,
-          start: start,
-          finish: finish
-        },
-        fri: {
-          day: 'Fri',
-          going: true,
-          start: start,
-          finish: finish
-        },
-        sat: {
-          day: 'Sat',
-          going: null,
-          start: zeroHour,
-          finish: zeroHour
-        }
-      },
-      comments: null
-    }
-  },
-  watch: {
-    currentShift: {
-      handler(val) {
-        if (this.isUpdate && val !== null) {
-          this.mapFromShift();
-        }
-      },
-      immediate: true,
-      deep: false
-    }
-  },
-  methods: {
-    changeAllFrom() {
-      for (const item in this.weekShift) {
-        if (this.weekShift[item].going) {
-          this.weekShift[item].start = this.startMain
-        } else {
-          this.weekShift[item].start = this.zeroHour
-        }
-      }
-      this.updateModel()
-    },
-    changeAllTo() {
-      for (const item in this.weekShift) {
-        if (this.weekShift[item].going) {
-          this.weekShift[item].finish = this.finishMain
-        } else {
-          this.weekShift[item].finish = this.zeroHour
-        }
-      }
-      this.updateModel()
-    },
-    updateModel() {
-      this.$emit("updateModel", this.mapToShift());
-    },
-    mapToShift() {
-      return {
-        sunday: this.weekShift.sun.going,
-        monday: this.weekShift.mon.going,
-        tuesday: this.weekShift.tue.going,
-        wednesday: this.weekShift.wed.going,
-        thursday: this.weekShift.thu.going,
-        friday: this.weekShift.fri.going,
-        saturday: this.weekShift.sat.going,
-        sundayStart: this.hoursToString(this.weekShift.sun.start),
-        sundayFinish: this.hoursToString(this.weekShift.sun.finish),
-        mondayStart: this.hoursToString(this.weekShift.mon.start),
-        mondayFinish: this.hoursToString(this.weekShift.mon.finish),
-        tuesdayStart: this.hoursToString(this.weekShift.tue.start),
-        tuesdayFinish: this.hoursToString(this.weekShift.tue.finish),
-        wednesdayStart: this.hoursToString(this.weekShift.wed.start),
-        wednesdayFinish: this.hoursToString(this.weekShift.wed.finish),
-        thursdayStart: this.hoursToString(this.weekShift.thu.start),
-        thursdayFinish: this.hoursToString(this.weekShift.thu.finish),
-        fridayStart: this.hoursToString(this.weekShift.fri.start),
-        fridayFinish: this.hoursToString(this.weekShift.fri.finish),
-        saturdayStart: this.hoursToString(this.weekShift.sat.start),
-        saturdayFinish: this.hoursToString(this.weekShift.sat.finish),
-        comments: this.comments
-      }
-    },
-    mapFromShift() {
-      this.weekShift = {
-        sun: {
-          day: 'Sun',
-          going: this.currentShift.sunday,
-          start: this.stringToHours(this.currentShift.sundayStart),
-          finish: this.stringToHours(this.currentShift.sundayFinish)
-        },
-        mon: {
-          day: 'Mon',
-          going: this.currentShift.monday,
-          start: this.stringToHours(this.currentShift.mondayStart),
-          finish: this.stringToHours(this.currentShift.mondayFinish)
-        },
-        tue: {
-          day: 'Tue',
-          going: this.currentShift.tuesday,
-          start: this.stringToHours(this.currentShift.tuesdayStart),
-          finish: this.stringToHours(this.currentShift.tuesdayFinish)
-        },
-        wed: {
-          day: 'Wed',
-          going: this.currentShift.wednesday,
-          start: this.stringToHours(this.currentShift.wednesdayStart),
-          finish: this.stringToHours(this.currentShift.wednesdayFinish)
-        },
-        thu: {
-          day: 'Thu',
-          going: this.currentShift.thursday,
-          start: this.stringToHours(this.currentShift.thursdayStart),
-          finish: this.stringToHours(this.currentShift.thursdayFinish)
-        },
-        fri: {
-          day: 'Fri',
-          going: this.currentShift.friday,
-          start: this.stringToHours(this.currentShift.fridayStart),
-          finish: this.stringToHours(this.currentShift.fridayFinish)
-        },
-        sat: {
-          day: 'Sat',
-          going: this.currentShift.saturday,
-          start: this.stringToHours(this.currentShift.saturdayStart),
-          finish: this.stringToHours(this.currentShift.saturdayFinish)
-        },
-      }
-      this.comments = this.currentShift.comments
-    },
-    hoursToString(hour) {
-      return dayjs(hour).format('HH:mm:ss').toString();
-    },
-    stringToHours(time) {
-      if (time) {
-        const [hours, minutes, seconds] = time.split(':').map(Number);
-        return dayjs().startOf('day')
-          .add(hours, 'hour')
-          .add(minutes, 'minute')
-          .add(seconds || 0, 'second').toDate();
-      }
-      return this.zeroHour;
-    }
-  },
-  mounted() {
-    if (this.isUpdate && this.currentShift !== null) {
-      this.mapFromShift();
+const startMain = ref<Date>(start);
+const showStart = ref(false);
+const finishMain = ref<Date>(finish);
+const showFinish = ref(false);
+const comments = ref<string | null>(null);
+
+const weekShift = reactive<Record<string, { day: string; going: any; start: Date; finish: Date }>>({
+  sun: { day: 'Sun', going: null, start: zeroHour, finish: zeroHour },
+  mon: { day: 'Mon', going: true, start, finish },
+  tue: { day: 'Tue', going: true, start, finish },
+  wed: { day: 'Wed', going: true, start, finish },
+  thu: { day: 'Thu', going: true, start, finish },
+  fri: { day: 'Fri', going: true, start, finish },
+  sat: { day: 'Sat', going: null, start: zeroHour, finish: zeroHour },
+});
+
+function hoursToString(hour: Date): string {
+  return dayjs(hour).format('HH:mm:ss').toString();
+}
+
+function stringToHours(time: string): Date {
+  if (time) {
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    return dayjs().startOf('day')
+      .add(hours, 'hour')
+      .add(minutes, 'minute')
+      .add(seconds || 0, 'second').toDate();
+  }
+  return zeroHour;
+}
+
+function mapToShift() {
+  return {
+    sunday: weekShift.sun.going,
+    monday: weekShift.mon.going,
+    tuesday: weekShift.tue.going,
+    wednesday: weekShift.wed.going,
+    thursday: weekShift.thu.going,
+    friday: weekShift.fri.going,
+    saturday: weekShift.sat.going,
+    sundayStart: hoursToString(weekShift.sun.start),
+    sundayFinish: hoursToString(weekShift.sun.finish),
+    mondayStart: hoursToString(weekShift.mon.start),
+    mondayFinish: hoursToString(weekShift.mon.finish),
+    tuesdayStart: hoursToString(weekShift.tue.start),
+    tuesdayFinish: hoursToString(weekShift.tue.finish),
+    wednesdayStart: hoursToString(weekShift.wed.start),
+    wednesdayFinish: hoursToString(weekShift.wed.finish),
+    thursdayStart: hoursToString(weekShift.thu.start),
+    thursdayFinish: hoursToString(weekShift.thu.finish),
+    fridayStart: hoursToString(weekShift.fri.start),
+    fridayFinish: hoursToString(weekShift.fri.finish),
+    saturdayStart: hoursToString(weekShift.sat.start),
+    saturdayFinish: hoursToString(weekShift.sat.finish),
+    comments: comments.value,
+  };
+}
+
+function mapFromShift() {
+  const cs = props.currentShift;
+  weekShift.sun = { day: 'Sun', going: cs.sunday, start: stringToHours(cs.sundayStart), finish: stringToHours(cs.sundayFinish) };
+  weekShift.mon = { day: 'Mon', going: cs.monday, start: stringToHours(cs.mondayStart), finish: stringToHours(cs.mondayFinish) };
+  weekShift.tue = { day: 'Tue', going: cs.tuesday, start: stringToHours(cs.tuesdayStart), finish: stringToHours(cs.tuesdayFinish) };
+  weekShift.wed = { day: 'Wed', going: cs.wednesday, start: stringToHours(cs.wednesdayStart), finish: stringToHours(cs.wednesdayFinish) };
+  weekShift.thu = { day: 'Thu', going: cs.thursday, start: stringToHours(cs.thursdayStart), finish: stringToHours(cs.thursdayFinish) };
+  weekShift.fri = { day: 'Fri', going: cs.friday, start: stringToHours(cs.fridayStart), finish: stringToHours(cs.fridayFinish) };
+  weekShift.sat = { day: 'Sat', going: cs.saturday, start: stringToHours(cs.saturdayStart), finish: stringToHours(cs.saturdayFinish) };
+  comments.value = cs.comments;
+}
+
+function updateModel() {
+  emit('updateModel', mapToShift());
+}
+
+function changeAllFrom() {
+  for (const item in weekShift) {
+    if (weekShift[item].going) {
+      weekShift[item].start = startMain.value;
     } else {
-      this.updateModel();
+      weekShift[item].start = zeroHour;
     }
   }
+  updateModel();
 }
+
+function changeAllTo() {
+  for (const item in weekShift) {
+    if (weekShift[item].going) {
+      weekShift[item].finish = finishMain.value;
+    } else {
+      weekShift[item].finish = zeroHour;
+    }
+  }
+  updateModel();
+}
+
+watch(() => props.currentShift, (val) => {
+  if (props.isUpdate && val !== null) {
+    mapFromShift();
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  if (props.isUpdate && props.currentShift !== null) {
+    mapFromShift();
+  } else {
+    updateModel();
+  }
+});
 </script>
 
 <style scoped>

@@ -7,27 +7,25 @@
         <div class="container-flex">
           <div class="col-12">
             <b-checkbox v-model="candidate.dnu" :disabled="hasDnuPermission">
-              {{ $t("DNU") }}
+              DNU
             </b-checkbox>
           </div>
           <div class="col-12">
-            <b-field label="Full Name" :type="errors.has('full name') ? 'is-danger' : ''">
-              <b-input type="text" v-model="candidate.name" name="full name" v-validate="'required|max:60|min:2'" />
+            <b-field label="Full Name" :type="formErrors.name ? 'is-danger' : ''"
+              :message="formErrors.name">
+              <b-input type="text" v-model="name" name="name" />
             </b-field>
-            <span v-show="errors.has('full name')" class="help is-danger no-margin">
-              {{ errors.first('full name') }}
-            </span>
           </div>
           <div class="col-12 mb-1">
-            <b-field :type="errors.has('email') ? 'is-danger' : ''" label="Email"
-              :message="errors.has('email') ? errors.first('email') : ''">
-              <b-input type="email" v-model="candidate.email" name="email" v-validate="'required|email|max:50|min:6'" />
+            <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
+              :message="formErrors.email">
+              <b-input type="email" v-model="email" name="email" />
             </b-field>
           </div>
           <div class="col-12 mb-3">
-            <b-field :type="errors.has('address') ? 'is-danger' : ''" label="Address"
-              :message="errors.has('address') ? errors.first('address') : ''">
-              <b-input type="text" v-model="candidate.address" name="address" v-validate="'required|max:100|min:2'" />
+            <b-field :type="formErrors.address ? 'is-danger' : ''" label="Address"
+              :message="formErrors.address">
+              <b-input type="text" v-model="address" name="address" />
             </b-field>
           </div>
           <div class="col-12">
@@ -48,100 +46,115 @@
           <div class="col-12">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
-                {{ candidate.hasVehicle ? $t("Yes") : $t("No") }}
+                {{ candidate.hasVehicle ? "Yes" : "No" }}
               </b-switch>
             </b-field>
           </div>
         </div>
-        <button class="background-btn create-btn orange-button btn-radius" type="submit">{{ $t('Update') }}</button>
+        <button class="background-btn create-btn orange-button btn-radius" type="submit">Update</button>
       </form>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import * as yup from 'yup';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { getGenders } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
+import { useStickyForm } from '@/composables/useStickyForm';
 
-export default {
-  setup() {
-    return { ...useBillingAdmin() };
-  },
-  props: ['candidateId'],
-  data() {
-    return {
-      isLoading: false,
-      candidate: {},
-      showPostalCode: false,
-      genderList: []
-    }
-  },
-  methods: {
-    loadCandidate() {
-      this.isLoading = true;
-      getAgencyCandidate(this.candidateId)
-        .then(response => {
-          this.isLoading = false;
-          this.candidate = response
-          this.showPostalCode = true;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-    validateForm() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.submitCandidate();
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    submitCandidate() {
-      this.isLoading = true;
-      updateAgencyCandidate(this.candidateId, this.candidate)
-        .then(() => {
-          this.isLoading = false
-          this.showAlertSuccess('Updated');
-          this.$emit('onUpdateWorker', true);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    }
-  },
-  created() {
-    getGenders()
-      .then((result) => {
-        this.genderList = result;
-        this.loadCandidate();
-      })
-      .catch(error => {
-        this.showAlertError(error);
-      })
-  },
-  computed: {
-    genders() {
-      return this.genderList;
-    },
-    residencyList() {
-      return residencyList;
-    },
-    hasDnuPermission() {
-      if (!this.candidate.dnu) {
-        return false;
-      } else if (
-        this.candidate.dnu && this.isPayrollManager
-      ) {
-        return false;
-      } else {
-        return true;
-      }
-    },
+const props = defineProps<{ candidateId: number | string }>();
+const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
+
+const billingAdmin = useBillingAdmin();
+
+const schema = yup.object({
+  name: yup.string().required('Full Name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
+  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+  address: yup.string().required('Address is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
+});
+
+const form = useStickyForm<{ name: string; email: string; address: string }>({
+  schema,
+  initialValues: { name: '', email: '', address: '' },
+});
+const { name, email, address } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const candidate = ref<any>(null);
+const showPostalCode = ref(false);
+const genderList = ref<any[]>([]);
+
+const genders = computed(() => genderList.value);
+const hasDnuPermission = computed(() => {
+  if (!candidate.value || !candidate.value.dnu) {
+    return false;
+  } else if (candidate.value.dnu && billingAdmin.isPayrollManager) {
+    return false;
+  } else {
+    return true;
   }
+});
+
+function loadCandidate() {
+  isLoading.value = true;
+  getAgencyCandidate(props.candidateId)
+    .then(response => {
+      isLoading.value = false;
+      candidate.value = response;
+      showPostalCode.value = true;
+      form.hydrate({
+        name: response.name || '',
+        email: response.email || '',
+        address: response.address || '',
+      });
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+async function validateForm() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError('Please make sure all required fields are filled out correctly');
+    return;
+  }
+  submitCandidate();
+}
+
+function submitCandidate() {
+  isLoading.value = true;
+  const payload = {
+    ...candidate.value,
+    name: name.value,
+    email: email.value,
+    address: address.value,
+  };
+  updateAgencyCandidate(props.candidateId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      emit('onUpdateWorker', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+getGenders()
+  .then((result) => {
+    genderList.value = result;
+    loadCandidate();
+  })
+  .catch(error => {
+    showAlertError(error);
+  });
 </script>

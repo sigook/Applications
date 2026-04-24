@@ -13,12 +13,12 @@
       />
     </label>
     <button
-      :class="{ disabled: !this.filter || this.filter.length < 3 }"
+      :class="{ disabled: !filter || filter.length < 3 }"
       @click="filterResults(filter)"
     >
-      {{ $t("Search") }}
+      {{ "Search" }}
     </button>
-    <button @click="showAll()">{{ $t("All") }}</button>
+    <button @click="showAll()">{{ "All" }}</button>
     <transition name="fade">
       <span class="help is-danger no-margin tooltip2" v-if="error"
         >Please write at least 3 characters</span
@@ -27,52 +27,62 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  props: ["placeholder", "defaultFilter", "onShowAll"],
-  data() {
-    return {
-      filter: "",
-      error: false,
-    };
-  },
-  created() {
-    if (this.defaultFilter) {
-      this.filter = this.defaultFilter;
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const props = defineProps<{
+  placeholder?: string;
+  defaultFilter?: string;
+  onShowAll?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'filterResults', value: string): void;
+  (e: 'showAllResults', value: string): void;
+}>();
+
+const filter = ref('');
+const error = ref(false);
+
+if (props.defaultFilter) {
+  filter.value = props.defaultFilter;
+}
+
+function filterResults(value: string) {
+  error.value = false;
+  if (filter.value && filter.value.length >= 2) {
+    emit('filterResults', value);
+  } else if (filter.value && filter.value.length <= 1) {
+    error.value = true;
+  } else {
+    filter.value = '';
+    emit('filterResults', '');
+  }
+}
+
+function showAll() {
+  filter.value = '';
+  if (props.onShowAll) {
+    emit('showAllResults', '');
+  } else {
+    emit('filterResults', '');
+  }
+}
+
+function changeError() {
+  if (error.value) {
+    if (filter.value && filter.value.length >= 2) {
+      error.value = false;
     }
-  },
-  methods: {
-    filterResults(value) {
-      this.error = false;
-      if (this.filter && this.filter.length >= 2) {
-        this.$emit("filterResults", value);
-      } else if (this.filter && this.filter.length <= 1) {
-        this.error = true;
-      } else {
-        this.filter = "";
-        this.$emit("filterResults", "");
-      }
-    },
-    showAll() {
-      this.filter = "";
-      if (this.onShowAll) {
-        this.$emit("showAllResults", "");
-      } else {
-        this.$emit("filterResults", "");
-      }
-    },
-    changeError() {
-      if (this.error) {
-        if (this.filter && this.filter.length >= 2) {
-          this.error = false;
-        }
-      }
-    },
-    clear() {
-      this.filter = "";
-    },
-  },
-};
+  }
+}
+
+// Exposed (preserved from legacy)
+function clear() {
+  filter.value = '';
+}
+
+defineExpose({ clear });
 </script>
 
 

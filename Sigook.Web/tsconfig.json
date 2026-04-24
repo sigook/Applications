@@ -5,19 +5,19 @@
     "strict": false,
     "jsx": "preserve",
     "importHelpers": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "vite/client",
+      "node"
     ],
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     },
     "lib": [

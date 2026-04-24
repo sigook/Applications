@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
@@ -15,6 +15,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
 {
@@ -40,7 +41,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
             }
             _output.WriteLine("*********************After read the response");
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<InvoiceListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<InvoiceListModel>>();
             Assert.NotEmpty(list.Items);
         }
 
@@ -49,7 +50,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
         {
             HttpResponseMessage response = await _client.GetAsync($"{ApiCompanyInvoice}/{Data.Invoice.Id}");
             response.EnsureSuccessStatusCode();
-            InvoiceSummaryModel model = await response.Content.ReadAsJsonAsync<InvoiceSummaryModel>();
+            InvoiceSummaryModel model = await response.Content.ReadFromJsonAsync<InvoiceSummaryModel>();
             Assert.NotNull(model);
         }
     }

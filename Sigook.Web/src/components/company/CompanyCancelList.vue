@@ -11,43 +11,59 @@
       </div>
       <transition name="fadeHeight">
         <div v-if="reasonSelected" class="col-12 col-padding">
-          <b-field label="Please indicate the reason" :type="errors.has('reason') ? 'is-danger' : ''"
-            :message="errors.has('reason') ? errors.first('reason') : ''">
-            <b-input type="textarea" v-model="reasonMessage" name="reason" v-validate="'required'" />
+          <b-field label="Please indicate the reason" :type="formErrors.reason ? 'is-danger' : ''"
+            :message="formErrors.reason || ''">
+            <b-input type="textarea" v-model="reason" name="reason" />
           </b-field>
         </div>
       </transition>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="validateInput">{{ $t("Send") }}</b-button>
+        <b-button type="is-primary" @click="validateInput">{{ "Send" }}</b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { getReasonCancellationRequest } from "@/api/catalogApi";
-export default {
-  data() {
-    return {
-      isLoading: true,
-      reasonSelected: null,
-      reasonMessage: null,
-      cancellationList: []
-    }
-  },
-  async created() {
-    this.cancellationList = await getReasonCancellationRequest();
-    this.isLoading = false;
-  },
-  methods: {
-    validateInput() {
-      this.$validator.validateAll().then((result) => {
-        if (result) {
-          this.$emit('sendReason', { reasonId: this.reasonSelected.id, otherMessage: this.reasonMessage });
-        }
-      });
-    }
+
+const emit = defineEmits<{ (e: 'sendReason', payload: { reasonId: any; otherMessage: string }): void }>();
+
+const schema = yup.object({
+  reason: yup.string().required('Reason is required'),
+});
+
+const form = useStickyForm<{ reason: string }>({
+  schema,
+  initialValues: { reason: '' },
+});
+const { reason } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(true);
+const reasonSelected = ref<any>(null);
+const cancellationList = ref<any[]>([]);
+
+(async () => {
+  cancellationList.value = await getReasonCancellationRequest();
+  isLoading.value = false;
+})();
+
+function validateInput() {
+  if (!reasonSelected.value) {
+    showAlertError('Please select a cancellation reason');
+    return;
   }
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    emit('sendReason', { reasonId: reasonSelected.value.id, otherMessage: values.reason });
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 </script>
 <style lang="scss" scoped>

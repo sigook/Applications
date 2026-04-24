@@ -7,17 +7,16 @@
     <div class="container-flex">
       <div class="col-12 col-padding">
         <b-field>
-          <b-checkbox v-model="form.paidHolidays">
+          <b-checkbox v-model="paidHolidays">
             Paid Holidays
           </b-checkbox>
         </b-field>
       </div>
 
       <div class="col-12 col-padding">
-        <b-field label="Overtime Starts After" :type="errors.has('overtimeStartsAfter') ? 'is-danger' : ''"
-          :message="errors.first('overtimeStartsAfter')">
-          <b-input v-model="form.overtimeStartsAfter" v-validate="'decimal|min_value:0'"
-            name="overtimeStartsAfter" type="number" step="1"></b-input>
+        <b-field label="Overtime Starts After" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
+          :message="formErrors.overtimeStartsAfter">
+          <b-input v-model="overtimeStartsAfter" name="overtimeStartsAfter" type="number" step="1"></b-input>
         </b-field>
       </div>
 
@@ -30,40 +29,58 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'ProvinceSettingsModal',
-  props: ["provinceId", "provinceName", "currentSettings"],
-  data() {
-    return {
-      isLoading: false,
-      form: {
-        paidHolidays: false,
-        overtimeStartsAfter: null
-      }
-    };
-  },
-  created() {
-    this.initializeForm();
-  },
-  methods: {
-    initializeForm() {
-      if (this.currentSettings) {
-        this.form = Object.assign({}, this.currentSettings);
-      }
-    },
-    async saveSettings() {
-      const isValid = await this.$validator.validateAll();
-      if (!isValid) {
-        this.showAlertError('Please fill in all required fields correctly');
-        return;
-      }
-      const settings = {
-        paidHolidays: this.form.paidHolidays,
-        overtimeStartsAfter: parseFloat(this.form.overtimeStartsAfter)
-      };
-      this.$emit('saved', settings);
-    }
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { showAlertError } from '@/utils/toast';
+import { useStickyForm } from '@/composables/useStickyForm';
+
+interface Settings {
+  paidHolidays: boolean;
+  overtimeStartsAfter: number | null;
+}
+
+const props = defineProps<{
+  provinceId?: number;
+  provinceName?: string;
+  currentSettings?: Settings | null;
+}>();
+
+const emit = defineEmits<{ (e: 'saved', settings: Settings): void }>();
+
+const schema = yup.object({
+  overtimeStartsAfter: yup
+    .number()
+    .transform((v, o) => (o === '' || o === null ? null : v))
+    .nullable()
+    .min(0, 'Must be >= 0'),
+});
+
+const form = useStickyForm<{ overtimeStartsAfter: number | null }>({
+  schema,
+  initialValues: { overtimeStartsAfter: null },
+});
+const { overtimeStartsAfter } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const paidHolidays = ref(false);
+
+if (props.currentSettings) {
+  paidHolidays.value = !!props.currentSettings.paidHolidays;
+  form.setFieldValue('overtimeStartsAfter', props.currentSettings.overtimeStartsAfter ?? null);
+}
+
+async function saveSettings() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) {
+    showAlertError('Please fill in all required fields correctly');
+    return;
   }
-};
+  emit('saved', {
+    paidHolidays: paidHolidays.value,
+    overtimeStartsAfter: parseFloat(String(overtimeStartsAfter.value)),
+  });
+}
 </script>

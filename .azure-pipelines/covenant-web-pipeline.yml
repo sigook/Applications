@@ -93,14 +93,10 @@ stages:
             name: SetEnvironment
             displayName: 'Determine Environment'
 
-          # Setup Node.js via NVM (pre-installed on VM)
-          - script: |
-              export NVM_DIR="$HOME/.nvm"
-              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-              nvm use covenant-web  # Alias for Node.js 20
-              echo "Node version: $(node --version)"
-              echo "NPM version: $(npm --version)"
-            displayName: 'Setup Node.js 20 via NVM'
+          # Setup Node.js (shared template — Vite 7 requires Node ^20.19 || >=22.12)
+          - template: templates/node-setup.yml
+            parameters:
+              nodeVersion: '22'
 
           # Display build information
           - task: Bash@3

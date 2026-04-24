@@ -3,8 +3,6 @@ import type {
   City,
   CovenantFileModel,
   LocationDetailModel,
-  LocationModel,
-  PaginatedList,
   Province,
   WsibGroup,
 } from './common';

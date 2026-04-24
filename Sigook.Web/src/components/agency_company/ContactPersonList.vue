@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">
-        {{ $t('Create') }}
+        {{ 'Create' }}
       </b-button>
     </b-field>
     <b-table :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="10">
@@ -45,70 +45,69 @@
     </b-modal>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
+import ContactForm from "./ContactPersonForm.vue";
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      profileId: this.$route.params.id,
-      showModal: false,
-      data: [],
-      currentContact: null,
-    }
-  },
-  methods: {
-    async loadContactPersons() {
-      this.isLoading = true;
-      await getAgencyCompanyContactPerson(this.profileId)
-        .then(response => {
-          this.isLoading = false;
-          this.data = response;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    openEditModal(item) {
-      this.currentContact = item;
-      this.showModal = true;
-    },
-    closeModal() {
-      this.currentContact = null;
-      this.showModal = false;
-    },
-    async onUpdateModal() {
-      await this.loadContactPersons();
-      this.closeModal();
-    },
-    onDeleteContactPerson(id) {
-      this.showAlertConfirm("Are you sure", "You want to delete this contact")
-        .then(response => {
-          if (response) {
-            this.isLoading = true;
-            deleteAgencyCompanyContactPerson(this.profileId, id)
-              .then(async () => {
-                this.showAlertSuccess('Deleted')
-                await this.loadContactPersons();
-                this.isLoading = false;
-              })
-              .catch(error => {
-                this.isLoading = false;
-                this.showAlertError(error)
-              })
-          }
-        }).catch(error => {
-          this.showAlertError(error)
-        })
-    }
-  },
-  created() {
-    this.loadContactPersons();
-  },
-  components: {
-    ContactForm: () => import("./ContactPersonForm.vue")
-  }
+const route = useRoute();
+
+const isLoading = ref(false);
+const profileId = route.params.id;
+const showModal = ref(false);
+const data = ref<any[]>([]);
+const currentContact = ref<any>(null);
+
+async function loadContactPersons() {
+  isLoading.value = true;
+  await getAgencyCompanyContactPerson(profileId)
+    .then(response => {
+      isLoading.value = false;
+      data.value = response;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function openEditModal(item: any) {
+  currentContact.value = item;
+  showModal.value = true;
+}
+
+function closeModal() {
+  currentContact.value = null;
+  showModal.value = false;
+}
+
+async function onUpdateModal() {
+  await loadContactPersons();
+  closeModal();
+}
+
+function onDeleteContactPerson(id: any) {
+  showAlertConfirm("Are you sure", "You want to delete this contact")
+    .then(response => {
+      if (response) {
+        isLoading.value = true;
+        deleteAgencyCompanyContactPerson(profileId, id)
+          .then(async () => {
+            showAlertSuccess('Deleted');
+            await loadContactPersons();
+            isLoading.value = false;
+          })
+          .catch(error => {
+            isLoading.value = false;
+            showAlertError(error);
+          });
+      }
+    }).catch(error => {
+      showAlertError(error);
+    });
+}
+
+loadContactPersons();
 </script>

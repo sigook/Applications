@@ -10,71 +10,76 @@
 
     <div class="container-flex">
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field label="New Email" :type="errors.has('newEmail') ? 'is-danger' : ''"
-          :message="errors.has('newEmail') ? errors.first('newEmail') : ''">
-          <b-input type="email" v-model="newEmail" name="newEmail" v-validate="'required|email'" data-vv-as="newEmail"
-            ref="newEmail">
+        <b-field label="New Email" :type="formErrors.newEmail ? 'is-danger' : ''"
+          :message="formErrors.newEmail || ''">
+          <b-input type="email" v-model="newEmail" name="newEmail">
           </b-input>
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-        <b-field label="Confirm Email" :type="errors.has('confirmEmail') ? 'is-danger' : ''"
-          :message="errors.has('confirmEmail') ? errors.first('confirmEmail') : ''">
-          <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail"
-            v-validate="{ required: true, confirmed: newEmail }">
+        <b-field label="Confirm Email" :type="formErrors.confirmEmail ? 'is-danger' : ''"
+          :message="formErrors.confirmEmail || ''">
+          <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail">
           </b-input>
         </b-field>
       </div>
 
       <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
         <b-button type="is-primary" @click="validateAll()">
-          {{ $t("Save") }}
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-
-import validationEmail from '../../mixins/validationEmail';
-import toastMixin from "../../mixins/toastMixin";
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { updateAgencyCompanyEmail } from "@/api/agencyCompanyApi";
 
-export default {
-  name: "DialogCompanyUpdateEmail",
-  props: ['companyProfileId'],
-  data() {
-    return {
-      isLoading: false,
-      newEmail: "",
-      confirmEmail: "",
-    }
-  },
-  mixins: [toastMixin, validationEmail],
-  methods: {
-    validateAll() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.updateEmail();
-          return;
-        }
-        this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-      });
-    },
-    updateEmail() {
-      this.isLoading = true;
-      updateAgencyCompanyEmail(this.companyProfileId, { newEmail: this.newEmail }).then(() => {
-        this.isLoading = false;
-        this.$emit('closeModal', true, this.newEmail);
-      })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    }
-  }
+const props = defineProps<{ companyProfileId: number | string }>();
+const emit = defineEmits<{ (e: 'closeModal', changed: boolean, newEmail: string): void }>();
+
+const schema = yup.object({
+  newEmail: yup.string().required('Email is required').email('Invalid email'),
+  confirmEmail: yup
+    .string()
+    .required('Confirm email is required')
+    .oneOf([yup.ref('newEmail')], 'Emails must match'),
+});
+
+const form = useStickyForm<{ newEmail: string; confirmEmail: string }>({
+  schema,
+  initialValues: { newEmail: '', confirmEmail: '' },
+});
+const { newEmail, confirmEmail } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    updateEmail(values.newEmail);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
 }
 
+function updateEmail(email: string) {
+  isLoading.value = true;
+  updateAgencyCompanyEmail(props.companyProfileId, { newEmail: email })
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true, email);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

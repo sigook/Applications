@@ -89,6 +89,7 @@ dependencies:
   # File Picker (Cross-platform file selection for iOS/Android/Web)
   file_picker: 10.3.7  # Pinned - version 10.3.9 has breaking API changes (FilePicker.platform removed)
   image_picker: ^1.2.1
+  image_cropper: ^12.0.0
   permission_handler: ^12.0.1
   geolocator: ^13.0.2
   openid_client: ^0.4.9+1
@@ -108,6 +109,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # Testing
+  mocktail: ^1.0.4
 
   # Code Generation
   build_runner: ^2.7.1

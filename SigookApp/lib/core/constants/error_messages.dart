@@ -23,7 +23,7 @@ class ErrorMessages {
       _messages?['network']?['unknown'] ?? 'Unknown error';
 
   static String get authenticationFailed =>
-      _messages?['authentication']?['failed'] ?? 'Authentication failed';
+      _messages?['authentication']?['failed'] ?? 'Authentication failed. Please sign in.';
   static String get tokenExpired =>
       _messages?['authentication']?['token_expired'] ?? 'Token expired';
   static String get userCancelled =>
@@ -101,10 +101,16 @@ class ErrorMessages {
   static String fromException(Exception e) {
     final message = e.toString().toLowerCase();
 
-    if (message.contains('network') || message.contains('connection')) {
-      return networkError;
-    } else if (message.contains('timeout')) {
+    if (message.contains('timeout')) {
       return connectionTimeout;
+    } else if (message.contains('network') || message.contains('connection')) {
+      return networkError;
+    } else if (message.contains('unauthorized') || message.contains('401')) {
+      return authenticationFailed;
+    } else if (message.contains('forbidden') || message.contains('403')) {
+      return locationPermissionDenied;
+    } else if (message.contains('not found') || message.contains('404')) {
+      return dataNotFound;
     } else if (message.contains('server')) {
       return serverError;
     } else if (message.contains('auth')) {

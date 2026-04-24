@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestSkill.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestSkill.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
@@ -12,6 +12,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestSkill
 {
@@ -35,7 +36,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestSkill
             var model = new SkillModel("Customer Service");
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<SkillModel>();
+            var detail = await response.Content.ReadFromJsonAsync<SkillModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestSkill entity = await context.RequestSkill.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(detail.Id, entity.Id);
@@ -47,7 +48,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestSkill
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<SkillModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<SkillModel>>();
             RequestSkill entity = Startup.FakeSkill;
             SkillModel model = list.Single(c => c.Id == entity.Id);
             Assert.Equal(model.Id, entity.Id);

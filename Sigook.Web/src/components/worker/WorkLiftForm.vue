@@ -3,10 +3,11 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="$t('WorkerYouCanLift')" class="has-text-weight-normal"
-          :type="errors.has('lift') ? 'is-danger' : ''">
-          <b-select v-model="worker.lift.id" placeholder="Select option" expanded 
-            name="lift" v-validate="'required'">
+        <b-field :label="'Can you Lift up to'" class="has-text-weight-normal"
+          :type="formErrors.liftId ? 'is-danger' : ''"
+          :message="formErrors.liftId || ''">
+          <b-select v-model="liftId" placeholder="Select option" expanded
+            name="lift">
             <option v-for="item in lifts" :value="item.id" v-bind:key="item.id">
               {{ item.value }}
             </option>
@@ -14,53 +15,69 @@
         </b-field>
       </div>
       <div class="col-12 mt-5">
-        <b-button type="is-primary" @click="createWorkerOther()">
-          {{ $t("Save") }}
+        <b-button type="is-primary" @click="validateAll()">
+          {{ "Save" }}
         </b-button>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
+import { showAlertError } from "@/utils/toast";
 import { fetchLifts } from "@/api/catalogApi";
 import { createWorkerOther } from '@/api/workerApi';
 
-export default {
-  props: ['data'],
-  data() {
-    return {
-      isLoading: false,
-      lifts: [],
-      worker: {
-        lift: {}
-      }
-    }
+const props = defineProps<{ data?: any }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const schema = yup.object({
+  liftId: yup.mixed().required('Lift is required'),
+});
+
+const form = useStickyForm<{ liftId: any }>({
+  schema,
+  initialValues: {
+    liftId: null,
   },
-  methods: {
-    createWorkerOther() {
-      this.$validator.validateAll().then((isValid) => {
-        if (isValid) {
-          this.isLoading = true;
-          createWorkerOther(this.data.id, this.worker)
-            .then(() => {
-              this.isLoading = false;
-              this.$emit('closeModal', true);
-            })
-            .catch(error => {
-              this.isLoading = false;
-              this.showAlertError(error);
-            })
-        } else {
-          this.showAlertError(this.$t('PleaseVerifyThatTheFieldsAreCorrect'));
-        }
-      });
-    }
-  },
-  async created() {
-    this.lifts = await fetchLifts();
-    if (this.data != null) {
-      this.worker.lift = Object.assign({}, this.data.lift);
-    }
-  }
+});
+const { liftId } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const lifts = ref<any[]>([]);
+
+function saveWorkerOther(values: any) {
+  isLoading.value = true;
+  const payload = { lift: { id: values.liftId } };
+  createWorkerOther(props.data.id, payload)
+    .then(() => {
+      isLoading.value = false;
+      emit('closeModal', true);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values: any) => {
+    saveWorkerOther(values);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+
+(async () => {
+  lifts.value = await fetchLifts();
+  if (props.data != null && props.data.lift) {
+    form.hydrate({
+      liftId: props.data.lift.id || null,
+    });
+  }
+})();
 </script>

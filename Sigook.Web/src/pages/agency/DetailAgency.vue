@@ -12,7 +12,7 @@
       </div>
     </section>
 
-    <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="agency">
       <b-tab-item label="Orders" value="Orders">
         <agency-requests v-if="visitedTabs.includes('Orders')" :agency="agency" class="p-2" />
       </b-tab-item>
@@ -20,56 +20,52 @@
   </div>
 </template>
 
-<script lang="ts">
-import { getAgency } from "@/api/agencyApi";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showAlertError } from '@/utils/toast';
+import { getAgency } from '@/api/agencyApi';
 import { lowercase } from '@/utils/filters';
+import AgencyRequests from '@/components/agency/AgencyRequests.vue';
 
-export default {
-  data() {
-    return {
-      currentTab: "Orders",
-      visitedTabs: ["Orders"],
-      agency: null,
-      isLoading: true,
-    };
-  },
-  components: {
-    AgencyRequests: () => import("@/components/agency/AgencyRequests.vue"),
-  },
-  methods: {
-    lowercase,
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: `/agency-detail/${this.$route.params.id}`,
-        query: {
-          tab: tab,
-        },
-      });
+const route = useRoute();
+const router = useRouter();
+
+const currentTab = ref<string>('Orders');
+const visitedTabs = ref<string[]>(['Orders']);
+const agency = ref<any>(null);
+const isLoading = ref(true);
+
+loadAgency();
+if (route.query && route.query.tab) {
+  currentTab.value = route.query.tab as string;
+  if (!visitedTabs.value.includes(route.query.tab as string)) {
+    visitedTabs.value.push(route.query.tab as string);
+  }
+}
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: `/agency-detail/${route.params.id}`,
+    query: {
+      tab: tab,
     },
-    loadAgency() {
-      this.isLoading = false;
-      getAgency(this.$route.params.id)
-        .then((agency) => {
-          this.agency = agency;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-  },
-  created() {
-    this.loadAgency();
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
-    }
-  },
-};
+  });
+}
+
+function loadAgency() {
+  isLoading.value = false;
+  getAgency(route.params.id as any)
+    .then((a: any) => {
+      agency.value = a;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>

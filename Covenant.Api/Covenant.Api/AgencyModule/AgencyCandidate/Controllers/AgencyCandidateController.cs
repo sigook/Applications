@@ -90,7 +90,11 @@ namespace Covenant.Api.AgencyModule.AgencyCandidate.Controllers
         public async Task<IActionResult> ConvertToWorker([FromRoute] Guid id)
         {
             var result = await candidateService.ConvertToWorker(id);
-            return Ok();
+            if (result)
+            {
+                return Ok();
+            }
+            return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
         [HttpPost("bulk/{agencyId}")]

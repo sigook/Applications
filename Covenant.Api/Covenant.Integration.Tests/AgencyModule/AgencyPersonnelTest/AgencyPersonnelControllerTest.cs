@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -19,6 +19,7 @@ using Moq.Protected;
 using System.Net;
 using System.Text.Json;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
 {
@@ -114,7 +115,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<IEnumerable<AgencyPersonnelModel>>();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<AgencyPersonnelModel>>();
             AgencyPersonnel entity = Startup.FakePersonnel;
             var model = list.Single(c => c.Id == entity.Id);
             Assert.Equal(entity.Name, model.Name);
@@ -126,7 +127,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
         {
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Startup.FakePersonnel.Id}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<AgencyPersonnelModel>();
+            var model = await response.Content.ReadFromJsonAsync<AgencyPersonnelModel>();
             AgencyPersonnel entity = Startup.FakePersonnel;
             Assert.Equal(entity.Name, model.Name);
             Assert.Equal(entity.User.Email, model.Email);

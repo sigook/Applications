@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyWorkerProfileNote;
+﻿using Covenant.Api.AgencyModule.AgencyWorkerProfileNote;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
@@ -14,6 +14,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileNote
 {
@@ -40,7 +41,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileNote
         {
             string url = AgencyWorkerProfileNoteController.RouteName.Replace("{workerProfileId}", Startup.WorkerProfileId.ToString());
             HttpResponseMessage response = await _client.GetAsync(url);
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<WorkerProfileNoteListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerProfileNoteListModel>>();
             Assert.NotEmpty(list.Items);
         }
 

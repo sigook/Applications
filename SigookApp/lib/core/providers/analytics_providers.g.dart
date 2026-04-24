@@ -53,7 +53,7 @@ final class AnalyticsServiceProvider
   }
 }
 
-String _$analyticsServiceHash() => r'abeffc869bc3a0b4309cef916d64847b863d9fd2';
+String _$analyticsServiceHash() => r'0721502b6eae308e6ae4da612b75c1075920a9ac';
 
 @ProviderFor(crashReportingService)
 const crashReportingServiceProvider = CrashReportingServiceProvider._();
@@ -101,4 +101,4 @@ final class CrashReportingServiceProvider
 }
 
 String _$crashReportingServiceHash() =>
-    r'4b4ffd8e2afc468495ddeae43577a21e2da5d75c';
+    r'5d0c3776bbd684bc6b027d3337d2c6b5bdc558a6';

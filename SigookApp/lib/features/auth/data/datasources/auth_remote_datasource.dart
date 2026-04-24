@@ -13,6 +13,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
   Future<bool> validateToken(String accessToken);
   Future<String> getUserRole(String accessToken);
+  Future<void> deactivateAccount(String accessToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -143,6 +144,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Failed to fetch user info: $e');
+    }
+  }
+
+  @override
+  Future<void> deactivateAccount(String accessToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+    try {
+      await dio.patch(
+        '/identity',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to deactivate account: ${e.message}',
+        statusCode: e.response?.statusCode,
+      );
     }
   }
 

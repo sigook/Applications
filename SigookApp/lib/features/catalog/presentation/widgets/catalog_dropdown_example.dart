@@ -140,7 +140,7 @@ class CountryDropdownExample extends ConsumerWidget {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(
-                  color: Color(0xFF1565C0),
+                  color: Color(0xFFEA1D25),
                   width: 2,
                 ),
               ),
@@ -210,7 +210,7 @@ class GenderSelectorExample extends ConsumerWidget {
                     onChanged?.call(gender.id);
                   }
                 },
-                selectedColor: const Color(0xFF1565C0),
+                selectedColor: const Color(0xFFEA1D25),
                 labelStyle: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -285,10 +285,10 @@ class SkillsMultiSelectExample extends ConsumerWidget {
                   }
                   onChanged?.call(updatedList);
                 },
-                selectedColor: const Color(0xFF1565C0).withValues(alpha: 0.2),
-                checkmarkColor: const Color(0xFF1565C0),
+                selectedColor: const Color(0xFFEA1D25).withValues(alpha: 0.2),
+                checkmarkColor: const Color(0xFFEA1D25),
                 labelStyle: TextStyle(
-                  color: isSelected ? const Color(0xFF1565C0) : Colors.black87,
+                  color: isSelected ? const Color(0xFFEA1D25) : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               );

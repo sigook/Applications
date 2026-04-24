@@ -2,7 +2,7 @@
 {
     public class WorkerProfileAvailability : IEquatable<WorkerProfileAvailability>
     {
-        internal WorkerProfileAvailability()
+        public WorkerProfileAvailability()
         {
         }
 
@@ -12,9 +12,9 @@
             AvailabilityId = availabilityId;
         }
 
-        public Guid WorkerProfileId { get; internal set; }
-        internal WorkerProfile WorkerProfile { get; set; }
-        public Guid AvailabilityId { get; internal set; }
+        public Guid WorkerProfileId { get; set; }
+        public WorkerProfile WorkerProfile { get; set; }
+        public Guid AvailabilityId { get; set; }
         public Availability Availability { get; set; }
 
         public bool Equals(WorkerProfileAvailability other)

@@ -1,7 +1,7 @@
 <template>
   <div class="mt-1">
     <b-loading v-model="isLoading"></b-loading>
-    <data-entry-terms></data-entry-terms>
+    <DataEntryTerms></DataEntryTerms>
     <div>
       <b-field grouped position="is-right">
         <b-button size="is-small" type="is-ghost" icon-right="file-excel"
@@ -9,7 +9,7 @@
       </b-field>
       <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         detailed show-detail-icon pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-        detail-transition="fade" default-sort="name" :current-page.sync="serverParams.pageIndex"
+        detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -22,7 +22,7 @@
           <b-table-column field="numberId" label="ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
@@ -31,7 +31,7 @@
           <b-table-column field="name" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress.native="onInputEntered"></b-input>
+                @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               {{ props.row.name }}
@@ -46,7 +46,7 @@
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
               <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @input="onStatusSelected" append-to-body>
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
               </b-taginput>
             </template>
             <template v-slot="props">
@@ -55,106 +55,106 @@
           </b-table-column>
         </template>
         <template #detail="props">
-          <table-punch-card :workerId="props.row.workerId" :requestId="serverParams.requestId" :request="request"
-            :worker="props.row.worker"></table-punch-card>
+          <TablePunchCard :workerId="props.row.workerId" :requestId="serverParams.requestId" :request="request"
+            :worker="props.row.worker"></TablePunchCard>
         </template>
       </b-table>
     </div>
   </div>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useRoute } from 'vue-router';
+import TablePunchCard from "@/components/company_request/CompanyPunchCardWorkerContainer.vue";
+import DataEntryTerms from "@/components/DataEntryTerms.vue";
+import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { downloadFile } from '@/utils/downloadFile';
 import { getRequestWorkers } from '@/api/companyApi';
 import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 
-export default {
-  props: ['request'],
-  data() {
-    return {
-      isLoading: true,
-      totalItems: 0,
-      rows: [],
-      statuses: [
-        { id: 2, value: 'Rejected' },
-        { id: 3, value: 'Booked' },
-      ],
-      statusesSelected: [],
-      serverParams: {
-        sortBy: 1,
-        requestId: this.$route.params.id,
-        pageIndex: 1,
-        pageSize: 30
-      }
-    }
-  },
-  components: {
-    TablePunchCard: () => import("@/components/company_request/CompanyPunchCardWorkerContainer.vue"),
-    DataEntryTerms: () => import("@/components/DataEntryTerms.vue")
-  },
-  methods: {
-    downloadFile,
-    hour,
-    onPageChange(params) {
-      this.serverParams.pageIndex = params;
-      this.getWorkers();
-    },
-    onSortChange(field, order) {
-      switch (field) {
-        case 'numberId':
-          this.serverParams.sortBy = 0;
-          break;
-        case 'name':
-          this.serverParams.sortBy = 1;
-          break;
-        case 'status':
-          this.serverParams.sortBy = 2;
-          break;
-      }
-      this.serverParams.isDescending = order !== 'asc';
-      this.getWorkers();
-    },
-    onInputEntered(event) {
-      if (event.key === 'Enter') {
-        this.getWorkers();
-      }
-    },
-    onStatusSelected() {
-      this.serverParams.statuses = this.statusesSelected.map(ss => ss.id);
-      this.getWorkers();
-    },
-    getWorkers() {
-      this.isLoading = true;
-      getRequestWorkers(this.serverParams)
-        .then((response) => {
-          this.rows = response.items.map(i => ({
-            ...i,
-            status: WorkerRequestStatusLabels[i.workerRequestStatus],
-          }));
-          this.totalItems = response.totalItems;
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.showAlertError(error.data);
-          this.isLoading = false;
-        })
-    },
-    downloadTimeSheetDocument() {
-      this.isLoading = true;
-      getRequestTimeSheetDocument(this.serverParams.requestId)
-        .then(response => {
-          this.isLoading = false;
-          this.downloadFile(response, `TimeSheet_${this.serverParams.requestId}`);
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        })
-    },
-  },
-  created() {
-    this.getWorkers();
+defineProps<{ request: any }>();
+
+const route = useRoute();
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const rows = ref<any[]>([]);
+const statuses = ref([
+  { id: 2, value: 'Rejected' },
+  { id: 3, value: 'Booked' },
+]);
+const statusesSelected = ref<any[]>([]);
+const serverParams = reactive<any>({
+  sortBy: 1,
+  requestId: route.params.id,
+  pageIndex: 1,
+  pageSize: 30,
+});
+
+function onPageChange(params: number) {
+  serverParams.pageIndex = params;
+  getWorkers();
+}
+
+function onSortChange(field: string, order: string) {
+  switch (field) {
+    case 'numberId':
+      serverParams.sortBy = 0;
+      break;
+    case 'name':
+      serverParams.sortBy = 1;
+      break;
+    case 'status':
+      serverParams.sortBy = 2;
+      break;
+  }
+  serverParams.isDescending = order !== 'asc';
+  getWorkers();
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    getWorkers();
   }
 }
+
+function onStatusSelected() {
+  serverParams.statuses = statusesSelected.value.map((ss: any) => ss.id);
+  getWorkers();
+}
+
+function getWorkers() {
+  isLoading.value = true;
+  getRequestWorkers(serverParams)
+    .then((response: any) => {
+      rows.value = response.items.map((i: any) => ({
+        ...i,
+        status: WorkerRequestStatusLabels[i.workerRequestStatus],
+      }));
+      totalItems.value = response.totalItems;
+      isLoading.value = false;
+    })
+    .catch((error: any) => {
+      showAlertError(error.data);
+      isLoading.value = false;
+    });
+}
+
+function downloadTimeSheetDocument() {
+  isLoading.value = true;
+  getRequestTimeSheetDocument(serverParams.requestId)
+    .then((response: any) => {
+      isLoading.value = false;
+      downloadFile(response, `TimeSheet_${serverParams.requestId}`);
+    })
+    .catch((error: any) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+getWorkers();
 </script>

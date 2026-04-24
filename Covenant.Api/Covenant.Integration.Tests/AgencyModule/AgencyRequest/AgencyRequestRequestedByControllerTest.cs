@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestRequestedBy.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyRequestRequestedBy.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -17,6 +17,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
 {
@@ -52,7 +53,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
             var requestUri = $"{RequestUri()}";
             HttpResponseMessage response = await _client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<RequestContactPersonModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestContactPersonModel>>();
             var model = list.Items.Single(c => c.Id == entity.Id);
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.Title, model.Title);
@@ -68,7 +69,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
             var requestUri = $"{RequestUri()}/{entity.Id}";
             HttpResponseMessage response = await _client.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<RequestContactPersonDetailModel>();
+            var model = await response.Content.ReadFromJsonAsync<RequestContactPersonDetailModel>();
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.Title, model.Title);
             Assert.Equal(entity.FirstName, model.FirstName);

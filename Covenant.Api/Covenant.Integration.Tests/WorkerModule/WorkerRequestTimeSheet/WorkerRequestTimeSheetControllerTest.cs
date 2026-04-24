@@ -1,4 +1,4 @@
-using Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
+﻿using Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -23,6 +23,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
 {
@@ -48,7 +49,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             };
             HttpResponseMessage response = await _client.PostAsJsonAsync(_url, payload);
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<RegisterTimeSheetResultModel>();
+            var model = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             Assert.NotNull(context.TimeSheet.Single(s => s.Id == model.TimeSheetId).ClockIn);
         }
@@ -58,7 +59,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
         {
             HttpResponseMessage response = await _client.GetAsync(_url);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<TimeSheetListModel>>();
             TimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day1.Id);
 
             Assert.Equal(model.Id, Data.Day1.Id);
@@ -81,7 +82,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
         {
             HttpResponseMessage response = await _client.GetAsync(_url);
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<TimeSheetListModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<TimeSheetListModel>>();
             TimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day2.Id);
 
             Assert.Equal(model.Id, Data.Day2.Id);

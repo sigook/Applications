@@ -19,28 +19,28 @@
         </div>
       </div>
 
-      <b-tabs v-model="currentTab" @input="changeTab" v-if="agency">
-        <b-tab-item :label="$t('Business Information')" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" :agency-data.sync="agency" />
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="agency">
+        <b-tab-item :label="'Business Information'" value="BusinessInformation">
+          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Billing Information')" value="BillingInformation">
+        <b-tab-item :label="'Billing Information'" value="BillingInformation">
           <BillingInformation v-if="visitedTabs.includes('BillingInformation')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Contact Information')" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :agency-data.sync="agency" />
+        <b-tab-item :label="'Contact Information'" value="ContactInformation">
+          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" v-model:agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Account Security')" value="AccountSecurity">
+        <b-tab-item :label="'Account Security'" value="AccountSecurity">
           <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('Users')" value="Users">
+        <b-tab-item :label="'Users'" value="Users">
           <Users v-if="visitedTabs.includes('Users')" :agency-data="agency" />
         </b-tab-item>
 
-        <b-tab-item :label="$t('User Notification')" value="UserNotification">
+        <b-tab-item :label="'Notifications'" value="UserNotification">
           <UserNotification v-if="visitedTabs.includes('UserNotification')" />
         </b-tab-item>
       </b-tabs>
@@ -48,93 +48,56 @@
   </div>
 </template>
 
-<script lang="ts">
-import { confirmationGuard } from '@/utils/confirmationGuard';
-import switchLocaleMixin from "../../mixins/switchLocaleMixin";
-import { getAgencyProfile, getPersonnelAgencies, updateAgency } from "@/api/agencyApi";
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAgencyStore } from '@/stores/agency';
+import { getAgencyProfile, getPersonnelAgencies } from '@/api/agencyApi';
 import { lowercase } from '@/utils/filters';
+import BusinessInformation from '@/components/agency/ProfileBusiness.vue';
+import BillingInformation from '@/components/agency/ProfileBilling.vue';
+import ContactInformation from '@/components/agency/ProfileContact.vue';
+import AccountSecurity from '@/components/agency/ProfileAccountInformation.vue';
+import UploadImage from '@/components/PreviewImage.vue';
+import UserNotification from '@/components/UserNotification.vue';
+import Users from '@/components/agency/AgencyPersonnel.vue';
 
-export default {
-  data() {
-    return {
-      isLoading: false,
-      currentTab: "BusinessInformation",
-      visitedTabs: ["BusinessInformation"],
-      isDisabled: true,
-      lang: this.$validator.dictionary.locale,
-      unsavedChanges: false,
-    };
-  },
-  components: {
-    BusinessInformation: () => import("@/components/agency/ProfileBusiness.vue"),
-    BillingInformation: () => import("@/components/agency/ProfileBilling.vue"),
-    ContactInformation: () => import("@/components/agency/ProfileContact.vue"),
-    AccountSecurity: () => import("@/components/agency/ProfileAccountInformation.vue"),
-    UploadImage: () => import("@/components/PreviewImage.vue"),
-    UserNotification: () => import("../../components/UserNotification.vue"),
-    Users: () => import("../../components/agency/AgencyPersonnel.vue"),
-  },
-  async created() {
-    if (this.$route.query && this.$route.query.tab) {
-      this.currentTab = this.$route.query.tab;
-      if (!this.visitedTabs.includes(this.$route.query.tab)) {
-        this.visitedTabs.push(this.$route.query.tab);
-      }
+const route = useRoute();
+const router = useRouter();
+const agencyStore = useAgencyStore();
+
+const isLoading = ref(false);
+const currentTab = ref<string>('BusinessInformation');
+const visitedTabs = ref<string[]>(['BusinessInformation']);
+const isDisabled = ref(true);
+
+const agency = computed<any>(() => agencyStore.agency);
+
+(async () => {
+  if (route.query && route.query.tab) {
+    currentTab.value = route.query.tab as string;
+    if (!visitedTabs.value.includes(route.query.tab as string)) {
+      visitedTabs.value.push(route.query.tab as string);
     }
-    this.isLoading = true;
-    const agency = await getAgencyProfile();
-    this.$store.commit("agency/setAgency", agency);
-    const personnelAgencies = await getPersonnelAgencies();
-    this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
-    this.isLoading = false;
-  },
-  methods: {
-    lowercase,
-    editProfile() {
-      this.isDisabled = false;
-    },
-    validateForm() {
-      let isValid = true;
-      this.$validator.validateAll().then((response) => {
-        if (!response || !isValid) {
-          this.showAlertError(this.$t("PleaseVerifyThatTheFieldsAreCorrect"));
-          return;
-        }
-        this.saveProfile();
-      });
-    },
-    saveProfile() {
-      this.isLoading = true;
-      updateAgency(this.agency)
-        .then(() => {
-          this.isDisabled = true;
-          this.unsavedChanges = false;
-          this.isLoading = false;
-          this.showAlertSuccess(this.$t("Updated"));
-        })
-        .catch((error) => {
-          this.isLoading = false;
-          this.showAlertError(error);
-        });
-    },
-    changeTab(tab) {
-      if (!this.visitedTabs.includes(tab)) {
-        this.visitedTabs.push(tab);
-      }
-      this.$router.push({
-        path: "/agency-profile",
-        query: { tab: tab },
-      });
-    },
-  },
-  computed: {
-    agency() {
-      return this.$store.state.agency.agency;
-    }
-  },
-  mixins: [switchLocaleMixin],
-  beforeRouteLeave: confirmationGuard,
-};
+  }
+  isLoading.value = true;
+  const agencyData = await getAgencyProfile();
+  agencyStore.setAgency(agencyData);
+  const personnelAgencies = await getPersonnelAgencies();
+  agencyStore.setPersonnelAgencies(personnelAgencies);
+  isLoading.value = false;
+})();
+
+function changeTab(tab: string) {
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
+  }
+  router.push({
+    path: '/agency-profile',
+    query: { tab: tab },
+  });
+}
+
 </script>
 
 <style lang="scss" scoped>

@@ -33,70 +33,64 @@
     <!-- end Select custom modal -->
   </div>
 </template>
-<script lang="ts">
-import toastMixin from "@/mixins/toastMixin";
+<script setup lang="ts">
+import { ref } from 'vue';
+import { showAlertError } from "@/utils/toast";
 import {
   getAgencyRequestReportTo,
   postAgencyRequestReportTo,
-  deleteAgencyRequestReportTo,
+  deleteAgencyRequestReportTo
 } from "@/api/agencyRequestApi";
+import ContactList from './ContactListModal.vue';
 
-export default {
-  props: ['requestId', 'companyId', 'canEdit'],
-  mixins: [toastMixin],
-  data() {
-    return {
-      showModal: false,
-      isLoading: false,
-      data: null
-    }
-  },
-  components: {
-    ContactList: () => import("./ContactListModal.vue")
-  },
-  methods: {
-    loadReportTo() {
-      getAgencyRequestReportTo(this.requestId)
-        .then(response => {
-          this.data = response;
-        })
-        .catch(error => {
-          this.showAlertError(error)
-        })
-    },
-    updateContactList(item) {
-      this.data.items.push(item)
-      this.showModal = false;
-    },
-    addReportTo(item) {
-      this.isLoading = true;
-      postAgencyRequestReportTo(this.requestId, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.updateContactList(item)
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    },
-    removeReportTo(item) {
-      let index = this.data.items.findIndex(x => x.id === item.id);
-      this.isLoading = true;
-      deleteAgencyRequestReportTo(this.requestId, item.id)
-        .then(() => {
-          this.isLoading = false;
-          this.data.items.splice(index, 1)
-          this.showModal = false;
-        })
-        .catch(error => {
-          this.isLoading = false;
-          this.showAlertError(error)
-        })
-    }
-  },
-  created() {
-    this.loadReportTo();
-  }
+const props = defineProps<{ requestId: any; companyId: any; canEdit?: boolean }>();
+
+const showModal = ref(false);
+const isLoading = ref(false);
+const data = ref<any>(null);
+
+function loadReportTo() {
+  getAgencyRequestReportTo(props.requestId)
+    .then(response => {
+      data.value = response;
+    })
+    .catch(error => {
+      showAlertError(error);
+    });
 }
+
+function updateContactList(item: any) {
+  data.value.items.push(item);
+  showModal.value = false;
+}
+
+function addReportTo(item: any) {
+  isLoading.value = true;
+  postAgencyRequestReportTo(props.requestId, item.id)
+    .then(() => {
+      isLoading.value = false;
+      updateContactList(item);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function removeReportTo(item: any) {
+  const index = data.value.items.findIndex((x: any) => x.id === item.id);
+  isLoading.value = true;
+  deleteAgencyRequestReportTo(props.requestId, item.id)
+    .then(() => {
+      isLoading.value = false;
+      data.value.items.splice(index, 1);
+      showModal.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+loadReportTo();
 </script>

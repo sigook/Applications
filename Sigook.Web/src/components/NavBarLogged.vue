@@ -11,16 +11,16 @@
         <b-navbar-item v-for="(item, i) in singleMenus" :key="i" tag="router-link" :to="item.to" :href="item.to"
           :target="item.external ? '_blank' : ''" :active="$route.path === item.to">
           <b-icon :icon="item.icon" class="mr-2"></b-icon>
-          {{ $t(item.label) }}
+          {{ item.label }}
         </b-navbar-item>
         <b-navbar-dropdown v-for="item in multiMenus" :key="item.label" :active="$route.path.startsWith(item.to)">
           <template #label>
             <b-icon :icon="item.icon" class="mr-2"></b-icon>
-            {{ $t(item.label) }}
+            {{ item.label }}
           </template>
           <b-navbar-item v-for="subItem in item.items" :key="subItem.label" tag="router-link"
             :to="item.to + subItem.to">
-            {{ $t(subItem.label) }}
+            {{ subItem.label }}
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
@@ -54,109 +54,104 @@
 </template>
 
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAgencyStore } from '@/stores/agency';
+import { useSecurityStore } from '@/stores/security';
 import { avatarLetters } from '@/utils/filters';
-import menu from "@/security/menu";
-import roles from "@/security/roles";
+import menu from '@/security/menu';
+import roles from '@/security/roles';
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
 
-export default {
-  data() {
-    return {
-      userRoles: [],
-      menuItems: [],
-      isLoading: false,
-      profileUrl: ""
-    };
-  },
-  methods: {
-    avatarLetters,
-    logout() {
-      this.isLoading = true
-      this.$store.dispatch("signOut")
-        .then(() => this.$router.push("/callback"));
-    },
-    switchLocale(lang) {
-      this.$i18n.locale = lang;
-      this.$validator.locale = lang;
-      this.lang = this.$validator.dictionary.locale;
-    },
-    async getAgencyInfo() {
-      const agency = await getAgencyProfile();
-      this.$store.commit("agency/setAgency", agency);
-      const personnelAgencies = await getPersonnelAgencies();
-      this.$store.commit("agency/setPersonnelAgencies", personnelAgencies);
-      this.profileUrl = "/agency-profile";
-    },
-    async getCompanyInfo() {
-      const response = await getCompanyProfile();
-      this.currentUser.fullName = response.businessName;
-      this.currentUser.profileImage = response.logo?.pathFile ?? null;
-      this.profileUrl = "/company-profile";
-    },
-    async getCompanyUserInfo() {
-      await this.$store.dispatch("getUser").then((r) => {
-        this.currentUser.fullName = r.profile.name;
-        this.currentUser.profileImage = null;
-        this.profileUrl = "/company-user-profile";
-      });
-    },
-    async getWorkerInfo() {
-      await getMyProfile().then((data) => {
-        this.currentUser.fullName = `${data.firstName} ${data.lastName}`;
-        this.currentUser.profileImage = data.workerProfileImage;
-        this.profileUrl = "/worker-profile";
-      });
-    },
-    switchAgency(agency) {
-      if (agency.isPrimary) return;
-      switchPersonnelAgency(agency.id)
-        .then(async () => {
-          this.$router.push('/agency-requests');
-          await this.getAgencyInfo();
-          window.location.reload();
-        });
-    },
-  },
-  computed: {
-    currentUser() {
-      return this.$store.state.agency.agency;
-    },
-    singleMenus() {
-      return this.menuItems.filter(item => !item.items);
-    },
-    multiMenus() {
-      return this.menuItems.filter(item => item.items);
-    },
-  },
-  async created() {
-    this.userRoles = this.$store.state.security.userRoles;
-    for (let i = 0; i < this.userRoles.length; i++) {
-      const role = this.userRoles[i];
-      switch (role) {
-        case roles.agencyPersonnel:
-        case roles.agency: {
-          await this.getAgencyInfo();
-          break;
-        }
-        case roles.companyUser:
-          await this.getCompanyUserInfo();
-          break;
-        case roles.company: {
-          await this.getCompanyInfo();
-          break;
-        }
-        case roles.worker: {
-          await this.getWorkerInfo();
-          break;
-        }
-      }
+interface MenuItem {
+  to: string;
+  icon?: string;
+  label: string;
+  external?: boolean;
+  items?: { to: string; label: string }[];
+}
+
+const router = useRouter();
+const agencyStore = useAgencyStore();
+const securityStore = useSecurityStore();
+
+const isLoading = ref(false);
+const profileUrl = ref('');
+const menuItems = ref<MenuItem[]>([]);
+
+const currentUser = computed(() => agencyStore.agency);
+const singleMenus = computed(() => menuItems.value.filter((item) => !item.items));
+const multiMenus = computed(() => menuItems.value.filter((item) => item.items));
+
+function logout() {
+  isLoading.value = true;
+  securityStore.signOut().then(() => router.push('/callback'));
+}
+
+async function getAgencyInfo() {
+  const agency = await getAgencyProfile();
+  agencyStore.setAgency(agency);
+  const personnelAgencies = await getPersonnelAgencies();
+  agencyStore.setPersonnelAgencies(personnelAgencies);
+  profileUrl.value = '/agency-profile';
+}
+
+async function getCompanyInfo() {
+  const response = await getCompanyProfile();
+  currentUser.value.fullName = response.businessName;
+  (currentUser.value as { profileImage: string | null }).profileImage = response.logo?.pathFile ?? null;
+  profileUrl.value = '/company-profile';
+}
+
+async function getCompanyUserInfo() {
+  const user = await securityStore.getUser();
+  currentUser.value.fullName = user.profile.name;
+  (currentUser.value as { profileImage: string | null }).profileImage = null;
+  profileUrl.value = '/company-user-profile';
+}
+
+async function getWorkerInfo() {
+  const data = await getMyProfile();
+  currentUser.value.fullName = `${data.firstName} ${data.lastName}`;
+  (currentUser.value as { profileImage: string | null }).profileImage = data.workerProfileImage;
+  profileUrl.value = '/worker-profile';
+}
+
+function switchAgency(agency: { id: string; isPrimary: boolean }) {
+  if (agency.isPrimary) return;
+  switchPersonnelAgency(agency.id).then(async () => {
+    router.push('/agency-requests');
+    await getAgencyInfo();
+    window.location.reload();
+  });
+}
+
+async function init() {
+  const userRoles = securityStore.userRoles;
+  for (const role of userRoles) {
+    switch (role) {
+      case roles.agencyPersonnel:
+      case roles.agency:
+        await getAgencyInfo();
+        break;
+      case roles.companyUser:
+        await getCompanyUserInfo();
+        break;
+      case roles.company:
+        await getCompanyInfo();
+        break;
+      case roles.worker:
+        await getWorkerInfo();
+        break;
     }
-    this.menuItems = menu.getMenu(this.userRoles, this.$store.state.agency.agency);
   }
-};
+  menuItems.value = menu.getMenu(userRoles, agencyStore.agency);
+}
+
+init();
 </script>
 <style lang="scss">
 .primary-agency {

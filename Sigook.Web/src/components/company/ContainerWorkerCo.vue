@@ -24,7 +24,7 @@
                 </div>
 
                 <button class="xs-btn background-btn green-button" @click="sendToRequest()" v-if="data.canCreateRequest">
-                    {{$t('CompanySendRequest')}}
+                    {{'Create request to this worker'}}
                 </button>
             </div>
         </div>
@@ -32,41 +32,35 @@
     </div>
 </template>
 
-<script lang="ts">
-    import { lowercase } from '@/utils/filters';
-    export default {
-        data() {
-            return {}
-        },
-        props: [
-            'data',
-            'showFull'
-        ],
-        methods: {
-            lowercase,
-            sendToDetail() {
-                this.$router.push({
-                    path: '/company-workers/worker/' + this.data.id,
-                    query: {
-                        agencyId: this.data.agencyId,
-                        agencyName: this.data.agencyFullName,
-                        canCreate: this.data.canCreateRequest
-                    }
-                })
-            },
-            sendToRequest() {
-                this.$router.push({
-                    path: '/create-request',
-                    query: {
-                        isUserRequest: true,
-                        workerId: this.data.workerId,
-                        workerFullName: this.data.name + " " + this.data.lastName,
-                        agencyId: this.data.agencyId,
-                        agencyName: this.data.agencyFullName,
-                        canCreate: this.data.canCreateRequest
-                    }
-                })
-            }
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+import { lowercase } from '@/utils/filters';
+
+const props = defineProps<{ data: any; showFull?: boolean }>();
+const router = useRouter();
+
+function sendToDetail() {
+    router.push({
+        path: '/company-workers/worker/' + props.data.id,
+        query: {
+            agencyId: props.data.agencyId,
+            agencyName: props.data.agencyFullName,
+            canCreate: props.data.canCreateRequest
         }
-    }
+    });
+}
+
+function sendToRequest() {
+    router.push({
+        path: '/create-request',
+        query: {
+            isUserRequest: String(true),
+            workerId: props.data.workerId,
+            workerFullName: props.data.name + " " + props.data.lastName,
+            agencyId: props.data.agencyId,
+            agencyName: props.data.agencyFullName,
+            canCreate: props.data.canCreateRequest
+        }
+    });
+}
 </script>

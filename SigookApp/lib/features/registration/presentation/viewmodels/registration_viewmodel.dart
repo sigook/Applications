@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../domain/entities/basic_info.dart';
 import '../../domain/entities/preferences_info.dart';
 import '../../domain/entities/documents_info.dart';
@@ -34,21 +35,37 @@ class RegistrationViewModel extends _$RegistrationViewModel {
     state = state.copyWith(basicInfo: info);
     debugPrint('State updated');
     _saveDraft();
+    ref.read(analyticsServiceProvider).logEvent(
+      name: 'registration_step_completed',
+      parameters: {'step': '0', 'step_name': 'basic_info'},
+    );
   }
 
   void updatePreferencesInfo(PreferencesInfo info) {
     state = state.copyWith(preferencesInfo: info);
     _saveDraft();
+    ref.read(analyticsServiceProvider).logEvent(
+      name: 'registration_step_completed',
+      parameters: {'step': '1', 'step_name': 'preferences'},
+    );
   }
 
   void updateDocumentsInfo(DocumentsInfo info) {
     state = state.copyWith(documentsInfo: info);
     _saveDraft();
+    ref.read(analyticsServiceProvider).logEvent(
+      name: 'registration_step_completed',
+      parameters: {'step': '2', 'step_name': 'documents'},
+    );
   }
 
   void updateAccountInfo(AccountInfo info) {
     state = state.copyWith(accountInfo: info);
     _saveDraft();
+    ref.read(analyticsServiceProvider).logEvent(
+      name: 'registration_step_completed',
+      parameters: {'step': '3', 'step_name': 'account'},
+    );
   }
 
   Future<void> _saveDraft() async {
@@ -57,7 +74,22 @@ class RegistrationViewModel extends _$RegistrationViewModel {
 
   Future<String> submitRegistration() async {
     final result = await _submitUseCase(state);
-    return result.fold((failure) => failure.message, (_) => 'Success');
+    return result.fold(
+      (failure) {
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'registration_failed',
+          parameters: {'error': failure.message},
+        );
+        return failure.message;
+      },
+      (_) {
+        ref.read(analyticsServiceProvider).logSignUp(method: 'email');
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'registration_completed',
+        );
+        return 'Success';
+      },
+    );
   }
 
   Future<void> clearForm() async {

@@ -1,5 +1,0 @@
-#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release-production.xcconfig"
-#include "Release.xcconfig"
-
-PRODUCT_BUNDLE_IDENTIFIER=com.all2job.all2job
-APP_DISPLAY_NAME=SIGOOK

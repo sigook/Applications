@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCandidatePhoneNumber.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCandidatePhoneNumber.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
@@ -12,6 +12,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
 {
@@ -36,7 +37,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             var model = new PhoneNumberModel("647897045");
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadAsJsonAsync<PhoneNumberModel>();
+            var detail = await response.Content.ReadFromJsonAsync<PhoneNumberModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CandidatePhones.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(detail.Id, entity.Id);
@@ -49,7 +50,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             var entity = Startup.FakePhone;
             HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.Id}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<PhoneNumberModel>();
+            var model = await response.Content.ReadFromJsonAsync<PhoneNumberModel>();
             AssertDetailAndEntity(model, entity);
         }
 

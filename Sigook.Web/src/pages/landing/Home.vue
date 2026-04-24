@@ -116,13 +116,13 @@
         <div id="theyThinkCarousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner">
             <div class="carousel-item px-3 active">
-              <img v-lazy="require('@/assets/images/home_carousel/banner_testimonials_1.png')" class="d-block w-100" alt="Slide 1">
+              <img v-lazy="bannerTestimonials1" class="d-block w-100" alt="Slide 1">
             </div>
             <div class="carousel-item px-3">
-              <img v-lazy="require('@/assets/images/home_carousel/banner_testimonials_2.png')" class="d-block w-100" alt="Slide 2">
+              <img v-lazy="bannerTestimonials2" class="d-block w-100" alt="Slide 2">
             </div>
             <div class="carousel-item px-3">
-              <img v-lazy="require('@/assets/images/home_carousel/banner_testimonials_3.png')" class="d-block w-100" alt="Slide 3">
+              <img v-lazy="bannerTestimonials3" class="d-block w-100" alt="Slide 3">
             </div>
           </div>
           <a class="carousel-control-prev" href="#theyThinkCarousel" role="button" data-slide="prev">
@@ -202,20 +202,19 @@
             </a>
           </div>
         </div>
-        <img v-lazy="require('@/assets/images/app_mobile.png')" class="w-100 grid-item-start hide-on-mobile" alt="app mobile" />
+        <img v-lazy="appMobile" class="w-100 grid-item-start hide-on-mobile" alt="app mobile" />
       </div>
     </section>
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  components: {
-    SigookVideo: () => import("@/components/landing/SigookVideo.vue"),
-    JobSearch: () => import("@/components/landing/JobSearch.vue")
-  },
-}
-
+<script setup lang="ts">
+import bannerTestimonials1 from '@/assets/images/home_carousel/banner_testimonials_1.png';
+import bannerTestimonials2 from '@/assets/images/home_carousel/banner_testimonials_2.png';
+import bannerTestimonials3 from '@/assets/images/home_carousel/banner_testimonials_3.png';
+import appMobile from '@/assets/images/app_mobile.png';
+import SigookVideo from "@/components/landing/SigookVideo.vue";
+import JobSearch from "@/components/landing/JobSearch.vue";
 </script>
 
 <style lang="scss">

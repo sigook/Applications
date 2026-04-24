@@ -214,85 +214,85 @@ p {
 }
 
 .icon-before-location:before {
-  background-image: url('assets/images/icon_location.png');
+  background-image: url('../images/icon_location.png');
 }
 
 .icon-before-salary:before {
-  background-image: url('assets/images/icon_salary.png');
+  background-image: url('../images/icon_salary.png');
 }
 
 .icon-before-break:before {
-  background-image: url('assets/images/icon_break.png');
+  background-image: url('../images/icon_break.png');
 }
 
 .icon-before-holiday:before {
-  background-image: url('assets/images/icon_holiday.png');
+  background-image: url('../images/icon_holiday.png');
 }
 
 .icon-before-industry:before {
-  background-image: url('assets/images/icon_industry.png');
+  background-image: url('../images/icon_industry.png');
 }
 
 .icon-before-plus:before {
-  background-image: url('assets/images/icon_plus.png');
+  background-image: url('../images/icon_plus.png');
 }
 
 .icon-before-time:before {
-  background-image: url('assets/images/icon_time.png');
+  background-image: url('../images/icon_time.png');
 }
 
 .icon-before-workers:before {
-  background-image: url('assets/images/icon_workers.png');
+  background-image: url('../images/icon_workers.png');
 }
 
 .icon-before-type:before {
-  background-image: url('assets/images/icon_type.png');
+  background-image: url('../images/icon_type.png');
 }
 
 .icon-before-date:before {
-  background-image: url('assets/images/icon_date.png');
+  background-image: url('../images/icon_date.png');
 }
 
 .icon-before-social:before {
-  background-image: url('assets/images/icon_social.png');
+  background-image: url('../images/icon_social.png');
 }
 
 .icon-before-mobile:before {
-  background-image: url('assets/images/icon_mobile.png');
+  background-image: url('../images/icon_mobile.png');
 }
 
 .icon-before-phone:before {
-  background-image: url('assets/images/icon_phone.png');
+  background-image: url('../images/icon_phone.png');
 }
 
 .icon-before-car:before {
-  background-image: url('assets/images/icon_car.png');
+  background-image: url('../images/icon_car.png');
 }
 
 .icon-before-web:before {
-  background-image: url('assets/images/icon_web.png');
+  background-image: url('../images/icon_web.png');
 }
 
 .icon-before-mail:before {
-  background-image: url('assets/images/icon_mail.png');
+  background-image: url('../images/icon_mail.png');
 }
 
 .icon-before-fax:before {
-  background-image: url('assets/images/icon_fax.png');
+  background-image: url('../images/icon_fax.png');
 }
 
 .icon-before-order:before {
-  background-image: url('assets/images/icon_order.svg');
+  background-image: url('../images/icon_order.svg');
 }
 
 /*
 .icon-before-days:before{
-  background-image: url('assets/images/sun.png');
+  background-image: url('../images/sun.png');
 }
 */
 
 .icon-before-days:before {
-  background-image: url('assets/images/sun.png');
+  background-image: url('../images/sun.png');
 }
 
 .icon-rating {
@@ -306,7 +306,7 @@ p {
     display: inline-block;
     margin-bottom: -2px;
     margin-right: 5px;
-    background-image: url('assets/images/star.png');
+    background-image: url('../images/star.png');
     background-size: contain;
   }
 }
@@ -323,7 +323,7 @@ p {
     display: inline-block;
     margin-bottom: -2px;
     margin-right: 5px;
-    background-image: url('assets/images/star-orange.png');
+    background-image: url('../images/star-orange.png');
     background-size: contain;
   }
 
@@ -335,7 +335,7 @@ p {
     width: 20px;
     height: 20px;
     display: inline-block;
-    background-image: url('assets/images/icon-img.png');
+    background-image: url('../images/icon-img.png');
     background-size: cover;
     margin-right: 10px;
   }
@@ -347,7 +347,7 @@ p {
     width: 20px;
     height: 20px;
     display: inline-block;
-    background-image: url('assets/images/icon-pdf.png');
+    background-image: url('../images/icon-pdf.png');
     background-size: cover;
     margin-right: 10px;
   }
@@ -381,7 +381,7 @@ p {
     position: absolute;
     left: 14px;
     top: 3px;
-    background: url('assets/images/xlsx-file.svg') no-repeat 50%;
+    background: url('../images/xlsx-file.svg') no-repeat 50%;
     background-size: contain;
     margin-right: 5px;
   }
@@ -711,14 +711,14 @@ button {
 }
 
 .btn-icon-edit {
-  background: url('assets/images/edit-button.svg') no-repeat 50%;
+  background: url('../images/edit-button.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   // background-color: #e4f5e4;
 }
 
 .btn-icon-delete {
-  background: url('assets/images/delete-button.svg') no-repeat 50%;
+  background: url('../images/delete-button.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   margin-left: 10px;
@@ -730,14 +730,14 @@ button {
 }
 
 .btn-icon-arrowB {
-  background: url('assets/images/arrow-down.svg') no-repeat 50%;
+  background: url('../images/arrow-down.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   // background-color: #e4f5e4 ;
 }
 
 .btn-icon-folder {
-  background: url('assets/images/folder.svg') no-repeat 50%;
+  background: url('../images/folder.svg') no-repeat 50%;
   -webkit-background-size: 64%;
   background-size: 64%;
   margin-left: 10px;
@@ -745,7 +745,7 @@ button {
 }
 
 .btn-icon-notes {
-  background: url('assets/images/notes.svg') no-repeat 50%;
+  background: url('../images/notes.svg') no-repeat 50%;
   -webkit-background-size: 70%;
   background-size: 70%;
   margin-left: 10px;
@@ -753,7 +753,7 @@ button {
 }
 
 .btn-icon-add {
-  background: url('assets/images/checked-accent.png') no-repeat 50%;
+  background: url('../images/checked-accent.png') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   margin-left: 10px;
@@ -761,39 +761,39 @@ button {
 }
 
 .btn-icon-reject {
-  background: url('assets/images/reject.png') no-repeat 50%;
+  background: url('../images/reject.png') no-repeat 50%;
   -webkit-background-size: 55%;
   background-size: 55%;
   // background-color: #fbe4e6;
 }
 
 .btn-icon-time {
-  background: url('assets/images/time-blue.png') no-repeat 50%;
+  background: url('../images/time-blue.png') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   // background-color: #dee5fb;
 }
 
 .btn-icon-punch {
-  background: #ffffff url('assets/images/puch-card-icon.png') no-repeat 50%;
+  background: #ffffff url('../images/puch-card-icon.png') no-repeat 50%;
   -webkit-background-size: 65%;
   background-size: 65%;
 }
 
 .btn-icon-favorite {
-  background: #ffffff url('assets/images/favorite-button.svg') no-repeat 50%;
+  background: #ffffff url('../images/favorite-button.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
 }
 
 .btn-icon-circle-plus {
-  background: #ffffff url('assets/images/circle-plus.png') no-repeat 50%;
+  background: #ffffff url('../images/circle-plus.png') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
 }
 
 .btn-icon-circle-minus {
-  background: #ffffff url('assets/images/circle-minus.png') no-repeat 50%;
+  background: #ffffff url('../images/circle-minus.png') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
   height: 20px;
@@ -802,13 +802,13 @@ button {
 }
 
 .btn-icon-worker-plus {
-  background: #ffffff url('assets/images/worker-plus.svg') no-repeat 50%;
+  background: #ffffff url('../images/worker-plus.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
 }
 
 .btn-icon-clip {
-  background: #ffffff url('assets/images/clip.svg') no-repeat 50%;
+  background: #ffffff url('../images/clip.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
 }
@@ -955,7 +955,7 @@ button {
     font-size: 0;
     width: 30px;
     height: 30px;
-    background: url('assets/images/icon_cross_white.svg');
+    background: url('../images/icon_cross_white.svg');
     background-repeat: no-repeat;
     background-position: 50% 50%;
     cursor: pointer;
@@ -1114,7 +1114,7 @@ input[type="file"] {
 }
 
 .input-search {
-  background: url('assets/images/icon_search.svg') no-repeat calc(17px - 10px) 50%;
+  background: url('../images/icon_search.svg') no-repeat calc(17px - 10px) 50%;
   background-size: 12px;
   padding: 0 25px !important;
 
@@ -1895,23 +1895,6 @@ div.button-excel-container {
   }
 }
 
-.notification {
-  background: #ff9933;
-  align-self: flex-start;
-  width: 16px;
-  height: 16px;
-  color: white;
-  text-align: center;
-  border-radius: 50%;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 0;
-  position: relative;
-  left: -12px;
-  display: inline-block;
-}
-
-
 .hover-actions {
   .actions {
     opacity: 1;
@@ -1975,7 +1958,7 @@ div.button-excel-container {
     margin-right: -0.50em;
     margin-left: 0.5em;
     border: 0;
-    background-image: url("assets/images/delete-x.png");
+    background-image: url("../images/delete-x.png");
     background-size: 40%;
     background-repeat: no-repeat;
     background-position: 50%;
@@ -2022,7 +2005,7 @@ div.filter-status-tag {
       width: 9px;
       height: 9px;
       display: inline-block;
-      background-image: url("assets/images/icon_cross_white.svg");
+      background-image: url("../images/icon_cross_white.svg");
       background-size: contain;
       margin-left: 10px;
     }
@@ -2179,7 +2162,7 @@ i.margin-left {
     width: 25px;
     height: 100%;
     position: absolute;
-    background: url('assets/images/right-arrow.svg') no-repeat 57% 50%;
+    background: url('../images/right-arrow.svg') no-repeat 57% 50%;
     background-size: 55%;
     top: 0;
     transform: rotateY(180deg);
@@ -2246,7 +2229,7 @@ i.margin-left {
 .button-view {
   width: 20px;
   height: 20px;
-  background: url('assets/images/view.png');
+  background: url('../images/view.png');
   background-size: contain;
   border: 0;
   margin-right: 5px;
@@ -2360,7 +2343,7 @@ i.margin-left {
   margin-left: 5px;
   position: relative;
   top: 3px;
-  background: url("assets/images/download-button.png");
+  background: url("../images/download-button.png");
   background-size: contain;
   display: inline-block;
   filter: grayscale(1);
@@ -2494,7 +2477,7 @@ Pagination
   }
 
   button {
-    background-image: url('assets/images/right-arrow.svg');
+    background-image: url('../images/right-arrow.svg');
     width: 9px;
     height: 9px;
     background-size: contain;
@@ -2656,7 +2639,7 @@ Pagination
     width: 20px;
     height: 20px;
     display: block;
-    background-image: url('assets/images/qr-code-white.png');
+    background-image: url('../images/qr-code-white.png');
     background-size: cover;
     position: absolute;
     left: 10px;

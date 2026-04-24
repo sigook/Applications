@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers;
+﻿using Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
 using Xunit.Abstractions;
+using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
 {
@@ -41,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             var model = new NoteModel("This is a note", "Blue");
             var response = await _client.PostAsJsonAsync(RequestUri(), model);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            var detail = await response.Content.ReadAsJsonAsync<NoteModel>();
+            var detail = await response.Content.ReadFromJsonAsync<NoteModel>();
             Assert.NotNull(detail.CreatedBy);
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CandidateNotes.SingleAsync(c => c.NoteId == detail.Id);
@@ -57,7 +58,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
         {
             var response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadAsJsonAsync<PaginatedList<NoteModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<NoteModel>>();
             Assert.NotEmpty(list.Items);
             var entity = Startup.FakeNote;
             var model = list.Items.Single(c => c.Id == entity.NoteId);
@@ -71,7 +72,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             var entity = Startup.FakeNote;
             var response = await _client.GetAsync($"{RequestUri()}/{entity.NoteId}");
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadAsJsonAsync<NoteModel>();
+            var model = await response.Content.ReadFromJsonAsync<NoteModel>();
             AssertEntityAndModel(entity, model);
         }
 

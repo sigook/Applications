@@ -18,71 +18,66 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-export default {
-  props: ['currentNote', 'currentIndex'],
-  data() {
-    return {
-      keyLocalstorage: "sigook_current_note_editing",
-      styleNote: {
-        background: '#fefefe',
-      },
-      newNote: {
-        color: "#fefefe",
-        note: ""
-      },
-    }
-  },
-  components: {
-    ColorPicker: () => import("./ColorPicker.vue"),
-  },
-  methods: {
-    addNote() {
-      if (this.newNote.note === null || this.newNote.note === "") return;
-      this.$emit('onSave', {
-        id: this.newNote.id,
-        color: this.newNote.color,
-        note: this.newNote.note,
-        createdAt: this.newNote.createdAt,
-        createdBy: this.newNote.createdBy
-      });
-      setTimeout(() => {
-        this.styleNote = { background: '#fefefe' }
-        this.newNote.note = "";
-        this.newNote.color = "#fefefe";
-        localStorage.removeItem(this.keyLocalstorage);
-      }, 200)
-    },
-    changeColor(color) {
-      this.styleNote.background = color;
-      this.newNote.color = color;
-    },
-    onPressEnter(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        this.addNote()
-      }
-    },
-    onEditingNote() {
-      localStorage.setItem(this.keyLocalstorage, this.newNote.note);
-    }
-  },
-  created() {
-    if (this.currentNote) {
-      this.newNote = {
-        id: this.currentNote.id,
-        color: this.currentNote.color,
-        note: this.currentNote.note,
-        createdAt: this.currentNote.createdAt,
-        createdBy: this.currentNote.createdBy
-      }
-      this.styleNote.background = this.currentNote.color
-    } else {
-      let currentNoteEditing = localStorage.getItem(this.keyLocalstorage);
-      if (currentNoteEditing) {
-        this.newNote.note = currentNoteEditing;
-      }
-    }
+<script setup lang="ts">
+import { reactive } from 'vue';
+import ColorPicker from "./ColorPicker.vue";
+
+const props = defineProps<{ currentNote?: any; currentIndex?: number }>();
+const emit = defineEmits<{ (e: 'onSave', note: any): void }>();
+
+const keyLocalstorage = "sigook_current_note_editing";
+
+const styleNote = reactive<{ background: string }>({ background: '#fefefe' });
+const newNote = reactive<any>({
+  color: "#fefefe",
+  note: "",
+});
+
+function addNote() {
+  if (newNote.note === null || newNote.note === "") return;
+  emit('onSave', {
+    id: newNote.id,
+    color: newNote.color,
+    note: newNote.note,
+    createdAt: newNote.createdAt,
+    createdBy: newNote.createdBy,
+  });
+  setTimeout(() => {
+    styleNote.background = '#fefefe';
+    newNote.note = "";
+    newNote.color = "#fefefe";
+    localStorage.removeItem(keyLocalstorage);
+  }, 200);
+}
+
+function changeColor(color: string) {
+  styleNote.background = color;
+  newNote.color = color;
+}
+
+function onPressEnter(event: KeyboardEvent) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addNote();
+  }
+}
+
+function onEditingNote() {
+  localStorage.setItem(keyLocalstorage, newNote.note);
+}
+
+// created()
+if (props.currentNote) {
+  newNote.id = props.currentNote.id;
+  newNote.color = props.currentNote.color;
+  newNote.note = props.currentNote.note;
+  newNote.createdAt = props.currentNote.createdAt;
+  newNote.createdBy = props.currentNote.createdBy;
+  styleNote.background = props.currentNote.color;
+} else {
+  const currentNoteEditing = localStorage.getItem(keyLocalstorage);
+  if (currentNoteEditing) {
+    newNote.note = currentNoteEditing;
   }
 }
 </script>
