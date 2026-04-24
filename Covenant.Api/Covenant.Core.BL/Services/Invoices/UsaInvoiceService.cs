@@ -1,5 +1,4 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Constants;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -99,37 +98,45 @@ public class UsaInvoiceService : BaseInvoiceService
 
         // 5. Add additional items and discounts
         var additionalItems = model.AdditionalItems.Select(s => new InvoiceUSAItem(s.Quantity, s.UnitPrice, s.Description));
-        var discounts = model.Discounts.Select(s => new InvoiceUSADiscount(s.Quantity, s.UnitPrice, s.Description));
+        var discounts = model.Discounts.Select(s => new InvoiceUSADiscount(s.Quantity, s.UnitPrice, s.Description)).ToList();
+        var allItems = usaItems.Concat(additionalItems).ToList();
 
         // 6. Get next invoice number
         var nextNumber = await invoiceRepository.GetNextInvoiceUSANumber();
 
-        // 7. Create invoice
+        // 7. Compute totals
         var invoiceDate = model.InvoiceDate ?? timeService.GetCurrentDateTime();
-        var invoiceResult = InvoiceUSA.Create(
-            nextNumber.NextNumber,
-            invoiceDate,
-            model.CompanyProfileId,
-            usaItems.Concat(additionalItems),
-            discounts,
-            salesTax);
+        var subTotal = allItems.Sum(s => s.Total) - discounts.Sum(s => s.Total);
+        var tax = salesTax != null ? subTotal * salesTax.Tax1 : 0m;
+        var totalNet = subTotal + tax;
+        var invoiceNumber = $"{InvoiceUSA.PrefixInvoiceNumber}-{nextNumber.NextNumber:0000}-{invoiceDate:yy}";
 
-        if (!invoiceResult) return invoiceResult;
+        // 8. Create invoice
+        var invoice = new InvoiceUSA
+        {
+            InvoiceNumberId = nextNumber.NextNumber,
+            CreatedAt = invoiceDate,
+            CompanyProfileId = model.CompanyProfileId,
+            Items = allItems,
+            Discounts = discounts,
+            SubTotal = subTotal,
+            Tax = tax,
+            TotalNet = totalNet,
+            InvoiceNumber = invoiceNumber
+        };
 
-        var invoice = invoiceResult.Value;
-
-        // 8. Set week ending date
+        // 9. Set week ending date
         if (model.DirectHiring)
         {
             invoice.WeekEnding = null;
         }
         else
         {
-            invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+            invoice.WeekEnding = timesheets.Count != 0 ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
         }
         invoice.BillToEmail = model.Email;
 
-        // 9. Set billing addresses
+        // 10. Set billing addresses
         var agencyId = agencyIds.First();
         var agency = await agencyRepository.GetAgency(agencyId);
         if (agency != null)
@@ -148,7 +155,7 @@ public class UsaInvoiceService : BaseInvoiceService
             invoice.BillToFax = company.FormattedFax;
         }
 
-        // 10. Add additional detail (client's site address)
+        // 11. Add additional detail (client's site address)
         if (!string.IsNullOrWhiteSpace(model.ClientSiteAddress))
         {
             invoice.AdditionalDetail = new InvoiceAdditionalDetail

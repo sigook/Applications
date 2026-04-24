@@ -47,7 +47,7 @@ If you change business rules, update the corresponding `.docs/` file.
 |-------------|-------|-------------|
 | `Covenant.Api/` | .NET 8 | Backend API — see `Covenant.Api/CLAUDE.md` |
 | `SigookApp/` | Flutter | Worker mobile app — see `SigookApp/CLAUDE.md` |
-| `Sigook.Web/` | Vue 2 | Agency web portal (main platform) — see `Sigook.Web/CLAUDE.md` |
+| `Sigook.Web/` | Vue 3 | Agency web portal (main platform) — see `Sigook.Web/CLAUDE.md` |
 | `Covenant.Web/` | Vue 3 | Marketing website (public-facing) — see `Covenant.Web/CLAUDE.md` |
 | `Covenant.IdentityServer/` | .NET 6 | Authentication server (IdentityServer4) — see `Covenant.IdentityServer/CLAUDE.md` |
 | `Sigook.CognitiveServices/` | .NET | AI/ML services (Azure Cognitive) — see `Sigook.CognitiveServices/CLAUDE.md` |

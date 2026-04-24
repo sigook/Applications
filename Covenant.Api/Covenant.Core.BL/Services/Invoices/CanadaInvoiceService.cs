@@ -1,5 +1,4 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Constants;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -17,24 +16,19 @@ using Covenant.Core.BL.Interfaces;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
-public class CanadaInvoiceService : BaseInvoiceService
+public class CanadaInvoiceService(
+    ITimeSheetRepository timeSheetRepository,
+    IInvoiceRepository invoiceRepository,
+    IAgencyRepository agencyRepository,
+    ICompanyRepository companyRepository,
+    ILocationRepository locationRepository,
+    ICatalogRepository catalogRepository,
+    ITimeService timeService,
+    Rates rates,
+    ISubcontractorRepository subcontractorRepository,
+    TimeLimits timeLimits,
+    ITimesheetCalculatorService calculatorService) : BaseInvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService)
 {
-    public CanadaInvoiceService(
-        ITimeSheetRepository timeSheetRepository,
-        IInvoiceRepository invoiceRepository,
-        IAgencyRepository agencyRepository,
-        ICompanyRepository companyRepository,
-        ILocationRepository locationRepository,
-        ICatalogRepository catalogRepository,
-        ITimeService timeService,
-        Rates rates,
-        ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits,
-        ITimesheetCalculatorService calculatorService)
-        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService)
-    {
-    }
-
     public override async Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model)
     {
         var result = await CreateInvoiceInternal(agencyIds, model);
@@ -96,7 +90,7 @@ public class CanadaInvoiceService : BaseInvoiceService
             var holidaysData = await GetHolidaysForPeriod(from, to, countryCode);
             holidays.AddRange(holidaysData);
         }
-        
+
 
         // 3. Process timesheets and build invoice totals with TimeSheetTotal entities
         // EF Core will cascade insert TimeSheetTotal entities when the invoice is saved
@@ -144,48 +138,48 @@ public class CanadaInvoiceService : BaseInvoiceService
         var nextInvoiceNumber = await invoiceRepository.GetNextInvoiceNumber();
 
         // 8. Create invoice
-        var invoice = new Invoice(
-            companyProfileId: model.CompanyProfileId,
-            invoiceNumber: nextInvoiceNumber.NextNumber,
-            nightShiftRate: 0, // Not using night shift
-            holidayRate: rates.Holiday,
-            overTimeRate: rates.OverTime,
-            vacationsRate: rates.Vacations,
-            hstRate: rates.Hst,
-            bonusRate: rates.Bonus,
-            subTotal: subtotal,
-            hst: hst,
-            totalNet: totalNet
-        );
-
-        invoice.Email = model.Email;
+        var invoice = new Invoice
+        {
+            CompanyId = model.CompanyProfileId,
+            InvoiceNumber = nextInvoiceNumber.NextNumber,
+            NightShiftRate = 0, // Not using night shift
+            HolidayRate = rates.Holiday,
+            OverTimeRate = rates.OverTime,
+            VacationsRate = rates.Vacations,
+            HstRate = rates.Hst,
+            BonusRate = rates.Bonus,
+            SubTotal = subtotal,
+            Hst = hst,
+            TotalNet = totalNet,
+            Email = model.Email,
+            CreatedAt = model.InvoiceDate ?? timeService.GetCurrentDateTime()
+        };
         if (model.DirectHiring)
         {
             invoice.WeekEnding = null;
         }
         else
         {
-            invoice.WeekEnding = timesheets.Any() ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
+            invoice.WeekEnding = timesheets.Count != 0 ? timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek() : null;
         }
-        invoice.CreatedAt = model.InvoiceDate ?? timeService.GetCurrentDateTime();
 
         // 9. Add invoice totals
         invoice.AddInvoiceTotals(invoiceTotals);
 
         // 10. Add paid holidays
-        if (invoiceHolidays.Any())
+        if (invoiceHolidays.Count != 0)
         {
             invoice.AddHolidays(invoiceHolidays);
         }
 
         // 11. Add additional items
-        if (additionalItems.Any())
+        if (additionalItems.Count != 0)
         {
             invoice.AddAdditionalItems(additionalItems);
         }
 
         // 12. Add discounts
-        if (discounts.Any())
+        if (discounts.Count != 0)
         {
             invoice.AddDiscounts(discounts);
         }

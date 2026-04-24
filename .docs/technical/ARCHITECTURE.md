@@ -6,7 +6,7 @@ The Covenant/Sigook platform is built as a **monorepo** with several specialized
 
 - **Backend API** — .NET 8 (Covenant.Api)
 - **Identity Server** — .NET 6 + IdentityServer4 (Covenant.IdentityServer)
-- **Main Web App** — Vue.js 2 (Sigook.Web)
+- **Main Web App** — Vue.js 3 (Sigook.Web)
 - **Marketing Website** — Vue.js 3 (Covenant.Web)
 - **Mobile App** — Flutter (SigookApp)
 - **Azure Functions** — .NET 8 (Sigook.Functions)
@@ -61,17 +61,19 @@ Protocols: OpenID Connect, OAuth 2.0
 
 ---
 
-### Web App - Sigook.Web (Vue.js 2)
+### Web App - Sigook.Web (Vue.js 3)
 
 ```
-Framework:    Vue.js 2.6.12
-Build Tool:   Vue CLI 4.5.19
-Node Version: 16.x
-State:        Vuex 3.0.1
-Router:       Vue Router 3.0.1
+Framework:    Vue.js 3.5.x
+Build Tool:   Vite 8.x
+Language:     TypeScript 6.x
+Node Version: 20+ (required by Vite 8)
+State:        Pinia 3.x (+ pinia-plugin-persistedstate)
+Router:       Vue Router 4.x
 HTTP:         Axios 1.10.0
-Auth:         OIDC Client 1.5.2
-UI Framework: Buefy 0.9.23 (Bulma)
+Auth:         oidc-client-ts 3.x
+UI Framework: @ntohq/buefy-next 0.2.x (Buefy port for Vue 3 / Bulma)
+Validation:   VeeValidate 4.x + Yup 1.x
 i18n:         vue-i18n
 Deployment:   Docker (Node.js build → Nginx)
 ```
@@ -570,7 +572,7 @@ class ApiClient {
 
 ---
 
-## 🌐 Frontend Architecture - Sigook.Web (Vue 2)
+## 🌐 Frontend Architecture - Sigook.Web (Vue 3)
 
 ### Project Structure
 
@@ -578,30 +580,32 @@ class ApiClient {
 Sigook.Web/
 ├── src/
 │   ├── assets/         # Images, styles
-│   ├── components/     # Reusable components
+│   ├── components/     # Reusable components (mostly <script setup>)
 │   ├── pages/          # Page components
-│   ├── router/         # Vue Router config
-│   ├── store/          # Vuex store modules
-│   ├── api/            # HTTP / API layer (TypeScript migration in progress)
+│   ├── router/         # Vue Router 4 config
+│   ├── store/          # Pinia stores
+│   ├── api/            # HTTP / API layer (TypeScript)
 │   ├── types/          # Shared TypeScript types
-│   ├── security/       # OIDC authentication
+│   ├── security/       # OIDC authentication (oidc-client-ts)
 │   ├── utils/          # Utilities
 │   ├── directives/     # Custom directives
-│   ├── filters/        # Vue filters
+│   ├── filters/        # Formatter helpers (Vue 3 has no filters — used as plain fns)
 │   ├── lang/           # i18n translations
-│   ├── mixins/         # Vue mixins
-│   └── main.js
+│   ├── composables/    # Composition API utilities
+│   └── main.ts
 │
 ├── public/             # Static assets
 ├── wwwroot/            # Build output (not dist/)
 ├── Dockerfile          # Multi-stage build
 ├── nginx.conf          # Nginx config
-└── vue.config.js
+└── vite.config.ts
 ```
 
 **Deployment:**
-- Build: Node.js 16 → `npm run staging` or `npm run production`
+- Build: Node.js 20+ → `npm run staging` or `npm run production` (Vite)
 - Deploy: Docker image with Nginx serving static files
+
+**Migration note:** Sigook.Web was migrated from Vue 2 (Vue CLI / Vuex / Buefy) to Vue 3 (Vite / Pinia / @ntohq/buefy-next) in PR #108. Forms now use VeeValidate 4 + Yup.
 
 ---
 

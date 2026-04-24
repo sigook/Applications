@@ -25,16 +25,19 @@ flutter test
 flutter analyze
 ```
 
-## Sigook.Web (Vue.js 2)
+## Sigook.Web (Vue.js 3) - Requires Node 20+
 
 ```bash
 cd Sigook.Web
-npm ci && npm run serve          # Dev
-npm run staging                  # Build staging
-npm run production               # Build production
+npm ci && npm run dev            # Dev (Vite)
+npm run staging                  # Build staging (Vite)
+npm run production               # Build production (Vite)
+npm run type-check               # TypeScript check
+npm run lint                     # ESLint
+npm run preview                  # Preview production build
 ```
 
-Note: output dir is `wwwroot/` (not `dist/`).
+Note: output dir is `wwwroot/` (not `dist/`). Build tool is Vite; state is Pinia; UI is `@ntohq/buefy-next`.
 
 ## Covenant.Web (Vue.js 3) - Requires Node ^20.19.0 or >=22.12.0
 

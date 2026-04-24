@@ -6,36 +6,6 @@ public class Invoice
 {
     public const string PrefixInvoiceNumber = "AI";
 
-    public Invoice() 
-    { 
-    }
-
-    public Invoice(
-        Guid companyProfileId,
-        long invoiceNumber,
-        decimal nightShiftRate,
-        decimal holidayRate,
-        decimal overTimeRate,
-        decimal vacationsRate,
-        decimal hstRate,
-        decimal bonusRate,
-        decimal subTotal,
-        decimal hst,
-        decimal totalNet)
-    {
-        CompanyId = companyProfileId;
-        InvoiceNumber = invoiceNumber;
-        NightShiftRate = nightShiftRate;
-        HolidayRate = holidayRate;
-        OverTimeRate = overTimeRate;
-        VacationsRate = vacationsRate;
-        HstRate = hstRate;
-        BonusRate = bonusRate;
-        SubTotal = subTotal;
-        Hst = hst;
-        TotalNet = totalNet;
-    }
-
     public Guid Id { get; set; } = Guid.NewGuid();
     public long NumberId { get; set; }
     public long InvoiceNumber { get; set; }
