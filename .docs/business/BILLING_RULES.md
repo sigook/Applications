@@ -115,6 +115,30 @@ HolidayRate = 1.5
 
 ---
 
+#### 4. Missing Hours
+
+**Rule:**
+- Hours not punched but approved by the agency (e.g. forgotten clock in/out, manual adjustments)
+- Stored per-timesheet in `TimeSheet.MissingHours` and `TimeSheet.MissingHoursOvertime`
+- Billed at `TimeSheet.MissingRateAgency`; falls back to `AgencyRate` when missing rate is `<= 0`
+- Missing overtime applies the same `OvertimeRate` multiplier on top of the missing rate
+
+**Calculation:**
+```
+MissingRate         = TimeSheet.MissingRateAgency > 0 ? TimeSheet.MissingRateAgency : AgencyRate
+MissingAmount       = MissingHours × MissingRate
+MissingOvertimeAmt  = MissingOvertimeHours × (MissingRate × OvertimeRate)
+```
+
+**Example:**
+```
+MissingRateAgency = $22.00, OvertimeRate = 1.5
+2h missing                 → 2 × $22.00 = $44.00
+1h missing overtime        → 1 × ($22.00 × 1.5) = $33.00
+```
+
+---
+
 ### Vacation Rate
 
 **Federal Rule (Canada):**
@@ -154,8 +178,14 @@ Vacations: $4,500.00 × 0.04 = $180.00
 4. Holiday charge:
    HolidayAmount = HolidayHours × (AgencyRate × HolidayRate)
 
-5. Worker total:
+5. Missing charge:
+   MissingRate         = TimeSheet.MissingRateAgency > 0 ? TimeSheet.MissingRateAgency : AgencyRate
+   MissingAmount       = MissingHours × MissingRate
+   MissingOvertimeAmt  = MissingOvertimeHours × (MissingRate × OvertimeRate)
+
+6. Worker total:
    WorkerTotal = RegularAmount + OvertimeAmount + NightShiftAmount + HolidayAmount
+                 + MissingAmount + MissingOvertimeAmt
 ```
 
 **Example (Worker: John Doe):**

@@ -197,6 +197,45 @@ public abstract class BaseInvoiceService(
                     AssignTimeSheetTotal(item, timeSheetTotal);
                     items.Add(item);
                 }
+
+                var missingHours = timesheet.MissingHours.TotalHours;
+                if (missingHours > 0)
+                {
+                    var missingAmount = calculatorService.CalculateMissingAmount(agencyRate, missingHours);
+                    var item = new T
+                    {
+                        Quantity = missingHours,
+                        UnitPrice = agencyRate,
+                        Description = $"Charge for {jobTitle} / Missing Hours",
+                        AgencyRate = agencyRate,
+                        Missing = missingAmount,
+                        Total = missingAmount,
+                        TotalGross = missingAmount,
+                        TotalNet = missingAmount
+                    };
+                    AssignTimeSheetTotal(item, timeSheetTotal);
+                    items.Add(item);
+                }
+
+                var missingOvertimeHours = timesheet.MissingHoursOvertime.TotalHours;
+                if (missingOvertimeHours > 0)
+                {
+                    var missingOvertimeRate = agencyRate * rates.OverTime;
+                    var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, missingOvertimeHours);
+                    var item = new T
+                    {
+                        Quantity = missingOvertimeHours,
+                        UnitPrice = missingOvertimeRate,
+                        Description = $"Charge for {jobTitle} / Missing Overtime Hours",
+                        AgencyRate = agencyRate,
+                        MissingOvertime = missingOvertimeAmount,
+                        Total = missingOvertimeAmount,
+                        TotalGross = missingOvertimeAmount,
+                        TotalNet = missingOvertimeAmount
+                    };
+                    AssignTimeSheetTotal(item, timeSheetTotal);
+                    items.Add(item);
+                }
             }
         }
 

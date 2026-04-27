@@ -58,23 +58,13 @@
               <b-tag rounded :type="props.row.workerRequestStatus === 3 ? 'is-success' : 'is-danger'">{{ props.row.workerRequestStatus === 3 ? 'Booked' : 'Rejected' }}</b-tag>
             </template>
           </b-table-column>
-          <b-table-column field="actions" v-slot="props">
-            <b-tooltip label="Punch Card" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-info" outlined rounded icon-right="timetable" class="mr-2"
-                @click="showModalPunchCard(props.row)"></b-button>
-            </b-tooltip>
-          </b-table-column>
         </template>
         <template #detail="props">
-          <PunchCard ref="punchCard" :workerId="props.row.workerId" :worker="props.row"
+          <PunchCard :workerId="props.row.workerId" :worker="props.row"
             :requestId="serverParams.requestId" :request="request" />
         </template>
       </b-table>
     </div>
-    <b-modal v-model="modalPunchCard">
-      <AgencyPunchCard :requestId="serverParams.requestId" :workerName="currentWorker.name"
-        :workerId="currentWorker.workerId" @created="onModalPunchCardClose" />
-    </b-modal>
   </div>
 </template>
 <script setup lang="ts">
@@ -84,7 +74,6 @@ import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { getAgencyRequestsWorkers } from "@/api/agencyRequestApi";
 import PunchCard from '@/components/agency_request/AgencyPunchCardWorkerContainer.vue';
-import AgencyPunchCard from '@/components/agency/AgencyPunchCard.vue';
 import Export from '@/components/Export.vue';
 
 defineProps<{ request: any }>();
@@ -100,8 +89,6 @@ const statuses = [
 ];
 const statusesSelected = ref<any[]>([]);
 const filteredStatuses = ref<any[]>([]);
-const modalPunchCard = ref(false);
-const currentWorker = ref<any>({});
 const serverParams = reactive<any>({
   sortBy: 2,
   requestId: route.params.id,
@@ -109,7 +96,6 @@ const serverParams = reactive<any>({
   pageSize: 30,
   isDescending: true
 });
-const punchCard = ref<any>(null);
 
 function onPageChange(params: any) {
   serverParams.pageIndex = params;
@@ -168,18 +154,6 @@ function loadRequestWorkers() {
       isLoading.value = false;
       showAlertError(error);
     });
-}
-
-function showModalPunchCard(worker: any) {
-  currentWorker.value = worker;
-  modalPunchCard.value = true;
-}
-
-function onModalPunchCardClose() {
-  modalPunchCard.value = false;
-  if (punchCard.value) {
-    punchCard.value.updateCell();
-  }
 }
 
 const getTimeSheetUrl = computed(() => `/api/AgencyRequest/${serverParams.requestId}/TimeSheet`);
