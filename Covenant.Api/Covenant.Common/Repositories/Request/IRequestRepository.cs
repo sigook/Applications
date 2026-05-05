@@ -15,7 +15,6 @@ public interface IRequestRepository
     Task Update<T>(T entity) where T : class;
     Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
     Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
-    Task<PaginatedList<WorkerRequestAgencyBoardModel>> GetWorkersRequestBoard(Guid agencyId, Pagination pagination);
     IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter);
@@ -42,6 +41,7 @@ public interface IRequestRepository
     Task<NoteModel> GetNoteDetail(Guid requestId, Guid id);
     Task<RequestNote> GetNote(Guid requestId, Guid id);
     Task<PaginatedList<RequestRecruiterDetailModel>> GetRecruiters(Guid requestId, Pagination pagination);
+    Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds);
     Task<RequestSkill> GetSkill(Guid requestId, Guid id);
     Task<IEnumerable<SkillModel>> GetSkills(Guid requestId);
     Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression);

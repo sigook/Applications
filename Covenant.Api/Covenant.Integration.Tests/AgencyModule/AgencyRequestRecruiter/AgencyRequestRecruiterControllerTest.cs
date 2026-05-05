@@ -46,7 +46,6 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestRecruiter
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             RequestRecruiter entity = await context.RequestRecruiter.SingleAsync(c => c.RecruiterId == detail.RecruiterId);
             Assert.Equal(model.RecruiterId, entity.RecruiterId);
-            Assert.NotNull(entity.Request.DisplayRecruiters);
         }
 
         [Fact]

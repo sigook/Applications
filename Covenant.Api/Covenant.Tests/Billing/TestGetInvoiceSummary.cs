@@ -142,9 +142,22 @@ namespace Covenant.Tests.Billing
 
         private Invoice FakeInvoice()
         {
-            var invoice = new Invoice(FakeProfile.Id, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1)
-            { CreatedAt = new DateTime(2019, 01, 01), WeekEnding = new DateTime(2019, 01, 07) };
+            var invoice = new Invoice
+            {
+                CompanyId = FakeProfile.Id,
+                InvoiceNumber = 1,
+                NightShiftRate = 1,
+                HolidayRate = 1,
+                OverTimeRate = 1,
+                VacationsRate = 1,
+                HstRate = 1,
+                BonusRate = 1,
+                SubTotal = 1,
+                Hst = 1,
+                TotalNet = 1,
+                CreatedAt = new DateTime(2019, 01, 01),
+                WeekEnding = new DateTime(2019, 01, 07)
+            };
 
             invoice.AddDiscounts(new[] { new InvoiceDiscount(1, 1, "One"), new InvoiceDiscount(1, 2, "Two") });
             invoice.AddHolidays(new[]{

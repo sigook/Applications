@@ -7,7 +7,6 @@ import {
 } from "@/resolvers/agencyResolvers";
 
 const AgencyRequests = () => import("@/pages/agency/Requests.vue");
-const WorkersBoard = () => import("@/pages/agency/WeeklyBoard.vue");
 const AgencyRequest = () => import("@/pages/agency/Request.vue");
 const AgencyCreateRequest = () => import("@/pages/agency/AgencyCreateRequest.vue");
 const AgencyWorkers = () => import("@/pages/agency/Workers.vue");
@@ -37,15 +36,6 @@ const routesAgency: RouteRecordRaw[] = [
     path: "/agency-requests",
     component: AgencyRequests,
     name: "agency-requests",
-    meta: {
-      requiresAuth: true,
-      role: [agency, agencyPersonnel],
-    },
-  },
-  {
-    path: "/board",
-    component: WorkersBoard,
-    name: "agency-board",
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],

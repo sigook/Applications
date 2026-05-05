@@ -1,7 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.Subcontractor;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting;
@@ -18,45 +17,30 @@ using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
-public abstract class BaseInvoiceService
+public abstract class BaseInvoiceService(
+    ITimeSheetRepository timeSheetRepository,
+    IInvoiceRepository invoiceRepository,
+    IAgencyRepository agencyRepository,
+    ICompanyRepository companyRepository,
+    ILocationRepository locationRepository,
+    ICatalogRepository catalogRepository,
+    ITimeService timeService,
+    Rates rates,
+    ISubcontractorRepository subcontractorRepository,
+    TimeLimits timeLimits,
+    ITimesheetCalculatorService calculatorService)
 {
-    protected readonly ITimeSheetRepository timeSheetRepository;
-    protected readonly IInvoiceRepository invoiceRepository;
-    protected readonly IAgencyRepository agencyRepository;
-    protected readonly ICompanyRepository companyRepository;
-    protected readonly ILocationRepository locationRepository;
-    protected readonly ICatalogRepository catalogRepository;
-    protected readonly ITimeService timeService;
-    protected readonly Rates rates;
-    protected readonly ISubcontractorRepository subcontractorRepository;
-    protected readonly TimeLimits timeLimits;
-    protected readonly ITimesheetCalculatorService calculatorService;
-
-    protected BaseInvoiceService(
-        ITimeSheetRepository timeSheetRepository,
-        IInvoiceRepository invoiceRepository,
-        IAgencyRepository agencyRepository,
-        ICompanyRepository companyRepository,
-        ILocationRepository locationRepository,
-        ICatalogRepository catalogRepository,
-        ITimeService timeService,
-        Rates rates,
-        ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits,
-        ITimesheetCalculatorService calculatorService)
-    {
-        this.timeSheetRepository = timeSheetRepository;
-        this.invoiceRepository = invoiceRepository;
-        this.agencyRepository = agencyRepository;
-        this.companyRepository = companyRepository;
-        this.locationRepository = locationRepository;
-        this.catalogRepository = catalogRepository;
-        this.timeService = timeService;
-        this.rates = rates;
-        this.subcontractorRepository = subcontractorRepository;
-        this.timeLimits = timeLimits;
-        this.calculatorService = calculatorService;
-    }
+    protected readonly ITimeSheetRepository timeSheetRepository = timeSheetRepository;
+    protected readonly IInvoiceRepository invoiceRepository = invoiceRepository;
+    protected readonly IAgencyRepository agencyRepository = agencyRepository;
+    protected readonly ICompanyRepository companyRepository = companyRepository;
+    protected readonly ILocationRepository locationRepository = locationRepository;
+    protected readonly ICatalogRepository catalogRepository = catalogRepository;
+    protected readonly ITimeService timeService = timeService;
+    protected readonly Rates rates = rates;
+    protected readonly ISubcontractorRepository subcontractorRepository = subcontractorRepository;
+    protected readonly TimeLimits timeLimits = timeLimits;
+    protected readonly ITimesheetCalculatorService calculatorService = calculatorService;
 
     // Abstract methods to be implemented by country-specific services
     public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
@@ -209,6 +193,45 @@ public abstract class BaseInvoiceService
                         Total = holidayAmount,
                         TotalGross = holidayAmount,
                         TotalNet = holidayAmount
+                    };
+                    AssignTimeSheetTotal(item, timeSheetTotal);
+                    items.Add(item);
+                }
+
+                var missingHours = timesheet.MissingHours.TotalHours;
+                if (missingHours > 0)
+                {
+                    var missingAmount = calculatorService.CalculateMissingAmount(agencyRate, missingHours);
+                    var item = new T
+                    {
+                        Quantity = missingHours,
+                        UnitPrice = agencyRate,
+                        Description = $"Charge for {jobTitle} / Missing Hours",
+                        AgencyRate = agencyRate,
+                        Missing = missingAmount,
+                        Total = missingAmount,
+                        TotalGross = missingAmount,
+                        TotalNet = missingAmount
+                    };
+                    AssignTimeSheetTotal(item, timeSheetTotal);
+                    items.Add(item);
+                }
+
+                var missingOvertimeHours = timesheet.MissingHoursOvertime.TotalHours;
+                if (missingOvertimeHours > 0)
+                {
+                    var missingOvertimeRate = agencyRate * rates.OverTime;
+                    var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, missingOvertimeHours);
+                    var item = new T
+                    {
+                        Quantity = missingOvertimeHours,
+                        UnitPrice = missingOvertimeRate,
+                        Description = $"Charge for {jobTitle} / Missing Overtime Hours",
+                        AgencyRate = agencyRate,
+                        MissingOvertime = missingOvertimeAmount,
+                        Total = missingOvertimeAmount,
+                        TotalGross = missingOvertimeAmount,
+                        TotalNet = missingOvertimeAmount
                     };
                     AssignTimeSheetTotal(item, timeSheetTotal);
                     items.Add(item);

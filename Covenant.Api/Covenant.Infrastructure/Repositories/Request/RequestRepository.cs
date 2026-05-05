@@ -46,6 +46,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
+        if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
+        {
+            var recruiterTerm = filter.DisplayRecruiters.ToLower();
+            requests = requests.Where(r => context.RequestRecruiter
+                .Any(rr => rr.RequestId == r.Id && rr.Recruiter.Name.ToLower().Contains(recruiterTerm)));
+        }
         var query = from r in requests
                     join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
                     join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
@@ -60,11 +66,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         JobTitle = r.JobTitle,
                         BillingTitle = r.BillingTitle,
                         CreatedAt = r.CreatedAt,
-                        UpdatedAt = r.UpdatedAt,
-                        FinishAt = r.FinishAt,
-                        StartAt = r.StartAt,
-                        DurationTerm = r.DurationTerm,
-                        EmploymentType = r.EmploymentType,
                         Address = r.JobLocation.Address,
                         City = r.JobLocation.City.Value,
                         ProvinceName = r.JobLocation.City.Province.Value,
@@ -76,7 +77,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         IsAsap = r.IsAsap,
                         WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
-                        DisplayRecruiters = r.DisplayRecruiters,
+                        DisplayRecruiters = string.Join("|", context.RequestRecruiter
+                            .Where(rr => rr.RequestId == r.Id)
+                            .Select(rr => rr.Recruiter.Name)),
                         WorkersQuantity = r.WorkersQuantity,
                         SalesRepresentative = rrc != null ? rrc.AgencyPersonnel.Name : null,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
@@ -121,14 +124,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         }
         if (!string.IsNullOrWhiteSpace(filter.JobTitle))
             predicate = predicate.And(r => r.JobTitle.ToLower().Contains(filter.JobTitle.ToLower()));
-        if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
-            predicate = predicate.And(r => r.DisplayRecruiters.ToLower().Contains(filter.DisplayRecruiters.ToLower()));
         if (!string.IsNullOrWhiteSpace(filter.SalesRepresentative))
             predicate = predicate.And(r => r.SalesRepresentative.ToLower().Contains(filter.SalesRepresentative.ToLower()));
-        if (filter.LastUpdateFrom.HasValue && filter.LastUpdateTo.HasValue)
-            predicate = predicate.And(r => r.UpdatedAt.Value.Date >= filter.LastUpdateFrom.Value.Date && r.UpdatedAt.Value.Date <= filter.LastUpdateTo.Value.Date);
-        if (filter.StartAtFrom.HasValue && filter.StartAtTo.HasValue)
-            predicate = predicate.And(r => r.StartAt.Value.Date >= filter.StartAtFrom.Value.Date && r.StartAt.Value.Date <= filter.StartAtTo.Value.Date);
+        if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
+            predicate = predicate.And(r => r.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && r.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
         if (filter.RateFrom.HasValue && filter.RateTo.HasValue)
             predicate = predicate.And(r => r.WorkerRate >= filter.RateFrom.Value && r.WorkerRate <= filter.RateTo.Value);
         if (filter.Statuses != null && filter.Statuses.Any())
@@ -153,8 +152,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             case GetRequestSortBy.JobTitle:
                 query = query.AddOrderBy(filter, o => o.JobTitle);
                 break;
-            case GetRequestSortBy.StartAt:
-                query = query.AddOrderBy(filter, o => o.StartAt);
+            case GetRequestSortBy.CreatedAt:
+                query = query.AddOrderBy(filter, o => o.CreatedAt);
                 break;
             case GetRequestSortBy.Recruiter:
                 query = query.AddOrderBy(filter, o => o.DisplayRecruiters);
@@ -164,9 +163,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 break;
             case GetRequestSortBy.WorkersQuantity:
                 query = query.AddOrderBy(filter, o => o.WorkersQuantity);
-                break;
-            case GetRequestSortBy.UpdatedAt:
-                query = query.AddOrderBy(filter, o => o.UpdatedAt);
                 break;
             case GetRequestSortBy.NumberId:
                 query = query.AddOrderBy(filter, o => o.NumberId);
@@ -201,49 +197,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 Shift = r.Shift == null ? string.Empty : r.Shift.DisplayShift
             });
         return await requests.OrderBy(r => r.Title).ToListAsync();
-    }
-
-    public Task<PaginatedList<WorkerRequestAgencyBoardModel>> GetWorkersRequestBoard(Guid agencyId, Pagination pagination)
-    {
-        return (from wr in context.WorkerRequest
-                join r in context.Request.Where(wR => wR.AgencyId == agencyId) on wr.RequestId equals r.Id
-                join wp in context.WorkerProfile on new { WId = wr.WorkerId, AId = r.AgencyId } equals new { WId = wp.WorkerId, AId = wp.AgencyId }
-                join cp in context.CompanyProfile on new { CId = r.CompanyId, AId = r.AgencyId } equals new { CId = cp.CompanyId, AId = cp.AgencyId }
-                orderby wr.StartWorking descending
-                select new WorkerRequestAgencyBoardModel
-                {
-                    Id = wr.Id,
-                    StartWorking = wr.StartWorking,
-                    WeekStartWorking = wr.WeekStartWorking,
-                    WorkerRequestStatus = wr.WorkerRequestStatus,
-                    RejectComments = wr.RejectComments,
-                    RejectedAt = wr.RejectedAt,
-                    RequestId = r.Id,
-                    NumberId = r.NumberId,
-                    RequestStatus = r.Status,
-                    JobTitle = r.JobTitle,
-                    WorkerRate = r.WorkerRate,
-                    WorkerSalary = r.WorkerSalary,
-                    DurationTerm = r.DurationTerm,
-                    DisplayRecruiters = r.DisplayRecruiters,
-                    Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
-                    Entrance = r.JobLocation.Entrance,
-                    DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
-                    WorkerProfileId = wp.Id,
-                    WorkerId = wp.WorkerId,
-                    FirstName = wp.FirstName,
-                    MiddleName = wp.MiddleName,
-                    LastName = wp.LastName,
-                    SecondLastName = wp.SecondLastName,
-                    SocialInsurance = wp.SocialInsurance,
-                    SocialInsuranceExpire = wp.SocialInsuranceExpire,
-                    DueDate = wp.DueDate,
-                    MobileNumber = wp.MobileNumber,
-                    IsSubcontractor = wp.IsSubcontractor,
-                    CompanyProfileId = cp.Id,
-                    CompanyFullName = cp.FullName,
-                    NotesCount = wr.Notes.Count(n => !n.Note.IsDeleted)
-                }).ToPaginatedList(pagination);
     }
 
     public async Task<AgencyRequestDetailModel> GetRequestDetailForAgency(Guid id)
@@ -300,7 +253,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         IncentiveDescription = r.IncentiveDescription,
                         DurationTerm = r.DurationTerm,
                         EmploymentType = r.EmploymentType,
-                        DisplayRecruiters = r.DisplayRecruiters,
+                        DisplayRecruiters = string.Join("|", context.RequestRecruiter
+                            .Where(rr => rr.RequestId == r.Id)
+                            .Select(rr => rr.Recruiter.Name)),
                         DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                         IsAsap = r.IsAsap,
                         VaccinationRequired = cp.VaccinationRequired,
@@ -1148,6 +1103,17 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var requests = context.Request.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
+    }
+
+    public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds)
+    {
+        var requestIdList = requestIds.ToList();
+        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
+        if (recruiterIds == null || !recruiterIds.Any()) return;
+        var entities = requestIdList
+            .SelectMany(rid => recruiterIds.Select(recId => new RequestRecruiter(rid, recId)))
+            .ToList();
+        await context.RequestRecruiter.AddRangeAsync(entities);
     }
 
     public async Task<bool> ExistsRequestByNumber(int orderId)

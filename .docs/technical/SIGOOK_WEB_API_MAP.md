@@ -1,12 +1,12 @@
 # Sigook.Web API Map
 
-This document maps every API file in `src/api/*.ts` to its backend endpoints, request/response types, and Vuex/store integrations.
+This document maps every API file in `src/api/*.ts` to its backend endpoints, request/response types, and Pinia store integrations.
 
 **Key Patterns:**
-- API functions are plain TypeScript functions (NOT Vuex dispatches)
+- API functions are plain TypeScript functions (NOT store dispatches)
 - All HTTP calls use the `http` instance from `@/security/apiService`
 - Request/response types live in `src/types/*.ts`
-- Vuex modules in `src/store/modules/` occasionally wrap state for filters only (not direct API calls)
+- Pinia stores in `src/store/modules/` occasionally wrap state for filters only (not direct API calls)
 - Backend is Covenant.Api (.NET 8) with REST conventions
 - Core actors: Agency, Company, Worker, Candidate
 
@@ -22,7 +22,7 @@ This document maps every API file in `src/api/*.ts` to its backend endpoints, re
 
 **Types:** `ChangeEmailRequest`, `GetEmailResponse` (from `src/types/security`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Usage:** Account management pages; email change workflows
 
@@ -51,8 +51,8 @@ Core agency profile and personnel management.
 
 **Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem` (from `src/types/agency`)
 
-**Vuex:** 
-- Module `agency` stores `AgencyProfile` and `agencyListFilter`
+**Pinia:** 
+- Store `agency` holds `AgencyProfile` and `agencyListFilter`
 - Used in: Agencies page, Agency profile, Personnel management
 
 **Business Logic:**
@@ -91,7 +91,7 @@ Candidate management (recruitment pool before conversion to Worker).
 
 **Types:** `Candidate`, `CandidateDocument`, `CreateCandidateDocumentPayload`, `AgencyCandidateFilter`, `CreateCandidateModel`, `CandidatePhoneNumberModel`, `CandidateSkillModel` (from `src/types/candidate`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyCandidateFilter` in `agency` module
 - Used in: Candidates page
 
@@ -195,7 +195,7 @@ Candidate management (recruitment pool before conversion to Worker).
 
 **Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `CompanyProvinceWithTaxes`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (from `src/types/agency`); `CompanyProfileDetail`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (from `src/types/company`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyCompanyProfileFilter` in `agency` module
 - Used in: Companies page, Company detail, Job position management
 
@@ -224,7 +224,7 @@ Invoicing for agency → company billing.
 
 **Types:** `AgencyInvoiceFilter`, `AgencyInvoiceListResponse`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (from `src/types/accounting`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyInvoiceFilter` in `agency` module
 - Used in: Invoices page (accounting)
 
@@ -267,7 +267,7 @@ Notes attached to Workers, Candidates, Companies, Requests.
 
 **Types:** `NoteModel`, `NoteItem`, `NotePagination`, `CreateNoteResponse` (from `src/types/agency`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Notes are internal annotations by agency staff
@@ -301,7 +301,7 @@ Pay stub generation and payroll administration.
 
 **Types:** `AgencyPayStubFilter`, `AgencyPayStubListItem`, `CreatePayStubPayload`, `CreateSkipPayrollNumberPayload`, `PayrollSubContractorListItem`, `SkipPayrollNumberItem`, `SubcontractorPayrollFilter`, `WorkerReadyForPayStubModel` (from `src/types/accounting`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyPayStubFilter` in `agency` module
 - Used in: Pay Stubs page (accounting)
 
@@ -339,7 +339,7 @@ Report generation and downloads (PDFs, Excel, data exports).
 
 **Types:** `ReportQueryParams`, `AgencyReportFilter`, `AgencyCompanyJobPosition`, `HoursWorkedResume`, `WeeklyPayrollItem` (from `src/types/agency`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Reports used by agency for compliance (T4, CRA), payroll admin, and internal analytics
@@ -369,7 +369,6 @@ Report generation and downloads (PDFs, Excel, data exports).
 | `updateAgencyRequestShift(id, model)` | PUT | `/api/AgencyRequest/{id}/Shift` | `RequestShiftModel` | `{ id: string; displayShift? }` | Update shift times |
 | `increaseWorkersQuantityByOne(id)` | PUT | `/api/AgencyRequest/{id}/IncreaseWorkersQuantityByOne` | — | `void` | +1 worker needed |
 | `reduceWorkersQuantityByOne(id)` | PUT | `/api/AgencyRequest/{id}/ReduceWorkersQuantityByOne` | — | `void` | -1 worker needed |
-| `getAgencyRequestBoard(pagination)` | GET | `/api/AgencyRequest/Board?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyRequestListItem>` | Weekly board view |
 
 ### Request → Workers
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -414,7 +413,7 @@ Report generation and downloads (PDFs, Excel, data exports).
 
 **Types:** `AgencyRequestFilter`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestRecruiterModel`, `AgencyRequestRecruiterItem`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem` (from `src/types/agency`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyRequestFilter` in `agency` module
 - Used in: Requests page, Request detail, Board view
 
@@ -445,7 +444,7 @@ Timesheet management for workers on requests (hours tracked).
 
 **Types:** `TimeSheetListItem`, `TimeSheetModel`, `TimeSheetUsagesModel` (from `src/types/company`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Timesheets record hours per worker per request
@@ -487,7 +486,7 @@ Worker profile management from agency perspective.
 
 **Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `AgencyWorkerRequestHistoryItem` (from `src/types/agency`); `WorkerProfile` (from `src/types/worker`)
 
-**Vuex:**
+**Pinia:**
 - Filter stored: `agencyWorkerProfileFilter` in `agency` module
 - Used in: Workers page
 
@@ -524,7 +523,7 @@ Reference data (enums, lookup tables).
 
 **Types:** `Gender`, `IdentificationType`, `Availability`, `AvailabilityTime`, `Day`, `Lift`, `Language`, `WsibGroup`, `Industry`, `JobPosition`, `Skill`, `CancellationReason`, `CatalogItem`, `TaxCategory` (from `src/types/common`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Static lookup tables
@@ -614,8 +613,8 @@ Company-side (client) view of their requests and workers.
 
 **Types:** `CompanyProfileDetail`, `CompanyProfileLocationDetail`, `CompanyProfileJobPositionRate`, `CompanyRequestFilter`, `CompanyRequestListItem`, `CompanyRequestWorkerFilter`, `CompanyRequestWorker`, `TimeSheetListItem`, `TimeSheetModel`, `ClockInModel`, `ClockInResult`, `CompanyUserModel`, `CreateCompanyUserModel`, `CompanyContactPersonModel`, `CompanyInvoiceFilter`, `CompanyInvoiceListItem`, `CommentsModel` (from `src/types/company`)
 
-**Vuex:**
-- Module `company` stores only `companyRequestFilter`
+**Pinia:**
+- Store `company` holds only `companyRequestFilter`
 - Used in: Company portal pages
 
 **Business Logic:**
@@ -638,7 +637,7 @@ File downloads (blobs).
 | `downloadWeeklyPayrollExcelByWeekEnding(date)` | GET | `/api/WeeklyPayroll/{date}/Document/EXCEL/ByWeekEnding` | — | Blob | Payroll by week ending |
 | `downloadWeeklyPayrollExcelByPaymentDate(date)` | GET | `/api/WeeklyPayroll/{date}/Document/EXCEL/ByPaymentDate` | — | Blob | Payroll by payment date |
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Generic blob downloads
@@ -660,7 +659,7 @@ Geographic lookup (countries, provinces, cities).
 
 **Types:** `Country`, `Province`, `City` (from `src/types/common`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Hierarchical: Country > Province > City
@@ -678,7 +677,7 @@ Minimal. Request shift lookup.
 
 **Types:** `RequestShiftModel` (from `src/types/agency`)
 
-**Vuex:** None
+**Pinia:** None
 
 ---
 
@@ -692,7 +691,7 @@ Email preferences (unsubscribe).
 
 **Types:** `UnsubscribeRequest` (from `src/types/common`)
 
-**Vuex:** None
+**Pinia:** None
 
 ---
 
@@ -707,7 +706,7 @@ User notification management.
 
 **Types:** `UserNotificationItem` (from `src/types/common`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - In-app notification inbox
@@ -727,7 +726,7 @@ Public website (landing page) endpoints.
 
 **Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm`, `LandingJobPositions` (from `src/types/website`)
 
-**Vuex:** None
+**Pinia:** None
 
 **Business Logic:**
 - Public-facing; no auth required
@@ -823,8 +822,8 @@ Public website (landing page) endpoints.
 
 **Types:** `WorkerProfile`, `WorkerRequestFilter`, `WorkerRequestApplyModel`, `WorkerCommentFilter`, `WorkerCommentList`, `WageHistoryFilter`, `TimeSheetHistoryFilter`, `ClockTypeResult`, `WorkerCatalogItem`, `WorkerBasicInformationModel`, `WorkerContactInformationModel`, `WorkerEmergencyInformationModel`, `WorkerOtherInformationModel`, `WorkerJobExperienceModel`, `WorkerRequestListItem`, `WorkerRequestDetail`, `WorkerTimeSheetItem`, `WorkerWageHistoryItem`, `WorkerTimeSheetHistoryItem` (from `src/types/worker`)
 
-**Vuex:**
-- Module `worker` stores only `workerProfile` (partial)
+**Pinia:**
+- Store `worker` holds only `workerProfile` (partial)
 - Used in: Worker portal pages
 
 **Business Logic:**
@@ -861,7 +860,7 @@ Public website (landing page) endpoints.
 
 ## Key Design Patterns
 
-1. **No Service Locator**: API functions are plain functions, not Vuex dispatches. Components import and call directly.
+1. **No Service Locator**: API functions are plain functions, not store dispatches. Components import and call directly.
 2. **Type Safety**: All request/response types are TypeScript interfaces in `src/types/`.
 3. **Pagination**: Most list endpoints return `PaginatedList<T>` with `PageSize` and `PageIndex` params.
 4. **Filters**: Filters (e.g., `AgencyRequestFilter`) are passed as query params via `params: { ...filter }`.
@@ -869,7 +868,7 @@ Public website (landing page) endpoints.
 6. **FormData for Uploads**: File uploads use `FormData` with `multipart/form-data` headers.
 7. **Blob Downloads**: PDF/Excel returns are `Blob` with `responseType: 'blob'`.
 8. **Auth Interception**: `apiService.ts` handles JWT refresh on 401; no auth calls needed in components.
-9. **Vuex State**: Vuex stores mostly **filters only**, not full API data (data cached in component state or temp store).
+9. **Pinia State**: Pinia stores mostly **filters only**, not full API data (data cached in component state or temp store).
 
 ---
 

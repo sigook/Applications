@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Overview of Vue 2 agency/worker portal for Covenant/Sigook staffing platform.
+Overview of Vue 3 agency/worker portal for Covenant/Sigook staffing platform. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts.
 
 ---
 
@@ -12,7 +12,7 @@ Sigook.Web/
 │   ├── api/                # Plain function API wrappers
 │   ├── assets/             # Images, fonts, SCSS
 │   ├── components/         # Reusable Vue components by domain
-│   ├── composables/        # Composition utilities (Vue 2 style)
+│   ├── composables/        # Composition API utilities
 │   ├── constants/          # Constants
 │   ├── directives/         # Custom Vue directives
 │   ├── filters/            # Vue filters
@@ -22,7 +22,7 @@ Sigook.Web/
 │   ├── resolvers/          # Route resolvers (pre-load data)
 │   ├── router/             # Vue Router config
 │   ├── security/           # Auth, API service, roles
-│   ├── store/              # Vuex state management
+│   ├── store/              # Pinia stores
 │   ├── types/              # TypeScript interfaces
 │   ├── utils/              # Utility functions
 │   ├── App.vue             # Root component
@@ -33,8 +33,7 @@ Sigook.Web/
 ├── CLAUDE.md               # Original notes (to be complemented by this doc)
 ├── package.json
 ├── tsconfig.json
-├── vue.config.js
-├── babel.config.js
+├── vite.config.ts
 └── Dockerfile
 ```
 
@@ -74,8 +73,8 @@ Sigook.Web/
 **Key Design:**
 - All functions use `http` instance from `@/security/apiService`
 - Return types are TypeScript (Promise<T>)
-- No direct Vuex dispatches; components call functions directly
-- Vuex only stores **filters** for pagination/search
+- No store dispatches; components call functions directly
+- Pinia only stores **filters** for pagination/search and auth state
 
 ---
 
@@ -107,7 +106,7 @@ Sigook.Web/
 | File | Routes | Components |
 |------|--------|-----------|
 | **index.ts** | Root routes, auth guard, scroll behavior | NotFound, SilentRefresh, Unauthorized, EmailPreferences, Callback |
-| **routesAgency.ts** | `/agency-*`, `/accounting/*`, `/board`, etc. | Agency portal (requests, workers, companies, candidates, invoices, paystubs, reports) |
+| **routesAgency.ts** | `/agency-*`, `/accounting/*`, etc. | Agency portal (requests, workers, companies, candidates, invoices, paystubs, reports) |
 | **routesCompany.ts** | `/company-*`, `/request/*` | Company portal (requests, reports, profile, users) |
 | **routesWorker.ts** | `/register-worker`, `/worker-*`, `/punch-card`, `/timesheet` | Worker portal (profile, job search, applications, timesheet, history) |
 | **routesLanding.ts** | `/home`, `/jobSeekers`, `/business`, `/about-us`, `/contact` | Public landing pages |
@@ -135,7 +134,6 @@ meta: { requiresAuth: false, layout: "web" }
 - **Requests.vue** — List job requests; filter, search, pagination
 - **Request.vue** — Request detail; workers, applicants, shift, notes, recruiters
 - **AgencyCreateRequest.vue** — Create/edit request; company, position, shift, workers quantity, requirements
-- **WeeklyBoard.vue** — Kanban board of requests + worker assignments
 - **Workers.vue** — Worker roster; list, search, profile access, flags (DNU, contractor)
 - **DetailWorker.vue** — Worker detail; profile, request history, notes, holidays, email
 - **Companies.vue** — Company client list; search, create, bulk import
@@ -342,31 +340,31 @@ meta: { requiresAuth: false, layout: "web" }
 - **WorkAvailabilityDaysDetail.vue** — Work days display
 - (More skill, language, document components...)
 
-**Pattern:** Components accept `function` refs (e.g., `onSave={agencyCandidateApi.updateAgencyCandidate}`) rather than Vuex dispatch strings. Generic components are reusable across features.
+**Pattern:** Components accept `function` refs (e.g., `onSave={agencyCandidateApi.updateAgencyCandidate}`) rather than store dispatch strings. Generic components are reusable across features.
 
 ---
 
-## src/store/ — Vuex State Management
+## src/store/ — Pinia State Management
 
-**Organization:** Module pattern. Minimal state (mostly filters for pagination).
+**Organization:** One store per domain. Minimal state (mostly filters for pagination). Persistence via `pinia-plugin-persistedstate`.
 
-### Root Store (`src/store/index.ts`)
+### Root Setup (`src/store/index.ts`)
 
-Combines modules; handles global state (user, auth, UI).
+Creates the Pinia instance and registers the persisted-state plugin; individual stores self-register via `defineStore`.
 
-### Modules (`src/store/modules/`)
+### Stores (`src/store/modules/`)
 
-| Module | State | Purpose |
-|--------|-------|---------|
+| Store | State | Purpose |
+|-------|-------|---------|
 | **agency.ts** | `agency: AgencyProfile`, `personnelAgencies: []`, `agencyRequestFilter`, `agencyCandidateFilter`, `agencyWorkerProfileFilter`, `agencyCompanyProfileFilter`, `agencyInvoiceFilter`, `agencyPayStubFilter`, `agencyListFilter` | Agency context + list filters |
 | **company.ts** | `companyRequestFilter` | Company context + request filter |
 | **worker.ts** | `workerProfile: Partial<WorkerProfile>` | Worker context + partial profile |
 | **security.ts** | (Auth state) | User, token, roles |
 
 **Design Philosophy:**
-- **Filters only**: Vuex stores UI state (pagination, search filters) so lists don't reset on route changes
+- **Filters only**: Pinia stores UI state (pagination, search filters) so lists don't reset on route changes
 - **No data caching**: API responses stored in component state or computed from live data
-- **Auth as exception**: Security module manages JWT + user roles (app-wide requirement)
+- **Auth as exception**: Security store manages JWT + user roles (app-wide requirement)
 
 ---
 
@@ -377,7 +375,7 @@ Combines modules; handles global state (user, auth, UI).
 **Axios instance** with interceptors:
 - **Request:** Adds `Authorization` header with JWT token
 - **Response:** 
-  - 401 → Silent refresh via `store.dispatch('silentSignin')`
+  - 401 → Silent refresh via the security Pinia store's `silentSignin` action
   - 403 → Alert "not authorized"
   - 500 → Alert error + handle blob responses
   - Adds `accept-language` header from localStorage
@@ -465,7 +463,9 @@ assets/
 
 ---
 
-## src/mixins/ — Vue Mixins
+## src/mixins/ — Legacy Mixins (being phased out)
+
+Vue 3 discourages mixins; remaining ones act as composable-style helpers until fully migrated.
 
 - **toastMixin.ts** — Toast notification helper (app-wide)
 
@@ -492,8 +492,8 @@ Pre-load data before route entry (route guard).
 
 | File | Purpose |
 |------|---------|
-| **App.vue** | Root layout; main nav, sidebar, router-view |
-| **main.ts** | Vue entry point; register plugins (Buefy, i18n, VueEditor, VueRecaptcha, etc.) |
+| **App.vue** | Root layout (`<script setup>`); main nav, sidebar, router-view |
+| **main.ts** | Vue entry point; installs Pinia, Vue Router 4, `@ntohq/buefy-next`, i18n, VeeValidate, VueRecaptcha, etc. |
 | **varaibles.ts** | Global config (API URLs, app version, feature flags, etc.) |
 | **CLAUDE.md** | Original dev notes |
 
@@ -529,8 +529,8 @@ Pre-load data before route entry (route guard).
 
 ### Styling
 
-- **Framework:** Bootstrap 5 (CSS)
-- **Component UI:** Buefy (Vue + Bulma)
+- **Framework:** Bootstrap 4 (CSS, legacy — being phased down)
+- **Component UI:** `@ntohq/buefy-next` (Buefy port for Vue 3, Bulma-based)
 - **Custom SCSS:** `/src/assets/scss/worker/` + component-level styles
 - **BEM Convention:** Class naming (likely)
 
@@ -574,10 +574,10 @@ Pre-load data before route entry (route guard).
 
 ## Key Decision Points
 
-### No Redux/Vuex for API Data
+### No Central Cache for API Data
 
 - Components fetch directly via API functions
-- Filters cached in Vuex (pagination state)
+- Filters cached in Pinia (pagination state)
 - Data flows via component `data()` or `computed`
 - **Pro:** Less boilerplate, easier to trace data flow
 - **Con:** Harder to share state across distant components (solved by passing props or event bus)
@@ -591,15 +591,15 @@ Pre-load data before route entry (route guard).
 ### Role-Based UI (Not Just Route Guards)
 
 - `meta.role` restricts route access
-- Components conditionally render via `$store.state.security.role`
+- Components conditionally render via the security Pinia store's `role`
 - E.g., payroll staff see "Generate Pay Stubs" button; recruiter doesn't
 
 ### Form Pattern
 
 - Multi-step forms in register workflows
-- Direct API calls on submit (no Vuex dispatch)
+- Direct API calls on submit (no store dispatch)
 - Toast notifications on success/error (toastMixin)
-- Validation via `vee-validate` + i18n messages
+- Validation via `vee-validate` 4 + Yup schemas, with i18n messages
 
 ### Reusable Components via Function Props
 
@@ -609,7 +609,7 @@ Pre-load data before route entry (route guard).
 
 Rather than:
 ```vue
-<DetailWorker @save="$store.dispatch('updateWorker')" />
+<DetailWorker @save="store.updateWorker" />
 ```
 
 Allows generic components to work across different backends.
@@ -618,21 +618,21 @@ Allows generic components to work across different backends.
 
 ## Testing & Development Notes
 
-- **Build Tool:** Vue CLI (vue.config.js)
-- **Transpiler:** Babel (babel.config.js)
-- **Type Checking:** TypeScript (tsconfig.json)
+- **Build Tool:** Vite (vite.config.ts)
+- **Type Checking:** TypeScript (`npm run type-check`, tsconfig.json)
+- **Linting:** ESLint (`npm run lint`)
 - **Package Manager:** npm (package-lock.json)
-- **Docker:** Dockerfile included (deployment)
+- **Docker:** Dockerfile included (multi-stage Node build → Nginx)
 - **nginx.conf:** Routing config for SPA (history mode)
 
 ---
 
 ## Deployment
 
-1. **Build:** `npm run build` → `/dist/` or `/wwwroot/`
+1. **Build:** `npm run staging` / `npm run production` → `/wwwroot/` (Vite)
 2. **Docker:** `docker build -t sigook-web .`
-3. **Environment:** `.env.development.local`, `.env.staging`, `.env.production` set `VUE_APP_URL_API`
-4. **Server:** nginx or IIS; serve `index.html` for all 404s (SPA routing)
+3. **Environment:** `.env.staging`, `.env.production` — Vite `VITE_*` vars (e.g. `VITE_URL_API`)
+4. **Server:** nginx; serves `index.html` for all 404s (SPA routing)
 
 ---
 
@@ -641,7 +641,7 @@ Allows generic components to work across different backends.
 | Aspect | Pattern | Example |
 |--------|---------|---------|
 | **Component Naming** | PascalCase.vue | DetailWorker.vue, AgencyRequests.vue |
-| **Store Module Naming** | camelCase.js | agency.ts, company.ts, worker.ts |
+| **Pinia Store Naming** | camelCase.ts | agency.ts, company.ts, worker.ts |
 | **API Function Naming** | camelCase, verb-first | getAgencyWorkers(), postAgencyRequest(), updateAgencyRequest() |
 | **Route Naming** | kebab-case | `/agency-requests`, `/company-profile` |
 | **Type Naming** | PascalCase, entity + suffix | `AgencyRequestDetail`, `CompanyProfileListItem`, `CreatePayStubPayload` |
@@ -665,7 +665,7 @@ Allows generic components to work across different backends.
 
 ## Summary
 
-**Sigook.Web** is a Vue 2 SPA for a staffing platform with three portals (Agency, Company, Worker). It follows a functional API layer pattern with minimal Vuex (filters only), role-based routing, and reusable components. The architecture prioritizes developer ergonomics over strict patterns, with direct API imports and inline callbacks reducing boilerplate. Internationalization, form validation, and toast notifications are app-wide; styling is Bootstrap + Buefy with custom SCSS.
+**Sigook.Web** is a Vue 3 SPA for a staffing platform with three portals (Agency, Company, Worker). It follows a functional API layer pattern with minimal Pinia state (filters + auth only), role-based routing, and reusable components. The architecture prioritizes developer ergonomics over strict patterns, with direct API imports and inline callbacks reducing boilerplate. Internationalization, form validation (VeeValidate + Yup), and toast notifications are app-wide; styling is Bootstrap + `@ntohq/buefy-next` with custom SCSS. Built with Vite.
 
 **Key Strengths:**
 - Clear separation of concerns (api, components, types, routes)

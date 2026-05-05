@@ -75,7 +75,20 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
     {
         public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency();
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("companyProfile@mail.com").Value), Agency = Agency };
-        public static readonly Invoice Invoice = new Invoice(CompanyProfile.Id, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+        public static readonly Invoice Invoice = new Invoice
+        {
+            CompanyId = CompanyProfile.Id,
+            InvoiceNumber = 1,
+            NightShiftRate = 1,
+            HolidayRate = 1,
+            OverTimeRate = 1,
+            VacationsRate = 1,
+            HstRate = 1,
+            BonusRate = 1,
+            SubTotal = 1,
+            Hst = 1,
+            TotalNet = 1
+        };
 
         public static void Seed(this CovenantContext context)
         {

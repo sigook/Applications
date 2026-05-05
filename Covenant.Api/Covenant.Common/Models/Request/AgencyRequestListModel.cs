@@ -10,9 +10,6 @@ namespace Covenant.Common.Models.Request
         public string JobTitle { get; set; }
         public string BillingTitle { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? FinishAt { get; set; }
-        public DateTime? StartAt { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
         public string ProvinceName { get; set; }
@@ -21,8 +18,6 @@ namespace Covenant.Common.Models.Request
         public string CompanyFullName { get; set; }
         public Guid CompanyProfileId { get; set; }
         public RequestStatus RequestStatus { get; set; }
-        public DurationTerm DurationTerm { get; set; }
-        public EmploymentType EmploymentType { get; set; }
         public int WorkersQuantity { get; set; }
         public int WorkersQuantityWorking { get; set; }
         public bool IsAsap { get; set; }

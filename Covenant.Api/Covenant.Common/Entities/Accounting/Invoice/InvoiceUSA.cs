@@ -1,6 +1,5 @@
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
-using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 
 namespace Covenant.Common.Entities.Accounting.Invoice;
@@ -32,37 +31,6 @@ public class InvoiceUSA
     public IEnumerable<InvoiceUSADiscount> Discounts { get; set; } = new List<InvoiceUSADiscount>();
     public IEnumerable<InvoiceUSATimeSheetTotal> TimeSheetTotals { get; set; } = new List<InvoiceUSATimeSheetTotal>();
     public InvoiceAdditionalDetail AdditionalDetail { get; set; }
-
-    public static Result<InvoiceUSA> Create(
-        long invoiceNumberId,
-        DateTime invoiceDate,
-        Guid companyProfileId,
-        IEnumerable<InvoiceUSAItem> items,
-        IEnumerable<InvoiceUSADiscount> discounts,
-        ProvinceTaxModel provinceTax)
-    {
-        var invoice = new InvoiceUSA
-        {
-            InvoiceNumberId = invoiceNumberId,
-            CompanyProfileId = companyProfileId,
-            Items = new List<InvoiceUSAItem>(items),
-            Discounts = new List<InvoiceUSADiscount>(discounts),
-            CreatedAt = invoiceDate,
-        };
-        invoice.InvoiceNumber = $"{PrefixInvoiceNumber}-{invoice.InvoiceNumberId:0000}-{invoice.CreatedAt:yy}";
-        invoice.SubTotal = invoice.Items.Sum(s => s.Total) - invoice.Discounts.Sum(s => s.Total);
-        if (invoice.SubTotal < 0) return Result.Fail<InvoiceUSA>($"Subtotal cannot be a negative value {invoice.SubTotal}");
-        if (provinceTax != null)
-        {
-            invoice.Tax = invoice.SubTotal * provinceTax.Tax1;
-        }
-        else
-        {
-            invoice.Tax = 0m;
-        }
-        invoice.TotalNet = invoice.SubTotal + invoice.Tax;
-        return Result.Ok(invoice);
-    }
 
     public void AddTimesheetTotals(IEnumerable<ITimeSheetTotal> totals)
     {

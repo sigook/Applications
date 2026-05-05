@@ -87,9 +87,21 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
             {
                 FakeAgency.AddLocation(new Location { Address = "1701 Coral Way", PostalCode = "33145", City = Miami }, true);
                 FakeCompany.AddLocation(Location.Create(Miami.Id, "2525 SW 3rd Ave", "M4P1M7").Value, true);
-                FakeInvoice = InvoiceUSA.Create(1, FakeNow, FakeCompany.Id,
-                        new[] { new InvoiceUSAItem(1, 1, "Regular") }, [], new ProvinceTaxModel { Tax1 = 0.06m })
-                    .Value;
+                var fakeItems = new[] { new InvoiceUSAItem(1, 1, "Regular") };
+                var fakeSubTotal = fakeItems.Sum(i => i.Total);
+                var fakeTax = fakeSubTotal * 0.06m;
+                FakeInvoice = new InvoiceUSA
+                {
+                    InvoiceNumberId = 1,
+                    CreatedAt = FakeNow,
+                    CompanyProfileId = FakeCompany.Id,
+                    Items = fakeItems,
+                    Discounts = [],
+                    SubTotal = fakeSubTotal,
+                    Tax = fakeTax,
+                    TotalNet = fakeSubTotal + fakeTax,
+                    InvoiceNumber = $"{InvoiceUSA.PrefixInvoiceNumber}-0001-{FakeNow:yy}"
+                };
                 FakeInvoice.WeekEnding = FakeNow;
                 FakeInvoice.BillFromAddress = FakeAgency.BillingAddress.FormattedAddress;
                 FakeInvoice.BillFromPhone = FakeAgency.FormattedPhone;

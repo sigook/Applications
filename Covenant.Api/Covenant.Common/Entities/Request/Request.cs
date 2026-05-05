@@ -75,7 +75,6 @@ namespace Covenant.Common.Entities.Request
         public DateTime? UpdatedAt { get; set; } = DateTime.Now;
         public DateTime? InvitationSentItAt { get; set; }
         public string CreatedBy { get; set; }
-        public string DisplayRecruiters { get; set; }
         public RequestComission RequestComission { get; set; }
         public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
         public IEnumerable<RequestNote> Notes { get; set; } = new List<RequestNote>();
@@ -332,21 +331,12 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok();
         }
 
-        private void UpdateDisplayRecruiters(string last = null)
-        {
-            ICollection<string> names = _recruiters.Where(w => !string.IsNullOrEmpty(w.Recruiter?.Name))
-                .Select(c => c.Recruiter.Name).ToList();
-            if (!string.IsNullOrEmpty(last)) names.Add(last);
-            DisplayRecruiters = string.Join("|", names);
-        }
-
         public Result AddRecruiter(AgencyPersonnel recruiter)
         {
             if (_recruiters.Count >= MaximumNumberOfRecruiters) return Result.Fail($"The maximum number of recruiters is {MaximumNumberOfRecruiters}");
             if (recruiter is null) throw new ArgumentNullException(nameof(recruiter));
             if (_recruiters.Any(a => a.RecruiterId == recruiter.Id)) return Result.Fail();
             _recruiters.Add(new RequestRecruiter(Id, recruiter.Id));
-            UpdateDisplayRecruiters(recruiter.Name);
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
@@ -358,7 +348,6 @@ namespace Covenant.Common.Entities.Request
             {
                 _recruiters.Remove(entity);
             }
-            UpdateDisplayRecruiters();
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
