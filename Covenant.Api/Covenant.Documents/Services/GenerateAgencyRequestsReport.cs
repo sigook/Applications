@@ -13,11 +13,11 @@ public class GenerateAgencyRequestsReport : GenerateAgencyReport<AgencyRequestLi
 
     public override IEnumerable<string> Columns => new string[]
     {
-        "Number ID",
+        "Order ID",
         "Client",
+        "Location",
         "Position",
-        "Last Update",
-        "Duration (Start - Finish)",
+        "Created",
         "Recruiter",
         "Sales Representative",
         "Rate / Salary",
@@ -30,11 +30,17 @@ public class GenerateAgencyRequestReportHandler : GenerateAgencyReportHandler<Ge
 {
     public override void SetValue(IXLWorksheet sheet, int row, AgencyRequestListModel data)
     {
+        var location = string.IsNullOrWhiteSpace(data.Entrance) ? data.Location : $"{data.Location} - {data.Entrance}";
+        var position = string.IsNullOrWhiteSpace(data.BillingTitle) ? data.JobTitle : $"{data.JobTitle} ({data.BillingTitle})";
+        var created = string.IsNullOrWhiteSpace(data.DisplayShift)
+            ? data.CreatedAt.ToString("yyyy-MM-dd")
+            : $"{data.CreatedAt:yyyy-MM-dd} - {data.DisplayShift}";
+
         sheet.Cell($"A{row}").SetValue(data.NumberId);
         sheet.Cell($"B{row}").SetValue(data.CompanyFullName);
-        sheet.Cell($"C{row}").SetValue(data.JobTitle);
-        sheet.Cell($"D{row}").SetValue(data.UpdatedAt);
-        sheet.Cell($"E{row}").SetValue($"{data.StartAt} - {data.FinishAt}");
+        sheet.Cell($"C{row}").SetValue(location);
+        sheet.Cell($"D{row}").SetValue(position);
+        sheet.Cell($"E{row}").SetValue(created);
         sheet.Cell($"F{row}").SetValue(data.DisplayRecruiters);
         sheet.Cell($"G{row}").SetValue(data.SalesRepresentative);
         sheet.Cell($"H{row}").SetValue(data.WorkerRate);

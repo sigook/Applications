@@ -9,7 +9,9 @@
           <strong>FOR BUSINESS</strong>
         </router-link>
       </div>
-      <button class="btn btn-primary px-4" @click="login">{{ loginButton }}</button>
+      <b-button type="is-primary" class="px-4" @click="login">
+        {{ loginButton }}
+      </b-button>
     </div>
     <nav class="navbar navbar-expand-lg navbar-sigook">
       <div class="container-fluid">

@@ -3,7 +3,6 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Request;
@@ -73,10 +72,6 @@ public class AgencyRequestController : ControllerBase
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
 
-    [HttpGet("Board")]
-    public async Task<IActionResult> Get([FromServices] IRequestRepository repository, Pagination pagination) =>
-        Ok(await repository.GetWorkersRequestBoard(User.GetAgencyId(), pagination));
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromServices] IRequestRepository repository, Guid id) =>
         this.GetByIdResult(await repository.GetRequestDetailForAgency(id));
@@ -102,45 +97,76 @@ public class AgencyRequestController : ControllerBase
     [HttpPut("{id:guid}/IsAsap")]
     public async Task<IActionResult> IsAsap([FromRoute] Guid id)
     {
-        return OkOrBadRequest(await requestService.UpdateIsAsap(id));
+        var result = await requestService.UpdateIsAsap(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("is-asap")]
     public async Task<IActionResult> UpdateIsAsapRequests([FromBody] RequestsQuickUpdate requestsQuickUpdate)
     {
         var result = await requestService.UpdateIsAsapRequests(requestsQuickUpdate);
-        return OkOrBadRequest(result);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("{id}/IncreaseWorkersQuantityByOne")]
     public async Task<IActionResult> IncreaseWorkersQuantityByOne([FromRoute] Guid id)
     {
-        return OkOrBadRequest(await agencyService.IncreaseWorkersQuantityByOne(id));
+        var result = await agencyService.IncreaseWorkersQuantityByOne(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("{id}/ReduceWorkersQuantityByOne")]
     public async Task<IActionResult> ReduceWorkersQuantityByOne([FromRoute] Guid id)
     {
-        return OkOrBadRequest(await requestService.ReduceWorkerQuantityByOne(id));
+        var result = await requestService.ReduceWorkerQuantityByOne(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("{id}/PunchCardVisibilityStatusInApp")]
     public async Task<IActionResult> PunchCardVisibilityStatusInApp([FromRoute] Guid id)
     {
-        return OkOrBadRequest(await requestService.PunchCardUpdateVisibilityStatusInApp(id));
+        var result = await requestService.PunchCardUpdateVisibilityStatusInApp(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("{id}/Cancel")]
     public async Task<IActionResult> Cancel([FromRoute] Guid id, [FromBody] RequestCancellationDetailModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        return OkOrBadRequest(await requestService.CancelRequest(id, model));
+        var result = await requestService.CancelRequest(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    [HttpPut("bulk-cancel")]
+    public async Task<IActionResult> BulkCancel([FromBody] BulkRequestCancellation model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await requestService.BulkCancelRequests(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok(result.Value);
+    }
+
+    [HttpPut("bulk-recruiters")]
+    public async Task<IActionResult> BulkRecruiters([FromBody] BulkRequestRecruiters model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await requestService.BulkUpdateRecruiters(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPut("{id:guid}/Open")]
     public async Task<IActionResult> Open([FromRoute] Guid id)
     {
-        return OkOrBadRequest(await requestService.OpenRequest(id, User.GetNickname()));
+        var result = await requestService.OpenRequest(id, User.GetNickname());
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     [HttpPost("{id:guid}/SendInvitation")]
@@ -171,11 +197,5 @@ public class AgencyRequestController : ControllerBase
         await repository.Update(request);
         await repository.SaveChangesAsync();
         return Ok();
-    }
-
-    private IActionResult OkOrBadRequest(Result result)
-    {
-        if (result) return Ok();
-        return BadRequest(ModelState.AddErrors(result.Errors));
     }
 }

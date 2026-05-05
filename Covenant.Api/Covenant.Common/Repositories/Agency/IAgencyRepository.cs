@@ -16,6 +16,7 @@ public interface IAgencyRepository
     Task SaveChangesAsync();
     Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId);
     Task<AgencyPersonnel> GetPersonnel(Guid id);
+    Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids);
     Task<List<AgencyPersonnel>> GetPersonnelByUserId(Guid id);
     Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id);
     Task<Guid> GetAgencyIdForUser(Guid userId);

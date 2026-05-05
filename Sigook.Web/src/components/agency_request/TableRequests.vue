@@ -4,15 +4,37 @@
       @onDataLoading="(value) => emit('onDataLoading', value)">
       <template v-slot:actions>
         <b-checkbox v-if="tableConfig.showMyOrdersCheckbox" v-model="serverParams.onlyMine">My Orders</b-checkbox>
-        <b-button v-if="tableConfig.showQuickActions" :disabled="checkedRows.length < 1"
-          @click="onShowQuickActionsModal">
-          Quick Actions
-        </b-button>
+        <b-dropdown v-if="tableConfig.showQuickActions"
+          :key="quickActionsKey"
+          aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false">
+          <template #trigger="{ active }">
+            <b-button :icon-right="active ? 'menu-up' : 'menu-down'">
+              Quick Actions
+            </b-button>
+          </template>
+          <b-dropdown-item aria-role="menuitem" custom :disabled="checkedRows.length < 1">
+            <div class="quick-action-item">
+              <span>Asap</span>
+              <b-switch v-model="quickActions.isAsap" :disabled="checkedRows.length < 1"
+                @update:modelValue="bulkUpdateIsAsap">
+                {{ quickActions.isAsap ? 'Yes' : 'No' }}
+              </b-switch>
+            </div>
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="menuitem" :disabled="checkedRows.length < 1"
+            @click="onShowBulkRecruitersModal">
+            Assign / Unassign recruiters
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="menuitem" :disabled="checkedRows.length < 1"
+            @click="onShowBulkCancelModal">
+            Cancel orders
+          </b-dropdown-item>
+        </b-dropdown>
       </template>
     </Export>
     <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      focuseable default-sort="updatedAt" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
+      focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -24,12 +46,16 @@
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <router-link :to="{ path: '/agency-request/' + props.row.id }">
-              <p>{{ props.row.numberId }}</p>
-            </router-link>
-            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
-            <p v-if="props.row.workerSalary" class="asap">DH</p>
-            <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
+            <div class="order-id-cell">
+              <div v-if="props.row.isAsap || props.row.workerSalary" class="order-flags">
+                <span v-if="props.row.isAsap" class="order-flag order-flag--asap">Asap</span>
+                <span v-if="props.row.workerSalary" class="order-flag order-flag--dh">DH</span>
+              </div>
+              <router-link :to="{ path: '/agency-request/' + props.row.id }">
+                <p>{{ props.row.numberId }}</p>
+              </router-link>
+              <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
+            </div>
           </template>
         </b-table-column>
         <b-table-column field="companyFullName" label="Client" :visible="!companyId" sortable searchable>
@@ -61,46 +87,19 @@
           <template v-slot="props">
             {{ props.row.jobTitle }}
             <i class="fz-2 block mb-0" v-if="props.row.billingTitle">{{ props.row.billingTitle }}</i>
-            <i class="fz-2 block">{{ dateFromNow(props.row.createdAt) }}</i>
           </template>
         </b-table-column>
-        <b-table-column field="updatedAt" label="Last Update" sortable searchable>
+        <b-table-column field="createdAt" label="Created" sortable searchable>
           <template v-slot:searchable>
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-              :icon-right="lastUpdateDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onLastUpdateCleared" range v-model="lastUpdateDatesSelected"
-              @update:modelValue="onLastUpdateSelected" append-to-body>
+              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
+              @update:modelValue="onCreatedAtSelected" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
-            {{ dateMonth(props.row.updatedAt) }}
-          </template>
-        </b-table-column>
-        <b-table-column field="startAt" sortable searchable>
-          <template v-slot:header>
-            <p class="fw-600">Duration</p>
-            <p class="fw-600">(Start - End)</p>
-          </template>
-          <template v-slot:searchable>
-            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-              :icon-right="startAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onStartAtCleared" range v-model="startAtDatesSelected" @update:modelValue="onStartAtSelected"
-              append-to-body>
-            </b-datepicker>
-          </template>
-          <template v-slot="props">
-            {{ dateMonth(props.row.startAt) }}
-            <span v-if="props.row.durationTerm !== DurationTerm.LongTerm">
-              - {{ dateMonth(props.row.finishAt) }}
-            </span>
-            <span
-              v-if="(props.row.requestStatus === RequestStatus.Filled || props.row.requestStatus === RequestStatus.Cancelled) && props.row.durationTerm === DurationTerm.LongTerm">
-              - {{ dateMonth(props.row.finishAt) }}
-            </span>
+            {{ dateMonth(props.row.createdAt) }}
             <AgencyShift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
-            <i class="fz-2 d-block">
-              {{ DurationTermLabels[props.row.durationTerm] }} - {{ EmploymentTypeLabels[props.row.employmentType] }}
-            </i>
           </template>
         </b-table-column>
         <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
@@ -210,23 +209,18 @@
         @removeUser="() => onUpdateRecruiter()" />
     </b-modal>
 
-    <!-- Quick Actions -->
-    <b-modal v-model="showQuickActions" @close="showQuickActions = false" width="500px">
-      <div class="p-3">
-        <div class="container-flex">
-          <div class="col-12 col-padding">
-            <b-field label="Is Asap">
-              <b-switch v-model="quickActions.isAsap">
-                {{ quickActions.isAsap ? 'Yes' : 'No' }}
-              </b-switch>
-            </b-field>
-          </div>
-          <div class="col-12 col-padding">
-            <b-button type="is-primary" @click="bulkUpdateIsAsap">Save</b-button>
-          </div>
-        </div>
-      </div>
+    <!-- bulk cancel -->
+    <b-modal v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
+      <CancelList @sendReason="onBulkCancelConfirmed" />
     </b-modal>
+
+    <!-- bulk recruiters -->
+    <b-modal v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px">
+      <BulkRecruiterModal :request-count="checkedRows.length"
+        @submit="onBulkRecruitersConfirmed"
+        @cancel="showBulkRecruitersModal = false" />
+    </b-modal>
+
   </div>
 </template>
 <script setup lang="ts">
@@ -234,11 +228,11 @@ import { ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { appGlobals } from '@/varaibles';
-import { showAlertError } from "@/utils/toast";
-import { dateFromNow, dateMonth, breakWord, currency } from '@/utils/filters';
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
+import { dateMonth, breakWord, currency } from '@/utils/filters';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
-import { getAgencyRequests } from "@/api/agencyRequestApi";
+import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
 import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
@@ -246,16 +240,12 @@ import {
   deleteAgencyRequestNote
 } from "@/api/agencyNoteApi";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
-import {
-  DurationTerm,
-  DurationTermLabels,
-  EmploymentTypeLabels,
-  RequestStatus,
-  RequestStatusLabels
-} from "@/constants/enums";
+import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import ModalNotes from '../notes/ModalNotes.vue';
 import PersonnelList from '../../components/agency_request/PersonnelListModal.vue';
+import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
+import CancelList from '@/components/company/CompanyCancelList.vue';
 import Export from '@/components/Export.vue';
 
 const props = defineProps<{ totalItems?: number; companyId?: any; agencyId?: any; config?: any }>();
@@ -277,7 +267,9 @@ const defaultConfig = {
   showNotesColumn: true
 };
 const showRecruitersModal = ref(false);
-const showQuickActions = ref(false);
+const showBulkCancelModal = ref(false);
+const showBulkRecruitersModal = ref(false);
+const quickActionsKey = ref(0);
 const recruiters = ref<any>(null);
 const currentRequest = ref<any>(null);
 const currentIndex = ref<number | null>(null);
@@ -291,18 +283,17 @@ const statuses = [
   { id: 4, value: appGlobals.$statusDisplayCancelled }
 ];
 const statusesSelected = ref<any[]>([]);
-const lastUpdateDatesSelected = ref<any[]>([]);
-const startAtDatesSelected = ref<any[]>([]);
+const createdAtDatesSelected = ref<any[]>([]);
 const rows = ref<any[]>([]);
 const checkedRows = ref<any[]>([]);
 const serverParams = reactive<any>({
   onlyMine: false,
-  sortBy: 7,
+  sortBy: 0,
   isDescending: true,
   pageIndex: 1,
   pageSize: 30
 });
-const quickActions = reactive<any>({});
+const quickActions = reactive<any>({ isAsap: false });
 
 const tableConfig = computed(() => ({ ...defaultConfig, ...props.config }));
 const totalQuantityWorking = computed(() => {
@@ -356,7 +347,7 @@ function onSortChange(field: string, order: string) {
     case 'jobTitle':
       serverParams.sortBy = 2;
       break;
-    case 'startAt':
+    case 'createdAt':
       serverParams.sortBy = 3;
       break;
     case 'displayRecruiters':
@@ -368,11 +359,8 @@ function onSortChange(field: string, order: string) {
     case 'workersQuantityWorking':
       serverParams.sortBy = 6;
       break;
-    case 'updatedAt':
-      serverParams.sortBy = 7;
-      break;
     case 'salesRepresentative':
-      serverParams.sortBy = 8;
+      serverParams.sortBy = 7;
       break;
   }
   serverParams.isDescending = order !== 'asc';
@@ -384,26 +372,15 @@ function onStatusChange() {
   loadRequests();
 }
 
-function onLastUpdateSelected() {
-  serverParams.lastUpdateFrom = lastUpdateDatesSelected.value[0];
-  serverParams.lastUpdateTo = lastUpdateDatesSelected.value[1];
+function onCreatedAtSelected() {
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
+  serverParams.createdAtTo = createdAtDatesSelected.value[1];
   loadRequests();
 }
 
-function onLastUpdateCleared() {
-  lastUpdateDatesSelected.value = [];
-  onLastUpdateSelected();
-}
-
-function onStartAtSelected() {
-  serverParams.startAtFrom = startAtDatesSelected.value[0];
-  serverParams.startAtTo = startAtDatesSelected.value[1];
-  loadRequests();
-}
-
-function onStartAtCleared() {
-  startAtDatesSelected.value = [];
-  onStartAtSelected();
+function onCreatedAtCleared() {
+  createdAtDatesSelected.value = [];
+  onCreatedAtSelected();
 }
 
 function onInputEntered(event: KeyboardEvent) {
@@ -458,12 +435,8 @@ function loadRequests() {
     .catch(() => emit('onDataLoading', false));
 }
 
-function onShowQuickActionsModal() {
-  quickActions.isAsap = false;
-  showQuickActions.value = true;
-}
-
 function bulkUpdateIsAsap() {
+  quickActionsKey.value++;
   emit('onDataLoading', true);
   const payload = {
     ids: checkedRows.value.map((cr) => cr.id),
@@ -471,10 +444,55 @@ function bulkUpdateIsAsap() {
   };
   updateIsAsapRequests(payload)
     .then(() => {
-      showQuickActions.value = false;
       loadRequests();
     }).catch((error) => {
-      showQuickActions.value = false;
+      showAlertError(error);
+      emit('onDataLoading', false);
+    });
+}
+
+function onShowBulkCancelModal() {
+  quickActionsKey.value++;
+  showBulkCancelModal.value = true;
+}
+
+function onShowBulkRecruitersModal() {
+  quickActionsKey.value++;
+  showBulkRecruitersModal.value = true;
+}
+
+function onBulkRecruitersConfirmed(recruiterIds: string[]) {
+  emit('onDataLoading', true);
+  bulkUpdateRecruiters({
+    ids: checkedRows.value.map((cr) => cr.id),
+    recruiterIds
+  })
+    .then(() => {
+      showBulkRecruitersModal.value = false;
+      showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters cleared' : 'Recruiters assigned');
+      loadRequests();
+    })
+    .catch((error) => {
+      showBulkRecruitersModal.value = false;
+      showAlertError(error);
+      emit('onDataLoading', false);
+    });
+}
+
+function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; otherMessage: string }) {
+  emit('onDataLoading', true);
+  bulkCancelRequests({
+    ids: checkedRows.value.map((cr) => cr.id),
+    cancellationReasonId: reasonId,
+    otherCancellationReason: otherMessage
+  })
+    .then((result) => {
+      showBulkCancelModal.value = false;
+      showAlertSuccess(`Cancelled ${result.cancelled} order(s), skipped ${result.skipped}`);
+      loadRequests();
+    })
+    .catch((error) => {
+      showBulkCancelModal.value = false;
       showAlertError(error);
       emit('onDataLoading', false);
     });
@@ -484,19 +502,19 @@ watch(() => serverParams.onlyMine, () => {
   loadRequests();
 });
 
+watch(checkedRows, (rows) => {
+  quickActions.isAsap = rows.length > 0 && rows.every((r: any) => r.isAsap);
+});
+
 if (!props.companyId && !props.agencyId) {
   if (agencyStore.agencyRequestFilter) {
     Object.assign(serverParams, agencyStore.agencyRequestFilter);
     if (serverParams.statuses) {
       statusesSelected.value = statuses.filter((s) => serverParams.statuses.some((sps: any) => sps == s.id));
     }
-    if (serverParams.lastUpdateFrom && serverParams.lastUpdateTo) {
-      lastUpdateDatesSelected.value[0] = serverParams.lastUpdateFrom;
-      lastUpdateDatesSelected.value[1] = serverParams.lastUpdateTo;
-    }
-    if (serverParams.startAtFrom && serverParams.startAtTo) {
-      startAtDatesSelected.value[0] = serverParams.startAtFrom;
-      startAtDatesSelected.value[1] = serverParams.startAtTo;
+    if (serverParams.createdAtFrom && serverParams.createdAtTo) {
+      createdAtDatesSelected.value[0] = serverParams.createdAtFrom;
+      createdAtDatesSelected.value[1] = serverParams.createdAtTo;
     }
   } else {
     serverParams.onlyMine = !isPayrollManager.value;
@@ -512,3 +530,54 @@ if (!props.companyId && !props.agencyId) {
 }
 loadRequests();
 </script>
+
+<style scoped lang="scss">
+.order-id-cell {
+  position: relative;
+  padding-top: 14px;
+}
+
+.order-flags {
+  position: absolute;
+  top: -8px;
+  left: -10px;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  z-index: 1;
+}
+
+.quick-action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 180px;
+}
+
+.order-flag {
+  display: inline-block;
+  padding: 2px 12px 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+
+  &--asap {
+    background: #ff9932;
+  }
+
+  &--dh {
+    background: #1d4ed8;
+  }
+
+  & + & {
+    margin-left: -6px;
+    padding-left: 12px;
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 6px 100%, 0 50%);
+  }
+}
+</style>

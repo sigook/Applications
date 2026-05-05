@@ -7,6 +7,9 @@ import type {
   CreateAgencyRequestModel,
   RequestShiftModel,
   CancelRequestPayload,
+  BulkCancelRequestsPayload,
+  BulkCancelRequestsResult,
+  BulkUpdateRecruitersPayload,
   AgencyRequestWorkerFilter,
   AgencyRequestWorker,
   BookWorkerModel,
@@ -49,6 +52,14 @@ export function cancelAgencyRequest(id: string, payload: CancelRequestPayload): 
   return http.put(`/api/AgencyRequest/${id}/Cancel`, payload).then(() => {});
 }
 
+export function bulkCancelRequests(payload: BulkCancelRequestsPayload): Promise<BulkCancelRequestsResult> {
+  return http.put('/api/AgencyRequest/bulk-cancel', payload).then(r => r.data);
+}
+
+export function bulkUpdateRecruiters(payload: BulkUpdateRecruitersPayload): Promise<void> {
+  return http.put('/api/AgencyRequest/bulk-recruiters', payload).then(() => {});
+}
+
 export function agencyRequestOpen(id: string): Promise<void> {
   return http.put(`/api/AgencyRequest/${id}/Open`, id).then(() => {});
 }
@@ -75,12 +86,6 @@ export function increaseWorkersQuantityByOne(requestId: string): Promise<void> {
 
 export function reduceWorkersQuantityByOne(requestId: string): Promise<void> {
   return http.put(`api/AgencyRequest/${requestId}/ReduceWorkersQuantityByOne`).then(() => {});
-}
-
-export function getAgencyRequestBoard(pagination: { size: number; page: number }): Promise<PaginatedList<AgencyRequestListItem>> {
-  return http
-    .get(`/api/AgencyRequest/Board?PageSize=${pagination.size}&PageIndex=${pagination.page}`)
-    .then(r => r.data);
 }
 
 // ---------------------------------------------------------------------------

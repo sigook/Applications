@@ -397,10 +397,8 @@ export interface AgencyRequestFilter {
   onlyMine?: boolean;
   recruiter?: string;
   salesRepresentative?: string;
-  lastUpdateFrom?: string | null;
-  lastUpdateTo?: string | null;
-  startAtFrom?: string | null;
-  startAtTo?: string | null;
+  createdAtFrom?: string | null;
+  createdAtTo?: string | null;
   rateFrom?: number | string | null;
   rateTo?: number | string | null;
   companyId?: string;
@@ -416,9 +414,6 @@ export interface AgencyRequestListItem {
   jobTitle: string;
   billingTitle?: string;
   createdAt: string;
-  updatedAt?: string | null;
-  finishAt?: string | null;
-  startAt?: string | null;
   address?: string;
   city?: string;
   provinceName?: string;
@@ -427,8 +422,6 @@ export interface AgencyRequestListItem {
   companyFullName?: string;
   companyProfileId: string;
   requestStatus: number;
-  durationTerm: number;
-  employmentType: number;
   workersQuantity: number;
   workersQuantityWorking: number;
   isAsap: boolean;
@@ -551,6 +544,26 @@ export interface RequestShiftModel {
 export interface CancelRequestPayload {
   cancellationReasonId: string;
   otherCancellationReason?: string;
+}
+
+// Payload for PUT /api/AgencyRequest/bulk-cancel. Mirrors BulkRequestCancellation.
+export interface BulkCancelRequestsPayload {
+  ids: string[];
+  cancellationReasonId: string;
+  otherCancellationReason?: string;
+}
+
+export interface BulkCancelRequestsResult {
+  cancelled: number;
+  skipped: number;
+}
+
+// Payload for PUT /api/AgencyRequest/bulk-recruiters. Mirrors BulkRequestRecruiters.
+// Replace semantics: clears existing recruiters on each request id and assigns the provided ones.
+// Empty recruiterIds = unassign all.
+export interface BulkUpdateRecruitersPayload {
+  ids: string[];
+  recruiterIds: string[];
 }
 
 // Filter for GET /api/AgencyRequest/{requestId}/Worker.

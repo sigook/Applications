@@ -106,7 +106,7 @@ Sigook.Web/
 | File | Routes | Components |
 |------|--------|-----------|
 | **index.ts** | Root routes, auth guard, scroll behavior | NotFound, SilentRefresh, Unauthorized, EmailPreferences, Callback |
-| **routesAgency.ts** | `/agency-*`, `/accounting/*`, `/board`, etc. | Agency portal (requests, workers, companies, candidates, invoices, paystubs, reports) |
+| **routesAgency.ts** | `/agency-*`, `/accounting/*`, etc. | Agency portal (requests, workers, companies, candidates, invoices, paystubs, reports) |
 | **routesCompany.ts** | `/company-*`, `/request/*` | Company portal (requests, reports, profile, users) |
 | **routesWorker.ts** | `/register-worker`, `/worker-*`, `/punch-card`, `/timesheet` | Worker portal (profile, job search, applications, timesheet, history) |
 | **routesLanding.ts** | `/home`, `/jobSeekers`, `/business`, `/about-us`, `/contact` | Public landing pages |
@@ -134,7 +134,6 @@ meta: { requiresAuth: false, layout: "web" }
 - **Requests.vue** — List job requests; filter, search, pagination
 - **Request.vue** — Request detail; workers, applicants, shift, notes, recruiters
 - **AgencyCreateRequest.vue** — Create/edit request; company, position, shift, workers quantity, requirements
-- **WeeklyBoard.vue** — Kanban board of requests + worker assignments
 - **Workers.vue** — Worker roster; list, search, profile access, flags (DNU, contractor)
 - **DetailWorker.vue** — Worker detail; profile, request history, notes, holidays, email
 - **Companies.vue** — Company client list; search, create, bulk import

@@ -369,7 +369,6 @@ Report generation and downloads (PDFs, Excel, data exports).
 | `updateAgencyRequestShift(id, model)` | PUT | `/api/AgencyRequest/{id}/Shift` | `RequestShiftModel` | `{ id: string; displayShift? }` | Update shift times |
 | `increaseWorkersQuantityByOne(id)` | PUT | `/api/AgencyRequest/{id}/IncreaseWorkersQuantityByOne` | — | `void` | +1 worker needed |
 | `reduceWorkersQuantityByOne(id)` | PUT | `/api/AgencyRequest/{id}/ReduceWorkersQuantityByOne` | — | `void` | -1 worker needed |
-| `getAgencyRequestBoard(pagination)` | GET | `/api/AgencyRequest/Board?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyRequestListItem>` | Weekly board view |
 
 ### Request → Workers
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

@@ -102,8 +102,7 @@
         <div class="col-12 col-padding">
           <h3 class="fz1 fw-600 mb-3">Discount</h3>
           <div class="expandable-section-container">
-            <div class="expandable-section-header" @click="addDiscount" :class="{ 'is-disabled': discount }"
-              :disabled="!!discount">
+            <div class="expandable-section-header" @click="addDiscount" :class="{ 'is-disabled': discount }">
               <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
                 <b-icon icon="minus-circle" class="mr-2"></b-icon>
                 Add Discount

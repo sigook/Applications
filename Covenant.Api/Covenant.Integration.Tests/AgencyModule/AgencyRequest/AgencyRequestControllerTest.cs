@@ -65,62 +65,15 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.NumberId, entity.NumberId);
         Assert.Equal(model.JobTitle, entity.JobTitle);
         Assert.Equal(model.CreatedAt, entity.CreatedAt);
-        Assert.Equal(model.UpdatedAt, entity.UpdatedAt);
-        Assert.Equal(model.FinishAt, entity.FinishAt);
-        Assert.Equal(model.StartAt, entity.StartAt);
         Assert.Equal(model.Location, entity.JobLocation.FormattedAddress);
         Assert.Equal(model.Entrance, entity.JobLocation.Entrance);
         Assert.Equal(model.CompanyFullName, Data.FakeCompany.FullName);
         Assert.Equal(model.RequestStatus, entity.Status);
-        Assert.Equal(model.DurationTerm, entity.DurationTerm);
         Assert.Equal(model.WorkersQuantity, entity.WorkersQuantity);
         Assert.Equal(model.WorkersQuantityWorking, entity.WorkersQuantityWorking);
         Assert.Equal(model.IsAsap, entity.IsAsap);
         Assert.Equal(model.WorkerRate, entity.WorkerRate ?? entity.WorkerSalary);
-        Assert.Equal(model.DisplayRecruiters, entity.DisplayRecruiters);
         Assert.Equal(model.DisplayShift, entity.Shift?.DisplayShift);
-    }
-
-    [Fact]
-    public async Task GetBoard()
-    {
-        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/Board");
-        response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestAgencyBoardModel>>();
-        Assert.NotEmpty(list.Items);
-        Request entity = Data.FakeRequest;
-        var workerRequest = entity.Workers.First();
-        WorkerProfile workerProfile = Data.FakeWorkerProfile;
-        CompanyProfile companyProfile = Data.FakeCompany;
-        WorkerRequestAgencyBoardModel model = list.Items.Single(s => s.Id == workerRequest.Id);
-        Assert.Equal(model.Id, workerRequest.Id);
-        Assert.Equal(model.StartWorking, workerRequest.StartWorking);
-        Assert.Equal(model.WeekStartWorking, workerRequest.WeekStartWorking);
-        Assert.Equal(model.WorkerRequestStatus, workerRequest.WorkerRequestStatus);
-        Assert.Equal(model.RejectComments, workerRequest.RejectComments);
-        Assert.Equal(model.RequestId, entity.Id);
-        Assert.Equal(model.NumberId, entity.NumberId);
-        Assert.Equal(model.RequestStatus, entity.Status);
-        Assert.Equal(model.JobTitle, entity.JobTitle);
-        Assert.Equal(model.WorkerRate, entity.WorkerRate);
-        Assert.Equal(model.DurationTerm, entity.DurationTerm);
-        Assert.Equal(model.DisplayRecruiters, entity.DisplayRecruiters);
-        Assert.Equal(model.Entrance, entity.JobLocation.Entrance);
-        Assert.Equal(model.Location, entity.JobLocation.FormattedAddress);
-        Assert.Equal(model.DisplayShift, entity.Shift.DisplayShift);
-        Assert.Equal(model.WorkerProfileId, workerProfile.Id);
-        Assert.Equal(model.WorkerId, workerProfile.WorkerId);
-        Assert.Equal(model.FirstName, workerProfile.FirstName);
-        Assert.Equal(model.MiddleName, workerProfile.MiddleName);
-        Assert.Equal(model.LastName, workerProfile.LastName);
-        Assert.Equal(model.SecondLastName, workerProfile.SecondLastName);
-        Assert.Equal(model.SocialInsurance, workerProfile.MaskedSocialInsurance);
-        Assert.Equal(model.SocialInsuranceExpire, workerProfile.SocialInsuranceExpire);
-        Assert.Equal(model.DueDate, workerProfile.DueDate);
-        Assert.Equal(model.MobileNumber, workerProfile.MobileNumber);
-        Assert.Equal(model.IsSubcontractor, workerProfile.IsSubcontractor);
-        Assert.Equal(model.CompanyProfileId, companyProfile.Id);
-        Assert.Equal(model.CompanyFullName, companyProfile.FullName);
     }
 
     [Fact]

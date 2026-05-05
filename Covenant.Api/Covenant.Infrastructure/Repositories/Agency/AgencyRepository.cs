@@ -88,6 +88,10 @@ public class AgencyRepository : IAgencyRepository
         _context.AgencyPersonnel.Where(c => c.UserId == id)
             .Include(i => i.User).ToListAsync();
 
+    public Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids) =>
+        _context.AgencyPersonnel.Where(c => ids.Contains(c.Id))
+            .Include(i => i.User).ToListAsync();
+
     public Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id) =>
         _context.AgencyPersonnel.Where(c => c.AgencyId == agencyId && c.Id == id)
             .Select(s => new AgencyPersonnelModel

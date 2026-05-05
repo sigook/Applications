@@ -7,11 +7,10 @@ namespace Covenant.Common.Models.Request
         NumberId,
         Client,
         JobTitle,
-        StartAt,
+        CreatedAt,
         Recruiter,
         Rate,
         WorkersQuantity,
-        UpdatedAt,
         SalesRepresentative
     }
 
@@ -28,10 +27,8 @@ namespace Covenant.Common.Models.Request
         public string SalesRepresentative { get; set; }
         public GetRequestSortBy SortBy { get; set; }
         public bool HasPermissionToSeeInternalOrders { get; set; }
-        public DateTime? LastUpdateFrom { get; set; }
-        public DateTime? LastUpdateTo { get; set; }
-        public DateTime? StartAtFrom { get; set; }
-        public DateTime? StartAtTo { get; set; }
+        public DateTime? CreatedAtFrom { get; set; }
+        public DateTime? CreatedAtTo { get; set; }
         public decimal? RateFrom { get; set; }
         public decimal? RateTo { get; set; }
         public Guid? CompanyId { get; set; }
