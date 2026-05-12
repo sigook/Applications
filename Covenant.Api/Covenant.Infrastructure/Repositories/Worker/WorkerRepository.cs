@@ -623,29 +623,40 @@ public class WorkerRepository : IWorkerRepository
         return result;
     }
 
-    public Task<PaginatedList<WorkerContactInfoModel>> GetWorkersAvailableToInvite(AvailableToInvitePagination pagination)
+    public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId)
     {
-        var workerProfiles = _context.WorkerProfile
-            .Where(wO => wO.Dnu == false)
-            .Where(wp => wp.AgencyId == pagination.AgencyId);
-        return (from wp in workerProfiles
-                join u in _context.User.Where(uW =>
-                           !EF.Functions.ILike(uW.Email, "%sigook%") &&
-                           !EF.Functions.ILike(uW.Email, "%covenant%"))
-                       on wp.WorkerId equals u.Id
-                join unt in _context.UserNotificationType.Where(uW =>
-                        uW.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id && uW.EmailNotification)
-                    on u.Id equals unt.UserId
-                where !_context.WorkerRequest.Any(aR => aR.WorkerId == wp.WorkerId &&
-                                                        aR.WorkerRequestStatus == WorkerRequestStatus.Booked)
-                orderby wp.NumberId
-                select new WorkerContactInfoModel
-                {
-                    WorkerId = wp.WorkerId,
-                    FirstName = wp.FirstName,
-                    LastName = wp.LastName,
-                    Email = u.Email,
-                }).ToPaginatedList(pagination);
+        var eligibleProfiles = _context.WorkerProfile
+            .Where(wp => !wp.Dnu)
+            .Where(wp => wp.AgencyId == agencyId)
+            .Where(wp => wp.Location.City.ProvinceId == provinceId)
+            .Where(wp => !string.IsNullOrEmpty(wp.FirstName));
+
+        var contactableUsers = _context.User
+            .Where(u => !string.IsNullOrEmpty(u.Email))
+            .Where(u => u.Email.Contains("@"));
+
+        var subscribedUserIds = _context.UserNotificationType
+            .Where(unt => unt.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id)
+            .Where(unt => unt.EmailNotification)
+            .Select(unt => unt.UserId);
+
+        var bookedWorkerIds = _context.WorkerRequest
+            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
+            .Select(wr => wr.WorkerId);
+
+        return eligibleProfiles
+            .Join(contactableUsers, wp => wp.WorkerId, u => u.Id, (wp, u) => new { wp, u })
+            .Where(x => subscribedUserIds.Contains(x.u.Id))
+            .Where(x => !bookedWorkerIds.Contains(x.wp.WorkerId))
+            .OrderBy(x => x.wp.NumberId)
+            .Select(x => new WorkerContactInfoModel
+            {
+                WorkerId = x.wp.WorkerId,
+                FirstName = x.wp.FirstName,
+                LastName = x.wp.LastName,
+                Email = x.u.Email,
+            })
+            .ToListAsync();
     }
 
     public async Task<WorkerProfileOtherDocument> GetOtherDocument(Guid otherDocumentId) => await _context.WorkerProfileOtherDocuments.FirstOrDefaultAsync(wpod => wpod.Id == otherDocumentId);

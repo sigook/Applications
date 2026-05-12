@@ -170,32 +170,10 @@ public class AgencyRequestController : ControllerBase
     }
 
     [HttpPost("{id:guid}/SendInvitation")]
-    public async Task<IActionResult> SendInvitation([FromServices] IRequestRepository repository, [FromServices] ITimeService timeService, [FromRoute] Guid id)
+    public async Task<IActionResult> SendInvitation([FromRoute] Guid id)
     {
-        var request = await repository.GetRequest(r => r.Id == id);
-        if (request is null || !request.CanBeUpdated) return BadRequest(ModelState.AddError(ApiResources.RequestNotAvailable));
-
-        Guid agencyId = User.GetAgencyId();
-        if (request.AgencyId != agencyId) return Unauthorized();
-
-        DateTime now = timeService.GetCurrentDateTime();
-        Result canBeSendIt = request.CanInvitationBeSendIt(now);
-        if (!canBeSendIt) return BadRequest(ModelState.AddErrors(canBeSendIt.Errors));
-
-        await requestService.SendInvitationToApply(new InvitationToApplyModel
-        {
-            RequestId = request.Id,
-            JobTitle = request.JobTitle,
-            Description = request.Description,
-            Requirements = request.Requirements,
-            City = request.JobLocation?.City?.Value,
-            Rate = request.WorkerRate.HasValue ? request.WorkerRate.Value.ToUsMoney() : request.WorkerSalary.Value.ToUsMoney(),
-            AgencyId = agencyId
-        });
-
-        request.InvitationSentItAt = now;
-        await repository.Update(request);
-        await repository.SaveChangesAsync();
+        var result = await requestService.SendInvitation(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

@@ -1,4 +1,3 @@
-using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
@@ -9,6 +8,7 @@ using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +37,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<IIdentityServerService>(),
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
-                Mock.Of<AzureStorageConfiguration>(),
+                Mock.Of<IWorkerRepository>(),
+                Mock.Of<IInvitationEmailService>(),
                 Mock.Of<ILogger<RequestService>>());
             Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
             Assert.True(result);

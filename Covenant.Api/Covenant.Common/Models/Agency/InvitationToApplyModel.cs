@@ -9,6 +9,7 @@
         public string City { get; set; }
         public string Rate { get; set; }
         public Guid AgencyId { get; set; }
+        public Guid ProvinceId { get; set; }
 
         public bool IsValidModel()
         {
@@ -18,9 +19,10 @@
             if (string.IsNullOrEmpty(Requirements)) return false;
             if (string.IsNullOrEmpty(Rate)) return false;
             if (AgencyId == default) return false;
+            if (ProvinceId == default) return false;
             return true;
         }
 
-        public override string ToString() => $"RequestId={RequestId},JobTitle:{JobTitle},Description:{Description},Requirements:{Requirements},Rate={Rate},City={City},AgencyId={AgencyId}";
+        public override string ToString() => $"RequestId={RequestId},JobTitle:{JobTitle},Description:{Description},Requirements:{Requirements},Rate={Rate},City={City},AgencyId={AgencyId},ProvinceId={ProvinceId}";
     }
 }

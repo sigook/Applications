@@ -7,7 +7,7 @@ namespace Covenant.Core.BL.Interfaces
 {
     public interface IRequestService
     {
-        Task SendInvitationToApply(InvitationToApplyModel model);
+        Task<Result> SendInvitation(Guid requestId);
         Task<Result> OpenRequest(Guid requestId, string finalizedBy);
         Task<Result<Guid>> CreateRequest(RequestCreateModel model, Guid? companyId = null);
         Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model);
