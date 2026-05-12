@@ -72,7 +72,8 @@ namespace Covenant.Tests.Accounting
                 identityServerService.Object,
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
-                Mock.Of<AzureStorageConfiguration>(),
+                Mock.Of<IWorkerRepository>(),
+                Mock.Of<IInvitationEmailService>(),
                 Mock.Of<ILogger<RequestService>>());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel

@@ -1,6 +1,4 @@
-﻿using Azure.Storage.Queues;
-using Covenant.Common.Configuration;
-using Covenant.Common.Entities;
+﻿using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
@@ -15,11 +13,12 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
+using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using System.Text.Json;
 
 namespace Covenant.Core.BL.Services;
 
@@ -34,7 +33,8 @@ public class RequestService : IRequestService
     private readonly IIdentityServerService identityServerService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
-    private readonly AzureStorageConfiguration azureStorageConfiguration;
+    private readonly IWorkerRepository workerRepository;
+    private readonly IInvitationEmailService invitationEmailService;
     private readonly ILogger<RequestService> logger;
 
     public RequestService(
@@ -47,7 +47,8 @@ public class RequestService : IRequestService
         IIdentityServerService identityServerService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
-        AzureStorageConfiguration azureStorageConfiguration,
+        IWorkerRepository workerRepository,
+        IInvitationEmailService invitationEmailService,
         ILogger<RequestService> logger)
     {
         this.companyRepository = companyRepository;
@@ -59,7 +60,8 @@ public class RequestService : IRequestService
         this.identityServerService = identityServerService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
-        this.azureStorageConfiguration = azureStorageConfiguration;
+        this.workerRepository = workerRepository;
+        this.invitationEmailService = invitationEmailService;
         this.logger = logger;
     }
 
@@ -415,18 +417,40 @@ public class RequestService : IRequestService
         return Result.Ok(entity);
     }
 
-    public async Task SendInvitationToApply(InvitationToApplyModel model)
+    public async Task<Result> SendInvitation(Guid requestId)
     {
-        var connectionString = azureStorageConfiguration.DefaultAccessKey.ConnectionString ?? throw new ArgumentNullException();
-        if (model is null) return;
-        var client = new QueueClient(connectionString, "invitation-to-apply");
-        if (await client.ExistsAsync())
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
+
+        var agencyId = identityServerService.GetAgencyId();
+        if (request.AgencyId != agencyId) return Result.Fail(ApiResources.RequestNotAvailable);
+
+        var now = timeService.GetCurrentDateTime();
+        var canBeSent = request.CanInvitationBeSendIt(now);
+        if (!canBeSent) return canBeSent;
+
+        var invitation = new InvitationToApplyModel
         {
-            var stringModel = JsonSerializer.Serialize(model);
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(stringModel);
-            var message = Convert.ToBase64String(plainTextBytes);
-            await client.SendMessageAsync(message);
+            RequestId = request.Id,
+            JobTitle = request.JobTitle,
+            Description = request.Description,
+            Requirements = request.Requirements,
+            City = request.JobLocation?.City?.Value,
+            Rate = request.WorkerRate.HasValue ? request.WorkerRate.Value.ToUsMoney() : request.WorkerSalary.Value.ToUsMoney(),
+            AgencyId = agencyId,
+            ProvinceId = request.JobLocation.City.ProvinceId,
+        };
+
+        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, invitation.ProvinceId);
+        if (workers.Count > 0)
+        {
+            await invitationEmailService.SendInvitations(invitation, workers);
         }
+
+        request.InvitationSentItAt = now;
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)

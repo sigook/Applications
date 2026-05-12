@@ -10,6 +10,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -302,10 +303,12 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         {
             b.ConfigureTestServices(s =>
             {
-                var requestService = new Mock<IRequestService>();
-                requestService.Setup(rs => rs.SendInvitationToApply(It.IsAny<InvitationToApplyModel>())).Returns(Task.CompletedTask);
+                var invitationEmailService = new Mock<IInvitationEmailService>();
+                invitationEmailService
+                    .Setup(es => es.SendInvitations(It.IsAny<InvitationToApplyModel>(), It.IsAny<IReadOnlyCollection<WorkerContactInfoModel>>()))
+                    .Returns(Task.CompletedTask);
                 s.AddSingleton(timeService.Object);
-                s.AddSingleton(requestService.Object);
+                s.AddSingleton(invitationEmailService.Object);
             });
         }).CreateClient();
         var url = $"{RequestUri()}/{Data.FakeRequestToSendInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";
