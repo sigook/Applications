@@ -303,12 +303,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         {
             b.ConfigureTestServices(s =>
             {
-                var invitationEmailService = new Mock<IInvitationEmailService>();
-                invitationEmailService
-                    .Setup(es => es.SendInvitations(It.IsAny<InvitationToApplyModel>(), It.IsAny<IReadOnlyCollection<WorkerContactInfoModel>>()))
-                    .Returns(Task.CompletedTask);
                 s.AddSingleton(timeService.Object);
-                s.AddSingleton(invitationEmailService.Object);
             });
         }).CreateClient();
         var url = $"{RequestUri()}/{Data.FakeRequestToSendInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";

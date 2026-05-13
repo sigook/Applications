@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+﻿using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
@@ -18,6 +19,7 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace Covenant.Core.BL.Services;
@@ -34,7 +36,8 @@ public class RequestService : IRequestService
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
     private readonly IWorkerRepository workerRepository;
-    private readonly IInvitationEmailService invitationEmailService;
+    private readonly ISendGridService sendGridService;
+    private readonly SendGridConfiguration sendGridConfiguration;
     private readonly ILogger<RequestService> logger;
 
     public RequestService(
@@ -48,7 +51,8 @@ public class RequestService : IRequestService
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
         IWorkerRepository workerRepository,
-        IInvitationEmailService invitationEmailService,
+        ISendGridService sendGridService,
+        IOptions<SendGridConfiguration> sendGridOptions,
         ILogger<RequestService> logger)
     {
         this.companyRepository = companyRepository;
@@ -61,7 +65,8 @@ public class RequestService : IRequestService
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
         this.workerRepository = workerRepository;
-        this.invitationEmailService = invitationEmailService;
+        this.sendGridService = sendGridService;
+        sendGridConfiguration = sendGridOptions.Value;
         this.logger = logger;
     }
 
@@ -419,37 +424,54 @@ public class RequestService : IRequestService
 
     public async Task<Result> SendInvitation(Guid requestId)
     {
+        var agencyId = identityServerService.GetAgencyId();
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
-
-        var agencyId = identityServerService.GetAgencyId();
-        if (request.AgencyId != agencyId) return Result.Fail(ApiResources.RequestNotAvailable);
 
         var now = timeService.GetCurrentDateTime();
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return canBeSent;
 
-        var invitation = new InvitationToApplyModel
-        {
-            RequestId = request.Id,
-            JobTitle = request.JobTitle,
-            Description = request.Description,
-            Requirements = request.Requirements,
-            City = request.JobLocation?.City?.Value,
-            Rate = request.WorkerRate.HasValue ? request.WorkerRate.Value.ToUsMoney() : request.WorkerSalary.Value.ToUsMoney(),
-            AgencyId = agencyId,
-            ProvinceId = request.JobLocation.City.ProvinceId,
-        };
-
-        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, invitation.ProvinceId);
+        var provinceId = request.JobLocation.City.ProvinceId;
+        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, provinceId);
         if (workers.Count > 0)
         {
-            await invitationEmailService.SendInvitations(invitation, workers);
-        }
+            var jobTitle = request.JobTitle;
+            var description = request.Description;
+            var requirements = request.Requirements;
+            var city = request.JobLocation?.City?.Value;
+            var rate = request.WorkerRate.HasValue ? request.WorkerRate.Value.ToUsMoney() : request.WorkerSalary.Value.ToUsMoney();
+            var recipients = new List<TemplateRecipient>(workers.Count);
+            foreach (var w in workers)
+            {
+                var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", w.WorkerId.ToString());
+                var applyUrl = sendGridConfiguration.ApplyOnlineUrl
+                    .Replace("{{requestId}}", request.Id.ToString())
+                    .Replace("{{workerId}}", w.WorkerId.ToString());
 
-        request.InvitationSentItAt = now;
-        await requestRepository.Update(request);
-        await requestRepository.SaveChangesAsync();
+                object data = new
+                {
+                    worker_name = w.FullName,
+                    unsubscribe = unsubscribeUrl,
+                    unsubscribe_preferences = unsubscribeUrl,
+                    job_title = jobTitle,
+                    description,
+                    requirements,
+                    rate,
+                    city,
+                    apply = applyUrl,
+                };
+
+                recipients.Add(new TemplateRecipient(w.Email, w.FullName, data));
+            }
+            if (recipients.Count > 0)
+            {
+                await sendGridService.SendTemplateBatch(sendGridConfiguration.NewJobTemplateId, recipients);
+                request.InvitationSentItAt = now;
+                await requestRepository.Update(request);
+                await requestRepository.SaveChangesAsync();
+            }
+        }
         return Result.Ok();
     }
 
