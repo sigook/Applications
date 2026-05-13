@@ -51,6 +51,7 @@ public static class TestStartupExtensions
         services.AddSingleton(mockEmailService.Object);
         var mockSendGridService = new Mock<ISendGridService>();
         mockSendGridService.Setup(ss => ss.SendEmail(It.IsAny<SendGridModel>())).ReturnsAsync(Result.Ok());
+        mockSendGridService.Setup(ss => ss.SendTemplateBatch(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<TemplateRecipient>>())).ReturnsAsync(Result.Ok());
         services.AddSingleton(mockSendGridService.Object);
         var mockFilesConfiguration = new Mock<IOptions<FilesConfiguration>>();
         mockFilesConfiguration.Setup(m => m.Value).Returns(new FilesConfiguration

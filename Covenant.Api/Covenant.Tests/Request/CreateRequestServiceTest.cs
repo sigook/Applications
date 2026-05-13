@@ -14,6 +14,7 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -73,7 +74,8 @@ namespace Covenant.Tests.Accounting
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
                 Mock.Of<IWorkerRepository>(),
-                Mock.Of<IInvitationEmailService>(),
+                Mock.Of<ISendGridService>(),
+                Options.Create(new SendGridConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel

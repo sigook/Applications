@@ -88,7 +88,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<IIdentityServerService, IdentityServerService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISendGridService, SendGridService>();
-        services.AddScoped<IInvitationEmailService, SendGridInvitationEmailService>();
         services.AddScoped<IPushNotifications, PushNotifications>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
