@@ -8,9 +8,7 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -296,28 +294,23 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
     [Fact]
     public async Task SendInvitation()
     {
-        var fakeNow = new DateTime(2019, 01, 01);
-        var timeService = new Mock<ITimeService>();
-        timeService.Setup(s => s.GetCurrentDateTime()).Returns(fakeNow);
-        HttpClient client = _factory.WithWebHostBuilder(b =>
-        {
-            b.ConfigureTestServices(s =>
-            {
-                s.AddSingleton(timeService.Object);
-            });
-        }).CreateClient();
         var url = $"{RequestUri()}/{Data.FakeRequestToSendInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";
-        HttpResponseMessage response = await client.PostAsJsonAsync(url, new { });
-        response.EnsureSuccessStatusCode();
 
-        response = await client.PostAsJsonAsync(url, new { });
+        HttpResponseMessage response = await _client.PostAsJsonAsync(url, new { });
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task SendInvitationFailsWhenAlreadySentWithinWaitingPeriod()
+    {
+        var url = $"{RequestUri()}/{Data.FakeRequestWithRecentInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(url, new { });
+
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         string error = await response.Content.ReadAsStringAsync();
-        Assert.Contains("The invitation must be sent it only once every 7 days.", error);
-
-        timeService.Setup(s => s.GetCurrentDateTime()).Returns(fakeNow.AddDays(Request.DaysToWaitToResendInvitation));
-        response = await client.PostAsJsonAsync(url, new { });
-        response.EnsureSuccessStatusCode();
+        Assert.Contains($"The invitation must be sent it only once every {Request.DaysToWaitToResendInvitation} days.", error);
     }
 
     private static void AssertModelAndEntity(RequestCreateModel model, Request entity)
@@ -403,7 +396,8 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
                 Data.FakeUpdateRequest, Data.FakeRequestIncreaseQuantity,
                 Data.FakeRequestReduceQuantity, Data.FakeRequestToCancel,
                 Data.FakeIsAsapRequest, Data.FakeRequestUpdateLocation, Data.FakeRequestToOpen,
-                Data.FakeRequestToSendInvitation, Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
+                Data.FakeRequestToSendInvitation, Data.FakeRequestWithRecentInvitation,
+                Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
             context.SaveChanges();
         }
     }
@@ -452,6 +446,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         public static readonly Request FakeRequestUpdateLocation;
         public static readonly Request FakeRequestToOpen;
         public static readonly Request FakeRequestToSendInvitation;
+        public static readonly Request FakeRequestWithRecentInvitation;
 
         public static readonly User FakeWorker = new User(CvnEmail.Create("w1@mai.com").Value);
         public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId);
@@ -486,6 +481,9 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
             FakeRequestToOpen.Cancel(FakeNow);
             FakeRequestToSendInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestToSendInvitation.WorkerSalary = 50_000m;
+            FakeRequestWithRecentInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestWithRecentInvitation.WorkerSalary = 50_000m;
+            FakeRequestWithRecentInvitation.InvitationSentItAt = DateTime.Now;
             var sinInfo = new Mock<ISinInformation<CovenantFile>>();
             sinInfo.SetupGet(g => g.SocialInsurance).Returns("989-987-678");
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(true);
