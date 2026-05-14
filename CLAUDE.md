@@ -32,7 +32,7 @@ Before implementing any feature, read the relevant document from `.docs/`:
 
 If you change business rules, update the corresponding `.docs/` file.
 
-> All documents in `.docs/` are in English. `REQUEST_STATE_MANAGEMENT.md` describes only the current system — the legacy dual `IsOpen` + `RequestStatus` mechanism and the intermediate `InProgress` state are gone.
+> All documents in `.docs/` are in English.
 
 ## Mandatory Rules
 

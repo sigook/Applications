@@ -463,9 +463,7 @@ assets/
 
 ---
 
-## src/mixins/ — Legacy Mixins (being phased out)
-
-Vue 3 discourages mixins; remaining ones act as composable-style helpers until fully migrated.
+## src/mixins/ — Mixins
 
 - **toastMixin.ts** — Toast notification helper (app-wide)
 
@@ -529,7 +527,7 @@ Pre-load data before route entry (route guard).
 
 ### Styling
 
-- **Framework:** Bootstrap 4 (CSS, legacy — being phased down)
+- **Framework:** Bootstrap 4 (CSS)
 - **Component UI:** `@ntohq/buefy-next` (Buefy port for Vue 3, Bulma-based)
 - **Custom SCSS:** `/src/assets/scss/worker/` + component-level styles
 - **BEM Convention:** Class naming (likely)
