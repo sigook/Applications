@@ -1,0 +1,265 @@
+<template>
+  <header class="nav-v2" :class="{ 'nav-v2--solid': isScrolled }">
+    <div class="nav-v2__inner">
+      <!-- Logo -->
+      <router-link to="/v2/home" class="nav-v2__logo">
+        <img src="@/assets/images/logo-white-v2.png" alt="Sigook" />
+      </router-link>
+
+      <!-- Desktop nav links -->
+      <nav class="nav-v2__links">
+        <a
+          v-for="link in navLinks"
+          :key="link.label"
+          :href="link.href"
+          class="nav-v2__link"
+          :class="{ 'nav-v2__link--active': isActiveLink(link.href) }"
+          @click.prevent
+        >{{ link.label }}</a>
+      </nav>
+
+      <!-- Desktop buttons -->
+      <div class="nav-v2__actions">
+        <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
+        <a href="#" class="btn btn--primary btn--sm" @click.prevent>Sign In</a>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button
+        class="nav-v2__hamburger"
+        :class="{ 'nav-v2__hamburger--open': mobileOpen }"
+        @click="mobileOpen = !mobileOpen"
+        aria-label="Toggle menu"
+      >
+        <span /><span /><span />
+      </button>
+    </div>
+
+    <!-- Mobile drawer -->
+    <transition name="nav-drawer">
+      <div v-if="mobileOpen" class="nav-v2__drawer">
+        <a
+          v-for="link in navLinks"
+          :key="link.label"
+          :href="link.href"
+          class="nav-v2__drawer-link"
+          @click.prevent="mobileOpen = false"
+        >{{ link.label }}</a>
+        <div class="nav-v2__drawer-actions">
+          <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
+          <a href="#" class="btn btn--primary btn--sm" @click.prevent>Sign In</a>
+        </div>
+      </div>
+    </transition>
+  </header>
+</template>
+
+<script setup lang="ts">
+import '@/assets/css/tailwind.css';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const isScrolled = ref(false);
+const mobileOpen = ref(false);
+
+const navLinks = [
+  { label: 'Open Positions', href: '#' },
+  { label: 'Industries',     href: '#' },
+  { label: 'News',           href: '#' },
+  { label: 'About Us',       href: '#' },
+  { label: 'Employers',      href: '#' },
+  { label: 'Talents',        href: '#' },
+];
+
+function isActiveLink(href: string): boolean {
+  if (href === '#') return false;
+  return route.path.startsWith(href);
+}
+
+function onScroll() {
+  isScrolled.value = window.scrollY > 80;
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll);
+});
+</script>
+
+<style scoped>
+/* ── Base layout ── */
+.nav-v2 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: 100%;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav-v2--solid {
+  background-color: var(--c-brand-blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Inner container ── */
+.nav-v2__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 80px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ── Logo ── */
+.nav-v2__logo {
+  flex-shrink: 0;
+  display: block;
+  line-height: 0;
+}
+
+.nav-v2__logo img {
+  width: 180px;
+  height: 72px;
+  object-fit: contain;
+}
+
+/* ── Desktop nav links ── */
+.nav-v2__links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-shrink: 0;
+}
+
+.nav-v2__link {
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.78px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-v2--solid .nav-v2__link {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.nav-v2__link--active,
+.nav-v2__link:hover {
+  color: #fff;
+}
+
+/* ── Desktop buttons ── */
+.nav-v2__actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Hamburger (mobile) ── */
+.nav-v2__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nav-v2__hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: #fff;
+  border-radius: 1px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.nav-v2__hamburger--open span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+.nav-v2__hamburger--open span:nth-child(2) {
+  opacity: 0;
+}
+.nav-v2__hamburger--open span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* ── Mobile drawer ── */
+.nav-v2__drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background-color: var(--c-brand-navy);
+  padding: 16px 24px 24px;
+}
+
+.nav-v2__drawer-link {
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: block;
+  transition: color 0.2s ease;
+}
+
+.nav-v2__drawer-link:hover {
+  color: #fff;
+}
+
+.nav-v2__drawer-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* ── Drawer transition ── */
+.nav-drawer-enter-active,
+.nav-drawer-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.nav-drawer-enter-from,
+.nav-drawer-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+  .nav-v2__inner {
+    padding: 16px 24px;
+  }
+
+  .nav-v2__logo img {
+    width: 140px;
+    height: 56px;
+  }
+
+  .nav-v2__links,
+  .nav-v2__actions {
+    display: none;
+  }
+
+  .nav-v2__hamburger {
+    display: flex;
+  }
+}
+</style>

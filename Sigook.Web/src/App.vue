@@ -17,6 +17,11 @@
         </div>
       </div>
     </div>
+    <div v-else-if="isV2Route" class="v2-page">
+      <HeaderV2 />
+      <router-view />
+      <FooterV2 />
+    </div>
     <div v-else>
       <Header />
       <router-view />
@@ -34,6 +39,8 @@ import axios from 'axios';
 import NavBarLogged from '@/components/NavBarLogged.vue';
 import Header from '@/components/landing/Header.vue';
 import Footer from '@/components/landing/Footer.vue';
+import HeaderV2 from '@/components/v2/HeaderV2.vue';
+import FooterV2 from '@/components/v2/FooterV2.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -43,6 +50,7 @@ const isANewVersion = ref(false);
 const isLogged = ref(false);
 
 const isCallback = computed(() => route.name === 'callback');
+const isV2Route = computed(() => route.meta?.layout === 'v2');
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
 const VERSION_CHECK_INTERVAL_MS = 60 * 60 * 1000;
