@@ -428,7 +428,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     public Task<Common.Entities.Request.Request> GetRequest(Expression<Func<Common.Entities.Request.Request, bool>> condition) =>
         context.Request.Where(condition)
             .Include(r => r.JobPositionRate).ThenInclude(c => c.JobPosition)
-            .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province)
+            .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Include(r => r.Workers)
             .Include(r => r.Shift)
             .Include(i => i.Recruiters).ThenInclude(ti => ti.Recruiter).ThenInclude(u => u.User)

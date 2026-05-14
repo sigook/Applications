@@ -4,15 +4,16 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Microsoft.Extensions.Options;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -30,6 +31,7 @@ namespace Covenant.Tests.Request
             requestRepository.Setup(c => c.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
             requestRepository.Setup(c => c.GetRequestCancellationDetail(request.Id)).ReturnsAsync(new RequestCancellationDetail());
             var service = new RequestService(
+                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ICompanyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),

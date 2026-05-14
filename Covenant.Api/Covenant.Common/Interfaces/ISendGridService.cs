@@ -7,5 +7,5 @@ public interface ISendGridService
 {
     Task<Result> SendEmail(SendGridModel model);
 
-    Task<Result> SendTemplateBatch(string templateId, IReadOnlyCollection<TemplateRecipient> recipients);
+    Task<Result> SendTemplateBatch(string recruitmentEmail, IReadOnlyCollection<TemplateRecipient> recipients);
 }

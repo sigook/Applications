@@ -26,6 +26,7 @@ namespace Covenant.Core.BL.Services;
 
 public class RequestService : IRequestService
 {
+    private readonly IAgencyRepository agencyRepository;
     private readonly ICompanyRepository companyRepository;
     private readonly ILocationRepository locationRepository;
     private readonly ITimeService timeService;
@@ -41,6 +42,7 @@ public class RequestService : IRequestService
     private readonly ILogger<RequestService> logger;
 
     public RequestService(
+        IAgencyRepository agencyRepository,
         ICompanyRepository companyRepository,
         ILocationRepository locationRepository,
         ITimeService timeService,
@@ -55,6 +57,7 @@ public class RequestService : IRequestService
         IOptions<SendGridConfiguration> sendGridOptions,
         ILogger<RequestService> logger)
     {
+        this.agencyRepository = agencyRepository;
         this.companyRepository = companyRepository;
         this.locationRepository = locationRepository;
         this.timeService = timeService;
@@ -424,7 +427,6 @@ public class RequestService : IRequestService
 
     public async Task<Result> SendInvitation(Guid requestId)
     {
-        var agencyId = identityServerService.GetAgencyId();
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
 
@@ -432,26 +434,28 @@ public class RequestService : IRequestService
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return canBeSent;
 
+        var agency = await agencyRepository.GetAgencyDetail(identityServerService.GetAgencyId());
         var provinceId = request.JobLocation.City.ProvinceId;
-        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, provinceId);
+        var workers = await workerRepository.GetWorkersAvailableToInvite(agency.Id, provinceId);
         if (workers.Count > 0)
         {
             var jobTitle = request.JobTitle;
             var description = request.Description;
             var requirements = request.Requirements;
             var city = request.JobLocation?.City?.Value;
-            var rate = request.WorkerRate.HasValue ? request.WorkerRate.Value.ToUsMoney() : request.WorkerSalary.Value.ToUsMoney();
+            var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
+            var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
             var recipients = new List<TemplateRecipient>(workers.Count);
-            foreach (var w in workers)
+            foreach (var worker in workers)
             {
-                var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", w.WorkerId.ToString());
+                var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", worker.WorkerId.ToString());
                 var applyUrl = sendGridConfiguration.ApplyOnlineUrl
                     .Replace("{{requestId}}", request.Id.ToString())
-                    .Replace("{{workerId}}", w.WorkerId.ToString());
+                    .Replace("{{workerId}}", worker.WorkerId.ToString());
 
                 object data = new
                 {
-                    worker_name = w.FullName,
+                    worker_name = worker.FullName,
                     unsubscribe = unsubscribeUrl,
                     unsubscribe_preferences = unsubscribeUrl,
                     job_title = jobTitle,
@@ -461,12 +465,11 @@ public class RequestService : IRequestService
                     city,
                     apply = applyUrl,
                 };
-
-                recipients.Add(new TemplateRecipient(w.Email, w.FullName, data));
+                recipients.Add(new TemplateRecipient(worker.Email, worker.FullName, data));
             }
             if (recipients.Count > 0)
             {
-                await sendGridService.SendTemplateBatch(sendGridConfiguration.NewJobTemplateId, recipients);
+                await sendGridService.SendTemplateBatch(agency.RecruitmentEmail, recipients);
                 request.InvitationSentItAt = now;
                 await requestRepository.Update(request);
                 await requestRepository.SaveChangesAsync();

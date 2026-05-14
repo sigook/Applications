@@ -5,6 +5,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
@@ -64,6 +65,7 @@ namespace Covenant.Tests.Accounting
             identityServerService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
             var timeService = new Mock<ITimeService>();
             _sut = new RequestService(
+                Mock.Of<IAgencyRepository>(),
                 _companyRepository.Object,
                 locationRepository.Object,
                 timeService.Object,

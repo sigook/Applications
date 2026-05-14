@@ -41,15 +41,16 @@ public class SendGridService : ISendGridService
         return Result.Ok();
     }
 
-    public async Task<Result> SendTemplateBatch(string templateId, IReadOnlyCollection<TemplateRecipient> recipients)
+    public async Task<Result> SendTemplateBatch(string recruitmentEmail, IReadOnlyCollection<TemplateRecipient> recipients)
     {
-        var fromEmail = new EmailAddress(configuration.TestingEmailAddress);
+        var templateId = configuration.NewJobTemplateId;
         var redirectToTesting = configuration.RedirectInvitationsToTestingEmail;
-
+        var fromEmail = redirectToTesting
+            ? new EmailAddress(configuration.TestingEmailAddress)
+            : new EmailAddress(recruitmentEmail);
         var batches = redirectToTesting
             ? [[recipients.First()]]
             : recipients.Chunk(SendGridRecipientsPerRequest);
-
         foreach (var batch in batches)
         {
             var personalizations = batch.Select(r => r.Data).ToList();
