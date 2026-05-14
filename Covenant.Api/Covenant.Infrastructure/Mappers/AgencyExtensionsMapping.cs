@@ -17,6 +17,7 @@ public static class AgencyExtensionsMapping
         WebPage = a.WebPage,
         PhonePrincipal = a.PhonePrincipal,
         PhonePrincipalExt = a.PhonePrincipalExt,
+        RecruitmentEmail = a.RecruitmentEmail,
         AgencyType = a.AgencyType,
         Logo = a.Logo == null ? null : new CovenantFileModel
         {
