@@ -602,7 +602,7 @@ Sigook.Web/
 ```
 
 **Deployment:**
-- Build: Node.js 20+ → `npm run staging` or `npm run production` (Vite)
+- Build: Node.js 22+ + pnpm → `pnpm run staging` or `pnpm run production` (Vite)
 - Deploy: Docker image with Nginx serving static files
 
 **Migration note:** Sigook.Web was migrated from Vue 2 (Vue CLI / Vuex / Buefy) to Vue 3 (Vite / Pinia / @ntohq/buefy-next) in PR #108. Forms now use VeeValidate 4 + Yup.

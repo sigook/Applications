@@ -619,17 +619,17 @@ Allows generic components to work across different backends.
 ## Testing & Development Notes
 
 - **Build Tool:** Vite (vite.config.ts)
-- **Type Checking:** TypeScript (`npm run type-check`, tsconfig.json)
-- **Linting:** ESLint (`npm run lint`)
-- **Package Manager:** npm (package-lock.json)
-- **Docker:** Dockerfile included (multi-stage Node build → Nginx)
+- **Type Checking:** TypeScript (`pnpm run type-check`, tsconfig.json)
+- **Linting:** ESLint (`pnpm run lint`)
+- **Package Manager:** pnpm (pnpm-lock.yaml, pinned via `packageManager` field). Security hardening: `ignore-scripts=true` in `.npmrc` + explicit `allowBuilds` allowlist in `pnpm-workspace.yaml`.
+- **Docker:** Dockerfile included (multi-stage Node 22 + pnpm build → Nginx)
 - **nginx.conf:** Routing config for SPA (history mode)
 
 ---
 
 ## Deployment
 
-1. **Build:** `npm run staging` / `npm run production` → `/wwwroot/` (Vite)
+1. **Build:** `pnpm run staging` / `pnpm run production` → `/wwwroot/` (Vite)
 2. **Docker:** `docker build -t sigook-web .`
 3. **Environment:** `.env.staging`, `.env.production` — Vite `VITE_*` vars (e.g. `VITE_URL_API`)
 4. **Server:** nginx; serves `index.html` for all 404s (SPA routing)
