@@ -83,6 +83,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker
 
             public static void Seed(CovenantContext context)
             {
+                context.Agencies.Add(Utils.FakeData.FakeAgency(AgencyId));
                 context.Availability.Add(FakeAvailability);
                 context.CompanyProfileJobPositionRate.Add(JobPositionRate);
                 context.WorkerProfile.AddRange(FakeWorkers);

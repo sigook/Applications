@@ -432,6 +432,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .Include(r => r.Workers)
             .Include(r => r.Shift)
             .Include(i => i.Recruiters).ThenInclude(ti => ti.Recruiter).ThenInclude(u => u.User)
+            .Include(i => i.Agency)
             .SingleOrDefaultAsync();
 
     public async Task<PaginatedList<AgencyWorkerRequestModel>> GetWorkersRequestByRequestId(Guid requestId, GetWorkersRequestFilter filter)

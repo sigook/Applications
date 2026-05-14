@@ -163,6 +163,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.Agencies.Add(FakeData.FakeAgency(FakeRequest.AgencyId));
                 context.Request.Add(FakeRequest);
                 context.Candidates.AddRange(FakeCandidatePost, FakeCandidateDelete, FakeCandidateList, FakeCandidateUpdate);
                 context.WorkerProfile.AddRange(FakeWorkerPost, FakeWorkerList);

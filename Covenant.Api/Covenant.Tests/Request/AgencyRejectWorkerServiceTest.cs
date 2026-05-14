@@ -30,7 +30,6 @@ namespace Covenant.Tests.Request
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
 
             var sut = new RequestService(
-                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ICompanyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),
@@ -60,7 +59,6 @@ namespace Covenant.Tests.Request
             var requestRepository = new Mock<IRequestRepository>();
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
             var sut = new RequestService(
-                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ICompanyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),
