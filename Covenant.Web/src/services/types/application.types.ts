@@ -5,6 +5,7 @@ export interface CandidateFormData {
   countryId: string
   address: string
   status: ResidencyStatus | '' | null | undefined
+  source: string | null
   skills: string[]
   hasVehicle: boolean
   resume: File | null
@@ -67,6 +68,8 @@ export interface CandidateViewModel {
   address: string
   fileName: string | null
   hasVehicle: boolean
+  source: string | null
+  origin: string
   requestId?: string
 }
 

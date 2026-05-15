@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Sigook.Functions.Models;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Sigook.Functions.Utils
 {
@@ -11,7 +11,7 @@ namespace Sigook.Functions.Utils
         {
             string url = configuration["TeamsWebhook"];
             if (string.IsNullOrEmpty(url)) return "TeamsWebhook configuration is not set";
-            string json = JsonConvert.SerializeObject(message);
+            string json = JsonSerializer.Serialize(message);
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new StringContent(json);

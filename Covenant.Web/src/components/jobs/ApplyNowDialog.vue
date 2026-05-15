@@ -69,9 +69,14 @@
                         variant="outlined"></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-switch v-model="fields.hasVehicle.value" v-bind="fields.hasVehicleProps"
-                        :label="fields.hasVehicle.value ? 'Own Vehicle' : 'Public Transit'"
-                        :error-messages="errors.hasVehicle" color="primary" hide-details="auto"></v-switch>
+                      <v-select v-model="fields.source.value" v-bind="fields.sourceProps"
+                        label="How did you hear about us?" :items="sources" :error-messages="errors.source"
+                        :loading="loadingSources" clearable variant="outlined"></v-select>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-file-input v-model="resumeFiles" :label="resumeRequired ? 'Resume / CV *' : 'Resume / CV (Optional)'" accept=".pdf,.doc,.docx"
+                        prepend-icon="mdi-file-document" :error-messages="errors.resume" show-size variant="outlined"
+                        @update:model-value="handleResumeChange"></v-file-input>
                     </v-col>
                     <v-col cols="12">
                       <v-combobox v-model="fields.skills.value" v-bind="fields.skillsProps"
@@ -80,22 +85,22 @@
                         hint="Select from suggestions or type your own (Press Enter to add, max 20 characters each)"
                         persistent-hint variant="outlined" :loading="loadingSkills"></v-combobox>
                     </v-col>
+                    <v-col cols="12" md="6">
+                      <v-switch v-model="fields.hasVehicle.value" v-bind="fields.hasVehicleProps"
+                        :label="fields.hasVehicle.value ? 'Own Vehicle' : 'Public Transit'"
+                        :error-messages="errors.hasVehicle" color="primary" hide-details="auto"></v-switch>
+                    </v-col>
                   </v-row>
                 </v-form>
               </v-card>
             </template>
 
-            <!-- STEP 3: Resume & Terms -->
+            <!-- STEP 3: Review & Submit -->
             <template v-slot:item.3>
               <v-card flat class="pa-2">
-                <v-card-title class="text-h6 mb-2">Resume & Terms</v-card-title>
+                <v-card-title class="text-h6 mb-2">Review & Submit</v-card-title>
                 <v-form>
                   <v-row>
-                    <v-col cols="12">
-                      <v-file-input v-model="resumeFiles" label="Resume / CV (Optional)" accept=".pdf,.doc,.docx"
-                        prepend-icon="mdi-file-document" :error-messages="errors.resume" show-size variant="outlined"
-                        @update:model-value="handleResumeChange"></v-file-input>
-                    </v-col>
                     <v-col cols="12">
                       <v-checkbox v-model="fields.termsAccepted.value" v-bind="fields.termsAcceptedProps"
                         :error-messages="errors.termsAccepted" color="primary">
@@ -131,6 +136,9 @@
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Immigration Status:</strong> {{ values.status || 'Not selected' }}
+                          </div>
+                          <div class="mb-1 text-body-2">
+                            <strong>How did you hear about us?:</strong> {{ values.source || 'Not selected' }}
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Transportation:</strong> {{ values.hasVehicle ? 'Own Vehicle' : 'Public Transit' }}
@@ -239,6 +247,8 @@ const countries = ref<Country[]>([])
 const loadingCountries = ref(false)
 const suggestedSkills = ref<string[]>([])
 const loadingSkills = ref(false)
+const sources = ref<string[]>([])
+const loadingSources = ref(false)
 const submitting = ref(false)
 const phoneFormatted = ref('')
 const resumeFiles = ref<File[]>([])
@@ -247,7 +257,7 @@ const registeredEmailError = ref('')
 const errorSnackbar = ref(false)
 const errorMessage = ref('')
 
-const stepItems = ['Personal Information', 'Additional Details', 'Resume & Terms']
+const stepItems = ['Personal Information', 'Additional Details', 'Review & Submit']
 
 const dialogTitle = computed(() => {
   if (props.selectedJob) {
@@ -255,6 +265,8 @@ const dialogTitle = computed(() => {
   }
   return 'Register with Us'
 })
+
+const resumeRequired = computed(() => values.source === 'Linkedin')
 
 const selectedCountryName = computed(() => {
   const country = countries.value.find((c) => c.id === values.countryId)
@@ -283,6 +295,16 @@ onMounted(async () => {
     console.error('Failed to load skills:', error)
   } finally {
     loadingSkills.value = false
+  }
+
+  // Load sources
+  loadingSources.value = true
+  try {
+    sources.value = await locationService.getSources()
+  } catch (error) {
+    console.error('Failed to load sources:', error)
+  } finally {
+    loadingSources.value = false
   }
 })
 

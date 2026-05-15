@@ -193,6 +193,22 @@ namespace Covenant.Api.Controllers.Sigook
             return Ok(skills.OrderBy(s => s.Skill));
         }
 
+        [HttpGet("source")]
+        [ResponseCache(Duration = 43200)]
+        public IActionResult GetSources()
+        {
+            var sources = new[]
+            {
+                "Indeed",
+                "Zip Recruiter",
+                "Linkedin",
+                "Referred",
+                "Sigook",
+                "Other",
+            };
+            return Ok(sources);
+        }
+
         [HttpGet("tax-categories")]
         [ResponseCache(Duration = 43200)]
         public IActionResult GetTaxCategories()

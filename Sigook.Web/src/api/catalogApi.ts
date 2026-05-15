@@ -68,6 +68,10 @@ export function getCompanyStatus(): Promise<CatalogItem<number>[]> {
   return http.get('/api/Catalog/companyStatus').then(r => r.data);
 }
 
+export function getSources(): Promise<string[]> {
+  return http.get('/api/Catalog/source').then(r => r.data);
+}
+
 export function getTaxCategories(): Promise<TaxCategory[]> {
   return http.get('/api/Catalog/tax-categories').then(r => r.data);
 }

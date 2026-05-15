@@ -14,5 +14,10 @@ export const locationService = {
   async getSkills(): Promise<string[]> {
     const response = await api.get<Skill[]>('/api/Catalog/skills')
     return response.data.map((s) => s.skill)
+  },
+
+  async getSources(): Promise<string[]> {
+    const response = await api.get<string[]>('/api/Catalog/source')
+    return response.data
   }
 }
