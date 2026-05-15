@@ -18,21 +18,21 @@
         <!-- Company column -->
         <nav class="footer-v2__col" aria-label="Company">
           <p class="footer-v2__col-heading">Company</p>
-          <a href="#" class="footer-v2__link" @click.prevent>About Us</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Open Positions</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Industries</a>
-          <a href="#" class="footer-v2__link" @click.prevent>News</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Special Projects</a>
+          <router-link to="/v2/about"            class="footer-v2__link">About Us</router-link>
+          <router-link to="/v2/open-positions"   class="footer-v2__link">Open Positions</router-link>
+          <router-link to="/v2/industries"       class="footer-v2__link">Industries</router-link>
+          <router-link to="/v2/news"             class="footer-v2__link">News</router-link>
+          <router-link to="/v2/special-projects" class="footer-v2__link">Special Projects</router-link>
         </nav>
 
         <!-- Services column -->
         <nav class="footer-v2__col" aria-label="Services">
           <p class="footer-v2__col-heading">Services</p>
-          <a href="#" class="footer-v2__link" @click.prevent>For Employers</a>
-          <a href="#" class="footer-v2__link" @click.prevent>For Talents</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Become a Partner</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Licensed &amp; Certified</a>
-          <a href="#" class="footer-v2__link" @click.prevent>Payroll Solutions</a>
+          <router-link to="/v2/employers" class="footer-v2__link">For Employers</router-link>
+          <router-link to="/v2/talents"   class="footer-v2__link">For Talents</router-link>
+          <router-link to="/v2/partner"   class="footer-v2__link">Become a Partner</router-link>
+          <router-link to="/v2/certified" class="footer-v2__link">Licensed &amp; Certified</router-link>
+          <router-link to="/v2/payroll"   class="footer-v2__link">Payroll Solutions</router-link>
         </nav>
 
         <!-- Contact column -->
@@ -53,8 +53,8 @@
           &copy; {{ currentYear }} Sigook Work Factory Inc. All rights reserved.
         </p>
         <div class="footer-v2__legal">
-          <a href="#" class="footer-v2__legal-link" @click.prevent>Privacy Policy</a>
-          <a href="#" class="footer-v2__legal-link" @click.prevent>Terms of Use</a>
+          <router-link to="/v2/privacy-policy" class="footer-v2__legal-link">Privacy Policy</router-link>
+          <router-link to="/v2/terms"           class="footer-v2__legal-link">Terms of Use</router-link>
         </div>
       </div>
     </div>

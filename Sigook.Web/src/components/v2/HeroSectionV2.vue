@@ -28,9 +28,9 @@
         </p>
       </transition>
 
-      <a href="#" class="btn btn--secondary btn--lg hero-v2__cta" @click.prevent>
+      <router-link to="/v2/about" class="btn btn--secondary btn--lg hero-v2__cta">
         Learn More
-      </a>
+      </router-link>
 
       <!-- Clickable SliderDots -->
       <div class="hero-v2__dots" role="tablist" aria-label="Carousel navigation">

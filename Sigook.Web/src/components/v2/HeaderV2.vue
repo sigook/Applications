@@ -8,20 +8,19 @@
 
       <!-- Desktop nav links -->
       <nav class="nav-v2__links">
-        <a
+        <router-link
           v-for="link in navLinks"
           :key="link.label"
-          :href="link.href"
+          :to="link.to"
           class="nav-v2__link"
-          :class="{ 'nav-v2__link--active': isActiveLink(link.href) }"
-          @click.prevent
-        >{{ link.label }}</a>
+          exact-active-class="nav-v2__link--active"
+        >{{ link.label }}</router-link>
       </nav>
 
       <!-- Desktop buttons -->
       <div class="nav-v2__actions">
-        <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
-        <a href="#" class="btn btn--secondary btn--sm nav-v2__btn-signin" @click.prevent>Sign In</a>
+        <router-link to="/v2/sign-up" class="btn btn--cyan btn--sm">Sign Up</router-link>
+        <router-link to="/v2/sign-in" class="btn btn--secondary btn--sm nav-v2__btn-signin">Sign In</router-link>
       </div>
 
       <!-- Mobile hamburger -->
@@ -38,16 +37,16 @@
     <!-- Mobile drawer -->
     <transition name="nav-drawer">
       <div v-if="mobileOpen" class="nav-v2__drawer">
-        <a
+        <router-link
           v-for="link in navLinks"
           :key="link.label"
-          :href="link.href"
+          :to="link.to"
           class="nav-v2__drawer-link"
-          @click.prevent="mobileOpen = false"
-        >{{ link.label }}</a>
+          @click="mobileOpen = false"
+        >{{ link.label }}</router-link>
         <div class="nav-v2__drawer-actions">
-          <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
-          <a href="#" class="btn btn--secondary btn--sm" @click.prevent>Sign In</a>
+          <router-link to="/v2/sign-up" class="btn btn--cyan btn--sm" @click="mobileOpen = false">Sign Up</router-link>
+          <router-link to="/v2/sign-in" class="btn btn--secondary btn--sm" @click="mobileOpen = false">Sign In</router-link>
         </div>
       </div>
     </transition>
@@ -57,25 +56,18 @@
 <script setup lang="ts">
 import '@/assets/css/tailwind.css';
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
 
-const route = useRoute();
 const isScrolled = ref(false);
 const mobileOpen = ref(false);
 
 const navLinks = [
-  { label: 'Open Positions', href: '#' },
-  { label: 'Industries',     href: '#' },
-  { label: 'News',           href: '#' },
-  { label: 'About Us',       href: '#' },
-  { label: 'Employers',      href: '#' },
-  { label: 'Talents',        href: '#' },
+  { label: 'Open Positions', to: '/v2/open-positions' },
+  { label: 'Industries',     to: '/v2/industries' },
+  { label: 'News',           to: '/v2/news' },
+  { label: 'About Us',       to: '/v2/about' },
+  { label: 'Employers',      to: '/v2/employers' },
+  { label: 'Talents',        to: '/v2/talents' },
 ];
-
-function isActiveLink(href: string): boolean {
-  if (href === '#') return false;
-  return route.path.startsWith(href);
-}
 
 function onScroll() {
   isScrolled.value = window.scrollY > 80;
