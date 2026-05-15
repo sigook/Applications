@@ -165,6 +165,8 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   z-index: 1;
   padding-bottom: 120px;
   overflow: hidden;
+  /* Figma: Rectangle 16 (node 425:5688) height = 1754px */
+  min-height: 1754px;
 }
 
 .why-v2__panel-inner {
@@ -299,6 +301,7 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   .why-v2__panel {
     border-radius: 80px 0 80px 0;
     margin-top: -80px;
+    min-height: 0; /* reset desktop 1754px — mobile stacks naturally */
   }
 
   .why-v2__panel-inner {

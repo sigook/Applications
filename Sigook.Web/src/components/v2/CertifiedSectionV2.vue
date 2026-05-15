@@ -49,15 +49,19 @@
   overflow: hidden;
   /* Figma screenshot: curved top-left + bottom-right → 150px 0 150px 0 */
   border-radius: 150px 0 150px 0;
-  /* Pull up to cover WhyChooseUs panel's padding-bottom (120px empty blue) */
-  margin-top: -120px;
+  /* Figma: Certified top=4054, WhyChooseUs panel top=2856+194(hero overlap)=actual top.
+     Ontario Foto 2 (photo layer) = 556px tall within the 577px section.
+     We overlap 556px into the Why panel so the bottom 21px of the section
+     shows only the blue container (no photo), matching Figma's exact layout. */
+  margin-top: -556px;
 }
 
 /* ── Photo background ── */
 .certified-v2__bg {
   position: absolute;
-  inset: 0;
-  /* outer section already clips with overflow:hidden — bg just fills the area */
+  /* Ontario Foto 2 (photos) = 556px, section = 577px → 21px gap at bottom
+     left uncovered so the blue container shows through (matches Figma). */
+  inset: 0 0 21px;
   overflow: hidden;
 }
 
