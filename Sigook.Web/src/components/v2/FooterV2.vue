@@ -1,67 +1,209 @@
 <template>
-  <footer class="tw-bg-gray-900 tw-text-gray-300">
-    <div class="tw-mx-auto tw-max-w-7xl tw-px-6 tw-py-12 lg:tw-px-8">
-      <div class="tw-grid tw-grid-cols-1 tw-gap-10 sm:tw-grid-cols-2 lg:tw-grid-cols-4">
-        <!-- Brand -->
-        <div class="tw-col-span-1 sm:tw-col-span-2 lg:tw-col-span-1">
-          <img src="@/assets/images/logo.png" alt="Sigook" class="tw-mb-4 tw-h-8 tw-w-auto tw-brightness-0 tw-invert" />
-          <p class="tw-text-sm tw-leading-relaxed tw-text-gray-400">
-            Connecting talent with opportunity across Canada.
+  <footer class="footer-v2">
+    <div class="footer-v2__inner">
+      <!-- Main row: brand column + 3 link columns -->
+      <div class="footer-v2__main">
+        <!-- Brand column -->
+        <div class="footer-v2__brand">
+          <img
+            src="@/assets/images/v2/footer-logo.png"
+            alt="Sigook Work Factory"
+            class="footer-v2__logo"
+          />
+          <p class="footer-v2__tagline">
+            Staffing and workforce solutions for growing businesses across Canada and the US.
           </p>
-          <div class="tw-mt-4 tw-flex tw-gap-3">
-            <a href="https://apps.apple.com/us/app/sigook/id1446736193" target="_blank" rel="noopener" aria-label="App Store">
-              <img src="@/assets/images/appstore.png" alt="App Store" class="tw-h-8 tw-w-auto" />
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.sigook.sigook" target="_blank" rel="noopener" aria-label="Google Play">
-              <img src="@/assets/images/googleplay.png" alt="Google Play" class="tw-h-8 tw-w-auto" />
-            </a>
-          </div>
         </div>
 
-        <!-- For Job Seekers -->
-        <div>
-          <h3 class="tw-mb-4 tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wider tw-text-white">
-            For Job Seekers
-          </h3>
-          <ul class="tw-space-y-2">
-            <li><router-link to="/jobSeekers" class="tw-text-sm tw-transition-colors hover:tw-text-white">Find a Job</router-link></li>
-            <li><router-link to="/register-worker" class="tw-text-sm tw-transition-colors hover:tw-text-white">Register</router-link></li>
-          </ul>
-        </div>
+        <!-- Company column -->
+        <nav class="footer-v2__col" aria-label="Company">
+          <p class="footer-v2__col-heading">Company</p>
+          <a href="#" class="footer-v2__link" @click.prevent>About Us</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Open Positions</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Industries</a>
+          <a href="#" class="footer-v2__link" @click.prevent>News</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Special Projects</a>
+        </nav>
 
-        <!-- For Business -->
-        <div>
-          <h3 class="tw-mb-4 tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wider tw-text-white">
-            For Business
-          </h3>
-          <ul class="tw-space-y-2">
-            <li><router-link to="/business" class="tw-text-sm tw-transition-colors hover:tw-text-white">Find Staff</router-link></li>
-            <li><router-link to="/direct-hiring" class="tw-text-sm tw-transition-colors hover:tw-text-white">Direct Hiring</router-link></li>
-          </ul>
-        </div>
+        <!-- Services column -->
+        <nav class="footer-v2__col" aria-label="Services">
+          <p class="footer-v2__col-heading">Services</p>
+          <a href="#" class="footer-v2__link" @click.prevent>For Employers</a>
+          <a href="#" class="footer-v2__link" @click.prevent>For Talents</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Become a Partner</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Licensed &amp; Certified</a>
+          <a href="#" class="footer-v2__link" @click.prevent>Payroll Solutions</a>
+        </nav>
 
-        <!-- Company -->
-        <div>
-          <h3 class="tw-mb-4 tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wider tw-text-white">
-            Company
-          </h3>
-          <ul class="tw-space-y-2">
-            <li><router-link to="/about-us" class="tw-text-sm tw-transition-colors hover:tw-text-white">About Us</router-link></li>
-            <li><router-link to="/contact" class="tw-text-sm tw-transition-colors hover:tw-text-white">Contact</router-link></li>
-            <li><router-link to="/terms-and-conditions" class="tw-text-sm tw-transition-colors hover:tw-text-white">Terms & Conditions</router-link></li>
-            <li><router-link to="/privacy-policy" class="tw-text-sm tw-transition-colors hover:tw-text-white">Privacy Policy</router-link></li>
-          </ul>
+        <!-- Contact column -->
+        <div class="footer-v2__col">
+          <p class="footer-v2__col-heading">Contact</p>
+          <a href="mailto:info@sigook.com" class="footer-v2__link">info@sigook.com</a>
+          <a href="tel:+18001234567" class="footer-v2__link">+1 (800) 123-4567</a>
+          <span class="footer-v2__link footer-v2__link--plain">Toronto, Ontario, Canada</span>
         </div>
       </div>
 
-      <div class="tw-mt-10 tw-border-t tw-border-gray-800 tw-pt-6 tw-text-center">
-        <p class="tw-text-xs tw-text-gray-500">
-          &copy; {{ new Date().getFullYear() }} Sigook<sup>®</sup>. All rights reserved.
+      <!-- Divider -->
+      <div class="footer-v2__divider" aria-hidden="true"></div>
+
+      <!-- Bottom row: copyright + legal links -->
+      <div class="footer-v2__bottom">
+        <p class="footer-v2__copyright">
+          &copy; {{ currentYear }} Sigook Work Factory Inc. All rights reserved.
         </p>
+        <div class="footer-v2__legal">
+          <a href="#" class="footer-v2__legal-link" @click.prevent>Privacy Policy</a>
+          <a href="#" class="footer-v2__legal-link" @click.prevent>Terms of Use</a>
+        </div>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
+const currentYear = new Date().getFullYear()
 </script>
+
+<style scoped>
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+.footer-v2 {
+  background: var(--c-bg);
+}
+
+/* ── Inner container ───────────────────────────────────────────────────────── */
+.footer-v2__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 64px var(--gutter-desktop) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ── Main row ──────────────────────────────────────────────────────────────── */
+.footer-v2__main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* ── Brand column ──────────────────────────────────────────────────────────── */
+.footer-v2__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.footer-v2__logo {
+  width: 180px;
+  height: 72px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.footer-v2__tagline {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: normal;
+  color: var(--c-ink-2);
+  max-width: 220px;
+  margin: 0;
+}
+
+/* ── Link columns ──────────────────────────────────────────────────────────── */
+.footer-v2__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-v2__col-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink);
+  line-height: normal;
+  margin: 0;
+}
+
+.footer-v2__link {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-ink-2);
+  line-height: normal;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-v2__link:hover {
+  color: var(--c-brand-blue);
+}
+
+.footer-v2__link--plain {
+  cursor: default;
+}
+
+.footer-v2__link--plain:hover {
+  color: var(--c-ink-2);
+}
+
+/* ── Divider ───────────────────────────────────────────────────────────────── */
+.footer-v2__divider {
+  height: 1px;
+  background: var(--c-line);
+  width: 100%;
+}
+
+/* ── Bottom row ────────────────────────────────────────────────────────────── */
+.footer-v2__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--c-ink-2);
+}
+
+.footer-v2__copyright {
+  margin: 0;
+}
+
+.footer-v2__legal {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-v2__legal-link {
+  color: var(--c-ink-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-v2__legal-link:hover {
+  color: var(--c-brand-blue);
+}
+
+/* ── Mobile ────────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .footer-v2__inner {
+    padding: 48px var(--gutter-mobile) 32px;
+    gap: 32px;
+  }
+
+  .footer-v2__main {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .footer-v2__logo {
+    width: 140px;
+    height: 56px;
+  }
+
+  .footer-v2__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+</style>

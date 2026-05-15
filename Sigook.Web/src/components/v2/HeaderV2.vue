@@ -21,7 +21,7 @@
       <!-- Desktop buttons -->
       <div class="nav-v2__actions">
         <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
-        <a href="#" class="btn btn--primary btn--sm" @click.prevent>Sign In</a>
+        <a href="#" class="btn btn--secondary btn--sm nav-v2__btn-signin" @click.prevent>Sign In</a>
       </div>
 
       <!-- Mobile hamburger -->
@@ -47,7 +47,7 @@
         >{{ link.label }}</a>
         <div class="nav-v2__drawer-actions">
           <a href="#" class="btn btn--cyan btn--sm" @click.prevent>Sign Up</a>
-          <a href="#" class="btn btn--primary btn--sm" @click.prevent>Sign In</a>
+          <a href="#" class="btn btn--secondary btn--sm" @click.prevent>Sign In</a>
         </div>
       </div>
     </transition>
@@ -112,7 +112,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 80px;
+  height: 80px;
+  padding: 0 80px;
   max-width: 1440px;
   margin: 0 auto;
 }
@@ -125,9 +126,15 @@ onUnmounted(() => {
 }
 
 .nav-v2__logo img {
-  width: 180px;
-  height: 72px;
+  height: 44px;
+  width: auto;
+  max-width: 160px;
   object-fit: contain;
+}
+
+/* Sign In button: white border visible on both transparent and solid navbar */
+.nav-v2__btn-signin {
+  border-color: rgba(255, 255, 255, 0.55) !important;
 }
 
 /* ── Desktop nav links ── */
@@ -245,12 +252,14 @@ onUnmounted(() => {
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .nav-v2__inner {
-    padding: 16px 24px;
+    height: 64px;
+    padding: 0 24px;
   }
 
   .nav-v2__logo img {
-    width: 140px;
-    height: 56px;
+    height: 34px;
+    width: auto;
+    max-width: 120px;
   }
 
   .nav-v2__links,
