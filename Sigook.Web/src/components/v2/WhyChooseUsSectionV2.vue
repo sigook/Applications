@@ -24,26 +24,13 @@
 
         <!-- Row 1: Map (left) + Nationwide vision (right) -->
         <div class="why-v2__row why-v2__row--top">
+          <!-- Map column — pins PNG (transparent bg) floats directly on the blue panel -->
           <div class="why-v2__col why-v2__col--map">
-            <div class="why-v2__map-wrap">
-              <div class="why-v2__map-container">
-                <!-- Figma asset: Canada Map (node 425:5692), 574×551px frame -->
-                <img
-                  src="@/assets/images/v2/canada-map.png"
-                  alt="USA/Canada presence map"
-                  class="why-v2__map-img"
-                />
-              </div>
-              <div class="why-v2__hawaii-wrap">
-                <!-- Figma asset: hawaii 1 (node 425:5695), 172×129px display size -->
-                <img
-                  src="@/assets/images/v2/hawaii-map.png"
-                  alt=""
-                  aria-hidden="true"
-                  class="why-v2__hawaii-img"
-                />
-              </div>
-            </div>
+            <img
+              src="@/assets/images/v2/usa-map.png"
+              alt="USA/Canada presence map"
+              class="why-v2__map-img"
+            />
           </div>
 
           <div class="why-v2__col why-v2__col--nationwide">
@@ -84,37 +71,13 @@
           </div>
 
           <div class="why-v2__col why-v2__col--graphic">
-            <svg class="why-v2__graphic-svg" viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <!-- Magnifying glass -->
-              <circle cx="280" cy="165" r="130" fill="none" stroke="white" stroke-width="12" opacity="0.9"/>
-              <line x1="375" y1="265" x2="440" y2="330" stroke="white" stroke-width="16" stroke-linecap="round" opacity="0.9"/>
-              <!-- Person inside circle -->
-              <circle cx="280" cy="140" r="28" fill="white" opacity="0.9"/>
-              <path d="M220 210 Q220 185 280 185 Q340 185 340 210" fill="white" opacity="0.9"/>
-              <!-- Smaller person left-1 -->
-              <circle cx="90" cy="155" r="20" fill="white" opacity="0.75"/>
-              <path d="M48 210 Q48 193 90 193 Q132 193 132 210" fill="white" opacity="0.75"/>
-              <!-- Smaller person left-2 -->
-              <circle cx="145" cy="175" r="18" fill="white" opacity="0.65"/>
-              <path d="M108 225 Q108 210 145 210 Q182 210 182 225" fill="white" opacity="0.65"/>
-              <!-- Sparkle stars -->
-              <g transform="translate(420,60)" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.8">
-                <line x1="0" y1="-14" x2="0" y2="14"/><line x1="-14" y1="0" x2="14" y2="0"/>
-                <line x1="-8" y1="-8" x2="8" y2="8"/><line x1="8" y1="-8" x2="-8" y2="8"/>
-              </g>
-              <g transform="translate(240,20)" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6">
-                <line x1="0" y1="-10" x2="0" y2="10"/><line x1="-10" y1="0" x2="10" y2="0"/>
-                <line x1="-6" y1="-6" x2="6" y2="6"/><line x1="6" y1="-6" x2="-6" y2="6"/>
-              </g>
-              <g transform="translate(30,90)" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.6">
-                <line x1="0" y1="-10" x2="0" y2="10"/><line x1="-10" y1="0" x2="10" y2="0"/>
-                <line x1="-6" y1="-6" x2="6" y2="6"/><line x1="6" y1="-6" x2="-6" y2="6"/>
-              </g>
-              <g transform="translate(60,300)" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5">
-                <line x1="0" y1="-8" x2="0" y2="8"/><line x1="-8" y1="0" x2="8" y2="0"/>
-                <line x1="-5" y1="-5" x2="5" y2="5"/><line x1="5" y1="-5" x2="-5" y2="5"/>
-              </g>
-            </svg>
+            <!-- Figma asset: recruitment graphic 01 1 (node 2442:670), 480×360px -->
+            <img
+              src="@/assets/images/v2/recruitment-graphic.png"
+              alt=""
+              aria-hidden="true"
+              class="why-v2__graphic-img"
+            />
           </div>
         </div>
 
@@ -244,45 +207,15 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   padding-top: 24px;
 }
 
-/* ── Map ── */
-.why-v2__map-wrap {
-  position: relative;
-}
-
-.why-v2__map-container {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-}
-
-/* Canada Map actual image — Figma node 425:5692, natural 4:3 displayed stretched */
+/* ── Map pins image — transparent PNG floats on blue panel background ── */
 .why-v2__map-img {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
-  object-position: bottom;  /* matches Figma object-bottom spec */
 }
 
-/* Hawaii inset — Figma node 425:5695, 172×129 display size */
-.why-v2__hawaii-wrap {
-  display: inline-block;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  margin-top: 10px;
-  overflow: hidden;
-  width: 172px;
-}
-
-.why-v2__hawaii-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* ── Recruitment graphic SVG ── */
-.why-v2__graphic-svg {
+/* ── Recruitment graphic image — Figma node 2442:670, 480×360px ── */
+.why-v2__graphic-img {
   width: 100%;
   max-width: 480px;
   height: auto;
@@ -377,8 +310,8 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
     gap: 40px;
   }
 
-  .why-v2__col--map,
-  .why-v2__col--leaders {
+  .why-v2__col--leaders,
+  .why-v2__col--map {
     flex: none;
     width: 100%;
   }

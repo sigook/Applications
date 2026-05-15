@@ -101,7 +101,9 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 }
 
 .app-v2__download {
-  padding-top: 180px;
+  /* Figma: "Download our APP" text sits ~116px below where Certified ends.
+     Reduced from 180px to match that gap more closely. */
+  padding-top: 100px;
 }
 
 .app-v2__dl-title {
