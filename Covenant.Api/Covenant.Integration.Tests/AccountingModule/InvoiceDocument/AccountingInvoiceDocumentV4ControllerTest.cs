@@ -1,4 +1,5 @@
 using Covenant.Api.AccountingModule.InvoiceDocument.Controllers;
+using Covenant.Api.AccountingModule.InvoiceDocument.Models;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
@@ -46,7 +47,12 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
         [Fact]
         public async Task Email()
         {
-            HttpResponseMessage response = await _client.PostAsJsonAsync($"{RouteName}/Email", new { });
+            using var content = new MultipartFormDataContent
+            {
+                { new StringContent("Invoice"), nameof(InvoiceEmailModel.Subject) },
+                { new StringContent("Test message"), nameof(InvoiceEmailModel.Message) }
+            };
+            HttpResponseMessage response = await _client.PostAsync($"{RouteName}/Email", content);
             response.EnsureSuccessStatusCode();
         }
 
