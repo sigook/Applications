@@ -41,7 +41,7 @@
 /* ── Back layer — same dimensions + border-radius, 20px above section ── */
 .certified-v2__back {
   position: absolute;
-  top: 30px;
+  top: 40px;
   left: 0;
   width: 100%;
   height: 577px;
@@ -58,13 +58,13 @@
   width: 100%;
   height: 577px;
   overflow: hidden;
-  border-radius: 200px 0 200px 0;
+  border-radius: 150px 0 150px 0;
 }
 
 /* ── Photo background ── */
 .certified-v2__bg {
   position: absolute;
-  inset: 0 0 21px;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -88,11 +88,11 @@
   left: -0.56%;
 }
 
-/* ── Blue overlay — covers the photo area (same 556px as the photo bg) ── */
+/* ── Blue overlay ── */
 .certified-v2::after {
   content: '';
   position: absolute;
-  inset: 0 0 21px;
+  inset: 0;
   background: rgba(26, 117, 187, 0.45);
   pointer-events: none;
   z-index: 0;
