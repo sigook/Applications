@@ -12,7 +12,7 @@
 
       <!-- Download block — white area, left column -->
       <div class="app-v2__download">
-        <h2 class="app-v2__dl-title">Download our APP</h2>
+        <h2 class="app-v2__dl-title">Download our App</h2>
         <p class="app-v2__dl-sub">
           Smarter Staffing,<br>Powered by Technology
         </p>

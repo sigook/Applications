@@ -134,7 +134,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   height: 1460px;
   overflow: hidden;
   background: transparent;
-  border-radius: 0 var(--r-brand) 0 0;
   margin-top: -700px;
   z-index: 3;
 }
@@ -149,6 +148,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
+  border-radius: 0 var(--r-brand) 0 0;
+  overflow: hidden;
 }
 
 .testimonials-v2__bg--active {
@@ -202,8 +203,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 /* ── Header (top-left of blue area) ────────────────────────────────────────── */
 .testimonials-v2__header {
   position: absolute;
-  top: 472px; /* bg_offset + 100px = 372 + 100 */
-  left: var(--gutter-desktop);
+  top: 472px;
+  left: 0;
 }
 
 .testimonials-v2__title {
@@ -225,7 +226,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 /* ── Quote body (centered, animated) ──────────────────────────────────────── */
 .testimonials-v2__body {
   position: absolute;
-  top: 642px; /* bg_offset + 270px = 372 + 270 */
+  top: 880px;
   left: 50%;
   transform: translateX(-50%);
   width: 380px;
