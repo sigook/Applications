@@ -5,6 +5,7 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.ManagerModule.WorkerProfilePunchCardId
@@ -23,7 +24,14 @@ namespace Covenant.Api.ManagerModule.WorkerProfilePunchCardId
             _workerRepository = workerRepository;
         }
 
+        /// <summary>
+        /// Updates the punch card identifier of a worker profile.
+        /// </summary>
+        /// <param name="profileId">Identifier of the worker profile.</param>
+        /// <param name="model">Punch card identifier data.</param>
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid profileId, [FromBody] WorkerProfilePunchCardIdUpdateModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -33,7 +41,12 @@ namespace Covenant.Api.ManagerModule.WorkerProfilePunchCardId
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
+        /// <summary>
+        /// Gets the punch card identifier of a worker profile.
+        /// </summary>
+        /// <param name="profileId">Identifier of the worker profile.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(WorkerProfilePunchCardIdModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid profileId)
         {
             var model = await _workerRepository.GetWorkerProfilePunchCarId(profileId);

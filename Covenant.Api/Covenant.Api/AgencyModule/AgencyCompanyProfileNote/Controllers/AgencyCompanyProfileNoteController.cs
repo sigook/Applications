@@ -7,6 +7,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyCompanyProfileNote.Controllers
@@ -20,7 +21,12 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileNote.Controllers
         public const string RouteName = "api/AgencyCompanyProfile/{profileId}/Note";
         public AgencyCompanyProfileNoteController(ICompanyRepository repository) => _repository = repository;
 
+        /// <summary>Creates a new note for the specified company profile.</summary>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="model">Note content and color.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(NoteModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(Guid profileId, [FromBody] NoteModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -38,10 +44,19 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileNote.Controllers
             });
         }
 
+        /// <summary>Gets a paginated list of notes for the specified company profile.</summary>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<NoteModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid profileId, Pagination pagination) => Ok(await _repository.GetNotes(profileId, pagination));
 
+        /// <summary>Gets the detail of a company profile note by its identifier.</summary>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="id">Identifier of the note.</param>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(NoteModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(Guid profileId, Guid id)
         {
             var model = await _repository.GetNoteDetail(profileId, id);
@@ -49,7 +64,13 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileNote.Controllers
             return Ok(model);
         }
 
+        /// <summary>Updates an existing company profile note.</summary>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="id">Identifier of the note to update.</param>
+        /// <param name="model">Updated note content and color.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid profileId, Guid id, [FromBody] NoteModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -63,7 +84,12 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileNote.Controllers
             return Ok();
         }
 
+        /// <summary>Soft-deletes a company profile note.</summary>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="id">Identifier of the note to delete.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(Guid profileId, Guid id)
         {
             var entity = await _repository.GetNote(profileId, id);

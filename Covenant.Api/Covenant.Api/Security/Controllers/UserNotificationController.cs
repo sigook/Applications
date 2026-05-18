@@ -4,6 +4,7 @@ using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Security.Controllers
@@ -16,7 +17,9 @@ namespace Covenant.Api.Security.Controllers
         private readonly INotificationRepository _notificationRepository;
         public UserNotificationController(INotificationRepository notificationRepository) => _notificationRepository = notificationRepository;
 
+        /// <summary>Gets the notification preferences for the current user.</summary>
         [HttpGet]
+        [ProducesResponseType(typeof(List<UserNotificationListModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
             var targetAllow = new List<NotificationTarget>();
@@ -30,7 +33,11 @@ namespace Covenant.Api.Security.Controllers
             return Ok(list);
         }
 
+        /// <summary>Updates the notification preferences for the current user.</summary>
+        /// <param name="model">Updated notification preferences.</param>
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put([FromBody] UserNotificationUpdateModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);

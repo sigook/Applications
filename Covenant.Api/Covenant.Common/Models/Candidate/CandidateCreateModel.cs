@@ -9,7 +9,7 @@ namespace Covenant.Common.Models.Candidate
         public BaseModel<Guid> Gender { get; set; }
         public bool HasVehicle { get; set; }
         public string ResidencyStatus { get; set; }
-        public string Source { get; set; }
+        public Guid? SourceId { get; set; }
         public bool Dnu { get; set; }
         public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = new List<PhoneNumberModel>();
         public IEnumerable<SkillModel> Skills { get; set; } = new List<SkillModel>();

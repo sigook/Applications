@@ -7,7 +7,21 @@
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		<UserSecretsId>6f9fc3c1-578a-490d-a3c0-e9afb502fc69</UserSecretsId>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<!-- Generate the OpenAPI document on every build as the API contract source of truth. -->
+		<OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+		<OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+		<OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\..\.docs\technical</OpenApiDocumentsDirectory>
 	</PropertyGroup>
+
+	<!-- The generator emits "{ProjectName}.json"; publish it under the canonical name. -->
+	<Target Name="RenameOpenApiDocument" AfterTargets="GenerateOpenApiDocuments">
+		<PropertyGroup>
+			<_GeneratedOpenApiFile>$(OpenApiDocumentsDirectory)\$(MSBuildProjectName).json</_GeneratedOpenApiFile>
+			<_CanonicalOpenApiFile>$(OpenApiDocumentsDirectory)\openapi.json</_CanonicalOpenApiFile>
+		</PropertyGroup>
+		<Move SourceFiles="$(_GeneratedOpenApiFile)" DestinationFiles="$(_CanonicalOpenApiFile)"
+			  Condition="Exists('$(_GeneratedOpenApiFile)')" OverwriteReadOnlyFiles="true" />
+	</Target>
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
 		<PackageReference Include="AutoMapper.Collection" Version="9.0.0" />
@@ -23,7 +37,12 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.11" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+		<PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.11">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Update="appsettings.Development.json">

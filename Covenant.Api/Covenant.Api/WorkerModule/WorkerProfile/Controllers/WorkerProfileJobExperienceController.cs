@@ -3,6 +3,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
@@ -15,7 +16,14 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
         private readonly IWorkerRepository _workerRepository;
         public WorkerProfileJobExperienceController(IWorkerRepository workerRepository) => _workerRepository = workerRepository;
 
+        /// <summary>
+        /// Adds a job experience entry to a worker profile.
+        /// </summary>
+        /// <param name="profileId">Identifier of the worker profile.</param>
+        /// <param name="model">Job experience data to add.</param>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(Guid profileId, [FromBody] WorkerProfileJobExperienceModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -28,7 +36,15 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Updates an existing job experience entry of a worker profile.
+        /// </summary>
+        /// <param name="profileId">Identifier of the worker profile.</param>
+        /// <param name="id">Identifier of the job experience entry.</param>
+        /// <param name="model">Updated job experience data.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid profileId, Guid id, [FromBody] WorkerProfileJobExperienceModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -41,7 +57,14 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Deletes a job experience entry from a worker profile.
+        /// </summary>
+        /// <param name="profileId">Identifier of the worker profile.</param>
+        /// <param name="id">Identifier of the job experience entry.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(Guid profileId, Guid id)
         {
             var entity = await _workerRepository.GetProfile(p => p.Id == profileId);

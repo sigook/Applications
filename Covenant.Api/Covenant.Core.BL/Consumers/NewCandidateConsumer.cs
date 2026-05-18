@@ -80,7 +80,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                                 Address = message.Address,
                                 HasVehicle = message.HasVehicle,
                                 ResidencyStatus = message.Status,
-                                Source = ResolveSource(message.Source, message.Origin),
+                                SourceId = message.SourceId,
                                 FileName = message.FileName,
                             };
                             if (!string.IsNullOrWhiteSpace(message.Phone))
@@ -162,15 +162,5 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
             await client.SendMessageAsync(response, serviceBusConfiguration.CreateApplicantTopic);
         }
         await args.CompleteMessageAsync(args.Message);
-    }
-
-    // Falls back to the originating site (Covenant/Sigook) when no specific source was selected.
-    private static string ResolveSource(string source, string origin)
-    {
-        if (string.IsNullOrWhiteSpace(source) || source.Equals("Other", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.IsNullOrWhiteSpace(origin) ? "Other" : origin;
-        }
-        return source;
     }
 }

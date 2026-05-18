@@ -7,6 +7,7 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
@@ -27,13 +28,19 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
             this.agencyRepository = agencyRepository;
         }
 
+        /// <summary>Gets all personnel of the current agency.</summary>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<AgencyPersonnelModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
             return Ok(await agencyRepository.GetAllPersonnel(User.GetAgencyId()));
         }
 
+        /// <summary>Creates a new personnel record for the current agency.</summary>
+        /// <param name="model">Personnel data.</param>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] AgencyPersonnelModel model)
         {
             var result = await agencyService.CreateAgencyPersonnel(model);
@@ -41,7 +48,11 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
             return Ok();
         }
 
+        /// <summary>Gets a personnel record of the current agency by its identifier.</summary>
+        /// <param name="id">Identifier of the personnel record.</param>
         [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(AgencyPersonnelModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             var model = await agencyRepository.GetPersonnel(User.GetAgencyId(), id);
@@ -49,7 +60,13 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
             return Ok(model);
         }
 
+        /// <summary>Deletes a personnel record of the current agency.</summary>
+        /// <param name="service">Identity server service used to remove the associated user or claim.</param>
+        /// <param name="id">Identifier of the personnel record to delete.</param>
         [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(
             [FromServices] IIdentityServerService service,
             [FromRoute] Guid id)

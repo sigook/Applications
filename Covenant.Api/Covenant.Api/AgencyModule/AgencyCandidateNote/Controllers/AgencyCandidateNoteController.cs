@@ -6,6 +6,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers
@@ -21,7 +22,12 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers
 
         public AgencyCandidateNoteController(ICandidateRepository repository) => candidateRepository = repository;
 
+        /// <summary>Creates a new note for the specified candidate.</summary>
+        /// <param name="candidateId">Identifier of the candidate the note belongs to.</param>
+        /// <param name="model">Note content and color.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(NoteModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Post(Guid candidateId, [FromBody] NoteModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -39,7 +45,12 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers
             });
         }
 
+        /// <summary>Gets the detail of a candidate note by its identifier.</summary>
+        /// <param name="candidateId">Identifier of the candidate the note belongs to.</param>
+        /// <param name="id">Identifier of the note.</param>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(NoteModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetById(Guid candidateId, Guid id)
         {
             var note = await candidateRepository.GetNoteDetail(candidateId, id);
@@ -47,10 +58,20 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers
             return Ok(note);
         }
 
+        /// <summary>Gets a paginated list of notes for the specified candidate.</summary>
+        /// <param name="candidateId">Identifier of the candidate.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<NoteModel>), StatusCodes.Status200OK)]
         public async Task<ActionResult> Get(Guid candidateId, Pagination pagination) => Ok(await candidateRepository.GetNotes(candidateId, pagination));
 
+        /// <summary>Updates an existing candidate note.</summary>
+        /// <param name="candidateId">Identifier of the candidate the note belongs to.</param>
+        /// <param name="id">Identifier of the note to update.</param>
+        /// <param name="model">Updated note content and color.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid candidateId, Guid id, [FromBody] NoteModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -64,7 +85,12 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers
             return Ok();
         }
 
+        /// <summary>Soft-deletes a candidate note.</summary>
+        /// <param name="candidateId">Identifier of the candidate the note belongs to.</param>
+        /// <param name="id">Identifier of the note to delete.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> DeleteNote(Guid candidateId, Guid id)
         {
             var entity = await candidateRepository.GetNote(candidateId, id);

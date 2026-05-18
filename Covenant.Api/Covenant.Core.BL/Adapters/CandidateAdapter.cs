@@ -16,8 +16,6 @@ namespace Covenant.Core.BL.Adapters;
 
 public class CandidateAdapter : ICandidateAdapter
 {
-    private IEnumerable<BaseModel<Guid>> genders;
-
     private readonly IAgencyRepository agencyRepository;
     private readonly ICatalogRepository catalogRepository;
     private readonly IIdentityServerService identityServerService;
@@ -38,31 +36,20 @@ public class CandidateAdapter : ICandidateAdapter
         this.filesContainer = filesContainer;
     }
 
-    private IEnumerable<BaseModel<Guid>> Genders
-    {
-        get
-        {
-            if (genders is null)
-            {
-                genders = catalogRepository
-                    .GetGender()
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            return genders;
-        }
-    }
-
     public async Task<BulkCandidate> ConvertCandidateCsvToCandidateBulk(CandidateCsvModel model, Guid agencyId, Request request)
     {
-        var gender = Genders.FirstOrDefault(g => g.Value == model.Gender);
+        var genders = await catalogRepository.GetGender();
+        var gender = genders.FirstOrDefault(g => g.Value.Equals(model.Gender, StringComparison.OrdinalIgnoreCase));
+        var sources = await catalogRepository.GetSources();
+        var source = sources.FirstOrDefault(s => s.Value.Equals(model.Source, StringComparison.OrdinalIgnoreCase))
+            ?? sources.FirstOrDefault(s => s.Value.Equals("Other", StringComparison.OrdinalIgnoreCase));
         var bulkCandidate = new BulkCandidate();
         var candidate = new Candidate(agencyId, model.FullName)
         {
             Address = model.Address,
             GenderId = gender?.Id,
             HasVehicle = false,
-            Source = model.Source,
+            SourceId = source?.Id,
             ResidencyStatus = model.Status
         };
         bulkCandidate.Candidate = candidate;
@@ -103,7 +90,7 @@ public class CandidateAdapter : ICandidateAdapter
             Address = model.Address,
             GenderId = model.Gender?.Id,
             HasVehicle = model.HasVehicle,
-            Source = model.Source,
+            SourceId = model.SourceId,
             Recruiter = recruiter,
             ResidencyStatus = model.ResidencyStatus,
         };

@@ -11,8 +11,7 @@ public class CandidateViewModel
     public string Address { get; set; }
     public string FileName { get; set; }
     public bool HasVehicle { get; set; }
-    public string Source { get; set; }
-    public string Origin { get; set; }
+    public Guid? SourceId { get; set; }
     public Guid? RequestId { get; set; }
 
     public override string ToString()

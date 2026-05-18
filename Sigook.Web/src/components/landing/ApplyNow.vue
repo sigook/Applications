@@ -76,14 +76,14 @@
                 <div class="col-12 col-padding">
                   <b-field label="How did you hear about us?">
                     <b-select v-model="source" name="source" expanded placeholder="Select a source">
-                      <option v-for="(item, index) in sources" :key="'source' + index" :value="item">{{ item }}
+                      <option v-for="(item, index) in sources" :key="'source' + index" :value="item.id">{{ item.value }}
                       </option>
                     </b-select>
                   </b-field>
                 </div>
                 <div class="col-12 col-padding">
                   <b-field :type="resumeError ? 'is-danger' : ''" :message="resumeError"
-                    :label="source === 'Linkedin' ? 'Resume' : 'Resume (Optional)'">
+                    :label="selectedSourceName === 'Linkedin' ? 'Resume' : 'Resume (Optional)'">
                     <b-field class="file is-primary" :class="{ 'has-name': !!file }">
                       <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" rounded>
                         <span class="file-cta">
@@ -183,6 +183,7 @@ import { generateFileName } from "@/utils/buildWorkerFormData";
 import { getCountries } from "@/api/locationApi";
 import { getSources } from "@/api/catalogApi";
 import { submitCandidate } from "@/api/websiteApi";
+import type { Source } from "@/types/common";
 import { useStickyForm } from '@/composables/useStickyForm';
 import PhoneInput from "@/components/PhoneInput.vue";
 
@@ -244,7 +245,9 @@ watch(isNewApplicantTab, (newVal) => {
 const activeStep = ref(0);
 const isLoading = ref(false);
 const countries = ref<any[]>([]);
-const sources = ref<string[]>([]);
+const sources = ref<Source[]>([]);
+const selectedSourceName = computed(() =>
+  sources.value.find((s: Source) => s.id === source.value)?.value ?? '');
 const file = ref<File | null>(null);
 const resumeError = ref('');
 watch(file, () => { resumeError.value = ''; });
@@ -261,6 +264,11 @@ const selectedCountryName = computed(() => {
 
 (async () => {
   [countries.value, sources.value] = await Promise.all([getCountries(), getSources()]);
+  // Default to the originating site ("Sigook") when the applicant does not pick a source.
+  if (!source.value) {
+    const defaultSource = sources.value.find((s: Source) => s.value === 'Sigook');
+    if (defaultSource) form.setFieldValue('source', defaultSource.id as any);
+  }
 })();
 
 function goToPreviousStep() {
@@ -294,7 +302,7 @@ async function validateStep1() {
 async function validateStep2() {
   form.markInteracted(['status']);
   const r = await form.validateField('status');
-  resumeError.value = source.value === 'Linkedin' && !file.value
+  resumeError.value = selectedSourceName.value === 'Linkedin' && !file.value
     ? 'Resume is required when you apply via Linkedin'
     : '';
   return r.valid && !resumeError.value;
@@ -304,7 +312,7 @@ async function createCandidate() {
   form.markInteracted();
   const { valid } = await form.validate();
   if (!valid) return;
-  if (isNewApplicantTab.value && source.value === 'Linkedin' && !file.value) {
+  if (isNewApplicantTab.value && selectedSourceName.value === 'Linkedin' && !file.value) {
     resumeError.value = 'Resume is required when you apply via Linkedin';
     activeStep.value = 1;
     showAlertError('Resume is required when you apply via Linkedin');
@@ -333,8 +341,7 @@ async function createCandidate() {
       address: address.value,
       fileName,
       hasVehicle: hasVehicle.value,
-      source: source.value || null,
-      origin: 'Sigook',
+      sourceId: source.value || null,
       requestId: requestId.value,
     };
     formData.append('data', JSON.stringify(candidateData));

@@ -120,6 +120,12 @@ namespace Covenant.Infrastructure.Repositories
             .Select(i => new BaseModel<Guid>(i.Id, i.Value))
             .ToListAsync();
 
+        public Task<List<BaseModel<Guid>>> GetSources() =>
+            _context.Source
+            .OrderBy(c => c.Value)
+            .Select(c => new BaseModel<Guid>(c.Id, c.Value))
+            .ToListAsync();
+
         public Task<List<JobPositionDetailModel>> GetJobPositions() =>
             _context.JobPosition.Where(c => !c.IsDeleted).Select(s => new JobPositionDetailModel
             {

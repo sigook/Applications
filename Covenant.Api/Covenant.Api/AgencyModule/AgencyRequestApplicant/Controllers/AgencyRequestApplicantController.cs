@@ -8,6 +8,7 @@ using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
@@ -26,7 +27,13 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
             this.candidateRepository = candidateRepository;
         }
 
+        /// <summary>Adds an applicant (candidate or worker) to the specified request.</summary>
+        /// <param name="workerRequestRepository">Worker request repository used to validate worker applicants.</param>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">Applicant data identifying a candidate or a worker profile.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(RequestApplicantDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromServices] IWorkerRequestRepository workerRequestRepository, [FromRoute] Guid requestId, [FromBody] RequestApplicantModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -59,7 +66,12 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
             return Ok(new RequestApplicantDetailModel { Id = entity.Id, CreatedBy = entity.CreatedBy, CreatedAt = entity.CreatedAt });
         }
 
+        /// <summary>Updates the comments of a request applicant.</summary>
+        /// <param name="id">Identifier of the request applicant.</param>
+        /// <param name="model">Updated comments.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid id, [FromBody] CommentsModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -71,10 +83,18 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
             return Ok();
         }
 
+        /// <summary>Gets a paginated list of applicants for the specified request.</summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="filter">Applicant filter and pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<RequestApplicantDetailModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid requestId, GetRequestApplicantFilter filter) => Ok(await _repository.GetRequestApplicants(requestId, filter));
 
+        /// <summary>Searches for potential applicants for the specified request.</summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="searchTerm">Term used to filter potential applicants.</param>
         [HttpGet("Search")]
+        [ProducesResponseType(typeof(List<ApplicantSearchResultModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Search(Guid requestId, [FromQuery] string searchTerm)
         {
             var agencyId = User.GetAgencyId();
@@ -82,7 +102,11 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
             return Ok(results);
         }
 
+        /// <summary>Removes an applicant from a request.</summary>
+        /// <param name="id">Identifier of the request applicant to delete.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(Guid id)
         {
             RequestApplicant entity = await _repository.GetRequestApplicant(c => c.Id == id);

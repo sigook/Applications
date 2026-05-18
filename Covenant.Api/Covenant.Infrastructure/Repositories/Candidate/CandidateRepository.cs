@@ -54,7 +54,7 @@ namespace Covenant.Infrastructure.Repositories.Candidate
                 Email = c.Email,
                 Address = c.Address,
                 PostalCode = c.PostalCode,
-                Source = c.Source,
+                Source = c.Source.Value,
                 PhoneNumbers = c.PhoneNumbers.Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }),
                 Skills = c.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => new SkillModel { Id = s.Id, Skill = s.Skill }),
                 Requests = c.RequestApplicants.Where(wC => wC.CandidateId == c.Id).OrderByDescending(oC => oC.CreatedAt).Select(sC => new BaseModel<Guid> { Id = sC.Request.Id, Value = sC.Request.NumberId.ToString() }),

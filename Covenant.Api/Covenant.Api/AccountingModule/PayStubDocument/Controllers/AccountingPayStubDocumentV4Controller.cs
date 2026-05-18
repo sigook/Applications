@@ -8,6 +8,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
 using Covenant.HtmlTemplates.Views.Billing.Payroll;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
@@ -20,7 +21,15 @@ public class AccountingPayStubDocumentV4Controller : AccountingBaseController
     public const string RouteName = "api/v4/Accounting/PayStub/{payStubId}/Document";
     private const string PayStubEmailTemplatePath = "/Views/Billing/Payroll/PayrollEmail.cshtml";
 
+    /// <summary>
+    /// Generates and returns the pay stub document as a PDF file.
+    /// </summary>
+    /// <param name="payStubPdf">Pay stub PDF generator.</param>
+    /// <param name="agencyRepository">Agency repository.</param>
+    /// <param name="payStubId">Identifier of the pay stub.</param>
     [HttpGet("PDF")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPdf(
         [FromServices] PayStubPdf payStubPdf,
         [FromServices] IAgencyRepository agencyRepository,
@@ -33,8 +42,17 @@ public class AccountingPayStubDocumentV4Controller : AccountingBaseController
         });
     }
 
+    /// <summary>
+    /// Generates the pay stub PDF and emails it to the worker.
+    /// </summary>
+    /// <param name="payStubPdf">Pay stub PDF generator.</param>
+    /// <param name="agencyRepository">Agency repository.</param>
+    /// <param name="emailService">Email delivery service.</param>
+    /// <param name="payStubId">Identifier of the pay stub.</param>
     [HttpPost]
     [Route("Email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post(
         [FromServices] PayStubPdf payStubPdf,
         [FromServices] IAgencyRepository agencyRepository,

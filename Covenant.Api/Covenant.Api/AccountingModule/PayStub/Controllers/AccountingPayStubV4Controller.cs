@@ -4,6 +4,7 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AccountingModule.PayStub.Controllers;
@@ -28,8 +29,14 @@ public class AccountingPayStubV4Controller : AccountingBaseController
         this.payStubService = payStubService;
     }
 
+    /// <summary>
+    /// Creates a manual pay stub. Obsolete.
+    /// </summary>
+    /// <param name="model">Manual pay stub creation data.</param>
     [Obsolete]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreatePayStubModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -39,7 +46,13 @@ public class AccountingPayStubV4Controller : AccountingBaseController
         return CreatedAtAction(nameof(GetById), new { id }, new { });
     }
 
+    /// <summary>
+    /// Gets the detail of a pay stub by its identifier.
+    /// </summary>
+    /// <param name="id">Identifier of the pay stub.</param>
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(PayStubDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var detail = await _payStubRepository.GetPayStubDetail(id);
@@ -47,7 +60,12 @@ public class AccountingPayStubV4Controller : AccountingBaseController
         return NotFound();
     }
 
+    /// <summary>
+    /// Deletes a pay stub by its identifier.
+    /// </summary>
+    /// <param name="id">Identifier of the pay stub to delete.</param>
     [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         await accountingService.DeletePayStub(id);

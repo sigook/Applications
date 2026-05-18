@@ -69,9 +69,10 @@
                         variant="outlined"></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-select v-model="fields.source.value" v-bind="fields.sourceProps"
-                        label="How did you hear about us?" :items="sources" :error-messages="errors.source"
-                        :loading="loadingSources" clearable variant="outlined"></v-select>
+                      <v-select v-model="fields.sourceId.value" v-bind="fields.sourceIdProps"
+                        label="How did you hear about us?" :items="sources" item-title="value" item-value="id"
+                        :error-messages="errors.sourceId" :loading="loadingSources" clearable
+                        variant="outlined"></v-select>
                     </v-col>
                     <v-col cols="12">
                       <v-file-input v-model="resumeFiles" :label="resumeRequired ? 'Resume / CV *' : 'Resume / CV (Optional)'" accept=".pdf,.doc,.docx"
@@ -138,7 +139,7 @@
                             <strong>Immigration Status:</strong> {{ values.status || 'Not selected' }}
                           </div>
                           <div class="mb-1 text-body-2">
-                            <strong>How did you hear about us?:</strong> {{ values.source || 'Not selected' }}
+                            <strong>How did you hear about us?:</strong> {{ selectedSourceName || 'Not selected' }}
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Transportation:</strong> {{ values.hasVehicle ? 'Own Vehicle' : 'Public Transit' }}
@@ -222,7 +223,7 @@ import { applicationService } from '@/services/applicationService'
 import { locationService } from '@/services/locationService'
 import { RESIDENCY_STATUS } from '@/services/types/application.types'
 import type { Job } from '@/services/types/job.types'
-import type { Country } from '@/services/types/application.types'
+import type { BaseModel, Country } from '@/services/types/application.types'
 
 const props = defineProps<{
   modelValue: boolean
@@ -239,7 +240,7 @@ const isOpen = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const { currentStep, values, errors, fields, validateCurrentStep, resetForm, setFieldValue } =
+const { currentStep, values, errors, fields, validateCurrentStep, resetForm, setFieldValue, setErrors } =
   useApplicationForm()
 
 const activeTab = ref('new')
@@ -247,7 +248,7 @@ const countries = ref<Country[]>([])
 const loadingCountries = ref(false)
 const suggestedSkills = ref<string[]>([])
 const loadingSkills = ref(false)
-const sources = ref<string[]>([])
+const sources = ref<BaseModel[]>([])
 const loadingSources = ref(false)
 const submitting = ref(false)
 const phoneFormatted = ref('')
@@ -266,7 +267,11 @@ const dialogTitle = computed(() => {
   return 'Register with Us'
 })
 
-const resumeRequired = computed(() => values.source === 'Linkedin')
+const selectedSourceName = computed(
+  () => sources.value.find((s) => s.id === values.sourceId)?.value || ''
+)
+
+const resumeRequired = computed(() => selectedSourceName.value === 'Linkedin')
 
 const selectedCountryName = computed(() => {
   const country = countries.value.find((c) => c.id === values.countryId)
@@ -301,6 +306,11 @@ onMounted(async () => {
   loadingSources.value = true
   try {
     sources.value = await locationService.getSources()
+    // Default to the originating site ("Covenant") when the applicant does not pick a source.
+    if (!values.sourceId) {
+      const defaultSource = sources.value.find((s) => s.value === 'Covenant')
+      if (defaultSource) setFieldValue('sourceId', defaultSource.id)
+    }
   } catch (error) {
     console.error('Failed to load sources:', error)
   } finally {
@@ -335,14 +345,22 @@ function handleResumeChange(files: File | File[] | null) {
 
 async function handleNext(next: () => void) {
   const isValid = await validateCurrentStep()
-  if (isValid) {
-    next()
+  if (!isValid) return
+  if (currentStep.value === 2 && resumeRequired.value && !values.resume) {
+    setErrors({ resume: 'Resume is required when you apply via Linkedin' })
+    return
   }
+  next()
 }
 
 async function handleSubmit() {
   const isValid = await validateCurrentStep()
   if (!isValid) return
+  if (resumeRequired.value && !values.resume) {
+    setErrors({ resume: 'Resume is required when you apply via Linkedin' })
+    currentStep.value = 2
+    return
+  }
 
   submitting.value = true
   try {
