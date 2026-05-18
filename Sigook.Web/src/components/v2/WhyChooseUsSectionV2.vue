@@ -163,10 +163,10 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   border-radius: 150px 0 150px 0;
   margin-top: -196px;
   z-index: 1;
-  padding-bottom: 320px;
+  padding-bottom: 160px;
   overflow: hidden;
   /* Figma: Rectangle 16 (node 425:5688) height = 1754px */
-  min-height: 2100px;
+  min-height: 1900px;
 }
 
 .why-v2__panel-inner {
