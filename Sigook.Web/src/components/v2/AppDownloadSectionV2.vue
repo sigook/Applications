@@ -16,9 +16,9 @@
         <p class="app-v2__dl-sub">
           Smarter Staffing,<br>Powered by Technology
         </p>
-        <a href="#" class="btn btn--primary btn--md app-v2__dl-btn" @click.prevent>
+        <a href="#" class="btn btn--primary btn--sm app-v2__dl-btn" @click.prevent>
           Download
-          <img src="@/assets/images/v2/app-arrow.svg" alt="" class="app-v2__dl-arrow" aria-hidden="true" />
+          <ArrowIconV2 :width="32" :height="11" :stroke-width="1.5" />
         </a>
       </div>
 
@@ -41,22 +41,24 @@
         <img src="@/assets/images/v2/app-hand-phone.png" alt="" class="app-v2__phone-img" />
       </div>
 
-      <!-- Device graphic — 3 absolutely-positioned images matching Figma nodes 425:5815-5817 -->
+      <!-- Device graphic -->
       <img src="@/assets/images/v2/app-phone-ellipse.svg"      class="app-v2__device-ellipse"     alt="" aria-hidden="true" />
       <img src="@/assets/images/v2/app-phone-graphic-blue.png" class="app-v2__device-phone-blue"  alt="" aria-hidden="true" />
       <img src="@/assets/images/v2/app-phone-graphic.png"      class="app-v2__device-phone"       alt="" aria-hidden="true" />
 
-      <!-- Stores pill — bottom center (Figma: left 666px, top 940px, 128×44) -->
-      <div class="app-v2__stores">
-        <img src="@/assets/images/v2/app-store-apple.png"  alt="Download on App Store"  class="app-v2__store-icon app-v2__store-icon--apple" />
-        <img src="@/assets/images/v2/app-store-google.png" alt="Get it on Google Play"  class="app-v2__store-icon app-v2__store-icon--google" />
-      </div>
+      <!-- Stores pill — bottom center -->
+      <img
+        src="@/assets/images/v2/app-stores-pill.svg"
+        alt="Download on App Store and Google Play"
+        class="app-v2__stores"
+      />
 
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 </script>
 
 <style scoped>
@@ -70,6 +72,7 @@
   overflow: hidden;
   background: white;
   min-height: 1380px;
+  z-index: 1;
 }
 
 /* --- Wave backgrounds (full-bleed, start at 480px from section top) --- */
@@ -140,17 +143,12 @@
   gap: 10px;
 }
 
-.app-v2__dl-arrow {
-  width: 32px;
-  height: auto;
-}
-
 /* --- Platform block (blue wave area) --- */
 .app-v2__platform {
   position: absolute;
-  left: 193px;
-  top: 606px;
-  width: 595px;
+  left: 220px;
+  top: 580px;
+  width: 520px;
   z-index: 3;
 }
 
@@ -161,8 +159,8 @@
   line-height: 1.15;
   color: white;
   text-transform: none;
-  margin: 0 0 70px;
-  width: 343px;
+  margin: 0 0 48px;
+  width: 100%;
 }
 
 .app-v2__list {
@@ -170,9 +168,9 @@
   font-size: 15px;
   line-height: 1.6;
   color: white;
-  padding-left: 22px;
-  margin: 0 0 0 92px;
-  width: 481px;
+  padding-left: 20px;
+  margin: 0;
+  width: 100%;
 }
 
 .app-v2__list li {
@@ -182,39 +180,37 @@
 /* --- Hand+phone image — sits between cobalt wave (z:1) and cyan wave (z:2) --- */
 .app-v2__phone {
   position: absolute;
-  left: 602px;
+  left: 600px;
   top: 0;
-  width: 449px;
-  height: 760px;
-  z-index: 1;
+  width: 450px;
+  z-index: 1; /* behind cyan wave (z:2) so the wave covers the wrist naturally */
 }
 
 .app-v2__phone-img {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
+  height: auto;
+  display: block;
   transform: rotate(-0.88deg);
-  transform-origin: top left;
+  transform-origin: top center;
 }
 
-/* --- Device graphic — 3 images matching Figma nodes 425:5815, 5816, 5817 --- */
+/* --- Device graphic — half-circle cropped at left edge, logo in visible right half --- */
 .app-v2__device-ellipse {
   position: absolute;
-  left: -33px;
-  top: 703px;
-  width: 280px;
-  height: 280px;
+  left: -128px;
+  top: 690px;
+  width: 255px;
+  height: 255px;
   z-index: 4;
   object-fit: contain;
 }
 
 .app-v2__device-phone-blue {
   position: absolute;
-  left: 82.33px;
-  top: 729.82px;
-  width: 151.842px;
-  height: 219.327px;
+  left: 8px;
+  top: 726px;
+  width: 126px;
+  height: 182px;
   opacity: 0.5;
   z-index: 5;
   object-fit: contain;
@@ -222,10 +218,10 @@
 
 .app-v2__device-phone {
   position: absolute;
-  left: 95.2px;
-  top: 722.85px;
-  width: 145.006px;
-  height: 217.51px;
+  left: 12px;
+  top: 740px;
+  width: auto;
+  height: 160px;
   z-index: 6;
   object-fit: contain;
 }
@@ -235,20 +231,11 @@
   position: absolute;
   left: 666px;
   top: 940px;
-  width: 128px;
-  height: 44px;
-  background: var(--c-overlay-blue);
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 8px;
+  width: 152px;
+  height: auto;
   z-index: 3;
+  display: block;
 }
-
-.app-v2__store-icon--apple  { width: 31px; height: 31px; object-fit: contain; }
-.app-v2__store-icon--google { width: 25px; height: 29px; object-fit: contain; }
 
 /* --- Mobile (<= 1023px) --- */
 @media (max-width: 1023px) {

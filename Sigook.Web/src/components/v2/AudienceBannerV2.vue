@@ -217,15 +217,16 @@ const props = defineProps<{
   position: absolute;
   inset: 0;
   z-index: 1;
+  overflow: hidden;
 }
 
 .talents-v2__photo-img {
   position: absolute;
-  height: 356%;
-  left: -7.59%;
-  top: -48.23%;
-  width: 108.04%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center 30%;
 }
 
 /* Semi-transparent red overlay that stays on top of photo at all times */

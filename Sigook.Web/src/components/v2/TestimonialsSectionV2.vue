@@ -1,6 +1,6 @@
 <template>
   <section class="testimonials-v2">
-    <!-- Slide backgrounds — fade between them -->
+    <!-- Slide backgrounds — fade between them, start at the visible zone -->
     <div
       v-for="(slide, i) in testimonials"
       :key="i"
@@ -8,11 +8,12 @@
       :class="{ 'testimonials-v2__bg--active': currentSlide === i }"
       aria-hidden="true"
     >
-      <img :src="slide.bg" alt="" class="testimonials-v2__bg-img" />
+      <img v-if="slide.bg" :src="slide.bg" alt="" class="testimonials-v2__bg-img" />
+      <div v-else class="testimonials-v2__bg-color" :style="{ background: slide.gradient }"></div>
       <div class="testimonials-v2__overlay"></div>
     </div>
 
-    <!-- Decorative quotation marks (top-right) -->
+    <!-- Decorative quotation marks -->
     <img
       src="@/assets/images/v2/testimonials-quote-mark.png"
       alt=""
@@ -62,18 +63,21 @@ import officeBg from '@/assets/images/v2/testimonials-office.jpg'
 const testimonials = [
   {
     bg: officeBg,
+    gradient: '',
     quote: '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
     author: 'HR Manager, Manufacturer',
     location: 'Doral, Florida',
   },
   {
-    bg: officeBg, // placeholder — replace with a different photo when available
+    bg: '',
+    gradient: 'linear-gradient(135deg, #0f2f44 0%, #1575bb 60%, #13629e 100%)',
     quote: '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
     author: 'Business Owner, Retail',
     location: 'Vancouver, BC',
   },
   {
-    bg: officeBg, // placeholder — replace with a different photo when available
+    bg: '',
+    gradient: 'linear-gradient(135deg, #13629e 0%, #00adef 60%, #1575bb 100%)',
     quote: '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
     author: 'Operations Manager, Logistics',
     location: 'Montréal, QC',
@@ -106,19 +110,42 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
 <style scoped>
+/*
+  Geometry (desktop):
+  ─────────────────────────────────────────────────────────────
+  AppDownload height          = 1380px
+  Stores pill bottom          = 940 + 52 = 992px  (from AppDL top)
+  Target bg start             = 992 + 60 = 1052px (from AppDL top)
+
+  testimonials margin-top     = -700px
+    → section top             = 1380 - 700 = 680px (from AppDL top)
+  bg_offset                   = 1052 - 680 = 372px (inside section)
+    → bg starts at AppDL y    = 680 + 372 = 1052  ✓
+
+  Transparent zone (shows AppDownload through): 0 – 372px within section
+  Blue zone (covers AppDownload + extends below): 372px – 1460px within section
+  Visible testimonials below AppDownload end: 1460 - 700 = 760px
+  ─────────────────────────────────────────────────────────────
+*/
+
 /* ── Section shell ─────────────────────────────────────────────────────────── */
 .testimonials-v2 {
   position: relative;
-  height: 760px;
+  height: 1460px;
   overflow: hidden;
-  background: var(--c-brand-navy);
+  background: transparent;
   border-radius: 0 var(--r-brand) 0 0;
+  margin-top: -700px;
+  z-index: 3;
 }
 
-/* ── Slide backgrounds ─────────────────────────────────────────────────────── */
+/* ── Slide backgrounds — start at 372px (= 60px below stores pill) ─────────── */
 .testimonials-v2__bg {
   position: absolute;
-  inset: 0;
+  top: 372px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
@@ -135,6 +162,12 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   object-position: center top;
 }
 
+/* Gradient placeholder (slides without a photo) */
+.testimonials-v2__bg-color {
+  position: absolute;
+  inset: 0;
+}
+
 .testimonials-v2__overlay {
   position: absolute;
   inset: 0;
@@ -148,7 +181,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 /* ── Decorative quotation mark ─────────────────────────────────────────────── */
 .testimonials-v2__quote-mark {
   position: absolute;
-  top: -10px;
+  top: 364px;
   right: 0;
   width: 45px;
   height: 45px;
@@ -160,16 +193,16 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 .testimonials-v2__inner {
   position: relative;
   z-index: 1;
-  height: 760px;
+  height: 1460px;
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--gutter-desktop);
 }
 
-/* ── Header (top-left, static) ─────────────────────────────────────────────── */
+/* ── Header (top-left of blue area) ────────────────────────────────────────── */
 .testimonials-v2__header {
   position: absolute;
-  top: 100px;
+  top: 472px; /* bg_offset + 100px = 372 + 100 */
   left: var(--gutter-desktop);
 }
 
@@ -192,7 +225,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 /* ── Quote body (centered, animated) ──────────────────────────────────────── */
 .testimonials-v2__body {
   position: absolute;
-  top: 270px;
+  top: 642px; /* bg_offset + 270px = 372 + 270 */
   left: 50%;
   transform: translateX(-50%);
   width: 380px;
@@ -275,6 +308,19 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     height: auto;
     min-height: 500px;
     padding-bottom: 48px;
+    margin-top: 0;
+    background: var(--c-brand-navy);
+  }
+
+  .testimonials-v2__bg {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .testimonials-v2__quote-mark {
+    top: 0;
   }
 
   .testimonials-v2__inner {

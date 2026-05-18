@@ -163,27 +163,33 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   border-radius: 150px 0 150px 0;
   margin-top: -196px;
   z-index: 1;
-  padding-bottom: 120px;
+  padding-bottom: 320px;
   overflow: hidden;
   /* Figma: Rectangle 16 (node 425:5688) height = 1754px */
-  min-height: 1754px;
+  min-height: 2100px;
 }
 
 .why-v2__panel-inner {
   max-width: 1440px;
   margin: 0 auto;
   padding: 248px 80px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ── Rows ── */
 .why-v2__row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: 92px;
+  width: 100%;
+  max-width: 1100px;
 }
 
 .why-v2__row--bottom {
-  margin-top: 72px;
+  margin-top: 120px;
 }
 
 /* ── Columns ── */
@@ -192,21 +198,22 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 }
 
 .why-v2__col--map {
-  flex: 0 0 575px;
+  flex: 1;
 }
 
 .why-v2__col--nationwide {
-  padding-top: 48px;
+  flex: 1;
 }
 
 .why-v2__col--leaders {
-  flex: 0 0 575px;
+  flex: 1;
 }
 
 .why-v2__col--graphic {
+  flex: 1;
   display: flex;
   align-items: center;
-  padding-top: 24px;
+  justify-content: center;
 }
 
 /* ── Map pins image — transparent PNG floats on blue panel background ── */
@@ -222,6 +229,7 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   max-width: 480px;
   height: auto;
   display: block;
+  margin: 0 auto;
 }
 
 /* ── Column text ── */
@@ -311,6 +319,7 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   .why-v2__row {
     flex-direction: column;
     gap: 40px;
+    max-width: 100%;
   }
 
   .why-v2__col--leaders,

@@ -143,7 +143,7 @@
 .numbers-v2__deco--c3 { width: 298px; height: 298px; left: 266px;  top: 291px; }  /* 1664−1373 */
 .numbers-v2__deco--c1 { width: 311px; height: 311px; left:  79px;  top: 334px; }  /* 1707−1373 */
 .numbers-v2__deco--c2 { width:  99px; height:  99px; left: 225px;  top: 408px; }  /* 1781−1373 */
-.numbers-v2__deco--c7 { width: 390px; height: 390px; left: 1160px; top: 373px; }  /* 1746−1373 */
+.numbers-v2__deco--c7 { width: 390px; height: 390px; left: 1050px; top: 373px; }  /* 1746−1373 */
 .numbers-v2__deco--c6 { width:  90px; height:  90px; left: 1082px; top: 380px; }  /* 1753−1373 */
 .numbers-v2__deco--c4 { width: 110px; height: 110px; left: 754px;  top: 458px; }  /* 1831−1373 */
 .numbers-v2__deco--c5 { width: 241px; height: 241px; left: 919px;  top: 667px; }  /* 2040−1373 */
@@ -207,7 +207,7 @@
 */
 .numbers-v2__stat {
   position: absolute;
-  top: 719px;
+  top: 506px;
 }
 
 .numbers-v2__stat--clients { left: 15.63%; }
