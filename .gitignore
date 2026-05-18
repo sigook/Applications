@@ -713,3 +713,6 @@ local.properties
 
 # OpenAPI spec - generated on every API build, not committed
 .docs/technical/openapi.json
+
+# C# language server cache - regenerated automatically, not committed
+*.lscache

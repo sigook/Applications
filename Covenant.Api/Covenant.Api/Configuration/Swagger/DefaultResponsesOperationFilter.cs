@@ -4,11 +4,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Covenant.Api.Configuration.Swagger;
 
-/// <summary>
-/// Adds the standard error responses (401, 403, 500) to every operation so the
-/// generated OpenAPI document reflects the API's actual error contract without
-/// requiring each controller action to declare them explicitly.
-/// </summary>
 public class DefaultResponsesOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

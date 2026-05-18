@@ -105,8 +105,8 @@ namespace Covenant.Infrastructure.Repositories.Candidate
                 predicate = predicate.And(c => c.Recruiter.ToLower().Contains(filter.Recruiter.ToLower()));
             if (filter.Statuses != null && filter.Statuses.Any())
                 predicate = predicate.And(c => filter.Statuses.Contains(c.ResidencyStatus));
-            if (!string.IsNullOrWhiteSpace(filter.Source))
-                predicate = predicate.And(c => c.Source.ToLower().Contains(filter.Source.ToLower()));
+            if (filter.Sources != null && filter.Sources.Any())
+                predicate = predicate.And(c => filter.Sources.Contains(c.Source));
             if (filter.ResumeOnly)
                 predicate = predicate.And(c => c.HasDocuments);
             return predicate;

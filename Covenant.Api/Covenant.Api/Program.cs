@@ -5,7 +5,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
 using Covenant.Api.Configuration;
 using Covenant.Api.Configuration.Swagger;
-using Covenant.Api.Middlewares;
+using Covenant.Api.Extensions;
 using Covenant.Common.Resources;
 using Covenant.Documents;
 using Covenant.Infrastructure.Contexts;
@@ -244,7 +244,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}"
 );
-app.UseMiddleware<BufferingMiddleware>();
 logger.LogInformation("Application configured successfully, starting web host...");
 logger.LogInformation("Health checks available at /health, /healthz, /ready, and /live endpoints");
 
