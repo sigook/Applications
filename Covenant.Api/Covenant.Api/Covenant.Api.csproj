@@ -7,9 +7,12 @@
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		<UserSecretsId>6f9fc3c1-578a-490d-a3c0-e9afb502fc69</UserSecretsId>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-		<!-- Generate the OpenAPI document on every build as the API contract source of truth. -->
-		<OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
-		<OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+		<!-- Generate the OpenAPI document on every LOCAL build as the API contract
+		     source of truth; the file is committed and the pipeline consumes it.
+		     Skipped on CI agents (Azure DevOps sets TF_BUILD=true) so the build
+		     never has to boot the app or reach Key Vault. -->
+		<OpenApiGenerateDocuments Condition="'$(TF_BUILD)' != 'true'">true</OpenApiGenerateDocuments>
+		<OpenApiGenerateDocumentsOnBuild Condition="'$(TF_BUILD)' != 'true'">true</OpenApiGenerateDocumentsOnBuild>
 		<OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\..\.docs\technical</OpenApiDocumentsDirectory>
 	</PropertyGroup>
 
