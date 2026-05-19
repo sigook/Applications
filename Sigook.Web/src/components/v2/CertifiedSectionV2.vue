@@ -148,7 +148,7 @@
 /* ── Mobile ── */
 @media (max-width: 1023px) {
   .certified-v2-wrap {
-    margin-top: 0;
+    margin-top: -160px; /* overlaps the 160px blue extension of WhyChooseUs — photo sits on top of the blue */
     padding-top: 0;
   }
 
@@ -160,7 +160,7 @@
     height: auto;
     min-height: 400px;
     border-radius: 80px 0 80px 0;
-    padding-bottom: 60px;
+    padding-bottom: 100px;
   }
 
   .certified-v2__content {

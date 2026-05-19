@@ -97,6 +97,10 @@ import GetInTouchFormV2 from '@/components/v2/GetInTouchFormV2.vue'
 
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
+  .contact-v2 {
+    min-height: unset; /* reset 1500px — let content drive height on mobile */
+  }
+
   .contact-v2__inner {
     padding: 60px var(--gutter-mobile) 60px;
   }

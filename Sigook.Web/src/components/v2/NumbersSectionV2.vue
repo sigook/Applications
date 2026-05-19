@@ -262,15 +262,16 @@
 /* ── Mobile (≤ 1023px) ───────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .numbers-v2 {
-    height: 1080px;
+    height: 1280px;      /* 100px top zone + 1080px canvas + 100px bottom zone */
     background: #E2EAED;
-    margin-top: 0;
+    margin-top: -100px;  /* slides 100px under Talents so its border-radius sits on our background */
     overflow: hidden;
   }
 
   .numbers-v2__canvas {
     position: relative;
     height: 1080px;
+    margin-top: 100px;   /* pushes canvas down, leaving 100px of bare background at top */
     overflow: hidden;
   }
 

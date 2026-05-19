@@ -269,7 +269,7 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 /* ── Mobile ── */
 @media (max-width: 1023px) {
   .why-v2 {
-    margin-top: 0;  /* no overlap with Numbers on mobile */
+    margin-top: -100px;  /* overlaps bottom 100px of Numbers background (z-index:1 already set) */
   }
 
   .why-v2__hero {
@@ -309,7 +309,8 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   .why-v2__panel {
     border-radius: 80px 0 80px 0;
     margin-top: -80px;
-    min-height: 0; /* reset desktop 1754px — mobile stacks naturally */
+    min-height: 0; /* reset desktop min-height — mobile stacks naturally */
+    padding-bottom: 220px; /* extends blue downward — certified section overlaps this extra space */
   }
 
   .why-v2__panel-inner {
@@ -320,6 +321,10 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
     flex-direction: column;
     gap: 40px;
     max-width: 100%;
+  }
+
+  .why-v2__row--bottom {
+    margin-top: 48px; /* reduce from 120px on desktop */
   }
 
   .why-v2__col--leaders,

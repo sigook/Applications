@@ -1,8 +1,12 @@
 <template>
   <section class="app-v2">
-    <!-- Full-bleed wave backgrounds (Figma: cobalt blue + cyan wave, top: 480px) -->
+    <!-- Desktop wave backgrounds (Figma desktop: full-bleed, top: 480px) -->
     <img src="@/assets/images/v2/app-wave-blue.svg"  class="app-v2__wave app-v2__wave--cobalt" alt="" aria-hidden="true" />
     <img src="@/assets/images/v2/app-wave-cyan.svg"  class="app-v2__wave app-v2__wave--cyan"   alt="" aria-hidden="true" />
+
+    <!-- Mobile wave backgrounds (Figma mobile node 425:10372 — different SVG shape/size) -->
+    <img src="@/assets/images/v2/app-wave-blue-mob.svg" class="app-v2__wave-mob app-v2__wave-mob--cobalt" alt="" aria-hidden="true" />
+    <img src="@/assets/images/v2/app-wave-cyan-mob.svg" class="app-v2__wave-mob app-v2__wave-mob--cyan"   alt="" aria-hidden="true" />
 
     <!-- 1440px reference grid — all content positioned relative to this -->
     <div class="app-v2__inner">
@@ -22,19 +26,33 @@
         </a>
       </div>
 
-      <!-- Platform block — blue wave area, left column -->
-      <div class="app-v2__platform">
-        <h2 class="app-v2__pl-title">
-          All-in-One Staffing &amp;<br>Workforce Platform
-        </h2>
-        <ul class="app-v2__list">
-          <li>One platform. Total workforce visibility.</li>
-          <li>Real-time attendance and supervisor-approved shifts.</li>
-          <li>Instant, accurate timesheets—no manual processing.</li>
-          <li>Mobile-first for workers, web-based for clients.</li>
-          <li>From onboarding to invoicing and payroll, fully connected.</li>
-        </ul>
-      </div>
+      <!--
+        Blue zone wrapper — on desktop: invisible static container (absolute children
+        still position relative to app-v2__inner). On mobile: blue background block
+        that groups the platform section + stores pill into one solid blue area.
+      -->
+      <div class="app-v2__blue-zone">
+        <!-- Platform block — blue wave area, left column -->
+        <div class="app-v2__platform">
+          <h2 class="app-v2__pl-title">
+            All-in-One Staffing &amp;<br>Workforce Platform
+          </h2>
+          <ul class="app-v2__list">
+            <li>One platform. Total workforce visibility.</li>
+            <li>Real-time attendance and supervisor-approved shifts.</li>
+            <li>Instant, accurate timesheets—no manual processing.</li>
+            <li>Mobile-first for workers, web-based for clients.</li>
+            <li>From onboarding to invoicing and payroll, fully connected.</li>
+          </ul>
+        </div>
+
+        <!-- Stores pill — bottom center (desktop: absolute; mobile: in-flow inside blue zone) -->
+        <img
+          src="@/assets/images/v2/app-stores-pill.svg"
+          alt="Download on App Store and Google Play"
+          class="app-v2__stores"
+        />
+      </div><!-- /blue-zone -->
 
       <!-- Hand holding iPhone photo (Figma: left 602px, top 0, 460×767, rotate -0.88deg) -->
       <div class="app-v2__phone" aria-hidden="true">
@@ -45,13 +63,6 @@
       <img src="@/assets/images/v2/app-phone-ellipse.svg"      class="app-v2__device-ellipse"     alt="" aria-hidden="true" />
       <img src="@/assets/images/v2/app-phone-graphic-blue.png" class="app-v2__device-phone-blue"  alt="" aria-hidden="true" />
       <img src="@/assets/images/v2/app-phone-graphic.png"      class="app-v2__device-phone"       alt="" aria-hidden="true" />
-
-      <!-- Stores pill — bottom center -->
-      <img
-        src="@/assets/images/v2/app-stores-pill.svg"
-        alt="Download on App Store and Google Play"
-        class="app-v2__stores"
-      />
 
     </div>
   </section>
@@ -237,63 +248,186 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   display: block;
 }
 
-/* --- Mobile (<= 1023px) --- */
+/* --- Blue zone wrapper — desktop: no styles (transparent static container) --- */
+.app-v2__blue-zone {
+  /* Desktop: position static so absolutely-positioned children still anchor to app-v2__inner */
+}
+
+/* --- Mobile wave images — hidden on desktop --- */
+.app-v2__wave-mob {
+  display: none;
+}
+
+/* ============================================================
+   Mobile  ≤ 1023px  —  Figma ref node 425:10372 (440px canvas)
+   All positions are section-relative (canvas y origin = 5231px)
+   ============================================================ */
 @media (max-width: 1023px) {
+  /* ── Section shell ── */
   .app-v2 {
-    min-height: unset;
+    min-height: 1010px; /* total mobile canvas height */
+    background: white;
   }
 
-  .app-v2__wave {
-    top: unset;
-    bottom: 0;
-    height: 55%;
-  }
-
-  .app-v2__wave--cobalt {
+  /* Rectangle 32: solid cyan floor beneath the waves (Figma: top=794px, fills to bottom) */
+  .app-v2::before {
+    content: '';
+    position: absolute;
     left: 0;
+    right: 0;
+    top: 794px;
+    bottom: 0;
+    background: var(--c-brand-cyan, #00ADEF);
+    z-index: 0;
+    pointer-events: none;
   }
 
+  /* ── Inner canvas — fixed-height absolute grid ── */
   .app-v2__inner {
     width: 100%;
-    height: auto;
-    padding: 60px 24px 240px;
+    height: 1010px;
+    padding: 0;
   }
 
-  .app-v2__download,
-  .app-v2__platform {
-    position: relative;
-    left: unset;
-    top: unset;
-    width: 100%;
+  /* ── Blue zone — reset (::before pseudo handles the blue floor) ── */
+  .app-v2__blue-zone {
+    margin: 0;
+    padding: 0;
+    background: none;
   }
 
-  .app-v2__platform {
-    margin-top: 60px;
+  /* ── Download block — top-left, overlaps phone on the right ── */
+  /* Figma: title center y=73px, subtitle y=116px, button y=161px from section top */
+  .app-v2__download {
+    position: absolute;
+    left: 24px;
+    top: 50px;
+    width: calc(100% - 48px);
+    z-index: 4;
   }
 
-  .app-v2__pl-title {
-    width: auto;
-    margin-bottom: 24px;
+  /* ── Phone hand — right side, extends top-to-wave ── */
+  /* Figma: left=83px, top=0, w=339px, h=574px */
+  .app-v2__phone {
+    display: block;
+    position: absolute;
+    left: 83px;
+    top: 0;
+    width: 339px;
+    height: 574px;
+    z-index: 1; /* behind cyan wave so wave clips the wrist */
   }
 
-  .app-v2__list {
-    margin-left: 0;
-    width: auto;
+  /* ── Cyan ellipse (Ellipse 17) — right side, partial circle effect ── */
+  /* Figma: left=314px, top=137px, size=384px */
+  .app-v2__cyan-ellipse {
+    display: block;
+    position: absolute;
+    left: 314px;
+    top: 137px;
+    width: 384px;
+    height: 384px;
+    z-index: 1;
   }
 
-  .app-v2__cyan-ellipse,
-  .app-v2__phone,
-  .app-v2__device-ellipse,
-  .app-v2__device-phone-blue,
-  .app-v2__device-phone {
+  /* Desktop waves — hidden on mobile (wrong SVG shape for mobile) */
+  .app-v2__wave {
     display: none;
   }
 
+  /* Mobile waves — SVG paths designed for 440px canvas, stretched to 654px wide */
+  /* Figma: both waves top=402px from section top */
+  .app-v2__wave-mob {
+    display: block;
+    position: absolute;
+    top: 402px;
+    width: 654px;
+    max-width: none; /* override global img { max-width: 100% } reset */
+    height: 408px;
+    object-fit: fill;
+  }
+
+  /* Figma: Cobalt Wave left=-181px, behind cyan */
+  .app-v2__wave-mob--cobalt {
+    left: -181px;
+    z-index: 2;
+  }
+
+  /* Figma: Cyan Wave left=-213px, in front of cobalt */
+  .app-v2__wave-mob--cyan {
+    left: -213px;
+    z-index: 3;
+  }
+
+  /* ── Platform block (All-in-One section) ── */
+  /* Figma: title center y=648px → top-edge ~618px */
+  .app-v2__platform {
+    position: absolute;
+    left: 24px;
+    top: 618px;
+    width: calc(100% - 48px);
+    margin-top: 0;
+    z-index: 4;
+  }
+
+  .app-v2__pl-title {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  /* Figma: list left=~142px from section edge → 142-24=118px from platform left.
+     Offset clears the device graphic (Ellipse 22) which spans x=0→146px. */
+  .app-v2__list {
+    margin-left: 118px;
+    width: auto;
+  }
+
+  /* ── Device graphic — Ellipse 22 (navy circle) ── */
+  /* Figma: left=-53px, top=729px, size=199px */
+  .app-v2__device-ellipse {
+    display: block;
+    position: absolute;
+    left: -53px;
+    top: 729px;
+    width: 199px;
+    height: 199px;
+    z-index: 4;
+  }
+
+  /* Figma: phone graphic blue — left=29px, top=748px, w=108px, h=156px */
+  .app-v2__device-phone-blue {
+    display: block;
+    position: absolute;
+    left: 29px;
+    top: 748px;
+    width: 108px;
+    height: 156px;
+    z-index: 5;
+  }
+
+  /* Figma: phone graphic — left=38px, top=743px, w=103px, h=155px */
+  .app-v2__device-phone {
+    display: block;
+    position: absolute;
+    left: 38px;
+    top: 743px;
+    width: 103px;
+    height: 155px;
+    z-index: 6;
+  }
+
+  /* ── Stores pill — centered, bottom of canvas ── */
+  /* Figma: left=calc(50%-64px), top=961px, w=128px, h=44px */
   .app-v2__stores {
-    position: relative;
-    left: unset;
-    top: unset;
-    margin-top: 32px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 961px;
+    width: 128px;
+    height: 44px;
+    z-index: 4;
+    margin: 0;
+    display: block;
   }
 }
 </style>
