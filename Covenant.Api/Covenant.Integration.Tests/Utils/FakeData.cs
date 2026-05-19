@@ -39,5 +39,8 @@ namespace Covenant.Integration.Tests.Utils
             return Request.AgencyCreateRequest(agencyId, companyId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
                 durationTerm: durationTerm).Value;
         }
+
+        public static Covenant.Common.Entities.Agency.Agency FakeAgency(Guid id) =>
+            new Covenant.Common.Entities.Agency.Agency { Id = id, RecruitmentEmail = "recruit@test.com" };
     }
 }

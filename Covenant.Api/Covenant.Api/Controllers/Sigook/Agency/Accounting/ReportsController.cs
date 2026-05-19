@@ -3,9 +3,13 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
+using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.Subcontractor;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
@@ -33,21 +37,34 @@ public class ReportsController : ControllerBase
         this.payStubRepository = payStubRepository;
     }
 
+    /// <summary>Gets the hours-worked report summary for the given filter.</summary>
+    /// <param name="filter">Filter criteria for the report.</param>
     [HttpGet("hours-worked")]
+    [ProducesResponseType(typeof(HoursWorkedResume), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHoursWorked([FromQuery] HoursWorkedFilter filter)
     {
         var result = await timeSheetService.GetHoursWorked(filter);
         return Ok(result);
     }
 
+    /// <summary>Exports the hours-worked report to an Excel file.</summary>
+    /// <param name="filter">Filter criteria for the report.</param>
     [HttpGet("hours-worked/file")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHoursWorkedFile([FromQuery] HoursWorkedFilter filter)
     {
         var file = await timeSheetService.GetHoursWorkedFile(filter);
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
 
+    /// <summary>Gets the job positions worked for a company within a date range.</summary>
+    /// <param name="companyId">Company identifier.</param>
+    /// <param name="startDate">Start of the date range.</param>
+    /// <param name="endDate">End of the date range.</param>
     [HttpGet("{companyId}/job-positions")]
+    [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetJobPositions([FromRoute] Guid companyId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
     {
         var model = await timeSheetService.GetJobPositions(companyId, startDate, endDate);
@@ -55,7 +72,13 @@ public class ReportsController : ControllerBase
         return Ok(model);
     }
 
+    /// <summary>Generates the T4 tax report as an Excel file for the given date range.</summary>
+    /// <param name="startDate">Start of the date range.</param>
+    /// <param name="endDate">End of the date range.</param>
     [HttpGet("t4")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetT4([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
         if (!startDate.HasValue || !endDate.HasValue)
@@ -70,7 +93,13 @@ public class ReportsController : ControllerBase
         return BadRequest(ModelState.AddErrors(file.Errors));
     }
 
+    /// <summary>Generates the CRA payroll report as an Excel file for the given date range.</summary>
+    /// <param name="startDate">Start of the date range.</param>
+    /// <param name="endDate">End of the date range.</param>
     [HttpGet("cra-payroll")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetCraPayroll([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
         if (!startDate.HasValue || !endDate.HasValue)
@@ -85,14 +114,22 @@ public class ReportsController : ControllerBase
         return BadRequest(ModelState.AddErrors(file.Errors));
     }
 
+    /// <summary>Gets the weekly payroll grouped by payment date.</summary>
+    /// <param name="pagination">Pagination criteria.</param>
     [HttpGet("payments")]
+    [ProducesResponseType(typeof(PaginatedList<WeeklyPayrollModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPayments([FromQuery] Pagination pagination)
     {
         var result = await accountingService.GetWeeklyPayrollGroupByPaymentDate(pagination);
         return Ok(result);
     }
 
+    /// <summary>Exports the weekly payroll for a given week-ending date to an Excel file.</summary>
+    /// <param name="weekEnding">Week-ending date.</param>
     [HttpGet("payments/file")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaymentsFile([FromQuery] string weekEnding)
     {
         var file = await accountingService.GetWeeklyPayrollGroupByPaymentDateFile(weekEnding);
@@ -103,14 +140,22 @@ public class ReportsController : ControllerBase
         return BadRequest(ModelState.AddErrors(file.Errors));
     }
 
+    /// <summary>Gets the paginated list of subcontractors.</summary>
+    /// <param name="filter">Pagination criteria.</param>
     [HttpGet("subcontractors")]
+    [ProducesResponseType(typeof(PaginatedList<PayrollSubContractorListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubcontractors([FromQuery] Pagination filter)
     {
         var result = await accountingService.GetSubcontractors(filter);
         return Ok(result);
     }
 
+    /// <summary>Exports the subcontractor report for a given week-ending date to an Excel file.</summary>
+    /// <param name="weekEnding">Week-ending date.</param>
     [HttpGet("subcontractors/file")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetSubcontractorFile([FromQuery] string weekEnding)
     {
         var file = await accountingService.GetSubcontractorFile(weekEnding);

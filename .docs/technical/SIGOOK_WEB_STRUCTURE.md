@@ -463,9 +463,7 @@ assets/
 
 ---
 
-## src/mixins/ — Legacy Mixins (being phased out)
-
-Vue 3 discourages mixins; remaining ones act as composable-style helpers until fully migrated.
+## src/mixins/ — Mixins
 
 - **toastMixin.ts** — Toast notification helper (app-wide)
 
@@ -529,7 +527,7 @@ Pre-load data before route entry (route guard).
 
 ### Styling
 
-- **Framework:** Bootstrap 4 (CSS, legacy — being phased down)
+- **Framework:** Bootstrap 4 (CSS)
 - **Component UI:** `@ntohq/buefy-next` (Buefy port for Vue 3, Bulma-based)
 - **Custom SCSS:** `/src/assets/scss/worker/` + component-level styles
 - **BEM Convention:** Class naming (likely)
@@ -619,17 +617,17 @@ Allows generic components to work across different backends.
 ## Testing & Development Notes
 
 - **Build Tool:** Vite (vite.config.ts)
-- **Type Checking:** TypeScript (`npm run type-check`, tsconfig.json)
-- **Linting:** ESLint (`npm run lint`)
-- **Package Manager:** npm (package-lock.json)
-- **Docker:** Dockerfile included (multi-stage Node build → Nginx)
+- **Type Checking:** TypeScript (`pnpm run type-check`, tsconfig.json)
+- **Linting:** ESLint (`pnpm run lint`)
+- **Package Manager:** pnpm (pnpm-lock.yaml, pinned via `packageManager` field). Security hardening: `ignore-scripts=true` in `.npmrc` + explicit `allowBuilds` allowlist in `pnpm-workspace.yaml`.
+- **Docker:** Dockerfile included (multi-stage Node 22 + pnpm build → Nginx)
 - **nginx.conf:** Routing config for SPA (history mode)
 
 ---
 
 ## Deployment
 
-1. **Build:** `npm run staging` / `npm run production` → `/wwwroot/` (Vite)
+1. **Build:** `pnpm run staging` / `pnpm run production` → `/wwwroot/` (Vite)
 2. **Docker:** `docker build -t sigook-web .`
 3. **Environment:** `.env.staging`, `.env.production` — Vite `VITE_*` vars (e.g. `VITE_URL_API`)
 4. **Server:** nginx; serves `index.html` for all 404s (SPA routing)

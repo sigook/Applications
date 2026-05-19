@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Sigook.Functions.Configuration;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWorkerDefaults()
     .ConfigureAppConfiguration((context, config) =>
     {
         var environment = context.HostingEnvironment;

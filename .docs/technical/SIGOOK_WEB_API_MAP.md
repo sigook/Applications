@@ -147,7 +147,7 @@ Candidate management (recruitment pool before conversion to Worker).
 | `updateAgencyCompanyJobPosition(id, posId, model)` | PUT | `/api/AgencyCompanyProfile/{id}/JobPosition/{id}` | `AgencyCompanyJobPosition` | `void` | Update position |
 | `deleteAgencyCompanyJobPosition(id, posId)` | DELETE | `/api/AgencyCompanyProfile/{id}/JobPosition/{id}` | — | `void` | Remove position |
 | `petitionAgencyCompanyJobPosition(id, model)` | POST | `/api/AgencyCompanyProfile/{id}/JobPosition/Petition` | `PetitionJobPositionPayload` | `void` | Request new position type |
-| `deleteAgencyJobPosition(companyId, posId)` | DELETE | `/api/AgencyJobPosition/{companyId}/{posId}` | — | `void` | Legacy delete path |
+| `deleteAgencyJobPosition(companyId, posId)` | DELETE | `/api/AgencyJobPosition/{companyId}/{posId}` | — | `void` | Alternate delete path |
 
 ### Job Position Documents
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -874,7 +874,7 @@ Public website (landing page) endpoints.
 
 ## Important Notes for Future Development
 
-- **Breaking Changes**: API versioning (`/api/v2/`, `/api/v4/`) indicates backend changes; watch for endpoint duplication (e.g., legacy `deleteAgencyJobPosition` vs newer paths).
+- **API Versioning**: Endpoints use `/api/v2/`, `/api/v4/` prefixes; watch for endpoint duplication across versions.
 - **Inconsistent Endpoints**: Some POST endpoints lack leading slash (e.g., `api/AgencyRequest` vs `/api/AgencyRequest`); axios baseURL handles this but watch in requests.
 - **Missing Type Validation**: Some endpoints accept generic objects; refer to backend documentation or type files for valid fields.
 - **Pagination Inconsistency**: Some endpoints use query params (`?PageSize={size}&PageIndex={page}`), others use standard `params: {}`. Standardize if refactoring.

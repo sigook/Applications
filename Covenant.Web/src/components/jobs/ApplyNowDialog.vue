@@ -69,9 +69,15 @@
                         variant="outlined"></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
-                      <v-switch v-model="fields.hasVehicle.value" v-bind="fields.hasVehicleProps"
-                        :label="fields.hasVehicle.value ? 'Own Vehicle' : 'Public Transit'"
-                        :error-messages="errors.hasVehicle" color="primary" hide-details="auto"></v-switch>
+                      <v-select v-model="fields.sourceId.value" v-bind="fields.sourceIdProps"
+                        label="How did you hear about us?" :items="sources" item-title="value" item-value="id"
+                        :error-messages="errors.sourceId" :loading="loadingSources" clearable
+                        variant="outlined"></v-select>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-file-input v-model="resumeFiles" :label="resumeRequired ? 'Resume / CV *' : 'Resume / CV (Optional)'" accept=".pdf,.doc,.docx"
+                        prepend-icon="mdi-file-document" :error-messages="errors.resume" show-size variant="outlined"
+                        @update:model-value="handleResumeChange"></v-file-input>
                     </v-col>
                     <v-col cols="12">
                       <v-combobox v-model="fields.skills.value" v-bind="fields.skillsProps"
@@ -80,22 +86,22 @@
                         hint="Select from suggestions or type your own (Press Enter to add, max 20 characters each)"
                         persistent-hint variant="outlined" :loading="loadingSkills"></v-combobox>
                     </v-col>
+                    <v-col cols="12" md="6">
+                      <v-switch v-model="fields.hasVehicle.value" v-bind="fields.hasVehicleProps"
+                        :label="fields.hasVehicle.value ? 'Own Vehicle' : 'Public Transit'"
+                        :error-messages="errors.hasVehicle" color="primary" hide-details="auto"></v-switch>
+                    </v-col>
                   </v-row>
                 </v-form>
               </v-card>
             </template>
 
-            <!-- STEP 3: Resume & Terms -->
+            <!-- STEP 3: Review & Submit -->
             <template v-slot:item.3>
               <v-card flat class="pa-2">
-                <v-card-title class="text-h6 mb-2">Resume & Terms</v-card-title>
+                <v-card-title class="text-h6 mb-2">Review & Submit</v-card-title>
                 <v-form>
                   <v-row>
-                    <v-col cols="12">
-                      <v-file-input v-model="resumeFiles" label="Resume / CV (Optional)" accept=".pdf,.doc,.docx"
-                        prepend-icon="mdi-file-document" :error-messages="errors.resume" show-size variant="outlined"
-                        @update:model-value="handleResumeChange"></v-file-input>
-                    </v-col>
                     <v-col cols="12">
                       <v-checkbox v-model="fields.termsAccepted.value" v-bind="fields.termsAcceptedProps"
                         :error-messages="errors.termsAccepted" color="primary">
@@ -131,6 +137,9 @@
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Immigration Status:</strong> {{ values.status || 'Not selected' }}
+                          </div>
+                          <div class="mb-1 text-body-2">
+                            <strong>How did you hear about us?:</strong> {{ selectedSourceName || 'Not selected' }}
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Transportation:</strong> {{ values.hasVehicle ? 'Own Vehicle' : 'Public Transit' }}
@@ -214,7 +223,7 @@ import { applicationService } from '@/services/applicationService'
 import { locationService } from '@/services/locationService'
 import { RESIDENCY_STATUS } from '@/services/types/application.types'
 import type { Job } from '@/services/types/job.types'
-import type { Country } from '@/services/types/application.types'
+import type { BaseModel, Country } from '@/services/types/application.types'
 
 const props = defineProps<{
   modelValue: boolean
@@ -231,7 +240,7 @@ const isOpen = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const { currentStep, values, errors, fields, validateCurrentStep, resetForm, setFieldValue } =
+const { currentStep, values, errors, fields, validateCurrentStep, resetForm, setFieldValue, setErrors } =
   useApplicationForm()
 
 const activeTab = ref('new')
@@ -239,6 +248,8 @@ const countries = ref<Country[]>([])
 const loadingCountries = ref(false)
 const suggestedSkills = ref<string[]>([])
 const loadingSkills = ref(false)
+const sources = ref<BaseModel[]>([])
+const loadingSources = ref(false)
 const submitting = ref(false)
 const phoneFormatted = ref('')
 const resumeFiles = ref<File[]>([])
@@ -247,7 +258,7 @@ const registeredEmailError = ref('')
 const errorSnackbar = ref(false)
 const errorMessage = ref('')
 
-const stepItems = ['Personal Information', 'Additional Details', 'Resume & Terms']
+const stepItems = ['Personal Information', 'Additional Details', 'Review & Submit']
 
 const dialogTitle = computed(() => {
   if (props.selectedJob) {
@@ -255,6 +266,12 @@ const dialogTitle = computed(() => {
   }
   return 'Register with Us'
 })
+
+const selectedSourceName = computed(
+  () => sources.value.find((s) => s.id === values.sourceId)?.value || ''
+)
+
+const resumeRequired = computed(() => selectedSourceName.value === 'Linkedin')
 
 const selectedCountryName = computed(() => {
   const country = countries.value.find((c) => c.id === values.countryId)
@@ -283,6 +300,21 @@ onMounted(async () => {
     console.error('Failed to load skills:', error)
   } finally {
     loadingSkills.value = false
+  }
+
+  // Load sources
+  loadingSources.value = true
+  try {
+    sources.value = await locationService.getSources()
+    // Default to the originating site ("Covenant") when the applicant does not pick a source.
+    if (!values.sourceId) {
+      const defaultSource = sources.value.find((s) => s.value === 'Covenant')
+      if (defaultSource) setFieldValue('sourceId', defaultSource.id)
+    }
+  } catch (error) {
+    console.error('Failed to load sources:', error)
+  } finally {
+    loadingSources.value = false
   }
 })
 
@@ -313,14 +345,22 @@ function handleResumeChange(files: File | File[] | null) {
 
 async function handleNext(next: () => void) {
   const isValid = await validateCurrentStep()
-  if (isValid) {
-    next()
+  if (!isValid) return
+  if (currentStep.value === 2 && resumeRequired.value && !values.resume) {
+    setErrors({ resume: 'Resume is required when you apply via Linkedin' })
+    return
   }
+  next()
 }
 
 async function handleSubmit() {
   const isValid = await validateCurrentStep()
   if (!isValid) return
+  if (resumeRequired.value && !values.resume) {
+    setErrors({ resume: 'Resume is required when you apply via Linkedin' })
+    currentStep.value = 2
+    return
+  }
 
   submitting.value = true
   try {

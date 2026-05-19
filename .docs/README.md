@@ -17,7 +17,7 @@
 | Document | Description |
 |----------|-------------|
 | [ARCHITECTURE.md](./technical/ARCHITECTURE.md) | Tech stack, layers, modules, and project organization |
-| [API_ENDPOINTS.md](./technical/API_ENDPOINTS.md) | Complete endpoint documentation by module (Agency, Company, Worker, Accounting) |
+| `technical/openapi.json` | OpenAPI 3.0 specification — the source of truth for every endpoint. Generated locally on each API build (not committed). Browse it via Swagger UI at the API site root in Dev/Staging |
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
@@ -35,7 +35,7 @@
 **Backend development:**
 1. [ARCHITECTURE.md](./technical/ARCHITECTURE.md) — layers and modules
 2. [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) — data model
-3. [API_ENDPOINTS.md](./technical/API_ENDPOINTS.md) — available endpoints
+3. `technical/openapi.json` — available endpoints (OpenAPI spec; build it, or use Swagger UI)
 
 **Modify payroll:**
 1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules

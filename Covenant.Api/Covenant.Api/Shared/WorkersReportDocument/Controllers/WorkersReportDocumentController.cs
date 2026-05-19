@@ -4,6 +4,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Documents.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Shared.WorkersReportDocument.Controllers
@@ -23,7 +24,11 @@ namespace Covenant.Api.Shared.WorkersReportDocument.Controllers
 
         protected IMediator Mediator => mediator ?? (mediator = HttpContext.RequestServices.GetService<IMediator>());
 
+        /// <summary>Generates the workers report for a request as an Excel file.</summary>
+        /// <param name="requestId">Request identifier.</param>
         [HttpGet]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         public async Task<ActionResult> GetReport([FromRoute] Guid requestId)
         {
             var workers = await repository.GetWorkersRequestByRequestId(requestId, new GetWorkersRequestFilter());

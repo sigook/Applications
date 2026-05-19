@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
 
-namespace Covenant.Api.Middlewares;
+namespace Covenant.Api.Extensions;
 
 public static class HealthCheckExtensions
 {
@@ -14,7 +14,7 @@ public static class HealthCheckExtensions
             ResponseWriter = async (context, report) =>
             {
                 context.Response.ContentType = "application/json";
-                
+
                 var response = new
                 {
                     status = report.Status.ToString(),
@@ -29,7 +29,7 @@ public static class HealthCheckExtensions
                         tags = x.Value.Tags
                     }).ToArray()
                 };
-                
+
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

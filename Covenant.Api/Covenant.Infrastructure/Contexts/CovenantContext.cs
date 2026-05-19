@@ -79,6 +79,7 @@ public class CovenantContext : DbContext
     public DbSet<ProvinceSetting> ProvinceSettings { get; set; }
     public DbSet<WsibGroup> WsibGroup { get; set; }
     public DbSet<Industry> Industry { get; set; }
+    public DbSet<Source> Source { get; set; }
     public DbSet<JobPosition> JobPosition { get; set; }
     public DbSet<ReasonCancellationRequest> ReasonCancellationRequest { get; set; }
     public DbSet<Holiday> Holiday { get; set; }

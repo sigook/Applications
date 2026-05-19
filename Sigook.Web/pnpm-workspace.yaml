@@ -1,0 +1,6 @@
+nodeLinker: hoisted
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+  '@parcel/watcher': true
+  core-js: false

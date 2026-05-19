@@ -22,8 +22,11 @@ export function useApplicationForm() {
     countryId: yup.string().required('Country is required'),
     address: yup.string().required('City/Address is required').max(100, 'Address must be at most 100 characters'),
     status: yup.string().required('Immigration status is required'),
+    sourceId: yup.string().nullable(),
     skills: yup.array().of(yup.string().max(20, 'Each skill must be at most 20 characters')),
     hasVehicle: yup.boolean().required(),
+    // Resume is conditionally required for the "Linkedin" source; that check is
+    // enforced in the dialog because it depends on the loaded source catalog.
     resume: yup.mixed().nullable(),
     termsAccepted: yup.boolean().oneOf([true], 'You must accept the terms and conditions')
   })
@@ -38,6 +41,7 @@ export function useApplicationForm() {
       countryId: '',
       address: '',
       status: undefined,
+      sourceId: null,
       skills: [],
       hasVehicle: false,
       resume: null,
@@ -53,6 +57,7 @@ export function useApplicationForm() {
   const [countryId, countryIdProps] = defineField('countryId', { validateOnModelUpdate: false })
   const [address, addressProps] = defineField('address', { validateOnModelUpdate: false })
   const [status, statusProps] = defineField('status', { validateOnModelUpdate: false })
+  const [sourceId, sourceIdProps] = defineField('sourceId', { validateOnModelUpdate: false })
   const [skills, skillsProps] = defineField('skills', { validateOnModelUpdate: false })
   const [hasVehicle, hasVehicleProps] = defineField('hasVehicle', { validateOnModelUpdate: false })
   const [resume, resumeProps] = defineField('resume', { validateOnModelUpdate: false })
@@ -83,12 +88,13 @@ export function useApplicationForm() {
 
     const step2Schema = yup.object({
       status: yup.string().required('Immigration status is required'),
+      sourceId: yup.string().nullable(),
       skills: yup.array().of(yup.string().max(20, 'Each skill must be at most 20 characters')),
-      hasVehicle: yup.boolean().required()
+      hasVehicle: yup.boolean().required(),
+      resume: yup.mixed().nullable()
     })
 
     const step3Schema = yup.object({
-      resume: yup.mixed().nullable(),
       termsAccepted: yup.boolean().oneOf([true], 'You must accept the terms and conditions')
     })
 
@@ -109,13 +115,14 @@ export function useApplicationForm() {
       schema = step2Schema
       valuesToValidate = {
         status: values.status,
+        sourceId: values.sourceId,
         skills: values.skills,
-        hasVehicle: values.hasVehicle
+        hasVehicle: values.hasVehicle,
+        resume: values.resume
       }
     } else if (currentStep.value === 3) {
       schema = step3Schema
       valuesToValidate = {
-        resume: values.resume,
         termsAccepted: values.termsAccepted
       }
     }
@@ -162,6 +169,8 @@ export function useApplicationForm() {
       addressProps,
       status,
       statusProps,
+      sourceId,
+      sourceIdProps,
       skills,
       skillsProps,
       hasVehicle,
@@ -174,6 +183,7 @@ export function useApplicationForm() {
     validateCurrentStep,
     resetForm,
     setFieldValue,
+    setErrors,
     goToStep
   }
 }

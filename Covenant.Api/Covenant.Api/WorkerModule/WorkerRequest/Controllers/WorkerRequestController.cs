@@ -5,7 +5,9 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Common.Models.Request;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
@@ -27,22 +29,33 @@ namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
         }
 
         /// <summary>
-        /// List all request that worker can apply
+        /// Lists all requests the authenticated worker can apply to.
         /// </summary>
-        /// <param name="pagination"></param>
+        /// <param name="pagination">Pagination parameters.</param>
         /// <returns>PaginatedList</returns>
         [HttpGet]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(PaginatedList<WorkerRequestListModel>), StatusCodes.Status200OK)]
         public async Task<ActionResult> Get(Pagination pagination) =>
             Ok(await _requestRepository.GetRequestsForWorker(User.GetUserId(), pagination));
 
+        /// <summary>
+        /// Gets the detail of a specific request for the authenticated worker.
+        /// </summary>
+        /// <param name="id">Identifier of the request.</param>
         [HttpGet("{id}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(WorkerRequestDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById([FromRoute] Guid id) =>
             this.GetByIdResult(await _requestRepository.GetRequestDetailForWorker(User.GetUserId(), id));
 
+        /// <summary>
+        /// Applies the authenticated worker to a request.
+        /// </summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">Application data.</param>
         [HttpPost("{requestId:guid}/Apply")]
+        [ProducesResponseType(typeof(RequestApplicantDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Apply([FromRoute] Guid requestId, [FromBody] WorkerRequestApplyModel model)
         {
             var result = await workerService.Apply(requestId, model);
@@ -50,8 +63,16 @@ namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
             return Ok(result.Value);
         }
 
+        /// <summary>
+        /// Applies a specific worker to a request (anonymous).
+        /// </summary>
+        /// <param name="workerId">Identifier of the worker.</param>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">Application data.</param>
         [HttpPost("{workerId:guid}/{requestId:guid}/Apply")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(RequestApplicantDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Apply([FromRoute] Guid workerId, [FromRoute] Guid requestId, [FromBody] WorkerRequestApplyModel model)
         {
             var result = await workerService.Apply(requestId, model, workerId);

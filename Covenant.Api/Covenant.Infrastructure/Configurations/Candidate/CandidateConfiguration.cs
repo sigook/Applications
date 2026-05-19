@@ -14,6 +14,13 @@ namespace Covenant.Infrastructure.Configurations.Candidate
             builder.Property(x => x.Email).IsRequired(false);
 
             builder
+                .HasOne(x => x.Source)
+                .WithMany(x => x.Candidates)
+                .HasForeignKey(x => x.SourceId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
                 .HasMany(x => x.PhoneNumbers)
                 .WithOne(x => x.Candidate)
                 .HasForeignKey(x => x.CandidateId)

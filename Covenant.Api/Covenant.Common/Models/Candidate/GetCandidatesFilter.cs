@@ -23,7 +23,7 @@
         public DateTime? CreatedAtTo { get; set; }
         public string Recruiter { get; set; }
         public string[] Statuses { get; set; }
-        public string Source { get; set; }
+        public string[] Sources { get; set; }
         public bool ResumeOnly { get; set; }
     }
 }

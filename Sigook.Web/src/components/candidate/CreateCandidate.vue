@@ -33,6 +33,17 @@
                 <b-input type="text" v-model="address" />
               </b-field>
             </div>
+            <div class="col-12">
+              <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
+                <template #label>
+                  Source <span class="has-text-danger">*</span>
+                </template>
+                <b-select v-model="candidate.sourceId" expanded placeholder="Select a source">
+                  <option v-for="(item, index) in sourceList" :value="item.id" :key="'sourceItem' + index">{{ item.value }}
+                  </option>
+                </b-select>
+              </b-field>
+            </div>
             <div class="col-12 mt-5">
               <b-field class="file is-primary" :class="{ 'has-name': !!file }">
                 <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @update:modelValue="uploadResume" rounded>
@@ -60,14 +71,6 @@
             <b-field label="Status">
               <b-select v-model="candidate.residencyStatus" expanded placeholder="Select a residency status">
                 <option v-for="(item, index) in residencyList" :key="'residency' + index" :value="item">{{ item }}
-                </option>
-              </b-select>
-            </b-field>
-          </div>
-          <div class="col-12">
-            <b-field label="Source">
-              <b-select v-model="candidate.source" expanded placeholder="Select a source">
-                <option v-for="(item, index) in sourceList" :value="item" :key="'sourceItem' + index">{{ item }}
                 </option>
               </b-select>
             </b-field>
@@ -103,9 +106,10 @@ import * as yup from 'yup';
 import PhoneInput from "@/components/PhoneInput.vue";
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { uploadFile } from "@/utils/fileUpload";
-import { getGenders } from "@/api/catalogApi";
-import { residencyList, sourceList } from "@/constants/catalog";
+import { getGenders, getSources } from "@/api/catalogApi";
+import { residencyList } from "@/constants/catalog";
 import { createAgencyCandidate } from "@/api/agencyCandidateApi";
+import type { Source } from "@/types/common";
 
 const emit = defineEmits<{ (e: 'onClose', value: boolean): void }>();
 
@@ -144,12 +148,14 @@ function markInteracted(fields: string[]) {
 const activeStep = ref(0);
 const isLoading = ref(false);
 const genders = ref<Array<{ id: number; value: string }>>([]);
+const sourceList = ref<Source[]>([]);
+const sourceError = ref('');
 const phoneNumber = ref('');
 const phoneComponent = ref<any>(null);
 const candidate = reactive<{
   phoneNumbers: Array<{ phoneNumber: string }>;
   skills: string[];
-  source: string | null;
+  sourceId: string | null;
   gender: { id: number; value: string } | null;
   hasVehicle: boolean;
   residencyStatus: string | null;
@@ -157,7 +163,7 @@ const candidate = reactive<{
 }>({
   phoneNumbers: [],
   skills: [],
-  source: null,
+  sourceId: null,
   gender: null,
   hasVehicle: false,
   residencyStatus: null,
@@ -165,13 +171,16 @@ const candidate = reactive<{
 });
 const file = ref<File | null>(null);
 
+watch(() => candidate.sourceId, () => { sourceError.value = ''; });
+
 async function validateStep1(): Promise<boolean> {
   const fields = ['name', 'email', 'address'];
   markInteracted(fields);
   const results = await Promise.all(fields.map((f) => validateField(f as any)));
   const fieldsValid = results.every((r: any) => r.valid);
   const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
-  return fieldsValid && phoneValid;
+  sourceError.value = candidate.sourceId ? '' : 'Source is required';
+  return fieldsValid && phoneValid && !sourceError.value;
 }
 
 async function validateAndGoToStep(currentStep: number) {
@@ -210,7 +219,7 @@ function submitCandidate(values: any) {
     address: values.address,
     skills: candidate.skills.map((s: string) => ({ skill: s })),
     phoneNumbers: phoneNumber.value ? [{ phoneNumber: phoneNumber.value }] : [],
-    source: candidate.source,
+    sourceId: candidate.sourceId,
     gender: candidate.gender,
     hasVehicle: candidate.hasVehicle,
     residencyStatus: candidate.residencyStatus,
@@ -236,7 +245,7 @@ async function uploadResume(f: File) {
 }
 
 (async () => {
-  genders.value = await getGenders();
+  [genders.value, sourceList.value] = await Promise.all([getGenders(), getSources()]);
 })();
 </script>
 

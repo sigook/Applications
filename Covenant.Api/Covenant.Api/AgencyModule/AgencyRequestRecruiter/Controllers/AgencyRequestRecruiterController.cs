@@ -6,6 +6,7 @@ using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Request;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers
@@ -19,7 +20,13 @@ namespace Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers
         public const string RouteName = "api/AgencyRequest/{requestId}/Recruiter";
         public AgencyRequestRecruiterController(IRequestRepository repository) => _repository = repository;
 
+        /// <summary>Assigns a recruiter to the specified request.</summary>
+        /// <param name="agencyRepository">Agency repository used to resolve the recruiter personnel.</param>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">Recruiter assignment data.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(RequestRecruiterDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromServices] IAgencyRepository agencyRepository, [FromRoute] Guid requestId, [FromBody] RequestRecruiterModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -34,11 +41,20 @@ namespace Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers
             return Ok(new RequestRecruiterDetailModel { RecruiterId = personnel.Id });
         }
 
+        /// <summary>Gets a paginated list of recruiters assigned to the specified request.</summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<RequestRecruiterDetailModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid requestId, Pagination pagination) =>
             Ok(await _repository.GetRecruiters(requestId, pagination));
 
+        /// <summary>Removes a recruiter from the specified request.</summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="id">Identifier of the recruiter to remove.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete([FromRoute] Guid requestId, [FromRoute] Guid id)
         {
             var entity = await _repository.GetRequest(r => r.Id == requestId);

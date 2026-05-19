@@ -6,6 +6,7 @@ using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Request;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyRequestShift.Controllers
@@ -26,7 +27,12 @@ namespace Covenant.Api.AgencyModule.AgencyRequestShift.Controllers
             this.shiftRepository = shiftRepository;
         }
 
+        /// <summary>Updates the shift of the specified request.</summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">New shift data.</param>
         [HttpPut]
+        [ProducesResponseType(typeof(AgencyRequestDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put([FromRoute] Guid requestId, [FromBody] ShiftModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);

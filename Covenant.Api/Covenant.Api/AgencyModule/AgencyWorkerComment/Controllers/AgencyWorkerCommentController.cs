@@ -5,6 +5,7 @@ using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyWorkerComment.Controllers
@@ -17,7 +18,14 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerComment.Controllers
     {
         public const string RouteName = "api/AgencyWorker/{workerId:guid}/Comment";
 
+        /// <summary>Posts a comment about a worker on behalf of the current agency.</summary>
+        /// <param name="workerId">Identifier of the worker the comment is about.</param>
+        /// <param name="commentsRepository">Worker comments repository.</param>
+        /// <param name="userRepository">User repository used to validate the worker.</param>
+        /// <param name="model">Comment content and rating.</param>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(Guid workerId,
             [FromServices] IWorkerCommentsRepository commentsRepository,
             [FromServices] IUserRepository userRepository,

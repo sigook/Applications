@@ -21,24 +21,26 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
+This project uses **pnpm** (pinned via `packageManager` field). Enable via `corepack enable` or install globally: `npm i -g pnpm`.
+
 ```sh
-npm install
+pnpm install
 ```
 
 ### Compile and Hot-Reload for Development
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 ### Compile and Minify for Production
 
 ```sh
-npm run build
+pnpm run build
 ```
 
 ### Lint with [ESLint](https://eslint.org/)
 
 ```sh
-npm run lint
+pnpm run lint
 ```

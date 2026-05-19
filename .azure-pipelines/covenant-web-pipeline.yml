@@ -89,7 +89,7 @@ stages:
               echo "##vso[task.setvariable variable=buildCommand]$buildCommand"
               echo ""
               echo "Environment: $environment"
-              echo "Build Command: npm run $buildCommand"
+              echo "Build Command: pnpm run $buildCommand"
             name: SetEnvironment
             displayName: 'Determine Environment'
 
@@ -97,6 +97,13 @@ stages:
           - template: templates/node-setup.yml
             parameters:
               nodeVersion: '22'
+
+          # Install pnpm (pinned via packageManager field in package.json)
+          - script: |
+              corepack enable || npm i -g pnpm@11.1.2
+              corepack prepare pnpm@11.1.2 --activate 2>/dev/null || true
+              pnpm --version
+            displayName: 'Setup pnpm'
 
           # Display build information
           - task: Bash@3
@@ -113,53 +120,41 @@ stages:
                 echo "Environment: $(environment)"
                 echo "Build Command: $(buildCommand)"
                 echo "Node: $(node --version)"
-                echo "NPM: $(npm --version)"
+                echo "pnpm: $(pnpm --version)"
                 echo "============================================"
 
-          # Ensure node_modules directory exists for cache task
-          - script: mkdir -p $(workingDirectory)/node_modules
-            displayName: 'Ensure node_modules directory exists'
+          # Resolve pnpm store directory for caching
+          - script: |
+              echo "##vso[task.setvariable variable=pnpmStorePath]$(pnpm store path --silent)"
+            displayName: 'Resolve pnpm store path'
+            workingDirectory: $(workingDirectory)
 
-          # Cache node_modules
+          # Cache pnpm content-addressable store (more reliable than caching node_modules)
           - task: Cache@2
-            displayName: 'Cache node_modules'
+            displayName: 'Cache pnpm store'
             inputs:
-              key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
-              path: '$(workingDirectory)/node_modules'
-              cacheHitVar: 'CacheRestored'
+              key: 'pnpm | "$(Agent.OS)" | $(workingDirectory)/pnpm-lock.yaml'
+              path: '$(pnpmStorePath)'
 
-          # Install dependencies (skip if cache was restored)
-          - task: Npm@1
-            displayName: 'npm ci'
-            condition: ne(variables['CacheRestored'], 'true')
-            inputs:
-              command: 'ci'
-              workingDir: $(workingDirectory)
+          # Install dependencies (frozen lockfile + scripts blocked by .npmrc)
+          - script: pnpm install --frozen-lockfile
+            displayName: 'pnpm install'
+            workingDirectory: $(workingDirectory)
 
           # Type checking
-          - task: Npm@1
+          - script: pnpm run type-check
             displayName: 'Type Check'
-            inputs:
-              command: 'custom'
-              customCommand: 'run type-check'
-              workingDir: $(workingDirectory)
-            continueOnError: false
+            workingDirectory: $(workingDirectory)
 
           # Linting
-          - task: Npm@1
+          - script: pnpm run lint
             displayName: 'Lint Code'
-            inputs:
-              command: 'custom'
-              customCommand: 'run lint'
-              workingDir: $(workingDirectory)
+            workingDirectory: $(workingDirectory)
 
           # Build application
-          - task: Npm@1
+          - script: pnpm run $(buildCommand)
             displayName: 'Build $(environment)'
-            inputs:
-              command: 'custom'
-              customCommand: 'run $(buildCommand)'
-              workingDir: $(workingDirectory)
+            workingDirectory: $(workingDirectory)
 
           # Verify build output
           - task: Bash@3

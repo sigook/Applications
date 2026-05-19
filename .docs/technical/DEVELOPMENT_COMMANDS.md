@@ -27,26 +27,31 @@ flutter analyze
 
 ## Sigook.Web (Vue.js 3) - Requires Node 20+
 
+Uses **pnpm** (pinned via `packageManager` field). Enable via `corepack enable` or `npm i -g pnpm`.
+
 ```bash
 cd Sigook.Web
-npm ci && npm run dev            # Dev (Vite)
-npm run staging                  # Build staging (Vite)
-npm run production               # Build production (Vite)
-npm run type-check               # TypeScript check
-npm run lint                     # ESLint
-npm run preview                  # Preview production build
+pnpm install && pnpm run dev     # Dev (Vite)
+pnpm run staging                 # Build staging (Vite)
+pnpm run production              # Build production (Vite)
+pnpm run type-check              # TypeScript check
+pnpm run lint                    # ESLint
+pnpm run preview                 # Preview production build
 ```
 
 Note: output dir is `wwwroot/` (not `dist/`). Build tool is Vite; state is Pinia; UI is `@ntohq/buefy-next`.
 
 ## Covenant.Web (Vue.js 3) - Requires Node ^20.19.0 or >=22.12.0
 
+Uses **pnpm** (pinned via `packageManager` field). Enable via `corepack enable` or `npm i -g pnpm`.
+
 ```bash
 cd Covenant.Web
-npm install && npm run dev       # Dev
-npm run build:staging            # Build staging
-npm run build:production         # Build production
-npm run type-check               # TypeScript check
+pnpm install && pnpm run dev     # Dev
+pnpm run build:staging           # Build staging
+pnpm run build:production        # Build production
+pnpm run type-check              # TypeScript check
+pnpm run lint                    # ESLint
 ```
 
 ## Covenant.IdentityServer (.NET 6)

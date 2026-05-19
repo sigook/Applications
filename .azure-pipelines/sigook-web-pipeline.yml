@@ -52,32 +52,42 @@ stages:
             parameters:
               nodeVersion: '22'
 
-          # Cache node_modules for faster builds
-          - task: Cache@2
-            displayName: 'Cache node_modules'
-            inputs:
-              key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
-              restoreKeys: |
-                npm | "$(Agent.OS)"
-              path: $(workingDirectory)/node_modules
-
-          # Install dependencies
+          # Install pnpm (pinned via packageManager field in package.json)
           - script: |
-              cd $(workingDirectory)
-              npm ci
+              corepack enable || npm i -g pnpm@11.1.2
+              corepack prepare pnpm@11.1.2 --activate 2>/dev/null || true
+              pnpm --version
+            displayName: 'Setup pnpm'
+
+          # Resolve pnpm store directory for caching
+          - script: |
+              echo "##vso[task.setvariable variable=pnpmStorePath]$(pnpm store path --silent)"
+            displayName: 'Resolve pnpm store path'
+            workingDirectory: $(workingDirectory)
+
+          # Cache pnpm content-addressable store
+          - task: Cache@2
+            displayName: 'Cache pnpm store'
+            inputs:
+              key: 'pnpm | "$(Agent.OS)" | $(workingDirectory)/pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
+              path: $(pnpmStorePath)
+
+          # Install dependencies (frozen lockfile + scripts blocked by .npmrc)
+          - script: pnpm install --frozen-lockfile
             displayName: 'Install Dependencies'
+            workingDirectory: $(workingDirectory)
 
           # Run linting
-          - script: |
-              cd $(workingDirectory)
-              npm run lint
+          - script: pnpm run lint
             displayName: 'Lint Code'
+            workingDirectory: $(workingDirectory)
 
           # TypeScript type checking (validates compilation without generating artifacts)
-          - script: |
-              cd $(workingDirectory)
-              npm run type-check
+          - script: pnpm run type-check
             displayName: 'TypeScript Type Check'
+            workingDirectory: $(workingDirectory)
 
   # ============================================
   # Stage 2: Docker Build and Deploy

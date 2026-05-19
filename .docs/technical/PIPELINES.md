@@ -70,18 +70,19 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 **Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `api`)
 
-### Sigook.Web (Vue.js 2 + Docker + Nginx)
+### Sigook.Web (Vue.js 3 + Docker + Nginx)
 
 **Build naming:** `SigookWeb-YYYYMMDDr`
 
 **Stage 1 - Build and Validate:**
-- Node.js 16 via NVM (alias `sigook-web`)
-- Cache `node_modules` (by `package-lock.json`)
-- Lint with ESLint
+- Node.js 22 via shared template
+- pnpm via corepack (pinned by `packageManager` field)
+- Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
+- Lint with ESLint, TypeScript type-check
 
 **Stage 2 - Docker and Deploy** (only on push to dev/main):
-- Token replacement in `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
-- Multi-stage Docker: Node.js 16 build → Nginx alpine
+- Token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
+- Multi-stage Docker: Node.js 22 + pnpm build → Nginx alpine
 - Build arg: `--build-arg ENV=staging|production`
 - Image: `sigook.azurecr.io/web:<tag>`
 - Staging: `https://sigook-web-staging.azurewebsites.net`
@@ -95,17 +96,18 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 **Build naming:** `CovenantWeb-YYYYMMDDr`
 
 **Stage 1 - Build and Test:**
-- Node.js 20 via NVM (alias `covenant-web`)
-- Cache `node_modules` (by `package-lock.json`)
-- Type checking: `npm run type-check`
-- Linting: `npm run lint`
-- Build: `npm run build:staging` or `npm run build:production`
+- Node.js 22 via shared template
+- pnpm via corepack (pinned by `packageManager` field)
+- Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
+- Type checking: `pnpm run type-check`
+- Linting: `pnpm run lint`
+- Build: `pnpm run build:staging` or `pnpm run build:production`
 - Verify `dist/index.html` exists
 - Archive as zip artifact (only on direct push, not PRs)
 
 **Stage 2 - Deploy** (only on direct push to dev/main):
 - Deploy zip to Azure App Service (Linux)
-- Runtime: Node.js 20 LTS, startup: `npm start`
+- Runtime: Node.js 20 LTS, startup: `npm start` (App Service image; runtime uses npm to launch `serve`)
 - Staging: `https://covenantgroup-staging.azurewebsites.net`
 - Production: `https://covenantgroup.azurewebsites.net`
 

@@ -94,6 +94,7 @@ export type Lift = CatalogItem;
 export type Language = CatalogItem;
 export type WsibGroup = CatalogItem;
 export type Industry = CatalogItem;
+export type Source = CatalogItem;
 export type CompanyStatusCatalog = CatalogItem;
 export type CancellationReason = CatalogItem;
 

@@ -1,9 +1,12 @@
 FROM node:22 AS build-stage
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci
+# Enable pnpm via corepack (ships with Node 22)
+RUN corepack enable
+
+# Copy manifest + lockfile + pnpm config first to leverage Docker layer cache
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -17,11 +20,11 @@ RUN if [ -z "${ENV}" ]; then \
       exit 1; \
     fi
 
-# Run Vue CLI build
+# Run Vite build
 RUN if [ "${ENV}" = "staging" ]; then \
-      npm run staging; \
+      pnpm run staging; \
     else \
-      npm run production; \
+      pnpm run production; \
     fi
 
 # Verify build output exists

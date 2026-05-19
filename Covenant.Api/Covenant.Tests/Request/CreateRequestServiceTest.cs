@@ -65,7 +65,6 @@ namespace Covenant.Tests.Accounting
             identityServerService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
             var timeService = new Mock<ITimeService>();
             _sut = new RequestService(
-                Mock.Of<IAgencyRepository>(),
                 _companyRepository.Object,
                 locationRepository.Object,
                 timeService.Object,

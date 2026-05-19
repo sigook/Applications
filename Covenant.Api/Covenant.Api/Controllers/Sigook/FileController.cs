@@ -4,6 +4,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Resources;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -32,9 +33,14 @@ namespace Covenant.Api.Controllers.Sigook
             this.filesContainer = filesContainer;
         }
 
+        /// <summary>Returns the default placeholder image.</summary>
+        /// <param name="id">Image identifier (unused placeholder route value).</param>
         [HttpGet]
         [Route("defaultImage/{id}")]
         [ResponseCache(Duration = 86400)]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult DefaultImage(string id)
         {
             string path = Path.Combine(_environment.WebRootPath, "assets", "images", "default-dev-image.png");
@@ -45,8 +51,14 @@ namespace Covenant.Api.Controllers.Sigook
             return PhysicalFile(path, "image/png");
         }
 
+        /// <summary>Uploads and saves a profile image.</summary>
+        /// <param name="files">Image files to upload.</param>
+        /// <param name="options">File storage options.</param>
         [HttpPost]
         [Route("imageProfile")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(FilesResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ImageProfile(IList<IFormFile> files, [FromQuery] SigookFileOptions options)
         {
             try
@@ -66,9 +78,15 @@ namespace Covenant.Api.Controllers.Sigook
             }
         }
 
+        /// <summary>Uploads and saves one or more documents or images.</summary>
+        /// <param name="files">Files to upload.</param>
+        /// <param name="options">File storage options.</param>
         [HttpPost]
         [Route("document")]
         [Route("image")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(List<FilesResult>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PostDocuments(IList<IFormFile> files, [FromQuery] SigookFileOptions options)
         {
             try
@@ -88,7 +106,10 @@ namespace Covenant.Api.Controllers.Sigook
             }
         }
 
+        /// <summary>Deletes a stored file by name if it exists.</summary>
+        /// <param name="fileName">Name of the file to delete.</param>
         [HttpDelete("{fileName}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteDocument([FromRoute] string fileName)
         {
             await filesContainer.DeleteFileIfExists(fileName);
