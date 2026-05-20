@@ -174,10 +174,6 @@ public class TimeSheetRepository : ITimeSheetRepository
         {
             timeSheet = timeSheet.Where(ts => ts.WorkerRequest.Request.JobLocation.City.Province.Id == model.ProvinceId);
         }
-        else
-        {
-            timeSheet = timeSheet.Where(ts => ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceTax.Tax1 == 0);
-        }
         if (model.From.HasValue && model.To.HasValue)
         {
             timeSheet = timeSheet.Where(ts => ts.Date.Date >= model.From.Value && ts.Date.Date <= model.To.Value);

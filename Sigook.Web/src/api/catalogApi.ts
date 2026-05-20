@@ -14,6 +14,7 @@ import type {
   CancellationReason,
   CatalogItem,
   TaxCategory,
+  Source,
 } from '@/types/common';
 
 export function getGenders(): Promise<Gender[]> {
@@ -66,6 +67,10 @@ export function getReasonCancellationRequest(): Promise<CancellationReason[]> {
 
 export function getCompanyStatus(): Promise<CatalogItem<number>[]> {
   return http.get('/api/Catalog/companyStatus').then(r => r.data);
+}
+
+export function getSources(): Promise<Source[]> {
+  return http.get('/api/Catalog/source').then(r => r.data);
 }
 
 export function getTaxCategories(): Promise<TaxCategory[]> {

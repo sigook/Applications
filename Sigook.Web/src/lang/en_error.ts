@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { formatFileSize, isDefinedGlobally } from './utils';
 
 const messages = {
@@ -50,7 +49,6 @@ const locale = {
 };
 
 if (isDefinedGlobally()) {
-    // eslint-disable-next-line
     (window as any).VeeValidate.Validator.localize({ [locale.name]: locale });
 }
 

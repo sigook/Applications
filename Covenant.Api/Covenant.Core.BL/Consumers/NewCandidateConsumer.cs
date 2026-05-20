@@ -80,7 +80,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                                 Address = message.Address,
                                 HasVehicle = message.HasVehicle,
                                 ResidencyStatus = message.Status,
-                                Source = "Covenant|Sigook",
+                                SourceId = message.SourceId,
                                 FileName = message.FileName,
                             };
                             if (!string.IsNullOrWhiteSpace(message.Phone))

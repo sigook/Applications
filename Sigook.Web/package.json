@@ -2,6 +2,11 @@
   "name": "clientapp",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0",
+    "pnpm": ">=10"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -9,7 +14,8 @@
     "production": "vite build --mode production",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.{ts,tsx,vue,js}\""
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx,vue,js,json,css,scss}\""
   },
   "dependencies": {
     "@ntohq/buefy-next": "^0.2.0",
@@ -41,70 +47,20 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^25.6.0",
+    "@eslint/js": "^9.39.1",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
     "@typescript-eslint/parser": "^8.59.0",
+    "@vue/eslint-config-prettier": "^10.2.0",
     "autoprefixer": "^10.5.0",
     "esbuild": "^0.28.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.32.0",
+    "eslint": "^9.37.0",
+    "eslint-plugin-vue": "~10.5.0",
+    "globals": "^16.4.0",
     "postcss": "^8.5.9",
-    "tailwindcss": "^4.3.0",
+    "prettier": "3.6.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.8",
     "vue-eslint-parser": "^10.4.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "rules": {
-      "no-console": "off",
-      "no-debugger": "off",
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^(_|[A-Z])"
-        }
-      ],
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-var-requires": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/no-empty-interface": "warn",
-      "vue/require-v-for-key": "warn",
-      "vue/no-unused-vars": "warn",
-      "vue/no-parsing-error": "warn",
-      "vue/no-mutating-props": "warn",
-      "vue/multi-word-component-names": "off",
-      "vue/no-reserved-component-names": "off",
-      "vue/no-v-model-argument": "off",
-      "vue/script-setup-uses-vars": "error",
-      "no-irregular-whitespace": "warn",
-      "no-undef": "off"
-    },
-    "parser": "vue-eslint-parser",
-    "parserOptions": {
-      "parser": "@typescript-eslint/parser"
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.js"
-        ],
-        "rules": {
-          "@typescript-eslint/no-unused-vars": "off"
-        }
-      }
-    ]
   },
   "postcss": {
     "plugins": {

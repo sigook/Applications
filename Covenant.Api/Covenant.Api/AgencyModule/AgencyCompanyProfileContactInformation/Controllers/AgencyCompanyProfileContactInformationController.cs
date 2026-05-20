@@ -6,6 +6,7 @@ using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyCompanyProfileContactInformation.Controllers
@@ -17,7 +18,13 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileContactInformation.Contr
     {
         public const string RouteName = "api/AgencyCompanyProfile/{profileId}/ContactInformation";
 
+        /// <summary>Updates the contact information of a company profile.</summary>
+        /// <param name="repository">Company repository.</param>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="model">Updated contact information.</param>
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(
             [FromServices] ICompanyRepository repository,
             Guid profileId,

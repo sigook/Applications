@@ -9,6 +9,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Services;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -54,8 +55,11 @@ public class WebSiteController : ControllerBase
         this.logger = logger;
     }
 
+    /// <summary>Sends a contact-form email from the public website.</summary>
+    /// <param name="contact">Contact form data.</param>
     [HttpPost("contact")]
     [ServiceFilter(typeof(CaptchaFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SendEmail([FromBody] ContactDto contact)
     {
         try
@@ -73,7 +77,10 @@ public class WebSiteController : ControllerBase
         }
     }
 
+    /// <summary>Gets the available jobs matching the public job search criteria.</summary>
+    /// <param name="model">Job search filter criteria.</param>
     [HttpGet("jobs")]
+    [ProducesResponseType(typeof(IEnumerable<JobViewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetJobs([FromQuery] JobSearchModel model)
     {
         var value = Enumerable.Empty<JobViewModel>();
@@ -99,8 +106,10 @@ public class WebSiteController : ControllerBase
         return Ok(value);
     }
 
+    /// <summary>Receives a candidate application with an optional resume file from the public website.</summary>
     [HttpPost("candidate")]
     [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateCandidate()
     {
         var candidate = HttpContext.Request.Form.DeserializeData<CandidateViewModel>();

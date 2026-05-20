@@ -5,8 +5,12 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Enums;
+using Covenant.Common.Models.Accounting;
+using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
@@ -28,11 +32,23 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
             _timeSheetRepository = timeSheetRepository;
         }
 
+        /// <summary>
+        /// Lists the timesheets of a request for the authenticated worker.
+        /// </summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(PaginatedList<TimeSheetListModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await _timeSheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
 
+        /// <summary>
+        /// Registers a clock-in/clock-out timesheet entry for the authenticated worker.
+        /// </summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="model">Worker location data of the punch.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(RegisterTimeSheetResultModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromBody] WorkerLocationModel model)
         {
             var result = await timeSheetService.Register(requestId, model);
@@ -40,7 +56,13 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
+        /// <summary>
+        /// Gets the next expected clock type (clock-in or clock-out) for a request.
+        /// </summary>
+        /// <param name="requestId">Identifier of the request.</param>
+        /// <param name="date">Optional date to evaluate the clock type for.</param>
         [HttpGet("clock-type")]
+        [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromQuery] DateTime? date)
         {
             var result = await timeSheetService.GetClockType(requestId, date);

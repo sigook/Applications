@@ -8,6 +8,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidate;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyCandidateDocument.Controllers
@@ -30,7 +31,12 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateDocument.Controllers
             this.documentService = documentService;
         }
 
+        /// <summary>Creates a new document for the specified candidate.</summary>
+        /// <param name="candidateId">Identifier of the candidate.</param>
+        /// <param name="model">Document file data.</param>
         [HttpPost]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Post([FromRoute] Guid candidateId, [FromBody] CovenantFileModel model)
         {
             if (!ModelState.IsValid)
@@ -45,11 +51,19 @@ namespace Covenant.Api.AgencyModule.AgencyCandidateDocument.Controllers
             return Ok(result.Value);
         }
 
+        /// <summary>Gets a paginated list of documents for the specified candidate.</summary>
+        /// <param name="candidateId">Identifier of the candidate.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<CovenantFileModel>), StatusCodes.Status200OK)]
         public async Task<ActionResult> GetDocuments(Guid candidateId, Pagination pagination) =>
             Ok(await candidateRepository.GetDocuments(candidateId, pagination));
 
+        /// <summary>Deletes a candidate document.</summary>
+        /// <param name="candidateId">Identifier of the candidate.</param>
+        /// <param name="id">Identifier of the document to delete.</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeleteDocument(Guid candidateId, Guid id)
         {
             var entity = await candidateRepository.GetDocument(candidateId, id);

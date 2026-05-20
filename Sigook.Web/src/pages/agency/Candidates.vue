@@ -109,8 +109,10 @@
           </b-table-column>
           <b-table-column field="source" label="Source" sortable searchable>
             <template v-slot:searchable>
-              <b-input v-model="serverParams.source" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
+              <b-taginput size="is-small" v-model="sourcesSelected" autocomplete :data="sourceList" open-on-focus
+                field="value" icon="label" placeholder="Select Source" @update:modelValue="onSourceSelected"
+                append-to-body>
+              </b-taginput>
             </template>
             <template v-slot="props">
               <span class="d-block">{{ props.row.source }}</span>
@@ -234,6 +236,8 @@ import {
   convertCandidateToWorker,
   bulkAgencyCandidates,
 } from '@/api/agencyCandidateApi';
+import { getSources } from '@/api/catalogApi';
+import type { Source } from '@/types/common';
 import { dateMonth, emailName } from '@/utils/filters';
 import {
   getCandidateNotes,
@@ -272,6 +276,19 @@ const serverParams = ref<any>({
 });
 
 const residencyListValue = residencyList;
+const sourceList = ref<Source[]>([]);
+const sourcesSelected = ref<Source[]>([]);
+
+getSources()
+  .then((sources) => {
+    sourceList.value = sources;
+    if (serverParams.value.sources) {
+      sourcesSelected.value = sources.filter((s) => serverParams.value.sources.includes(s.value));
+    }
+  })
+  .catch((error) => {
+    showAlertError(error);
+  });
 
 const getCandidateNotesFn = ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination);
 const addCandidateNoteFn = ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model);
@@ -337,6 +354,11 @@ function onCreatedAtSelected() {
 function onCreatedAtCleared() {
   createdAtDatesSelected.value = [];
   onCreatedAtSelected();
+}
+
+function onSourceSelected() {
+  serverParams.value.sources = sourcesSelected.value.map((s) => s.value);
+  loadCandidates();
 }
 
 function onStatusSelected() {

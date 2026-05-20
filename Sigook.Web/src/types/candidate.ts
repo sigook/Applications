@@ -63,7 +63,7 @@ export interface AgencyCandidateFilter {
   createdAtTo?: string | null;
   recruiter?: string;
   statuses?: string[];
-  source?: string;
+  sources?: string[];
   resumeOnly?: boolean;
 }
 

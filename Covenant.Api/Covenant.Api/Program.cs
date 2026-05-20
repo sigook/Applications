@@ -4,7 +4,8 @@ using Azure.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
 using Covenant.Api.Configuration;
-using Covenant.Api.Middlewares;
+using Covenant.Api.Configuration.Swagger;
+using Covenant.Api.Extensions;
 using Covenant.Common.Resources;
 using Covenant.Documents;
 using Covenant.Infrastructure.Contexts;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Globalization;
 using System.Reflection;
 
@@ -66,7 +68,23 @@ builder.Services
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddSwaggerGen(opt =>
     {
-        opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Covenant", Version = "v1" });
+        opt.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Covenant/Sigook API",
+            Version = "v1",
+            Description = "Staffing and recruitment platform API for the Canadian market. "
+                + "Routes for the Agency, Company, Worker and Accounting modules. "
+                + "Versioned routes (v2, v4) are encoded directly in the route template.",
+            Contact = new OpenApiContact { Name = "Covenant/Sigook" }
+        });
+
+        opt.EnableAnnotations();
+        opt.SupportNonNullableReferenceTypes();
+        opt.OperationFilter<DefaultResponsesOperationFilter>();
+        opt.DocumentFilter<ServersDocumentFilter>();
+
+        // DTO names repeat across modules; use the full type name to avoid schema id collisions.
+        opt.CustomSchemaIds(t => t.FullName?.Replace("+", "."));
 
         opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
@@ -206,8 +224,15 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     app.UseSwagger(o => o.RouteTemplate = "sigook/swagger/{documentname}/swagger.json")
        .UseSwaggerUI(o =>
        {
-           o.SwaggerEndpoint("/sigook/swagger/v1/swagger.json", "Sigook");
+           o.SwaggerEndpoint("/sigook/swagger/v1/swagger.json", "Covenant/Sigook API v1");
            o.RoutePrefix = string.Empty;
+           o.DocumentTitle = "Covenant/Sigook API";
+           o.DocExpansion(DocExpansion.None);
+           o.DefaultModelsExpandDepth(-1);
+           o.EnableFilter();
+           o.EnableDeepLinking();
+           o.EnablePersistAuthorization();
+           o.DisplayRequestDuration();
        });
 }
 app.UseAuthentication();
@@ -219,7 +244,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}"
 );
-app.UseMiddleware<BufferingMiddleware>();
 logger.LogInformation("Application configured successfully, starting web host...");
 logger.LogInformation("Health checks available at /health, /healthz, /ready, and /live endpoints");
 

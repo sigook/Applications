@@ -6,11 +6,14 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -37,7 +40,9 @@ namespace Covenant.Tests.Request
                 Mock.Of<IIdentityServerService>(),
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
-                Mock.Of<AzureStorageConfiguration>(),
+                Mock.Of<IWorkerRepository>(),
+                Mock.Of<ISendGridService>(),
+                Options.Create(new SendGridConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
             Assert.True(result);

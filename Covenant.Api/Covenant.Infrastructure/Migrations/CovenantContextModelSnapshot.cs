@@ -1080,14 +1080,16 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("ResidencyStatus")
                         .HasColumnType("text");
 
-                    b.Property<string>("Source")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AgencyId");
 
                     b.HasIndex("GenderId");
+
+                    b.HasIndex("SourceId");
 
                     b.ToTable("Candidates", (string)null);
                 });
@@ -3134,6 +3136,25 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Shift");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Source", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Value")
+                        .IsUnique();
+
+                    b.ToTable("Sources", (string)null);
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.StringResource", b =>
                 {
                     b.Property<long>("Id")
@@ -4051,9 +4072,16 @@ namespace Covenant.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("GenderId");
 
+                    b.HasOne("Covenant.Common.Entities.Source", "Source")
+                        .WithMany("Candidates")
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Agency");
 
                     b.Navigation("Gender");
+
+                    b.Navigation("Source");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateDocument", b =>
@@ -5152,6 +5180,11 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Notes");
 
                     b.Navigation("TimeSheets");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Source", b =>
+                {
+                    b.Navigation("Candidates");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>

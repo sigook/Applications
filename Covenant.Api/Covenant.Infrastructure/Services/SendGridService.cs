@@ -1,44 +1,38 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Net.Http.Headers;
 
 namespace Covenant.Infrastructure.Services;
 
 public class SendGridService : ISendGridService
 {
-    private readonly IHttpClientFactory httpClientFactory;
+    private const int SendGridRecipientsPerRequest = 1000;
+
     private readonly SendGridConfiguration configuration;
+    private readonly SendGridClient sendGridClient;
     private readonly ILogger<SendGridService> logger;
 
-    public SendGridService(
-        IHttpClientFactory httpClientFactory,
-        IOptions<SendGridConfiguration> options,
-        ILogger<SendGridService> logger)
+    public SendGridService(IOptions<SendGridConfiguration> options, ILogger<SendGridService> logger)
     {
-        configuration = options.Value;
-        this.httpClientFactory = httpClientFactory;
         this.logger = logger;
+        configuration = options.Value;
+        sendGridClient = new SendGridClient(configuration.ApiKey);
     }
 
     public async Task<Result> SendEmail(SendGridModel model)
     {
-        var templateId = await GetTemplateId(model.Template);
-        if (!templateId) return Result.Fail(templateId.Errors);
+        var templateId = configuration.NewApplicantTemplateId;
         var message = MailHelper.CreateSingleTemplateEmailToMultipleRecipients(
-            new EmailAddress(configuration.From),
-            model.Tos.Select(t => new EmailAddress(t)).ToList(),
-            templateId.Value,
+            new EmailAddress(configuration.TestingEmailAddress),
+            [.. model.Tos.Select(t => new EmailAddress(t))],
+            templateId,
             model.Data);
-        message.SetSandBoxMode(configuration.SandBox);
-        var client = new SendGridClient(configuration.ApiKey);
-        var response = await client.SendEmailAsync(message);
+        var response = await sendGridClient.SendEmailAsync(message);
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError("Error sending emails error: {Error}", await response.Body.ReadAsStringAsync());
@@ -47,20 +41,31 @@ public class SendGridService : ISendGridService
         return Result.Ok();
     }
 
-    private async Task<Result<string>> GetTemplateId(string templateName)
+    public async Task<Result> SendTemplateBatch(string recruitmentEmail, IReadOnlyCollection<TemplateRecipient> recipients)
     {
-        var client = httpClientFactory.CreateClient();
-        client.BaseAddress = new Uri(configuration.TemplatesUrl);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", configuration.ApiKey);
-        var response = await client.GetAsync("templates?generations=dynamic");
-        if (!response.IsSuccessStatusCode) return Result.Fail<string>("It is not possible to get the templates");
-        var content = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(content);
-        var template = doc.RootElement.GetProperty("templates")
-            .EnumerateArray()
-            .FirstOrDefault(t => t.GetProperty("name").GetString() == templateName);
-        if (template.ValueKind == JsonValueKind.Undefined) return Result.Fail<string>($"{templateName} was not found");
-        var templateId = template.GetProperty("id").GetString();
-        return Result.Ok(templateId);
+        var templateId = configuration.NewJobTemplateId;
+        var redirectToTesting = configuration.RedirectInvitationsToTestingEmail;
+        var fromEmail = redirectToTesting
+            ? new EmailAddress(configuration.TestingEmailAddress)
+            : new EmailAddress(recruitmentEmail);
+        var batches = redirectToTesting
+            ? [[recipients.First()]]
+            : recipients.Chunk(SendGridRecipientsPerRequest);
+        foreach (var batch in batches)
+        {
+            var personalizations = batch.Select(r => r.Data).ToList();
+            var tos = redirectToTesting
+                ? [new(configuration.TestingEmailAddress, "Testing Recipient")]
+                : batch.Select(r => new EmailAddress(r.Email, r.FullName)).ToList();
+
+            var message = MailHelper.CreateMultipleTemplateEmailsToMultipleRecipients(fromEmail, tos, templateId, personalizations);
+            var response = await sendGridClient.SendEmailAsync(message);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Body.ReadAsStringAsync();
+                logger.LogError("Error sending template batch. TemplateId={TemplateId} Error={Error}", templateId, error);
+            }
+        }
+        return Result.Ok();
     }
 }

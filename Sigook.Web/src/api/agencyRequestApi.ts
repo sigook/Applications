@@ -65,7 +65,7 @@ export function agencyRequestOpen(id: string): Promise<void> {
 }
 
 export function agencyRequestSendInvitation(requestId: string): Promise<void> {
-  return http.post(`/api/AgencyRequest/${requestId}/SendInvitation`).then(() => {});
+  return http.post(`/api/AgencyRequest/${requestId}/SendInvitation`, undefined, { timeout: 120_000 }).then(() => {});
 }
 
 export function updateAgencyRequestIsAsap(requestId: string): Promise<void> {

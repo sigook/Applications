@@ -17,9 +17,7 @@ public enum RequestStatus
 }
 ```
 
-There are exactly **three** explicit states. There is no `IsOpen` flag, no `Requested` state, and no `InProgress` state — those are legacy concepts that were removed during the state-management refactor.
-
-> Enum values `2` is intentionally skipped to preserve the original numbering and avoid database migrations after `InProgress` was removed.
+There are exactly **three** explicit states.
 
 ---
 

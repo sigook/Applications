@@ -1,11 +1,13 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
@@ -25,8 +27,11 @@ namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
             this.requestService = requestService;
         }
 
+        /// <summary>Gets the paginated list of requests belonging to the current company.</summary>
+        /// <param name="repository">Request repository resolved from DI.</param>
+        /// <param name="filter">Filter and pagination criteria.</param>
         [HttpGet]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(PaginatedList<RequestListModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get([FromServices] IRequestRepository repository, GetRequestForCompanyFilter filter)
         {
             if (User.IsCompanyUser())
@@ -37,15 +42,19 @@ namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
             return Ok(result);
         }
 
+        /// <summary>Gets the detail of a specific company request by its identifier.</summary>
+        /// <param name="repository">Request repository resolved from DI.</param>
+        /// <param name="id">Request identifier.</param>
         [HttpGet("{id}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(CompanyRequestDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById([FromServices] IRequestRepository repository, [FromRoute] Guid id) =>
             this.GetByIdResult(await repository.GetRequestDetailForCompany(id));
 
+        /// <summary>Creates a new request for the current company.</summary>
         [HttpPost]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(typeof(CompanyRequestDetailModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] RequestCreateModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -55,7 +64,12 @@ namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
+        /// <summary>Updates the requirements of an existing request.</summary>
+        /// <param name="id">Request identifier.</param>
+        /// <param name="model">Updated requirements.</param>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] RequestUpdateRequirementsModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -64,8 +78,13 @@ namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
+        /// <summary>Cancels an existing request.</summary>
+        /// <param name="id">Request identifier.</param>
+        /// <param name="model">Cancellation detail.</param>
         [HttpPut]
         [Route("{id}/Cancel")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Cancel([FromRoute] Guid id, [FromBody] RequestCancellationDetailModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

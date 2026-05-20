@@ -12,6 +12,7 @@ using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -32,7 +33,15 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
         this.payStubsContainer = payStubsContainer;
     }
 
+    /// <summary>
+    /// Gets the invoice summary by its identifier, using the agency's billing location to select the format.
+    /// </summary>
+    /// <param name="agencyRepository">Agency repository.</param>
+    /// <param name="invoiceRepository">Invoice repository.</param>
+    /// <param name="id">Identifier of the invoice.</param>
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(InvoiceSummaryModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(
         [FromServices] IAgencyRepository agencyRepository,
         [FromServices] IInvoiceRepository invoiceRepository,
@@ -47,7 +56,19 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
     }
 
 
+    /// <summary>
+    /// Deletes an invoice and its related pay stubs after validating the verification code, and notifies the accounting team.
+    /// </summary>
+    /// <param name="options">Teams webhook configuration.</param>
+    /// <param name="service">Teams notification service.</param>
+    /// <param name="invoiceRepository">Invoice repository.</param>
+    /// <param name="payStubRepository">Pay stub repository.</param>
+    /// <param name="agencyRepository">Agency repository.</param>
+    /// <param name="id">Identifier of the invoice to delete.</param>
+    /// <param name="model">Verification code and the pay stubs to delete alongside the invoice.</param>
     [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete(
         [FromServices] IOptions<TeamsWebhookConfiguration> options,
         [FromServices] ITeamsService service,
@@ -86,7 +107,15 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
         return Ok();
     }
 
+    /// <summary>
+    /// Sends the invoice deletion verification code to the accounting team via Teams.
+    /// </summary>
+    /// <param name="options">Teams webhook configuration.</param>
+    /// <param name="service">Teams notification service.</param>
+    /// <param name="id">Identifier of the invoice the verification code is generated for.</param>
     [HttpPost("{id:guid}/SendVerificationCode")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendVerificationCode([FromServices] IOptions<TeamsWebhookConfiguration> options, [FromServices] ITeamsService service, Guid id)
     {
         var configuration = options.Value;

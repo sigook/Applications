@@ -13,6 +13,7 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
@@ -38,7 +39,10 @@ namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
             this.identityServerService = identityServerService;
         }
 
+        /// <summary>Creates a new user for the current company.</summary>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] CompanyUserModel model)
         {
             if (model is not null || ModelState.IsValid)
@@ -53,7 +57,12 @@ namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
             return BadRequest(ModelState);
         }
 
+        /// <summary>Updates an existing company user.</summary>
+        /// <param name="id">Company user identifier.</param>
+        /// <param name="model">Updated company user data.</param>
         [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CompanyUserModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
@@ -68,11 +77,16 @@ namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
             return Ok();
         }
 
+        /// <summary>Gets all users belonging to the current company.</summary>
         [HttpGet]
-        public async Task<IActionResult> Get() => 
+        [ProducesResponseType(typeof(IEnumerable<CompanyUserModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Get() =>
             Ok(await companyRepository.GetAllCompanyUsers(User.GetCompanyId()));
 
+        /// <summary>Gets the detail of the currently authenticated company user.</summary>
         [HttpGet("detail")]
+        [ProducesResponseType(typeof(CompanyUserModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById()
         {
             var id = identityServerService.GetUserId();
@@ -81,7 +95,11 @@ namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
             return Ok(model);
         }
 
+        /// <summary>Deletes a company user by its identifier.</summary>
+        /// <param name="id">Company user identifier.</param>
         [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await companyService.DeleteCompanyUser(id);

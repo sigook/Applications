@@ -4,11 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sigook.Functions.Configuration;
-using Sigook.Functions.Models;
-using Sigook.Functions.Services;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWorkerDefaults()
     .ConfigureAppConfiguration((context, config) =>
     {
         var environment = context.HostingEnvironment;
@@ -31,11 +29,8 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        services.Configure<SendGridSettings>(context.Configuration);
         services.AddHttpClient("Api");
         services.AddHttpClient("Teams");
-        services.AddSingleton<ISigookApi, SigookApi>();
-        services.AddSingleton<IEmailService, SendGridService>();
     })
     .Build();
 

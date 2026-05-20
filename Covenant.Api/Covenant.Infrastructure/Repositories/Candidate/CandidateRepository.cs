@@ -54,7 +54,7 @@ namespace Covenant.Infrastructure.Repositories.Candidate
                 Email = c.Email,
                 Address = c.Address,
                 PostalCode = c.PostalCode,
-                Source = c.Source,
+                Source = c.Source.Value,
                 PhoneNumbers = c.PhoneNumbers.Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }),
                 Skills = c.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => new SkillModel { Id = s.Id, Skill = s.Skill }),
                 Requests = c.RequestApplicants.Where(wC => wC.CandidateId == c.Id).OrderByDescending(oC => oC.CreatedAt).Select(sC => new BaseModel<Guid> { Id = sC.Request.Id, Value = sC.Request.NumberId.ToString() }),
@@ -105,8 +105,8 @@ namespace Covenant.Infrastructure.Repositories.Candidate
                 predicate = predicate.And(c => c.Recruiter.ToLower().Contains(filter.Recruiter.ToLower()));
             if (filter.Statuses != null && filter.Statuses.Any())
                 predicate = predicate.And(c => filter.Statuses.Contains(c.ResidencyStatus));
-            if (!string.IsNullOrWhiteSpace(filter.Source))
-                predicate = predicate.And(c => c.Source.ToLower().Contains(filter.Source.ToLower()));
+            if (filter.Sources != null && filter.Sources.Any())
+                predicate = predicate.And(c => filter.Sources.Contains(c.Source));
             if (filter.ResumeOnly)
                 predicate = predicate.And(c => c.HasDocuments);
             return predicate;

@@ -179,8 +179,6 @@ public static class ApiServicesConfiguration
         var accountingStorageConnection = builder.Configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = builder.Configuration.GetConnectionString("FileStorageConnection");
 
-        // Use empty strings as fallback to prevent null reference exceptions
-        // The health checks will report if configuration is missing
         var accountingConnectionSafe = accountingStorageConnection ?? string.Empty;
         var fileConnectionSafe = fileStorageConnection ?? string.Empty;
 
@@ -200,8 +198,6 @@ public static class ApiServicesConfiguration
     {
         var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBusConnection");
 
-        // Only register Service Bus consumers if connection string is configured
-        // The health checks will report if configuration is missing
         if (!string.IsNullOrEmpty(serviceBusConnection))
         {
             services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
@@ -224,7 +220,6 @@ public static class ApiServicesConfiguration
 
         var healthChecksBuilder = services.AddHealthChecks();
 
-        // Configuration validation checks - these check if configuration exists
         healthChecksBuilder.AddTypeActivatedCheck<DatabaseConfigurationHealthCheck>(
             "config-database",
             HealthStatus.Unhealthy,
@@ -243,7 +238,6 @@ public static class ApiServicesConfiguration
             tags: ["config", "ready"],
             args: [serviceBusConnection!]);
 
-        // Connectivity checks - these check if services are accessible (only if configured)
         if (!string.IsNullOrEmpty(databaseConnection))
         {
             healthChecksBuilder.AddDbContextCheck<CovenantContext>(
@@ -252,7 +246,6 @@ public static class ApiServicesConfiguration
                 tags: ["connectivity", "ready", "live"]);
         }
 
-        // Always add connectivity checks (they now handle null connection strings gracefully)
         healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",
             new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
             HealthStatus.Unhealthy,

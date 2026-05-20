@@ -2,11 +2,13 @@
 using Covenant.Api.Utils;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities.Agency;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency;
@@ -34,21 +36,30 @@ public class AgencyController : ControllerBase
         _defaultLogoProvider = defaultLogoProvider;
     }
 
+    /// <summary>Gets a paginated list of agencies matching the given filter.</summary>
+    /// <param name="filter">Filter and pagination criteria.</param>
     [HttpGet]
+    [ProducesResponseType(typeof(PaginatedList<AgencyModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllAgencies([FromQuery] GetAgenciesFilter filter)
     {
         var data = await agencyRepository.GetAgencies(User.GetAgencyId(), filter);
         return Ok(data);
     }
 
+    /// <summary>Gets the detail of a specific agency by id.</summary>
+    /// <param name="agencyId">Agency identifier.</param>
     [HttpGet("{agencyId}")]
+    [ProducesResponseType(typeof(AgencyModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAgency([FromRoute] Guid agencyId)
     {
         var agency = await agencyRepository.GetAgencyDetail(agencyId);
         return Ok(agency);
     }
 
+    /// <summary>Gets the profile detail of the current agency.</summary>
     [HttpGet("Profile")]
+    [ProducesResponseType(typeof(AgencyModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAgencyProfile()
     {
         Guid agencyId = User.GetAgencyId();
@@ -57,7 +68,11 @@ public class AgencyController : ControllerBase
         return Ok(agency);
     }
 
+    /// <summary>Updates the profile of the current agency.</summary>
+    /// <param name="model">Updated agency data.</param>
     [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put([FromBody] AgencyModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -100,7 +115,11 @@ public class AgencyController : ControllerBase
         return Ok();
     }
 
+    /// <summary>Creates a new agency.</summary>
+    /// <param name="model">Agency data to create.</param>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateAgency([FromBody] AgencyModel model)
     {
         var result = await agencyService.CreateAgency(model);

@@ -55,7 +55,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
                     PostalCode = "M1M2M1",
                     Gender = new BaseModel<Guid>(Startup.Male.Id),
                     HasVehicle = true,
-                    Source = "Web page",
+                    SourceId = Startup.WebPageSource.Id,
                     PhoneNumbers = new[] { new PhoneNumberModel("234 5677") },
                     Skills = new[] { new SkillModel("Cleaning"), new SkillModel("Packing") },
                     ResidencyStatus = "Student"
@@ -73,7 +73,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             Assert.Equal(model.PostalCode, entity.PostalCode);
             Assert.Equal(model.Gender?.Id, entity.Gender?.Id);
             Assert.Equal(model.HasVehicle, entity.HasVehicle);
-            Assert.Equal(model.Source, entity.Source);
+            Assert.Equal(model.SourceId, entity.SourceId);
             Assert.Equal(model.ResidencyStatus, entity.ResidencyStatus);
             Assert.All(model.PhoneNumbers, c => Assert.Contains(entity.PhoneNumbers, e => e.PhoneNumber == c.PhoneNumber));
             Assert.All(model.Skills, c => Assert.Contains(entity.Skills, e => e.Skill == c.Skill));
@@ -162,6 +162,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
             public const string CurrentUser = "mary@mail.com";
             public static readonly Gender Male = new Gender { Id = Guid.NewGuid(), Value = "Male" };
             public static readonly Gender Female = new Gender { Id = Guid.NewGuid(), Value = "Female" };
+            public static readonly Source WebPageSource = new Source { Id = Guid.NewGuid(), Value = "Web page" };
             private static readonly User FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
             private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
             public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "J Martin")
@@ -169,7 +170,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
                 Address = "MAIN 123",
                 Gender = new Gender { Value = "Female" },
                 HasVehicle = true,
-                Source = "Web page",
+                SourceId = WebPageSource.Id,
                 Recruiter = "recruiter",
                 AgencyId = FakeAgency.Id,
                 ResidencyStatus = "Foreign Worker"
@@ -226,6 +227,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 context.Gender.AddRange(Male, Female);
+                context.Source.Add(WebPageSource);
                 context.Agencies.Add(FakeAgency);
                 context.Candidates.Add(FakeCandidate);
                 context.Candidates.Add(FakeCandidateEmpty);

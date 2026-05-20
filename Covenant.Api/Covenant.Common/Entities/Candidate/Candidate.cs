@@ -27,7 +27,8 @@ namespace Covenant.Common.Entities.Candidate
         public Guid? GenderId { get; set; }
         public Gender Gender { get; set; }
         public bool HasVehicle { get; set; }
-        public string Source { get; set; }
+        public Guid? SourceId { get; set; }
+        public Source Source { get; set; }
         public string Recruiter { get; set; }
         public string ResidencyStatus { get; set; }
         public IList<CandidatePhone> PhoneNumbers { get; set; } = new List<CandidatePhone>();

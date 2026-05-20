@@ -30,7 +30,7 @@ public interface IWorkerRepository
     Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination);
     Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);
-    Task<PaginatedList<WorkerContactInfoModel>> GetWorkersAvailableToInvite(AvailableToInvitePagination pagination);
+    Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId);
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);
     Task<IEnumerable<WorkerLicenseExpiredModel>> GetWorkerLicensesExpired(DateTime date);
     Task<WorkerProfileTaxCategory> GetWorkerProfileTaxCategory(Guid workerProfileId);

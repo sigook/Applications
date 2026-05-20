@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Company;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyCompanyProfileLogo.Controllers
@@ -13,7 +14,13 @@ namespace Covenant.Api.AgencyModule.AgencyCompanyProfileLogo.Controllers
     {
         public const string RouteName = "api/AgencyCompanyProfile/{profileId}/Logo";
 
+        /// <summary>Updates the logo of a company profile.</summary>
+        /// <param name="repository">Company repository.</param>
+        /// <param name="profileId">Identifier of the company profile.</param>
+        /// <param name="model">Logo file information.</param>
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(
             [FromServices] ICompanyRepository repository,
             Guid profileId,

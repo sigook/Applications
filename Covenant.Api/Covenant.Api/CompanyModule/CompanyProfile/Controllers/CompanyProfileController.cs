@@ -9,6 +9,7 @@ using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.CompanyModule.CompanyProfile.Controllers
@@ -34,8 +35,11 @@ namespace Covenant.Api.CompanyModule.CompanyProfile.Controllers
             this.companyService = companyService;
         }
 
+        /// <summary>Registers a new company profile created by the company itself.</summary>
         [HttpPost]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] CompanyRegisterByItselfModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -65,7 +69,10 @@ namespace Covenant.Api.CompanyModule.CompanyProfile.Controllers
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
+        /// <summary>Gets the profile detail of the current company.</summary>
         [HttpGet]
+        [ProducesResponseType(typeof(CompanyProfileDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById()
         {
             var model = await _companyRepository.GetCompanyProfileDetail(cp => cp.CompanyId == User.GetCompanyId());
@@ -73,7 +80,12 @@ namespace Covenant.Api.CompanyModule.CompanyProfile.Controllers
             return Ok(model);
         }
 
+        /// <summary>Updates an existing company profile.</summary>
+        /// <param name="profileId">Company profile identifier.</param>
+        /// <param name="model">Updated company profile data.</param>
         [HttpPut("{profileId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(Guid profileId, [FromBody] CompanyProfileDetailModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

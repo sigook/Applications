@@ -81,7 +81,7 @@ public class CandidateService : ICandidateService
             using var stream = new MemoryStream();
             using var workbook = new XLWorkbook();
             var sheet = workbook.Worksheets.Add("Report");
-            sheet.SetupHeaders(new string[] { "Candidate Name" });
+            sheet.SetupHeaders(["Candidate Name"]);
             var startAt = 2;
             var bulkCandidates = new List<BulkCandidate>();
             foreach (var record in records)

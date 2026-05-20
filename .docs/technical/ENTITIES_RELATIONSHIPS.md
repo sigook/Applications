@@ -558,8 +558,6 @@ public enum RequestStatus
 }
 ```
 
-> Enum value `2` is intentionally skipped (legacy `InProgress` was removed).
-
 **DurationTerm Enum:**
 ```csharp
 public enum DurationTerm
@@ -743,8 +741,6 @@ public class PayStub
     public ICollection<PayStubWageDetail> WageDetails { get; set; }
 }
 ```
-
-> The `OtherDeductions` column was removed from `PayStub` in migration `20260327161135_RemoveOtherDeductionsColumn`. Per-line "other deduction" amounts now live in `PayStubOtherDeduction`.
 
 ---
 

@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Queues;
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Notification;
@@ -7,7 +6,6 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
@@ -15,11 +13,13 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
+using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Text;
-using System.Text.Json;
 
 namespace Covenant.Core.BL.Services;
 
@@ -34,7 +34,9 @@ public class RequestService : IRequestService
     private readonly IIdentityServerService identityServerService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
-    private readonly AzureStorageConfiguration azureStorageConfiguration;
+    private readonly IWorkerRepository workerRepository;
+    private readonly ISendGridService sendGridService;
+    private readonly SendGridConfiguration sendGridConfiguration;
     private readonly ILogger<RequestService> logger;
 
     public RequestService(
@@ -47,7 +49,9 @@ public class RequestService : IRequestService
         IIdentityServerService identityServerService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
-        AzureStorageConfiguration azureStorageConfiguration,
+        IWorkerRepository workerRepository,
+        ISendGridService sendGridService,
+        IOptions<SendGridConfiguration> sendGridOptions,
         ILogger<RequestService> logger)
     {
         this.companyRepository = companyRepository;
@@ -59,7 +63,9 @@ public class RequestService : IRequestService
         this.identityServerService = identityServerService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
-        this.azureStorageConfiguration = azureStorageConfiguration;
+        this.workerRepository = workerRepository;
+        this.sendGridService = sendGridService;
+        sendGridConfiguration = sendGridOptions.Value;
         this.logger = logger;
     }
 
@@ -415,18 +421,56 @@ public class RequestService : IRequestService
         return Result.Ok(entity);
     }
 
-    public async Task SendInvitationToApply(InvitationToApplyModel model)
+    public async Task<Result> SendInvitation(Guid requestId)
     {
-        var connectionString = azureStorageConfiguration.DefaultAccessKey.ConnectionString ?? throw new ArgumentNullException();
-        if (model is null) return;
-        var client = new QueueClient(connectionString, "invitation-to-apply");
-        if (await client.ExistsAsync())
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
+
+        var now = timeService.GetCurrentDateTime();
+        var canBeSent = request.CanInvitationBeSendIt(now);
+        if (!canBeSent) return canBeSent;
+
+        var provinceId = request.JobLocation.City.ProvinceId;
+        var workers = await workerRepository.GetWorkersAvailableToInvite(request.AgencyId, provinceId);
+        if (workers.Count > 0)
         {
-            var stringModel = JsonSerializer.Serialize(model);
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(stringModel);
-            var message = Convert.ToBase64String(plainTextBytes);
-            await client.SendMessageAsync(message);
+            var jobTitle = request.JobTitle;
+            var description = request.Description;
+            var requirements = request.Requirements;
+            var city = request.JobLocation?.City?.Value;
+            var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
+            var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
+            var recipients = new List<TemplateRecipient>(workers.Count);
+            foreach (var worker in workers)
+            {
+                var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", worker.WorkerId.ToString());
+                var applyUrl = sendGridConfiguration.ApplyOnlineUrl
+                    .Replace("{{requestId}}", request.Id.ToString())
+                    .Replace("{{workerId}}", worker.WorkerId.ToString());
+
+                object data = new
+                {
+                    worker_name = worker.FullName,
+                    unsubscribe = unsubscribeUrl,
+                    unsubscribe_preferences = unsubscribeUrl,
+                    job_title = jobTitle,
+                    description,
+                    requirements,
+                    rate,
+                    city,
+                    apply = applyUrl,
+                };
+                recipients.Add(new TemplateRecipient(worker.Email, worker.FullName, data));
+            }
+            if (recipients.Count > 0)
+            {
+                await sendGridService.SendTemplateBatch(request.Agency.RecruitmentEmail, recipients);
+                request.InvitationSentItAt = now;
+                await requestRepository.Update(request);
+                await requestRepository.SaveChangesAsync();
+            }
         }
+        return Result.Ok();
     }
 
     public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)

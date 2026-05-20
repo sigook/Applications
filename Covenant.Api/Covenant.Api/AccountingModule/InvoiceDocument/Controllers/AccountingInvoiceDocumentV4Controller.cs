@@ -8,6 +8,7 @@ using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
 using Covenant.HtmlTemplates.Views.Billing.Invoice;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net.Mime;
@@ -40,8 +41,15 @@ namespace Covenant.Api.AccountingModule.InvoiceDocument.Controllers
             this.emailService = emailService;
         }
 
+        /// <summary>
+        /// Generates and returns the invoice document as a PDF file.
+        /// </summary>
+        /// <param name="invoiceId">Identifier of the invoice.</param>
         [HttpGet]
         [Route("PDF")]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPdf(Guid invoiceId)
         {
             Location billingLocation = await _agencyRepository.GetBillingLocation(User.GetAgencyId());
@@ -53,8 +61,16 @@ namespace Covenant.Api.AccountingModule.InvoiceDocument.Controllers
             return PhysicalFile(pdfPath, MediaTypeNames.Application.Pdf, invoiceId.ToInvoiceBlobName());
         }
 
+        /// <summary>
+        /// Generates the invoice PDF and emails it, with optional attachments, to the client.
+        /// </summary>
+        /// <param name="invoiceId">Identifier of the invoice.</param>
+        /// <param name="model">Email content, recipients and attachment files.</param>
         [HttpPost]
         [Route("Email")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(Guid invoiceId, [FromForm] InvoiceEmailModel model)
         {
             Location billingLocation = await _agencyRepository.GetBillingLocation(User.GetAgencyId());

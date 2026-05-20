@@ -5,6 +5,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
@@ -14,6 +15,7 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -72,7 +74,9 @@ namespace Covenant.Tests.Accounting
                 identityServerService.Object,
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
-                Mock.Of<AzureStorageConfiguration>(),
+                Mock.Of<IWorkerRepository>(),
+                Mock.Of<ISendGridService>(),
+                Options.Create(new SendGridConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel

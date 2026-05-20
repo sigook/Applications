@@ -8,6 +8,7 @@ using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Security.Controllers
@@ -28,8 +29,13 @@ namespace Covenant.Api.Security.Controllers
             _userRepository = userRepository;
         }
 
+        /// <summary>Changes the email address of the current authenticated user.</summary>
+        /// <param name="model">New email data.</param>
         [HttpPost]
         [Route("ChangeEmail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -59,8 +65,10 @@ namespace Covenant.Api.Security.Controllers
             return Ok();
         }
 
+        /// <summary>Gets the email address of the current authenticated user.</summary>
         [HttpGet]
         [Route("GetEmail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetEmail()
         {
             User.TryGetUserId(out Guid userId);
@@ -68,8 +76,10 @@ namespace Covenant.Api.Security.Controllers
             return Ok(new { Email = email });
         }
 
+        /// <summary>Gets the claims of the current authenticated user.</summary>
         [HttpGet]
         [Route("Claims")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Claims()
         {
             return Ok(User.Claims.Select(s => new
@@ -80,8 +90,11 @@ namespace Covenant.Api.Security.Controllers
             }));
         }
 
+        /// <summary>Computes the hash of the given password.</summary>
+        /// <param name="password">Plain text password to hash.</param>
         [HttpGet("HashPassword")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public IActionResult HashPassword([FromQuery] string password)
         {
             return Ok(identityServerService.HashPassword(password).Value);

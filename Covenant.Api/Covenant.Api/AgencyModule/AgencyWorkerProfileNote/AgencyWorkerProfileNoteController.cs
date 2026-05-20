@@ -6,6 +6,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.AgencyModule.AgencyWorkerProfileNote
@@ -16,7 +17,13 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerProfileNote
     public class AgencyWorkerProfileNoteController : Controller
     {
         public const string RouteName = "api/AgencyWorkerProfile/{workerProfileId}/Note";
+        /// <summary>Creates a new note for the specified worker profile.</summary>
+        /// <param name="repository">Worker repository.</param>
+        /// <param name="workerProfileId">Identifier of the worker profile.</param>
+        /// <param name="model">Note content.</param>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromServices] IWorkerRepository repository, [FromRoute] Guid workerProfileId, [FromBody] WorkerProfileNoteCreateModel model)
         {
             string createdBy = User.GetNickname();
@@ -27,7 +34,12 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerProfileNote
             return Ok();
         }
 
+        /// <summary>Gets a paginated list of notes for the specified worker profile.</summary>
+        /// <param name="repository">Worker repository.</param>
+        /// <param name="workerProfileId">Identifier of the worker profile.</param>
+        /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<WorkerProfileNoteListModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get([FromServices] IWorkerRepository repository, [FromRoute] Guid workerProfileId, Pagination pagination) =>
             Ok(await repository.GetWorkerProfileNotes(workerProfileId, pagination));
     }
