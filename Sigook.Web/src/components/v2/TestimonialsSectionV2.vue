@@ -140,11 +140,13 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   z-index: 3;
 }
 
-/* ── Slide backgrounds — fill full section so the curve sits at the AppDownload
-   boundary, mirroring the CertifiedSection→AppDownload transition above ─── */
+/* ── Slide backgrounds — start where AppDownload's visible features end, so
+   the curve sits right at that boundary (mirrors the CertifiedSection→
+   AppDownload transition above). The space above the bg in the section is
+   transparent, letting AppDownload's lighter blue show through naturally. */
 .testimonials-v2__bg {
   position: absolute;
-  top: 0;
+  top: 540px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -184,10 +186,10 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   );
 }
 
-/* ── Decorative quotation mark ─────────────────────────────────────────────── */
+/* ── Decorative quotation mark — sits in the bg's top-right corner ───────── */
 .testimonials-v2__quote-mark {
   position: absolute;
-  top: 28px;
+  top: 568px;
   right: 32px;
   width: 45px;
   height: 45px;
@@ -205,10 +207,10 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 0 var(--gutter-desktop);
 }
 
-/* ── Header (top-left of blue area) ────────────────────────────────────────── */
+/* ── Header (top-left of blue area, sits inside the slide bg) ────────────── */
 .testimonials-v2__header {
   position: absolute;
-  top: 472px;
+  top: 640px;
   left: 0;
 }
 
