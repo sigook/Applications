@@ -15,7 +15,7 @@
 
     <!-- Decorative quotation marks -->
     <img
-      src="@/assets/images/v2/testimonials-quote-mark.png"
+      src="@/assets/images/v2/testimonials/testimonials-quote-mark.png"
       alt=""
       aria-hidden="true"
       class="testimonials-v2__quote-mark"
@@ -58,26 +58,28 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import officeBg from '@/assets/images/v2/testimonials-office.jpg'
+import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.jpg'
+import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.jpg'
+import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.jpg'
 
 const testimonials = [
   {
-    bg: officeBg,
+    bg: slide1Bg,
     gradient: '',
     quote: '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
     author: 'HR Manager, Manufacturer',
     location: 'Doral, Florida',
   },
   {
-    bg: '',
-    gradient: 'linear-gradient(135deg, #0f2f44 0%, #1575bb 60%, #13629e 100%)',
+    bg: slide2Bg,
+    gradient: '',
     quote: '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
     author: 'Business Owner, Retail',
     location: 'Vancouver, BC',
   },
   {
-    bg: '',
-    gradient: 'linear-gradient(135deg, #13629e 0%, #00adef 60%, #1575bb 100%)',
+    bg: slide3Bg,
+    gradient: '',
     quote: '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
     author: 'Operations Manager, Logistics',
     location: 'Montréal, QC',

@@ -10,32 +10,32 @@
     <div class="numbers-v2__canvas">
 
       <!-- ── Decorative circles (fixed px, decorative clipping ok) ───── -->
-      <img src="@/assets/images/v2/deco-circle-3.svg" class="numbers-v2__deco numbers-v2__deco--c3" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-1.svg" class="numbers-v2__deco numbers-v2__deco--c1" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-2.svg" class="numbers-v2__deco numbers-v2__deco--c2" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-7.svg" class="numbers-v2__deco numbers-v2__deco--c7" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-6.svg" class="numbers-v2__deco numbers-v2__deco--c6" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-4.svg" class="numbers-v2__deco numbers-v2__deco--c4" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-circle-5.svg" class="numbers-v2__deco numbers-v2__deco--c5" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-3.svg" class="numbers-v2__deco numbers-v2__deco--c3" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-1.svg" class="numbers-v2__deco numbers-v2__deco--c1" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-2.svg" class="numbers-v2__deco numbers-v2__deco--c2" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-7.svg" class="numbers-v2__deco numbers-v2__deco--c7" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-6.svg" class="numbers-v2__deco numbers-v2__deco--c6" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-4.svg" class="numbers-v2__deco numbers-v2__deco--c4" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-circle-5.svg" class="numbers-v2__deco numbers-v2__deco--c5" alt="" aria-hidden="true" />
 
       <!-- ── Decorative lines (fixed px) ────────────────────────────── -->
-      <img src="@/assets/images/v2/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l1" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l2" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-line-b.svg" class="numbers-v2__deco numbers-v2__deco--l3" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l4" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l1" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l2" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-line-b.svg" class="numbers-v2__deco numbers-v2__deco--l3" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-line-a.svg" class="numbers-v2__deco numbers-v2__deco--l4" alt="" aria-hidden="true" />
 
       <!-- ── Decorative dot grids (fixed px) ────────────────────────── -->
-      <img src="@/assets/images/v2/deco-dots.svg" class="numbers-v2__deco numbers-v2__deco--dots-r" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-dots.svg" class="numbers-v2__deco numbers-v2__deco--dots-l" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-dots.svg" class="numbers-v2__deco numbers-v2__deco--dots-r" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-dots.svg" class="numbers-v2__deco numbers-v2__deco--dots-l" alt="" aria-hidden="true" />
 
       <!-- ── Cobalt divider bar (% width + left) ────────────────────── -->
       <div class="numbers-v2__divider" aria-hidden="true"></div>
 
       <!-- ── Dots on the divider (% left) ──────────────────────────── -->
-      <img src="@/assets/images/v2/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--1" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--2" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--3" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/stat-dot-filled.svg" class="numbers-v2__sdot numbers-v2__sdot--4" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--1" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--2" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/stat-dot.svg"        class="numbers-v2__sdot numbers-v2__sdot--3" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/stat-dot-filled.svg" class="numbers-v2__sdot numbers-v2__sdot--4" alt="" aria-hidden="true" />
 
       <!-- ── Stat circles — desktop only (% left, vertically centered) ── -->
       <div class="numbers-v2__stat numbers-v2__stat--clients">
@@ -82,8 +82,8 @@
       <span class="numbers-v2__mob-dl numbers-v2__mob-dl--4" aria-hidden="true"></span>
 
       <!-- ── Mobile: dot grids (hidden on desktop) ─────────────────────── -->
-      <img src="@/assets/images/v2/deco-dots.svg" class="numbers-v2__mob-dg numbers-v2__mob-dg--tr" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/deco-dots.svg" class="numbers-v2__mob-dg numbers-v2__mob-dg--bl" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-dots.svg" class="numbers-v2__mob-dg numbers-v2__mob-dg--tr" alt="" aria-hidden="true" />
+      <img src="@/assets/images/v2/numbers/deco-dots.svg" class="numbers-v2__mob-dg numbers-v2__mob-dg--bl" alt="" aria-hidden="true" />
 
     </div><!-- /canvas -->
   </section>

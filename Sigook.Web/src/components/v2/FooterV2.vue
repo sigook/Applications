@@ -6,7 +6,7 @@
         <!-- Brand column -->
         <div class="footer-v2__brand">
           <img
-            src="@/assets/images/v2/footer-logo.png"
+            src="@/assets/images/v2/footer/footer-logo.png"
             alt="Sigook Work Factory"
             class="footer-v2__logo"
           />

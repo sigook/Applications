@@ -6,9 +6,9 @@
     <section class="certified-v2">
       <!-- Photo layer 1 -->
       <div class="certified-v2__bg" aria-hidden="true">
-        <img src="@/assets/images/v2/certified-bg.jpg" alt="" class="certified-v2__photo certified-v2__photo--1" />
+        <img src="@/assets/images/v2/certified/certified-bg.jpg" alt="" class="certified-v2__photo certified-v2__photo--1" />
         <!-- Photo layer 2 -->
-        <img src="@/assets/images/v2/certified-bg2.jpg" alt="" class="certified-v2__photo certified-v2__photo--2" />
+        <img src="@/assets/images/v2/certified/certified-bg2.jpg" alt="" class="certified-v2__photo certified-v2__photo--2" />
       </div>
 
       <div class="certified-v2__content">

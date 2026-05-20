@@ -52,8 +52,8 @@
 
 <script setup lang="ts">
 import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
-import employersPhoto from '@/assets/images/v2/employers-office.jpg'
-import talentsPhoto from '@/assets/images/v2/talents-worker.jpg'
+import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.jpg'
+import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.jpg'
 
 const props = defineProps<{
   variant: 'employers' | 'talents'
@@ -105,11 +105,11 @@ const props = defineProps<{
 .employers-v2__photo-img {
   position: absolute;
   width: 100%;
-  height: 184%;
-  top: -32%;
+  height: 100%;
+  top: 0;
   left: 0;
   object-fit: cover;
-  object-position: center top;
+  object-position: center center;
 }
 
 .employers-v2__photo-overlay {

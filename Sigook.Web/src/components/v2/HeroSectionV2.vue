@@ -16,7 +16,7 @@
     <!-- Static content (shared across all slides) -->
     <div class="hero-v2__content">
       <img
-        src="@/assets/images/v2/hero-logo.png"
+        src="@/assets/images/v2/hero/hero-logo.png"
         alt="Sigook Work Factory"
         class="hero-v2__logo"
       />
@@ -51,22 +51,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import heroImg from '@/assets/images/v2/hero-bg.jpg'
+import heroSlide1 from '@/assets/images/v2/hero/hero-slide1.jpg'
+import heroSlide2 from '@/assets/images/v2/hero/hero-slide2.jpg'
+import heroSlide3 from '@/assets/images/v2/hero/hero-slide3.jpg'
 
 const slides = [
   {
-    bg: heroImg,
+    bg: heroSlide1,
     gradient: '',
     tagline: 'Behind Every Great American Company is Great Talent',
   },
   {
-    bg: '',
-    gradient: 'linear-gradient(135deg, #0f2f44 0%, #1575bb 60%, #13629e 100%)',
+    bg: heroSlide2,
+    gradient: '',
     tagline: 'Connecting Top Talent with Leading Employers Across North America',
   },
   {
-    bg: '',
-    gradient: 'linear-gradient(135deg, #13629e 0%, #00adef 60%, #1575bb 100%)',
+    bg: heroSlide3,
+    gradient: '',
     tagline: 'Your Workforce Solution — From Onboarding to Payroll, Fully Connected',
   },
 ]
@@ -121,11 +123,11 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 .hero-v2__bg-img {
   position: absolute;
   width: 100%;
-  height: 296%;
-  top: -20%;
+  height: 100%;
+  top: 0;
   left: 0;
   object-fit: cover;
-  object-position: center top;
+  object-position: center center;
 }
 
 .hero-v2__bg-color {

@@ -2,7 +2,7 @@
   <section class="why-v2">
     <!-- Block A — Corporate buildings photo -->
     <div class="why-v2__hero">
-      <img src="@/assets/images/v2/why-bg.jpg" alt="" class="why-v2__hero-bg" aria-hidden="true" />
+      <img src="@/assets/images/v2/why-choose-us/why-bg.jpg" alt="" class="why-v2__hero-bg" aria-hidden="true" />
       <div class="why-v2__hero-overlay" aria-hidden="true"></div>
       <div class="why-v2__hero-content">
         <div class="why-v2__hero-left">
@@ -27,7 +27,7 @@
           <!-- Map column — pins PNG (transparent bg) floats directly on the blue panel -->
           <div class="why-v2__col why-v2__col--map">
             <img
-              src="@/assets/images/v2/usa-map.png"
+              src="@/assets/images/v2/why-choose-us/usa-map.png"
               alt="USA/Canada presence map"
               class="why-v2__map-img"
             />
@@ -73,7 +73,7 @@
           <div class="why-v2__col why-v2__col--graphic">
             <!-- Figma asset: recruitment graphic 01 1 (node 2442:670), 480×360px -->
             <img
-              src="@/assets/images/v2/recruitment-graphic.png"
+              src="@/assets/images/v2/why-choose-us/recruitment-graphic.png"
               alt=""
               aria-hidden="true"
               class="why-v2__graphic-img"
