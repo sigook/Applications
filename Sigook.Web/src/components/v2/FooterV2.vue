@@ -19,11 +19,12 @@
         <div class="footer-v2__cols">
           <nav class="footer-v2__col" aria-label="Company">
             <p class="footer-v2__col-heading">Company</p>
-            <router-link to="/v2/about"          class="footer-v2__link">About Us</router-link>
-            <router-link to="/v2/open-positions" class="footer-v2__link">Open Positions</router-link>
-            <router-link to="/v2/industries"     class="footer-v2__link">Industries</router-link>
-            <router-link to="/v2/partner"        class="footer-v2__link">Become a Partner</router-link>
-            <a href="#sp-contact"                class="footer-v2__link">Contact</a>
+            <router-link to="/v2/about"            class="footer-v2__link">About Us</router-link>
+            <router-link to="/v2/open-positions"  class="footer-v2__link">Open Positions</router-link>
+            <router-link to="/v2/industries"      class="footer-v2__link">Industries</router-link>
+            <router-link to="/v2/special-projects" class="footer-v2__link">Special Projects</router-link>
+            <router-link to="/v2/partner"         class="footer-v2__link">Become a Partner</router-link>
+            <a href="#sp-contact"                 class="footer-v2__link">Contact</a>
           </nav>
 
           <nav class="footer-v2__col" aria-label="Services">

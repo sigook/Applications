@@ -16,19 +16,15 @@
     <!-- ── Focus Areas ───────────────────────────────────────────────────── -->
     <section class="sp-focus">
       <div class="sp-focus__inner">
-        <div class="sp-focus__header">
-          <p class="v2-eyebrow sp-focus__eyebrow">Our Approach</p>
-          <h2 class="v2-h2 sp-focus__title">Our Focus Areas</h2>
-          <p class="v2-body sp-focus__desc">
-            We develop initiatives that support workforce growth, industry needs, and talent
-            development across Canada.
-          </p>
-        </div>
+        <h2 class="sp-focus__title">Our Focus Areas</h2>
 
         <div class="sp-focus__grid">
           <div v-for="area in focusAreas" :key="area.title" class="sp-focus__card">
-            <h3 class="v2-h3 sp-focus__card-title">{{ area.title }}</h3>
-            <p class="v2-body sp-focus__card-desc">{{ area.desc }}</p>
+            <img class="sp-focus__card-icon" :src="area.icon" :alt="area.title" />
+            <div class="sp-focus__card-body">
+              <h3 class="sp-focus__card-title">{{ area.title }}</h3>
+              <p class="sp-focus__card-desc">{{ area.desc }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -47,19 +43,23 @@ import ContactSectionV2 from '@/components/v2/ContactSectionV2.vue'
 const focusAreas = [
   {
     title: 'Our Focus Areas',
-    desc: 'Strategic workforce initiatives driving growth and industry development across Canada.',
+    desc: 'We develop initiatives to support workforce growth, industry needs, and talent development.',
+    icon: '/images/v2/sp-icon-focus-areas.png',
   },
   {
     title: 'Featured Initiative',
-    desc: 'Programs and projects making a real impact in our communities and creating lasting change.',
+    desc: 'Programs and projects that are making an impact.',
+    icon: '/images/v2/sp-icon-featured-initiative.png',
   },
   {
-    title: 'How We Collaborate',
-    desc: 'Working with clients, partners, and communities to deliver meaningful workforce solutions.',
+    title: 'How we collaborate',
+    desc: 'Working together with clients, partners, and communities to deliver meaningful workforce solutions.',
+    icon: '/images/v2/sp-icon-collaborate.png',
   },
   {
     title: 'Future Initiatives',
     desc: 'Exploring new opportunities and projects that will shape the future of work.',
+    icon: '/images/v2/sp-icon-future-initiatives.png',
   },
 ]
 </script>
@@ -117,56 +117,75 @@ main {
 
 /* ── Focus Areas ───────────────────────────────────────────────────────────── */
 .sp-focus {
-  padding: var(--sp-16) 0;
+  padding: var(--sp-12) 0;
 }
 
 .sp-focus__inner {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--gutter-mobile);
-}
-
-.sp-focus__header {
-  text-align: center;
-  margin-bottom: var(--sp-8);
-}
-
-.sp-focus__eyebrow {
-  color: var(--c-brand-blue);
-  margin: 0 0 var(--sp-2);
+  padding: 0 39px;
 }
 
 .sp-focus__title {
+  font-size: 30px;
+  font-weight: 700;
   color: #fff;
-  margin: 0 0 var(--sp-4);
-}
-
-.sp-focus__desc {
-  color: var(--c-ink-2);
-  margin: 0;
+  text-align: center;
+  margin: 0 0 36px;
 }
 
 .sp-focus__grid {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: 21px;
 }
 
 .sp-focus__card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 13px 20px;
+  border-radius: 30px;
   background: var(--c-bg);
-  border-radius: var(--r-md);
-  padding: var(--sp-6);
-  box-shadow: var(--sh-2);
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.sp-focus__card:hover {
+  background: var(--c-brand-cyan);
+}
+
+/* Mobile: alternate icon side on even cards */
+.sp-focus__card:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.sp-focus__card-icon {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 50%; /* clip square PNG to circle */
+  object-fit: cover;
+}
+
+.sp-focus__card-body {
+  flex: 1;
 }
 
 .sp-focus__card-title {
+  font-size: 22px;
+  font-weight: 700;
   color: var(--c-ink);
-  margin: 0 0 var(--sp-3);
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 
 .sp-focus__card-desc {
-  color: var(--c-ink-2);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-ink);
   margin: 0;
+  line-height: 1.5;
 }
 
 /* ── Desktop ───────────────────────────────────────────────────────────────── */
@@ -199,17 +218,30 @@ main {
     padding: 0 var(--gutter-desktop);
   }
 
-  .sp-focus__header {
-    max-width: 560px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: var(--sp-12);
+  .sp-focus__title {
+    font-size: 40px;
+    margin-bottom: 68px;
   }
 
   .sp-focus__grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--sp-6);
+    gap: 40px 48px;
+    max-width: 1122px;
+    margin: 0 auto;
+  }
+
+  /* Reset mobile icon alternating — all cards are icon-left on desktop */
+  .sp-focus__card:nth-child(even) {
+    flex-direction: row;
+  }
+
+  .sp-focus__card {
+    min-height: 116px;
+  }
+
+  .sp-focus__card-body {
+    max-width: 368px;
   }
 }
 </style>

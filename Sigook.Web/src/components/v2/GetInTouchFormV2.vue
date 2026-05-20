@@ -160,7 +160,7 @@ function handleReset() {
   box-shadow: var(--sh-2);
   padding: 32px 40px 40px;
   width: 550px;
-  max-width: 100%;
+  max-width: 60%;
   box-sizing: border-box;
 }
 

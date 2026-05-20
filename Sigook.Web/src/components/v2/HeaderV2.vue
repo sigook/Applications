@@ -61,12 +61,13 @@ const isScrolled = ref(false);
 const mobileOpen = ref(false);
 
 const navLinks = [
-  { label: 'Open Positions', to: '/v2/open-positions' },
-  { label: 'Industries',     to: '/v2/industries' },
-  { label: 'News',           to: '/v2/news' },
-  { label: 'About Us',       to: '/v2/about' },
-  { label: 'Employers',      to: '/v2/employers' },
-  { label: 'Talents',        to: '/v2/talents' },
+  { label: 'Open Positions',   to: '/v2/open-positions' },
+  { label: 'Industries',       to: '/v2/industries' },
+  { label: 'News',             to: '/v2/news' },
+  { label: 'About Us',         to: '/v2/about' },
+  { label: 'Employers',        to: '/v2/employers' },
+  { label: 'Talents',          to: '/v2/talents' },
+  { label: 'Special Projects', to: '/v2/special-projects' },
 ];
 
 function onScroll() {

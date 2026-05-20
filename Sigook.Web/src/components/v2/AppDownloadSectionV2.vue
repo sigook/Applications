@@ -1,12 +1,12 @@
 <template>
   <section class="app-v2">
-    <!-- Desktop wave backgrounds (Figma desktop: full-bleed, top: 480px) -->
-    <img src="@/assets/images/v2/app-wave-blue.svg"  class="app-v2__wave app-v2__wave--cobalt" alt="" aria-hidden="true" />
-    <img src="@/assets/images/v2/app-wave-cyan.svg"  class="app-v2__wave app-v2__wave--cyan"   alt="" aria-hidden="true" />
+    <!-- Desktop wave backgrounds -->
+    <img src="@/assets/images/v2/app-wave-cobalt.png" class="app-v2__wave app-v2__wave--cobalt" alt="" aria-hidden="true" />
+    <img src="@/assets/images/v2/app-wave-cyan.png"   class="app-v2__wave app-v2__wave--cyan"   alt="" aria-hidden="true" />
 
-    <!-- Mobile wave backgrounds (Figma mobile node 425:10372 — different SVG shape/size) -->
-    <img src="@/assets/images/v2/app-wave-blue-mob.svg" class="app-v2__wave-mob app-v2__wave-mob--cobalt" alt="" aria-hidden="true" />
-    <img src="@/assets/images/v2/app-wave-cyan-mob.svg" class="app-v2__wave-mob app-v2__wave-mob--cyan"   alt="" aria-hidden="true" />
+    <!-- Mobile wave backgrounds -->
+    <img src="@/assets/images/v2/app-wave-cobalt.png" class="app-v2__wave-mob app-v2__wave-mob--cobalt" alt="" aria-hidden="true" />
+    <img src="@/assets/images/v2/app-wave-cyan.png"   class="app-v2__wave-mob app-v2__wave-mob--cyan"   alt="" aria-hidden="true" />
 
     <!-- 1440px reference grid — all content positioned relative to this -->
     <div class="app-v2__inner">
