@@ -3,14 +3,13 @@
     <!-- ── Hero ──────────────────────────────────────────────────────────── -->
     <section class="sp-hero">
       <div class="sp-hero__inner">
-        <p class="v2-eyebrow sp-hero__eyebrow">Special Projects</p>
-        <h1 class="v2-h1 sp-hero__title">Special Projects</h1>
-        <p class="v2-lead sp-hero__lead">
-          At SIGOOK, our work naturally expands into initiatives that combine workforce
-          development, specialized training, and community engagement to create new
-          opportunities across industries and regions.
-        </p>
-        <a href="#sp-contact" class="btn btn--primary">Get in Touch</a>
+        <h1 class="sp-hero__title">Special Projects</h1>
+        <div class="sp-hero__desc">
+          <p>At SIGOOK, connecting organizations with talent is just the beginning.</p>
+          <p>Over time, our work with employers, communities, and public institutions has naturally expanded into initiatives that combine workforce development, specialized training, and innovative projects aimed at strengthening local economies.</p>
+          <p>Through our Special Projects initiatives, we participate in efforts that bring together talent, technology, and community engagement to create new opportunities across industries and regions.</p>
+        </div>
+        <a href="#sp-contact" class="btn btn--lg btn--cyan">Reach Out ></a>
       </div>
     </section>
 
@@ -66,36 +65,58 @@ const focusAreas = [
 </script>
 
 <style scoped>
+main {
+  background: var(--c-brand-teal-dark);
+}
+
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
 .sp-hero {
-  background: var(--c-brand-navy);
-  padding: calc(64px + var(--sp-12)) 0 var(--sp-16); /* 64px = mobile header height */
+  background:
+    linear-gradient(to top, rgba(0, 173, 239, 0.7), rgba(235, 28, 36, 0.7)),
+    url('/images/v2/sp-hero-bg.png') center / cover no-repeat;
+  border-bottom-right-radius: 94px;
+  padding: 159px 0 var(--sp-16);
+  min-height: 992px;
 }
 
 .sp-hero__inner {
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0 var(--gutter-mobile);
-}
-
-.sp-hero__eyebrow {
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 var(--sp-4);
+  padding: 0 39px;
 }
 
 .sp-hero__title {
+  font-family: var(--font-family);
+  font-size: var(--text-h1-size);
+  font-weight: var(--text-display-weight);
+  line-height: var(--text-h1-lh);
   color: #fff;
   margin: 0 0 var(--sp-6);
 }
 
-.sp-hero__lead {
-  color: #d7e1e5;
-  margin: 0 0 var(--sp-8);
+.sp-hero__desc {
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: var(--text-body-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-body-lh);
+  text-align: justify;
+  max-width: 560px;
+  margin: 0;
+}
+
+.sp-hero__desc p {
+  margin: 0 0 var(--sp-4);
+}
+
+.sp-hero__desc p:last-child {
+  margin-bottom: 0;
+}
+
+.sp-hero .btn {
+  margin-top: 43px;
 }
 
 /* ── Focus Areas ───────────────────────────────────────────────────────────── */
 .sp-focus {
-  background: var(--c-surface);
   padding: var(--sp-16) 0;
 }
 
@@ -116,7 +137,7 @@ const focusAreas = [
 }
 
 .sp-focus__title {
-  color: var(--c-ink);
+  color: #fff;
   margin: 0 0 var(--sp-4);
 }
 
@@ -151,19 +172,23 @@ const focusAreas = [
 /* ── Desktop ───────────────────────────────────────────────────────────────── */
 @media (min-width: 1024px) {
   .sp-hero {
-    padding: calc(80px + var(--sp-20)) 0 var(--sp-20); /* 80px = desktop header height */
+    padding: 218px 0 var(--sp-24);
+    min-height: 924px;
   }
 
   .sp-hero__inner {
-    padding: 0 var(--gutter-desktop);
+    padding: 0 0 0 169px;
     max-width: 800px;
-    margin: 0 0; /* left-aligned hero */
   }
 
   .sp-hero__title {
-    font-size: var(--text-display-size);
+    font-size: 55px;
     line-height: var(--text-display-lh);
     letter-spacing: var(--text-display-ls);
+  }
+
+  .sp-hero .btn {
+    margin-top: var(--sp-16);
   }
 
   .sp-focus {

@@ -3,7 +3,7 @@
     <!-- Decorative circles -->
     <div class="contact-v2__deco-1" aria-hidden="true">
       <svg viewBox="0 0 851 851" xmlns="http://www.w3.org/2000/svg" class="contact-v2__deco-svg">
-        <circle cx="425.5" cy="425.5" r="425.5" fill="#00ADEF" fill-opacity="0.35" />
+        <circle cx="425.5" cy="425.5" r="425.5" style="fill: var(--c-brand-cyan)" />
       </svg>
     </div>
     <div class="contact-v2__deco-2" aria-hidden="true">
@@ -29,9 +29,9 @@ import GetInTouchFormV2 from '@/components/v2/GetInTouchFormV2.vue'
 /* ── Section shell ─────────────────────────────────────────────────────────── */
 .contact-v2 {
   position: relative;
-  background: var(--c-brand-blue);
+  background: var(--contact-v2-bg, transparent);
   border-radius: 0 0 20px 20px;
-  min-height: 1500px;
+  overflow: hidden;
 }
 
 /* ── Decorative circles ────────────────────────────────────────────────────── */

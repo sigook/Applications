@@ -15,32 +15,32 @@
           </p>
         </div>
 
-        <!-- Company column -->
-        <nav class="footer-v2__col" aria-label="Company">
-          <p class="footer-v2__col-heading">Company</p>
-          <router-link to="/v2/about"            class="footer-v2__link">About Us</router-link>
-          <router-link to="/v2/open-positions"   class="footer-v2__link">Open Positions</router-link>
-          <router-link to="/v2/industries"       class="footer-v2__link">Industries</router-link>
-          <router-link to="/v2/news"             class="footer-v2__link">News</router-link>
-          <router-link to="/v2/special-projects" class="footer-v2__link">Special Projects</router-link>
-        </nav>
+        <!-- Nav columns: auto-fit grid → 2 cols on small mobile, 3 on wider -->
+        <div class="footer-v2__cols">
+          <nav class="footer-v2__col" aria-label="Company">
+            <p class="footer-v2__col-heading">Company</p>
+            <router-link to="/v2/about"          class="footer-v2__link">About Us</router-link>
+            <router-link to="/v2/open-positions" class="footer-v2__link">Open Positions</router-link>
+            <router-link to="/v2/industries"     class="footer-v2__link">Industries</router-link>
+            <router-link to="/v2/partner"        class="footer-v2__link">Become a Partner</router-link>
+            <a href="#sp-contact"                class="footer-v2__link">Contact</a>
+          </nav>
 
-        <!-- Services column -->
-        <nav class="footer-v2__col" aria-label="Services">
-          <p class="footer-v2__col-heading">Services</p>
-          <router-link to="/v2/employers" class="footer-v2__link">For Employers</router-link>
-          <router-link to="/v2/talents"   class="footer-v2__link">For Talents</router-link>
-          <router-link to="/v2/partner"   class="footer-v2__link">Become a Partner</router-link>
-          <router-link to="/v2/certified" class="footer-v2__link">Licensed &amp; Certified</router-link>
-          <router-link to="/v2/payroll"   class="footer-v2__link">Payroll Solutions</router-link>
-        </nav>
+          <nav class="footer-v2__col" aria-label="Services">
+            <p class="footer-v2__col-heading">Services</p>
+            <router-link to="/v2/employers" class="footer-v2__link">Temporary Staffing</router-link>
+            <router-link to="/v2/payroll"   class="footer-v2__link">Payroll Services</router-link>
+            <router-link to="/v2/talents"   class="footer-v2__link">Workforce Solutions</router-link>
+            <router-link to="/v2/about"     class="footer-v2__link">HR Consulting</router-link>
+            <router-link to="/v2/certified" class="footer-v2__link">Compliance</router-link>
+          </nav>
 
-        <!-- Contact column -->
-        <div class="footer-v2__col">
-          <p class="footer-v2__col-heading">Contact</p>
-          <a href="mailto:info@sigook.com" class="footer-v2__link">info@sigook.com</a>
-          <a href="tel:+18001234567" class="footer-v2__link">+1 (800) 123-4567</a>
-          <span class="footer-v2__link footer-v2__link--plain">Toronto, Ontario, Canada</span>
+          <div class="footer-v2__col">
+            <p class="footer-v2__col-heading">Contact</p>
+            <a href="mailto:info@sigook.com" class="footer-v2__link">info@sigook.com</a>
+            <a href="tel:+16475550123"       class="footer-v2__link">+1 (647) 555-0123</a>
+            <span class="footer-v2__link footer-v2__link--plain">Toronto, ON, Canada</span>
+          </div>
         </div>
       </div>
 
@@ -86,6 +86,11 @@ const currentYear = new Date().getFullYear()
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+/* Transparent on desktop — 3 cols become direct children of main flex row */
+.footer-v2__cols {
+  display: contents;
 }
 
 /* ── Brand column ──────────────────────────────────────────────────────────── */
@@ -186,7 +191,7 @@ const currentYear = new Date().getFullYear()
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .footer-v2__inner {
-    padding: 48px var(--gutter-mobile) 32px;
+    padding: 48px 32px 40px;
     gap: 32px;
   }
 
@@ -196,14 +201,22 @@ const currentYear = new Date().getFullYear()
   }
 
   .footer-v2__logo {
-    width: 140px;
-    height: 56px;
+    width: 150px;
+    height: 60px;
+  }
+
+  /* Auto-fit: 2 cols on narrow mobile, 3 cols when there's enough room */
+  .footer-v2__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 24px 16px;
+    width: 100%;
   }
 
   .footer-v2__bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
 }
 </style>
