@@ -31,7 +31,7 @@
         <div class="app-v2__copy">
           <span class="app-v2__eyebrow">Sigook App</span>
           <h2 class="app-v2__title">
-            Download our <span class="app-v2__title-accent">APP</span>
+            Your workforce,<br />in your <span class="app-v2__title-accent">pocket</span>
           </h2>
           <p class="app-v2__subtitle">
             Smarter Staffing,<br />Powered by Technology
@@ -57,8 +57,8 @@
                 class="app-v2__badge-icon"
               />
               <span class="app-v2__badge-text">
-                <span class="app-v2__badge-small">Get it on</span>
-                <span class="app-v2__badge-big">Google Play</span>
+                <span class="app-v2__badge-small">DOWNLOAD ON THE</span>
+                <span class="app-v2__badge-big">Play Store</span>
               </span>
             </a>
           </div>
@@ -129,18 +129,24 @@ const features = [
   background:
     radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.18) 0%, transparent 45%),
     linear-gradient(
-      160deg,
+      180deg,
       var(--c-brand-navy) 0%,
-      var(--c-brand-navy-deep) 35%,
-      var(--c-brand-deep) 70%,
-      var(--c-brand-blue) 100%
+      var(--c-brand-navy-deep) 22%,
+      var(--c-brand-deep) 50%,
+      var(--c-brand-navy-deep) 78%,
+      var(--c-brand-navy) 100%
     );
-  /* Brand asymmetric curve at top-left — flows from CertifiedSection */
-  border-radius: var(--r-brand) 0 0 0;
-  margin-top: -1px; /* hide hairline against previous section bg */
+  /* Extend up behind CertifiedSection (z:2) AND down behind TestimonialsSection
+     (z:3) to fill the wedges left by their asymmetric border-radii. Adjacent
+     sections stay on top via z-index; only the curve-exposed areas get filled
+     with matching navy — no more colour jumps at either edge. */
+  margin-top: -200px;
+  padding-top: 200px;
+  margin-bottom: -200px;
+  padding-bottom: 200px;
   overflow: hidden;
   font-family: var(--font-family);
-  z-index: 2;
+  z-index: 1;
   color: #fff;
 }
 
@@ -271,8 +277,8 @@ const features = [
   align-items: center;
   gap: 14px;
   padding: 14px 24px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.466);
+  border: 1px solid rgba(255, 255, 255, 0.39);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #fff;
@@ -449,7 +455,9 @@ const features = [
 @media (max-width: 1023px) {
   .app-v2 {
     min-height: 0;
-    border-radius: 80px 0 0 0;
+    /* Mobile: smaller overlap (corners are smaller on mobile too) */
+    margin-top: -120px;
+    padding-top: 120px;
   }
 
   .app-v2__inner {

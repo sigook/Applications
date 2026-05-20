@@ -59,6 +59,8 @@
   height: 577px;
   overflow: hidden;
   border-radius: 150px 0 150px 0;
+  /* Cast a soft shadow downward to reinforce the overlap onto AppDownload */
+  box-shadow: 0 22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
 /* ── Photo background ── */

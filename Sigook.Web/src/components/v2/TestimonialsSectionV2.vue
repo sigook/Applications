@@ -152,6 +152,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   pointer-events: none;
   border-radius: 0 var(--r-brand) 0 0;
   overflow: hidden;
+  /* Cast a soft shadow upward to reinforce the overlap onto AppDownload */
+  box-shadow: 0 -22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
 .testimonials-v2__bg--active {
