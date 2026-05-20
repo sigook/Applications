@@ -132,9 +132,8 @@ const features = [
       180deg,
       var(--c-brand-navy) 0%,
       var(--c-brand-navy-deep) 22%,
-      var(--c-brand-deep) 50%,
-      var(--c-brand-navy-deep) 78%,
-      var(--c-brand-navy) 100%
+      var(--c-brand-deep) 55%,
+      var(--c-brand-blue) 100%
     );
   /* Extend up behind CertifiedSection (z:2) AND down behind TestimonialsSection
      (z:3) to fill the wedges left by their asymmetric border-radii. Adjacent

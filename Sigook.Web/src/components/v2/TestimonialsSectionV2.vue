@@ -140,10 +140,11 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   z-index: 3;
 }
 
-/* ── Slide backgrounds — start at 372px (= 60px below stores pill) ─────────── */
+/* ── Slide backgrounds — fill full section so the curve sits at the AppDownload
+   boundary, mirroring the CertifiedSection→AppDownload transition above ─── */
 .testimonials-v2__bg {
   position: absolute;
-  top: 372px;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
@@ -186,11 +187,11 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 /* ── Decorative quotation mark ─────────────────────────────────────────────── */
 .testimonials-v2__quote-mark {
   position: absolute;
-  top: 364px;
-  right: 0;
+  top: 28px;
+  right: 32px;
   width: 45px;
   height: 45px;
-  z-index: 1;
+  z-index: 2;
   object-fit: contain;
 }
 
@@ -314,7 +315,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     min-height: 500px;
     padding-bottom: 48px;
     margin-top: 0;
-    background: var(--c-brand-navy);
+    /* No background — let AppDownload's gradient show through the rounded
+       corner cutout, mirroring the top transition (CertifiedSection→AppDownload) */
+    background: transparent;
   }
 
   .testimonials-v2__bg {
