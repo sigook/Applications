@@ -707,12 +707,10 @@ local.properties
 # Claude Code - AI assistant workspace files
 .claude/settings.local.json
 .claude.json
+.mcp.json
 
 # CodeGraph - local knowledge graph index
 .codegraph/
-
-# OpenAPI spec - generated on every API build, not committed
-.docs/technical/openapi.json
 
 # C# language server cache - regenerated automatically, not committed
 *.lscache

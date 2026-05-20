@@ -12,6 +12,7 @@ namespace Covenant.Infrastructure.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
             builder.Property(x => x.Value).IsRequired();
+            builder.Property(x => x.IsAvailableForRequests).HasDefaultValue(false);
             builder.HasIndex(x => x.Value).IsUnique();
         }
     }

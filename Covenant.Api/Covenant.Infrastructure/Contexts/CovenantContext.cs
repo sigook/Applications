@@ -51,6 +51,7 @@ public class CovenantContext : DbContext
     public DbSet<RequestReportTo> RequestReportTo { get; set; }
     public DbSet<RequestNote> RequestNotes { get; set; }
     public DbSet<RequestRecruiter> RequestRecruiter { get; set; }
+    public DbSet<RequestSource> RequestSource { get; set; }
     public DbSet<RequestSkill> RequestSkill { get; set; }
     public DbSet<RequestApplicant> RequestApplicant { get; set; }
     public DbSet<RequestComission> RequestComissions { get; set; }

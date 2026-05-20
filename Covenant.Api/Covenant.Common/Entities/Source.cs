@@ -4,6 +4,7 @@ namespace Covenant.Common.Entities
     {
         public Guid Id { get; set; }
         public string Value { get; set; }
+        public bool IsAvailableForRequests { get; set; }
         public ICollection<Candidate.Candidate> Candidates { get; set; } = new List<Candidate.Candidate>();
     }
 }

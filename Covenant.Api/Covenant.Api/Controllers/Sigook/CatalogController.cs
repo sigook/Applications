@@ -230,6 +230,16 @@ namespace Covenant.Api.Controllers.Sigook
             return Ok(sources);
         }
 
+        /// <summary>Gets the list of sources eligible to be assigned to requests (job boards).</summary>
+        [HttpGet("source/requests")]
+        [ResponseCache(Duration = 43200)]
+        [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSourcesForRequests()
+        {
+            var sources = await _repository.GetSourcesForRequests();
+            return Ok(sources);
+        }
+
         /// <summary>Gets the available tax category values.</summary>
         [HttpGet("tax-categories")]
         [ResponseCache(Duration = 43200)]
