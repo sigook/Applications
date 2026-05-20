@@ -1,70 +1,112 @@
 <template>
   <section class="app-v2">
-    <!-- Wave backgrounds: same assets, shown/hidden via media query -->
-    <img src="@/assets/images/v2/app-download/app-wave-cobalt.png" class="app-v2__wave app-v2__wave--cobalt" alt="" aria-hidden="true" />
-    <img src="@/assets/images/v2/app-download/app-wave-cyan.png"   class="app-v2__wave app-v2__wave--cyan"   alt="" aria-hidden="true" />
-    <img src="@/assets/images/v2/app-download/app-wave-cobalt.png" class="app-v2__wave-mob app-v2__wave-mob--cobalt" alt="" aria-hidden="true" />
-    <img src="@/assets/images/v2/app-download/app-wave-cyan.png"   class="app-v2__wave-mob app-v2__wave-mob--cyan"   alt="" aria-hidden="true" />
+    <!-- Decorative geometric shapes: solid + outlined circles, varied sizes -->
+    <div class="app-v2__shapes" aria-hidden="true">
+      <!-- Large rings (background depth) -->
+      <span class="app-v2__shape app-v2__shape--ring-cyan shape-xl-1"></span>
+      <span class="app-v2__shape app-v2__shape--ring-red  shape-xl-2"></span>
+      <span class="app-v2__shape app-v2__shape--ring-cyan shape-xl-3"></span>
 
-    <!-- 1440px reference grid -->
+      <!-- Medium rings -->
+      <span class="app-v2__shape app-v2__shape--ring-red  shape-md-1"></span>
+      <span class="app-v2__shape app-v2__shape--ring-cyan shape-md-2"></span>
+      <span class="app-v2__shape app-v2__shape--ring-red  shape-md-3"></span>
+
+      <!-- Small dots -->
+      <span class="app-v2__shape app-v2__shape--dot-cyan shape-sm-1"></span>
+      <span class="app-v2__shape app-v2__shape--dot-red  shape-sm-2"></span>
+      <span class="app-v2__shape app-v2__shape--dot-cyan shape-sm-3"></span>
+      <span class="app-v2__shape app-v2__shape--dot-red  shape-sm-4"></span>
+      <span class="app-v2__shape app-v2__shape--dot-cyan shape-sm-5"></span>
+      <span class="app-v2__shape app-v2__shape--dot-red  shape-sm-6"></span>
+
+      <!-- Tiny accents -->
+      <span class="app-v2__shape app-v2__shape--dot-cyan shape-xs-1"></span>
+      <span class="app-v2__shape app-v2__shape--dot-red  shape-xs-2"></span>
+    </div>
+
     <div class="app-v2__inner">
-      <img src="@/assets/images/v2/app-download/app-cyan-ellipse.svg" class="app-v2__cyan-ellipse" alt="" aria-hidden="true" />
-
-      <!-- Download block — white area, left column -->
-      <div class="app-v2__download">
-        <h2 class="app-v2__dl-title">Download our App</h2>
-        <p class="app-v2__dl-sub">
-          Smarter Staffing,<br>Powered by Technology
-        </p>
-        <a :href="downloadHref" class="btn btn--primary btn--sm app-v2__dl-btn">
-          Download
-          <ArrowIconV2 :width="32" :height="11" :stroke-width="1.5" />
-        </a>
-      </div>
-
-      <!--
-        Blue zone wrapper: desktop = transparent static container so absolute children
-        anchor to app-v2__inner. Mobile = groups platform + stores into the blue area.
-      -->
-      <div class="app-v2__blue-zone">
-        <div class="app-v2__platform">
-          <h2 class="app-v2__pl-title">
-            All-in-One Staffing &amp;<br>Workforce Platform
+      <!-- TOP: CTA + phone hero -->
+      <div class="app-v2__top">
+        <div class="app-v2__copy">
+          <span class="app-v2__eyebrow">Sigook App</span>
+          <h2 class="app-v2__title">
+            Download our <span class="app-v2__title-accent">APP</span>
           </h2>
-          <ul class="app-v2__list">
-            <li v-for="feature in features" :key="feature">{{ feature }}</li>
-          </ul>
+          <p class="app-v2__subtitle">
+            Smarter Staffing,<br />Powered by Technology
+          </p>
+
+          <div class="app-v2__badges">
+            <a href="#" class="app-v2__badge" aria-label="Download on the App Store">
+              <img
+                src="@/assets/images/v2/app-download/app-store-apple.png"
+                alt=""
+                class="app-v2__badge-icon app-v2__badge-icon--apple"
+              />
+              <span class="app-v2__badge-text">
+                <span class="app-v2__badge-small">Download on the</span>
+                <span class="app-v2__badge-big">App Store</span>
+              </span>
+            </a>
+
+            <a href="#" class="app-v2__badge" aria-label="Get it on Google Play">
+              <img
+                src="@/assets/images/v2/app-download/app-store-google.png"
+                alt=""
+                class="app-v2__badge-icon"
+              />
+              <span class="app-v2__badge-text">
+                <span class="app-v2__badge-small">Get it on</span>
+                <span class="app-v2__badge-big">Google Play</span>
+              </span>
+            </a>
+          </div>
         </div>
 
-        <img
-          src="@/assets/images/v2/app-download/app-stores-pill.svg"
-          alt="Download on App Store and Google Play"
-          class="app-v2__stores"
-        />
+        <div class="app-v2__phone-wrap" aria-hidden="true">
+          <span class="app-v2__phone-halo"></span>
+          <img
+            src="@/assets/images/v2/app-download/app-hand-phone.png"
+            alt=""
+            class="app-v2__phone-img"
+          />
+        </div>
       </div>
 
-      <!-- Hand holding iPhone photo -->
-      <div class="app-v2__phone" aria-hidden="true">
-        <img src="@/assets/images/v2/app-download/app-hand-phone.png" alt="" class="app-v2__phone-img" />
-      </div>
+      <!-- BOTTOM: Features (same background, no panel) -->
+      <div class="app-v2__bottom">
+        <div class="app-v2__bottom-inner">
+          <span class="app-v2__bottom-eyebrow">Workforce platform</span>
+          <h2 class="app-v2__features-title">
+            All-in-One Staffing &amp;<br />Workforce Platform
+          </h2>
+          <div class="app-v2__accent-line"></div>
 
-      <!-- Device graphic -->
-      <img src="@/assets/images/v2/app-download/app-phone-ellipse.svg"      class="app-v2__device-ellipse"    alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/app-download/app-phone-graphic-blue.png" class="app-v2__device-phone-blue" alt="" aria-hidden="true" />
-      <img src="@/assets/images/v2/app-download/app-phone-graphic.png"      class="app-v2__device-phone"      alt="" aria-hidden="true" />
+          <ul class="app-v2__features">
+            <li v-for="feature in features" :key="feature">
+              <svg
+                class="app-v2__check"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
-
-withDefaults(defineProps<{
-  downloadHref?: string
-}>(), {
-  downloadHref: '#'
-})
-
 const features = [
   'One platform. Total workforce visibility.',
   'Real-time attendance and supervisor-approved shifts.',
@@ -76,306 +118,429 @@ const features = [
 
 <style scoped>
 /* ============================================================
-   App Section V2  —  Figma reference: node 425:5801
-   Canvas size: 1440 × 1379 px
+   App Download — modern reimagined v2
+   Unified dark background, geometric decorative shapes.
+   Total height 1380px (compat with TestimonialsSection -700 overlap)
    ============================================================ */
 
 .app-v2 {
   position: relative;
-  overflow: hidden;
-  background: white;
   min-height: 1380px;
-  z-index: 1;
-  font-family: 'Poppins', sans-serif;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.18) 0%, transparent 45%),
+    linear-gradient(
+      160deg,
+      var(--c-brand-navy) 0%,
+      var(--c-brand-navy-deep) 35%,
+      var(--c-brand-deep) 70%,
+      var(--c-brand-blue) 100%
+    );
+  /* Brand asymmetric curve at top-left — flows from CertifiedSection */
+  border-radius: var(--r-brand) 0 0 0;
+  margin-top: -1px; /* hide hairline against previous section bg */
+  overflow: hidden;
+  font-family: var(--font-family);
+  z-index: 2;
+  color: #fff;
 }
 
-/* --- Wave backgrounds (full-bleed, start at 480px from section top) --- */
-.app-v2__wave {
+/* ── Decorative shapes (solid dots + outlined rings) ────────── */
+.app-v2__shapes {
   position: absolute;
-  top: 480px;
-  left: 0;
-  width: 100%;
-  height: 899px;
-  object-fit: fill;
+  inset: 0;
   pointer-events: none;
+  z-index: 0;
 }
 
-/* Figma node 425:5802: cobalt wave has left: 52px offset */
-.app-v2__wave--cobalt { z-index: 1; left: 52px; }
-.app-v2__wave--cyan   { z-index: 2; }
+.app-v2__shape {
+  position: absolute;
+  border-radius: 50%;
+}
 
-/* --- Inner 1440px layout reference grid --- */
+.app-v2__shape--dot-cyan { background: var(--c-brand-cyan); }
+.app-v2__shape--dot-red  { background: var(--c-brand-red); }
+.app-v2__shape--ring-cyan {
+  background: transparent;
+  border: 2.5px solid var(--c-brand-cyan);
+}
+.app-v2__shape--ring-red {
+  background: transparent;
+  border: 2.5px solid var(--c-brand-red);
+}
+
+/* ── Large outlined rings (visual depth) ───────────────────── */
+.shape-xl-1 { width: 220px; height: 220px; top: 80px;   left: -60px; opacity: 0.55; animation: drift-a 18s ease-in-out infinite; }
+.shape-xl-2 { width: 180px; height: 180px; top: 980px;  left: 86%;   opacity: 0.55; animation: drift-b 22s ease-in-out infinite; }
+.shape-xl-3 { width: 280px; height: 280px; top: 540px;  left: 38%;   opacity: 0.28; animation: drift-a 26s ease-in-out infinite; }
+
+/* ── Medium rings ──────────────────────────────────────────── */
+.shape-md-1 { width: 76px;  height: 76px;  top: 180px;  left: 4%;    opacity: 0.85; animation: drift-b 14s ease-in-out infinite; }
+.shape-md-2 { width: 56px;  height: 56px;  top: 760px;  left: 14%;   opacity: 0.75; animation: drift-a 12s ease-in-out infinite; }
+.shape-md-3 { width: 44px;  height: 44px;  top: 1200px; left: 58%;   opacity: 0.85; animation: drift-b 16s ease-in-out infinite; }
+
+/* ── Small solid dots ──────────────────────────────────────── */
+.shape-sm-1 { width: 16px;  height: 16px;  top: 260px;  left: 22%;   opacity: 1;    animation: drift-a 10s ease-in-out infinite; }
+.shape-sm-2 { width: 14px;  height: 14px;  top: 130px;  left: 78%;   opacity: 1;    animation: drift-b 11s ease-in-out infinite; }
+.shape-sm-3 { width: 18px;  height: 18px;  top: 660px;  left: 52%;   opacity: 1;    animation: drift-a 13s ease-in-out infinite; }
+.shape-sm-4 { width: 12px;  height: 12px;  top: 920px;  left: 28%;   opacity: 1;    animation: drift-b 9s  ease-in-out infinite; }
+.shape-sm-5 { width: 14px;  height: 14px;  top: 1090px; left: 8%;    opacity: 0.95; animation: drift-a 12s ease-in-out infinite; }
+.shape-sm-6 { width: 12px;  height: 12px;  top: 1280px; left: 46%;   opacity: 1;    animation: drift-b 15s ease-in-out infinite; }
+
+/* ── Tiny accent dots ──────────────────────────────────────── */
+.shape-xs-1 { width: 7px;   height: 7px;   top: 420px;  left: 90%;   opacity: 1;    animation: drift-b 8s  ease-in-out infinite; }
+.shape-xs-2 { width: 8px;   height: 8px;   top: 820px;  left: 64%;   opacity: 1;    animation: drift-a 11s ease-in-out infinite; }
+
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(14px, -18px); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-12px, 16px); }
+}
+
+/* ── Inner container ────────────────────────────────────────── */
 .app-v2__inner {
   position: relative;
-  width: 1440px;
-  max-width: 100%;
+  max-width: var(--container-max);
   margin: 0 auto;
-  height: 1380px;
-}
-
-/* --- Cyan ellipse behind phone (Figma node 425:5803) --- */
-.app-v2__cyan-ellipse {
-  position: absolute;
-  left: 753px;
-  top: 156px;
-  width: 566px;
-  height: 549px;
+  padding: 0 var(--gutter-desktop);
   z-index: 1;
-  object-fit: contain;
 }
 
-/* --- Download block (white area) --- */
-.app-v2__download {
-  position: absolute;
-  left: 193px;
-  top: 204px;
-  width: 362px;
-  z-index: 3;
+/* ── TOP: CTA + phone ───────────────────────────────────────── */
+.app-v2__top {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  align-items: center;
+  gap: 48px;
+  padding: 90px 0 40px;
 }
 
-.app-v2__dl-title {
-  font-size: 30px;
+.app-v2__copy {
+  position: relative;
+  z-index: 2;
+}
+
+/* Solid pill eyebrow — high contrast on dark bg */
+.app-v2__eyebrow {
+  display: inline-block;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.15;
-  color: var(--c-ink);
-  margin: 0 0 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--c-brand-red);
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  margin-bottom: 24px;
+  box-shadow: 0 8px 18px -6px rgba(229, 45, 39, 0.55);
 }
 
-.app-v2__dl-sub {
-  font-size: 15px;
+.app-v2__title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #fff;
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+
+.app-v2__title-accent {
+  color: var(--c-brand-cyan);
+}
+
+.app-v2__subtitle {
+  font-size: 17px;
   line-height: 1.6;
-  color: var(--c-ink);
-  margin: 0 0 26px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 40px;
+  max-width: 380px;
 }
 
-.app-v2__dl-btn {
+/* ── Store badges (bigger icons, more presence) ────────────── */
+.app-v2__badges {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 14px;
+}
+
+.app-v2__badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  min-width: 210px;
 }
 
-/* --- Platform block (blue wave area) --- */
-.app-v2__platform {
+.app-v2__badge:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.45);
+}
+
+.app-v2__badge-icon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Apple logo PNG has whitespace around the glyph — scale up to visually match Play Store */
+.app-v2__badge-icon--apple {
+  transform: scale(2.90);
+  transform-origin: center;
+}
+
+.app-v2__badge-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.app-v2__badge-small {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.app-v2__badge-big {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* ── Phone hero with cyan halo, masked at bottom to blend ──── */
+.app-v2__phone-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.app-v2__phone-halo {
   position: absolute;
-  left: 220px;
-  top: 580px;
-  width: 520px;
-  z-index: 3;
-}
-
-.app-v2__pl-title {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.15;
-  color: white;
-  margin: 0 0 48px;
-}
-
-.app-v2__list {
-  font-size: 15px;
-  line-height: 1.6;
-  color: white;
-  padding-left: 20px;
-  margin: 0;
-}
-
-/* --- Hand+phone image — sits between cobalt wave (z:1) and cyan wave (z:2) --- */
-.app-v2__phone {
-  position: absolute;
-  left: 600px;
+  width: 460px;
+  height: 460px;
   top: 0;
-  width: 450px;
-  z-index: 1; /* behind cyan wave so the wave covers the wrist naturally */
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    circle,
+    rgba(0, 173, 239, 0.55) 0%,
+    rgba(0, 173, 239, 0.25) 38%,
+    rgba(0, 173, 239, 0) 72%
+  );
+  border-radius: 50%;
+  filter: blur(4px);
+  z-index: 0;
 }
 
 .app-v2__phone-img {
-  width: 100%;
+  position: relative;
+  width: 340px;
+  max-width: 100%;
   height: auto;
-  display: block;
-  transform: rotate(-0.88deg);
+  z-index: 1;
+  transform: rotate(-1.5deg);
   transform-origin: top center;
+  animation: phone-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
 }
 
-/* --- Device graphic — half-circle cropped at left edge --- */
-.app-v2__device-ellipse {
-  position: absolute;
-  left: -128px;
-  top: 690px;
-  width: 255px;
-  height: 255px;
-  z-index: 4;
-  object-fit: contain;
+@keyframes phone-float {
+  0%, 100% { transform: rotate(-1.5deg) translateY(0); }
+  50%      { transform: rotate(-1.5deg) translateY(-12px); }
 }
 
-.app-v2__device-phone-blue {
-  position: absolute;
-  left: 8px;
-  top: 726px;
-  width: 126px;
-  height: 182px;
-  opacity: 0.5;
-  z-index: 5;
-  object-fit: contain;
+/* ── BOTTOM: Features (same unified bg, no panel) ──────────── */
+.app-v2__bottom {
+  position: relative;
 }
 
-.app-v2__device-phone {
-  position: absolute;
-  left: 12px;
-  top: 740px;
-  width: auto;
-  height: 160px;
-  z-index: 6;
-  object-fit: contain;
+.app-v2__bottom-inner {
+  position: relative;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 36px 0 200px;
+  z-index: 1;
 }
 
-/* --- Stores pill (bottom-center) --- */
-.app-v2__stores {
-  position: absolute;
-  left: 666px;
-  top: 940px;
-  width: 152px;
-  height: auto;
-  z-index: 3;
-  display: block;
+.app-v2__bottom-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--c-brand-navy);
+  background: var(--c-brand-cyan);
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  margin-bottom: 24px;
+  box-shadow: 0 8px 18px -6px rgba(0, 173, 239, 0.45);
 }
 
-/* --- Mobile wave images — hidden on desktop --- */
-.app-v2__wave-mob {
-  display: none;
+.app-v2__features-title {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+  margin: 0 0 16px;
+  max-width: 560px;
+  letter-spacing: -0.3px;
+}
+
+.app-v2__accent-line {
+  width: 60px;
+  height: 3px;
+  background: var(--c-brand-red);
+  border-radius: 2px;
+  margin: 0 0 28px;
+}
+
+.app-v2__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  row-gap: 14px;
+  max-width: 980px;
+}
+
+.app-v2__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.app-v2__check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--c-brand-cyan);
+  color: var(--c-brand-navy);
+  margin-top: 2px;
 }
 
 /* ============================================================
-   Mobile  ≤ 1023px  —  Figma ref node 425:10372 (440px canvas)
+   Mobile  ≤ 1023px
    ============================================================ */
 @media (max-width: 1023px) {
   .app-v2 {
-    min-height: 1010px;
-  }
-
-  /* Rectangle 32: solid cyan floor beneath the waves (Figma: top=794px) */
-  .app-v2::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 794px;
-    bottom: 0;
-    background: var(--c-brand-cyan, #00ADEF);
-    z-index: 0;
-    pointer-events: none;
+    min-height: 0;
+    border-radius: 80px 0 0 0;
   }
 
   .app-v2__inner {
-    width: 100%;
-    height: 1010px;
-    padding: 0;
+    padding: 0 var(--gutter-mobile);
   }
 
-  /* Figma: title center y=73px, button y=161px from section top */
-  .app-v2__download {
-    position: absolute;
-    left: 24px;
-    top: 50px;
-    width: calc(100% - 48px);
-    z-index: 4;
+  .app-v2__top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 60px 0 32px;
+    text-align: center;
   }
 
-  /* Figma: left=83px, top=0, w=339px, h=574px */
-  .app-v2__phone {
-    left: 83px;
+  .app-v2__copy {
+    order: 2;
+  }
+
+  .app-v2__phone-wrap {
+    order: 1;
+    height: 340px;
+  }
+
+  .app-v2__phone-halo {
+    width: 340px;
+    height: 340px;
     top: 0;
-    width: 339px;
-    height: 574px;
-    z-index: 1;
   }
 
-  /* Figma: left=314px, top=137px, size=384px */
-  .app-v2__cyan-ellipse {
-    left: 314px;
-    top: 137px;
-    width: 384px;
-    height: 384px;
-    z-index: 1;
+  .app-v2__phone-img {
+    width: 260px;
   }
 
-  .app-v2__wave {
-    display: none;
+  .app-v2__title {
+    font-size: 36px;
   }
 
-  /* Mobile waves — SVG paths designed for 440px canvas, stretched to 654px wide */
-  /* Figma: both waves top=402px from section top */
-  .app-v2__wave-mob {
-    display: block;
-    position: absolute;
-    top: 402px;
-    width: 654px;
-    max-width: none; /* override global img { max-width: 100% } */
-    height: 408px;
-    object-fit: fill;
+  .app-v2__subtitle {
+    font-size: 15px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  /* Figma: Cobalt left=-181px, behind cyan */
-  .app-v2__wave-mob--cobalt { left: -181px; z-index: 2; }
-  /* Figma: Cyan left=-213px, in front of cobalt */
-  .app-v2__wave-mob--cyan   { left: -213px; z-index: 3; }
-
-  /* Figma: title center y=648px → top-edge ~618px */
-  .app-v2__platform {
-    position: absolute;
-    left: 24px;
-    top: 618px;
-    width: calc(100% - 48px);
-    margin-top: 0;
-    z-index: 4;
+  .app-v2__badges {
+    justify-content: center;
+    gap: 10px;
   }
 
-  .app-v2__pl-title {
-    margin-bottom: 24px;
+  /* Revert badge sizing on mobile — fit two in a row */
+  .app-v2__badge {
+    flex: 1 1 0;
+    gap: 8px;
+    padding: 10px 12px;
+    min-width: 0;
   }
 
-  /* Offset clears the device graphic (Ellipse 22) which spans x=0→146px */
-  .app-v2__list {
-    margin-left: 118px;
-    width: auto;
+  .app-v2__badge-icon {
+    width: 32px;
+    height: 32px;
   }
 
-  /* Figma: left=-53px, top=729px, size=199px */
-  .app-v2__device-ellipse {
-    left: -53px;
-    top: 729px;
-    width: 199px;
-    height: 199px;
-    z-index: 4;
+  .app-v2__badge-small {
+    font-size: 8px;
+    letter-spacing: 0.3px;
   }
 
-  /* Figma: left=29px, top=748px, w=108px, h=156px */
-  .app-v2__device-phone-blue {
-    left: 29px;
-    top: 748px;
-    width: 108px;
-    height: 156px;
-    z-index: 5;
+  .app-v2__badge-big {
+    font-size: 13px;
   }
 
-  /* Figma: left=38px, top=743px, w=103px, h=155px */
-  .app-v2__device-phone {
-    left: 38px;
-    top: 743px;
-    width: 103px;
-    height: 155px;
-    z-index: 6;
+  .app-v2__bottom-inner {
+    padding: 32px 0 100px;
   }
 
-  /* Figma: centered, top=961px, w=128px, h=44px */
-  .app-v2__stores {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 961px;
-    width: 128px;
-    height: 44px;
-    z-index: 4;
-    margin: 0;
+  .app-v2__features-title {
+    font-size: 28px;
   }
+
+  .app-v2__features {
+    grid-template-columns: 1fr;
+  }
+
+  .app-v2__features li {
+    font-size: 15px;
+  }
+
+  /* Tame the decorative shapes on mobile — keep variety but smaller */
+  .shape-xl-3 { display: none; }
+  .shape-xl-1 { width: 140px; height: 140px; }
+  .shape-xl-2 { width: 110px; height: 110px; }
+  .shape-md-1 { width: 48px; height: 48px; }
+  .shape-md-2 { width: 36px; height: 36px; }
+  .shape-md-3 { width: 32px; height: 32px; }
 }
 </style>
