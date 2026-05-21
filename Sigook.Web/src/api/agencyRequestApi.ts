@@ -22,6 +22,9 @@ import type {
   AgencyRequestRecruiterItem,
   AgencyRequestSkillModel,
   AgencyRequestPersonItem,
+  RequestJobBoard,
+  SetRequestJobBoardItem,
+  AgencyRequestsPagedResponse,
 } from '@/types/agency';
 
 // ---------------------------------------------------------------------------
@@ -32,7 +35,7 @@ export function postAgencyRequest(model: CreateAgencyRequestModel): Promise<Agen
   return http.post('api/AgencyRequest', model).then(r => r.data);
 }
 
-export function getAgencyRequests(filter: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem>> {
+export function getAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRequestsPagedResponse> {
   return http.get('/api/AgencyRequest', { params: { ...filter } }).then(r => r.data);
 }
 
@@ -190,4 +193,16 @@ export function postAgencyRequestSkill(requestId: string, model: AgencyRequestSk
 
 export function deleteAgencyRequestSkill(requestId: string, id: string): Promise<void> {
   return http.delete(`/api/AgencyRequest/${requestId}/Skill/${id}`).then(() => {});
+}
+
+// ---------------------------------------------------------------------------
+// Job Boards (Sources where the request is published)
+// ---------------------------------------------------------------------------
+
+export function getAgencyRequestSources(requestId: string): Promise<RequestJobBoard[]> {
+  return http.get(`/api/AgencyRequest/${requestId}/sources`).then(r => r.data);
+}
+
+export function setAgencyRequestSources(requestId: string, items: SetRequestJobBoardItem[]): Promise<void> {
+  return http.put(`/api/AgencyRequest/${requestId}/sources`, items).then(() => {});
 }

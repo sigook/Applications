@@ -107,6 +107,13 @@ public class AgencyRepository : IAgencyRepository
         return Task.CompletedTask;
     }
 
+    public async Task<bool> PersonnelHasRequests(Guid personnelId) =>
+        await _context.RequestRecruiter.AnyAsync(r => r.RecruiterId == personnelId)
+        || await _context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
+
+    public Task<bool> PersonnelHasCompanies(Guid personnelId) =>
+        _context.CompanyProfile.AnyAsync(c => c.SalesRepresentativeId == personnelId);
+
     public async Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId)
     {
         var result = _context.AgencyPersonnel

@@ -73,6 +73,10 @@ export function getSources(): Promise<Source[]> {
   return http.get('/api/Catalog/source').then(r => r.data);
 }
 
+export function getSourcesForRequests(): Promise<Source[]> {
+  return http.get('/api/Catalog/source/requests').then(r => r.data);
+}
+
 export function getTaxCategories(): Promise<TaxCategory[]> {
   return http.get('/api/Catalog/tax-categories').then(r => r.data);
 }

@@ -404,6 +404,39 @@ export interface AgencyRequestFilter {
   companyId?: string;
   agencyId?: string;
   filter?: string;
+  jobBoardIds?: string[];
+}
+
+// Job board (Source) attached to a request. Mirrors RequestSourceDetailModel.
+export interface RequestJobBoard {
+  sourceId: string;
+  value: string;
+  publishedAt?: string | null;
+  externalUrl?: string | null;
+}
+
+// Payload item for PUT /api/AgencyRequest/{id}/sources. Mirrors CreateRequestSourceModel.
+export interface SetRequestJobBoardItem {
+  sourceId: string;
+  publishedAt?: string | null;
+  externalUrl?: string | null;
+}
+
+// Aggregated count of requests per job board. Mirrors RequestSourceSummaryModel.
+export interface RequestJobBoardSummary {
+  sourceId: string;
+  value: string;
+  count: number;
+}
+
+// Combined response for GET /api/AgencyRequest. Mirrors AgencyRequestsPagedResponse.
+// PaginatedList<AgencyRequestListItem> + JobBoardsSummary aligned with the same filter.
+export interface AgencyRequestsPagedResponse {
+  pageIndex: number;
+  totalPages: number;
+  totalItems: number;
+  items: AgencyRequestListItem[];
+  jobBoardsSummary: RequestJobBoardSummary[];
 }
 
 // Item returned by GET /api/AgencyRequest. Mirrors AgencyRequestListModel.
@@ -436,6 +469,7 @@ export interface AgencyRequestListItem {
   hasPermissionToSeeInternalOrders: boolean;
   location: string;
   locationAddress: string;
+  jobBoards: RequestJobBoard[];
 }
 
 // Detail returned by GET /api/AgencyRequest/{id}. Mirrors AgencyRequestDetailModel.

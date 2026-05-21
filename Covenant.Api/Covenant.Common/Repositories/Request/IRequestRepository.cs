@@ -17,6 +17,9 @@ public interface IRequestRepository
     Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
     IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
+    Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
+    Task<IEnumerable<RequestSource>> GetRequestSources(Guid requestId);
+    Task ReplaceRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
     Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter);
     Task<IEnumerable<JobViewModel>> GetAvailableRequest(IEnumerable<string> countries);
     Task<AgencyRequestDetailModel> GetRequestDetailForAgency(Guid id);

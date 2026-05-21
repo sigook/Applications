@@ -2779,6 +2779,31 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestSkill");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSource", b =>
+                {
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExternalUrl")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RequestId", "SourceId");
+
+                    b.HasIndex("SourceId");
+
+                    b.ToTable("RequestSource", (string)null);
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3142,6 +3167,11 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<bool>("IsAvailableForRequests")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -4644,6 +4674,25 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSource", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany("Sources")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Source", "Source")
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+
+                    b.Navigation("Source");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.WorkerRequest", "WorkerRequest")
@@ -5166,6 +5215,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("RequestComission");
 
                     b.Navigation("RequestCompanyUser");
+
+                    b.Navigation("Sources");
 
                     b.Navigation("Workers");
                 });

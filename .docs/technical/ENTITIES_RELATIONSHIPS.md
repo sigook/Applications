@@ -618,6 +618,33 @@ public enum WorkerRequestStatus
 
 ---
 
+### RequestSource (Job Board Posting)
+
+**Table:** `RequestSource`
+
+**Purpose:** Links a Request to a Source (job board / platform) where it is published. Many-to-many between `Request` and `Source`. Only sources flagged with `IsAvailableForRequests = true` are exposed to the agency UI (today: `Indeed`, `Zip Recruiter`, `Social Media`).
+
+```csharp
+public class RequestSource
+{
+    public Guid RequestId { get; set; }
+    public Guid SourceId { get; set; }
+    public DateTime? PublishedAt { get; set; }   // optional
+    public string ExternalUrl { get; set; }       // optional
+    public DateTime CreatedAt { get; set; }
+
+    // Navigation properties
+    public Request Request { get; set; }
+    public Source Source { get; set; }
+}
+```
+
+**Primary key:** composite `(RequestId, SourceId)`.
+
+**Source flag:** `Source.IsAvailableForRequests` (bool, default `false`) decides whether the source is selectable as a job board. The existing candidate-source listing keeps every value; the new `GET api/Catalog/source/requests` endpoint returns only the ones flagged ON.
+
+---
+
 ## ⏱️ TIMESHEET Module
 
 ### TimeSheet
