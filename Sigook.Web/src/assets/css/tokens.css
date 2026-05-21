@@ -1,0 +1,309 @@
+/* ============================================================
+   Sigook v2 — Design System Tokens
+   Source: Figma file AQKYskiJcAr0rFJgcurLbL, page 🎨 Design System
+   ============================================================ */
+
+:root {
+  /* --- Brand Blues --- */
+  --c-brand-sky-blue: #29abe2;
+  --c-brand-blue: #1575bb;
+  --c-brand-deep: #13629e;
+  --c-brand-navy: #0f2f44;
+  --c-brand-cobalt: #2c5eba;
+  --c-brand-blue-mid: #155e96;
+  --c-brand-navy-deep: #093055;
+  --c-brand-teal-dark: #1c496c;
+  --c-brand-cyan: #00adef;
+
+  /* --- Brand Reds --- */
+  --c-brand-red: #e52d27;
+  --c-brand-crimson: #b01c22;
+  --c-brand-coral: #f84e48;
+
+  /* --- Neutrals --- */
+  --c-ink: #1e1e1e;
+  --c-ink-2: #334e60;
+  --c-line: #d9d9d9;
+  --c-line-2: #c9c9c9;
+  --c-surface: #f5f5f5;
+  --c-bg: #ffffff;
+
+  /* --- Extended neutrals --- */
+  --c-neutral-black: #000000;
+  --c-neutral-charcoal: #1f2937;
+  --c-neutral-muted: #99b4bf;
+
+  /* --- State --- */
+  --c-state-success: #459356;
+  --c-state-success-light: #59dc76;
+
+  /* --- Overlays --- */
+  --c-overlay-navy: rgba(15, 47, 68, 0.35);
+  --c-overlay-red: rgba(229, 45, 39, 0.5);
+  --c-overlay-blue: rgba(21, 117, 187, 0.45);
+  --c-overlay-tealy: rgba(170, 206, 220, 0.3);
+
+  /* --- Spacing scale (4px base) --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  /* --- Layout --- */
+  --gutter-desktop: 80px;
+  --gutter-mobile: 24px;
+  --container-max: 1280px;
+
+  /* --- Border radii --- */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 20px;
+  --r-pill: 30px;
+  --r-pill-lg: 50px;
+  --r-circle: 50%;
+  --r-brand: 150px; /* asymmetric brand signature */
+
+  /* --- Shadows --- */
+  --sh-1: 0 4px 4px rgba(0, 0, 0, 0.25);   /* buttons / CTAs */
+  --sh-2: 0 6px 12px rgba(0, 0, 0, 0.25);  /* cards / forms  */
+  --sh-3: 0 12px 32px rgba(0, 0, 0, 0.18); /* floating panels */
+
+  /* --- Typography: Poppins scale --- */
+  --font-family: 'Poppins', sans-serif;
+
+  --text-display-size: 55px;
+  --text-display-weight: 700;
+  --text-display-lh: 1.05;
+  --text-display-ls: -0.01em;
+
+  --text-h1-size: 40px;
+  --text-h1-weight: 700;
+  --text-h1-lh: 1.1;
+
+  --text-h2-size: 30px;
+  --text-h2-weight: 700;
+  --text-h2-lh: 1.15;
+
+  --text-h2-light-weight: 300;
+  --text-h2-light-lh: 1.2;
+
+  --text-h3-size: 22px;
+  --text-h3-weight: 700;
+  --text-h3-lh: 1.2;
+
+  --text-lead-size: 18px;
+  --text-lead-weight: 500;
+  --text-lead-lh: 1.5;
+
+  --text-body-size: 15px;
+  --text-body-weight: 400;
+  --text-body-lh: 1.6;
+
+  --text-caption-size: 12px;
+  --text-caption-weight: 400;
+  --text-caption-lh: 1.5;
+
+  --text-eyebrow-size: 12px;
+  --text-eyebrow-weight: 500;
+  --text-eyebrow-ls: 0.18em;
+
+  --text-small-size: 13px;
+  --text-small-weight: 400;
+  --text-small-lh: 1.6;
+}
+
+/* ============================================================
+   Typography utility classes (v2 only — scoped via .v2-page)
+   ============================================================ */
+.v2-page {
+  font-family: var(--font-family);
+  color: var(--c-ink);
+}
+
+.v2-display {
+  font-family: var(--font-family);
+  font-size: var(--text-display-size);
+  font-weight: var(--text-display-weight);
+  line-height: var(--text-display-lh);
+  letter-spacing: var(--text-display-ls);
+}
+
+.v2-h1 {
+  font-family: var(--font-family);
+  font-size: var(--text-h1-size);
+  font-weight: var(--text-h1-weight);
+  line-height: var(--text-h1-lh);
+}
+
+.v2-h2 {
+  font-family: var(--font-family);
+  font-size: var(--text-h2-size);
+  font-weight: var(--text-h2-weight);
+  line-height: var(--text-h2-lh);
+}
+
+.v2-h2-light {
+  font-family: var(--font-family);
+  font-size: var(--text-h2-size);
+  font-weight: var(--text-h2-light-weight);
+  line-height: var(--text-h2-light-lh);
+}
+
+.v2-h3 {
+  font-family: var(--font-family);
+  font-size: var(--text-h3-size);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+}
+
+.v2-lead {
+  font-family: var(--font-family);
+  font-size: var(--text-lead-size);
+  font-weight: var(--text-lead-weight);
+  line-height: var(--text-lead-lh);
+}
+
+.v2-body {
+  font-family: var(--font-family);
+  font-size: var(--text-body-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-body-lh);
+}
+
+.v2-caption {
+  font-family: var(--font-family);
+  font-size: var(--text-caption-size);
+  font-weight: var(--text-caption-weight);
+  line-height: var(--text-caption-lh);
+}
+
+.v2-eyebrow {
+  font-family: var(--font-family);
+  font-size: var(--text-eyebrow-size);
+  font-weight: var(--text-eyebrow-weight);
+  letter-spacing: var(--text-eyebrow-ls);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Button system (.btn)
+   Scoped under .v2-page to win over Bootstrap's .btn cascade.
+   Variants: --primary --secondary --blue --cyan --ghost
+   Sizes:    --sm  (default: md)  --lg
+   ============================================================ */
+.v2-page .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+
+  /* default = md */
+  height: 45px;
+  padding: 0 22px;
+  border-radius: var(--r-pill);
+}
+
+.v2-page .btn:disabled,
+.v2-page .btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* sizes */
+.v2-page .btn--sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  border-radius: var(--r-pill);
+}
+
+.v2-page .btn--lg {
+  height: 56px;
+  padding: 0 36px;
+  font-size: 18px;
+  font-weight: 500;
+  border-radius: var(--r-pill-lg);
+}
+
+/* variants */
+.v2-page .btn--primary {
+  background-color: var(--c-brand-red);
+  color: #fff;
+  box-shadow: var(--sh-1);
+}
+.v2-page .btn--primary:hover:not(:disabled) {
+  background-color: var(--c-brand-crimson);
+}
+
+.v2-page .btn--secondary {
+  background-color: #fff;
+  color: var(--c-brand-blue);
+  border: 1.5px solid var(--c-overlay-tealy);
+  box-shadow: var(--sh-1);
+}
+.v2-page .btn--secondary:hover:not(:disabled) {
+  background-color: var(--c-surface);
+}
+
+.v2-page .btn--blue {
+  background-color: var(--c-brand-blue);
+  color: #fff;
+}
+.v2-page .btn--blue:hover:not(:disabled) {
+  background-color: var(--c-brand-deep);
+}
+
+.v2-page .btn--cyan {
+  background-color: var(--c-brand-cyan);
+  color: #fff;
+}
+.v2-page .btn--cyan:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.v2-page .btn--ghost {
+  background-color: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+}
+.v2-page .btn--ghost:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   Asymmetric brand shapes (150px signature cuts)
+   ============================================================ */
+.cut-tl-br {
+  border-radius: var(--r-brand) 0 var(--r-brand) 0;
+}
+.cut-tr-bl {
+  border-radius: 0 var(--r-brand) 0 var(--r-brand);
+}
+.cut-tr {
+  border-radius: 0 var(--r-brand) 0 0;
+}
+.cut-br {
+  border-radius: 0 0 var(--r-brand) 0;
+}
+.cut-tl {
+  border-radius: var(--r-brand) 0 0 0;
+}
+.cut-bl {
+  border-radius: 0 0 0 var(--r-brand);
+}
