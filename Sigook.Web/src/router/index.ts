@@ -8,6 +8,7 @@ import routesCompany from "@/router/routesCompany";
 import routesAgency from "@/router/routesAgency";
 import routesWorker from "@/router/routesWorker";
 import routesLanding from "@/router/routesLanding";
+import routesV2 from "@/router/routesV2";
 import pinia from "@/stores";
 import { useSecurityStore } from "@/stores/security";
 
@@ -55,7 +56,8 @@ const router = createRouter({
     .concat(routesAgency as RouteRecordRaw[])
     .concat(routesCompany as RouteRecordRaw[])
     .concat(routesWorker as RouteRecordRaw[])
-    .concat(routesLanding as RouteRecordRaw[]),
+    .concat(routesLanding as RouteRecordRaw[])
+    .concat(routesV2 as RouteRecordRaw[]),
 });
 router.beforeEach(async (to, from, next) => {
   if (from.name !== 'jobSeekers') {
