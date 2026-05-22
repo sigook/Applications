@@ -1,8 +1,7 @@
 <template>
   <main>
     <HeroSectionV2 />
-    <AudienceBannerV2 variant="employers" />
-    <AudienceBannerV2 variant="talents" />
+    <DualCtaSectionV2 />
     <NumbersSectionV2 />
     <WhyChooseUsSectionV2 />
     <CertifiedSectionV2 />
@@ -15,7 +14,7 @@
 
 <script setup lang="ts">
 import HeroSectionV2 from '@/components/v2/HeroSectionV2.vue'
-import AudienceBannerV2 from '@/components/v2/AudienceBannerV2.vue'
+import DualCtaSectionV2 from '@/components/v2/DualCtaSectionV2.vue'
 import NumbersSectionV2 from '@/components/v2/NumbersSectionV2.vue'
 import WhyChooseUsSectionV2 from '@/components/v2/WhyChooseUsSectionV2.vue'
 import CertifiedSectionV2 from '@/components/v2/CertifiedSectionV2.vue'

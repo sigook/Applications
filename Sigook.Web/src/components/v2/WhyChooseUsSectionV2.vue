@@ -1,15 +1,28 @@
 <template>
   <section class="why-v2">
+    <!-- Back layer — same shape as the photo, sits 20px above so it peeks out at the top -->
+    <div class="why-v2__hero-back" aria-hidden="true"></div>
+
     <!-- Block A — Corporate buildings photo -->
     <div class="why-v2__hero">
       <img src="@/assets/images/v2/why-choose-us/why-bg.jpg" alt="" class="why-v2__hero-bg" aria-hidden="true" />
       <div class="why-v2__hero-overlay" aria-hidden="true"></div>
+
+      <!-- Decorative cyan glow + thin lines (Hero language) -->
+      <div class="why-v2__hero-glow" aria-hidden="true"></div>
+      <div class="why-v2__hero-lines" aria-hidden="true">
+        <span class="why-v2__hero-line"></span>
+        <span class="why-v2__hero-line"></span>
+      </div>
+
       <div class="why-v2__hero-content">
         <div class="why-v2__hero-left">
-          <h2 class="v2-display why-v2__hero-title">Why Choose Us?</h2>
+          <span class="why-v2__hero-eyebrow">Our Approach</span>
+          <h2 class="why-v2__hero-title">Why Choose Us?</h2>
+          <div class="why-v2__hero-divider" aria-hidden="true"></div>
         </div>
         <div class="why-v2__hero-right">
-          <p class="v2-body why-v2__hero-body">
+          <p class="why-v2__hero-body">
             We are a Talent Management Agency focused on providing skilled professionals,
             tailored workforce solutions, and reliable support to ensure every partnership
             runs smoothly and efficiently.
@@ -97,6 +110,19 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   margin-top: -260px;   /* overlaps the bottom 260px of Numbers: Numbers ends at y=2724, WhyChooseUs starts at y=2464 */
 }
 
+/* ── Back layer for the hero — peeks 20px above & sides, same shape ─────── */
+.why-v2__hero-back {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  height: 588px;
+  border-radius: 150px 0 150px 0;
+  background: rgba(26, 117, 187, 0.45);
+  z-index: 1;
+  pointer-events: none;
+}
+
 /* ── Block A: Photo ── */
 .why-v2__hero {
   position: relative;
@@ -107,6 +133,10 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   height: 588px;
   border-radius: 150px 0 150px 0;
   overflow: hidden;
+  /* Soft drop shadows top + bottom — smooth transitions with Numbers (above) and panel (below) */
+  box-shadow:
+    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
+    0  22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
 .why-v2__hero-bg {
@@ -119,17 +149,58 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   object-position: center 30%;
 }
 
+/* Navy gradient overlay — replaces the green-tinted one, matches DualCta veil language */
 .why-v2__hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(16, 52, 75, 0.23) 0%, rgba(15, 47, 68, 0.65) 100%),
-    linear-gradient(180deg, rgba(69, 147, 86, 0.4) 0%, rgba(102, 102, 102, 0.4) 100%);
+    linear-gradient(90deg, rgba(15, 47, 68, 0.78) 0%, rgba(15, 47, 68, 0.45) 100%),
+    linear-gradient(180deg, rgba(9, 48, 85, 0.20) 0%, rgba(15, 47, 68, 0.55) 100%);
+}
+
+/* Cyan glow accent — tertiary color, top-right corner */
+.why-v2__hero-glow {
+  position: absolute;
+  top: -80px;
+  right: -120px;
+  width: 540px;
+  height: 540px;
+  background: var(--c-brand-cyan);
+  border-radius: 50%;
+  filter: blur(160px);
+  opacity: 0.24;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Thin geometric line accents — bottom-left, echoes Hero deco lines */
+.why-v2__hero-lines {
+  position: absolute;
+  bottom: 56px;
+  left: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.why-v2__hero-line {
+  display: block;
+  width: 96px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.40);
+  border-radius: 2px;
+}
+
+.why-v2__hero-line:nth-child(2) {
+  width: 64px;
+  margin-left: 18px;
 }
 
 .why-v2__hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   align-items: center;
   height: 100%;
@@ -142,9 +213,34 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
   text-align: right;
 }
 
+.why-v2__hero-eyebrow {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+  margin-bottom: 14px;
+}
+
 .why-v2__hero-title {
+  font-family: var(--font-family);
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
   color: #fff;
   margin: 0;
+}
+
+/* Cyan divider line under title — right-aligned to match text */
+.why-v2__hero-divider {
+  width: 88px;
+  height: 2px;
+  background: var(--c-brand-cyan);
+  border-radius: 2px;
+  margin: 24px 0 0 auto;
 }
 
 .why-v2__hero-right {
@@ -152,8 +248,13 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 }
 
 .why-v2__hero-body {
-  color: #fff;
+  font-family: var(--font-family);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.92);
   margin: 0;
+  max-width: 560px;
 }
 
 /* ── Block B: Blue panel ── */
@@ -272,6 +373,10 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
     margin-top: -100px;  /* overlaps bottom 100px of Numbers background (z-index:1 already set) */
   }
 
+  .why-v2__hero-back {
+    display: none;       /* skip on mobile — overlap math + smaller card make it noisy */
+  }
+
   .why-v2__hero {
     height: auto;
     min-height: 280px;
@@ -292,18 +397,54 @@ import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
     gap: 20px;
   }
 
+  .why-v2__hero-glow {
+    width: 320px;
+    height: 320px;
+    top: -60px;
+    right: -100px;
+    filter: blur(110px);
+    opacity: 0.20;
+  }
+
+  .why-v2__hero-lines {
+    bottom: 24px;
+    left: 24px;
+  }
+
+  .why-v2__hero-line {
+    width: 56px;
+  }
+
+  .why-v2__hero-line:nth-child(2) {
+    width: 36px;
+    margin-left: 10px;
+  }
+
   .why-v2__hero-left {
     flex: none;
     width: 100%;
     text-align: left;
   }
 
+  .why-v2__hero-eyebrow {
+    margin-bottom: 10px;
+  }
+
   .why-v2__hero-title {
-    font-size: 32px;
+    font-size: 36px;
+  }
+
+  .why-v2__hero-divider {
+    margin: 16px 0 0 0;       /* left-aligned on mobile to match left-aligned text */
+    width: 64px;
   }
 
   .why-v2__hero-right {
     width: 100%;
+  }
+
+  .why-v2__hero-body {
+    font-size: 15px;
   }
 
   .why-v2__panel {

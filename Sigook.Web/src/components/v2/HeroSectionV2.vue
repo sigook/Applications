@@ -10,7 +10,18 @@
     >
       <img v-if="slide.bg" :src="slide.bg" alt="" class="hero-v2__bg-img" />
       <div class="hero-v2__bg-color" :style="{ background: slide.gradient }" v-if="!slide.bg"></div>
-      <div class="hero-v2__overlay"></div>
+    </div>
+
+    <!-- Downward gradient overlay — strengthens as it approaches DualCta -->
+    <div class="hero-v2__overlay" aria-hidden="true"></div>
+
+    <!-- Decorative cyan glow (tertiary accent, bottom-right) -->
+    <div class="hero-v2__glow" aria-hidden="true"></div>
+
+    <!-- Decorative thin lines (subtle geometric accent, brand language) -->
+    <div class="hero-v2__deco-lines" aria-hidden="true">
+      <span class="hero-v2__deco-line"></span>
+      <span class="hero-v2__deco-line"></span>
     </div>
 
     <!-- Static content (shared across all slides) -->
@@ -28,11 +39,11 @@
         </p>
       </transition>
 
-      <router-link to="/v2/about" class="btn btn--secondary btn--lg hero-v2__cta">
-        Learn More
+      <router-link to="/v2/about" class="hero-v2__cta">
+        <span>Learn More</span>
       </router-link>
 
-      <!-- Clickable SliderDots -->
+      <!-- Glass pill carousel dots -->
       <div class="hero-v2__dots" role="tablist" aria-label="Carousel navigation">
         <button
           v-for="(_, i) in slides"
@@ -99,12 +110,14 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
 <style scoped>
-/* ── Section shell ─────────────────────────────────────────────────────────── */
+/* ── Section shell — full screen ───────────────────────────────────────────── */
 .hero-v2 {
   position: relative;
   width: 100%;
-  height: 865px;
+  height: 100vh;
+  min-height: 720px;
   overflow: hidden;
+  isolation: isolate;
 }
 
 /* ── Slide backgrounds ─────────────────────────────────────────────────────── */
@@ -114,6 +127,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
+  z-index: 0;
 }
 
 .hero-v2__bg--active {
@@ -135,42 +149,97 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   inset: 0;
 }
 
+/* ── Downward gradient — heavy navy at bottom flows into DualCta ──────────── */
 .hero-v2__overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
+  pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(15, 47, 68, 0.35) 0%, rgba(15, 47, 68, 0.35) 100%),
-    linear-gradient(180deg, rgba(15, 47, 68, 0) 71.55%, rgb(15, 47, 68) 100%);
+    linear-gradient(90deg, rgba(15, 47, 68, 0.30) 0%, rgba(15, 47, 68, 0.30) 100%),
+    linear-gradient(180deg,
+      rgba(15, 47, 68, 0.10) 0%,
+      rgba(15, 47, 68, 0.30) 35%,
+      rgba(15, 47, 68, 0.75) 75%,
+      rgba(15, 47, 68, 0.98) 100%
+    );
 }
 
-/* ── Content ───────────────────────────────────────────────────────────────── */
+/* ── Decorative cyan glow — tertiary accent, bottom-right ─────────────────── */
+.hero-v2__glow {
+  position: absolute;
+  right: -200px;
+  bottom: -200px;
+  width: 720px;
+  height: 720px;
+  background: var(--c-brand-cyan);
+  border-radius: 50%;
+  filter: blur(180px);
+  opacity: 0.22;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Decorative thin lines — subtle geometric accent ──────────────────────── */
+.hero-v2__deco-lines {
+  position: absolute;
+  top: 28%;
+  left: 7%;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-v2__deco-line {
+  display: block;
+  width: 96px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+}
+
+.hero-v2__deco-line:nth-child(2) {
+  width: 64px;
+  margin-left: 18px;
+}
+
+/* ── Content — vertically centered ────────────────────────────────────────── */
 .hero-v2__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 240px;
+  justify-content: center;
+  height: 100%;
+  /* Bottom padding shifts the centered block upward, clearing the DualCta overlap (140px).
+     Caps at 32vh so short viewports (e.g. 1024×768) don't squeeze content off-screen. */
+  padding: 80px 24px min(300px, 32vh);
 }
 
 .hero-v2__logo {
-  width: 260px;
-  height: 260px;
+  /* Caps at 32vh so the logo stays in-frame on short viewports */
+  width: min(320px, 32vh);
+  height: min(320px, 32vh);
   object-fit: contain;
   object-position: center;
   display: block;
 }
 
-/* ── Tagline ───────────────────────────────────────────────────────────────── */
+/* ── Tagline — larger, modern ─────────────────────────────────────────────── */
 .hero-v2__tagline {
-  margin-top: 24px;
+  margin-top: 28px;
   font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.6;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.3;
   color: #fff;
   text-align: center;
-  max-width: 260px;
+  max-width: 720px;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
 /* tagline fade transition */
@@ -187,41 +256,65 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   transform: translateY(-8px);
 }
 
-/* ── CTA ───────────────────────────────────────────────────────────────────── */
+/* ── CTA — glass pill matching DualCta language ───────────────────────────── */
 .hero-v2__cta {
-  margin-top: 28px;
-  border-color: var(--c-brand-blue) !important;
-  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 36px;
+  padding: 14px 34px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
 
-/* ── SliderDots ────────────────────────────────────────────────────────────── */
+.hero-v2__cta:hover,
+.hero-v2__cta:focus-visible {
+  background: #fff;
+  color: var(--c-brand-navy);
+  transform: translateY(-2px);
+}
+
+/* ── Glass pill carousel dots ─────────────────────────────────────────────── */
 .hero-v2__dots {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: #fff;
-  border: 1px solid rgba(170, 206, 220, 0.3);
-  padding: 4px 10px;
-  border-radius: 30px;
-  margin-top: 20px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 8px 14px;
+  border-radius: 999px;
+  margin-top: 40px;
 }
 
 .hero-v2__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--c-neutral-muted);
+  background-color: rgba(255, 255, 255, 0.50);
   flex-shrink: 0;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+  transition: width 0.25s ease, height 0.25s ease, background-color 0.25s ease;
 }
 
 .hero-v2__dot--active {
   width: 10px;
   height: 10px;
-  background-color: var(--c-brand-blue);
+  background-color: #fff;
 }
 
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
@@ -232,24 +325,51 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   }
 
   .hero-v2__content {
-    padding-top: 120px;
-    padding-left: 24px;
-    padding-right: 24px;
+    padding: 80px 24px 200px;
   }
 
   .hero-v2__logo {
-    width: 180px;
-    height: 180px;
-  }
-
-  .hero-v2__cta {
-    margin-top: 20px;
+    width: 220px;
+    height: 220px;
   }
 
   .hero-v2__tagline {
-    margin-top: 16px;
+    margin-top: 20px;
+    font-size: 20px;
+    max-width: 340px;
+  }
+
+  .hero-v2__cta {
+    margin-top: 24px;
+    padding: 12px 28px;
     font-size: 14px;
-    max-width: 280px;
+  }
+
+  .hero-v2__dots {
+    margin-top: 28px;
+  }
+
+  .hero-v2__glow {
+    width: 420px;
+    height: 420px;
+    filter: blur(140px);
+    opacity: 0.18;
+    right: -120px;
+    bottom: -120px;
+  }
+
+  .hero-v2__deco-lines {
+    top: 22%;
+    left: 6%;
+  }
+
+  .hero-v2__deco-line {
+    width: 56px;
+  }
+
+  .hero-v2__deco-line:nth-child(2) {
+    width: 36px;
+    margin-left: 10px;
   }
 }
 </style>
