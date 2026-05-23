@@ -1,153 +1,78 @@
 <template>
   <section class="hero-v2">
-    <!-- Slide backgrounds — fade between them -->
-    <div
-      v-for="(slide, i) in slides"
-      :key="i"
-      class="hero-v2__bg"
-      :class="{ 'hero-v2__bg--active': currentIndex === i }"
-      aria-hidden="true"
-    >
-      <img v-if="slide.bg" :src="slide.bg" alt="" class="hero-v2__bg-img" />
-      <div v-else class="hero-v2__bg-color" :style="{ background: slide.gradient }"></div>
-    </div>
-
-    <!-- Downward gradient overlay — strengthens as it approaches DualCta -->
-    <div class="hero-v2__overlay" aria-hidden="true"></div>
-
-    <!-- Decorative cyan glow + brand magnifier -->
-    <div class="hero-v2__glow" aria-hidden="true"></div>
+    <!-- Atmospheric magnifier decoration -->
     <DecoMagnifierV2 class="hero-v2__magnifier" />
 
-    <!-- Static content (shared across all slides) -->
     <div class="hero-v2__content">
+      <EyebrowPillV2 variant="red" class="hero-v2__eyebrow">
+        Workforce Platform
+      </EyebrowPillV2>
+
       <img
-        src="@/assets/images/v2/hero/hero-logo.png"
+        src="@/assets/images/v2/footer/footer-logo.png"
         alt="Sigook Work Factory"
         class="hero-v2__logo"
       />
 
-      <transition name="hero-tag" mode="out-in">
-        <p :key="currentIndex" class="hero-v2__tagline">
-          {{ currentItem.tagline }}
-        </p>
-      </transition>
+      <h1 class="hero-v2__heading">
+        Where great talent meets
+        <span class="hero-v2__heading-accent">great opportunities</span>
+      </h1>
 
-      <GlassPillCtaV2 to="/v2/about" size="md" class="hero-v2__cta">
-        Learn More
-      </GlassPillCtaV2>
+      <p class="hero-v2__subtitle">
+        Sigook connects North America's leading employers with skilled workers —
+        from onboarding and timesheets to payroll, fully connected in one platform.
+      </p>
 
-      <SliderDotsV2
-        v-model="currentIndex"
-        :count="slides.length"
-        aria-label="Carousel navigation"
-        class="hero-v2__dots"
-      />
+      <div class="hero-v2__industries">
+        <span class="hero-v2__industries-label">Trusted across</span>
+        <div class="hero-v2__industries-chips">
+          <span
+            v-for="industry in INDUSTRIES"
+            :key="industry"
+            class="hero-v2__industry"
+          >{{ industry }}</span>
+          <span class="hero-v2__industry hero-v2__industry--more">+ more</span>
+        </div>
+      </div>
     </div>
+
+    <ScrollIndicatorV2 href="#dual-cta" class="hero-v2__scroll" />
   </section>
 </template>
 
 <script setup lang="ts">
-import { useCarousel } from '@/composables/useCarousel'
 import DecoMagnifierV2 from '@/components/v2/shared/DecoMagnifierV2.vue'
-import SliderDotsV2 from '@/components/v2/shared/SliderDotsV2.vue'
-import GlassPillCtaV2 from '@/components/v2/shared/GlassPillCtaV2.vue'
+import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
+import ScrollIndicatorV2 from '@/components/v2/shared/ScrollIndicatorV2.vue'
 
-import heroSlide1 from '@/assets/images/v2/hero/hero-slide1.jpg'
-import heroSlide2 from '@/assets/images/v2/hero/hero-slide2.jpg'
-import heroSlide3 from '@/assets/images/v2/hero/hero-slide3.jpg'
-
-interface HeroSlide {
-  bg?: string
-  gradient?: string
-  tagline: string
-}
-
-const slides: HeroSlide[] = [
-  { bg: heroSlide1, tagline: 'Behind Every Great American Company is Great Talent' },
-  { bg: heroSlide2, tagline: 'Connecting Top Talent with Leading Employers Across North America' },
-  { bg: heroSlide3, tagline: 'Your Workforce Solution — From Onboarding to Payroll, Fully Connected' },
-]
-
-const { currentIndex, currentItem } = useCarousel(slides, { intervalMs: 5000 })
+const INDUSTRIES = [
+  'Manufacturing',
+  'Logistics',
+  'Healthcare',
+  'Retail',
+  'Construction',
+] as const
 </script>
 
 <style scoped>
-/* ── Section shell — full screen ───────────────────────────────────────────── */
+/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .hero-v2 {
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 720px;
+  height: auto;
+  min-height: max(100vh, 1080px);
   overflow: hidden;
   isolation: isolate;
 }
 
-/* ── Slide backgrounds ─────────────────────────────────────────────────────── */
-.hero-v2__bg {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero-v2__bg--active { opacity: 1; }
-
-.hero-v2__bg-img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-  object-position: center center;
-}
-
-.hero-v2__bg-color {
-  position: absolute;
-  inset: 0;
-}
-
-/* ── Downward gradient — heavy navy at bottom flows into DualCta ──────────── */
-.hero-v2__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(15, 47, 68, 0.30) 0%, rgba(15, 47, 68, 0.30) 100%),
-    linear-gradient(180deg,
-      rgba(15, 47, 68, 0.10) 0%,
-      rgba(15, 47, 68, 0.30) 35%,
-      rgba(15, 47, 68, 0.75) 75%,
-      rgba(15, 47, 68, 0.98) 100%
-    );
-}
-
-/* ── Decorative cyan glow — tertiary accent, bottom-right ─────────────────── */
-.hero-v2__glow {
-  position: absolute;
-  right: -200px;
-  bottom: -200px;
-  width: 720px;
-  height: 720px;
-  background: var(--c-brand-cyan);
-  border-radius: 50%;
-  filter: blur(180px);
-  opacity: 0.22;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* ── Magnifier position (component owns the size + animation) ─────────────── */
+/* ── Decorative magnifier — top-left anchor ─────────────────────────────── */
 .hero-v2__magnifier {
-  top: 24%;
-  left: 6%;
+  top: 18%;
+  left: 7%;
 }
 
-/* ── Content — vertically centered ────────────────────────────────────────── */
+/* ── Content stack — vertically centered editorial layout ───────────────── */
 .hero-v2__content {
   position: relative;
   z-index: 2;
@@ -155,84 +80,189 @@ const { currentIndex, currentItem } = useCarousel(slides, { intervalMs: 5000 })
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  /* Bottom padding shifts the centered block upward, clearing the DualCta overlap (140px).
-     Caps at 32vh so short viewports (e.g. 1024×768) don't squeeze content off-screen. */
-  padding: 80px 24px min(300px, 32vh);
+  min-height: max(100vh, 1080px);
+  /* Top padding clears the 80px fixed navbar + 60px buffer.
+     Bottom padding clears the DualCta overlap (-140px) + 80px buffer. */
+  padding: 140px 24px 220px;
+  text-align: center;
+  max-width: 1100px;
+  margin: 0 auto;
 }
+
+/* Spacing between stack elements lives here — atoms own their own visual */
+.hero-v2__eyebrow   { margin-bottom: 36px; }
 
 .hero-v2__logo {
-  /* Caps at 32vh so the logo stays in-frame on short viewports */
-  width: min(320px, 32vh);
-  height: min(320px, 32vh);
-  object-fit: contain;
-  object-position: center;
   display: block;
+  width: auto;
+  height: 96px;
+  max-width: 280px;
+  object-fit: contain;
+  margin: 0 auto 44px;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.30));
 }
 
-/* ── Tagline — larger, modern ─────────────────────────────────────────────── */
-.hero-v2__tagline {
-  margin-top: 28px;
+/* ── Main heading — large editorial with cyan accent ────────────────────── */
+.hero-v2__heading {
   font-family: var(--font-family);
-  font-size: 32px;
-  font-weight: 500;
-  line-height: 1.3;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: #fff;
-  text-align: center;
+  margin: 0 0 36px;
+  max-width: 920px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
+}
+
+.hero-v2__heading-accent {
+  color: var(--c-brand-cyan);
+  white-space: nowrap;
+}
+
+/* ── Subtitle / value prop ──────────────────────────────────────────────── */
+.hero-v2__subtitle {
+  font-family: var(--font-family);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 64px;
+  max-width: 640px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Industries served — chips list ─────────────────────────────────────── */
+.hero-v2__industries {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-v2__industries-label {
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.hero-v2__industries-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
   max-width: 720px;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* Tagline fade transition */
-.hero-tag-enter-active,
-.hero-tag-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+.hero-v2__industry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.02em;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
-.hero-tag-enter-from { opacity: 0; transform: translateY(8px); }
-.hero-tag-leave-to   { opacity: 0; transform: translateY(-8px); }
 
-/* CTA + dots spacing (visual styling lives in their components) */
-.hero-v2__cta  { margin-top: 36px; }
-.hero-v2__dots { margin-top: 40px; }
+.hero-v2__industry::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-brand-cyan);
+  flex-shrink: 0;
+}
 
-/* ── Mobile ────────────────────────────────────────────────────────────────── */
+.hero-v2__industry:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.30);
+  transform: translateY(-1px);
+}
+
+/* Overflow indicator — muted variant of the chip */
+.hero-v2__industry--more {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.hero-v2__industry--more::before {
+  background: rgba(255, 255, 255, 0.40);
+}
+
+/* ── Scroll indicator — absolute positioning lives on the parent class ──── */
+.hero-v2__scroll {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .hero-v2 {
     height: 100svh;
-    min-height: 600px;
+    min-height: 640px;
   }
 
   .hero-v2__content {
-    padding: 80px 24px 200px;
+    padding: 80px 24px 120px;
   }
+
+  .hero-v2__eyebrow { margin-bottom: 28px; }
 
   .hero-v2__logo {
-    width: 220px;
-    height: 220px;
+    height: 64px;
+    max-width: 200px;
+    margin-bottom: 32px;
   }
 
-  .hero-v2__tagline {
-    margin-top: 20px;
-    font-size: 20px;
-    max-width: 340px;
+  .hero-v2__heading {
+    font-size: 32px;
+    margin-bottom: 24px;
   }
 
-  .hero-v2__cta  { margin-top: 24px; }
-  .hero-v2__dots { margin-top: 28px; }
+  .hero-v2__subtitle {
+    font-size: 14px;
+    margin-bottom: 44px;
+  }
 
-  .hero-v2__glow {
-    width: 420px;
-    height: 420px;
-    filter: blur(140px);
-    opacity: 0.18;
-    right: -120px;
-    bottom: -120px;
+  .hero-v2__industries { gap: 10px; }
+
+  .hero-v2__industries-chips {
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .hero-v2__industry {
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .hero-v2__industry::before {
+    width: 5px;
+    height: 5px;
   }
 
   .hero-v2__magnifier {
-    top: 20%;
-    left: 5%;
+    top: 14%;
+    left: 6%;
   }
+
+  .hero-v2__scroll { display: none; }
 }
 </style>
