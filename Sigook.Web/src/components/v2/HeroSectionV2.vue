@@ -5,26 +5,19 @@
       v-for="(slide, i) in slides"
       :key="i"
       class="hero-v2__bg"
-      :class="{ 'hero-v2__bg--active': currentSlide === i }"
+      :class="{ 'hero-v2__bg--active': currentIndex === i }"
       aria-hidden="true"
     >
       <img v-if="slide.bg" :src="slide.bg" alt="" class="hero-v2__bg-img" />
-      <div class="hero-v2__bg-color" :style="{ background: slide.gradient }" v-if="!slide.bg"></div>
+      <div v-else class="hero-v2__bg-color" :style="{ background: slide.gradient }"></div>
     </div>
 
     <!-- Downward gradient overlay — strengthens as it approaches DualCta -->
     <div class="hero-v2__overlay" aria-hidden="true"></div>
 
-    <!-- Decorative cyan glow (tertiary accent, bottom-right) -->
+    <!-- Decorative cyan glow + brand magnifier -->
     <div class="hero-v2__glow" aria-hidden="true"></div>
-
-    <!-- Decorative brand magnifier — replaces the previous thin lines -->
-    <img
-      src="@/assets/images/v2/branding/sigook-magnifier.png"
-      alt=""
-      aria-hidden="true"
-      class="hero-v2__magnifier"
-    />
+    <DecoMagnifierV2 class="hero-v2__magnifier" />
 
     <!-- Static content (shared across all slides) -->
     <div class="hero-v2__content">
@@ -34,81 +27,49 @@
         class="hero-v2__logo"
       />
 
-      <!-- Animated tagline -->
       <transition name="hero-tag" mode="out-in">
-        <p :key="currentSlide" class="hero-v2__tagline">
-          {{ slides[currentSlide].tagline }}
+        <p :key="currentIndex" class="hero-v2__tagline">
+          {{ currentItem.tagline }}
         </p>
       </transition>
 
-      <router-link to="/v2/about" class="hero-v2__cta">
-        <span>Learn More</span>
-      </router-link>
+      <GlassPillCtaV2 to="/v2/about" size="md" class="hero-v2__cta">
+        Learn More
+      </GlassPillCtaV2>
 
-      <!-- Glass pill carousel dots -->
-      <div class="hero-v2__dots" role="tablist" aria-label="Carousel navigation">
-        <button
-          v-for="(_, i) in slides"
-          :key="i"
-          class="hero-v2__dot"
-          :class="{ 'hero-v2__dot--active': currentSlide === i }"
-          @click="goToSlide(i)"
-          :aria-label="`Slide ${i + 1}`"
-          :aria-selected="currentSlide === i"
-          role="tab"
-        ></button>
-      </div>
+      <SliderDotsV2
+        v-model="currentIndex"
+        :count="slides.length"
+        aria-label="Carousel navigation"
+        class="hero-v2__dots"
+      />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useCarousel } from '@/composables/useCarousel'
+import DecoMagnifierV2 from '@/components/v2/shared/DecoMagnifierV2.vue'
+import SliderDotsV2 from '@/components/v2/shared/SliderDotsV2.vue'
+import GlassPillCtaV2 from '@/components/v2/shared/GlassPillCtaV2.vue'
+
 import heroSlide1 from '@/assets/images/v2/hero/hero-slide1.jpg'
 import heroSlide2 from '@/assets/images/v2/hero/hero-slide2.jpg'
 import heroSlide3 from '@/assets/images/v2/hero/hero-slide3.jpg'
 
-const slides = [
-  {
-    bg: heroSlide1,
-    gradient: '',
-    tagline: 'Behind Every Great American Company is Great Talent',
-  },
-  {
-    bg: heroSlide2,
-    gradient: '',
-    tagline: 'Connecting Top Talent with Leading Employers Across North America',
-  },
-  {
-    bg: heroSlide3,
-    gradient: '',
-    tagline: 'Your Workforce Solution — From Onboarding to Payroll, Fully Connected',
-  },
+interface HeroSlide {
+  bg?: string
+  gradient?: string
+  tagline: string
+}
+
+const slides: HeroSlide[] = [
+  { bg: heroSlide1, tagline: 'Behind Every Great American Company is Great Talent' },
+  { bg: heroSlide2, tagline: 'Connecting Top Talent with Leading Employers Across North America' },
+  { bg: heroSlide3, tagline: 'Your Workforce Solution — From Onboarding to Payroll, Fully Connected' },
 ]
 
-const currentSlide = ref(0)
-let timer: ReturnType<typeof setInterval> | null = null
-
-function goToSlide(index: number) {
-  currentSlide.value = index
-  resetTimer()
-}
-
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % slides.length
-}
-
-function startTimer() {
-  timer = setInterval(nextSlide, 5000)
-}
-
-function resetTimer() {
-  if (timer) clearInterval(timer)
-  startTimer()
-}
-
-onMounted(startTimer)
-onUnmounted(() => { if (timer) clearInterval(timer) })
+const { currentIndex, currentItem } = useCarousel(slides, { intervalMs: 5000 })
 </script>
 
 <style scoped>
@@ -132,9 +93,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   z-index: 0;
 }
 
-.hero-v2__bg--active {
-  opacity: 1;
-}
+.hero-v2__bg--active { opacity: 1; }
 
 .hero-v2__bg-img {
   position: absolute;
@@ -182,29 +141,10 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   pointer-events: none;
 }
 
-/* ── Decorative thin lines — subtle geometric accent ──────────────────────── */
+/* ── Magnifier position (component owns the size + animation) ─────────────── */
 .hero-v2__magnifier {
-  position: absolute;
   top: 24%;
   left: 6%;
-  width: 88px;
-  height: 88px;
-  z-index: 1;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
-  animation: magnifier-float 6.5s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes magnifier-float {
-  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
-  25%      { transform: translate(6px, -8px) rotate(4deg); }
-  50%      { transform: translate(0, -14px) rotate(8deg); }
-  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-v2__magnifier { animation: none; }
 }
 
 /* ── Content — vertically centered ────────────────────────────────────────── */
@@ -244,80 +184,17 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* tagline fade transition */
+/* Tagline fade transition */
 .hero-tag-enter-active,
 .hero-tag-leave-active {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.hero-tag-enter-from {
-  opacity: 0;
-  transform: translateY(8px);
-}
-.hero-tag-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
+.hero-tag-enter-from { opacity: 0; transform: translateY(8px); }
+.hero-tag-leave-to   { opacity: 0; transform: translateY(-8px); }
 
-/* ── CTA — glass pill matching DualCta language ───────────────────────────── */
-.hero-v2__cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 36px;
-  padding: 14px 34px;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px) saturate(150%);
-  -webkit-backdrop-filter: blur(10px) saturate(150%);
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-
-.hero-v2__cta:hover,
-.hero-v2__cta:focus-visible {
-  background: #fff;
-  color: var(--c-brand-navy);
-  transform: translateY(-2px);
-}
-
-/* ── Glass pill carousel dots ─────────────────────────────────────────────── */
-.hero-v2__dots {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 8px 14px;
-  border-radius: 999px;
-  margin-top: 40px;
-}
-
-.hero-v2__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.50);
-  flex-shrink: 0;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: width 0.25s ease, height 0.25s ease, background-color 0.25s ease;
-}
-
-.hero-v2__dot--active {
-  width: 10px;
-  height: 10px;
-  background-color: #fff;
-}
+/* CTA + dots spacing (visual styling lives in their components) */
+.hero-v2__cta  { margin-top: 36px; }
+.hero-v2__dots { margin-top: 40px; }
 
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
@@ -341,15 +218,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     max-width: 340px;
   }
 
-  .hero-v2__cta {
-    margin-top: 24px;
-    padding: 12px 28px;
-    font-size: 14px;
-  }
-
-  .hero-v2__dots {
-    margin-top: 28px;
-  }
+  .hero-v2__cta  { margin-top: 24px; }
+  .hero-v2__dots { margin-top: 28px; }
 
   .hero-v2__glow {
     width: 420px;
@@ -361,8 +231,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   }
 
   .hero-v2__magnifier {
-    width: 56px;
-    height: 56px;
     top: 20%;
     left: 5%;
   }

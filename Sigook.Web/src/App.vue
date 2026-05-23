@@ -18,6 +18,7 @@
       </div>
     </div>
     <div v-else-if="isV2Route" class="v2-page">
+      <GlobalBackgroundV2 />
       <HeaderV2 />
       <router-view />
       <FooterV2 />
@@ -41,6 +42,7 @@ import Header from '@/components/landing/Header.vue';
 import Footer from '@/components/landing/Footer.vue';
 import HeaderV2 from '@/components/v2/HeaderV2.vue';
 import FooterV2 from '@/components/v2/FooterV2.vue';
+import GlobalBackgroundV2 from '@/components/v2/shared/GlobalBackgroundV2.vue';
 
 const route = useRoute();
 const appStore = useAppStore();

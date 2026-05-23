@@ -41,17 +41,6 @@
     <div class="why-v2__panel">
       <div class="why-v2__panel-inner">
 
-        <!-- Decorative floating elements (matches Numbers vocabulary) -->
-        <span class="why-v2__deco why-v2__deco--cyan-glow" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--navy-glow" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--red-glow" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--blue-glow" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--red-glow-sm" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--ring-lg" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--ring-sm" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--dot-a" aria-hidden="true"></span>
-        <span class="why-v2__deco why-v2__deco--dot-b" aria-hidden="true"></span>
-
         <!-- Top zone: asymmetric editorial — heading left, map right -->
         <div class="why-v2__top">
           <header class="why-v2__panel-header">
@@ -285,18 +274,9 @@ onUnmounted(() => observer?.disconnect())
   max-width: 560px;
 }
 
-/* ── Block B: Blue panel ── */
+/* ── Block B: Blue panel — transparent (background lives in GlobalBackgroundV2) ── */
 .why-v2__panel {
   position: relative;
-  /* Same gradient as Numbers section — flows navy → brand-blue from top to bottom */
-  background:
-    linear-gradient(180deg,
-      #0f2f44 0%,
-      #093055 22%,
-      #0d4063 48%,
-      #135b8c 76%,
-      #1575bb 100%
-    );
   border-radius: 150px 0 150px 0;
   margin-top: -196px;
   z-index: 1;
@@ -315,173 +295,6 @@ onUnmounted(() => observer?.disconnect())
   flex-direction: column;
   align-items: center;
   z-index: 1;
-}
-
-/* ── Floating decorative elements (drift continuously like Numbers) ────── */
-.why-v2__deco {
-  position: absolute;
-  pointer-events: none;
-  border-radius: 50%;
-  z-index: 0;
-  will-change: transform;
-}
-
-.why-v2__deco--cyan-glow {
-  width: 640px;
-  height: 640px;
-  top: 180px;
-  right: -180px;
-  background: var(--c-brand-cyan);
-  filter: blur(180px);
-  opacity: 0.32;
-  animation: why-drift-a 62s ease-in-out infinite;
-}
-
-.why-v2__deco--navy-glow {
-  width: 520px;
-  height: 520px;
-  top: 60%;
-  left: -160px;
-  background: #062a44;
-  filter: blur(160px);
-  opacity: 0.45;
-  animation: why-drift-b 70s ease-in-out infinite;
-  animation-delay: -8s;
-}
-
-/* Big red blur — visible warmth, mid-left area */
-.why-v2__deco--red-glow {
-  width: 520px;
-  height: 520px;
-  top: 40%;
-  left: 24%;
-  background: var(--c-brand-red);
-  filter: blur(170px);
-  opacity: 0.32;
-  animation: why-drift-c 56s ease-in-out infinite;
-  animation-delay: -14s;
-}
-
-/* Big blue blur — visible cool tone, lower-right */
-.why-v2__deco--blue-glow {
-  width: 580px;
-  height: 580px;
-  top: 50%;
-  right: 8%;
-  background: var(--c-brand-blue);
-  filter: blur(180px);
-  opacity: 0.40;
-  animation: why-drift-d 66s ease-in-out infinite;
-  animation-delay: -22s;
-}
-
-/* Medium red blur — bottom, near feature cards */
-.why-v2__deco--red-glow-sm {
-  width: 380px;
-  height: 380px;
-  bottom: 280px;
-  left: 20%;
-  background: var(--c-brand-red);
-  filter: blur(140px);
-  opacity: 0.30;
-  animation: why-drift-e 50s ease-in-out infinite;
-  animation-delay: -6s;
-}
-
-.why-v2__deco--ring-lg {
-  width: 220px;
-  height: 220px;
-  top: 22%;
-  left: -50px;
-  background: transparent;
-  border: 3px solid rgba(255, 255, 255, 0.22);
-  animation: why-drift-f 54s ease-in-out infinite;
-}
-
-.why-v2__deco--ring-sm {
-  width: 130px;
-  height: 130px;
-  bottom: 280px;
-  right: 60px;
-  background: transparent;
-  border: 3px solid rgba(0, 173, 239, 0.55);
-  animation: why-drift-g 46s ease-in-out infinite;
-  animation-delay: -12s;
-}
-
-.why-v2__deco--dot-a {
-  width: 22px;
-  height: 22px;
-  top: 32%;
-  right: 8%;
-  background: var(--c-brand-cyan);
-  opacity: 0.85;
-  animation: why-drift-h 38s ease-in-out infinite;
-}
-
-.why-v2__deco--dot-b {
-  width: 14px;
-  height: 14px;
-  bottom: 18%;
-  left: 18%;
-  background: var(--c-brand-red);
-  opacity: 0.85;
-  animation: why-drift-a 42s ease-in-out infinite;
-  animation-delay: -18s;
-}
-
-/* ── Drift keyframes — slow ambient motion (same vocabulary as Numbers) ── */
-@keyframes why-drift-a {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(140px, -110px); }
-}
-
-@keyframes why-drift-b {
-  0%, 100% { transform: translate(0, 0); }
-  33%      { transform: translate(-90px, 80px); }
-  66%      { transform: translate(80px, -120px); }
-}
-
-@keyframes why-drift-c {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(-110px, 90px) scale(1.10); }
-}
-
-@keyframes why-drift-d {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(70px, -80px) scale(0.90); }
-}
-
-@keyframes why-drift-e {
-  0%, 100% { transform: translate(0, 0); }
-  25%      { transform: translate(80px, -60px); }
-  50%      { transform: translate(50px, 100px); }
-  75%      { transform: translate(-80px, 40px); }
-}
-
-@keyframes why-drift-f {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  20%      { transform: translate(90px, -40px) scale(1.08); }
-  40%      { transform: translate(-70px, -80px) scale(0.92); }
-  60%      { transform: translate(-80px, 70px) scale(1.06); }
-  80%      { transform: translate(100px, 60px) scale(0.94); }
-}
-
-@keyframes why-drift-g {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(-130px, 150px); }
-}
-
-@keyframes why-drift-h {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(120px, 70px) scale(1.05); }
-  66%      { transform: translate(-90px, 110px) scale(0.95); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .why-v2__deco {
-    animation: none !important;
-  }
 }
 
 /* ── Top zone — asymmetric editorial split (heading left, map right) ─── */
@@ -816,69 +629,6 @@ onUnmounted(() => observer?.disconnect())
 
   .why-v2__panel-inner {
     padding: 140px 24px 0;
-  }
-
-  /* Mobile deco scale-down — keep glows, hide some rings/dots */
-  .why-v2__deco--cyan-glow {
-    width: 360px;
-    height: 360px;
-    right: -100px;
-    top: 120px;
-    filter: blur(120px);
-    opacity: 0.28;
-  }
-
-  .why-v2__deco--navy-glow {
-    width: 320px;
-    height: 320px;
-    left: -100px;
-    filter: blur(110px);
-  }
-
-  .why-v2__deco--red-glow {
-    width: 320px;
-    height: 320px;
-    top: 36%;
-    left: -60px;
-    filter: blur(130px);
-    opacity: 0.28;
-  }
-
-  .why-v2__deco--blue-glow {
-    width: 360px;
-    height: 360px;
-    top: 52%;
-    right: -100px;
-    filter: blur(140px);
-    opacity: 0.35;
-  }
-
-  .why-v2__deco--red-glow-sm {
-    width: 260px;
-    height: 260px;
-    bottom: 220px;
-    left: 8%;
-    filter: blur(110px);
-    opacity: 0.26;
-  }
-
-  .why-v2__deco--ring-lg {
-    width: 120px;
-    height: 120px;
-    top: 14%;
-    left: -40px;
-  }
-
-  .why-v2__deco--ring-sm,
-  .why-v2__deco--dot-a {
-    display: none;
-  }
-
-  .why-v2__deco--dot-b {
-    width: 10px;
-    height: 10px;
-    bottom: 10%;
-    left: 10%;
   }
 
   /* Top zone — stack vertically on mobile */
