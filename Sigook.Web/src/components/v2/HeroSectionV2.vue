@@ -18,11 +18,13 @@
     <!-- Decorative cyan glow (tertiary accent, bottom-right) -->
     <div class="hero-v2__glow" aria-hidden="true"></div>
 
-    <!-- Decorative thin lines (subtle geometric accent, brand language) -->
-    <div class="hero-v2__deco-lines" aria-hidden="true">
-      <span class="hero-v2__deco-line"></span>
-      <span class="hero-v2__deco-line"></span>
-    </div>
+    <!-- Decorative brand magnifier — replaces the previous thin lines -->
+    <img
+      src="@/assets/images/v2/branding/sigook-magnifier.png"
+      alt=""
+      aria-hidden="true"
+      class="hero-v2__magnifier"
+    />
 
     <!-- Static content (shared across all slides) -->
     <div class="hero-v2__content">
@@ -181,28 +183,28 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 }
 
 /* ── Decorative thin lines — subtle geometric accent ──────────────────────── */
-.hero-v2__deco-lines {
+.hero-v2__magnifier {
   position: absolute;
-  top: 28%;
-  left: 7%;
+  top: 24%;
+  left: 6%;
+  width: 88px;
+  height: 88px;
   z-index: 1;
   pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
+  animation: magnifier-float 6.5s ease-in-out infinite;
+  will-change: transform;
 }
 
-.hero-v2__deco-line {
-  display: block;
-  width: 96px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 2px;
+@keyframes magnifier-float {
+  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+  25%      { transform: translate(6px, -8px) rotate(4deg); }
+  50%      { transform: translate(0, -14px) rotate(8deg); }
+  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
 }
 
-.hero-v2__deco-line:nth-child(2) {
-  width: 64px;
-  margin-left: 18px;
+@media (prefers-reduced-motion: reduce) {
+  .hero-v2__magnifier { animation: none; }
 }
 
 /* ── Content — vertically centered ────────────────────────────────────────── */
@@ -358,18 +360,11 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     bottom: -120px;
   }
 
-  .hero-v2__deco-lines {
-    top: 22%;
-    left: 6%;
-  }
-
-  .hero-v2__deco-line {
+  .hero-v2__magnifier {
     width: 56px;
-  }
-
-  .hero-v2__deco-line:nth-child(2) {
-    width: 36px;
-    margin-left: 10px;
+    height: 56px;
+    top: 20%;
+    left: 5%;
   }
 }
 </style>

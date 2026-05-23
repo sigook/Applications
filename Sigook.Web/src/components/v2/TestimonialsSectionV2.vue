@@ -13,33 +13,41 @@
       <div class="testimonials-v2__overlay"></div>
     </div>
 
-    <!-- Decorative quotation marks -->
+    <!-- Decorative cyan glow + brand magnifier -->
+    <div class="testimonials-v2__glow" aria-hidden="true"></div>
     <img
-      src="@/assets/images/v2/testimonials/testimonials-quote-mark.png"
+      src="@/assets/images/v2/branding/sigook-magnifier.png"
       alt=""
       aria-hidden="true"
-      class="testimonials-v2__quote-mark"
+      class="testimonials-v2__magnifier"
     />
 
     <div class="testimonials-v2__inner">
-      <!-- Top-left: section title + divider (static) -->
-      <div class="testimonials-v2__header">
-        <h2 class="testimonials-v2__title">
-          What Our<br />Clients Say
-        </h2>
-        <div class="testimonials-v2__divider"></div>
-      </div>
+      <!-- Header — eyebrow + heading + cyan divider (matches Numbers / WhyChooseUs) -->
+      <header class="testimonials-v2__header">
+        <span class="testimonials-v2__eyebrow">Testimonials</span>
+        <h2 class="testimonials-v2__title">What our clients say</h2>
+        <div class="testimonials-v2__divider" aria-hidden="true"></div>
+      </header>
 
-      <!-- Center: animated quote, author, location -->
+      <!-- Animated glass quote card -->
       <transition name="test-fade" mode="out-in">
-        <div :key="currentSlide" class="testimonials-v2__body">
+        <article :key="currentSlide" class="testimonials-v2__card">
+          <img
+            src="@/assets/images/v2/testimonials/testimonials-quote-mark.png"
+            alt=""
+            aria-hidden="true"
+            class="testimonials-v2__quote-mark"
+          />
           <p class="testimonials-v2__quote">{{ testimonials[currentSlide].quote }}</p>
-          <p class="testimonials-v2__author">{{ testimonials[currentSlide].author }}</p>
-          <p class="testimonials-v2__location">{{ testimonials[currentSlide].location }}</p>
-        </div>
+          <div class="testimonials-v2__attribution">
+            <p class="testimonials-v2__author">{{ testimonials[currentSlide].author }}</p>
+            <p class="testimonials-v2__location">{{ testimonials[currentSlide].location }}</p>
+          </div>
+        </article>
       </transition>
 
-      <!-- Clickable SliderDots -->
+      <!-- Glass pill dots (matches Hero) -->
       <div class="testimonials-v2__dots" role="tablist" aria-label="Testimonials navigation">
         <button
           v-for="(_, i) in testimonials"
@@ -130,20 +138,20 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   ─────────────────────────────────────────────────────────────
 */
 
-/* ── Section shell ─────────────────────────────────────────────────────────── */
+/* ── Section shell — preserves AppDownload overlap geometry ──────────────── */
 .testimonials-v2 {
   position: relative;
   height: 1460px;
-  overflow: hidden;
+  /* No overflow:hidden — lets the bg shadow extend down into Contact for the smooth transition.
+     The bg has its own overflow:hidden so its photo still clips to the rounded corners. */
   background: transparent;
   margin-top: -700px;
   z-index: 3;
+  isolation: isolate;
 }
 
-/* ── Slide backgrounds — start where AppDownload's visible features end, so
-   the curve sits right at that boundary (mirrors the CertifiedSection→
-   AppDownload transition above). The space above the bg in the section is
-   transparent, letting AppDownload's lighter blue show through naturally. */
+/* ── Slide backgrounds — start at y=540 so top is transparent (AppDL bleeds through),
+       bottom carries the photo + navy veil. Same geometry as before. */
 .testimonials-v2__bg {
   position: absolute;
   top: 540px;
@@ -153,10 +161,13 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
-  border-radius: 0 var(--r-brand) 0 0;
+  /* Asymmetric brand shape — top-right + bottom-left rounded */
+  border-radius: 0 var(--r-brand) 0 var(--r-brand);
   overflow: hidden;
-  /* Cast a soft shadow upward to reinforce the overlap onto AppDownload */
-  box-shadow: 0 -22px 40px -12px rgba(0, 0, 0, 0.45);
+  /* Soft shadows top + bottom — reinforces overlap with AppDownload (above) and Contact (below) */
+  box-shadow:
+    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
+    0  22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
 .testimonials-v2__bg--active {
@@ -170,144 +181,220 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   object-position: center top;
 }
 
-/* Gradient placeholder (slides without a photo) */
 .testimonials-v2__bg-color {
   position: absolute;
   inset: 0;
 }
 
+/* Heavy navy gradient overlay — matches DualCta veil language */
 .testimonials-v2__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--c-overlay-blue),
-    var(--c-brand-blue)
-  );
+  background:
+    linear-gradient(90deg, rgba(15, 47, 68, 0.55) 0%, rgba(15, 47, 68, 0.30) 50%, rgba(15, 47, 68, 0.55) 100%),
+    linear-gradient(180deg, rgba(15, 47, 68, 0.45) 0%, rgba(15, 47, 68, 0.70) 100%);
 }
 
-/* ── Decorative quotation mark — sits in the bg's top-right corner ───────── */
-.testimonials-v2__quote-mark {
+/* ── Decorative cyan glow (Hero language) — top-right of visible blue zone ── */
+.testimonials-v2__glow {
   position: absolute;
-  top: 568px;
-  right: 32px;
-  width: 45px;
-  height: 45px;
-  z-index: 2;
-  object-fit: contain;
+  z-index: 1;
+  pointer-events: none;
+  top: 580px;
+  right: -120px;
+  width: 560px;
+  height: 560px;
+  background: var(--c-brand-cyan);
+  border-radius: 50%;
+  filter: blur(160px);
+  opacity: 0.22;
 }
 
-/* ── Inner container ───────────────────────────────────────────────────────── */
+/* ── Brand magnifier decoration — bottom-left of visible blue zone ─────── */
+.testimonials-v2__magnifier {
+  position: absolute;
+  z-index: 2;
+  bottom: 170px;
+  left: 7%;
+  width: 88px;
+  height: 88px;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
+  animation: test-magnifier-float 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes test-magnifier-float {
+  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+  25%      { transform: translate(6px, -8px) rotate(4deg); }
+  50%      { transform: translate(0, -14px) rotate(8deg); }
+  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonials-v2__magnifier { animation: none; }
+}
+
+/* ── Inner container ─────────────────────────────────────────────────────── */
 .testimonials-v2__inner {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   height: 1460px;
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--gutter-desktop);
 }
 
-/* ── Header (top-left of blue area, sits inside the slide bg) ────────────── */
+/* ── Header — eyebrow + heading + cyan divider centered above quote card ─── */
 .testimonials-v2__header {
   position: absolute;
-  top: 640px;
-  left: 0;
+  top: 660px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.testimonials-v2__eyebrow {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+  margin-bottom: 16px;
 }
 
 .testimonials-v2__title {
-  color: var(--c-bg);
-  font-size: 30px;
+  font-family: var(--font-family);
+  font-size: 44px;
   font-weight: 700;
-  line-height: 1.15;
-  text-transform: none;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: #fff;
   margin: 0;
 }
 
 .testimonials-v2__divider {
-  width: 36px;
+  width: 64px;
   height: 2px;
-  background: var(--c-bg);
-  margin-top: 16px;
+  background: var(--c-brand-cyan);
+  border-radius: 2px;
+  margin: 22px auto 0;
 }
 
-/* ── Quote body (centered, animated) ──────────────────────────────────────── */
-.testimonials-v2__body {
+/* ── Quote glass card — centered, asymmetric brand radius ─────────────────── */
+.testimonials-v2__card {
   position: absolute;
   top: 880px;
   left: 50%;
   transform: translateX(-50%);
-  width: 380px;
+  width: 100%;
+  max-width: 680px;
+  padding: 48px 56px 40px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 24px 64px 24px 64px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.30);
   text-align: center;
 }
 
+.testimonials-v2__quote-mark {
+  display: block;
+  margin: 0 auto 18px;
+  width: 36px;
+  height: 36px;
+  opacity: 0.85;
+  filter: brightness(0) invert(1);  /* force white tint regardless of source */
+}
+
 .testimonials-v2__quote {
-  color: var(--c-bg);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0 0 24px;
+  font-family: var(--font-family);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: #fff;
+  margin: 0 0 32px;
+}
+
+.testimonials-v2__attribution {
+  display: inline-block;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
 }
 
 .testimonials-v2__author {
-  color: var(--c-bg);
-  font-size: 15px;
+  font-family: var(--font-family);
+  font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   line-height: 1.4;
+  color: #fff;
   margin: 0 0 4px;
-  text-transform: none;
+  text-transform: uppercase;
 }
 
 .testimonials-v2__location {
-  color: var(--c-bg);
-  font-size: 12px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 400;
   line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
 }
 
-/* Quote fade transition */
+/* Card fade transition */
 .test-fade-enter-active,
 .test-fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .test-fade-enter-from {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateX(-50%) translateY(12px);
 }
 .test-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateX(-50%) translateY(-12px);
 }
 
-/* ── SliderDots (bottom-center, clickable) ─────────────────────────────────── */
+/* ── Glass pill dots — matches Hero exactly ──────────────────────────────── */
 .testimonials-v2__dots {
   position: absolute;
-  bottom: 72px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--c-bg);
-  border: 1px solid rgba(170, 206, 220, 0.3);
-  border-radius: var(--r-pill);
-  padding: 4px 10px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 8px 14px;
+  border-radius: 999px;
 }
 
 .testimonials-v2__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--c-neutral-muted);
+  background-color: rgba(255, 255, 255, 0.50);
   flex-shrink: 0;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+  transition: width 0.25s ease, height 0.25s ease, background-color 0.25s ease;
 }
 
 .testimonials-v2__dot--active {
   width: 10px;
   height: 10px;
-  background: var(--c-brand-blue);
+  background-color: #fff;
 }
 
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
@@ -315,10 +402,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   .testimonials-v2 {
     height: auto;
     min-height: 500px;
-    padding-bottom: 48px;
+    padding-bottom: 56px;
     margin-top: 0;
-    /* No background — let AppDownload's gradient show through the rounded
-       corner cutout, mirroring the top transition (CertifiedSection→AppDownload) */
     background: transparent;
   }
 
@@ -329,8 +414,20 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     bottom: 0;
   }
 
-  .testimonials-v2__quote-mark {
-    top: 0;
+  .testimonials-v2__glow {
+    top: 60px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    filter: blur(110px);
+    opacity: 0.20;
+  }
+
+  .testimonials-v2__magnifier {
+    width: 56px;
+    height: 56px;
+    bottom: 20px;
+    left: 20px;
   }
 
   .testimonials-v2__inner {
@@ -340,20 +437,40 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
   .testimonials-v2__header {
     position: static;
+    transform: none;
     padding-top: 80px;
+    margin-bottom: 32px;
   }
 
-  .testimonials-v2__body {
+  .testimonials-v2__title {
+    font-size: 28px;
+  }
+
+  .testimonials-v2__card {
     position: static;
     transform: none;
-    width: 100%;
-    margin-top: 40px;
+    max-width: 100%;
+    padding: 36px 28px 32px;
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+
+  .testimonials-v2__quote {
+    font-size: 15px;
+  }
+
+  .test-fade-enter-from,
+  .test-fade-leave-to {
+    transform: translateY(10px);   /* reset translateX(-50%) for static mobile layout */
+  }
+
+  .test-fade-leave-to {
+    transform: translateY(-10px);
   }
 
   .testimonials-v2__dots {
     position: static;
     transform: none;
-    justify-content: center;
     margin: 32px auto 0;
     width: fit-content;
   }

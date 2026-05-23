@@ -1,7 +1,11 @@
 <template>
   <div class="git-card" :class="`git-card--${size}`">
-    <h3 class="git-card__title">Your Information</h3>
-    <p class="git-card__sub">We'll reach out to you for the next steps</p>
+    <header class="git-card__header">
+      <span class="git-card__eyebrow">Get Started</span>
+      <h3 class="git-card__title">Your information</h3>
+      <p class="git-card__sub">We'll reach out to you for the next steps.</p>
+      <div class="git-card__divider" aria-hidden="true"></div>
+    </header>
 
     <form class="git-card__form" @submit.prevent="handleFormSubmit" novalidate>
       <!-- Name row -->
@@ -14,7 +18,7 @@
               :class="{ 'git-card__input--error': errors.firstName }"
               v-model="fields.firstName.value"
               type="text"
-              placeholder="First Name"
+              placeholder="First name"
               autocomplete="given-name"
             />
             <span v-if="errors.firstName" class="git-card__field-error">{{ errors.firstName }}</span>
@@ -25,7 +29,7 @@
               :class="{ 'git-card__input--error': errors.lastName }"
               v-model="fields.lastName.value"
               type="text"
-              placeholder="Last Name"
+              placeholder="Last name"
               autocomplete="family-name"
             />
             <span v-if="errors.lastName" class="git-card__field-error">{{ errors.lastName }}</span>
@@ -41,7 +45,7 @@
           :class="{ 'git-card__input--error': errors.email }"
           v-model="fields.email.value"
           type="email"
-          placeholder="Your Email Address"
+          placeholder="your.email@company.com"
           autocomplete="email"
         />
         <span v-if="errors.email" class="git-card__field-error">{{ errors.email }}</span>
@@ -54,7 +58,7 @@
           class="git-card__input git-card__input--full"
           v-model="fields.industry.value"
           type="text"
-          placeholder="Select One"
+          placeholder="Select one"
         />
       </div>
 
@@ -65,7 +69,7 @@
           class="git-card__textarea"
           :class="{ 'git-card__input--error': errors.message }"
           v-model="fields.message.value"
-          placeholder="Tell us more about the role you need to fill"
+          placeholder="Tell us more about the role you need to fill."
           rows="4"
         ></textarea>
         <span v-if="errors.message" class="git-card__field-error">{{ errors.message }}</span>
@@ -81,12 +85,13 @@
 
       <!-- Submit -->
       <button type="submit" class="git-card__submit" :disabled="submitting">
-        {{ submitting ? 'Sending…' : 'Save & Send' }}
+        <span>{{ submitting ? 'Sending…' : 'Save & Send' }}</span>
+        <ArrowIconV2 v-if="!submitting" :width="32" :height="11" :stroke-width="1.5" color="#fff" />
       </button>
 
       <!-- Reset -->
       <button type="button" class="git-card__reset" @click="handleReset">
-        Reset Information
+        Reset information
       </button>
     </form>
   </div>
@@ -97,6 +102,7 @@ import { ref } from 'vue'
 import * as yup from 'yup'
 import { useStickyForm } from '@/composables/useStickyForm'
 import { submitContactForm } from '@/api/websiteApi'
+import ArrowIconV2 from '@/components/v2/ArrowIconV2.vue'
 
 withDefaults(defineProps<{ size?: 'default' | 'compact' }>(), { size: 'default' })
 
@@ -153,12 +159,15 @@ function handleReset() {
 </script>
 
 <style scoped>
-/* ── Card shell ────────────────────────────────────────────────────────────── */
+/* ── Card shell — asymmetric brand radius, deeper shadow ────────────────── */
 .git-card {
+  position: relative;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: var(--sh-2);
-  padding: 32px 40px 40px;
+  border-radius: 20px 56px 20px 56px;   /* asymmetric brand shape */
+  box-shadow:
+    0 24px 60px rgba(15, 47, 68, 0.20),
+    0 4px 12px rgba(15, 47, 68, 0.06);
+  padding: 44px 48px 44px;
   width: 550px;
   max-width: 60%;
   box-sizing: border-box;
@@ -167,44 +176,75 @@ function handleReset() {
 /* Compact variant — narrower card for sidebar / secondary contexts */
 .git-card--compact {
   width: 392px;
-  padding: 28px 32px 36px;
+  padding: 32px 32px 36px;
+  border-radius: 16px 40px 16px 40px;
 }
 
-/* ── Card header ───────────────────────────────────────────────────────────── */
-.git-card__title {
-  color: var(--c-ink);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
+/* ── Card header ─────────────────────────────────────────────────────────── */
+.git-card__header {
   text-align: center;
+  margin-bottom: 28px;
+}
+
+.git-card__eyebrow {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+  margin-bottom: 12px;
+}
+
+.git-card__title {
+  font-family: var(--font-family);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
   text-transform: none;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
 
 .git-card__sub {
-  color: var(--c-line);
-  font-size: 12px;
-  line-height: 1.5;
-  text-align: center;
-  margin: 0 0 24px;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--c-ink-2, #4a5764);
+  margin: 0 0 18px;
 }
 
-/* ── Form layout ───────────────────────────────────────────────────────────── */
+/* Cyan divider — closes the header, brand accent */
+.git-card__divider {
+  width: 56px;
+  height: 2px;
+  background: var(--c-brand-cyan);
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+/* ── Form layout ─────────────────────────────────────────────────────────── */
 .git-card__form {
   display: flex;
   flex-direction: column;
 }
 
 .git-card__field-group {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .git-card__label {
   display: block;
+  font-family: var(--font-family);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--c-ink);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  text-transform: none;
 }
 
 .git-card__name-row {
@@ -219,122 +259,193 @@ function handleReset() {
   flex-direction: column;
 }
 
-/* ── Inputs ────────────────────────────────────────────────────────────────── */
+/* ── Inputs — taller, refined borders, cyan focus accent ─────────────────── */
 .git-card__input {
   width: 100%;
-  height: 46px;
-  padding: 0 16px;
-  border: 1px solid #d9d9d9;
-  border-radius: 12px;
+  height: 52px;
+  padding: 0 18px;
+  border: 1.5px solid #e3e8ed;
+  border-radius: 14px;
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--c-ink);
   background: #fff;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
   box-sizing: border-box;
 }
 
-.git-card__input::placeholder { color: #b0b0b0; }
-.git-card__input:focus        { border-color: var(--c-brand-blue); }
-.git-card__input--full        { width: 100%; }
-.git-card__input--error       { border-color: var(--c-brand-red); }
+.git-card__input::placeholder {
+  color: #a8b3bd;
+}
 
-/* ── Textarea ──────────────────────────────────────────────────────────────── */
+.git-card__input:hover {
+  border-color: #c8d3dd;
+}
+
+.git-card__input:focus {
+  border-color: var(--c-brand-cyan);
+  box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.12);
+  background: #fbfdff;
+}
+
+.git-card__input--full {
+  width: 100%;
+}
+
+.git-card__input--error {
+  border-color: var(--c-brand-red);
+}
+
+.git-card__input--error:focus {
+  box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.14);
+}
+
+/* ── Textarea ────────────────────────────────────────────────────────────── */
 .git-card__textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d9d9d9;
-  border-radius: 12px;
+  padding: 14px 18px;
+  border: 1.5px solid #e3e8ed;
+  border-radius: 14px;
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--c-ink);
   background: #fff;
   outline: none;
   resize: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
   box-sizing: border-box;
-  line-height: 1.5;
+  line-height: 1.55;
+  min-height: 110px;
 }
 
-.git-card__textarea::placeholder { color: #b0b0b0; }
-.git-card__textarea:focus        { border-color: var(--c-brand-blue); }
+.git-card__textarea::placeholder { color: #a8b3bd; }
 
-/* ── Validation errors ─────────────────────────────────────────────────────── */
+.git-card__textarea:hover {
+  border-color: #c8d3dd;
+}
+
+.git-card__textarea:focus {
+  border-color: var(--c-brand-cyan);
+  box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.12);
+  background: #fbfdff;
+}
+
+/* ── Validation errors ───────────────────────────────────────────────────── */
 .git-card__field-error {
   display: block;
   color: var(--c-brand-red);
-  font-size: 11px;
-  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 6px;
   padding-left: 4px;
 }
 
-/* ── Feedback ──────────────────────────────────────────────────────────────── */
+/* ── Feedback ────────────────────────────────────────────────────────────── */
 .git-card__feedback {
+  font-family: var(--font-family);
   font-size: 13px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin-bottom: 14px;
   text-align: center;
 }
 
-.git-card__feedback--success { background: #e8f5e9; color: #2e7d32; }
-.git-card__feedback--error   { background: #fdecea; color: var(--c-brand-red); }
+.git-card__feedback--success {
+  background: rgba(46, 125, 50, 0.10);
+  color: #2e7d32;
+  border: 1px solid rgba(46, 125, 50, 0.20);
+}
 
-/* ── Submit button — RED per Figma ─────────────────────────────────────────── */
+.git-card__feedback--error {
+  background: rgba(229, 45, 39, 0.08);
+  color: var(--c-brand-red);
+  border: 1px solid rgba(229, 45, 39, 0.20);
+}
+
+/* ── Submit button — solid red pill with arrow icon (brand action) ───────── */
 .git-card__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   width: 100%;
   height: 56px;
-  margin-top: 16px;
+  margin-top: 18px;
   background: var(--c-brand-red);
   color: #fff;
   border: none;
-  border-radius: 28px;
+  border-radius: 999px;
   font-family: var(--font-family);
   font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: opacity 0.2s;
+  box-shadow: 0 12px 28px rgba(229, 45, 39, 0.28);
+  transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
 }
 
-.git-card__submit:hover:not(:disabled) { opacity: 0.88; }
-.git-card__submit:disabled             { opacity: 0.55; cursor: not-allowed; }
+.git-card__submit:hover:not(:disabled) {
+  background: var(--c-brand-crimson, #c8302a);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(229, 45, 39, 0.36);
+}
 
-/* ── Reset ─────────────────────────────────────────────────────────────────── */
+.git-card__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Reset link ──────────────────────────────────────────────────────────── */
 .git-card__reset {
   display: block;
   width: fit-content;
-  margin: 12px auto 0;
+  margin: 14px auto 0;
   background: none;
   border: none;
-  padding: 0;
+  padding: 4px 8px;
   font-family: var(--font-family);
-  font-size: 12px;
-  color: var(--c-ink);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-ink-2, #4a5764);
   cursor: pointer;
+  transition: color 0.2s;
 }
 
-.git-card__reset:hover { text-decoration: underline; }
+.git-card__reset:hover {
+  color: var(--c-brand-blue);
+  text-decoration: underline;
+}
 
-/* ── Compact field adjustments ─────────────────────────────────────────────── */
+/* ── Compact field adjustments ───────────────────────────────────────────── */
 .git-card--compact .git-card__input,
 .git-card--compact .git-card__textarea {
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.git-card--compact .git-card__title { font-size: 18px; }
+.git-card--compact .git-card__title { font-size: 22px; }
 
-/* ── Mobile ────────────────────────────────────────────────────────────────── */
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .git-card,
   .git-card--compact {
     width: 100%;
-    padding: 24px 20px 32px;
+    max-width: 100%;
+    padding: 32px 24px 32px;
+    border-radius: 16px 40px 16px 40px;
   }
+
+  .git-card__title { font-size: 24px; }
+  .git-card__sub { font-size: 13px; }
 
   .git-card__name-row {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .git-card__input {
+    height: 48px;
   }
 }
 </style>
