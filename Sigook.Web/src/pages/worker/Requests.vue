@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <!-- If is not approved to work -->
     <b-message type="is-warning" v-if="!currentUser.approvedToWork" :closable="false">
@@ -26,7 +26,7 @@
     </b-message>
     <h2 class="fz1 pt-3">Jobs</h2>
     <div>
-      <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @click="onRowClick">
         <template v-slot:empty>

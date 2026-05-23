@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 white-container-mobile">
+  <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
     <h2 class="text-center fz1 mb-4">Assign Recruiters</h2>
     <p class="text-center mb-4">

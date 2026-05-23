@@ -4,7 +4,7 @@
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="openAddContactModal">Add</b-button>
     </b-field>
-    <b-table :data="localAgencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated
+    <b-table sticky-header height="var(--grid-height)" :data="localAgencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated
       pagination-rounded>
       <template v-slot:empty>
         <p class="container text-center">No records available</p>

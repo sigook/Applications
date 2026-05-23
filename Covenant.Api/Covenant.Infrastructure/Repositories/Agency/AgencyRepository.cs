@@ -72,6 +72,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId) =>
         await _context.AgencyPersonnel.Where(c => c.AgencyId == agencyId)
+            .OrderBy(c => c.Name)
             .Select(s => new AgencyPersonnelModel
             {
                 Id = s.Id,

@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
       <template v-slot:empty>

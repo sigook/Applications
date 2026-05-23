@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
@@ -9,7 +9,7 @@
         <b-button type="is-ghost" icon-right="file-excel"
           @click="downloadWorkersReportDocument">Export</b-button>
       </b-field>
-      <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick" @mouseleave="hideNotes">

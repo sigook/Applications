@@ -1,22 +1,20 @@
 <template>
-  <div class="white-container-mobile wrapper-request">
+  <div class="wrapper-request">
     <b-loading v-model="isLoading"></b-loading>
     <!-- CANCELLED -->
     <div v-if="request && !request.canEdit && request.cancellationDetail" class="alert-warning">
       <b>Cancellation detail: </b> {{ request.cancellationDetail }}
     </div>
     <section class="wrapper-request-top" v-if="request">
-      <div class="asap-title-detail" :class="[isDirectHiringComputed ? 'mb-3' : '']" v-if="request.isAsap">
-        Asap
-      </div>
-      <div class="asap-title-detail" :class="[request.isAsap ? 'mt-6' : '']" v-if="isDirectHiringComputed">
-        DH
-      </div>
       <div>
         <router-link :to="'/agency-companies/company/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
         <h2 class="capitalize fz1 fw-700">
+          <span v-if="request.isAsap || isDirectHiringComputed" class="order-flags">
+            <span v-if="request.isAsap" class="order-flag order-flag--asap">Asap</span>
+            <span v-if="isDirectHiringComputed" class="order-flag order-flag--dh">DH</span>
+          </span>
           <span class="fw-400 fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
           <i class="fz-2 block">{{ billingTitle }}</i>
@@ -190,7 +188,7 @@ function onCancelRequest(reason: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Cancelled');
-      router.push('/agency-requests');
+      router.push('/recruiting/orders');
     })
     .catch((error) => {
       isLoading.value = false;
@@ -269,3 +267,58 @@ function getStatusColorClass(r: any) {
   return RequestStatusLabels[r.status];
 }
 </script>
+
+<style scoped lang="scss">
+// Top-align the right-side group (recruiter, status, actions) with the
+// title's first line instead of vertically centering against the whole h2.
+.wrapper-request-top {
+  align-items: flex-start;
+
+  // keep the action group's own items centered relative to each other,
+  // and nudge it down so its text sits on the title's first line
+  & > div:last-child {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+  }
+}
+
+.order-flags {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.order-flag {
+  position: relative;
+  display: inline-block;
+  padding: 2px 12px 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  // convex right-pointing arrow; the tip pokes into the next (solid) flag,
+  // so the seam is always backed by color and never reveals a white sub-pixel gap
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
+
+  &--asap {
+    background: #ff9932;
+    z-index: 2;
+  }
+
+  &--dh {
+    background: #1d4ed8;
+    z-index: 1;
+  }
+
+  // the second flag tucks under the first arrow's tip; its flat left edge keeps
+  // solid colour behind that tip in both expanded and collapsed layouts
+  & + & {
+    margin-left: -6px;
+  }
+}
+</style>

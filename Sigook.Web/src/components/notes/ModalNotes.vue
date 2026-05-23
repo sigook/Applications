@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <b-button icon-right="close" type="is-ghost" @click="onNoteClose"></b-button>
     <span>Notes</span>

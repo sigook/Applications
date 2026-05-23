@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <div class="p-3">
       <div class="container-flex mb-4">
         <div class="col-12 col-padding text-center">

@@ -2,7 +2,7 @@
   <div>
     <div class="container-flex">
       <div class="col-12 col-padding">
-        <b-table :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
+        <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated backend-pagination
           backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
           v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
           <template v-slot:empty>

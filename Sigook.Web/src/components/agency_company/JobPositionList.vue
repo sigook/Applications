@@ -8,7 +8,7 @@
         <b-button v-else type="is-ghost" icon-right="forum" @click="showModalRole = true">Ask for a new
           role</b-button>
       </b-field>
-      <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
+      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
         pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>

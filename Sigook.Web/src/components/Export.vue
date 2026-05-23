@@ -1,7 +1,7 @@
 <template>
   <b-field grouped position="is-right">
     <slot name="actions"></slot>
-    <b-dropdown aria-role="list" position="is-bottom-left">
+    <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
       <template #trigger>
         <b-button type="is-ghost" icon-right="chevron-down" icon-left="dots-vertical">Actions</b-button>
       </template>

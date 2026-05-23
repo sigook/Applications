@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <Invoices></Invoices>
   </div>
 </template>

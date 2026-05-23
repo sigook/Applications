@@ -559,6 +559,7 @@ namespace Covenant.Infrastructure.Repositories.Company
         {
             var companyUsers = await _context.CompanyUser
                 .Where(cu => cu.CompanyId == companyId)
+                .OrderBy(cu => cu.Name).ThenBy(cu => cu.Lastname)
                 .Select(CompanyExtensionsMapping.SelectCompanyUser).ToListAsync();
             return companyUsers;
         }

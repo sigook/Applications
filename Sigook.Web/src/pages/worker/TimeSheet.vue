@@ -1,6 +1,6 @@
 <template>
-  <div class="white-container-mobile">
-    <b-table :data="data.items || []" narrowed hoverable :mobile-cards="true">
+  <div>
+    <b-table sticky-header height="var(--grid-height)" :data="data.items || []" narrowed hoverable :mobile-cards="true">
       <template v-slot:empty>
         <p class="container text-center">{{ "No records available" }}</p>
       </template>
