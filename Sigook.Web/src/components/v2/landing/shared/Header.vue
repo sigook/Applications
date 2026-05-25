@@ -121,12 +121,17 @@ onUnmounted(() => {
 }
 
 /* ── Inner container ─────────────────────────────────────────────────────── */
+/* `width: 100%` is CRITICAL — without it, the flex container shrinks to fit
+   its content (logo + hamburger when nav links are hidden on mobile) and
+   `margin: 0 auto` then centers that tiny block, making the logo appear
+   centered instead of left-aligned. */
 .nav__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 80px;
   padding: 0 80px;
+  width: 100%;
   max-width: 1440px;
   margin: 0 auto;
   gap: 32px;
@@ -371,7 +376,10 @@ onUnmounted(() => {
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
-@media (max-width: 1023px) {
+/* Breakpoint at 1199px (not 1023px) because the desktop nav has 7 nav links
+   plus a Sign In CTA — at 1024–1199px the row visibly overflows. Tablet
+   landscape gets the hamburger drawer instead. */
+@media (max-width: 1199px) {
   .nav__inner {
     height: 64px;
     padding: 0 24px;
@@ -384,13 +392,19 @@ onUnmounted(() => {
     max-width: 120px;
   }
 
+  /* Hide desktop links/actions with !important to beat any cascade conflict
+     from Tailwind reset or global utility classes that might re-enable flex. */
   .nav__links,
   .nav__actions {
-    display: none;
+    display: none !important;
   }
 
+  /* Hamburger forced to right edge regardless of any flex item changes —
+     `margin-left: auto` consumes all remaining horizontal space, pinning
+     the button to the right side. */
   .nav__hamburger {
     display: flex;
+    margin-left: auto;
   }
 }
 </style>

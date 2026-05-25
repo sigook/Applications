@@ -112,6 +112,15 @@ onUnmounted(() => {
   display: none;
 }
 
+/* V2 landing layout — clip any horizontal overflow from decorative absolute
+   elements (glows, blurs, photos, circles) so the page never shows a
+   horizontal scrollbar. `clip` is preferred over `hidden` because it does
+   NOT create a scroll container (preserves position: sticky behavior). */
+.v2-page {
+  overflow-x: clip;
+  position: relative;
+}
+
 .logged-layout {
   display: flex;
   align-items: flex-start;
