@@ -6,6 +6,7 @@ const Industries       = () => import('@/pages/v2/landing/Industries/Industries.
 const Talents          = () => import('@/pages/v2/landing/Talents/Talents.vue');
 const Employers        = () => import('@/pages/v2/landing/Employers/Employers.vue');
 const News             = () => import('@/pages/v2/landing/News/News.vue');
+const OpenPositions    = () => import('@/pages/v2/landing/OpenPositions/OpenPositions.vue');
 const Partner          = () => import('@/pages/v2/landing/Partner/Partner.vue');
 const SpecialProjects  = () => import('@/pages/v2/landing/SpecialProjects/SpecialProjects.vue');
 const ComingSoon       = () => import('@/pages/v2/landing/ComingSoon.vue');
@@ -24,7 +25,12 @@ const routesV2: RouteRecordRaw[] = [
         component: Home,
         meta: { layout: 'v2', requiresAuth: false },
     },
-    cs('/v2/open-positions',   'v2-open-positions',   'Open Positions'),
+    {
+        path: '/v2/open-positions',
+        name: 'v2-open-positions',
+        component: OpenPositions,
+        meta: { layout: 'v2', requiresAuth: false, title: 'Open Positions' },
+    },
     {
         path: '/v2/industries',
         name: 'v2-industries',
