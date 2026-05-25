@@ -3,6 +3,7 @@ import { RouteRecordRaw } from 'vue-router';
 const HomeV2             = () => import('@/pages/v2/HomeV2.vue');
 const AboutUsV2          = () => import('@/pages/v2/AboutUsV2.vue');
 const IndustriesV2       = () => import('@/pages/v2/IndustriesV2.vue');
+const TalentsV2          = () => import('@/pages/v2/TalentsV2.vue');
 const SpecialProjectsV2  = () => import('@/pages/v2/SpecialProjectsV2.vue');
 const ComingSoonV2       = () => import('@/pages/v2/ComingSoonV2.vue');
 
@@ -35,7 +36,12 @@ const routesV2: RouteRecordRaw[] = [
         meta: { layout: 'v2', requiresAuth: false, title: 'About Us' },
     },
     cs('/v2/employers',        'v2-employers',        'For Employers'),
-    cs('/v2/talents',          'v2-talents',          'For Talents'),
+    {
+        path: '/v2/talents',
+        name: 'v2-talents',
+        component: TalentsV2,
+        meta: { layout: 'v2', requiresAuth: false, title: 'For Talents' },
+    },
     {
         path: '/v2/special-projects',
         name: 'v2-special-projects',
