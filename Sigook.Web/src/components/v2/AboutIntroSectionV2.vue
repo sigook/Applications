@@ -1,198 +1,211 @@
 <template>
   <section class="about-intro-v2">
-    <!-- Abstract bg image with gradient overlay — covers top 781px (Intro zone) -->
-    <div class="about-intro-v2__abstract" aria-hidden="true">
-      <img
-        src="@/assets/images/v2/about/intro-bg.png"
-        alt=""
-        class="about-intro-v2__abstract-img"
-      />
-      <div class="about-intro-v2__abstract-overlay"></div>
-    </div>
+    <!-- Atmospheric magnifier decoration — right-side anchor (mirrors Home Hero's left placement) -->
+    <DecoMagnifierV2 class="about-intro-v2__magnifier" />
 
-    <!-- Header copy + CTA — Figma frame: y=246, w=362 -->
     <div class="about-intro-v2__content">
-      <h1 class="about-intro-v2__title">
-        Empowering People. Strengthening
-        <span class="about-intro-v2__title-accent">Businesses.</span>
+      <EyebrowPillV2 variant="red" class="about-intro-v2__eyebrow">
+        Our Story
+      </EyebrowPillV2>
+
+      <h1 class="about-intro-v2__heading">
+        Empowering people.
+        <span class="about-intro-v2__heading-accent">Strengthening businesses.</span>
       </h1>
 
       <p class="about-intro-v2__subtitle">
-        Our success is built on values we live by: fairness, respect, and genuine care
-        for those we serve. At Sigook Work Factory, we believe that trust and integrity
-        are what truly connect people — and that's where lasting partnerships begin.
+        Since Florida in 2008, Sigook Work Factory has grown with one clear purpose —
+        to bring people and opportunities together. Built on fairness, respect, and
+        genuine care, we turn trust and integrity into lasting partnerships.
       </p>
 
-      <a href="#about-form" class="btn btn--secondary about-intro-v2__cta">
-        Get in Touch <span class="about-intro-v2__cta-arrow" aria-hidden="true">›</span>
-      </a>
+      <!-- Credential line — historical footprint (replaces the legacy "Get in Touch" CTA) -->
+      <ul class="about-intro-v2__credentials">
+        <li
+          v-for="(credential, idx) in CREDENTIALS"
+          :key="credential"
+          class="about-intro-v2__credential"
+        >
+          {{ credential }}
+          <span
+            v-if="idx < CREDENTIALS.length - 1"
+            class="about-intro-v2__credential-dot"
+            aria-hidden="true"
+          ></span>
+        </li>
+      </ul>
+
+      <LabeledChipListV2
+        label="Our values"
+        :items="VALUES"
+        class="about-intro-v2__values"
+      />
     </div>
 
-    <!-- 2×2 numbers grid — Figma: y=824, 360×381 -->
-    <NumbersGridV2 class="about-intro-v2__numbers" />
+    <ScrollIndicatorV2 href="#about-numbers" class="about-intro-v2__scroll" />
   </section>
 </template>
 
 <script setup lang="ts">
-import NumbersGridV2 from '@/components/v2/NumbersGridV2.vue'
+import DecoMagnifierV2 from '@/components/v2/shared/DecoMagnifierV2.vue'
+import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
+import LabeledChipListV2 from '@/components/v2/shared/LabeledChipListV2.vue'
+import ScrollIndicatorV2 from '@/components/v2/shared/ScrollIndicatorV2.vue'
+
+const CREDENTIALS = [
+  'Since 2008',
+  'Florida → Canada & USA',
+  'Talent Management since 2016',
+] as const
+
+const VALUES = [
+  'Fairness',
+  'Respect',
+  'Integrity',
+  'Trust',
+  'Care',
+] as const
 </script>
 
 <style scoped>
-/* ============================================================
-   About — Intro Section (mobile-first)
-   Figma node: 425:7763 + 2374:670 (Intro frame + NumbersGrid)
-   Total height target: 1248px
-     • 781px Intro frame (abstract bg + copy + CTA)
-     • 43px gap
-     • 381px Numbers grid
-     • 43px bottom gap (before About Us hero card starts)
-   ============================================================ */
-
+/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .about-intro-v2 {
   position: relative;
   width: 100%;
-  height: 1248px;
-  background: var(--c-brand-teal-dark);
+  height: auto;
+  min-height: max(100vh, 1080px);
   overflow: hidden;
-  font-family: var(--font-family);
-  color: var(--c-bg);
+  isolation: isolate;
 }
 
-/* ── Abstract bg image — top 781px, gradient fades to teal-dark ─────── */
-.about-intro-v2__abstract {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 781px;
-  pointer-events: none;
-  z-index: 0;
+/* ── Decorative magnifier — top-right anchor (mirror of Home Hero) ──────── */
+.about-intro-v2__magnifier {
+  top: clamp(14%, 16vw, 18%);
+  right: clamp(6%, 7vw, 9%);
 }
 
-.about-intro-v2__abstract-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-}
-
-.about-intro-v2__abstract-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 47, 68, 0) 28.681%,
-    var(--c-brand-teal-dark) 100%
-  );
-}
-
-/* ── Copy block — Figma: x=39, y=246 ─────────────────────────────────── */
+/* ── Content stack — vertically centered editorial layout ───────────────── */
 .about-intro-v2__content {
-  position: absolute;
-  top: 246px;
-  left: 39px;
-  right: 39px;
-  z-index: 1;
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: max(100vh, 1080px);
+  /* Fluid padding: clears fixed navbar + leaves room before next section overlap */
+  padding:
+    clamp(80px, 12vw, 140px)
+    clamp(20px, 3vw, 32px)
+    clamp(120px, 16vw, 220px);
+  text-align: center;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.about-intro-v2__title {
-  margin: 0;
-  font-size: 40px;
+/* Spacing between stack elements lives here — atoms own their own visual */
+.about-intro-v2__eyebrow {
+  margin-bottom: clamp(24px, 3.5vw, 36px);
+}
+
+/* ── Main heading — large editorial with cyan accent ────────────────────── */
+.about-intro-v2__heading {
+  font-family: var(--font-family);
+  font-size: clamp(32px, 5.5vw, 60px);
   font-weight: 700;
-  line-height: 1.5; /* 60px per line × 4 lines = 240px (Figma height) */
-  color: var(--c-bg);
-  max-width: 362px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 clamp(24px, 3.5vw, 36px);
+  max-width: 920px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
 }
 
-.about-intro-v2__title-accent {
+.about-intro-v2__heading-accent {
   color: var(--c-brand-cyan);
+  display: block;
 }
 
+/* ── Subtitle / value prop ──────────────────────────────────────────────── */
 .about-intro-v2__subtitle {
-  margin: 12px 0 0; /* gap before subtitle */
-  font-size: 15px;
+  font-family: var(--font-family);
+  font-size: clamp(14px, 1.4vw, 17px);
   font-weight: 400;
-  line-height: 1.6;
-  color: var(--c-bg);
-  text-align: justify;
-  max-width: 361px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 clamp(28px, 3.6vw, 44px);
+  max-width: 640px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-.about-intro-v2__cta {
-  margin-top: 30px;
-  align-self: flex-start;
+/* ── Credential line — historical footprint badges separated by cyan dots ── */
+.about-intro-v2__credentials {
+  list-style: none;
+  margin: 0 0 clamp(36px, 5vw, 64px);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1vw, 14px);
+}
+
+.about-intro-v2__credential {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-width: 196px;
-  justify-content: center;
+  gap: clamp(8px, 1vw, 14px);
+  font-family: var(--font-family);
+  font-size: clamp(10px, 0.85vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.70);
+  white-space: nowrap;
 }
 
-.about-intro-v2__cta-arrow {
-  font-size: 20px;
-  line-height: 1;
+.about-intro-v2__credential-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--c-brand-cyan);
+  flex-shrink: 0;
 }
 
-/* ── Numbers grid — Figma: x=41, y=824 (43px after intro frame) ──────── */
-.about-intro-v2__numbers {
+/* ── Scroll indicator — absolute positioning lives on the parent class ──── */
+.about-intro-v2__scroll {
   position: absolute;
-  top: 824px;
+  bottom: clamp(20px, 3vw, 36px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1;
+  z-index: 2;
 }
 
-/* ============================================================
-   Desktop (≥1024px) — Figma nodes 425:6607 + 2382:4
-   Total height target: 1656px
-     • 781px Intro frame (abstract bg + copy + CTA at x=169/168)
-     • 43px gap
-     • 832px Numbers grid (834×832, centered)
-   ============================================================ */
-@media (min-width: 1024px) {
+/* ── Mobile-only behaviors (clamp can't express conditional layout) ─────── */
+@media (max-width: 1023px) {
   .about-intro-v2 {
-    /* 1656 (intro frame + numbers) + 117 gap before About Us hero */
-    height: 1773px;
+    min-height: 100svh;
   }
 
-  /* Abstract bg still covers the top 781px (full width) */
-
-  /* ── Copy block — Figma: x=169, y=198 ──────────────────────────── */
   .about-intro-v2__content {
-    top: 198px;
-    left: 169px;
-    right: auto;
-    width: 563px; /* room for the wider subtitle */
+    min-height: 100svh;
   }
 
-  .about-intro-v2__title {
-    font-size: 50px;
-    line-height: 1.5; /* 75px × 4 lines = 300px (Figma title height) */
-    max-width: 409px;
+  /* Stack credentials vertically on narrow viewports for legibility */
+  .about-intro-v2__credentials {
+    flex-direction: column;
   }
 
-  /* gap 13px after title (Figma: title ends y=498, subtitle y=511) */
-  .about-intro-v2__subtitle {
-    margin-top: 13px;
-    max-width: 563px;
+  .about-intro-v2__credential-dot {
+    display: none;
   }
 
-  /* Strict anchor at y=618 from section top (Figma) regardless of how the
-     subtitle wraps. Mobile keeps the margin-top flow. */
-  .about-intro-v2__cta {
-    position: absolute;
-    top: 420px; /* 618 (Figma section y) - 198 (content y) = 420 */
-    left: 0;
-    margin-top: 0;
+  .about-intro-v2__scroll {
+    display: none;
   }
 
-  /* Numbers grid — Figma: x=296, y=824 (centered with -7px nudge) */
-  .about-intro-v2__numbers {
-    top: 824px;
+  .about-intro-v2__magnifier {
+    top: 12%;
+    right: 6%;
   }
 }
 </style>

@@ -1,122 +1,167 @@
 <template>
   <div class="numbers-grid-v2">
-    <div class="numbers-grid-v2__row">
-      <div class="numbers-grid-v2__card numbers-grid-v2__card--red numbers-grid-v2__card--tl">
-        <span class="numbers-grid-v2__num numbers-grid-v2__num--lg">+10</span>
-        <span class="numbers-grid-v2__lbl">Years of<br />Experience</span>
-      </div>
-      <div class="numbers-grid-v2__card numbers-grid-v2__card--blue numbers-grid-v2__card--tr">
-        <span class="numbers-grid-v2__num">+330</span>
-        <span class="numbers-grid-v2__lbl">Clients<br />Served</span>
-      </div>
-    </div>
-    <div class="numbers-grid-v2__row">
-      <div class="numbers-grid-v2__card numbers-grid-v2__card--blue numbers-grid-v2__card--bl">
-        <span class="numbers-grid-v2__num">+1,700</span>
-        <span class="numbers-grid-v2__lbl">Jobs<br />Posted</span>
-      </div>
-      <div class="numbers-grid-v2__card numbers-grid-v2__card--red numbers-grid-v2__card--br">
-        <span class="numbers-grid-v2__num">+5,000</span>
-        <span class="numbers-grid-v2__lbl">Applications<br />Filed</span>
-      </div>
-    </div>
+    <article
+      v-for="(stat, idx) in stats"
+      :key="stat.label"
+      class="numbers-grid-v2__card"
+      :class="[
+        `numbers-grid-v2__card--${stat.tone}`,
+        idx % 2 === 0
+          ? 'numbers-grid-v2__card--shape-a'
+          : 'numbers-grid-v2__card--shape-b',
+      ]"
+    >
+      <span class="numbers-grid-v2__accent" aria-hidden="true"></span>
+
+      <span class="numbers-grid-v2__num">
+        <span class="numbers-grid-v2__plus" aria-hidden="true">+</span>{{ stat.value }}
+      </span>
+
+      <span class="numbers-grid-v2__lbl">{{ stat.label }}</span>
+    </article>
   </div>
 </template>
 
+<script lang="ts">
+/**
+ * Shared types for NumbersGridV2. Lives in a regular <script> block so
+ * parents can `import type { Stat } from '@/components/v2/NumbersGridV2.vue'`
+ * and tightly type their data arrays.
+ */
+export type StatTone = 'cyan' | 'red'
+
+export interface Stat {
+  readonly value: string
+  readonly label: string
+  readonly tone: StatTone
+}
+</script>
+
 <script setup lang="ts">
-// Decorative numbers grid — 2×2 cards with asymmetric pill corners.
-// Figma node: 2374:670 (Mobile NumbersGrid 360×381)
+/**
+ * NumbersGridV2 — 4 editorial glass stat cards with asymmetric brand radius.
+ *
+ * Replaces the legacy "petal cluster" 2×2 of red/blue rounded shapes which
+ * didn't match the rest of the V2 vocabulary (glass + asymmetric radius +
+ * cyan/red accents). Each card carries its accent tone via a small top line
+ * and the leading "+" sign — keeps the brand duality without shouting.
+ *
+ * Layout: 4 columns desktop → 2 columns tablet → 1 column small mobile.
+ *
+ * Data lives in the parent — pass an array of Stat via the `stats` prop.
+ * The grid renders as many cards as items provided; alternating shape and
+ * tone are driven by item index + the tone field on each stat.
+ */
+defineProps<{
+  stats: readonly Stat[]
+}>()
 </script>
 
 <style scoped>
-/* Figma mobile: 360×381 — 2×2 grid, gap 20px between rows & cols */
+/* ── Grid shell — fluid 4-col → 2-col → 1-col responsive ────────────────── */
 .numbers-grid-v2 {
-  width: 360px;
-  max-width: 100%;
-  height: 381px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(16px, 1.8vw, 28px);
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
   font-family: var(--font-family);
 }
 
-.numbers-grid-v2__row {
-  display: flex;
-  gap: 20px;
-  flex: 1 0 0;
-  min-height: 0;
-}
-
+/* ── Card shell — glass surface, editorial vertical stack ───────────────── */
 .numbers-grid-v2__card {
-  flex: 1 0 0;
-  min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px 12px;
-  color: #fff;
-  text-align: center;
+  align-items: flex-start;
+  gap: clamp(12px, 1.4vw, 20px);
+  padding:
+    clamp(28px, 3.4vw, 44px)
+    clamp(22px, 2.6vw, 32px);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  isolation: isolate;
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.numbers-grid-v2__card--red { background-color: var(--c-brand-red); }
-.numbers-grid-v2__card--blue { background-color: var(--c-brand-blue); }
+.numbers-grid-v2__card:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-4px);
+}
 
-/* Asymmetric pill corners — one corner sharp (the one pointing inward),
-   three rounded — creates the "petal" cluster effect */
-.numbers-grid-v2__card--tl { border-radius: 300px 300px 0 300px; }
-.numbers-grid-v2__card--tr { border-radius: 300px 300px 300px 0; }
-.numbers-grid-v2__card--bl { border-radius: 300px 0 300px 300px; }
-.numbers-grid-v2__card--br { border-radius: 0 300px 300px 300px; }
+/* Asymmetric brand radius — alternates per card position for visual rhythm */
+.numbers-grid-v2__card--shape-a {
+  border-radius:
+    clamp(28px, 3.4vw, 48px) 0
+    clamp(28px, 3.4vw, 48px) 0;
+}
 
+.numbers-grid-v2__card--shape-b {
+  border-radius:
+    0 clamp(28px, 3.4vw, 48px)
+    0 clamp(28px, 3.4vw, 48px);
+}
+
+/* ── Top accent line — short tinted bar anchored top-left ───────────────── */
+.numbers-grid-v2__accent {
+  width: clamp(36px, 4.2vw, 56px);
+  height: 3px;
+  border-radius: 999px;
+}
+
+.numbers-grid-v2__card--cyan .numbers-grid-v2__accent {
+  background: var(--c-brand-cyan);
+  box-shadow: 0 0 14px rgba(0, 173, 239, 0.55);
+}
+
+.numbers-grid-v2__card--red .numbers-grid-v2__accent {
+  background: var(--c-brand-red);
+  box-shadow: 0 0 14px rgba(229, 45, 39, 0.55);
+}
+
+/* ── Number — large editorial figure ────────────────────────────────────── */
 .numbers-grid-v2__num {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: clamp(36px, 4.5vw, 60px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fff;
   white-space: nowrap;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.30);
 }
 
-.numbers-grid-v2__num--lg {
-  font-size: 42px;
+.numbers-grid-v2__plus {
+  display: inline-block;
+  margin-right: clamp(2px, 0.2vw, 4px);
+  font-weight: 700;
 }
 
+.numbers-grid-v2__card--cyan .numbers-grid-v2__plus { color: var(--c-brand-cyan); }
+.numbers-grid-v2__card--red  .numbers-grid-v2__plus { color: var(--c-brand-red);  }
+
+/* ── Label — uppercase tracked muted ────────────────────────────────────── */
 .numbers-grid-v2__lbl {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-size: clamp(11px, 0.95vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-/* ============================================================
-   Desktop (≥1024px) — Figma node 2381:14 (834×832)
-   ============================================================ */
-@media (min-width: 1024px) {
-  .numbers-grid-v2 {
-    width: 834px;
-    height: 832px;
-    gap: 46px; /* row gap */
-  }
+/* ── Mobile-only behaviors (clamp can't express grid-column shifts) ─────── */
+@media (max-width: 899px) {
+  .numbers-grid-v2 { grid-template-columns: 1fr 1fr; }
+}
 
-  .numbers-grid-v2__row {
-    gap: 48px; /* col gap */
-  }
-
-  /* Border-radius scales up to 300px per Figma (already 300, but make sure) */
-  .numbers-grid-v2__card--tl { border-radius: 300px 300px 0 300px; }
-  .numbers-grid-v2__card--tr { border-radius: 300px 300px 300px 0; }
-  .numbers-grid-v2__card--bl { border-radius: 300px 0 300px 300px; }
-  .numbers-grid-v2__card--br { border-radius: 0 300px 300px 300px; }
-
-  .numbers-grid-v2__num {
-    font-size: 60px;
-  }
-
-  .numbers-grid-v2__num--lg {
-    font-size: 80px;
-  }
-
-  .numbers-grid-v2__lbl {
-    font-size: 20px;
-  }
+@media (max-width: 480px) {
+  .numbers-grid-v2 { grid-template-columns: 1fr; }
 }
 </style>

@@ -2,6 +2,7 @@ import { RouteRecordRaw } from 'vue-router';
 
 const HomeV2             = () => import('@/pages/v2/HomeV2.vue');
 const AboutUsV2          = () => import('@/pages/v2/AboutUsV2.vue');
+const IndustriesV2       = () => import('@/pages/v2/IndustriesV2.vue');
 const SpecialProjectsV2  = () => import('@/pages/v2/SpecialProjectsV2.vue');
 const ComingSoonV2       = () => import('@/pages/v2/ComingSoonV2.vue');
 
@@ -20,7 +21,12 @@ const routesV2: RouteRecordRaw[] = [
         meta: { layout: 'v2', requiresAuth: false },
     },
     cs('/v2/open-positions',   'v2-open-positions',   'Open Positions'),
-    cs('/v2/industries',       'v2-industries',       'Industries'),
+    {
+        path: '/v2/industries',
+        name: 'v2-industries',
+        component: IndustriesV2,
+        meta: { layout: 'v2', requiresAuth: false, title: 'Industries' },
+    },
     cs('/v2/news',             'v2-news',             'News'),
     {
         path: '/v2/about',

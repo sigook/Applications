@@ -1,38 +1,43 @@
 <template>
-  <section class="why-work-v2">
+  <section id="sp-focus" class="sp-focus-v2">
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
-    <div class="why-work-v2__surface" aria-hidden="true"></div>
+    <div class="sp-focus-v2__surface" aria-hidden="true"></div>
 
-    <header class="why-work-v2__header">
-      <EyebrowPillV2 variant="white" class="why-work-v2__eyebrow">
-        What Sets Us Apart
+    <header class="sp-focus-v2__header">
+      <EyebrowPillV2 variant="white" class="sp-focus-v2__eyebrow">
+        Our Focus Areas
       </EyebrowPillV2>
 
-      <h2 class="why-work-v2__heading">
-        Three reasons people
-        <span class="why-work-v2__heading-accent">choose &amp; stay.</span>
+      <h2 class="sp-focus-v2__heading">
+        Four ways our work
+        <span class="sp-focus-v2__heading-accent">moves communities forward.</span>
       </h2>
 
-      <p class="why-work-v2__subtitle">
-        Local presence, modern technology, and seventeen years of know-how —
-        woven into every match we make.
+      <p class="sp-focus-v2__subtitle">
+        Each initiative weaves workforce, technology, and community engagement
+        into outcomes that outlast a single placement.
       </p>
     </header>
 
-    <div class="why-work-v2__cards">
+    <div class="sp-focus-v2__grid">
       <article
-        v-for="(reason, idx) in REASONS"
-        :key="reason.title"
-        class="why-work-v2__card"
-        :class="`why-work-v2__card--${reason.tone}`"
+        v-for="(area, idx) in AREAS"
+        :key="area.title"
+        class="sp-focus-v2__card"
+        :class="[
+          `sp-focus-v2__card--${area.tone}`,
+          idx % 2 === 0
+            ? 'sp-focus-v2__card--shape-a'
+            : 'sp-focus-v2__card--shape-b',
+        ]"
       >
-        <span class="why-work-v2__index" aria-hidden="true">{{ formatIndex(idx) }}</span>
+        <span class="sp-focus-v2__index" aria-hidden="true">{{ formatIndex(idx) }}</span>
 
-        <span class="why-work-v2__card-eyebrow">{{ reason.eyebrow }}</span>
+        <span class="sp-focus-v2__card-eyebrow">{{ area.eyebrow }}</span>
 
-        <h3 class="why-work-v2__card-heading">{{ reason.title }}</h3>
+        <h3 class="sp-focus-v2__card-heading">{{ area.title }}</h3>
 
-        <p class="why-work-v2__card-body" v-html="reason.body"></p>
+        <p class="sp-focus-v2__card-body">{{ area.body }}</p>
       </article>
     </div>
   </section>
@@ -40,49 +45,60 @@
 
 <script setup lang="ts">
 /**
- * Why Work With Us section.
+ * Special Projects — Focus Areas section.
  *
- * Adopts the Home panel vocabulary (DualCtaSectionV2): asymmetric brand
- * radius shell, dual top/bottom drop shadows, negative margin-top to
- * overlap the previous section, inner glass surface over GlobalBackground.
+ * Adopts the panel vocabulary established by DualCtaSectionV2 (Home),
+ * AboutNumbersSectionV2 and WhyWorkWithUsSectionV2: asymmetric brand
+ * radius shell (TL + BR), dual top/bottom drop shadows, negative
+ * margin-top for overlap, inner glass navy surface.
  *
- * Inside the panel: editorial header + 3 glass feature cards with magazine-
- * style ghost indices (01/02/03), each tinted to its accent tone. Cards
- * carry alternating brand radii to mirror the asymmetric vocabulary of
- * the broader system without copying the staggered DualCta layout.
+ * Inside the panel: editorial header + 4 glass cards in a 2x2 grid with
+ * magazine-style ghost indices (01-04), alternating cyan/red accent
+ * tones and mirrored asymmetric corners for visual rhythm.
+ *
+ * Renames the legacy first card "Our Focus Areas" to "Workforce
+ * Development" — that title already lives in the section eyebrow and
+ * duplicating it inside a card was redundant.
  */
 import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
 
 type Tone = 'cyan' | 'red'
 
-interface Reason {
+interface FocusArea {
   readonly eyebrow: string
   readonly title: string
   readonly body: string
   readonly tone: Tone
 }
 
-const REASONS: readonly Reason[] = [
+const AREAS: readonly FocusArea[] = [
   {
-    eyebrow: 'Local Presence',
-    title: 'We’re in your neighborhood',
+    eyebrow: 'Capability Building',
+    title: 'Workforce Development',
     body:
-      'Most of our employer partners are in the Greater Toronto Area, so we know their teams, their needs, and the right person to send when the call comes in.',
+      'Initiatives that support workforce growth, industry needs, and talent development at every level — from entry to specialist.',
     tone: 'cyan',
   },
   {
-    eyebrow: 'Speed by Design',
-    title: 'From profile to paycheck — fast',
+    eyebrow: 'In Motion',
+    title: 'Featured Initiatives',
     body:
-      'SIGOOK&trade; — our self-serve platform — connects employers with our talent database in clicks. Get hired today, start working tomorrow.',
+      'Programs and projects making real impact today — across cities, sectors, and public–private partnerships.',
     tone: 'red',
   },
   {
-    eyebrow: 'Seventeen Years In',
-    title: 'Experience you can lean on',
+    eyebrow: 'Way of Working',
+    title: 'How We Collaborate',
     body:
-      'We’ve matched thousands of workers to clients across industries since 2008. We know what works because we’ve done it — at scale, every season.',
+      'Shoulder-to-shoulder with clients, partners, and communities — co-designing workforce solutions that actually stick.',
     tone: 'cyan',
+  },
+  {
+    eyebrow: 'On the Horizon',
+    title: 'Future Initiatives',
+    body:
+      'Exploring the opportunities and programs that will shape the next decade of work — and the people who power it.',
+    tone: 'red',
   },
 ] as const
 
@@ -93,10 +109,10 @@ function formatIndex(idx: number): string {
 
 <style scoped>
 /* ── Panel shell — adopts DualCta vocabulary (TL+BR radius, dual shadow) ── */
-.why-work-v2 {
+.sp-focus-v2 {
   position: relative;
   width: 100%;
-  /* Overlap previous section (Mission) — same vocab as Numbers panel */
+  /* Overlap previous section (Hero) — same vocab as Numbers/WhyWork panels */
   margin-top: clamp(-180px, -10vw, -80px);
   padding:
     clamp(140px, 14vw, 200px)
@@ -118,7 +134,7 @@ function formatIndex(idx: number): string {
 }
 
 /* ── Inner glass surface ────────────────────────────────────────────────── */
-.why-work-v2__surface {
+.sp-focus-v2__surface {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -133,7 +149,7 @@ function formatIndex(idx: number): string {
 }
 
 /* ── Header block ───────────────────────────────────────────────────────── */
-.why-work-v2__header {
+.sp-focus-v2__header {
   position: relative;
   z-index: 2;
   display: flex;
@@ -144,11 +160,11 @@ function formatIndex(idx: number): string {
   margin: 0 auto;
 }
 
-.why-work-v2__eyebrow {
+.sp-focus-v2__eyebrow {
   margin-bottom: clamp(20px, 2.5vw, 28px);
 }
 
-.why-work-v2__heading {
+.sp-focus-v2__heading {
   font-size: clamp(28px, 4.2vw, 46px);
   font-weight: 700;
   line-height: 1.15;
@@ -159,12 +175,12 @@ function formatIndex(idx: number): string {
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
 }
 
-.why-work-v2__heading-accent {
+.sp-focus-v2__heading-accent {
   color: var(--c-brand-cyan);
   display: block;
 }
 
-.why-work-v2__subtitle {
+.sp-focus-v2__subtitle {
   font-size: clamp(13px, 1.2vw, 16px);
   font-weight: 400;
   line-height: 1.6;
@@ -174,12 +190,12 @@ function formatIndex(idx: number): string {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Cards grid — 3 columns desktop, stack mobile ───────────────────────── */
-.why-work-v2__cards {
+/* ── Cards grid — 2x2 desktop, 1 col mobile ─────────────────────────────── */
+.sp-focus-v2__grid {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: clamp(20px, 2.4vw, 32px);
   width: 100%;
   max-width: 1180px;
@@ -187,7 +203,7 @@ function formatIndex(idx: number): string {
 }
 
 /* ── Feature card ──────────────────────────────────────────────────────── */
-.why-work-v2__card {
+.sp-focus-v2__card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -207,27 +223,27 @@ function formatIndex(idx: number): string {
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.why-work-v2__card:hover {
+.sp-focus-v2__card:hover {
   background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.20);
   transform: translateY(-4px);
 }
 
-/* Alternating asymmetric brand radius — visual rhythm */
-.why-work-v2__card:nth-child(odd) {
+/* Alternating asymmetric brand radius — diagonal mirror for visual rhythm */
+.sp-focus-v2__card--shape-a {
   border-radius:
     clamp(40px, 5.5vw, 72px) 0
     clamp(40px, 5.5vw, 72px) 0;
 }
 
-.why-work-v2__card:nth-child(even) {
+.sp-focus-v2__card--shape-b {
   border-radius:
     0 clamp(40px, 5.5vw, 72px)
     0 clamp(40px, 5.5vw, 72px);
 }
 
-/* ── Ghost numeral 01/02/03 — magazine accent ───────────────────────────── */
-.why-work-v2__index {
+/* ── Ghost numeral 01-04 — magazine accent ──────────────────────────────── */
+.sp-focus-v2__index {
   position: absolute;
   top: clamp(-6px, -0.6vw, 2px);
   right: clamp(10px, 1.8vw, 24px);
@@ -241,16 +257,16 @@ function formatIndex(idx: number): string {
   user-select: none;
 }
 
-.why-work-v2__card--cyan .why-work-v2__index {
+.sp-focus-v2__card--cyan .sp-focus-v2__index {
   color: rgba(0, 173, 239, 0.10);
 }
 
-.why-work-v2__card--red .why-work-v2__index {
+.sp-focus-v2__card--red .sp-focus-v2__index {
   color: rgba(229, 45, 39, 0.10);
 }
 
 /* ── Card eyebrow ──────────────────────────────────────────────────────── */
-.why-work-v2__card-eyebrow {
+.sp-focus-v2__card-eyebrow {
   position: relative;
   z-index: 1;
   display: inline-block;
@@ -261,11 +277,11 @@ function formatIndex(idx: number): string {
   margin-bottom: clamp(4px, 0.5vw, 8px);
 }
 
-.why-work-v2__card--cyan .why-work-v2__card-eyebrow { color: var(--c-brand-cyan); }
-.why-work-v2__card--red  .why-work-v2__card-eyebrow { color: var(--c-brand-red);  }
+.sp-focus-v2__card--cyan .sp-focus-v2__card-eyebrow { color: var(--c-brand-cyan); }
+.sp-focus-v2__card--red  .sp-focus-v2__card-eyebrow { color: var(--c-brand-red);  }
 
 /* ── Card heading ───────────────────────────────────────────────────────── */
-.why-work-v2__card-heading {
+.sp-focus-v2__card-heading {
   position: relative;
   z-index: 1;
   font-size: clamp(20px, 2.2vw, 28px);
@@ -278,7 +294,7 @@ function formatIndex(idx: number): string {
 }
 
 /* ── Card body ─────────────────────────────────────────────────────────── */
-.why-work-v2__card-body {
+.sp-focus-v2__card-body {
   position: relative;
   z-index: 1;
   font-size: clamp(13px, 1.15vw, 15px);
@@ -288,19 +304,8 @@ function formatIndex(idx: number): string {
   margin: 0;
 }
 
-.why-work-v2__card-body :deep(a) {
-  color: var(--c-brand-cyan);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(0, 173, 239, 0.40);
-  transition: border-color 0.25s ease;
-}
-
-.why-work-v2__card-body :deep(a:hover) {
-  border-bottom-color: var(--c-brand-cyan);
-}
-
-/* ── Mobile-only behaviors (clamp can't express grid column shifts) ─────── */
+/* ── Mobile-only behaviors (grid column shift) ──────────────────────────── */
 @media (max-width: 899px) {
-  .why-work-v2__cards { grid-template-columns: 1fr; }
+  .sp-focus-v2__grid { grid-template-columns: 1fr; }
 }
 </style>
