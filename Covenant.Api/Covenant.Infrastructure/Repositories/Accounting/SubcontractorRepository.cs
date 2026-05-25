@@ -70,10 +70,10 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
         return await data.ToPaginatedList(pagination);
     }
 
-    public async Task<RegularWageWorker> GetSubcontractorRegularWages(ParamsToGetRegularWages p)
+    public async Task<RegularWageWorker> GetSubcontractorRegularWages(Guid workerProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
-        var queryable = from ps1 in _context.ReportSubcontractor.Where(s => s.WorkerProfileId == p.ProfileId && s.DateWorkEnd.Date >= p.Start && s.DateWorkEnd.Date <= p.End)
-                        join wp1 in _context.WorkerProfile.Where(wp1W => wp1W.Id == p.ProfileId) on ps1.WorkerProfileId equals wp1.Id
+        var queryable = from ps1 in _context.ReportSubcontractor.Where(s => s.WorkerProfileId == workerProfileId && s.DateWorkEnd.Date >= start && s.DateWorkEnd.Date <= end)
+                        join wp1 in _context.WorkerProfile.Where(wp1W => wp1W.Id == workerProfileId) on ps1.WorkerProfileId equals wp1.Id
                         group ps1 by ps1.WorkerProfileId
                         into result
                         select new
@@ -83,15 +83,15 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
         var data = queryable.Select(w => new RegularWageWorker
         {
             RegularWage = w.RegularWage,
-            HolidayWasPaid = (from ps2 in _context.ReportSubcontractor.Where(s => s.WorkerProfileId == p.ProfileId)
-                              join psh in _context.ReportSubcontractorPublicHolidays.Where(h => h.Holiday == p.Holiday) on ps2.Id equals psh.ReportSubcontractorId
+            HolidayWasPaid = (from ps2 in _context.ReportSubcontractor.Where(s => s.WorkerProfileId == workerProfileId)
+                              join psh in _context.ReportSubcontractorPublicHolidays.Where(h => h.Holiday == holiday) on ps2.Id equals psh.ReportSubcontractorId
                               select psh.Holiday).Any(),
-            CustomPublicHolidayValue = (from wph in _context.WorkerProfileHoliday.Where(ph => ph.WorkerProfileId == p.ProfileId)
-                                        join h in _context.Holiday.Where(hw => hw.Date.Date == p.Holiday.Date) on wph.HolidayId equals h.Id
+            CustomPublicHolidayValue = (from wph in _context.WorkerProfileHoliday.Where(ph => ph.WorkerProfileId == workerProfileId)
+                                        join h in _context.Holiday.Where(hw => hw.Date.Date == holiday.Date) on wph.HolidayId equals h.Id
                                         select wph.StatPaidWorker).FirstOrDefault(),
-            IsEntitledToReceiveHolidayPay = (from wp in _context.WorkerProfile.Where(pr => pr.Id == p.ProfileId)
+            IsEntitledToReceiveHolidayPay = (from wp in _context.WorkerProfile.Where(pr => pr.Id == workerProfileId)
                                              join wr in _context.WorkerRequest on wp.WorkerId equals wr.WorkerId
-                                             join isEntitledToReceiveHolidayPay in _context.TimeSheet.Where(s => p.RangeOfDaysWorkerMustWorkToReceiveHolidayPay.Contains(s.Date.Date)) on wr.Id equals isEntitledToReceiveHolidayPay.WorkerRequestId
+                                             join isEntitledToReceiveHolidayPay in _context.TimeSheet.Where(s => qualifyingDays.Contains(s.Date.Date)) on wr.Id equals isEntitledToReceiveHolidayPay.WorkerRequestId
                                              select isEntitledToReceiveHolidayPay.Date).Any()
         });
         return await data.SingleOrDefaultAsync();

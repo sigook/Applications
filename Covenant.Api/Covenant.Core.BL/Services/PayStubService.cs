@@ -5,6 +5,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
@@ -314,17 +315,24 @@ public class PayStubService : IPayStubService
             // Step 3.3: Get public holidays for this week
             var firstDateInWeek = week.First().Date;
             var holidaysInWeek = await catalogRepository.GetHolidaysInWeek(firstDateInWeek, countryCode);
-            if (holidaysInWeek != null && holidaysInWeek.Any())
+            if (holidaysInWeek != null && holidaysInWeek.Count != 0)
             {
                 foreach (var holiday in holidaysInWeek)
                 {
-                    var wages = await payStubRepository.GetWorkerRegularWages(
-                        new ParamsToGetRegularWages(workerProfileId, holiday));
+                    var holidayWeekEnd = holiday.GetEnd();
+                    var lookbackStart = holidayWeekEnd.GetStart();
+                    var qualifyingDays = holiday.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay();
+
+                    var wages = await payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays);
                     if (wages == null) continue;
-                    var amount = wages.AmountToPay;
+
+                    var windowTimesheets = await timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
+                    wages.RegularWage = calculatorService.CalculateHolidayPayBase(windowTimesheets);
+
+                    var (amount, description) = calculatorService.ResolveHolidayPay(wages);
                     if (amount <= 0) continue;
 
-                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, wages.Description);
+                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, description);
                     if (rHoliday) publicHolidays.Add(rHoliday.Value);
                 }
             }

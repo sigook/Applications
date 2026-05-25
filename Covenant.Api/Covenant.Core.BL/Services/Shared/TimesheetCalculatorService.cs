@@ -16,15 +16,20 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
     private readonly IDeductionsRepository _deductionsRepository;
     private readonly IWorkerRepository _workerRepository;
     private readonly Rates _rates;
+    private readonly TimeLimits _timeLimits;
+
+    private const int FourWeekDivisor = 20;
 
     public TimesheetCalculatorService(
         IDeductionsRepository deductionsRepository,
         IWorkerRepository workerRepository,
-        Rates rates)
+        Rates rates,
+        TimeLimits timeLimits)
     {
         _deductionsRepository = deductionsRepository;
         _workerRepository = workerRepository;
         _rates = rates;
+        _timeLimits = timeLimits;
     }
 
     #region Deductions
@@ -193,6 +198,65 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         decimal overtime)
     {
         return regular.Add(missing).Add(missingOvertime).Add(holiday).Add(overtime);
+    }
+
+    #endregion
+
+    #region Public Holiday Pay
+
+    public decimal CalculateHolidayPayBase(IEnumerable<TimeSheetApprovedPayrollModel> timesheets)
+    {
+        var gross = decimal.Zero;
+        foreach (var week in timesheets.GroupBy(t => t.Week))
+        {
+            foreach (var request in week.GroupBy(t => t.RequestId))
+            {
+                var accumulatedHours = TimeSpan.Zero;
+                foreach (var ts in request.OrderBy(t => t.Date))
+                {
+                    if (!ts.TimeInApproved.HasValue || !ts.TimeOutApproved.HasValue) continue;
+
+                    var hoursBreakdown = CalculateHoursBreakdown(
+                        ts.TimeInApproved.Value,
+                        ts.TimeOutApproved.Value,
+                        ts.DurationBreak,
+                        ts.BreakIsPaid,
+                        ts.IsHoliday,
+                        ts.HolidayIsPaid,
+                        ref accumulatedHours,
+                        ts.OvertimeStartsAfter,
+                        _timeLimits.MaxHoursWeek);
+
+                    var missingRate = ts.MissingRateWorker <= decimal.Zero ? ts.WorkerRate : ts.MissingRateWorker;
+
+                    gross = gross
+                        .Add(CalculateRegularAmount(ts.WorkerRate, hoursBreakdown.RegularHours.TotalHours))
+                        .Add(CalculateRegularAmount(ts.WorkerRate, hoursBreakdown.OtherRegularHours.TotalHours))
+                        .Add(CalculateOvertimeAmount(ts.WorkerRate, _rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours))
+                        .Add(CalculateHolidayAmount(ts.WorkerRate, _rates.Holiday, hoursBreakdown.HolidayHours.TotalHours))
+                        .Add(CalculateMissingAmount(missingRate, ts.MissingHours.TotalHours))
+                        .Add(CalculateOvertimeAmount(missingRate, _rates.OverTime, ts.MissingHoursOvertime.TotalHours));
+                }
+            }
+        }
+        gross = gross.DefaultMoneyRound();
+        var vacations = CalculateVacationsAmount(gross, _rates.Vacations);
+        return gross.Add(vacations).DefaultMoneyRound();
+    }
+
+    public (decimal Amount, string Description) ResolveHolidayPay(RegularWageWorker wages)
+    {
+        if (wages.HolidayWasPaid)
+            return (decimal.Zero, "The holiday was already paid");
+
+        if (wages.CustomPublicHolidayValue > decimal.Zero)
+            return (wages.CustomPublicHolidayValue, $"The amount to pay is a custom value ({wages.CustomPublicHolidayValue})");
+
+        if (!wages.IsEntitledToReceiveHolidayPay)
+            return (decimal.Zero, "The worker is not entitled to receive the public holiday because he did not work the required days");
+
+        var amount = (wages.RegularWage / FourWeekDivisor).DefaultMoneyRound();
+        return (amount, $"The amount was calculated using the regular formula: (gross earnings plus vacation pay ({wages.RegularWage}) of the last four weeks / 20)");
     }
 
     #endregion

@@ -100,7 +100,7 @@ public static class DateExtensions
             DayOfWeek.Thursday => holiday.Subtract(TimeSpan.FromDays(5)),
             DayOfWeek.Friday => holiday.Subtract(TimeSpan.FromDays(6)),
             DayOfWeek.Saturday => holiday.Subtract(TimeSpan.FromDays(7)),
-            DayOfWeek.Sunday => holiday.Subtract(TimeSpan.FromDays(8)),
+            DayOfWeek.Sunday => holiday.Subtract(TimeSpan.FromDays(1)),
             _ => throw new ArgumentOutOfRangeException(),
         };
     }

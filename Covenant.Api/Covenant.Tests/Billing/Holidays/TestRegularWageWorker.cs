@@ -1,64 +1,57 @@
 using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Core.BL.Services.Shared;
 using Xunit;
 
 namespace Covenant.Tests.Billing.Holidays
 {
     public class TestRegularWageWorker
     {
+        // ResolveHolidayPay only reads the RegularWageWorker argument, so the service
+        // dependencies are not exercised here.
+        private static readonly TimesheetCalculatorService Calculator = new(null, null, null, null);
+
         [Fact]
-        public void Create()
+        public void Uses_Regular_Formula_When_Entitled()
         {
-            const int regularWage = 10;
-            var sub = new RegularWageWorker
+            var wages = new RegularWageWorker
             {
-                RegularWage = regularWage,
+                RegularWage = 10,
                 HolidayWasPaid = false,
                 CustomPublicHolidayValue = default,
                 IsEntitledToReceiveHolidayPay = true
             };
-            Assert.Equal(regularWage, sub.RegularWage);
-            Assert.Equal(default, sub.CustomPublicHolidayValue);
-            Assert.False(sub.HolidayWasPaid);
-            Assert.True(sub.IsEntitledToReceiveHolidayPay);
-            Assert.Equal(0.5m, sub.AmountToPay);
-            Assert.NotEmpty(sub.Description);
+            var (amount, description) = Calculator.ResolveHolidayPay(wages);
+            Assert.Equal(0.5m, amount);
+            Assert.NotEmpty(description);
         }
 
         [Fact]
-        public void Holiday_Was_Paid()
+        public void Returns_Zero_When_Holiday_Was_Paid()
         {
-            var sub = new RegularWageWorker
-            {
-                HolidayWasPaid = true
-            };
-            Assert.True(sub.HolidayWasPaid);
-            Assert.Equal(0, sub.AmountToPay);
-            Assert.NotEmpty(sub.Description);
+            var (amount, description) = Calculator.ResolveHolidayPay(new RegularWageWorker { HolidayWasPaid = true });
+            Assert.Equal(0, amount);
+            Assert.NotEmpty(description);
         }
 
         [Fact]
-        public void Is_Not_Entitled_To_Receive_Holiday_Pay()
+        public void Returns_Zero_When_Not_Entitled()
         {
-            var sub = new RegularWageWorker
-            {
-                IsEntitledToReceiveHolidayPay = false
-            };
-            Assert.False(sub.IsEntitledToReceiveHolidayPay);
-            Assert.Equal(0, sub.AmountToPay);
-            Assert.NotEmpty(sub.Description);
+            var (amount, description) = Calculator.ResolveHolidayPay(new RegularWageWorker { IsEntitledToReceiveHolidayPay = false });
+            Assert.Equal(0, amount);
+            Assert.NotEmpty(description);
         }
 
         [Fact]
-        public void Holiday_Custom_Value()
+        public void Returns_Custom_Value_When_Present()
         {
             const int customPublicHolidayValue = 99;
-            var sub = new RegularWageWorker
+            var (amount, description) = Calculator.ResolveHolidayPay(new RegularWageWorker
             {
                 IsEntitledToReceiveHolidayPay = true,
                 CustomPublicHolidayValue = customPublicHolidayValue
-            };
-            Assert.Equal(customPublicHolidayValue, sub.AmountToPay);
-            Assert.NotEmpty(sub.Description);
+            });
+            Assert.Equal(customPublicHolidayValue, amount);
+            Assert.NotEmpty(description);
         }
     }
 }

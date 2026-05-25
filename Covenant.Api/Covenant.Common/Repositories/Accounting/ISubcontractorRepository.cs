@@ -9,5 +9,5 @@ public interface ISubcontractorRepository : IBaseRepository<ReportSubcontractor>
 {
     Task<List<ReportSubcontractorModel>> GetReportsSubcontractorSummary(DateTime weekEnding);
     Task<PaginatedList<PayrollSubContractorListModel>> GetPayrollsSubcontractor(Guid agencyId, Pagination pagination);
-    Task<RegularWageWorker> GetSubcontractorRegularWages(ParamsToGetRegularWages p);
+    Task<RegularWageWorker> GetSubcontractorRegularWages(Guid workerProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays);
 }

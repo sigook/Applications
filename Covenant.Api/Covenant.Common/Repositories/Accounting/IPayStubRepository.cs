@@ -12,7 +12,7 @@ public interface IPayStubRepository
     Task<PaginatedList<PayStubListModel>> GetPayStubs(IEnumerable<Guid> agencyId, GetPayStubsFilter filter);
     Task<List<PayStubListModel>> GetAllPayStubs(IEnumerable<Guid> agencyIds, GetPayStubsFilter filter);
     Task<PayStubDetailModel> GetPayStubDetail(Guid payStubId);
-    Task<RegularWageWorker> GetWorkerRegularWages(ParamsToGetRegularWages parameters);
+    Task<RegularWageWorker> GetWorkerRegularWages(Guid workerProfileId, DateTime holiday, IEnumerable<DateTime> qualifyingDays);
     Task<List<PayStubDeleteWarningListModel>> GetPayStubs(Guid invoiceId);
     Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(IEnumerable<Guid> agencyIds, Pagination pagination);
     Task<List<WeeklyPayStubModel>> GetWeeklyPayrollDetailByPaymentDate(DateTime paymentDate);

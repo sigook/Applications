@@ -213,37 +213,30 @@ public class TimeSheetRepository : ITimeSheetRepository
         return result;
     }
 
-    public Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyId) =>
-        GetTimeSheet(r => agencyIds.Contains(r.AgencyId) && r.CompanyId == companyId, wp => wp.IsSubcontractor);
-
-    public Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId) =>
-        GetTimeSheet(r => agencyIds.Contains(r.AgencyId), wp => wp.WorkerId == workerId && !wp.IsSubcontractor);
-
-    private async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheet(
-        Expression<Func<Common.Entities.Request.Request, bool>> conditionRequest,
-        Expression<Func<WorkerProfile, bool>> conditionWorker)
+    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyId)
     {
-        var requests = _context.Request.Where(conditionRequest).Where(r => !r.WorkerSalary.HasValue);
-        var workerProfiles = _context.WorkerProfile.Where(conditionWorker);
-        var timeSheets = _context.TimeSheet.Where(c => c.TimeInApproved != null && c.TimeOutApproved != null && !_context.TimeSheetTotalPayroll.Any(ts => ts.TimeSheetId == c.Id));
-        var query = from r in requests
-                    join cpj in _context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id
-                    join jp in _context.JobPosition on cpj.JobPositionId equals jp.Id into tmp1
-                    from jp in tmp1.DefaultIfEmpty()
-                    join wr in _context.WorkerRequest on r.Id equals wr.RequestId
-                    join cp in _context.CompanyProfile on new { r.CompanyId, r.AgencyId } equals new { cp.CompanyId, cp.AgencyId }
-                    join wp in workerProfiles on new { wr.WorkerId, r.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
-                    join ts in timeSheets on wr.Id equals ts.WorkerRequestId
+        var timeSheets = _context.TimeSheet
+            .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
+            .Where(ts => ts.WorkerRequest.Request.CompanyId == companyId);
+
+        var query = from ts in timeSheets
+                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
+                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
+                    where wp.IsSubcontractor
+                    orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
-                        r.JobLocation.City.Province.ProvinceSetting != null && r.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
-                            ? r.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
                             : cp.OvertimeStartsAfter,
-                        r.Id,
-                        r.WorkerRate.Value,
-                        r.BreakIsPaid,
-                        r.DurationBreak,
-                        r.HolidayIsPaid,
-                        wp.WorkerId,
+                        ts.WorkerRequest.RequestId,
+                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.BreakIsPaid,
+                        ts.WorkerRequest.Request.DurationBreak,
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
+                            : cp.PaidHolidays,
+                        ts.WorkerRequest.WorkerId,
                         wp.Id,
                         ts.Id,
                         PostgresFunctions.get_week_start_sunday(ts.Date),
@@ -261,11 +254,106 @@ public class TimeSheetRepository : ITimeSheetRepository
                         ts.Reimbursements,
                         ts.ReimbursementsDescription)
                     {
-                        TypeOfWork = jp == null ? cpj.OtherJobPosition : jp.Value,
-                        CountryCode = r.JobLocation.City.Province.Country.Code
+                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition == null ? ts.WorkerRequest.Request.JobPositionRate.OtherJobPosition : ts.WorkerRequest.Request.JobPositionRate.JobPosition.Value,
+                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
                     };
         var result = await query.ToListAsync();
         return result;
+
+    }
+
+    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId)
+    {
+        var timeSheets = _context.TimeSheet
+            .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
+            .Where(ts => ts.WorkerRequest.WorkerId == workerId);
+
+        var query = from ts in timeSheets
+                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
+                    join wp in _context.WorkerProfile
+                        on new { ts.WorkerRequest.WorkerId, ts.WorkerRequest.Request.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
+                    orderby ts.Date
+                    select new TimeSheetApprovedPayrollModel(
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                            : cp.OvertimeStartsAfter,
+                        ts.WorkerRequest.RequestId,
+                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.BreakIsPaid,
+                        ts.WorkerRequest.Request.DurationBreak,
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
+                            : cp.PaidHolidays,
+                        ts.WorkerRequest.WorkerId,
+                        wp.Id,
+                        ts.Id,
+                        PostgresFunctions.get_week_start_sunday(ts.Date),
+                        ts.Date,
+                        ts.TimeInApproved,
+                        ts.TimeOutApproved,
+                        ts.MissingHours,
+                        ts.MissingHoursOvertime,
+                        ts.MissingRateWorker,
+                        ts.IsHoliday,
+                        ts.BonusOrOthers,
+                        ts.BonusOrOthersDescription,
+                        ts.DeductionsOthers,
+                        ts.DeductionsOthersDescription,
+                        ts.Reimbursements,
+                        ts.ReimbursementsDescription)
+                    {
+                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition == null ? ts.WorkerRequest.Request.JobPositionRate.OtherJobPosition : ts.WorkerRequest.Request.JobPositionRate.JobPosition.Value,
+                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
+                    };
+        var result = await query.ToListAsync();
+        return result;
+    }
+
+    public async Task<List<TimeSheetApprovedPayrollModel>> GetApprovedTimeSheetsInRange(Guid workerProfileId, DateTime start, DateTime end)
+    {
+        var timeSheets = _context.TimeSheet
+            .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null)
+            .Where(ts => ts.Date.Date >= start.Date && ts.Date.Date <= end.Date);
+
+        var query = from ts in timeSheets
+                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
+                    join wp in _context.WorkerProfile.Where(w => w.Id == workerProfileId && !w.IsSubcontractor)
+                        on new { ts.WorkerRequest.WorkerId, ts.WorkerRequest.Request.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
+                    where ts.WorkerRequest.Request.WorkerRate != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
+                    orderby ts.Date
+                    select new TimeSheetApprovedPayrollModel(
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                            : cp.OvertimeStartsAfter,
+                        ts.WorkerRequest.RequestId,
+                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.BreakIsPaid,
+                        ts.WorkerRequest.Request.DurationBreak,
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
+                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
+                            : cp.PaidHolidays,
+                        ts.WorkerRequest.WorkerId,
+                        ts.WorkerRequest.Id,
+                        ts.Id,
+                        PostgresFunctions.get_week_start_sunday(ts.Date),
+                        ts.Date,
+                        ts.TimeInApproved,
+                        ts.TimeOutApproved,
+                        ts.MissingHours,
+                        ts.MissingHoursOvertime,
+                        ts.MissingRateWorker,
+                        ts.IsHoliday,
+                        ts.BonusOrOthers,
+                        ts.BonusOrOthersDescription,
+                        ts.DeductionsOthers,
+                        ts.DeductionsOthersDescription,
+                        ts.Reimbursements,
+                        ts.ReimbursementsDescription)
+                    {
+                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
+                    };
+        return await query.ToListAsync();
     }
 
     public async Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds)

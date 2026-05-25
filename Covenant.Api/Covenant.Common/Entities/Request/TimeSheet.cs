@@ -42,6 +42,7 @@ namespace Covenant.Common.Entities.Request
         public DateTime? ClockInRounded { get; set; }
         public DateTime? ClockOutRounded { get; set; }
         public TimeSheetTotal TimeSheetTotal { get; set; }
+        public TimeSheetTotalPayroll TimeSheetTotalPayroll { get; set; }
         public WorkerRequest WorkerRequest { get; set; }
         public double TotalHours => TimeOut.HasValue ? (TimeOut - TimeIn).GetValueOrDefault().TotalHours : 0;
         public double TotalHoursApproved => TimeInApproved.HasValue && TimeOutApproved.HasValue ? (TimeOutApproved - TimeInApproved).GetValueOrDefault().TotalHours : 0;

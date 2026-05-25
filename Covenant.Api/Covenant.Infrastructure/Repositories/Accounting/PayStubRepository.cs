@@ -111,30 +111,33 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
         return result ?? new PayStubYtdModel();
     }
 
-    public async Task<RegularWageWorker> GetWorkerRegularWages(ParamsToGetRegularWages p)
+    public async Task<RegularWageWorker> GetWorkerRegularWages(Guid workerProfileId, DateTime holiday, IEnumerable<DateTime> qualifyingDays)
     {
-        var queryable = from ps1 in context.PayStub.Where(s => s.WorkerProfileId == p.ProfileId && s.DateWorkEnd.Date >= p.Start && s.DateWorkEnd.Date <= p.End)
-                        join wp1 in context.WorkerProfile on ps1.WorkerProfileId equals wp1.Id
-                        group ps1 by ps1.WorkerProfileId into tmp1
-                        select new
-                        {
-                            RegularWage = tmp1.Sum(ps => ps.RegularWage),
-                        };
-        var result = queryable.Select(w => new RegularWageWorker
+        var workerId = await context.WorkerProfile
+            .Where(wp => wp.Id == workerProfileId)
+            .Select(wp => (Guid?)wp.WorkerId)
+            .FirstOrDefaultAsync();
+        if (workerId is null) return null;
+
+        var holidayWasPaid = await context.PayStubPublicHolidays
+            .AnyAsync(psh => psh.Holiday == holiday && psh.PayStub.WorkerProfileId == workerProfileId);
+
+        var customPublicHolidayValue = await context.WorkerProfileHoliday
+            .Where(wph => wph.WorkerProfileId == workerProfileId && wph.Holiday.Date.Date == holiday.Date)
+            .Select(wph => wph.StatPaidWorker)
+            .FirstOrDefaultAsync();
+
+        var isEntitledToReceiveHolidayPay = await context.TimeSheet
+            .AnyAsync(ts => ts.WorkerRequest.WorkerId == workerId
+                && qualifyingDays.Contains(ts.Date.Date));
+
+        return new RegularWageWorker
         {
-            RegularWage = w.RegularWage,
-            HolidayWasPaid = (from ps2 in context.PayStub.Where(s => s.WorkerProfileId == p.ProfileId)
-                              join psh in context.PayStubPublicHolidays.Where(h => h.Holiday == p.Holiday) on ps2.Id equals psh.PayStubId
-                              select psh.Holiday).Any(),
-            CustomPublicHolidayValue = (from wph in context.WorkerProfileHoliday.Where(ph => ph.WorkerProfileId == p.ProfileId)
-                                        join h in context.Holiday.Where(hw => hw.Date.Date == p.Holiday.Date) on wph.HolidayId equals h.Id
-                                        select wph.StatPaidWorker).FirstOrDefault(),
-            IsEntitledToReceiveHolidayPay = (from wp2 in context.WorkerProfile.Where(pr => pr.Id == p.ProfileId)
-                                             join wr2 in context.WorkerRequest on wp2.WorkerId equals wr2.WorkerId
-                                             join ts in context.TimeSheet.Where(s => p.RangeOfDaysWorkerMustWorkToReceiveHolidayPay.Contains(s.Date.Date)) on wr2.Id equals ts.WorkerRequestId
-                                             select ts.Date).Any()
-        });
-        return await result.SingleOrDefaultAsync();
+            RegularWage = decimal.Zero,
+            HolidayWasPaid = holidayWasPaid,
+            CustomPublicHolidayValue = customPublicHolidayValue,
+            IsEntitledToReceiveHolidayPay = isEntitledToReceiveHolidayPay
+        };
     }
 
     public Task<List<PayStubDeleteWarningListModel>> GetPayStubs(Guid invoiceId) =>

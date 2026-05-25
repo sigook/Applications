@@ -292,18 +292,18 @@ public class InvoiceRepository : IInvoiceRepository
         return invoice;
     }
 
-    public async Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(ParamsToGetRegularWages p)
+    public async Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
-        var workers = from ts in _context.TimeSheet.Where(ts => p.RangeOfDaysWorkerMustWorkToReceiveHolidayPay.Contains(ts.Date.Date) && ts.TimeSheetTotal == null)
-                      join cp in _context.CompanyProfile.Where(cp => cp.Id == p.ProfileId) on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
+        var workers = from ts in _context.TimeSheet.Where(ts => qualifyingDays.Contains(ts.Date.Date) && ts.TimeSheetTotal == null)
+                      join cp in _context.CompanyProfile.Where(cp => cp.Id == companyProfileId) on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
                       group ts by ts.WorkerRequest.WorkerId into g
                       select g.Key;
 
-        return await (from i in _context.Invoice.Where(i => i.CompanyId == p.ProfileId)
+        return await (from i in _context.Invoice.Where(i => i.CompanyId == companyProfileId)
                       join cp in _context.CompanyProfile on i.CompanyId equals cp.Id
                       join it in _context.InvoiceTotals on i.Id equals it.InvoiceId
                       join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                      join ts in _context.TimeSheet.Where(s => s.Date.Date >= p.Start && s.Date.Date <= p.End) on tst.TimeSheetId equals ts.Id
+                      join ts in _context.TimeSheet.Where(s => s.Date.Date >= start && s.Date.Date <= end) on tst.TimeSheetId equals ts.Id
                       join wr in _context.WorkerRequest.Where(wwr => workers.Contains(wwr.WorkerId)) on ts.WorkerRequestId equals wr.Id
                       join wp in _context.WorkerProfile on wr.WorkerId equals wp.WorkerId
                       select new { wr.WorkerId, wp.Id, it.AgencyRate, it.Regular, it.OtherRegular }
