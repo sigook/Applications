@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } fro
 /**
  * Carousel state + auto-advance timer for any section with fading slides.
  *
- * Used by HeroSectionV2 and TestimonialsSectionV2.
+ * Used by HeroSection and TestimonialsSection.
  *
  * @param items   List of slide items (or a reactive ref/getter returning one).
  * @param options Optional config.
