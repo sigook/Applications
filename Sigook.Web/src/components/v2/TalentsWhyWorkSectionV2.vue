@@ -17,25 +17,17 @@
     </header>
 
     <div class="talents-why-v2__grid">
-      <article
+      <FeatureCardV2
         v-for="(reason, idx) in REASONS"
         :key="reason.title"
-        class="talents-why-v2__card"
-        :class="[
-          `talents-why-v2__card--${reason.tone}`,
-          { 'talents-why-v2__card--offset': idx === 1 },
-        ]"
+        :variant="reason.variant"
+        :eyebrow="reason.eyebrow"
+        :title="reason.title"
+        :delay="idx * 140"
+        :class="{ 'talents-why-v2__card--offset': idx === 1 }"
       >
-        <span class="talents-why-v2__index" aria-hidden="true">
-          {{ formatIndex(idx) }}
-        </span>
-
-        <span class="talents-why-v2__card-eyebrow">{{ reason.eyebrow }}</span>
-
-        <h3 class="talents-why-v2__card-heading">{{ reason.title }}</h3>
-
-        <p class="talents-why-v2__card-body">{{ reason.body }}</p>
-      </article>
+        {{ reason.body }}
+      </FeatureCardV2>
     </div>
   </section>
 </template>
@@ -48,23 +40,18 @@
  * the Solutions panel (above) and the Industries carousel panel (below) to
  * keep the page rhythm: window → panel → window → panel → window.
  *
- * Three glass cards with a "valley" stagger (middle card sits lower) keep
- * a distinct rhythm from the About page's WhyWorkWithUs grid. Same family,
- * different beat.
- *
- * Copy is rewritten from the talent's perspective — the Figma's three blocks
- * (Working where you are / We care about you / Focused on your experience)
- * become editorial cards with thematic eyebrows and tightened body copy.
+ * Three FeatureCardV2 (canonical Home pattern) with a "valley" stagger
+ * (middle card sits lower) — keeps a distinct rhythm from the About page's
+ * WhyWorkWithUs grid. Same family, different beat.
  */
 import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
-
-type Tone = 'cyan' | 'red'
+import FeatureCardV2, { type FeatureCardVariant } from '@/components/v2/shared/FeatureCardV2.vue'
 
 interface Reason {
   readonly eyebrow: string
   readonly title: string
   readonly body: string
-  readonly tone: Tone
+  readonly variant: FeatureCardVariant
 }
 
 const REASONS: readonly Reason[] = [
@@ -73,27 +60,23 @@ const REASONS: readonly Reason[] = [
     title: 'Working where you are',
     body:
       'With clients located across multiple states and provinces, you\'ll find roles that match your skills and interests — and build the relationships that turn placement into long-term stability.',
-    tone: 'cyan',
+    variant: 'blue',
   },
   {
     eyebrow: 'Human-First',
     title: 'We care about you',
     body:
       'You\'re not just a candidate. Your aspirations and vision define how we work — we take the time to understand where you want to go before we recommend a single opportunity.',
-    tone: 'red',
+    variant: 'cyan',
   },
   {
     eyebrow: 'Sector Expertise',
     title: 'Focused on your experience',
     body:
       'Our recruiters specialize in the sectors where your skills are most valued. They know each industry\'s rhythms, language, and what excellent looks like — and they match you accordingly.',
-    tone: 'cyan',
+    variant: 'red',
   },
 ] as const
-
-function formatIndex(idx: number): string {
-  return String(idx + 1).padStart(2, '0')
-}
 </script>
 
 <style scoped>
@@ -169,111 +152,9 @@ function formatIndex(idx: number): string {
   margin: 0 auto;
 }
 
-/* ── Card shell ─────────────────────────────────────────────────────────── */
-.talents-why-v2__card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(12px, 1.4vw, 18px);
-  padding:
-    clamp(32px, 4vw, 56px)
-    clamp(26px, 3vw, 40px);
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    background 0.35s ease,
-    border-color 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.talents-why-v2__card:hover {
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.22);
-  transform: translateY(-4px);
-}
-
-/* Alternating asymmetric brand radius */
-.talents-why-v2__card:nth-child(odd) {
-  border-radius:
-    clamp(40px, 5.5vw, 72px) 0
-    clamp(40px, 5.5vw, 72px) 0;
-}
-
-.talents-why-v2__card:nth-child(even) {
-  border-radius:
-    0 clamp(40px, 5.5vw, 72px)
-    0 clamp(40px, 5.5vw, 72px);
-}
-
 /* "Valley" stagger — middle card drops to break the rigid 3-col rhythm */
 .talents-why-v2__card--offset {
   margin-top: clamp(36px, 5vw, 72px);
-}
-
-/* ── Ghost numeral ──────────────────────────────────────────────────────── */
-.talents-why-v2__index {
-  position: absolute;
-  top: clamp(-6px, -0.6vw, 2px);
-  right: clamp(10px, 1.8vw, 24px);
-  z-index: 0;
-  font-size: clamp(110px, 14vw, 180px);
-  font-weight: 800;
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  color: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-  user-select: none;
-}
-
-.talents-why-v2__card--cyan .talents-why-v2__index {
-  color: rgba(0, 173, 239, 0.10);
-}
-
-.talents-why-v2__card--red .talents-why-v2__index {
-  color: rgba(229, 45, 39, 0.10);
-}
-
-/* ── Card eyebrow ──────────────────────────────────────────────────────── */
-.talents-why-v2__card-eyebrow {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  font-size: clamp(10px, 0.85vw, 12px);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin-bottom: clamp(4px, 0.5vw, 8px);
-}
-
-.talents-why-v2__card--cyan .talents-why-v2__card-eyebrow { color: var(--c-brand-cyan); }
-.talents-why-v2__card--red  .talents-why-v2__card-eyebrow { color: var(--c-brand-red);  }
-
-/* ── Card heading ───────────────────────────────────────────────────────── */
-.talents-why-v2__card-heading {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(20px, 2.2vw, 28px);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.30);
-}
-
-/* ── Card body ─────────────────────────────────────────────────────────── */
-.talents-why-v2__card-body {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(13px, 1.15vw, 15px);
-  font-weight: 400;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
 }
 
 /* ── Mobile-only behaviors ──────────────────────────────────────────────── */

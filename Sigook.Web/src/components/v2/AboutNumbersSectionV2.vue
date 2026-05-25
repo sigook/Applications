@@ -40,10 +40,10 @@ import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
 import NumbersGridV2, { type Stat } from '@/components/v2/NumbersGridV2.vue'
 
 const ABOUT_STATS: readonly Stat[] = [
-  { value: '10',    label: 'Years of Experience', tone: 'cyan' },
-  { value: '330',   label: 'Clients Served',      tone: 'red'  },
-  { value: '1,700', label: 'Jobs Posted',         tone: 'cyan' },
-  { value: '5,000', label: 'Applications Filed',  tone: 'red'  },
+  { value: '10',    label: 'Years of Experience', tone: 'blue' },
+  { value: '330',   label: 'Clients Served',      tone: 'cyan' },
+  { value: '1,700', label: 'Jobs Posted',         tone: 'red'  },
+  { value: '5,000', label: 'Applications Filed',  tone: 'cyan' },
 ] as const
 </script>
 

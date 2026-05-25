@@ -20,46 +20,36 @@
     </header>
 
     <div class="why-work-v2__cards">
-      <article
+      <FeatureCardV2
         v-for="(reason, idx) in REASONS"
         :key="reason.title"
-        class="why-work-v2__card"
-        :class="`why-work-v2__card--${reason.tone}`"
+        :variant="reason.variant"
+        :eyebrow="reason.eyebrow"
+        :title="reason.title"
+        :delay="idx * 140"
       >
-        <span class="why-work-v2__index" aria-hidden="true">{{ formatIndex(idx) }}</span>
-
-        <span class="why-work-v2__card-eyebrow">{{ reason.eyebrow }}</span>
-
-        <h3 class="why-work-v2__card-heading">{{ reason.title }}</h3>
-
-        <p class="why-work-v2__card-body" v-html="reason.body"></p>
-      </article>
+        <span v-html="reason.body" />
+      </FeatureCardV2>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 /**
- * Why Work With Us section.
+ * Why Work With Us section (About page panel).
  *
- * Adopts the Home panel vocabulary (DualCtaSectionV2): asymmetric brand
- * radius shell, dual top/bottom drop shadows, negative margin-top to
- * overlap the previous section, inner glass surface over GlobalBackground.
- *
- * Inside the panel: editorial header + 3 glass feature cards with magazine-
- * style ghost indices (01/02/03), each tinted to its accent tone. Cards
- * carry alternating brand radii to mirror the asymmetric vocabulary of
- * the broader system without copying the staggered DualCta layout.
+ * Three FeatureCardV2 cards (canonical Home pattern: triple gradient, radial
+ * glow, asymmetric brand radius) showing the company's differentiators.
+ * Cycle: blue → cyan → red. Stagger entry via `delay` prop.
  */
 import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
-
-type Tone = 'cyan' | 'red'
+import FeatureCardV2, { type FeatureCardVariant } from '@/components/v2/shared/FeatureCardV2.vue'
 
 interface Reason {
   readonly eyebrow: string
   readonly title: string
   readonly body: string
-  readonly tone: Tone
+  readonly variant: FeatureCardVariant
 }
 
 const REASONS: readonly Reason[] = [
@@ -68,35 +58,30 @@ const REASONS: readonly Reason[] = [
     title: 'We’re in your neighborhood',
     body:
       'Most of our employer partners are in the Greater Toronto Area, so we know their teams, their needs, and the right person to send when the call comes in.',
-    tone: 'cyan',
+    variant: 'blue',
   },
   {
     eyebrow: 'Speed by Design',
     title: 'From profile to paycheck — fast',
     body:
       'SIGOOK&trade; — our self-serve platform — connects employers with our talent database in clicks. Get hired today, start working tomorrow.',
-    tone: 'red',
+    variant: 'cyan',
   },
   {
     eyebrow: 'Seventeen Years In',
     title: 'Experience you can lean on',
     body:
       'We’ve matched thousands of workers to clients across industries since 2008. We know what works because we’ve done it — at scale, every season.',
-    tone: 'cyan',
+    variant: 'red',
   },
 ] as const
-
-function formatIndex(idx: number): string {
-  return String(idx + 1).padStart(2, '0')
-}
 </script>
 
 <style scoped>
-/* ── Panel shell — adopts DualCta vocabulary (TL+BR radius, dual shadow) ── */
+/* ── Panel shell — adopts DualCta vocabulary ────────────────────────────── */
 .why-work-v2 {
   position: relative;
   width: 100%;
-  /* Overlap previous section (Mission) — same vocab as Numbers panel */
   margin-top: clamp(-180px, -10vw, -80px);
   padding:
     clamp(140px, 14vw, 200px)
@@ -117,7 +102,6 @@ function formatIndex(idx: number): string {
   font-family: var(--font-family);
 }
 
-/* ── Inner glass surface ────────────────────────────────────────────────── */
 .why-work-v2__surface {
   position: absolute;
   inset: 0;
@@ -132,7 +116,7 @@ function formatIndex(idx: number): string {
   pointer-events: none;
 }
 
-/* ── Header block ───────────────────────────────────────────────────────── */
+/* ── Header ─────────────────────────────────────────────────────────────── */
 .why-work-v2__header {
   position: relative;
   z-index: 2;
@@ -181,125 +165,25 @@ function formatIndex(idx: number): string {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(20px, 2.4vw, 32px);
+  align-items: start;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
 }
 
-/* ── Feature card ──────────────────────────────────────────────────────── */
-.why-work-v2__card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(12px, 1.4vw, 18px);
-  padding:
-    clamp(32px, 4vw, 56px)
-    clamp(26px, 3vw, 40px);
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    background 0.35s ease,
-    border-color 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.why-work-v2__card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.20);
-  transform: translateY(-4px);
-}
-
-/* Alternating asymmetric brand radius — visual rhythm */
-.why-work-v2__card:nth-child(odd) {
-  border-radius:
-    clamp(40px, 5.5vw, 72px) 0
-    clamp(40px, 5.5vw, 72px) 0;
-}
-
-.why-work-v2__card:nth-child(even) {
-  border-radius:
-    0 clamp(40px, 5.5vw, 72px)
-    0 clamp(40px, 5.5vw, 72px);
-}
-
-/* ── Ghost numeral 01/02/03 — magazine accent ───────────────────────────── */
-.why-work-v2__index {
-  position: absolute;
-  top: clamp(-6px, -0.6vw, 2px);
-  right: clamp(10px, 1.8vw, 24px);
-  z-index: 0;
-  font-size: clamp(110px, 14vw, 180px);
-  font-weight: 800;
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  color: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-  user-select: none;
-}
-
-.why-work-v2__card--cyan .why-work-v2__index {
-  color: rgba(0, 173, 239, 0.10);
-}
-
-.why-work-v2__card--red .why-work-v2__index {
-  color: rgba(229, 45, 39, 0.10);
-}
-
-/* ── Card eyebrow ──────────────────────────────────────────────────────── */
-.why-work-v2__card-eyebrow {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  font-size: clamp(10px, 0.85vw, 12px);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin-bottom: clamp(4px, 0.5vw, 8px);
-}
-
-.why-work-v2__card--cyan .why-work-v2__card-eyebrow { color: var(--c-brand-cyan); }
-.why-work-v2__card--red  .why-work-v2__card-eyebrow { color: var(--c-brand-red);  }
-
-/* ── Card heading ───────────────────────────────────────────────────────── */
-.why-work-v2__card-heading {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(20px, 2.2vw, 28px);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.30);
-}
-
-/* ── Card body ─────────────────────────────────────────────────────────── */
-.why-work-v2__card-body {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(13px, 1.15vw, 15px);
-  font-weight: 400;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-}
-
-.why-work-v2__card-body :deep(a) {
+/* Inline-link styling inside FeatureCardV2 slot — preserves SIGOOK™ link */
+.why-work-v2__cards :deep(a) {
   color: var(--c-brand-cyan);
   text-decoration: none;
   border-bottom: 1px solid rgba(0, 173, 239, 0.40);
   transition: border-color 0.25s ease;
 }
 
-.why-work-v2__card-body :deep(a:hover) {
+.why-work-v2__cards :deep(a:hover) {
   border-bottom-color: var(--c-brand-cyan);
 }
 
-/* ── Mobile-only behaviors (clamp can't express grid column shifts) ─────── */
+/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
 @media (max-width: 899px) {
   .why-work-v2__cards { grid-template-columns: 1fr; }
 }

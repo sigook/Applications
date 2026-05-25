@@ -51,10 +51,11 @@
               :key="card.key"
               :to="card.kind === 'learn-more' ? '/v2/industries' : undefined"
               class="talents-industries-v2__card"
-              :class="[
-                `talents-industries-v2__card--${card.tone}`,
-                { 'talents-industries-v2__card--cta': card.kind === 'learn-more' },
-              ]"
+              :class="
+                card.kind === 'industry'
+                  ? `talents-industries-v2__card--${card.tone}`
+                  : 'talents-industries-v2__card--cta'
+              "
             >
               <template v-if="card.kind === 'industry'">
                 <IndustryIconV2
@@ -131,7 +132,7 @@ import SliderDotsV2 from '@/components/v2/shared/SliderDotsV2.vue'
 import IndustryIconV2, { type IndustryIconName } from '@/components/v2/shared/IndustryIconV2.vue'
 import { useCarousel } from '@/composables/useCarousel'
 
-type Tone = 'cyan' | 'red'
+type Tone = 'blue' | 'cyan' | 'red'
 
 interface IndustryCard {
   readonly kind: 'industry'
@@ -146,31 +147,30 @@ interface LearnMoreCard {
   readonly key: string
   readonly title: string
   readonly subtitle: string
-  readonly tone: Tone
 }
 
 type CarouselCard = IndustryCard | LearnMoreCard
 
 // 11 industries + 1 Learn More card = 12 cards.
-// Tones alternate per industry; the CTA card uses a special hybrid tone.
+// Industries cycle through the 3 canonical Home tones (blue → cyan → red)
+// so the brand palette stays balanced across slides.
 const CARDS: readonly CarouselCard[] = [
-  { kind: 'industry', key: 'automotive',     title: 'Automotive',      iconName: 'automotive',     tone: 'cyan' },
-  { kind: 'industry', key: 'aviation',       title: 'Aviation',        iconName: 'aviation',       tone: 'red'  },
-  { kind: 'industry', key: 'construction',   title: 'Construction',    iconName: 'construction',   tone: 'cyan' },
-  { kind: 'industry', key: 'engineering',    title: 'Engineering',     iconName: 'engineering',    tone: 'red'  },
+  { kind: 'industry', key: 'automotive',     title: 'Automotive',      iconName: 'automotive',     tone: 'blue' },
+  { kind: 'industry', key: 'aviation',       title: 'Aviation',        iconName: 'aviation',       tone: 'cyan' },
+  { kind: 'industry', key: 'construction',   title: 'Construction',    iconName: 'construction',   tone: 'red'  },
+  { kind: 'industry', key: 'engineering',    title: 'Engineering',     iconName: 'engineering',    tone: 'blue' },
   { kind: 'industry', key: 'technology',     title: 'Technology & IT', iconName: 'technology',     tone: 'cyan' },
   { kind: 'industry', key: 'finance',        title: 'Finance',         iconName: 'finance',        tone: 'red'  },
-  { kind: 'industry', key: 'legal',          title: 'Legal',           iconName: 'legal',          tone: 'cyan' },
-  { kind: 'industry', key: 'logistics',      title: 'Logistics',       iconName: 'logistics',      tone: 'red'  },
-  { kind: 'industry', key: 'manufacturing',  title: 'Manufacturing',   iconName: 'manufacturing',  tone: 'cyan' },
-  { kind: 'industry', key: 'retail',         title: 'Retail',          iconName: 'retail',         tone: 'red'  },
+  { kind: 'industry', key: 'legal',          title: 'Legal',           iconName: 'legal',          tone: 'blue' },
+  { kind: 'industry', key: 'logistics',      title: 'Logistics',       iconName: 'logistics',      tone: 'cyan' },
+  { kind: 'industry', key: 'manufacturing',  title: 'Manufacturing',   iconName: 'manufacturing',  tone: 'red'  },
+  { kind: 'industry', key: 'retail',         title: 'Retail',          iconName: 'retail',         tone: 'blue' },
   { kind: 'industry', key: 'transportation', title: 'Transportation',  iconName: 'transportation', tone: 'cyan' },
   {
     kind: 'learn-more',
     key: 'learn-more',
     title: 'Learn more',
     subtitle: 'Explore all sectors',
-    tone: 'red',
   },
 ]
 
@@ -347,7 +347,7 @@ const trackStyle = computed(() => ({
   gap: clamp(14px, 1.6vw, 22px);
 }
 
-/* ── Card ───────────────────────────────────────────────────────────────── */
+/* ── Card — canonical Home pattern: triple gradient + radial glow ───────── */
 .talents-industries-v2__card {
   position: relative;
   display: flex;
@@ -359,57 +359,112 @@ const trackStyle = computed(() => ({
     clamp(32px, 3.8vw, 52px)
     clamp(16px, 2vw, 28px);
   min-height: clamp(180px, 18vw, 240px);
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
   overflow: hidden;
   isolation: isolate;
   text-align: center;
   text-decoration: none;
   transition:
-    background 0.35s ease,
     border-color 0.35s ease,
+    box-shadow 0.35s ease,
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .talents-industries-v2__card:hover {
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.32);
   transform: translateY(-4px);
 }
 
-/* Alternating asymmetric brand radius across all cards in the carousel */
-.talents-industries-v2__card:nth-child(odd) {
-  border-radius:
-    clamp(28px, 3.4vw, 48px) 0
-    clamp(28px, 3.4vw, 48px) 0;
+/* Radial corner glow — placed at the larger asymmetric corner */
+.talents-industries-v2__card::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  width: clamp(100px, 12vw, 160px);
+  height: clamp(100px, 12vw, 160px);
+  z-index: 0;
 }
 
-.talents-industries-v2__card:nth-child(even) {
+/* ── Variant: blue (blue dominant + red accent on top-right) ────────────── */
+.talents-industries-v2__card--blue {
+  background: linear-gradient(135deg,
+    rgba(21, 117, 187, 0.42) 0%,
+    rgba(21, 117, 187, 0.14) 50%,
+    rgba(229, 45, 39, 0.32) 100%);
   border-radius:
-    0 clamp(28px, 3.4vw, 48px)
-    0 clamp(28px, 3.4vw, 48px);
+    clamp(20px, 2.4vw, 32px) clamp(40px, 5vw, 64px)
+    clamp(20px, 2.4vw, 32px) clamp(40px, 5vw, 64px);
 }
 
-/* Icon — large, tinted to tone */
+.talents-industries-v2__card--blue::before {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at top right,
+    rgba(229, 45, 39, 0.55) 0%,
+    rgba(229, 45, 39, 0.18) 35%,
+    transparent 70%);
+  border-radius: 0 clamp(40px, 5vw, 64px) 0 0;
+}
+
+/* ── Variant: cyan (triple cyan → blue → red gradient) ──────────────────── */
+.talents-industries-v2__card--cyan {
+  background: linear-gradient(135deg,
+    rgba(0, 173, 239, 0.34) 0%,
+    rgba(21, 117, 187, 0.22) 50%,
+    rgba(229, 45, 39, 0.30) 100%);
+  border-radius:
+    clamp(40px, 5vw, 64px) clamp(20px, 2.4vw, 32px)
+    clamp(40px, 5vw, 64px) clamp(20px, 2.4vw, 32px);
+}
+
+.talents-industries-v2__card--cyan::before {
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at top left,
+    rgba(0, 173, 239, 0.55) 0%,
+    rgba(0, 173, 239, 0.18) 35%,
+    transparent 70%);
+  border-radius: clamp(40px, 5vw, 64px) 0 0 0;
+}
+
+/* ── Variant: red (red dominant + blue accent on top-right) ─────────────── */
+.talents-industries-v2__card--red {
+  background: linear-gradient(135deg,
+    rgba(229, 45, 39, 0.42) 0%,
+    rgba(229, 45, 39, 0.14) 50%,
+    rgba(21, 117, 187, 0.32) 100%);
+  border-radius:
+    clamp(20px, 2.4vw, 32px) clamp(40px, 5vw, 64px)
+    clamp(20px, 2.4vw, 32px) clamp(40px, 5vw, 64px);
+}
+
+.talents-industries-v2__card--red::before {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at top right,
+    rgba(21, 117, 187, 0.60) 0%,
+    rgba(21, 117, 187, 0.20) 35%,
+    transparent 70%);
+  border-radius: 0 clamp(40px, 5vw, 64px) 0 0;
+}
+
+/* Icon — large, neutral white on the rich gradient bg */
 .talents-industries-v2__card-icon {
+  position: relative;
+  z-index: 1;
   font-size: clamp(36px, 4vw, 52px);
   color: #fff;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
-  transition: color 0.25s ease;
-}
-
-.talents-industries-v2__card--cyan .talents-industries-v2__card-icon {
-  color: var(--c-brand-cyan);
-}
-
-.talents-industries-v2__card--red .talents-industries-v2__card-icon {
-  color: var(--c-brand-red);
 }
 
 /* Title */
 .talents-industries-v2__card-title {
+  position: relative;
+  z-index: 1;
   font-size: clamp(15px, 1.4vw, 18px);
   font-weight: 700;
   line-height: 1.2;
@@ -418,23 +473,29 @@ const trackStyle = computed(() => ({
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Learn-more CTA card — distinct treatment ──────────────────────────── */
+/* ── Learn-more CTA card — same vocabulary, distinct gradient ───────────── */
 .talents-industries-v2__card--cta {
   cursor: pointer;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 173, 239, 0.18) 0%,
-    rgba(229, 45, 39, 0.18) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg,
+    rgba(0, 173, 239, 0.30) 0%,
+    rgba(21, 117, 187, 0.22) 50%,
+    rgba(229, 45, 39, 0.40) 100%);
+  border-radius:
+    clamp(40px, 5vw, 64px) clamp(20px, 2.4vw, 32px)
+    clamp(40px, 5vw, 64px) clamp(20px, 2.4vw, 32px);
+}
+
+.talents-industries-v2__card--cta::before {
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at top left,
+    rgba(0, 173, 239, 0.55) 0%,
+    rgba(0, 173, 239, 0.18) 35%,
+    transparent 70%);
+  border-radius: clamp(40px, 5vw, 64px) 0 0 0;
 }
 
 .talents-industries-v2__card--cta:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 173, 239, 0.30) 0%,
-    rgba(229, 45, 39, 0.30) 100%
-  );
   border-color: rgba(255, 255, 255, 0.45);
 }
 
@@ -443,13 +504,17 @@ const trackStyle = computed(() => ({
 }
 
 .talents-industries-v2__card-meta {
+  position: relative;
+  z-index: 1;
   font-size: clamp(11px, 0.9vw, 12px);
   font-weight: 500;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.70);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .talents-industries-v2__card-cta {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 6px;

@@ -22,26 +22,22 @@
     </header>
 
     <div class="talents-solutions-v2__cards">
-      <article
+      <FeatureCardV2
         v-for="(option, idx) in OPTIONS"
         :key="option.key"
+        :variant="option.variant"
+        :eyebrow="option.eyebrow"
+        :title="option.title"
+        :delay="idx * 160"
         class="talents-solutions-v2__card"
-        :class="`talents-solutions-v2__card--${option.tone}`"
       >
-        <span class="talents-solutions-v2__index" aria-hidden="true">
-          {{ formatIndex(idx) }}
-        </span>
-
-        <span class="talents-solutions-v2__card-eyebrow">
-          {{ option.eyebrow }}
-        </span>
-
-        <h3 class="talents-solutions-v2__card-heading">{{ option.title }}</h3>
-
         <p class="talents-solutions-v2__card-body">{{ option.body }}</p>
 
         <span class="talents-solutions-v2__benefits-label">What you get</span>
-        <ul class="talents-solutions-v2__benefits">
+        <ul
+          class="talents-solutions-v2__benefits"
+          :class="`talents-solutions-v2__benefits--${option.variant}`"
+        >
           <li
             v-for="benefit in option.benefits"
             :key="benefit"
@@ -51,11 +47,12 @@
         <router-link
           :to="option.ctaTo"
           class="talents-solutions-v2__cta"
+          :class="`talents-solutions-v2__cta--${option.variant}`"
         >
           <span>{{ option.ctaLabel }}</span>
           <span class="talents-solutions-v2__cta-arrow" aria-hidden="true">→</span>
         </router-link>
-      </article>
+      </FeatureCardV2>
     </div>
   </section>
 </template>
@@ -64,17 +61,13 @@
 /**
  * Talents — "Your Career, Your Way" section.
  *
- * Two CTA cards (Direct Hiring + Contract) inside the panel vocabulary
- * (TL+BR radius, dual shadow, margin-top overlap, glass surface). Aligned
- * horizontally — not staggered like AboutMissionSection — because these
- * cards are action prompts, not declarations.
- *
- * Copy is written from the talent's perspective (the Figma legacy had it
- * from the employer's perspective, which doesn't fit the Talents page).
+ * Two FeatureCardV2 cards (canonical Home pattern) as career-path CTAs.
+ * Direct Hiring = blue variant, Contract = red variant. Each card carries
+ * supporting copy + a benefits list + a CTA pill — all rendered into the
+ * FeatureCardV2 default slot.
  */
 import EyebrowPillV2 from '@/components/v2/shared/EyebrowPillV2.vue'
-
-type Tone = 'cyan' | 'red'
+import FeatureCardV2, { type FeatureCardVariant } from '@/components/v2/shared/FeatureCardV2.vue'
 
 interface CareerOption {
   readonly key: string
@@ -84,7 +77,7 @@ interface CareerOption {
   readonly benefits: readonly string[]
   readonly ctaLabel: string
   readonly ctaTo: string
-  readonly tone: Tone
+  readonly variant: FeatureCardVariant
 }
 
 const OPTIONS: readonly CareerOption[] = [
@@ -101,7 +94,7 @@ const OPTIONS: readonly CareerOption[] = [
     ],
     ctaLabel: 'Browse direct hires',
     ctaTo: '/v2/open-positions',
-    tone: 'cyan',
+    variant: 'blue',
   },
   {
     key: 'contract',
@@ -116,13 +109,9 @@ const OPTIONS: readonly CareerOption[] = [
     ],
     ctaLabel: 'Browse contracts',
     ctaTo: '/v2/open-positions',
-    tone: 'red',
+    variant: 'red',
   },
 ] as const
-
-function formatIndex(idx: number): string {
-  return String(idx + 1).padStart(2, '0')
-}
 </script>
 
 <style scoped>
@@ -213,129 +202,38 @@ function formatIndex(idx: number): string {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(24px, 3.2vw, 40px);
+  align-items: start;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
 }
 
-/* ── Card shell ─────────────────────────────────────────────────────────── */
 .talents-solutions-v2__card {
-  position: relative;
+  /* FeatureCardV2 ships its own padding; we use a fill-height column inside */
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 1.4vw, 18px);
-  padding:
-    clamp(36px, 4.2vw, 56px)
-    clamp(28px, 3.2vw, 44px);
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    background 0.35s ease,
-    border-color 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.talents-solutions-v2__card:hover {
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.22);
-  transform: translateY(-4px);
-}
-
-/* Mirrored asymmetric radius — Direct Hiring rounds TL+BR, Contract rounds TR+BL */
-.talents-solutions-v2__card--cyan {
-  border-radius:
-    clamp(48px, 6.5vw, 88px) 0
-    clamp(48px, 6.5vw, 88px) 0;
-}
-
-.talents-solutions-v2__card--red {
-  border-radius:
-    0 clamp(48px, 6.5vw, 88px)
-    0 clamp(48px, 6.5vw, 88px);
-}
-
-/* ── Ghost numeral ──────────────────────────────────────────────────────── */
-.talents-solutions-v2__index {
-  position: absolute;
-  top: clamp(-6px, -0.6vw, 4px);
-  right: clamp(14px, 2.2vw, 32px);
-  z-index: 0;
-  font-size: clamp(120px, 16vw, 200px);
-  font-weight: 800;
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  color: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-  user-select: none;
-}
-
-.talents-solutions-v2__card--cyan .talents-solutions-v2__index {
-  color: rgba(0, 173, 239, 0.10);
-}
-
-.talents-solutions-v2__card--red .talents-solutions-v2__index {
-  color: rgba(229, 45, 39, 0.10);
-}
-
-/* ── Card eyebrow ──────────────────────────────────────────────────────── */
-.talents-solutions-v2__card-eyebrow {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  font-size: clamp(10px, 0.85vw, 12px);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin-bottom: clamp(4px, 0.5vw, 8px);
-}
-
-.talents-solutions-v2__card--cyan .talents-solutions-v2__card-eyebrow { color: var(--c-brand-cyan); }
-.talents-solutions-v2__card--red  .talents-solutions-v2__card-eyebrow { color: var(--c-brand-red);  }
-
-/* ── Card heading ───────────────────────────────────────────────────────── */
-.talents-solutions-v2__card-heading {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(24px, 2.6vw, 34px);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.30);
-}
-
-/* ── Card body ─────────────────────────────────────────────────────────── */
+/* ── Slotted content (body + benefits + CTA) inside FeatureCardV2 ───────── */
 .talents-solutions-v2__card-body {
-  position: relative;
-  z-index: 1;
   font-size: clamp(13px, 1.15vw, 15px);
   font-weight: 400;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.82);
-  margin: 0 0 clamp(8px, 1vw, 14px);
+  color: rgba(255, 255, 255, 0.86);
+  margin: 0 0 clamp(16px, 1.8vw, 22px);
 }
 
-/* ── Benefits list ──────────────────────────────────────────────────────── */
 .talents-solutions-v2__benefits-label {
-  position: relative;
-  z-index: 1;
   display: inline-block;
   font-size: clamp(10px, 0.8vw, 11px);
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.60);
-  margin-bottom: clamp(4px, 0.5vw, 8px);
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: clamp(6px, 0.8vw, 10px);
 }
 
 .talents-solutions-v2__benefits {
-  position: relative;
-  z-index: 1;
   list-style: none;
   padding: 0;
   margin: 0 0 clamp(20px, 2.4vw, 32px);
@@ -348,7 +246,7 @@ function formatIndex(idx: number): string {
   position: relative;
   padding-left: 18px;
   font-size: clamp(13px, 1.1vw, 14px);
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
   line-height: 1.5;
 }
 
@@ -362,26 +260,20 @@ function formatIndex(idx: number): string {
   border-radius: 50%;
 }
 
-.talents-solutions-v2__card--cyan .talents-solutions-v2__benefits li::before {
-  background: var(--c-brand-cyan);
-}
-
-.talents-solutions-v2__card--red .talents-solutions-v2__benefits li::before {
-  background: var(--c-brand-red);
-}
+.talents-solutions-v2__benefits--blue li::before { background: var(--c-brand-cyan); }
+.talents-solutions-v2__benefits--cyan li::before { background: var(--c-brand-cyan); }
+.talents-solutions-v2__benefits--red  li::before { background: #fff; opacity: 0.9; }
 
 /* ── CTA pill ──────────────────────────────────────────────────────────── */
 .talents-solutions-v2__cta {
-  position: relative;
-  z-index: 1;
   margin-top: auto;
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: clamp(11px, 1.2vw, 14px) clamp(22px, 2.4vw, 30px);
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.40);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 999px;
   color: #fff;
   font-family: var(--font-family);
@@ -397,17 +289,18 @@ function formatIndex(idx: number): string {
     transform 0.25s ease;
 }
 
-.talents-solutions-v2__card--cyan .talents-solutions-v2__cta:hover {
+.talents-solutions-v2__cta--blue:hover,
+.talents-solutions-v2__cta--cyan:hover {
   background: var(--c-brand-cyan);
   border-color: var(--c-brand-cyan);
   color: var(--c-brand-navy);
   transform: translateX(4px);
 }
 
-.talents-solutions-v2__card--red .talents-solutions-v2__cta:hover {
-  background: var(--c-brand-red);
-  border-color: var(--c-brand-red);
-  color: #fff;
+.talents-solutions-v2__cta--red:hover {
+  background: #fff;
+  border-color: #fff;
+  color: var(--c-brand-red);
   transform: translateX(4px);
 }
 
