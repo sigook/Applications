@@ -218,8 +218,11 @@ public class CanadaInvoiceService(
         // For each holiday in the period, get workers entitled to holiday pay
         foreach (var holiday in holidays)
         {
-            var parameters = new ParamsToGetRegularWages(companyProfileId, holiday);
-            var workersCharges = await invoiceRepository.GetCompanyRegularCharges(parameters);
+            // 4-week look-back window before the holiday's work week (ESA public holiday pay rule).
+            var holidayWeekEnd = holiday.GetEnd();          // last Saturday of the week before the holiday's week
+            var lookbackStart = holidayWeekEnd.GetStart();  // four work weeks earlier
+            var qualifyingDays = holiday.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay();
+            var workersCharges = await invoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays);
 
             foreach (var workerCharge in workersCharges)
             {

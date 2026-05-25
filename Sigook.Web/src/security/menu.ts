@@ -1,15 +1,21 @@
 import roles from "@/security/roles";
 
-interface MenuItem {
+interface MenuLink {
   to: string;
   icon?: string;
   label: string;
-  items?: { to: string; label: string }[];
+  external?: boolean;
+}
+
+interface MenuGroup {
+  label?: string;
+  icon?: string;
+  items: MenuLink[];
 }
 
 export default {
-  getMenu(userRoles: string[], agency: any): MenuItem[] {
-    const result: MenuItem[] = [];
+  getMenu(userRoles: string[], agency: any): MenuGroup[] {
+    const result: MenuGroup[] = [];
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
         case roles.agencyPersonnel:
@@ -17,7 +23,7 @@ export default {
           if (
             userRoles.some((ur: string) => ur === roles.payroll || ur === roles.admin)
           ) {
-            result.push(...this.agencyBillingMenu(agency));
+            result.push(this.agencyBillingMenu(agency));
           }
           break;
         case roles.company:
@@ -31,100 +37,128 @@ export default {
           break;
       }
     }
+    result.sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
     return result;
   },
-  agencyMenu(agency: any): MenuItem[] {
-    const menus: MenuItem[] = [
-      {
-        to: "/agency-requests",
-        icon: "calendar-month",
-        label: "Orders",
-      },
-      {
-        to: "/agency-candidates",
-        icon: "account-group",
-        label: "Candidates",
-      },
-      {
-        to: "/agency-workers",
-        icon: "badge-account-outline",
-        label: "Workers",
-      },
-      {
-        to: "/agency-companies",
-        icon: "domain",
-        label: "Clients",
-      },
-    ];
+  agencyMenu(agency: any): MenuGroup[] {
+    const recruiting: MenuGroup = {
+      label: "Recruiting",
+      icon: "account-search",
+      items: [
+        {
+          to: "/recruiting/orders",
+          icon: "calendar-month",
+          label: "Orders",
+        },
+        {
+          to: "/recruiting/candidates",
+          icon: "account-group",
+          label: "Candidates",
+        },
+        {
+          to: "/recruiting/workers",
+          icon: "badge-account-outline",
+          label: "Workers",
+        },
+        {
+          to: "/recruiting/companies",
+          icon: "domain",
+          label: "Clients",
+        },
+      ],
+    };
+    const sales: MenuGroup = {
+      label: "Sales",
+      icon: "cart-outline",
+      items: [
+        {
+          to: "/sales/companies",
+          icon: "domain",
+          label: "Clients",
+        },
+      ],
+    };
     if (agency.masterAgency) {
-      menus.push({
-        to: "/agency-agencies",
+      sales.items.push({
+        to: "/sales/agencies",
         icon: "office-building",
         label: "Agencies",
       });
     }
-    return menus;
+    return [recruiting, sales];
   },
-  agencyBillingMenu(agency: any): MenuItem[] {
-    const root: MenuItem = {
-      to: "/accounting",
-      icon: "finance",
+  agencyBillingMenu(agency: any): MenuGroup {
+    const accounting: MenuGroup = {
       label: "Accounting",
-      items: [],
+      icon: "finance",
+      items: [
+        {
+          to: "/accounting/invoices",
+          icon: "file-document-outline",
+          label: "Invoices",
+        },
+        {
+          to: "/accounting/reports",
+          icon: "chart-box-outline",
+          label: "Reports",
+        },
+      ],
     };
-    root.items?.push(
-      {
-        to: "/invoices",
-        label: "Invoices",
-      },
-      {
-        to: "/reports",
-        label: "Reports",
-      }
-    );
-    const menus: MenuItem[] = [root];
     if (!agency.usaAgency) {
-      root.items?.push({
-        to: "/paystubs",
+      accounting.items.push({
+        to: "/accounting/paystubs",
+        icon: "cash-multiple",
         label: "Pay Stubs",
       });
     }
-    return menus;
+    return accounting;
   },
-  companyMenu(): MenuItem[] {
+  companyMenu(): MenuGroup[] {
     return [
       {
-        to: "/company-requests",
-        icon: "calendar-month",
-        label: "Staff Requests",
-      },
-      {
-        to: "/company-invoices",
-        icon: "finance",
-        label: "Accounting",
+        items: [
+          {
+            to: "/company-requests",
+            icon: "calendar-month",
+            label: "Staff Requests",
+          },
+          {
+            to: "/company-invoices",
+            icon: "finance",
+            label: "Accounting",
+          },
+        ],
       },
     ];
   },
-  companyUserMenu(): MenuItem[] {
+  companyUserMenu(): MenuGroup[] {
     return [
       {
-        to: "/company-requests",
-        icon: "calendar-month",
-        label: "Staff Requests",
+        items: [
+          {
+            to: "/company-requests",
+            icon: "calendar-month",
+            label: "Staff Requests",
+          },
+        ],
       },
     ];
   },
-  workerMenu(): MenuItem[] {
+  workerMenu(): MenuGroup[] {
     return [
       {
-        to: "/worker-requests",
-        icon: "calendar-month",
-        label: "Jobs available for you",
-      },
-      {
-        to: "/worker-history",
-        icon: "history",
-        label: "History",
+        items: [
+          {
+            to: "/worker-requests",
+            icon: "calendar-month",
+            label: "Jobs available for you",
+          },
+          {
+            to: "/worker-history",
+            icon: "history",
+            label: "History",
+          },
+        ],
       },
     ];
   },
@@ -133,7 +167,7 @@ export default {
       switch (userRoles[i]) {
         case roles.agencyPersonnel:
         case roles.agency:
-          return "/agency-requests";
+          return "/recruiting/orders";
         case roles.company:
         case roles.companyUser:
           return "/company-requests";

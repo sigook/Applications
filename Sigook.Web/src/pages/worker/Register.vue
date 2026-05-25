@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <form class="form-md" @submit.prevent="validateForm">
       <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">

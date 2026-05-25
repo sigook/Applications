@@ -6,7 +6,7 @@
         <b-checkbox v-if="tableConfig.showMyOrdersCheckbox" v-model="serverParams.onlyMine">My Orders</b-checkbox>
         <b-dropdown v-if="tableConfig.showQuickActions"
           :key="quickActionsKey"
-          aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false">
+          aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false" append-to-body>
           <template #trigger="{ active }">
             <b-button :icon-right="active ? 'menu-up' : 'menu-down'">
               Quick Actions
@@ -38,7 +38,7 @@
         {{ s.value }} ({{ s.count }})
       </b-tag>
     </div>
-    <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
@@ -620,6 +620,7 @@ loadRequests();
 }
 
 .order-flag {
+  position: relative;
   display: inline-block;
   padding: 2px 12px 2px 6px;
   font-size: 10px;
@@ -628,20 +629,24 @@ loadRequests();
   color: #fff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+  // convex right-pointing arrow; the tip pokes into the next (solid) flag,
+  // so the seam is always backed by color and never reveals a white sub-pixel gap
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
 
   &--asap {
     background: #ff9932;
+    z-index: 2;
   }
 
   &--dh {
     background: #1d4ed8;
+    z-index: 1;
   }
 
+  // the second flag tucks under the first arrow's tip; its flat left edge keeps
+  // solid colour behind that tip in both expanded and collapsed layouts
   & + & {
     margin-left: -6px;
-    padding-left: 12px;
-    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 6px 100%, 0 50%);
   }
 }
 

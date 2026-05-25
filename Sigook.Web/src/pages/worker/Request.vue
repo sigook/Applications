@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile wrapper-request">
+  <div class="wrapper-request">
     <b-loading v-model="isLoading"></b-loading>
 
     <section class="wrapper-request-top" v-if="request">

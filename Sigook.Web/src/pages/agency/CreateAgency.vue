@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3">Create Agency</h2>
@@ -108,7 +108,7 @@ function submitAgency(values: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Agency created successfully');
-      router.push('/agency-agencies');
+      router.push('/sales/agencies');
     })
     .catch((error) => {
       isLoading.value = false;

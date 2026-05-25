@@ -1,5 +1,5 @@
 <template>
-  <div class="company-wrapper white-container-mobile">
+  <div class="company-wrapper">
     <b-loading v-model="isLoading"></b-loading>
 
     <section class="company-top" v-if="company">

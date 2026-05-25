@@ -9,12 +9,10 @@
     <div v-if="isCallback">
       <router-view />
     </div>
-    <div v-else-if="isLogged">
-      <NavBarLogged />
-      <div class="container-fluid">
-        <div class="white-container">
-          <router-view />
-        </div>
+    <div v-else-if="isLogged" class="logged-layout">
+      <SidebarLogged />
+      <div class="logged-content">
+        <router-view />
       </div>
     </div>
     <div v-else-if="isV2Route" class="v2-page">
@@ -36,7 +34,7 @@ import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import axios from 'axios';
-import NavBarLogged from '@/components/NavBarLogged.vue';
+import SidebarLogged from '@/components/SidebarLogged.vue';
 import Header from '@/components/landing/Header.vue';
 import Footer from '@/components/landing/Footer.vue';
 import HeaderV2 from '@/components/v2/HeaderV2.vue';
@@ -112,18 +110,27 @@ onUnmounted(() => {
   display: none;
 }
 
+.logged-layout {
+  display: flex;
+  align-items: flex-start;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.logged-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
+  // extra top padding leaves room for the fixed top-right user menu
+  padding: 64px 32px 24px;
+}
+
 .main-container {
   background-color: $gray-bg;
   min-height: calc(100vh - 63px);
   padding: 30px;
-}
-
-.white-container {
-  background-color: white;
-  padding: 30px;
-  box-shadow: 6px 6px 10px #d6d6d6;
-  position: relative;
-  min-height: 600px;
 }
 
 .message-version {
@@ -149,10 +156,11 @@ onUnmounted(() => {
     background-color: #fff;
   }
 
-  .white-container {
-    padding: 15px;
-    box-shadow: none;
-    background-color: $gray-bg;
+  .logged-layout,
+  .logged-content {
+    position: static;
+    height: auto;
+    overflow: visible;
   }
 }
 </style>

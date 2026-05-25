@@ -1,6 +1,6 @@
 <template>
   <div class="p-3">
-    <div class="white-container-mobile">
+    <div>
       <h2 class="text-center main-title">Documents</h2>
       <div class="tooltip-form tooltip-form-multiline">
         <div class="form-100">

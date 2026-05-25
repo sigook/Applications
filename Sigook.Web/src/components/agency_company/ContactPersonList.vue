@@ -6,7 +6,7 @@
         {{ 'Create' }}
       </b-button>
     </b-field>
-    <b-table :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="10">
+    <b-table sticky-header height="var(--grid-height)" :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-rounded :per-page="10">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>

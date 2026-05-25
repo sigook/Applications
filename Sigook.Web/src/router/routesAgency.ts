@@ -33,7 +33,7 @@ const admin = roles.admin;
 
 const routesAgency: RouteRecordRaw[] = [
   {
-    path: "/agency-requests",
+    path: "/recruiting/orders",
     component: AgencyRequests,
     name: "agency-requests",
     meta: {
@@ -41,6 +41,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: [agency, agencyPersonnel],
     },
   },
+  { path: "/agency-requests", redirect: "/recruiting/orders" },
   {
     path: "/agency-request/:id",
     component: AgencyRequest,
@@ -70,7 +71,7 @@ const routesAgency: RouteRecordRaw[] = [
     beforeEnter: loadAgencyRequestToUpdateResolver
   },
   {
-    path: "/agency-workers",
+    path: "/recruiting/workers",
     component: AgencyWorkers,
     name: "workers",
     meta: {
@@ -78,6 +79,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: [agency, agencyPersonnel],
     },
   },
+  { path: "/agency-workers", redirect: "/recruiting/workers" },
   {
     path: "/agency-workers/worker/:id",
     component: AgencyDetailWorker,
@@ -97,7 +99,8 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/agency-companies",
+    path: "/recruiting/companies",
+    name: "recruiting-companies",
     component: AgencyCompanies,
     meta: {
       requiresAuth: true,
@@ -105,6 +108,17 @@ const routesAgency: RouteRecordRaw[] = [
     },
     beforeEnter: loadAgencyCompaniesResolver
   },
+  {
+    path: "/sales/companies",
+    name: "sales-companies",
+    component: AgencyCompanies,
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+    beforeEnter: loadAgencyCompaniesResolver
+  },
+  { path: "/agency-companies", redirect: "/recruiting/companies" },
   {
     path: "/create-company",
     component: CreateCompany,
@@ -139,21 +153,23 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/agency-candidates",
+    path: "/recruiting/candidates",
     component: AgencyCandidates,
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],
     },
   },
+  { path: "/agency-candidates", redirect: "/recruiting/candidates" },
   {
-    path: "/agency-agencies",
+    path: "/sales/agencies",
     component: AgencyAgencies,
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],
     },
   },
+  { path: "/agency-agencies", redirect: "/sales/agencies" },
   {
     path: "/create-agency",
     component: CreateAgency,

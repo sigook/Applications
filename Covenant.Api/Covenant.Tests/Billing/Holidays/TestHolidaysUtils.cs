@@ -12,7 +12,7 @@ namespace Covenant.Tests.Billing.Holidays
         [InlineData("2020-07-23", "2020-07-18")]//Thursday
         [InlineData("2020-07-24", "2020-07-18")]//Friday
         [InlineData("2020-07-25", "2020-07-18")]//Saturday
-        [InlineData("2020-07-26", "2020-07-18")]//Sunday
+        [InlineData("2020-07-26", "2020-07-25")]//Sunday (start of its own Sun-Sat week; previous week ends the day before)
         public void GetEnd(string holidayS, string endS)
         {
             DateTime holiday = DateTime.Parse(holidayS);

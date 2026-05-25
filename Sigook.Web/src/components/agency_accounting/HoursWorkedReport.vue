@@ -34,7 +34,7 @@
         <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </Export>
-        <b-table :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
+        <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
           v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>

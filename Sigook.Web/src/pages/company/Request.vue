@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile has-menu-bottom">
+  <div class="has-menu-bottom">
     <b-loading v-model="isLoading"></b-loading>
 
     <section class="wrapper-request-top" v-if="request">

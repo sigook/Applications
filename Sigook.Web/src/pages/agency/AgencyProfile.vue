@@ -1,5 +1,5 @@
 <template>
-  <div class="profile white-container-mobile" v-if="agency">
+  <div class="profile" v-if="agency">
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="profile-content">
