@@ -24,6 +24,8 @@ public interface IAgencyRepository
     Task<List<LocationDetailModel>> GetLocations(Guid agencyId);
     Task<LocationDetailModel> GetLocationDetail(Guid agencyId, Guid id);
     Task DeletePersonnel(AgencyPersonnel entity);
+    Task<bool> PersonnelHasRequests(Guid personnelId);
+    Task<bool> PersonnelHasCompanies(Guid personnelId);
     Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId);
     Task<Location> GetBillingLocation(Guid agencyId);
     Task<Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city);

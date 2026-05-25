@@ -1,6 +1,63 @@
-// Bootstrap ships its own `.toast` component that leaks into Buefy's toast
-// (both use the same class name). Unset Bootstrap's sizing/styling for
-// toasts rendered inside Buefy's `.notices` container.
+// Fallback height for sticky-header tables rendered outside the flex shell
+// (e.g. inside modals). On regular logged pages the grid fills available
+// height via flexbox instead (see below), so this value is not used there.
+:root {
+  --grid-height: calc(100vh - 280px);
+}
+
+.b-table .table-wrapper.has-sticky-header {
+  // Keep the data scrollbar off the viewport edge so it reads as the table's
+  // scroll, not a page scroll.
+  padding-right: 12px;
+  scrollbar-gutter: stable;
+
+  // Buefy only sticks the first header row (labels). Pin the whole thead so
+  // the filter/search row stays visible too. Override its per-th sticky to
+  // avoid both rows collapsing onto top: 0.
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: $white;
+  }
+
+  thead th {
+    position: static;
+    background: $white;
+  }
+}
+
+// On any logged page that contains a sticky-header grid, lay the shell out as
+// a flex column so the grid fills the leftover height exactly — whatever the
+// chrome above it (toolbars, summary rows, titles). This removes the redundant
+// page scrollbar: only the grid's own wrapper scrolls vertically. Scoped with
+// :has() so form pages keep their normal page scroll.
+.logged-content:has(.table-wrapper.has-sticky-header) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  // Every descendant that contains the sticky grid (page root, inner wrappers,
+  // the b-table itself) becomes a filling flex column. Sibling chrome (titles,
+  // toolbars) does not match `:has`, so it keeps its natural height.
+  *:has(.table-wrapper.has-sticky-header) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    // Flex columns whose items are scroll containers (min-width: 0) otherwise
+    // shrink to content width; force full width so wide tables don't overflow.
+    width: 100%;
+  }
+
+  .b-table .table-wrapper.has-sticky-header {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto; // fill via flex instead of the --grid-height fallback
+    width: 100%;
+  }
+}
+
 .notices .toast {
   flex-basis: auto;
   max-width: none;

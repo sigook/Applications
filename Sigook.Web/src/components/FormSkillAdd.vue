@@ -54,3 +54,20 @@ getSkills().then(response => {
   filteredSkills.value = skills.value;
 });
 </script>
+
+<style scoped lang="scss">
+// Long skill names (e.g. "Forklift / Scissors Lift Operator - …") otherwise
+// stay on one line and force the Skills column — and the whole table — wider
+// than the viewport. Let tag text wrap so the column can shrink to fit.
+:deep(.taginput .taginput-container) {
+  max-width: 100%;
+}
+
+:deep(.taginput .tag) {
+  height: auto;
+  min-height: 2em;
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+}
+</style>

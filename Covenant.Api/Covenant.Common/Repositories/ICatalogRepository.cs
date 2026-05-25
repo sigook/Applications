@@ -25,6 +25,7 @@ public interface ICatalogRepository
     Task<List<JobPositionDetailModel>> GetJobPositions();
     Task<List<BaseModel<Guid>>> GetIndustries();
     Task<List<BaseModel<Guid>>> GetSources();
+    Task<List<BaseModel<Guid>>> GetSourcesForRequests();
     Task<bool> IsHoliday(DateTime date, string countryCode);
     Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek, string countryCode);
     Task SaveChangesAsync();

@@ -1,5 +1,5 @@
 <template>
-  <div class="contain-worker white-container-mobile has-menu-bottom" v-if="worker">
+  <div class="contain-worker has-menu-bottom" v-if="worker">
     <b-loading v-model="isLoading"></b-loading>
 
     <section class="wrapper-worker-top mb-0">

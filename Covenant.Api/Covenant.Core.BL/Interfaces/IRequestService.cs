@@ -21,5 +21,8 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model);
         Task<Result> ReduceWorkerQuantityByOne(Guid requestId);
         Task<Result> RejectWorker(Guid requestId, Guid workerId, CommentsModel model);
+        Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId);
+        Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
+        Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     }
 }

@@ -27,6 +27,11 @@ namespace Covenant.Infrastructure.Configurations.Request
                 .HasForeignKey(f => f.RequestId).IsRequired()
                 .OnDelete(DeleteBehavior.Cascade)
                 .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            builder.HasMany(m => m.Sources)
+                .WithOne(o => o.Request)
+                .HasForeignKey(f => f.RequestId).IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

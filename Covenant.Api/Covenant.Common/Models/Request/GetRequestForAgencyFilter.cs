@@ -22,6 +22,7 @@ namespace Covenant.Common.Models.Request
         public string JobTitle { get; set; }
         public string DisplayRecruiters { get; set; }
         public IEnumerable<RequestStatus> Statuses { get; set; }
+        public IEnumerable<Guid> JobBoardIds { get; set; }
         public bool OnlyMine { get; set; }
         public string Recruiter { get; set; }
         public string SalesRepresentative { get; set; }

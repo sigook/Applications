@@ -30,6 +30,7 @@ namespace Covenant.Common.Models.Request
         public bool VaccinationRequired { get; set; }
         public bool PunchCardOptionEnabled { get; set; }
         public bool HasPermissionToSeeInternalOrders { get; set; }
+        public IEnumerable<RequestSourceDetailModel> JobBoards { get; set; } = new List<RequestSourceDetailModel>();
 
         public string Location => $"{Address} {City} {ProvinceName} {PostalCode}";
         public string LocationAddress => $"{Address} {City} {PostalCode}";

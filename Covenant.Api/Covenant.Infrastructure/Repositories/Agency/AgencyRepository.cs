@@ -72,6 +72,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId) =>
         await _context.AgencyPersonnel.Where(c => c.AgencyId == agencyId)
+            .OrderBy(c => c.Name)
             .Select(s => new AgencyPersonnelModel
             {
                 Id = s.Id,
@@ -106,6 +107,13 @@ public class AgencyRepository : IAgencyRepository
         _context.AgencyPersonnel.Remove(entity);
         return Task.CompletedTask;
     }
+
+    public async Task<bool> PersonnelHasRequests(Guid personnelId) =>
+        await _context.RequestRecruiter.AnyAsync(r => r.RecruiterId == personnelId)
+        || await _context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
+
+    public Task<bool> PersonnelHasCompanies(Guid personnelId) =>
+        _context.CompanyProfile.AnyAsync(c => c.SalesRepresentativeId == personnelId);
 
     public async Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId)
     {

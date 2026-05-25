@@ -4,7 +4,7 @@
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="addLocation">Add</b-button>
     </b-field>
-    <b-table :data="locations" narrowed hoverable paginated pagination-rounded>
+    <b-table sticky-header height="var(--grid-height)" :data="locations" narrowed hoverable paginated pagination-rounded>
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
       </template>

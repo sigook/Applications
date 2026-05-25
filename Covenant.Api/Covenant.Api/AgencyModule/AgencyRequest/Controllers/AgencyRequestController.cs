@@ -38,24 +38,17 @@ public class AgencyRequestController : ControllerBase
         this.agencyService = agencyService;
     }
 
-    /// <summary>Gets a paginated list of requests for the current agency.</summary>
-    /// <param name="repository">Request repository.</param>
+    /// <summary>Gets a paginated list of requests for the current agency along with the job boards summary aligned with the same filter.</summary>
     /// <param name="pagination">Request filter and pagination parameters.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(PaginatedList<AgencyRequestListModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Get([FromServices] IRequestRepository repository, GetRequestForAgencyFilter pagination)
+    [ProducesResponseType(typeof(AgencyRequestsPagedResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get(GetRequestForAgencyFilter pagination)
     {
         var agencyId = User.GetAgencyId();
-        if (pagination.OnlyMine)
-        {
-            pagination.Recruiter = User.GetNickname();
-        }
-        if (pagination.AgencyId.HasValue)
-        {
-            agencyId = pagination.AgencyId.Value;
-        }
+        if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
+        if (pagination.AgencyId.HasValue) agencyId = pagination.AgencyId.Value;
         pagination.HasPermissionToSeeInternalOrders = User.IsPayrollManager();
-        return Ok(await repository.GetRequestsForAgency(agencyId, pagination));
+        return Ok(await requestService.GetRequestsForAgency(agencyId, pagination));
     }
 
     /// <summary>Gets all requests for the current agency without pagination.</summary>
@@ -231,6 +224,31 @@ public class AgencyRequestController : ControllerBase
     public async Task<IActionResult> Open([FromRoute] Guid id)
     {
         var result = await requestService.OpenRequest(id, User.GetNickname());
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Gets the job boards where the specified request is published.</summary>
+    /// <param name="id">Identifier of the request.</param>
+    [HttpGet("{id:guid}/sources")]
+    [ProducesResponseType(typeof(IEnumerable<RequestSourceDetailModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetSources([FromRoute] Guid id)
+    {
+        var result = await requestService.GetRequestSources(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok(result.Value);
+    }
+
+    /// <summary>Replaces the full set of job boards where the specified request is published.</summary>
+    /// <param name="id">Identifier of the request.</param>
+    /// <param name="sources">Job boards to publish on. PublishedAt and ExternalUrl are optional per item.</param>
+    [HttpPut("{id:guid}/sources")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SetSources([FromRoute] Guid id, [FromBody] IEnumerable<CreateRequestSourceModel> sources)
+    {
+        var result = await requestService.SetRequestSources(id, sources);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

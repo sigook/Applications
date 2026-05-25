@@ -1,6 +1,6 @@
 <template>
   <div class="p-3">
-    <div class="white-container-mobile modal-overflow" v-if="candidate">
+    <div class="modal-overflow" v-if="candidate">
       <b-loading v-model="isLoading"></b-loading>
       <h2 class="text-center main-title">{{ candidate.name }}</h2>
       <form @submit.prevent="validateForm">

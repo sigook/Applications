@@ -78,6 +78,7 @@ namespace Covenant.Common.Entities.Request
         public RequestComission RequestComission { get; set; }
         public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
         public IEnumerable<RequestNote> Notes { get; set; } = new List<RequestNote>();
+        public ICollection<RequestSource> Sources { get; set; } = new List<RequestSource>();
         public IReadOnlyCollection<RequestRecruiter> Recruiters => _recruiters;
         public IReadOnlyCollection<WorkerRequest> Workers => _workers;
         private string TheOrderCanNotBeChanged => $"The order can't be changed because is: {Status}";

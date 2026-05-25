@@ -1,5 +1,5 @@
 <template>
-  <div class="profile white-container-mobile">
+  <div class="profile">
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="profile-content">

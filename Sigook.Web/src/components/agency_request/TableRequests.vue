@@ -6,7 +6,7 @@
         <b-checkbox v-if="tableConfig.showMyOrdersCheckbox" v-model="serverParams.onlyMine">My Orders</b-checkbox>
         <b-dropdown v-if="tableConfig.showQuickActions"
           :key="quickActionsKey"
-          aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false">
+          aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false" append-to-body>
           <template #trigger="{ active }">
             <b-button :icon-right="active ? 'menu-up' : 'menu-down'">
               Quick Actions
@@ -32,7 +32,13 @@
         </b-dropdown>
       </template>
     </Export>
-    <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+    <div v-if="jobBoardsSummary.length" class="job-boards-summary">
+      <span class="job-boards-summary__label">Posted in:</span>
+      <b-tag v-for="s in jobBoardsSummary" :key="s.sourceId" rounded type="is-info is-light">
+        {{ s.value }} ({{ s.count }})
+      </b-tag>
+    </div>
+    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
@@ -166,6 +172,25 @@
             </ModalNotes>
           </div>
         </b-table-column>
+        <b-table-column field="jobBoards" label="Job Boards" searchable>
+          <template v-slot:searchable>
+            <b-taginput size="is-small" v-model="jobBoardsSelected" autocomplete :data="availableJobBoards"
+              open-on-focus field="value" icon="bullhorn" placeholder="Select Job Boards"
+              @update:modelValue="onJobBoardsChange" append-to-body>
+            </b-taginput>
+          </template>
+          <template v-slot="props">
+            <div class="job-boards-cell">
+              <b-tag v-for="jb in props.row.jobBoards" :key="jb.sourceId" rounded type="is-info is-light">
+                {{ jb.value }}
+              </b-tag>
+              <b-tooltip v-if="!props.row.jobBoards || props.row.jobBoards.length === 0"
+                label="Add job boards" type="is-dark" append-to-body>
+                <b-icon icon="plus-circle-outline" size="is-small" class="job-boards-cell__add"></b-icon>
+              </b-tooltip>
+            </div>
+          </template>
+        </b-table-column>
         <b-table-column field="status" label="Status" searchable>
           <template v-slot:searchable>
             <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
@@ -221,6 +246,16 @@
         @cancel="showBulkRecruitersModal = false" />
     </b-modal>
 
+    <!-- job boards -->
+    <b-modal v-model="showJobBoardsModal" @close="showJobBoardsModal = false" width="520px" :destroy-on-hide="true">
+      <JobBoardsModal v-if="currentJobBoardsRequest"
+        :request-id="currentJobBoardsRequest.id"
+        :number-id="currentJobBoardsRequest.numberId"
+        :current-boards="currentJobBoardsRequest.jobBoards || []"
+        @saved="onJobBoardsSaved"
+        @close="showJobBoardsModal = false" />
+    </b-modal>
+
   </div>
 </template>
 <script setup lang="ts">
@@ -233,6 +268,9 @@ import { dateMonth, breakWord, currency } from '@/utils/filters';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
 import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
+import { getSourcesForRequests } from "@/api/catalogApi";
+import type { RequestJobBoardSummary, AgencyRequestListItem } from '@/types/agency';
+import type { Source } from '@/types/common';
 import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
@@ -244,6 +282,7 @@ import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import ModalNotes from '../notes/ModalNotes.vue';
 import PersonnelList from '../../components/agency_request/PersonnelListModal.vue';
 import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
+import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import Export from '@/components/Export.vue';
@@ -269,6 +308,11 @@ const defaultConfig = {
 const showRecruitersModal = ref(false);
 const showBulkCancelModal = ref(false);
 const showBulkRecruitersModal = ref(false);
+const showJobBoardsModal = ref(false);
+const currentJobBoardsRequest = ref<AgencyRequestListItem | null>(null);
+const availableJobBoards = ref<Source[]>([]);
+const jobBoardsSelected = ref<Source[]>([]);
+const jobBoardsSummary = ref<RequestJobBoardSummary[]>([]);
 const quickActionsKey = ref(0);
 const recruiters = ref<any>(null);
 const currentRequest = ref<any>(null);
@@ -322,6 +366,10 @@ function onCellClick(row: any, column: any, rowIndex: number) {
         onShowRecruitersModal(row, rowIndex);
       }
       break;
+    case 'jobBoards':
+      currentJobBoardsRequest.value = row;
+      showJobBoardsModal.value = true;
+      break;
     case 'notesCount':
     case 'actions':
       break;
@@ -369,6 +417,15 @@ function onSortChange(field: string, order: string) {
 
 function onStatusChange() {
   serverParams.statuses = statusesSelected.value.map((ss) => ss.id);
+  loadRequests();
+}
+
+function onJobBoardsChange() {
+  serverParams.jobBoardIds = jobBoardsSelected.value.map((jb) => jb.id);
+  loadRequests();
+}
+
+function onJobBoardsSaved() {
   loadRequests();
 }
 
@@ -429,6 +486,7 @@ function loadRequests() {
   getAgencyRequests(serverParams)
     .then((requestsResponse) => {
       rows.value = requestsResponse.items.map((i: any) => ({ ...i, actions: null, showNotes: false, notesCount: i.notesCount || 0 }));
+      jobBoardsSummary.value = requestsResponse.jobBoardsSummary || [];
       emit('update:totalItems', requestsResponse.totalItems);
       emit('onDataLoading', false);
     })
@@ -528,6 +586,12 @@ if (!props.companyId && !props.agencyId) {
     serverParams.agencyId = props.agencyId;
   }
 }
+getSourcesForRequests().then((sources) => {
+  availableJobBoards.value = sources;
+  if (serverParams.jobBoardIds && serverParams.jobBoardIds.length) {
+    jobBoardsSelected.value = sources.filter((s) => serverParams.jobBoardIds.includes(s.id));
+  }
+});
 loadRequests();
 </script>
 
@@ -556,6 +620,7 @@ loadRequests();
 }
 
 .order-flag {
+  position: relative;
   display: inline-block;
   padding: 2px 12px 2px 6px;
   font-size: 10px;
@@ -564,20 +629,54 @@ loadRequests();
   color: #fff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+  // convex right-pointing arrow; the tip pokes into the next (solid) flag,
+  // so the seam is always backed by color and never reveals a white sub-pixel gap
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
 
   &--asap {
     background: #ff9932;
+    z-index: 2;
   }
 
   &--dh {
     background: #1d4ed8;
+    z-index: 1;
   }
 
+  // the second flag tucks under the first arrow's tip; its flat left edge keeps
+  // solid colour behind that tip in both expanded and collapsed layouts
   & + & {
     margin-left: -6px;
-    padding-left: 12px;
-    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 6px 100%, 0 50%);
+  }
+}
+
+.job-boards-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 4px 12px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-right: 4px;
+  }
+}
+
+.job-boards-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+
+  &__add {
+    color: #888;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover { color: #1d4ed8; }
   }
 }
 </style>

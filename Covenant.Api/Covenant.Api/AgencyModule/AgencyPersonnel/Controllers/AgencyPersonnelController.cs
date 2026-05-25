@@ -74,6 +74,10 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
             Guid agencyId = User.GetAgencyId();
             var entity = await agencyRepository.GetPersonnel(id);
             if (entity is null || entity.AgencyId != agencyId) return NotFound();
+            if (await agencyRepository.PersonnelHasRequests(entity.Id))
+                return BadRequest(ModelState.AddError("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first."));
+            if (await agencyRepository.PersonnelHasCompanies(entity.Id))
+                return BadRequest(ModelState.AddError("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first."));
             await agencyRepository.DeletePersonnel(entity);
             await agencyRepository.SaveChangesAsync();
             var result = await service.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));

@@ -2,7 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div>
-      <b-table :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="invoiceNumberId"
         v-model:current-page="serverParams.pageIndex">
         <template v-slot:empty>

@@ -88,6 +88,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         VaccinationRequired = cp.VaccinationRequired.GetValueOrDefault(),
                         PunchCardOptionEnabled = r.PunchCardOptionEnabled,
                         HasPermissionToSeeInternalOrders = cp.RequiresPermissionToSeeOrders,
+                        JobBoards = r.Sources.Select(rs => new RequestSourceDetailModel
+                        {
+                            SourceId = rs.SourceId,
+                            Value = rs.Source.Value,
+                            PublishedAt = rs.PublishedAt,
+                            ExternalUrl = rs.ExternalUrl
+                        }),
                     };
         var predicateNew = ApplyFilterForAgency(filter);
         query = query.Where(predicateNew);
@@ -99,6 +106,50 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var query = GetAllRequestsForAgency(agencyId, filter);
         return await query.ToPaginatedList(filter);
+    }
+
+    public async Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
+    {
+        // Reuse the same filtered query (without paging) and aggregate the JobBoards projection.
+        var query = (IQueryable<AgencyRequestListModel>)GetAllRequestsForAgency(agencyId, filter);
+        var summary = await query
+            .SelectMany(r => r.JobBoards)
+            .GroupBy(jb => new { jb.SourceId, jb.Value })
+            .Select(g => new RequestSourceSummaryModel
+            {
+                SourceId = g.Key.SourceId,
+                Value = g.Key.Value,
+                Count = g.Count()
+            })
+            .ToListAsync();
+        return summary;
+    }
+
+    public async Task<IEnumerable<RequestSource>> GetRequestSources(Guid requestId)
+    {
+        return await context.Set<RequestSource>()
+            .Include(rs => rs.Source)
+            .Where(rs => rs.RequestId == requestId)
+            .ToListAsync();
+    }
+
+    public async Task ReplaceRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)
+    {
+        var set = context.Set<RequestSource>();
+        var existing = await set.Where(rs => rs.RequestId == requestId).ToListAsync();
+        set.RemoveRange(existing);
+
+        if (sources == null) return;
+        foreach (var model in sources)
+        {
+            await set.AddAsync(new RequestSource
+            {
+                RequestId = requestId,
+                SourceId = model.SourceId,
+                PublishedAt = model.PublishedAt,
+                ExternalUrl = model.ExternalUrl
+            });
+        }
     }
 
     private static Expression<Func<AgencyRequestListModel, bool>> ApplyFilterForAgency(GetRequestForAgencyFilter filter)
@@ -133,6 +184,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         if (filter.Statuses != null && filter.Statuses.Any())
         {
             predicate = predicate.And(r => filter.Statuses.Contains(r.RequestStatus));
+        }
+        if (filter.JobBoardIds != null && filter.JobBoardIds.Any())
+        {
+            predicate = predicate.And(r => r.JobBoards.Any(jb => filter.JobBoardIds.Contains(jb.SourceId)));
         }
         if (!string.IsNullOrWhiteSpace(filter.Filter))
             predicate = predicate.And(r =>

@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <h2 v-if="isUpdate" class="text-center main-title">Update Client</h2>
     <h2 v-else class="text-center main-title">Create Client</h2>

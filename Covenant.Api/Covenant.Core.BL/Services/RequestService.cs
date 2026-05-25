@@ -510,4 +510,43 @@ public class RequestService : IRequestService
         }
         return Result.Ok();
     }
+
+    public async Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail<IEnumerable<RequestSourceDetailModel>>(ApiResources.RequestNotAvailable);
+        var sources = await requestRepository.GetRequestSources(requestId);
+        return Result.Ok(sources.Select(s => new RequestSourceDetailModel
+        {
+            SourceId = s.SourceId,
+            Value = s.Source?.Value,
+            PublishedAt = s.PublishedAt,
+            ExternalUrl = s.ExternalUrl
+        }));
+    }
+
+    public async Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
+    {
+        var paged = await requestRepository.GetRequestsForAgency(agencyId, filter);
+        var summary = await requestRepository.GetRequestSourcesSummaryForAgency(agencyId, filter);
+        return new AgencyRequestsPagedResponse
+        {
+            PageIndex = paged.PageIndex,
+            TotalPages = paged.TotalPages,
+            TotalItems = paged.TotalItems,
+            Items = paged.Items,
+            JobBoardsSummary = summary
+        };
+    }
+
+    public async Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var distinct = (sources ?? []).GroupBy(s => s.SourceId).Select(g => g.First()).ToList();
+        await requestRepository.ReplaceRequestSources(requestId, distinct);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
 }

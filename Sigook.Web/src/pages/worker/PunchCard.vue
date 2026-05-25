@@ -1,5 +1,5 @@
 <template>
-  <div class="white-container-mobile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
     <DataEntryTerms></DataEntryTerms>
     <section class="punch-card">
