@@ -4,6 +4,8 @@ const Home             = () => import('@/pages/v2/landing/Home/Home.vue');
 const AboutUs          = () => import('@/pages/v2/landing/About/AboutUs.vue');
 const Industries       = () => import('@/pages/v2/landing/Industries/Industries.vue');
 const Talents          = () => import('@/pages/v2/landing/Talents/Talents.vue');
+const Employers        = () => import('@/pages/v2/landing/Employers/Employers.vue');
+const News             = () => import('@/pages/v2/landing/News/News.vue');
 const SpecialProjects  = () => import('@/pages/v2/landing/SpecialProjects/SpecialProjects.vue');
 const ComingSoon       = () => import('@/pages/v2/landing/ComingSoon.vue');
 
@@ -28,14 +30,24 @@ const routesV2: RouteRecordRaw[] = [
         component: Industries,
         meta: { layout: 'v2', requiresAuth: false, title: 'Industries' },
     },
-    cs('/v2/news',             'v2-news',             'News'),
+    {
+        path: '/v2/news',
+        name: 'v2-news',
+        component: News,
+        meta: { layout: 'v2', requiresAuth: false, title: 'News' },
+    },
     {
         path: '/v2/about',
         name: 'v2-about',
         component: AboutUs,
         meta: { layout: 'v2', requiresAuth: false, title: 'About Us' },
     },
-    cs('/v2/employers',        'v2-employers',        'For Employers'),
+    {
+        path: '/v2/employers',
+        name: 'v2-employers',
+        component: Employers,
+        meta: { layout: 'v2', requiresAuth: false, title: 'For Employers' },
+    },
     {
         path: '/v2/talents',
         name: 'v2-talents',
