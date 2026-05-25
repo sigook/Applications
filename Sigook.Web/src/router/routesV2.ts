@@ -6,6 +6,7 @@ const Industries       = () => import('@/pages/v2/landing/Industries/Industries.
 const Talents          = () => import('@/pages/v2/landing/Talents/Talents.vue');
 const Employers        = () => import('@/pages/v2/landing/Employers/Employers.vue');
 const News             = () => import('@/pages/v2/landing/News/News.vue');
+const Partner          = () => import('@/pages/v2/landing/Partner/Partner.vue');
 const SpecialProjects  = () => import('@/pages/v2/landing/SpecialProjects/SpecialProjects.vue');
 const ComingSoon       = () => import('@/pages/v2/landing/ComingSoon.vue');
 
@@ -60,7 +61,12 @@ const routesV2: RouteRecordRaw[] = [
         component: SpecialProjects,
         meta: { layout: 'v2', requiresAuth: false },
     },
-    cs('/v2/partner',          'v2-partner',          'Become a Partner'),
+    {
+        path: '/v2/partner',
+        name: 'v2-partner',
+        component: Partner,
+        meta: { layout: 'v2', requiresAuth: false, title: 'Become a Partner' },
+    },
     cs('/v2/certified',        'v2-certified',        'Licensed & Certified'),
     cs('/v2/payroll',          'v2-payroll',          'Payroll Solutions'),
     cs('/v2/privacy-policy',   'v2-privacy-policy',   'Privacy Policy'),
