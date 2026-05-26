@@ -328,11 +328,10 @@ public class PayStubService : IPayStubService
 
                     var windowTimesheets = await timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
                     wages.RegularWage = calculatorService.CalculateHolidayPayBase(windowTimesheets);
+                    ResolveHolidayPay(wages);
+                    if (wages.Amount <= 0) continue;
 
-                    var (amount, description) = calculatorService.ResolveHolidayPay(wages);
-                    if (amount <= 0) continue;
-
-                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, description);
+                    var rHoliday = PayStubPublicHoliday.Create(holiday, wages.Amount, wages.Description);
                     if (rHoliday) publicHolidays.Add(rHoliday.Value);
                 }
             }
@@ -723,4 +722,28 @@ public class PayStubService : IPayStubService
     }
 
     private string GeneratePayStubNumber(long number, DateTime date) => $"PS-{number:0000}-{date:yy}";
+
+    private void ResolveHolidayPay(RegularWageWorker wages)
+    {
+        if (wages.HolidayWasPaid)
+        {
+            wages.Amount = decimal.Zero;
+            wages.Description = "The holiday was already paid";
+        }
+        else if (wages.CustomPublicHolidayValue > decimal.Zero)
+        {
+            wages.Amount = wages.CustomPublicHolidayValue;
+            wages.Description = $"The amount to pay is a custom value ({wages.CustomPublicHolidayValue})";
+        }
+        else if (!wages.IsEntitledToReceiveHolidayPay)
+        {
+            wages.Amount = decimal.Zero;
+            wages.Description = "The worker is not entitled to receive the public holiday because he did not work the required days";
+        }
+        else
+        {
+            wages.Amount = (wages.RegularWage / 20).DefaultMoneyRound();
+            wages.Description = $"The amount was calculated using the regular formula: (gross earnings plus vacation pay ({wages.RegularWage}) of the last four weeks / 20)";
+        }
+    }
 }

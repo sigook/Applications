@@ -18,8 +18,6 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
     private readonly Rates _rates;
     private readonly TimeLimits _timeLimits;
 
-    private const int FourWeekDivisor = 20;
-
     public TimesheetCalculatorService(
         IDeductionsRepository deductionsRepository,
         IWorkerRepository workerRepository,
@@ -242,21 +240,6 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         gross = gross.DefaultMoneyRound();
         var vacations = CalculateVacationsAmount(gross, _rates.Vacations);
         return gross.Add(vacations).DefaultMoneyRound();
-    }
-
-    public (decimal Amount, string Description) ResolveHolidayPay(RegularWageWorker wages)
-    {
-        if (wages.HolidayWasPaid)
-            return (decimal.Zero, "The holiday was already paid");
-
-        if (wages.CustomPublicHolidayValue > decimal.Zero)
-            return (wages.CustomPublicHolidayValue, $"The amount to pay is a custom value ({wages.CustomPublicHolidayValue})");
-
-        if (!wages.IsEntitledToReceiveHolidayPay)
-            return (decimal.Zero, "The worker is not entitled to receive the public holiday because he did not work the required days");
-
-        var amount = (wages.RegularWage / FourWeekDivisor).DefaultMoneyRound();
-        return (amount, $"The amount was calculated using the regular formula: (gross earnings plus vacation pay ({wages.RegularWage}) of the last four weeks / 20)");
     }
 
     #endregion
