@@ -16,9 +16,10 @@
       </div>
     </div>
     <div v-else-if="isV2Route" class="v2-page">
-      <HeaderV2 />
+      <LandingBackground />
+      <LandingHeader />
       <router-view />
-      <FooterV2 />
+      <LandingFooter />
     </div>
     <div v-else>
       <Header />
@@ -37,8 +38,9 @@ import axios from 'axios';
 import SidebarLogged from '@/components/SidebarLogged.vue';
 import Header from '@/components/landing/Header.vue';
 import Footer from '@/components/landing/Footer.vue';
-import HeaderV2 from '@/components/v2/HeaderV2.vue';
-import FooterV2 from '@/components/v2/FooterV2.vue';
+import LandingHeader from '@/components/v2/landing/shared/Header.vue';
+import LandingFooter from '@/components/v2/landing/shared/Footer.vue';
+import LandingBackground from '@/components/v2/landing/shared/GlobalBackground.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -108,6 +110,15 @@ onUnmounted(() => {
 
 .no-menu {
   display: none;
+}
+
+/* V2 landing layout — clip any horizontal overflow from decorative absolute
+   elements (glows, blurs, photos, circles) so the page never shows a
+   horizontal scrollbar. `clip` is preferred over `hidden` because it does
+   NOT create a scroll container (preserves position: sticky behavior). */
+.v2-page {
+  overflow-x: clip;
+  position: relative;
 }
 
 .logged-layout {
