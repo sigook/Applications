@@ -31,10 +31,10 @@
             solutions, combining experienced recruiters, streamlined processes,
             and reliable talent to meet evolving workforce needs.
           </p>
-          <a href="#" class="certified__cta" @click.prevent>
+          <router-link to="/v2/partner" class="certified__cta">
             <span>Grow With Us</span>
             <ArrowIcon :width="32" :height="11" :stroke-width="1.5" />
-          </a>
+          </router-link>
         </div>
       </div>
     </section>

@@ -23,10 +23,10 @@
         Browse openings and grow your career.
 
         <template #button>
-          <button class="dual-cta__cta dual-cta__cta--work" type="button">
+          <router-link to="/v2/talents" class="dual-cta__cta dual-cta__cta--work">
             <span>Browse Jobs</span>
             <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
-          </button>
+          </router-link>
         </template>
       </PrimaryCard>
 
@@ -42,10 +42,10 @@
         We match qualified workers to your needs, fast.
 
         <template #button>
-          <button class="dual-cta__cta dual-cta__cta--talent" type="button">
+          <router-link to="/v2/employers" class="dual-cta__cta dual-cta__cta--talent">
             <span>Post a Job</span>
             <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
-          </button>
+          </router-link>
         </template>
       </PrimaryCard>
     </div>
@@ -178,6 +178,7 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.04em;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }

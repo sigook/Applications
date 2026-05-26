@@ -8,11 +8,16 @@
         Workforce Platform
       </EyebrowPill>
 
-      <img
-        src="@/assets/images/v2/footer/footer-logo.png"
-        alt="Sigook Work Factory"
-        class="hero__logo"
-      />
+      <!-- Logo lockup with atmospheric halo — radial white glow softens the
+           transition between the logo and the navy background so the mark
+           reads with more presence without breaking the page palette. -->
+      <div class="hero__logo-halo">
+        <img
+          src="@/assets/images/v2/footer/footer-logo.png"
+          alt="Sigook Work Factory"
+          class="hero__logo"
+        />
+      </div>
 
       <h1 class="hero__heading">
         Where great talent meets
@@ -28,6 +33,7 @@
         label="Trusted across"
         :items="INDUSTRIES"
         more-label="+ more"
+        more-to="/v2/industries"
         class="hero__industries"
       />
     </div>
@@ -93,13 +99,44 @@ const INDUSTRIES = [
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
 
+/* Logo halo — wraps the brand mark with a soft radial white glow that
+   fades to transparent. The halo sits behind the logo via `z-index: -1`
+   on a pseudo-element; `isolation: isolate` keeps it scoped to this
+   stacking context so it never bleeds onto siblings. */
+.hero__logo-halo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto clamp(28px, 4vw, 44px);
+  isolation: isolate;
+  /* Generous padding gives the glow room to breathe past the logo edges. */
+  padding: clamp(20px, 3vw, 36px) clamp(40px, 6vw, 80px);
+}
+
+.hero__logo-halo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.18) 28%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 78%
+  );
+  /* Soften the gradient edges further so the halo blends into the navy. */
+  filter: blur(8px);
+}
+
 .hero__logo {
   display: block;
   width: auto;
   height: clamp(64px, 8vw, 96px);
   max-width: clamp(200px, 22vw, 280px);
   object-fit: contain;
-  margin: 0 auto clamp(28px, 4vw, 44px);
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.30));
 }
 

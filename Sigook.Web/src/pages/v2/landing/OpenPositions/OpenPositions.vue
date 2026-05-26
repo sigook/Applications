@@ -9,6 +9,11 @@
     <div id="openpos-contact">
       <ContactSection />
     </div>
+
+    <!-- Worker registration modal — single page-level mount. Both "Apply
+         for this role" (inside JobDetail) and "Send your resume" (inside
+         OpenPositionsCtaSection) trigger the same singleton-managed dialog. -->
+    <WorkerRegisterModal />
   </main>
 </template>
 
@@ -34,4 +39,5 @@ import OpenPositionsListSection from '@/components/v2/landing/OpenPositions/Open
 import OpenPositionsBrowseSection from '@/components/v2/landing/OpenPositions/OpenPositionsBrowseSection.vue'
 import OpenPositionsCtaSection from '@/components/v2/landing/OpenPositions/OpenPositionsCtaSection.vue'
 import ContactSection from '@/components/v2/landing/shared/ContactSection.vue'
+import WorkerRegisterModal from '@/components/v2/landing/shared/forms/WorkerRegisterModal.vue'
 </script>

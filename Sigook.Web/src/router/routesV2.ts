@@ -7,6 +7,7 @@ const Talents          = () => import('@/pages/v2/landing/Talents/Talents.vue');
 const Employers        = () => import('@/pages/v2/landing/Employers/Employers.vue');
 const News             = () => import('@/pages/v2/landing/News/News.vue');
 const OpenPositions    = () => import('@/pages/v2/landing/OpenPositions/OpenPositions.vue');
+const Apply            = () => import('@/pages/v2/landing/Apply/Apply.vue');
 const Partner          = () => import('@/pages/v2/landing/Partner/Partner.vue');
 const SpecialProjects  = () => import('@/pages/v2/landing/SpecialProjects/SpecialProjects.vue');
 const ComingSoon       = () => import('@/pages/v2/landing/ComingSoon.vue');
@@ -72,6 +73,12 @@ const routesV2: RouteRecordRaw[] = [
         name: 'v2-partner',
         component: Partner,
         meta: { layout: 'v2', requiresAuth: false, title: 'Become a Partner' },
+    },
+    {
+        path: '/v2/apply',
+        name: 'v2-apply',
+        component: Apply,
+        meta: { layout: 'v2', requiresAuth: false, title: 'Apply' },
     },
     cs('/v2/certified',        'v2-certified',        'Licensed & Certified'),
     cs('/v2/payroll',          'v2-payroll',          'Payroll Solutions'),

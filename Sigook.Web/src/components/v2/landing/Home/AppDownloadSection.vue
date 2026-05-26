@@ -13,7 +13,13 @@
           </p>
 
           <div class="app__badges">
-            <a href="#" class="app__badge" aria-label="Download on the App Store">
+            <a
+              href="https://apps.apple.com/us/app/sigook/id1446736193"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="app__badge"
+              aria-label="Download Sigook on the App Store"
+            >
               <img
                 src="@/assets/images/v2/app-download/app-store-apple.png"
                 alt=""
@@ -25,7 +31,13 @@
               </span>
             </a>
 
-            <a href="#" class="app__badge" aria-label="Get it on Google Play">
+            <a
+              href="https://play.google.com/store/apps/details?id=com.sigook.sigook&hl=es_EC"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="app__badge"
+              aria-label="Get Sigook on Google Play"
+            >
               <img
                 src="@/assets/images/v2/app-download/app-store-google.png"
                 alt=""
