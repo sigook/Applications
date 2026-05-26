@@ -21,9 +21,13 @@
 
       <!-- Desktop actions -->
       <div class="nav__actions">
-        <router-link to="/v2/sign-in" class="nav__cta nav__cta--ghost">
-          Sign In
-        </router-link>
+        <button
+          type="button"
+          class="nav__cta nav__cta--ghost"
+          @click="onSignIn"
+        >
+          {{ ctaLabel }}
+        </button>
       </div>
 
       <!-- Mobile hamburger -->
@@ -50,11 +54,11 @@
           @click="mobileOpen = false"
         >{{ link.label }}</router-link>
         <div class="nav__drawer-actions">
-          <router-link
-            to="/v2/sign-in"
+          <button
+            type="button"
             class="nav__cta nav__cta--ghost"
-            @click="mobileOpen = false"
-          >Sign In</router-link>
+            @click="onSignIn"
+          >{{ ctaLabel }}</button>
         </div>
       </div>
     </transition>
@@ -63,7 +67,13 @@
 
 <script setup lang="ts">
 import '@/assets/css/tailwind.css';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useSecurityStore } from '@/stores/security';
+import menu from '@/security/menu';
+
+const router = useRouter();
+const securityStore = useSecurityStore();
 
 const isScrolled = ref(false);
 const mobileOpen = ref(false);
@@ -77,6 +87,24 @@ const navLinks = [
   { label: 'Talents',          to: '/v2/talents' },
   { label: 'Special Projects', to: '/v2/special-projects' },
 ];
+
+/**
+ * CTA flips between "Sign In" (anonymous) and "Go to Portal" (logged in).
+ * Mirrors the legacy landing Header behaviour at src/components/landing/Header.vue.
+ */
+const ctaLabel = computed(() => (securityStore.user ? 'Go to Portal' : 'Sign In'));
+
+async function onSignIn(): Promise<void> {
+  mobileOpen.value = false;
+  if (securityStore.user) {
+    // Already authenticated — jump straight to the role-appropriate home.
+    const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
+    router.push(homePageUrl);
+  } else {
+    // Hand off to the IdentityServer OIDC flow.
+    await securityStore.signIn();
+  }
+}
 
 function onScroll() {
   isScrolled.value = window.scrollY > 80;

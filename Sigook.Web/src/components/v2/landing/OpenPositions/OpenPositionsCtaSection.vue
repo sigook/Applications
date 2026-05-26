@@ -16,10 +16,10 @@
       </p>
 
       <div class="op-cta__actions">
-        <a href="#openpos-contact" class="op-cta__primary">
+        <button type="button" class="op-cta__primary" @click="onSendResume">
           <span>Send your resume</span>
           <span class="op-cta__arrow" aria-hidden="true">→</span>
-        </a>
+        </button>
         <router-link to="/v2/industries" class="op-cta__secondary">
           <span>Browse industries</span>
           <span class="op-cta__arrow" aria-hidden="true">→</span>
@@ -35,10 +35,20 @@
  *
  * Window-style closing CTA for users who didn't find a fit in the list.
  * Two actions:
- *  • Primary: scroll to contact form to send a CV
+ *  • Primary: opens the worker registration modal (Send your resume)
  *  • Secondary: pivot to the industries page for sector-level browsing
+ *
+ * The WorkerRegisterModal is mounted once at the page level (OpenPositions.vue)
+ * — clicking the button triggers the singleton composable.
  */
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
+import { useWorkerRegisterModal } from '@/components/v2/landing/shared/forms/useWorkerRegisterModal'
+
+const registerModal = useWorkerRegisterModal()
+
+function onSendResume(): void {
+  registerModal.open()
+}
 </script>
 
 <style scoped>
@@ -147,6 +157,7 @@ import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
   gap: 10px;
   padding: clamp(13px, 1.4vw, 16px) clamp(26px, 2.8vw, 36px);
   border-radius: 999px;
+  font-family: var(--font-family);
   font-size: clamp(13px, 1.1vw, 14px);
   font-weight: 700;
   letter-spacing: 0.04em;

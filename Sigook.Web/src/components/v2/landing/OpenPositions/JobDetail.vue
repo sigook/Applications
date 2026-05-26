@@ -21,14 +21,16 @@
         </span>
       </div>
 
-      <a
-        :href="`#openpos-contact`"
+      <button
+        type="button"
         class="job-detail__apply"
         :aria-label="`Apply for ${job.title}`"
+        @click="onApply"
       >
         <span>Apply for this role</span>
         <span class="job-detail__apply-arrow" aria-hidden="true">→</span>
-      </a>
+      </button>
+
     </header>
 
     <section class="job-detail__section">
@@ -75,10 +77,17 @@ import {
   formatSalary,
   type Job,
 } from '@/data/jobs'
+import { useWorkerRegisterModal } from '@/components/v2/landing/shared/forms/useWorkerRegisterModal'
 
 const props = defineProps<{
   job: Job
 }>()
+
+const registerModal = useWorkerRegisterModal()
+
+function onApply(): void {
+  registerModal.open({ jobSlug: props.job.slug, jobTitle: props.job.title })
+}
 
 const JOB_TYPE_LABELS: Readonly<Record<Job['type'], string>> = {
   'full-time': 'Full-time',
@@ -224,6 +233,7 @@ const formattedPosted = computed(() => {
   border: 1px solid var(--c-brand-red);
   border-radius: 999px;
   color: #fff;
+  font-family: var(--font-family);
   font-size: clamp(13px, 1.1vw, 14px);
   font-weight: 700;
   letter-spacing: 0.04em;

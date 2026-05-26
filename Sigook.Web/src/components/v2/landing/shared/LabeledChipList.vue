@@ -7,8 +7,16 @@
         :key="item"
         class="labeled-chip-list__chip"
       >{{ item }}</span>
+
+      <!-- "+ more" overflow indicator — renders as a router-link when
+           `moreTo` is provided (clickable), or a plain span otherwise. -->
+      <router-link
+        v-if="moreLabel && moreTo"
+        :to="moreTo"
+        class="labeled-chip-list__chip labeled-chip-list__chip--more labeled-chip-list__chip--link"
+      >{{ moreLabel }}</router-link>
       <span
-        v-if="moreLabel"
+        v-else-if="moreLabel"
         class="labeled-chip-list__chip labeled-chip-list__chip--more"
       >{{ moreLabel }}</span>
     </div>
@@ -23,19 +31,26 @@
  *
  * Sizing scales fluidly via clamp() — no media queries needed.
  *
+ * The "+ more" chip can act as a router-link when `moreTo` is passed —
+ * useful for pointing users to a fuller listing (e.g. /v2/industries).
+ *
  * Usage:
  *   <LabeledChipList
  *     label="Trusted across"
  *     :items="INDUSTRIES"
  *     more-label="+ more"
+ *     more-to="/v2/industries"
  *   />
  */
 withDefaults(defineProps<{
   label: string
   items: readonly string[]
   moreLabel?: string
+  /** When provided, the "+ more" chip becomes a router-link to this path. */
+  moreTo?: string
 }>(), {
   moreLabel: undefined,
+  moreTo: undefined,
 })
 </script>
 
@@ -111,5 +126,22 @@ withDefaults(defineProps<{
 
 .labeled-chip-list__chip--more::before {
   background: rgba(255, 255, 255, 0.40);
+}
+
+/* Link variant of the "+ more" chip — clickable, brighter hover state */
+.labeled-chip-list__chip--link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.labeled-chip-list__chip--link:hover {
+  background: rgba(0, 173, 239, 0.12);
+  border-color: rgba(0, 173, 239, 0.55);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.labeled-chip-list__chip--link:hover::before {
+  background: var(--c-brand-cyan);
 }
 </style>

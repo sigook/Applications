@@ -61,21 +61,26 @@
 }
 
 /* ── Soft blurred glows ───────────────────────────────────────────────────── */
+/* All blurred glows use white per design decision — they read as soft
+   atmospheric halos against the navy gradient backdrop rather than
+   colored accents. Opacities are tuned down where the previous color
+   already had high saturation (e.g. navy was 0.55, but white at that
+   level reads as harsh light; lowered to 0.18). */
 .glow-cyan-lg {
   width: 640px; height: 640px;
   top: -100px; right: -100px;
-  background: var(--c-brand-cyan);
+  background: #fff;
   filter: blur(180px);
-  opacity: 0.30;
+  opacity: 0.18;
   animation: drift-a 62s ease-in-out infinite;
 }
 
 .glow-navy-lg {
   width: 520px; height: 520px;
   bottom: -120px; left: -120px;
-  background: #062a44;
+  background: #fff;
   filter: blur(160px);
-  opacity: 0.55;
+  opacity: 0.14;
   animation: drift-b 70s ease-in-out infinite;
   animation-delay: -8s;
 }
@@ -83,9 +88,9 @@
 .glow-red-md {
   width: 480px; height: 480px;
   top: 30%; left: 18%;
-  background: var(--c-brand-red);
+  background: #fff;
   filter: blur(170px);
-  opacity: 0.30;
+  opacity: 0.16;
   animation: drift-c 56s ease-in-out infinite;
   animation-delay: -14s;
 }
@@ -93,9 +98,9 @@
 .glow-blue-md {
   width: 540px; height: 540px;
   top: 50%; right: 12%;
-  background: var(--c-brand-blue);
+  background: #fff;
   filter: blur(180px);
-  opacity: 0.36;
+  opacity: 0.18;
   animation: drift-d 66s ease-in-out infinite;
   animation-delay: -22s;
 }
@@ -103,9 +108,9 @@
 .glow-red-sm {
   width: 320px; height: 320px;
   bottom: 14%; left: 32%;
-  background: var(--c-brand-red);
+  background: #fff;
   filter: blur(140px);
-  opacity: 0.28;
+  opacity: 0.15;
   animation: drift-e 50s ease-in-out infinite;
   animation-delay: -6s;
 }
@@ -113,9 +118,9 @@
 .glow-cyan-md {
   width: 380px; height: 380px;
   bottom: 10%; right: -50px;
-  background: var(--c-brand-cyan);
+  background: #fff;
   filter: blur(150px);
-  opacity: 0.24;
+  opacity: 0.14;
   animation: drift-f 60s ease-in-out infinite;
   animation-delay: -32s;
 }

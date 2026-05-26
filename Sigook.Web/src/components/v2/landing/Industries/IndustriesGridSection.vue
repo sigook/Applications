@@ -30,6 +30,15 @@
         :index="idx"
         @toggle="toggle(industry.key)"
       />
+
+      <!-- "+" card — closes the grid (slot 12). Same red brand gradient
+           as the other red-tone cards, with a single centered plus glyph.
+           Acts as a soft CTA: "don't see your sector? talk to us". -->
+      <a href="#industries-contact" class="industries-grid__plus" aria-label="Don't see your sector? Contact us">
+        <span class="industries-grid__plus-symbol" aria-hidden="true">+</span>
+        <span class="industries-grid__plus-label">Don't see your sector?</span>
+        <span class="industries-grid__plus-cta">Talk to us →</span>
+      </a>
     </div>
   </section>
 </template>
@@ -51,9 +60,10 @@ import { ref } from 'vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import IndustryCard, { type Industry } from '@/components/v2/landing/Industries/IndustryCard.vue'
 
-// 11 sectors. Tones alternate cyan / red for visual rhythm.
-// Photo paths point to `/public/images/v2/industries/{key}.jpg` — when those
-// files don't exist, cards gracefully degrade to the solid brand gradient.
+// 11 sectors. Tones alternate navy / red for visual rhythm.
+// Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized
+// for the card aspect (~800w, q=80, fit=crop) so the JPEG is light. When
+// marketing supplies branded photography these URLs swap to local assets.
 const INDUSTRIES: readonly Industry[] = [
   {
     key: 'automotive',
@@ -67,7 +77,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Service Advisors',
       'Production Operators',
     ],
-    photo: '/images/v2/industries/automotive.jpg',
+    photo: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -82,7 +92,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Avionics Technicians',
       'Flight Operations',
     ],
-    photo: '/images/v2/industries/aviation.jpg',
+    photo: 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -97,7 +107,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Skilled Trades',
       'Safety Officers',
     ],
-    photo: '/images/v2/industries/construction.jpg',
+    photo: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -112,7 +122,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Civil Engineers',
       'Process Engineers',
     ],
-    photo: '/images/v2/industries/engineering.jpg',
+    photo: 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -127,7 +137,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Data Engineers',
       'IT Support Leads',
     ],
-    photo: '/images/v2/industries/technology.jpg',
+    photo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -142,7 +152,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Auditors',
       'Compliance Officers',
     ],
-    photo: '/images/v2/industries/finance.jpg',
+    photo: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -157,7 +167,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Compliance Specialists',
       'Contract Coordinators',
     ],
-    photo: '/images/v2/industries/legal.jpg',
+    photo: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -172,7 +182,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Inventory Specialists',
       'Supply Chain Analysts',
     ],
-    photo: '/images/v2/industries/logistics.jpg',
+    photo: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -187,7 +197,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Quality Technicians',
       'Maintenance Techs',
     ],
-    photo: '/images/v2/industries/manufacturing.jpg',
+    photo: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -202,7 +212,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Customer Service Leads',
       'Inventory Associates',
     ],
-    photo: '/images/v2/industries/retail.jpg',
+    photo: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -217,7 +227,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Operations Managers',
       'Dispatch Specialists',
     ],
-    photo: '/images/v2/industries/transportation.jpg',
+    photo: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
 ]
@@ -323,6 +333,114 @@ function toggle(key: Industry['key']): void {
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
+}
+
+/* ── "+" card — closes the 11-industry grid as slot 12 ─────────────────── */
+.industries-grid__plus {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.2vw, 16px);
+  min-height: clamp(380px, 38vw, 460px);
+  padding: clamp(28px, 3vw, 44px);
+  color: #fff;
+  font-family: var(--font-family);
+  text-decoration: none;
+  isolation: isolate;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: linear-gradient(
+    135deg,
+    rgba(229, 45, 39, 0.92) 0%,
+    rgba(229, 45, 39, 0.70) 100%
+  );
+  /* Matches IndustryCard `:nth-child(even)` shape (TR+BL) — slot 12 is the
+     12th child of the grid, so picking the even radius keeps the alternating
+     rhythm consistent with the rest of the cards. */
+  border-radius:
+    0 clamp(40px, 5.5vw, 72px)
+    0 clamp(40px, 5.5vw, 72px);
+  transition:
+    border-color 0.4s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s ease;
+}
+
+.industries-grid__plus:hover {
+  border-color: rgba(255, 255, 255, 0.30);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 44px rgba(229, 45, 39, 0.32);
+}
+
+/* Subtle white wash behind the symbol — adds depth without overpowering */
+.industries-grid__plus::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.10) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.industries-grid__plus-symbol {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(96px, 12vw, 160px);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.30);
+  /* Soft scale wobble — feels alive without being noisy */
+  animation: plus-pulse 4s ease-in-out infinite;
+}
+
+@keyframes plus-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .industries-grid__plus-symbol { animation: none; }
+}
+
+.industries-grid__plus-label {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(15px, 1.4vw, 18px);
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
+}
+
+.industries-grid__plus-cta {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(9px, 1vw, 11px) clamp(20px, 2vw, 26px);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  font-size: clamp(12px, 1vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.industries-grid__plus:hover .industries-grid__plus-cta {
+  background: #fff;
+  color: var(--c-brand-red);
 }
 
 /* ── Responsive grid shifts (can't be expressed with clamp alone) ───────── */
