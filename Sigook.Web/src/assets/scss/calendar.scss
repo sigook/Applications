@@ -8,11 +8,13 @@
       background: #f7f7f7;
     }
 
-    /* change for punch card calendar*/
     &.isPunchCard {
+      table-layout: fixed;
+      width: 100%;
+
       th:nth-child(1),
       td:nth-child(1) {
-        width: 40px;
+        width: 60px;
         background: #e4e4e4;
         border-left: 1px solid white;
       }
@@ -21,15 +23,12 @@
         background: #f7f7f7;
       }
     }
-    /* change for punch card calendar*/
 
     td {
       padding: 0 !important;
     }
     tbody td {
       border: 1px solid #d2d2d2;
-      // width: calc((100% - 40px) / 7 );
-      width: 100px;
     }
     .wrapper-day {
       min-height: 60px;

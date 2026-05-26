@@ -13,7 +13,22 @@
     </div>
 
     <nav class="sidebar-nav">
-      <b-menu>
+      <div v-if="collapsed" class="sidebar-rail">
+        <div v-for="(group, i) in menuGroups" :key="i" class="sidebar-rail-group">
+          <span v-if="group.label" class="sidebar-rail-group-label" :title="group.label">{{ group.label }}</span>
+          <ul>
+            <li v-for="item in group.items" :key="item.to + item.label">
+              <router-link :to="item.to" class="sidebar-rail-item" :class="{ 'is-active': isActive(item.to) }"
+                :title="item.label">
+                <b-icon :icon="item.icon" size="is-medium"></b-icon>
+                <span class="sidebar-rail-label">{{ item.label }}</span>
+              </router-link>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <b-menu v-else>
         <b-menu-list>
           <template v-for="(group, i) in menuGroups" :key="i">
             <b-menu-item v-if="group.label" :title="group.label" class="sidebar-group"
@@ -21,31 +36,24 @@
               @update:expanded="expandedGroups[i] = $event">
               <template #label="{ expanded }">
                 <span class="sidebar-group-label">
-                  <b-tooltip :label="group.label" position="is-right" :active="isCollapsed && !isMobile" append-to-body>
-                    <b-icon :icon="group.icon" class="mr-2"></b-icon>
-                  </b-tooltip>
-                  <span v-if="!collapsed">{{ group.label }}</span>
+                  <b-icon :icon="group.icon" size="is-medium" class="mr-2"></b-icon>
+                  <span>{{ group.label }}</span>
                 </span>
-                <b-icon v-if="!collapsed" :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
+                <b-icon :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
                   class="sidebar-group-arrow"></b-icon>
               </template>
               <b-menu-item v-for="item in group.items" :key="item.to + item.label" tag="router-link" :to="item.to"
                 :model-value="isActive(item.to)" :title="item.label">
                 <template #label>
-                  <b-tooltip :label="item.label" position="is-right" :active="isCollapsed && !isMobile" append-to-body>
-                    <b-icon :icon="item.icon" class="mr-2"></b-icon>
-                  </b-tooltip>
-                  <span v-if="!collapsed">{{ item.label }}</span>
+                  <span>{{ item.label }}</span>
                 </template>
               </b-menu-item>
             </b-menu-item>
             <b-menu-item v-else v-for="item in group.items" :key="item.to + item.label" tag="router-link"
               :to="item.to" :model-value="isActive(item.to)" :title="item.label">
               <template #label>
-                <b-tooltip :label="item.label" position="is-right" :active="isCollapsed && !isMobile" append-to-body>
-                  <b-icon :icon="item.icon" class="mr-2"></b-icon>
-                </b-tooltip>
-                <span v-if="!collapsed">{{ item.label }}</span>
+                <b-icon :icon="item.icon" size="is-medium" class="mr-2"></b-icon>
+                <span>{{ item.label }}</span>
               </template>
             </b-menu-item>
           </template>
@@ -231,7 +239,7 @@ init();
 
 <style lang="scss">
 $sidebar-width: 250px;
-$sidebar-width-collapsed: 76px;
+$sidebar-width-collapsed: 100px;
 
 .sidebar-logged {
   position: sticky;
@@ -313,33 +321,62 @@ $sidebar-width-collapsed: 76px;
     }
   }
 
-  &.is-collapsed {
-    .menu-list .icon {
-      margin-right: 0 !important;
-    }
-
-    // submenu visibility follows buefy's v-show (only the expanded group);
-    // strip indent/border so children align under the group
-    .menu-list li ul {
+  .sidebar-rail {
+    ul {
+      list-style: none;
       margin: 0;
       padding: 0;
-      border-left: 0;
     }
 
-    // top-level entries (group parents + flat items) hug the left edge
-    .menu-list > li > a {
-      justify-content: flex-start;
-      padding-left: 16px;
-      padding-right: 0;
+    .sidebar-rail-group + .sidebar-rail-group {
+      margin-top: 14px;
     }
 
-    // submenu children sit to the right, reading as belonging to their group
-    .menu-list li ul a {
+    .sidebar-rail-group-label {
+      display: block;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #21b7ff;
+      background-color: rgba(33, 183, 255, 0.1);
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sidebar-rail-item {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
       align-items: center;
-      padding-left: 0;
-      padding-right: 16px;
+      gap: 4px;
+      padding: 10px 4px;
+      border-radius: 8px;
+      color: #555;
+      text-align: center;
+
+      &:hover {
+        background-color: #f3f3f3;
+      }
+
+      &.is-active {
+        background-color: rgba(33, 183, 255, 0.12);
+        color: #21b7ff;
+      }
+    }
+
+    .sidebar-rail-label {
+      font-size: 11px;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
     }
   }
 
