@@ -855,7 +855,11 @@ async function onSubmit(): Promise<void> {
   worker.password = password.value as never
   worker.confirmPassword = confirmPassword.value as never
   worker.agreeTermsAndConditions = agreeTermsAndConditions.value as never
-  worker.gender = { id: gender.value as never } as never
+  // V2Select emits the full Gender object (unlike the legacy form's
+   // b-select which bound only the id). Extract `.id` so the backend
+   // receives the same `{ id: '<guid>' }` shape Register.vue sends.
+  const genderObj = gender.value as { id: string } | null
+  worker.gender = (genderObj ? { id: genderObj.id } : null) as never
   // Address: assemble a `location` matching the legacy shape
   worker.location = addressModel.value.city
     ? {
