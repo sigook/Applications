@@ -1,11 +1,10 @@
 <template>
   <div id="app">
-    <div class="message-version" v-if="isANewVersion">
-      New version available!
-      <button @click="updateAppVersion">
-        Please click here to get the latest version.
-      </button>
-    </div>
+    <!-- Non-invasive bottom-right toast that nudges the user to refresh
+         when a newer build is detected. Replaces the legacy top banner
+         which (a) shifted layout down and (b) collided with the V2 fixed
+         navbar. Component lives in src/components/v2/landing/shared/. -->
+    <AppVersionToast v-model="isANewVersion" @update="updateAppVersion" />
     <div v-if="isCallback">
       <router-view />
     </div>
@@ -41,6 +40,7 @@ import Footer from '@/components/landing/Footer.vue';
 import LandingHeader from '@/components/v2/landing/shared/Header.vue';
 import LandingFooter from '@/components/v2/landing/shared/Footer.vue';
 import LandingBackground from '@/components/v2/landing/shared/GlobalBackground.vue';
+import AppVersionToast from '@/components/v2/landing/shared/AppVersionToast.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -144,21 +144,9 @@ onUnmounted(() => {
   padding: 30px;
 }
 
-.message-version {
-  background-color: #13dde8;
-  color: white;
-  text-align: center;
-  padding: 5px 10px;
-
-  button {
-    display: block;
-    font-size: 14px;
-    color: #fff;
-    margin: 5px auto;
-    border: 0;
-    border-bottom: 1px solid white;
-  }
-}
+/* Legacy .message-version banner removed — replaced by AppVersionToast
+   (src/components/v2/landing/shared/AppVersionToast.vue) which renders
+   non-invasively in the bottom-right corner. */
 
 @media (max-width: 767px) {
   .main-container {
