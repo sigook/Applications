@@ -51,9 +51,10 @@ import { ref } from 'vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import IndustryCard, { type Industry } from '@/components/v2/landing/Industries/IndustryCard.vue'
 
-// 11 sectors. Tones alternate cyan / red for visual rhythm.
-// Photo paths point to `/public/images/v2/industries/{key}.jpg` — when those
-// files don't exist, cards gracefully degrade to the solid brand gradient.
+// 11 sectors. Tones alternate navy / red for visual rhythm.
+// Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized
+// for the card aspect (~800w, q=80, fit=crop) so the JPEG is light. When
+// marketing supplies branded photography these URLs swap to local assets.
 const INDUSTRIES: readonly Industry[] = [
   {
     key: 'automotive',
@@ -67,7 +68,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Service Advisors',
       'Production Operators',
     ],
-    photo: '/images/v2/industries/automotive.jpg',
+    photo: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -82,7 +83,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Avionics Technicians',
       'Flight Operations',
     ],
-    photo: '/images/v2/industries/aviation.jpg',
+    photo: 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -97,7 +98,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Skilled Trades',
       'Safety Officers',
     ],
-    photo: '/images/v2/industries/construction.jpg',
+    photo: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -112,7 +113,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Civil Engineers',
       'Process Engineers',
     ],
-    photo: '/images/v2/industries/engineering.jpg',
+    photo: 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -127,7 +128,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Data Engineers',
       'IT Support Leads',
     ],
-    photo: '/images/v2/industries/technology.jpg',
+    photo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -142,7 +143,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Auditors',
       'Compliance Officers',
     ],
-    photo: '/images/v2/industries/finance.jpg',
+    photo: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -157,7 +158,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Compliance Specialists',
       'Contract Coordinators',
     ],
-    photo: '/images/v2/industries/legal.jpg',
+    photo: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -172,7 +173,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Inventory Specialists',
       'Supply Chain Analysts',
     ],
-    photo: '/images/v2/industries/logistics.jpg',
+    photo: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -187,7 +188,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Quality Technicians',
       'Maintenance Techs',
     ],
-    photo: '/images/v2/industries/manufacturing.jpg',
+    photo: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
   {
@@ -202,7 +203,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Customer Service Leads',
       'Inventory Associates',
     ],
-    photo: '/images/v2/industries/retail.jpg',
+    photo: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80&auto=format&fit=crop',
     tone: 'red',
   },
   {
@@ -217,7 +218,7 @@ const INDUSTRIES: readonly Industry[] = [
       'Operations Managers',
       'Dispatch Specialists',
     ],
-    photo: '/images/v2/industries/transportation.jpg',
+    photo: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&auto=format&fit=crop',
     tone: 'navy',
   },
 ]

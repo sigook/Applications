@@ -198,17 +198,35 @@ function formatIndex(idx: number): string {
   opacity: 0;
 }
 
-/* ── Layer 2 — navy overlay (visible when collapsed) ────────────────────── */
+/* ── Layer 2 — brand-tone overlay (visible when collapsed) ──────────────── */
+/* Top-to-bottom gradient that matches the card's tone (navy or red) so the
+   photo reads through the brand color instead of a generic dark veil. Goes
+   from semi-transparent at the top (lets the photo breathe) to nearly opaque
+   at the bottom (anchors the title + tagline). Fades out on expand to
+   reveal the solid `.industry-card__base` gradient underneath. */
 .industry-card__overlay {
   position: absolute;
   inset: 0;
   z-index: 2;
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.industry-card--navy .industry-card__overlay {
   background: linear-gradient(
     180deg,
-    rgba(9, 48, 85, 0.45) 0%,
-    rgba(9, 48, 85, 0.88) 100%
+    rgba(15, 47, 68, 0.55) 0%,
+    rgba(21, 117, 187, 0.65) 55%,
+    rgba(15, 47, 68, 0.92) 100%
   );
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.industry-card--red .industry-card__overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(229, 45, 39, 0.55) 0%,
+    rgba(229, 45, 39, 0.75) 55%,
+    rgba(176, 30, 26, 0.92) 100%
+  );
 }
 
 .industry-card--expanded .industry-card__overlay {
