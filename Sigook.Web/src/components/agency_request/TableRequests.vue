@@ -160,7 +160,7 @@
         </b-table-column>
         <b-table-column field="notesCount" label="Notes" :visible="tableConfig.showNotesColumn" v-slot="props">
           <div @click="onNote(props.row, true)">
-            <b-tag icon="note-multiple" rounded>
+            <b-tag icon="note-text" rounded>
               <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
             </b-tag>
           </div>

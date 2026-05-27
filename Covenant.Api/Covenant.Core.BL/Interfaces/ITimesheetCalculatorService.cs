@@ -26,7 +26,7 @@ public interface ITimesheetCalculatorService
     decimal CalculateMissingAmount(decimal rate, double hours);
     decimal CalculateVacationsAmount(decimal gross, decimal vacationsRate);
     decimal CalculateTotalGross(decimal regular, decimal missing, decimal missingOvertime, decimal holiday, decimal overtime);
-    decimal CalculateHolidayPayBase(IEnumerable<TimeSheetApprovedPayrollModel> timesheets);
+    Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd);
 
     TimeSheetTotalEntity CreateTimeSheetTotalEntity(
         Guid timeSheetId,

@@ -33,6 +33,7 @@ public class GeneratePayStubHolidayPayTest
         var calculator = new TimesheetCalculatorService(
             Mock.Of<IDeductionsRepository>(),
             Mock.Of<IWorkerRepository>(),
+            _timeSheetRepository.Object,
             rates,
             timeLimits);
 

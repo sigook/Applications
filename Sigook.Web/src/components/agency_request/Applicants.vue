@@ -26,7 +26,7 @@
               <span class="d-block">
                 {{ props.row.name }}
                 <b-tooltip label="Candidate" type="is-dark" append-to-body>
-                  <b-icon v-if="props.row.candidateId" icon="account-group" size="is-small"></b-icon>
+                  <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
                 </b-tooltip>
                 <b-tooltip label="Worker" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>

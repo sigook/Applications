@@ -292,8 +292,6 @@ $sidebar-width-collapsed: 100px;
     padding: 8px;
   }
 
-  // The user/profile block is detached from the sidebar and pinned to the
-  // top-right corner of the viewport, acting as a permanent navbar menu.
   .sidebar-user {
     position: fixed;
     top: 12px;

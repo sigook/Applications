@@ -4,6 +4,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
@@ -15,17 +16,20 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 {
     private readonly IDeductionsRepository _deductionsRepository;
     private readonly IWorkerRepository _workerRepository;
+    private readonly ITimeSheetRepository _timeSheetRepository;
     private readonly Rates _rates;
     private readonly TimeLimits _timeLimits;
 
     public TimesheetCalculatorService(
         IDeductionsRepository deductionsRepository,
         IWorkerRepository workerRepository,
+        ITimeSheetRepository timeSheetRepository,
         Rates rates,
         TimeLimits timeLimits)
     {
         _deductionsRepository = deductionsRepository;
         _workerRepository = workerRepository;
+        _timeSheetRepository = timeSheetRepository;
         _rates = rates;
         _timeLimits = timeLimits;
     }
@@ -202,8 +206,9 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     #region Public Holiday Pay
 
-    public decimal CalculateHolidayPayBase(IEnumerable<TimeSheetApprovedPayrollModel> timesheets)
+    public async Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd)
     {
+        var timesheets = await _timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
         var gross = decimal.Zero;
         foreach (var week in timesheets.GroupBy(t => t.Week))
         {
