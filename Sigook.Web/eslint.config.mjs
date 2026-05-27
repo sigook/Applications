@@ -105,7 +105,50 @@ export default [
       'vue/no-mutating-props': 'warn',
       'vue/multi-word-component-names': 'off',
       'vue/no-reserved-component-names': 'off',
-      'vue/no-v-model-argument': 'off'
+      'vue/no-v-model-argument': 'off',
+      // Catch <PascalCase> tags in templates that have no matching import or
+      // registration. Without this, missing imports silently degrade to
+      // unknown HTML elements (e.g. <eyebrowpillv2> rendered as plain span).
+      // ignorePatterns covers globally-registered components from vue-router
+      // and Buefy plus Vue built-ins.
+      'vue/no-undef-components': ['error', {
+        ignorePatterns: [
+          // Vue Router
+          'router-view',
+          'router-link',
+          'RouterView',
+          'RouterLink',
+          // Vue built-ins
+          'transition',
+          'transition-group',
+          'Transition',
+          'TransitionGroup',
+          'keep-alive',
+          'KeepAlive',
+          'teleport',
+          'Teleport',
+          'suspense',
+          'Suspense',
+          'component',
+          'slot',
+          // Buefy (globally registered via @ntohq/buefy-next)
+          '^[Bb]-.*',
+          '^[Bb][A-Z].*',
+          // VeeValidate (auto-imported / globally registered)
+          '^[Ff]ield$',
+          '^[Ff]orm$',
+          '^[Ee]rror[Mm]essage$',
+          // Vue Quill editor
+          '^[Qq]uill[Ee]ditor$',
+          // Globally registered in src/main.ts
+          'default-image',
+          'defaultImage',
+          'DefaultImage',
+          // Third-party globals
+          'vue-recaptcha',
+          'VueRecaptcha'
+        ]
+      }]
     }
   },
 
