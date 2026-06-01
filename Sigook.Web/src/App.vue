@@ -1,11 +1,10 @@
 <template>
   <div id="app">
-    <div class="message-version" v-if="isANewVersion">
-      New version available!
-      <button @click="updateAppVersion">
-        Please click here to get the latest version.
-      </button>
-    </div>
+    <!-- Non-invasive bottom-right toast that nudges the user to refresh
+         when a newer build is detected. Replaces the legacy top banner
+         which (a) shifted layout down and (b) collided with the V2 fixed
+         navbar. Component lives in src/components/v2/landing/shared/. -->
+    <AppVersionToast v-model="isANewVersion" @update="updateAppVersion" />
     <div v-if="isCallback">
       <router-view />
     </div>
@@ -16,9 +15,10 @@
       </div>
     </div>
     <div v-else-if="isV2Route" class="v2-page">
-      <HeaderV2 />
+      <LandingBackground />
+      <LandingHeader />
       <router-view />
-      <FooterV2 />
+      <LandingFooter />
     </div>
     <div v-else>
       <Header />
@@ -37,8 +37,10 @@ import axios from 'axios';
 import SidebarLogged from '@/components/SidebarLogged.vue';
 import Header from '@/components/landing/Header.vue';
 import Footer from '@/components/landing/Footer.vue';
-import HeaderV2 from '@/components/v2/HeaderV2.vue';
-import FooterV2 from '@/components/v2/FooterV2.vue';
+import LandingHeader from '@/components/v2/landing/shared/Header.vue';
+import LandingFooter from '@/components/v2/landing/shared/Footer.vue';
+import LandingBackground from '@/components/v2/landing/shared/GlobalBackground.vue';
+import AppVersionToast from '@/components/v2/landing/shared/AppVersionToast.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -110,6 +112,15 @@ onUnmounted(() => {
   display: none;
 }
 
+/* V2 landing layout — clip any horizontal overflow from decorative absolute
+   elements (glows, blurs, photos, circles) so the page never shows a
+   horizontal scrollbar. `clip` is preferred over `hidden` because it does
+   NOT create a scroll container (preserves position: sticky behavior). */
+.v2-page {
+  overflow-x: clip;
+  position: relative;
+}
+
 .logged-layout {
   display: flex;
   align-items: flex-start;
@@ -133,21 +144,9 @@ onUnmounted(() => {
   padding: 30px;
 }
 
-.message-version {
-  background-color: #13dde8;
-  color: white;
-  text-align: center;
-  padding: 5px 10px;
-
-  button {
-    display: block;
-    font-size: 14px;
-    color: #fff;
-    margin: 5px auto;
-    border: 0;
-    border-bottom: 1px solid white;
-  }
-}
+/* Legacy .message-version banner removed — replaced by AppVersionToast
+   (src/components/v2/landing/shared/AppVersionToast.vue) which renders
+   non-invasively in the bottom-right corner. */
 
 @media (max-width: 767px) {
   .main-container {

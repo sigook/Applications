@@ -133,7 +133,6 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
         return new RegularWageWorker
         {
-            RegularWage = decimal.Zero,
             HolidayWasPaid = holidayWasPaid,
             CustomPublicHolidayValue = customPublicHolidayValue,
             IsEntitledToReceiveHolidayPay = isEntitledToReceiveHolidayPay

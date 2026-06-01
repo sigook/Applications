@@ -26,18 +26,7 @@ public interface ITimesheetCalculatorService
     decimal CalculateMissingAmount(decimal rate, double hours);
     decimal CalculateVacationsAmount(decimal gross, decimal vacationsRate);
     decimal CalculateTotalGross(decimal regular, decimal missing, decimal missingOvertime, decimal holiday, decimal overtime);
-
-    /// <summary>
-    /// Public holiday pay base: the worker's full gross earnings across the given timesheets
-    /// (regular + other-regular + overtime + worked-holiday + missing) plus vacation pay on that gross.
-    /// </summary>
-    decimal CalculateHolidayPayBase(IEnumerable<TimeSheetApprovedPayrollModel> timesheets);
-
-    /// <summary>
-    /// Resolves the public holiday pay amount from the entitlement flags and the four-week base:
-    /// 0 if already paid or not entitled, the agency custom value when present, otherwise base / 20.
-    /// </summary>
-    (decimal Amount, string Description) ResolveHolidayPay(RegularWageWorker wages);
+    Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd);
 
     TimeSheetTotalEntity CreateTimeSheetTotalEntity(
         Guid timeSheetId,

@@ -325,14 +325,11 @@ public class PayStubService : IPayStubService
 
                     var wages = await payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays);
                     if (wages == null) continue;
+                    wages.RegularWage = await calculatorService.CalculateHolidayPayBase(workerProfileId, lookbackStart, holidayWeekEnd);
+                    wages.CalculateAmount();
+                    if (wages.Amount <= 0) continue;
 
-                    var windowTimesheets = await timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
-                    wages.RegularWage = calculatorService.CalculateHolidayPayBase(windowTimesheets);
-
-                    var (amount, description) = calculatorService.ResolveHolidayPay(wages);
-                    if (amount <= 0) continue;
-
-                    var rHoliday = PayStubPublicHoliday.Create(holiday, amount, description);
+                    var rHoliday = PayStubPublicHoliday.Create(holiday, wages.Amount, wages.Description);
                     if (rHoliday) publicHolidays.Add(rHoliday.Value);
                 }
             }

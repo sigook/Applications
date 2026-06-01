@@ -52,7 +52,7 @@ export default {
         },
         {
           to: "/recruiting/candidates",
-          icon: "account-group",
+          icon: "account-hard-hat",
           label: "Candidates",
         },
         {
@@ -81,7 +81,7 @@ export default {
     if (agency.masterAgency) {
       sales.items.push({
         to: "/sales/agencies",
-        icon: "office-building",
+        icon: "warehouse",
         label: "Agencies",
       });
     }
@@ -94,12 +94,12 @@ export default {
       items: [
         {
           to: "/accounting/invoices",
-          icon: "file-document-outline",
+          icon: "invoice-list-outline",
           label: "Invoices",
         },
         {
           to: "/accounting/reports",
-          icon: "chart-box-outline",
+          icon: "file-chart-outline",
           label: "Reports",
         },
       ],

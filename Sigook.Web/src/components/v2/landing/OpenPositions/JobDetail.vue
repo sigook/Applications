@@ -1,0 +1,326 @@
+<template>
+  <article class="job-detail">
+    <header class="job-detail__head">
+      <h3 class="job-detail__title">{{ job.title }}</h3>
+
+      <div class="job-detail__meta">
+        <span class="job-detail__meta-item job-detail__meta-item--location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          {{ formatLocation(job.location) }}
+        </span>
+
+        <span class="job-detail__meta-item job-detail__meta-item--salary">
+          {{ formatSalary(job.salary) }}
+        </span>
+
+        <span class="job-detail__chip" :class="`job-detail__chip--${job.type}`">
+          {{ typeLabel }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="job-detail__apply"
+        :aria-label="`Apply for ${job.title}`"
+        @click="onApply"
+      >
+        <span>Apply for this role</span>
+        <span class="job-detail__apply-arrow" aria-hidden="true">→</span>
+      </button>
+
+    </header>
+
+    <section class="job-detail__section">
+      <h4 class="job-detail__section-title">Schedule</h4>
+      <ul class="job-detail__list">
+        <li v-for="item in job.schedule" :key="item">{{ item }}</li>
+      </ul>
+    </section>
+
+    <section class="job-detail__section">
+      <h4 class="job-detail__section-title">Responsibilities</h4>
+      <ul class="job-detail__list">
+        <li v-for="item in job.responsibilities" :key="item">{{ item }}</li>
+      </ul>
+    </section>
+
+    <section class="job-detail__section">
+      <h4 class="job-detail__section-title">Requirements</h4>
+      <ul class="job-detail__list">
+        <li v-for="item in job.requirements" :key="item">{{ item }}</li>
+      </ul>
+    </section>
+
+    <footer class="job-detail__footer">
+      <span class="job-detail__posted">
+        Posted {{ formattedPosted }} · ref {{ job.jobNumber }}
+      </span>
+    </footer>
+  </article>
+</template>
+
+<script setup lang="ts">
+/**
+ * JobDetail — the right-column / inline detail panel for a single job.
+ *
+ * Consumes a Job from `@/data/jobs`. Owns no state — purely presentational.
+ * Used by OpenPositionsListSection in two modes:
+ *   - Desktop: sticky right column
+ *   - Mobile : inline expanded under the active list item
+ */
+import { computed } from 'vue'
+import {
+  formatLocation,
+  formatSalary,
+  type Job,
+} from '@/data/jobs'
+import { useWorkerRegisterModal } from '@/components/v2/landing/shared/forms/useWorkerRegisterModal'
+
+const props = defineProps<{
+  job: Job
+}>()
+
+const registerModal = useWorkerRegisterModal()
+
+function onApply(): void {
+  registerModal.open({ jobSlug: props.job.slug, jobTitle: props.job.title })
+}
+
+const JOB_TYPE_LABELS: Readonly<Record<Job['type'], string>> = {
+  'full-time': 'Full-time',
+  'part-time': 'Part-time',
+  'contract':  'Contract',
+  'temp':      'Temporary',
+}
+
+const typeLabel = computed(() => JOB_TYPE_LABELS[props.job.type])
+
+const formattedPosted = computed(() => {
+  const date = new Date(`${props.job.postedAt}T00:00:00Z`)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+})
+</script>
+
+<style scoped>
+/* ── Shell ──────────────────────────────────────────────────────────────── */
+.job-detail {
+  position: relative;
+  padding: clamp(24px, 3vw, 36px) clamp(22px, 2.8vw, 36px);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius:
+    clamp(20px, 2.4vw, 28px) clamp(20px, 2.4vw, 28px)
+    clamp(20px, 2.4vw, 28px) clamp(40px, 5vw, 56px);
+  color: #fff;
+  font-family: var(--font-family);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.4vw, 28px);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Decorative bottom-left glow */
+.job-detail::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  bottom: 0;
+  left: 0;
+  width: clamp(140px, 16vw, 200px);
+  height: clamp(140px, 16vw, 200px);
+  z-index: 0;
+  border-radius: 0 clamp(40px, 5vw, 56px) 0 0;
+  background: radial-gradient(circle at bottom left,
+    rgba(0, 173, 239, 0.30) 0%,
+    rgba(0, 173, 239, 0.10) 40%,
+    transparent 70%);
+}
+
+/* ── Header — title + meta + apply ──────────────────────────────────────── */
+.job-detail__head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.5vw, 18px);
+}
+
+.job-detail__title {
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.job-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(8px, 1.2vw, 14px);
+  font-size: clamp(12px, 1.05vw, 14px);
+}
+
+.job-detail__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.job-detail__meta-item--salary {
+  color: var(--c-brand-cyan);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.job-detail__meta-item svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Type chip */
+.job-detail__chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: clamp(10px, 0.9vw, 11px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.job-detail__chip--contract {
+  background: rgba(229, 45, 39, 0.18);
+  border-color: rgba(229, 45, 39, 0.45);
+  color: #ff8a85;
+}
+
+.job-detail__chip--temp {
+  background: rgba(229, 45, 39, 0.12);
+  border-color: rgba(229, 45, 39, 0.35);
+  color: #ff8a85;
+}
+
+/* ── Apply CTA — solid red pill (matches Figma) ─────────────────────────── */
+.job-detail__apply {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(8px, 1vw, 12px);
+  padding: clamp(12px, 1.3vw, 14px) clamp(24px, 2.6vw, 32px);
+  background: var(--c-brand-red);
+  border: 1px solid var(--c-brand-red);
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: clamp(13px, 1.1vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.job-detail__apply:hover {
+  background: #c92622;
+  border-color: #c92622;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(229, 45, 39, 0.35);
+}
+
+.job-detail__apply-arrow {
+  font-size: 1.15em;
+  line-height: 1;
+  transition: transform 0.25s ease;
+}
+
+.job-detail__apply:hover .job-detail__apply-arrow {
+  transform: translateX(3px);
+}
+
+/* ── Sections — Schedule / Responsibilities / Requirements ──────────────── */
+.job-detail__section {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1vw, 12px);
+}
+
+.job-detail__section-title {
+  font-size: clamp(11px, 0.95vw, 12px);
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+  margin: 0;
+}
+
+.job-detail__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.job-detail__list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.job-detail__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+/* ── Footer — posted date + ref ─────────────────────────────────────────── */
+.job-detail__footer {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(8px, 1vw, 12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.job-detail__posted {
+  font-size: clamp(11px, 0.95vw, 12px);
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+</style>

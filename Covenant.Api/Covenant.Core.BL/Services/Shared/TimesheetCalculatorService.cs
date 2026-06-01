@@ -4,6 +4,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
@@ -15,19 +16,20 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 {
     private readonly IDeductionsRepository _deductionsRepository;
     private readonly IWorkerRepository _workerRepository;
+    private readonly ITimeSheetRepository _timeSheetRepository;
     private readonly Rates _rates;
     private readonly TimeLimits _timeLimits;
-
-    private const int FourWeekDivisor = 20;
 
     public TimesheetCalculatorService(
         IDeductionsRepository deductionsRepository,
         IWorkerRepository workerRepository,
+        ITimeSheetRepository timeSheetRepository,
         Rates rates,
         TimeLimits timeLimits)
     {
         _deductionsRepository = deductionsRepository;
         _workerRepository = workerRepository;
+        _timeSheetRepository = timeSheetRepository;
         _rates = rates;
         _timeLimits = timeLimits;
     }
@@ -204,8 +206,9 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     #region Public Holiday Pay
 
-    public decimal CalculateHolidayPayBase(IEnumerable<TimeSheetApprovedPayrollModel> timesheets)
+    public async Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd)
     {
+        var timesheets = await _timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
         var gross = decimal.Zero;
         foreach (var week in timesheets.GroupBy(t => t.Week))
         {
@@ -242,21 +245,6 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         gross = gross.DefaultMoneyRound();
         var vacations = CalculateVacationsAmount(gross, _rates.Vacations);
         return gross.Add(vacations).DefaultMoneyRound();
-    }
-
-    public (decimal Amount, string Description) ResolveHolidayPay(RegularWageWorker wages)
-    {
-        if (wages.HolidayWasPaid)
-            return (decimal.Zero, "The holiday was already paid");
-
-        if (wages.CustomPublicHolidayValue > decimal.Zero)
-            return (wages.CustomPublicHolidayValue, $"The amount to pay is a custom value ({wages.CustomPublicHolidayValue})");
-
-        if (!wages.IsEntitledToReceiveHolidayPay)
-            return (decimal.Zero, "The worker is not entitled to receive the public holiday because he did not work the required days");
-
-        var amount = (wages.RegularWage / FourWeekDivisor).DefaultMoneyRound();
-        return (amount, $"The amount was calculated using the regular formula: (gross earnings plus vacation pay ({wages.RegularWage}) of the last four weeks / 20)");
     }
 
     #endregion
