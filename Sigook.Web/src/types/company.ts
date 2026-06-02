@@ -22,7 +22,7 @@ export interface CompanyProfile {
   email: string;
   phoneNumber: string;
   website: string;
-  requiresPermissionToSeeOrders: boolean;
+  requiresPermissionToSeeRequests: boolean;
   createdAt: string;
   fullName: string;
   logo: string | null;
@@ -72,7 +72,7 @@ export interface CompanyUser {
   lastName: string;
   email: string;
   phoneNumber: string;
-  canSeeOrders: boolean;
+  canSeeRequests: boolean;
   isActive: boolean;
 }
 
@@ -107,7 +107,7 @@ export interface CompanyProfileDetail {
   createdAt: string;
   vaccinationRequired: boolean | null;
   vaccinationRequiredComments: string;
-  requiresPermissionToSeeOrders: boolean;
+  requiresPermissionToSeeRequests: boolean;
   logo: CovenantFileModel;
   industry: CompanyProfileIndustryDetail;
   salesRepresentativeId: string | null;
@@ -148,10 +148,10 @@ export interface CompanyProfileListItem {
   updatedBy: string;
 }
 
-// PATCH /api/V2/AgencyCompanyProfile/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeOrders}
+// PATCH /api/V2/AgencyCompanyProfile/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeRequests}
 // Matches CompanyProfileSettingsUpdateModel — .NET binds only the fields it needs
 export interface CompanyProfileSettingsUpdate {
-  requiresPermissionToSeeOrders?: boolean;
+  requiresPermissionToSeeRequests?: boolean;
   overtimeStartsAfter?: number;
   paidHolidays?: boolean;
 }

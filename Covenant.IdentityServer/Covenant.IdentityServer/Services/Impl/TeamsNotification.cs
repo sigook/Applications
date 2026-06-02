@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Covenant.IdentityServer.Services.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.IdentityServer.Services.Impl
 {
@@ -36,7 +37,11 @@ namespace Covenant.IdentityServer.Services.Impl
 					_logger.LogError("Teams url is empty");
 					return;
 				}
-				string json = JsonConvert.SerializeObject(notification);
+				var message = TeamsAdaptiveMessage.FromNotification(notification);
+				string json = JsonSerializer.Serialize(message, new JsonSerializerOptions
+				{
+					DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+				});
 				var content = new StringContent(json);
 				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 				HttpClient client = _clientFactory.CreateClient();

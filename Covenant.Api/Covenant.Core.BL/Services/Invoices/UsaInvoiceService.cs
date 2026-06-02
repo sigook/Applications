@@ -17,7 +17,7 @@ namespace Covenant.Core.BL.Services.Invoices;
 public class UsaInvoiceService : BaseInvoiceService
 {
     public UsaInvoiceService(
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         IInvoiceRepository invoiceRepository,
         IAgencyRepository agencyRepository,
         ICompanyRepository companyRepository,
@@ -88,26 +88,37 @@ public class UsaInvoiceService : BaseInvoiceService
         }
 
         // 3. Process timesheets and build invoice items with TimeSheetTotal entities
-        // EF Core will cascade insert TimeSheetTotal entities when the invoice is saved
-        var usaItems = ProcessTimesheets<InvoiceUSAItem>(timesheets, holidays);
+        var usaItems = new List<InvoiceUSAItem>();
+        var timesheetsTax = 0m;
+        if (!model.DirectHiring)
+        {
+            usaItems.AddRange(ProcessTimesheets<InvoiceUSAItem>(timesheets, holidays, out timesheetsTax));
+        }
 
-        // 4. Get sales tax
-        var salesTax = model.ProvinceId.HasValue
-            ? await locationRepository.GetProvinceSalesTax(model.ProvinceId.Value)
-            : null;
-
-        // 5. Add additional items and discounts
+        // 4. Add additional items and discounts
         var additionalItems = model.AdditionalItems.Select(s => new InvoiceUSAItem(s.Quantity, s.UnitPrice, s.Description));
         var discounts = model.Discounts.Select(s => new InvoiceUSADiscount(s.Quantity, s.UnitPrice, s.Description)).ToList();
         var allItems = usaItems.Concat(additionalItems).ToList();
 
-        // 6. Get next invoice number
+        // 5. Get next invoice number
         var nextNumber = await invoiceRepository.GetNextInvoiceUSANumber();
 
-        // 7. Compute totals
+        // 6. Compute totals
         var invoiceDate = model.InvoiceDate ?? timeService.GetCurrentDateTime();
         var subTotal = allItems.Sum(s => s.Total) - discounts.Sum(s => s.Total);
-        var tax = salesTax != null ? subTotal * salesTax.Tax1 : 0m;
+
+        // 7. Compute tax
+        decimal tax;
+        if (model.DirectHiring)
+        {
+            var directHiringRate = (model.TaxPercentage ?? 0m) / 100m;
+            tax = subTotal * directHiringRate;
+        }
+        else
+        {
+            tax = timesheetsTax;
+        }
+
         var totalNet = subTotal + tax;
         var invoiceNumber = $"{InvoiceUSA.PrefixInvoiceNumber}-{nextNumber.NextNumber:0000}-{invoiceDate:yy}";
 

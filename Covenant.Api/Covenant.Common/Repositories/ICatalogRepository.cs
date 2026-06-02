@@ -22,7 +22,6 @@ public interface ICatalogRepository
     Task<List<BaseModel<Guid>>> GetLanguage();
     Task<List<BaseModel<Guid>>> GetLift();
     Task<List<ReasonCancellationRequest>> GetReasonCancellationRequest();
-    Task<List<JobPositionDetailModel>> GetJobPositions();
     Task<List<BaseModel<Guid>>> GetIndustries();
     Task<List<BaseModel<Guid>>> GetSources();
     Task<List<BaseModel<Guid>>> GetSourcesForRequests();

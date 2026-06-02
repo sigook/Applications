@@ -17,7 +17,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker
             private static readonly Availability FakeAvailability = new Availability();
             public static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
 
-            private static readonly CompanyProfileJobPositionRate JobPositionRate = new CompanyProfileJobPositionRate { JobPosition = new JobPosition() };
+            private static readonly CompanyProfileJobPositionRate JobPositionRate = new CompanyProfileJobPositionRate { JobPosition = "General Labour" };
             public static readonly Request FakeRequest = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeData.FakeLocation(), FakeNow, JobPositionRate.Id, workersQuantity: 5).Value;
 
             public static readonly WorkerProfile FakeWorkerForList = new WorkerProfile(new User(CvnEmail.Create("w_profile@mail.com").Value))

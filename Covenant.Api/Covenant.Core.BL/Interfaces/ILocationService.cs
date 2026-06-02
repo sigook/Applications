@@ -1,4 +1,5 @@
 using Covenant.Common.Functionals;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 
 namespace Covenant.Core.BL.Interfaces;
@@ -10,4 +11,6 @@ public interface ILocationService
     Task<List<CityModel>> GetCities(Guid provinceId);
     Task<Result<Guid>> AddCity(CityModel model);
     Task<Result> UpsertProvinceSettings(Guid provinceId, ProvinceSettingsModel model);
+    Task<LocationTaxModel> GetLocationTax(Guid locationId);
+    Task<Result> UpsertLocationTax(Guid locationId, LocationTaxModel model);
 }

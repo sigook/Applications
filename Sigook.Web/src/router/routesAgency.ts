@@ -33,7 +33,7 @@ const admin = roles.admin;
 
 const routesAgency: RouteRecordRaw[] = [
   {
-    path: "/recruiting/orders",
+    path: "/recruiting/requests",
     component: AgencyRequests,
     name: "agency-requests",
     meta: {
@@ -41,7 +41,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: [agency, agencyPersonnel],
     },
   },
-  { path: "/agency-requests", redirect: "/recruiting/orders" },
+  { path: "/agency-requests", redirect: "/recruiting/requests" },
   {
     path: "/agency-request/:id",
     component: AgencyRequest,

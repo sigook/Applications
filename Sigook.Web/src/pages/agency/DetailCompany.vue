@@ -21,7 +21,7 @@
         </template>
         <b-dropdown-item v-if="isClient" aria-role="listitem"
           @click="router.push({ path: `/agency-create-request/${company.id}` })">
-          Create Order
+          Create Request
         </b-dropdown-item>
         <b-dropdown-item aria-role="listitem"
           @click="router.push({ path: `/update-company/${company.id}` })">
@@ -49,7 +49,7 @@
       <b-tab-item label="Workers" value="Workers">
         <workers v-if="visitedTabs.includes('Workers')" :company="company" class="p-2" />
       </b-tab-item>
-      <b-tab-item label="Orders" value="Requests" v-if="!requiresPayrollPermission">
+      <b-tab-item label="Requests" value="Requests" v-if="!requiresPayrollPermission">
         <requests v-if="visitedTabs.includes('Requests')" :company="company" class="p-2" />
       </b-tab-item>
     </b-tabs>
@@ -88,7 +88,7 @@ const isLoading = ref(true);
 const showUpdateLogo = ref(false);
 
 const requiresPayrollPermission = computed(() => {
-  if (company.value && company.value.requiresPermissionToSeeOrders) {
+  if (company.value && company.value.requiresPermissionToSeeRequests) {
     return !billingAdmin.isPayrollManager;
   }
   return false;
@@ -144,3 +144,9 @@ function updateLogo(newLogo: any) {
     });
 }
 </script>
+
+<style>
+.logged-content:has(.company-wrapper) {
+  overflow-y: auto !important;
+}
+</style>

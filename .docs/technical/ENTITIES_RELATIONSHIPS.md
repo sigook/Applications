@@ -235,7 +235,7 @@ public class CompanyProfile
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public string Website { get; set; }
-    public bool RequiresPermissionToSeeOrders { get; set; }
+    public bool RequiresPermissionToSeeRequests { get; set; }
     public DateTime CreatedAt { get; set; }
 
     // Navigation properties
@@ -354,7 +354,7 @@ public class CompanyUser
     public Guid Id { get; set; }
     public Guid CompanyProfileId { get; set; }
     public Guid UserId { get; set; }
-    public bool CanSeeOrders { get; set; }
+    public bool CanSeeRequests { get; set; }
     public bool IsActive { get; set; }
 
     // Navigation
@@ -466,7 +466,7 @@ See `Covenant.Common/Entities/Worker/` for the full definitions.
 
 ---
 
-## 📋 REQUEST Module (Job Orders)
+## 📋 REQUEST Module
 
 ### Request
 
@@ -538,7 +538,7 @@ public class Request
 
     // Navigation
     public Agency Agency { get; set; }
-    public User Company { get; set; }                  // The user that owns this order on the company side
+    public User Company { get; set; }                  // The user that owns this request on the company side
     public IReadOnlyCollection<WorkerRequest> Workers { get; }
     public IReadOnlyCollection<RequestRecruiter> Recruiters { get; }
 }
@@ -552,7 +552,7 @@ public class Request
 ```csharp
 public enum RequestStatus
 {
-    Open = 1,        // Active order with available capacity
+    Open = 1,        // Active request with available capacity
     Filled = 3,      // All positions filled
     Cancelled = 4    // Cancelled
 }

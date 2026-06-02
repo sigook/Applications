@@ -87,7 +87,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         NotesCount = r.Notes.Count(n => !n.Note.IsDeleted),
                         VaccinationRequired = cp.VaccinationRequired.GetValueOrDefault(),
                         PunchCardOptionEnabled = r.PunchCardOptionEnabled,
-                        HasPermissionToSeeInternalOrders = cp.RequiresPermissionToSeeOrders,
+                        HasPermissionToSeeInternalRequests = cp.RequiresPermissionToSeeRequests,
                         JobBoards = r.Sources.Select(rs => new RequestSourceDetailModel
                         {
                             SourceId = rs.SourceId,
@@ -155,8 +155,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     private static Expression<Func<AgencyRequestListModel, bool>> ApplyFilterForAgency(GetRequestForAgencyFilter filter)
     {
         var predicate = PredicateBuilder.New<AgencyRequestListModel>(true);
-        if (!filter.HasPermissionToSeeInternalOrders)
-            predicate = predicate.And(p => p.HasPermissionToSeeInternalOrders == false);
+        if (!filter.HasPermissionToSeeInternalRequests)
+            predicate = predicate.And(p => p.HasPermissionToSeeInternalRequests == false);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
         if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
@@ -265,8 +265,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var query = from r in requests
                     join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
                     from cpj in tmp1.DefaultIfEmpty()
-                    join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
-                    from jp in tmp2.DefaultIfEmpty()
                     join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
                     join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
@@ -295,7 +293,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         WorkerRate = r.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
                         JobPositionId = r.JobPositionRateId,
-                        JobPosition = jp != null ? jp.Value : cpj != null ? cpj.OtherJobPosition : r.JobTitle,
+                        JobPosition = cpj != null ? cpj.JobPosition : r.JobTitle,
                         HolidayIsPaid = r.HolidayIsPaid,
                         BreakIsPaid = r.BreakIsPaid,
                         DurationBreak = r.DurationBreak,
@@ -420,8 +418,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         (from r in context.Request.Where(c => c.Id == id)
          join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
          from cpj in tmp1.DefaultIfEmpty()
-         join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
-         from jp in tmp2.DefaultIfEmpty()
          select new CompanyRequestDetailModel
          {
              Id = r.Id,
@@ -468,7 +464,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              },
              JobPositionRate = new JobPositionDetailModel
              {
-                 Value = jp != null ? jp.Value : cpj != null ? cpj.OtherJobPosition : r.JobTitle
+                 Value = cpj != null ? cpj.JobPosition : r.JobTitle
              },
              AgencyRate = r.AgencyRate,
              WorkerSalary = r.WorkerSalary,
@@ -482,7 +478,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public Task<Common.Entities.Request.Request> GetRequest(Expression<Func<Common.Entities.Request.Request, bool>> condition) =>
         context.Request.Where(condition)
-            .Include(r => r.JobPositionRate).ThenInclude(c => c.JobPosition)
+            .Include(r => r.JobPositionRate)
             .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Include(r => r.Workers)
             .Include(r => r.Shift)
@@ -730,8 +726,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return (from r in context.Request.Where(c => c.Id == requestId)
                 join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
                 from cpj in tmp1.DefaultIfEmpty()
-                join jp in context.JobPosition on cpj.JobPositionId equals jp.Id into tmp2
-                from jp in tmp2.DefaultIfEmpty()
                 join wp in context.WorkerProfile.Where(c => c.WorkerId == workerId) on r.AgencyId equals wp.AgencyId
                 join wr in context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId) on r.Id equals wr.RequestId into tmp
                 from wr in tmp.DefaultIfEmpty()
@@ -756,7 +750,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     WorkersQuantity = r.WorkersQuantity,
                     WorkerRate = r.WorkerRate,
                     WorkerSalary = r.WorkerSalary,
-                    JobPosition = jp != null ? jp.Value : cpj != null ? cpj.OtherJobPosition : r.JobTitle,
+                    JobPosition = cpj != null ? cpj.JobPosition : r.JobTitle,
                     HolidayIsPaid = r.HolidayIsPaid,
                     BreakIsPaid = r.BreakIsPaid,
                     CreatedAt = r.CreatedAt,
@@ -1172,9 +1166,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         await context.RequestRecruiter.AddRangeAsync(entities);
     }
 
-    public async Task<bool> ExistsRequestByNumber(int orderId)
+    public async Task<bool> ExistsRequestByNumber(int requestId)
     {
-        var result = await context.Request.AnyAsync(r => r.NumberId == orderId);
+        var result = await context.Request.AnyAsync(r => r.NumberId == requestId);
         return result;
     }
 }

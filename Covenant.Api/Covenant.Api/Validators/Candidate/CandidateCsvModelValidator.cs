@@ -35,13 +35,13 @@ public class CandidateCsvModelValidator : AbstractValidator<CandidateCsvModel>
         RuleFor(c => c.Address)
             .NotEmpty()
             .MaximumLength(250);
-        RuleFor(c => c.OrderID)
+        RuleFor(c => c.RequestID)
             .Must(c => int.TryParse(c, out var result) && result > 0)
-            .When(c => !string.IsNullOrWhiteSpace(c.OrderID))
+            .When(c => !string.IsNullOrWhiteSpace(c.RequestID))
             .WithMessage("This is not a valid number");
         RuleFor(c => c.Skills)
             .NotEmpty()
-            .When(x => string.IsNullOrWhiteSpace(x.OrderID) && string.IsNullOrWhiteSpace(x.UrlResume));
+            .When(x => string.IsNullOrWhiteSpace(x.RequestID) && string.IsNullOrWhiteSpace(x.UrlResume));
         RuleFor(c => c.UrlResume)
             .MustAsync(async (c, cancellationToken) => await teamsService.ExistsTeamsFile(c))
             .When(c => !string.IsNullOrWhiteSpace(c.UrlResume))

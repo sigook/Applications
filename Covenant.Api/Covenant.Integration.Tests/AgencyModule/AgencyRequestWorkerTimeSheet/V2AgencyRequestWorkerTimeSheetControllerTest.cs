@@ -126,7 +126,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerTimeSheet
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
                 services.AddSingleton<ITimesheetService, TimesheetService>();
-                services.AddSingleton<ITimeSheetRepository, TimeSheetRepository>();
+                services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();

@@ -25,14 +25,20 @@
           </b-field>
         </div>
 
-        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+        <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-if="invoice.directHiring">
+          <b-field label="Tax (%)"
+            :message="'Direct hiring invoices have no timesheets: enter the tax percentage to apply'">
+            <b-numberinput v-model="invoice.taxPercentage" :min="0" :max="100" :step="0.01" :controls="false"
+              name="taxPercentage" placeholder="e.g. 10 for 10%" />
+          </b-field>
+        </div>
+
+        <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-else>
           <b-field label="Province/State">
-            <b-select v-model="invoice.provinceId" name="province" expanded placeholder="Select Province/State"
-              :disabled="!enabledProvince">
-              <option v-for="province in provinces" :key="province.id" :value="province.id">
-                {{ province.value }}
-              </option>
-            </b-select>
+            <b-autocomplete v-model="provinceSearch" :data="filteredProvinces" open-on-focus
+              field="value" name="province" placeholder="Select Province/State"
+              :disabled="!enabledProvince" @select="selectProvince">
+            </b-autocomplete>
           </b-field>
         </div>
 
@@ -201,12 +207,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick } from 'vue';
+import { ref, reactive, computed, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { showAlertError } from '@/utils/toast';
-import { getAgencyCompanyProfileWithRequests, getCompanyProvinceWithTaxes } from '@/api/agencyCompanyApi';
+import { getAgencyCompanyProfileWithRequests } from '@/api/agencyCompanyApi';
+import { getAgencyLocations } from '@/api/agencyApi';
+import { getProvinces } from '@/api/locationApi';
 import { previewAgencyInvoice, createAgencyInvoice } from '@/api/agencyInvoiceApi';
 import { useStickyForm } from '@/composables/useStickyForm';
 import PreviewInvoice from '@/components/agency_accounting/PreviewInvoice.vue';
@@ -230,6 +238,7 @@ const isLoading = ref(false);
 const invoice = ref<any>({});
 const companies = ref<any[]>([]);
 const provinces = ref<any[]>([]);
+const provinceSearch = ref('');
 const additionalItems = ref<any[]>([]);
 const discounts = ref<any[]>([]);
 const previewData = ref<any>(null);
@@ -240,11 +249,23 @@ const filteredCompanies = computed(() =>
   companies.value.filter((c: any) => c.fullName.toLowerCase().includes((company.value || '').toLowerCase())),
 );
 
-const enabledProvince = computed(() => company.value && provinces.value.length > 0);
+const enabledProvince = computed(() => !!company.value && provinces.value.length > 0);
+
+const filteredProvinces = computed(() =>
+  provinces.value.filter((p: any) => p.value.toLowerCase().includes((provinceSearch.value || '').toLowerCase())),
+);
 
 (async () => {
   await loadCompanies();
+  await loadAgencyProvinces();
 })();
+
+async function loadAgencyProvinces() {
+  const agencyLocations = await getAgencyLocations();
+  const reference = agencyLocations.find((l: any) => l.isBilling) ?? agencyLocations[0];
+  const countryId = reference?.city?.province?.country?.id;
+  provinces.value = countryId ? await getProvinces(countryId) : [];
+}
 
 function loadPreview() {
   validateForm();
@@ -261,16 +282,28 @@ async function loadCompanies() {
   companies.value = await getAgencyCompanyProfileWithRequests();
 }
 
-async function selectCompany(c: any) {
+function selectCompany(c: any) {
   if (c) {
     invoice.value.companyId = c.companyId;
     invoice.value.companyProfileId = c.id;
-    provinces.value = await getCompanyProvinceWithTaxes(invoice.value.companyProfileId);
   } else {
     invoice.value = {};
-    provinces.value = [];
+    provinceSearch.value = '';
   }
 }
+
+function selectProvince(item: any) {
+  invoice.value.provinceId = item ? item.id : undefined;
+}
+
+watch(() => invoice.value.directHiring, (isDirectHiring) => {
+  if (isDirectHiring) {
+    invoice.value.provinceId = undefined;
+    provinceSearch.value = '';
+  } else {
+    invoice.value.taxPercentage = undefined;
+  }
+});
 
 function updateTotalAdditionalItems(item: any) {
   item.total = item.quantity * item.unitPrice;

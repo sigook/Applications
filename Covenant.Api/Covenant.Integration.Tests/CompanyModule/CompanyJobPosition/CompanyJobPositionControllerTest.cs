@@ -39,9 +39,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
             var model = list.Single(c =>
                 c.Id == entity.Id &&
                 c.Rate == entity.Rate &&
-                c.OtherJobPosition == entity.OtherJobPosition &&
-                c.JobPosition?.Value == entity.JobPosition?.Value &&
-                !string.IsNullOrEmpty(c.Value));
+                c.JobPosition == entity.JobPosition);
             Assert.NotNull(model);
         }
 
@@ -55,9 +53,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.Rate, model.Rate);
             Assert.Equal(entity.Description, model.Description);
-            Assert.Equal(entity.OtherJobPosition, model.OtherJobPosition);
-            Assert.Equal(entity.JobPosition?.Value, model.JobPosition?.Value);
-            Assert.NotNull(model.Value);
+            Assert.Equal(entity.JobPosition, model.JobPosition);
             Assert.Equal(entity.Shift?.Sunday, model.Shift?.Sunday);
             Assert.Equal(entity.Shift?.SundayStart, model.Shift?.SundayStart);
             Assert.Equal(entity.Shift?.SundayFinish, model.Shift?.SundayFinish);
@@ -99,7 +95,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
                 services.AddSingleton<CompanyIdFilter>();
             }
 
-            private static readonly JobPosition GeneralLabour = new JobPosition { Industry = new Industry(), Value = "General Labour" };
             public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
 
             private static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
@@ -119,7 +114,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.JobPosition.Add(GeneralLabour);
                 var shift = new Shift();
                 shift.AddSunday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
                 shift.AddSaturday(TimeSpan.Parse("09:00"), TimeSpan.Parse("17:00"));

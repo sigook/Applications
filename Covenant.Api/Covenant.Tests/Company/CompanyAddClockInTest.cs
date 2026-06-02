@@ -19,7 +19,7 @@ namespace Covenant.Tests.Company
         private readonly ITimesheetService _sut;
         private readonly DateTime _fakeNow = new DateTime(2019, 01, 01, 08, 00, 00, 00);
         private readonly Covenant.Common.Entities.Request.WorkerRequest _workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
-        private readonly Mock<ITimeSheetRepository> _timeSheetRepository;
+        private readonly Mock<ITimesheetRepository> _timeSheetRepository;
 
         public CompanyAddClockInTest()
         {
@@ -44,7 +44,7 @@ namespace Covenant.Tests.Company
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
             workerRequestRepository.Setup(w => w.GetWorkerRequest(_workerRequest.WorkerId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
 
-            _timeSheetRepository = new Mock<ITimeSheetRepository>();
+            _timeSheetRepository = new Mock<ITimesheetRepository>();
             var catalogRepository = new Mock<ICatalogRepository>();
             _sut = new TimesheetService(
                 timService.Object,

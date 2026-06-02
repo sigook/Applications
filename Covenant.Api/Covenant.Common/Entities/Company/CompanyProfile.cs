@@ -49,7 +49,7 @@ namespace Covenant.Common.Entities.Company
         public string ContactRole { get; set; }
         public string ContactName { get; set; }
         public CompanyStatus CompanyStatus { get; set; }
-        public bool RequiresPermissionToSeeOrders { get; set; }
+        public bool RequiresPermissionToSeeRequests { get; set; }
         public ICollection<CompanyProfileLocation> Locations { get; set; } = new List<CompanyProfileLocation>();
         public ICollection<CompanyProfileContactPerson> ContactPersons { get; set; } = new List<CompanyProfileContactPerson>();
         public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; set; } = new List<CompanyProfileJobPositionRate>();
@@ -129,9 +129,9 @@ namespace Covenant.Common.Entities.Company
             return Result.Ok();
         }
 
-        public void UpdatePermissionToSeeOrders(bool value)
+        public void UpdatePermissionToSeeRequests(bool value)
         {
-            RequiresPermissionToSeeOrders = value;
+            RequiresPermissionToSeeRequests = value;
         }
 
         public static CompanyProfile CompanyRegisterByItself(
@@ -142,7 +142,7 @@ namespace Covenant.Common.Entities.Company
             int? phoneExt,
             Location location,
             bool isBilling,
-            ICollection<(Guid? jobPositionId, string otherJobPosition)> jonPositionRates,
+            ICollection<string> jobPositions,
             string logoName)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -160,9 +160,9 @@ namespace Covenant.Common.Entities.Company
                 RequiredPaymentMethod = true
             };
             companyProfile.AddLocation(location, isBilling);
-            foreach ((Guid? jobPositionId, string otherJobPosition) in jonPositionRates)
+            foreach (var jobPosition in jobPositions)
             {
-                Result<CompanyProfileJobPositionRate> rRate = CompanyProfileJobPositionRate.CompanyCreate(companyProfile.Id, jobPositionId, otherJobPosition);
+                Result<CompanyProfileJobPositionRate> rRate = CompanyProfileJobPositionRate.CompanyCreate(companyProfile.Id, jobPosition);
                 if (rRate) companyProfile.AddJobPositionRate(rRate.Value);
             }
             return companyProfile;
@@ -182,7 +182,7 @@ namespace Covenant.Common.Entities.Company
             CovenantFile logo,
             string about,
             string internalInfo,
-            bool requiresPermissionToSeeOrders,
+            bool requiresPermissionToSeeRequests,
             string createdBy,
             CompanyStatus companyStatus,
             Guid? salesRepresentativeId)
@@ -204,7 +204,7 @@ namespace Covenant.Common.Entities.Company
                 About = about,
                 InternalInfo = internalInfo,
                 Active = true,
-                RequiresPermissionToSeeOrders = requiresPermissionToSeeOrders,
+                RequiresPermissionToSeeRequests = requiresPermissionToSeeRequests,
                 CreatedBy = createdBy,
                 CompanyStatus = companyStatus,
                 SalesRepresentativeId = salesRepresentativeId

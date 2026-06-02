@@ -7,6 +7,7 @@ public class CreateInvoiceModel
     public DateTime? InvoiceDate { get; set; }
     public string Email { get; set; }
     public Guid? ProvinceId { get; set; }
+    public decimal? TaxPercentage { get; set; }
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
     public IEnumerable<CreateInvoiceItemModel> Discounts { get; set; } = [];

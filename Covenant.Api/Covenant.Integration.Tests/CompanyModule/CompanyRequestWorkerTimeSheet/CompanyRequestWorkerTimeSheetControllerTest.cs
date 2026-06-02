@@ -80,7 +80,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
                         o.AddCompanyRole();
                     });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
-                services.AddSingleton<ITimeSheetRepository, TimeSheetRepository>();
+                services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<CompanyIdFilter>();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton(Rates.DefaultRates);

@@ -140,7 +140,7 @@ public class RequestService : IRequestService
         Result result = request.Open(now);
         if (!result) return result;
 
-        var note = CovenantNote.Create("Order open", CovenantNote.RedColor, finalizedBy).Value;
+        var note = CovenantNote.Create("Request open", CovenantNote.RedColor, finalizedBy).Value;
         await requestRepository.Create(new RequestNote(requestId, note));
         var requestFinalizationDetail = await requestRepository.GetRequestFinalizationDetail(requestId);
         if (requestFinalizationDetail != null)
@@ -326,7 +326,7 @@ public class RequestService : IRequestService
             CancelAt = timeService.GetCurrentDateTime()
         };
         var noteBuilder = new StringBuilder();
-        noteBuilder.Append("Order canceled");
+        noteBuilder.Append("Request canceled");
         if (!string.IsNullOrEmpty(entity.OtherReasonCancellationRequest))
         {
             noteBuilder.Append($" - {entity.OtherReasonCancellationRequest}");

@@ -19,7 +19,7 @@
       </b-taginput>
     </b-field>
     <p class="fz-2 op6 mb-3">
-      Leave empty and click "Unassign all" to remove every recruiter from the selected orders.
+      Leave empty and click "Unassign all" to remove every recruiter from the selected requests.
     </p>
     <div class="text-right">
       <b-button class="mr-2" @click="onCancel">Cancel</b-button>

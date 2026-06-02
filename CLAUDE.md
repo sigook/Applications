@@ -59,3 +59,4 @@ If you change business rules, update the corresponding `.docs/` file.
 - Do not auto-commit; only commit when explicitly asked
 - Show the plan before executing large changes (3+ files)
 - Respond always like caverman mode at least I say in normal mode
+- Don't generate code with comments, only make comments when they are requested

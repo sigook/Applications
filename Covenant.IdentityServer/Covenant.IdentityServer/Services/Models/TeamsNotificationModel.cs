@@ -1,12 +1,18 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Covenant.IdentityServer.Services.Models
 {
 	public class TeamsNotificationModel
 	{
-		[JsonProperty("themeColor")]public string ThemeColor { get; private set; }="0072C6";
-		[JsonProperty("title")] public string Title { get; private set; }
-		[JsonProperty("text")] public string Text { get; private set; }
+		[JsonInclude]
+		[JsonPropertyName("themeColor")] public string ThemeColor { get; private set; } = "0072C6";
+
+		[JsonInclude]
+		[JsonPropertyName("title")] public string Title { get; private set; }
+
+		[JsonInclude]
+		[JsonPropertyName("text")] public string Text { get; private set; }
+
 		public TeamsNotificationModel(string title,string text)
 		{
 			Title = title;

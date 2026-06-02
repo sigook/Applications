@@ -1,10 +1,10 @@
 ﻿using Covenant.IdentityServer.Models.Enums;
 using IdentityServer4.EntityFramework.Entities;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json;
 
 namespace Covenant.IdentityServer.Models.ViewModels
 {
@@ -73,7 +73,7 @@ namespace Covenant.IdentityServer.Models.ViewModels
         {
             get
             {
-                return ClientSecret == null ? default : JsonConvert.DeserializeObject<IEnumerable<CustomSecret>>(ClientSecret);
+                return ClientSecret == null ? default : JsonSerializer.Deserialize<IEnumerable<CustomSecret>>(ClientSecret, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
         }
 
@@ -121,7 +121,7 @@ namespace Covenant.IdentityServer.Models.ViewModels
                 AllowedCorsOrigins = string.Join(",", client.AllowedCorsOrigins.Select(plru => plru.Origin)),
                 ClientUri = client.ClientUri,
                 AllowedScopes = client.AllowedScopes.Select(@as => @as.Scope).ToList(),
-                ClientSecret = JsonConvert.SerializeObject(client.ClientSecrets.Select(cs => new CustomSecret
+                ClientSecret = JsonSerializer.Serialize(client.ClientSecrets.Select(cs => new CustomSecret
                 {
                     Id = cs.Id,
                     Value = cs.Value,

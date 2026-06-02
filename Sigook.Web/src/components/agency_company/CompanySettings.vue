@@ -2,8 +2,8 @@
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <b-checkbox class="col-2" v-model="localCompany.requiresPermissionToSeeOrders" @update:modelValue="updateRequiresPermissionToSee">
-        Requires permission to see orders?
+      <b-checkbox class="col-2" v-model="localCompany.requiresPermissionToSeeRequests" @update:modelValue="updateRequiresPermissionToSee">
+        Requires permission to see requests?
       </b-checkbox>
       <b-checkbox class="col-2" v-model="localCompany.paidHolidays" @update:modelValue="updatePaidHolidaysHandler">
         Paid Holidays?
@@ -22,13 +22,13 @@
 import { ref, watch } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import {
-  updatePermissionToSeeOrders,
+  updatePermissionToSeeRequests,
   updatePaidHolidays,
   updateOvertime
 } from "@/api/agencyCompanyApi";
 
 const apiActions: Record<string, (id: any, model: any) => Promise<any>> = {
-  updatePermissionToSeeOrders,
+  updatePermissionToSeeRequests,
   updatePaidHolidays,
   updateOvertime
 };
@@ -55,7 +55,7 @@ function update(action: string) {
 }
 
 function updateRequiresPermissionToSee() {
-  update("updatePermissionToSeeOrders");
+  update("updatePermissionToSeeRequests");
 }
 
 function updatePaidHolidaysHandler() {

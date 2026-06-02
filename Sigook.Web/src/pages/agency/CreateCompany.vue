@@ -14,8 +14,8 @@
         </div>
         <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <b-field>
-            <b-checkbox v-model="company.requiresPermissionToSeeOrders">
-              Requires permission to see orders?
+            <b-checkbox v-model="company.requiresPermissionToSeeRequests">
+              Requires permission to see requests?
             </b-checkbox>
           </b-field>
         </div>
@@ -230,7 +230,7 @@ const company = ref<any>({
   companyProfileId: null,
   logo: {},
   industry: { industry: null, otherIndustry: null },
-  requiresPermissionToSeeOrders: false,
+  requiresPermissionToSeeRequests: false,
 });
 
 const filteredIndustries = computed(() => {

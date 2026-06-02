@@ -13,7 +13,7 @@ public class GenerateAgencyRequestsReport : GenerateAgencyReport<AgencyRequestLi
 
     public override IEnumerable<string> Columns => new string[]
     {
-        "Order ID",
+        "Request ID",
         "Client",
         "Location",
         "Position",

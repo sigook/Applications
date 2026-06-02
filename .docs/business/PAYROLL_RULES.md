@@ -129,13 +129,23 @@ Vacations: $1,000 × 0.04 = $40.00
 
 ### 6. Public Holiday Pay
 
-**Rule:**
-- If the worker is entitled to the holiday but works
-- Additional pay beyond the holiday premium
+**Rule (ESA, Ontario):**
+- Statutory benefit paid to an entitled worker for the public holiday itself (separate from the worked-holiday premium in §4).
+- **Entitlement:** the worker must have worked at least one of the qualifying days around the holiday (the day before, the holiday, or the day after). A worker who has not worked the required days is not entitled.
+- **No double payment:** if the holiday was already paid in a previous pay stub, it is not paid again.
+- **Agency override:** if a custom value is configured for the worker/holiday (`WorkerProfileHoliday.StatPaidWorker`), that amount is used instead of the formula.
+
+**Calculation:**
+```
+PublicHolidayPay = (GrossEarnings + VacationPay) / 20
+```
+where `GrossEarnings + VacationPay` is the worker's total earnings (regular + other-regular + overtime + worked-holiday + missing, plus vacation pay on that gross) over the **four work weeks before** the holiday's work week. Work weeks are Sunday–Saturday; the window ends on the Saturday of the week before the holiday's week.
+
+> The base is computed from the **worked timesheets** of that window (`CalculateHolidayPayBase`), not from previously generated pay stubs, so it does not depend on pay stub generation order.
 
 **Example:**
-- Worker works on Christmas (holiday)
-- Receives regular pay + holiday premium (1.5x) + public holiday pay
+- Worker did not work the holiday but worked the day before and after (entitled).
+- Earned $3,000 gross + $120 vacation over the prior four weeks → PublicHolidayPay = $3,120 / 20 = $156.00
 
 ---
 

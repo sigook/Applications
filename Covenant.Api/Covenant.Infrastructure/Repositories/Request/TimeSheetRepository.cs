@@ -14,14 +14,14 @@ using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Request;
 
-public class TimeSheetRepository : ITimeSheetRepository
+public class TimesheetRepository : ITimesheetRepository
 {
     private readonly CovenantContext _context;
     private readonly Rates rates;
     private readonly IRequestRepository requestRepository;
     private readonly TimeLimits timeLimits;
 
-    public TimeSheetRepository(
+    public TimesheetRepository(
         CovenantContext context,
         Rates rates,
         IRequestRepository requestRepository,
@@ -183,10 +183,12 @@ public class TimeSheetRepository : ITimeSheetRepository
                     select new TimeSheetApprovedBillingModel
                     {
                         PaidHolidays = cp.PaidHolidays,
-                        OvertimeStartsAfter = ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null &&
-                            ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                            : cp.OvertimeStartsAfter,
+                        OvertimeStartsAfter = ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
+                            : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null &&
+                                ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                                ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                                : cp.OvertimeStartsAfter),
                         RequestId = ts.WorkerRequest.RequestId,
                         JobTitle = string.IsNullOrWhiteSpace(ts.WorkerRequest.Request.BillingTitle) ? ts.WorkerRequest.Request.JobTitle : ts.WorkerRequest.Request.BillingTitle,
                         AgencyRate = ts.WorkerRequest.Request.AgencyRate.Value,
@@ -207,7 +209,10 @@ public class TimeSheetRepository : ITimeSheetRepository
                         OverTime = rates.OverTime,
                         NightShift = rates.NightShift,
                         Holiday = rates.Holiday,
-                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
+                        CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code,
+                        Tax = ts.WorkerRequest.Request.JobLocation.LocationTax != null
+                            ? ts.WorkerRequest.Request.JobLocation.LocationTax.Tax1
+                            : 0m
                     };
         var result = await query.ToListAsync();
         return result;
@@ -226,9 +231,11 @@ public class TimeSheetRepository : ITimeSheetRepository
                     where wp.IsSubcontractor
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                            : cp.OvertimeStartsAfter,
+                        ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
+                            : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                                ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                                : cp.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
@@ -254,7 +261,7 @@ public class TimeSheetRepository : ITimeSheetRepository
                         ts.Reimbursements,
                         ts.ReimbursementsDescription)
                     {
-                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition == null ? ts.WorkerRequest.Request.JobPositionRate.OtherJobPosition : ts.WorkerRequest.Request.JobPositionRate.JobPosition.Value,
+                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition,
                         CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
                     };
         var result = await query.ToListAsync();
@@ -275,9 +282,11 @@ public class TimeSheetRepository : ITimeSheetRepository
                         on new { ts.WorkerRequest.WorkerId, ts.WorkerRequest.Request.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                            : cp.OvertimeStartsAfter,
+                        ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
+                            : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                                ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                                : cp.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
@@ -303,7 +312,7 @@ public class TimeSheetRepository : ITimeSheetRepository
                         ts.Reimbursements,
                         ts.ReimbursementsDescription)
                     {
-                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition == null ? ts.WorkerRequest.Request.JobPositionRate.OtherJobPosition : ts.WorkerRequest.Request.JobPositionRate.JobPosition.Value,
+                        TypeOfWork = ts.WorkerRequest.Request.JobPositionRate.JobPosition,
                         CountryCode = ts.WorkerRequest.Request.JobLocation.City.Province.Country.Code
                     };
         var result = await query.ToListAsync();
@@ -323,9 +332,11 @@ public class TimeSheetRepository : ITimeSheetRepository
                     where ts.WorkerRequest.Request.WorkerRate != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                            : cp.OvertimeStartsAfter,
+                        ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
+                            ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
+                            : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                                ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                                : cp.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
@@ -414,7 +425,6 @@ public class TimeSheetRepository : ITimeSheetRepository
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
             .ThenInclude(r => r.JobPositionRate)
-            .ThenInclude(jpr => jpr.JobPosition)
             .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
         if (filter.CompanyId.HasValue)
             timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.CompanyId == filter.CompanyId);
@@ -426,9 +436,7 @@ public class TimeSheetRepository : ITimeSheetRepository
                     {
                         wp.WorkerId,
                         WorkerName = wp.FirstName + " " + wp.LastName,
-                        JobPosition = ts.WorkerRequest.Request.JobPositionRate.JobPosition != null ?
-                            ts.WorkerRequest.Request.JobPositionRate.JobPosition.Value :
-                            ts.WorkerRequest.Request.JobPositionRate.OtherJobPosition,
+                        JobPosition = ts.WorkerRequest.Request.JobPositionRate.JobPosition,
                         BillRate = ts.WorkerRequest.Request.AgencyRate,
                         RegularHoursWorked = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
                         OvertimeHoursWorked = ts.TimeSheetTotal.OvertimeHours.TotalHours,
@@ -472,19 +480,13 @@ public class TimeSheetRepository : ITimeSheetRepository
             .Select(lj => new
             {
                 lj.WorkerRequest.Request.JobPositionRate.Id,
-                JobPosition = lj.WorkerRequest.Request.JobPositionRate.JobPosition != null ?
-                    lj.WorkerRequest.Request.JobPositionRate.JobPosition.Value :
-                    lj.WorkerRequest.Request.JobPositionRate.OtherJobPosition
+                JobPosition = lj.WorkerRequest.Request.JobPositionRate.JobPosition
             });
         var result = await agencyCompanyProfileJobPositionRate.GroupBy(acpjr => new { acpjr.Id, acpjr.JobPosition })
             .Select(acpjr => new CompanyProfileJobPositionRateModel
             {
                 Id = acpjr.Key.Id,
-                JobPosition = new JobPositionDetailModel
-                {
-                    Value = acpjr.Key.JobPosition
-                },
-                Value = acpjr.Key.JobPosition
+                JobPosition = acpjr.Key.JobPosition
             }).ToListAsync();
         return result;
     }

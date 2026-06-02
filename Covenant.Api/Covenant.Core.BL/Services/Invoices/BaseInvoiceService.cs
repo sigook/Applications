@@ -18,7 +18,7 @@ using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 namespace Covenant.Core.BL.Services.Invoices;
 
 public abstract class BaseInvoiceService(
-    ITimeSheetRepository timeSheetRepository,
+    ITimesheetRepository timeSheetRepository,
     IInvoiceRepository invoiceRepository,
     IAgencyRepository agencyRepository,
     ICompanyRepository companyRepository,
@@ -30,7 +30,7 @@ public abstract class BaseInvoiceService(
     TimeLimits timeLimits,
     ITimesheetCalculatorService calculatorService)
 {
-    protected readonly ITimeSheetRepository timeSheetRepository = timeSheetRepository;
+    protected readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
     protected readonly IInvoiceRepository invoiceRepository = invoiceRepository;
     protected readonly IAgencyRepository agencyRepository = agencyRepository;
     protected readonly ICompanyRepository companyRepository = companyRepository;
@@ -113,11 +113,20 @@ public abstract class BaseInvoiceService(
         List<TimeSheetApprovedBillingModel> timesheets,
         List<DateTime> holidays) where T : IInvoiceLineItem, new()
     {
+        return ProcessTimesheets<T>(timesheets, holidays, out _);
+    }
+
+    protected List<T> ProcessTimesheets<T>(
+        List<TimeSheetApprovedBillingModel> timesheets,
+        List<DateTime> holidays,
+        out decimal tax) where T : IInvoiceLineItem, new()
+    {
+        tax = 0m;
         var items = new List<T>();
 
-        // Group timesheets by week and worker (composite key)
+        // Group timesheets by week, worker and request — overtime accumulates per request
         var workerWeekGroups = timesheets
-            .GroupBy(t => new { Week = t.Date.GetWeekEndingCurrentWeek(), t.WorkerId });
+            .GroupBy(t => new { Week = t.Date.GetWeekEndingCurrentWeek(), t.WorkerId, t.RequestId });
 
         foreach (var group in workerWeekGroups)
         {
@@ -126,6 +135,7 @@ public abstract class BaseInvoiceService(
             // Process each timesheet individually, ordered by date
             foreach (var timesheet in group.OrderBy(t => t.Date))
             {
+                var itemsBeforeTimesheet = items.Count;
                 bool isHoliday = IsPublicHoliday(timesheet.Date, holidays);
                 var hoursBreakdown = CalculateHoursForItem(timesheet, ref accumulatedRegularHours, isHoliday);
 
@@ -236,6 +246,9 @@ public abstract class BaseInvoiceService(
                     AssignTimeSheetTotal(item, timeSheetTotal);
                     items.Add(item);
                 }
+
+                var timesheetGross = items.Skip(itemsBeforeTimesheet).Sum(i => i.Total);
+                tax += timesheetGross * timesheet.Tax;
             }
         }
 
@@ -314,7 +327,7 @@ public abstract class BaseInvoiceService(
         var timesheets = await timeSheetRepository.GetTimeSheetForCreatingReportsSubcontractor(agencyIds, companyId);
         if (timesheets.Count == 0) return;
 
-        // Group by worker and week
+        // Group by worker and week — overtime accumulator resets per request inside
         var workerWeekGroups = timesheets
             .GroupBy(t => new { t.WorkerId, Week = t.Date.GetWeekEndingCurrentWeek() });
 
@@ -323,51 +336,52 @@ public abstract class BaseInvoiceService(
             var first = group.First();
             var workerProfileId = first.WorkerProfileId;
 
-            TimeSpan accumulatedRegularHours = TimeSpan.Zero;
             var from = group.Min(t => t.Date);
             var to = group.Max(t => t.Date);
             var countryCode = first.CountryCode;
             var holidays = await GetHolidaysForPeriod(from, to, countryCode);
 
-            // Create a WageDetail for each timesheet (not just one per week)
             var wageDetails = new List<ReportSubcontractorWageDetail>();
 
-            foreach (var timesheet in group.OrderBy(t => t.Date))
+            foreach (var requestGroup in group.GroupBy(t => t.RequestId))
             {
-                bool isHoliday = IsPublicHoliday(timesheet.Date, holidays);
-                var hoursBreakdown = CalculateHoursForItem(timesheet, ref accumulatedRegularHours, isHoliday);
+                TimeSpan accumulatedRegularHours = TimeSpan.Zero;
 
-                var workerRate = timesheet.WorkerRate;
-                var regularHours = hoursBreakdown.RegularHours.TotalHours + hoursBreakdown.OtherRegularHours.TotalHours;
-                var overtimeHours = hoursBreakdown.OvertimeHours.TotalHours;
-                var holidayHours = hoursBreakdown.HolidayHours.TotalHours;
-
-                var regularAmount = calculatorService.CalculateRegularAmount(workerRate, regularHours);
-                var overtimeAmount = calculatorService.CalculateOvertimeAmount(workerRate, rates.OverTime, overtimeHours);
-                var holidayAmount = calculatorService.CalculateHolidayAmount(workerRate, rates.Holiday, holidayHours);
-
-                // Create TimeSheetTotalPayroll for this timesheet
-                var timeSheetTotal = calculatorService.CreateTimeSheetTotalPayrollEntity(
-                    timesheet.TimeSheetId,
-                    hoursBreakdown,
-                    accumulatedRegularHours);
-
-                // Create WageDetail linked to the TimeSheetTotalPayroll
-                var wageDetail = new ReportSubcontractorWageDetail(
-                    workerRate: workerRate,
-                    regular: regularAmount,
-                    otherRegular: 0,
-                    missing: 0,
-                    missingOvertime: 0,
-                    nightShift: 0,
-                    holiday: holidayAmount,
-                    overtime: overtimeAmount
-                )
+                foreach (var timesheet in requestGroup.OrderBy(t => t.Date))
                 {
-                    TimeSheetTotal = timeSheetTotal
-                };
+                    bool isHoliday = IsPublicHoliday(timesheet.Date, holidays);
+                    var hoursBreakdown = CalculateHoursForItem(timesheet, ref accumulatedRegularHours, isHoliday);
 
-                wageDetails.Add(wageDetail);
+                    var workerRate = timesheet.WorkerRate;
+                    var regularHours = hoursBreakdown.RegularHours.TotalHours + hoursBreakdown.OtherRegularHours.TotalHours;
+                    var overtimeHours = hoursBreakdown.OvertimeHours.TotalHours;
+                    var holidayHours = hoursBreakdown.HolidayHours.TotalHours;
+
+                    var regularAmount = calculatorService.CalculateRegularAmount(workerRate, regularHours);
+                    var overtimeAmount = calculatorService.CalculateOvertimeAmount(workerRate, rates.OverTime, overtimeHours);
+                    var holidayAmount = calculatorService.CalculateHolidayAmount(workerRate, rates.Holiday, holidayHours);
+
+                    var timeSheetTotal = calculatorService.CreateTimeSheetTotalPayrollEntity(
+                        timesheet.TimeSheetId,
+                        hoursBreakdown,
+                        accumulatedRegularHours);
+
+                    var wageDetail = new ReportSubcontractorWageDetail(
+                        workerRate: workerRate,
+                        regular: regularAmount,
+                        otherRegular: 0,
+                        missing: 0,
+                        missingOvertime: 0,
+                        nightShift: 0,
+                        holiday: holidayAmount,
+                        overtime: overtimeAmount
+                    )
+                    {
+                        TimeSheetTotal = timeSheetTotal
+                    };
+
+                    wageDetails.Add(wageDetail);
+                }
             }
 
             var totalRegular = wageDetails.Sum(w => w.Regular);

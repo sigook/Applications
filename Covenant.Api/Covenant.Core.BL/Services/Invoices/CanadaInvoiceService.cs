@@ -17,7 +17,7 @@ using Covenant.Core.BL.Interfaces;
 namespace Covenant.Core.BL.Services.Invoices;
 
 public class CanadaInvoiceService(
-    ITimeSheetRepository timeSheetRepository,
+    ITimesheetRepository timeSheetRepository,
     IInvoiceRepository invoiceRepository,
     IAgencyRepository agencyRepository,
     ICompanyRepository companyRepository,
@@ -94,10 +94,19 @@ public class CanadaInvoiceService(
 
         // 3. Process timesheets and build invoice totals with TimeSheetTotal entities
         // EF Core will cascade insert TimeSheetTotal entities when the invoice is saved
-        var invoiceTotals = ProcessTimesheets<InvoiceTotal>(timesheets, holidays);
+        var invoiceTotals = new List<InvoiceTotal>();
+        if (!model.DirectHiring)
+        {
+            invoiceTotals.AddRange(ProcessTimesheets<InvoiceTotal>(timesheets, holidays));
+        }
 
         // 3.1. Get paid holidays (workers who don't work on holidays but get paid)
-        var invoiceHolidays = await GetInvoiceHolidaysAsync(timesheets, holidays, model.CompanyProfileId);
+
+        var invoiceHolidays = new List<InvoiceHoliday>();
+        if (!model.DirectHiring)
+        {
+            await GetInvoiceHolidaysAsync(timesheets, holidays, model.CompanyProfileId);
+        }
 
         // 4. Prepare additional items
         var additionalItems = new List<InvoiceAdditionalItem>();

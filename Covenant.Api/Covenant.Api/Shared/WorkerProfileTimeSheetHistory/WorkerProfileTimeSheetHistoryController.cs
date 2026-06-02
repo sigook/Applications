@@ -13,10 +13,10 @@ namespace Covenant.Api.Shared.WorkerProfileTimeSheetHistory;
 [Route(Route)]
 public class WorkerProfileTimeSheetHistoryController : ControllerBase
 {
-    private readonly ITimeSheetRepository _timeSheetRepository;
+    private readonly ITimesheetRepository _timeSheetRepository;
     public const string Route = "api/WorkerProfile/{workerProfileId}/TimeSheetHistory";
 
-    public WorkerProfileTimeSheetHistoryController(ITimeSheetRepository timeSheetRepository) => _timeSheetRepository = timeSheetRepository;
+    public WorkerProfileTimeSheetHistoryController(ITimesheetRepository timeSheetRepository) => _timeSheetRepository = timeSheetRepository;
 
     /// <summary>Gets the paginated timesheet history for a worker profile.</summary>
     /// <param name="workerProfileId">Worker profile identifier.</param>

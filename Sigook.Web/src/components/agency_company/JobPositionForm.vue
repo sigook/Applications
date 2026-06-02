@@ -2,16 +2,18 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-6 col-lg-6 col-padding' : 'col-sm-12 col-md-12 col-lg-12 col-padding'">
         <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
           :message="formErrors.jobPosition || ''">
-          <b-autocomplete :data="filteredPositions" placeholder="Position" v-model="jobPosition" field="value"
-            open-on-focus name="positions">
-            <template v-slot="props">
-              <span class="fz-0">{{ props.option.value }}</span>
-              <span v-if="props.option.industry" class="fz-2 d-block">Industry: {{ props.option.industry }}</span>
-            </template>
-          </b-autocomplete>
+          <b-input placeholder="Position" v-model="jobPosition" name="positions" />
+        </b-field>
+      </div>
+      <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field label="Overtime Starts After (hours)" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
+          :message="formErrors.overtimeStartsAfter || 'Leave empty to inherit from company/province default'">
+          <b-numberinput v-model="overtimeStartsAfter" name="overtimeStartsAfter" controls-alignment="right"
+            step="0.5" :min="0" placeholder="44">
+          </b-numberinput>
         </b-field>
       </div>
       <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-4 col-lg-4 col-padding">
@@ -68,7 +70,6 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
-import { getJobPositions } from "@/api/catalogApi";
 import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 import Shift from "../request/ShiftsForm.vue";
 
@@ -96,6 +97,12 @@ const schema = computed(() => {
       .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
       .min(workerRateRef.value && workerRateRef.value > 0 ? workerRateRef.value : 0, 'Must be >= worker rate')
       .max(rateRef.value && rateRef.value > 0 ? rateRef.value : 50, 'Cannot exceed agency rate'),
+    overtimeStartsAfter: yup
+      .number()
+      .nullable()
+      .transform((v, o) => (o === '' || o === null || o === undefined ? null : v))
+      .min(0, 'Must be >= 0')
+      .max(168, 'Must be <= 168'),
     description: yup.string().nullable().transform((v) => (v === '' ? null : v)).max(1000, 'Max 1000 characters'),
   });
 });
@@ -105,6 +112,7 @@ const form = useStickyForm<{
   rate: number | null;
   workerRate: number | null;
   workerRateMax: number | null;
+  overtimeStartsAfter: number | null;
   description: string;
 }>({
   schema,
@@ -113,10 +121,11 @@ const form = useStickyForm<{
     rate: null,
     workerRate: null,
     workerRateMax: null,
+    overtimeStartsAfter: null,
     description: '',
   },
 });
-const { jobPosition, rate, workerRate, workerRateMax, description } = form.fields;
+const { jobPosition, rate, workerRate, workerRateMax, overtimeStartsAfter, description } = form.fields;
 const formErrors = form.errors;
 
 watch(rate, (v) => { rateRef.value = (v as number | null) ?? null; });
@@ -127,33 +136,25 @@ const model = ref<any>({
   id: null,
   jobPosition: null,
   rate: null,
-  otherJobPosition: null,
   workerRate: null,
   description: null,
   workerRateMin: null,
   workerRateMax: null,
   shift: null,
 });
-const jobPositionList = ref<any[]>([]);
-
-const filteredPositions = computed(() => {
-  const search = (jobPosition.value || '').toLowerCase();
-  return jobPositionList.value.filter((jpl: any) => jpl.value.toLowerCase().includes(search));
-});
 
 function validateForm() {
   form.markInteracted();
   form.handleSubmit((values) => {
-    const existingJobPosition = jobPositionList.value.find((jpl: any) => jpl.value === values.jobPosition);
     const payload = {
       ...model.value,
       rate: values.rate,
       workerRate: values.workerRate,
       workerRateMin: values.workerRate,
       workerRateMax: values.workerRateMax,
+      overtimeStartsAfter: values.overtimeStartsAfter,
       description: values.description,
-      jobPosition: existingJobPosition || null,
-      otherJobPosition: existingJobPosition ? null : values.jobPosition,
+      jobPosition: values.jobPosition,
     };
     if (props.currentPosition) {
       updateJobPosition(payload, props.currentPosition.id);
@@ -197,10 +198,11 @@ function loadJobPositionById(id: any) {
     .then((response: any) => {
       model.value = response;
       form.hydrate({
-        jobPosition: response.value || '',
+        jobPosition: response.jobPosition || '',
         rate: response.rate ?? null,
         workerRate: response.workerRate ?? null,
         workerRateMax: response.workerRateMax ?? null,
+        overtimeStartsAfter: response.overtimeStartsAfter ?? null,
         description: response.description || '',
       });
       isLoading.value = false;
@@ -212,11 +214,10 @@ function loadJobPositionById(id: any) {
 }
 
 (async () => {
-  isLoading.value = true;
-  jobPositionList.value = await getJobPositions();
   if (props.currentPosition && props.currentPosition.id) {
+    isLoading.value = true;
     loadJobPositionById(props.currentPosition.id);
+    isLoading.value = false;
   }
-  isLoading.value = false;
 })();
 </script>

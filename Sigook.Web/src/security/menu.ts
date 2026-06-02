@@ -46,9 +46,9 @@ export default {
       icon: "account-search",
       items: [
         {
-          to: "/recruiting/orders",
+          to: "/recruiting/requests",
           icon: "calendar-month",
-          label: "Orders",
+          label: "Requests",
         },
         {
           to: "/recruiting/candidates",
@@ -167,7 +167,7 @@ export default {
       switch (userRoles[i]) {
         case roles.agencyPersonnel:
         case roles.agency:
-          return "/recruiting/orders";
+          return "/recruiting/requests";
         case roles.company:
         case roles.companyUser:
           return "/company-requests";

@@ -18,7 +18,7 @@ public class PayStubService : IPayStubService
 {
     private readonly IPayStubRepository payStubRepository;
     private readonly ITimesheetCalculatorService calculatorService;
-    private readonly ITimeSheetRepository timeSheetRepository;
+    private readonly ITimesheetRepository timeSheetRepository;
     private readonly ICatalogRepository catalogRepository;
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
@@ -26,7 +26,7 @@ public class PayStubService : IPayStubService
     public PayStubService(
         IPayStubRepository payStubRepository,
         ITimesheetCalculatorService calculatorService,
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         ICatalogRepository catalogRepository,
         Rates rates,
         TimeLimits timeLimits)

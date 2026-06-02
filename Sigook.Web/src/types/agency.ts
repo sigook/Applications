@@ -332,18 +332,16 @@ export interface AgencyCompanyLocationModel extends LocationDetailModel {
 export interface AgencyCompanyJobPosition {
   id?: string;
   companyProfileId?: string;
-  jobPosition?: CatalogItem | null;
+  jobPosition?: string;
   rate?: number;
-  asapRate?: number | null;
-  otherJobPosition?: string;
   workerRate?: number;
   workerRateMin?: number | null;
   workerRateMax?: number | null;
+  overtimeStartsAfter?: number | null;
   description?: string;
   shift?: RequestShiftModel | null;
   createdAt?: string | null;
   createdBy?: string;
-  value?: string;
   displayShift?: string;
 }
 
@@ -371,17 +369,11 @@ export interface BulkUploadPayload {
   file: File;
 }
 
-// Response item of GET /api/v2/AgencyCompanyProfile/{id}/company-provinces-taxes.
-// Mirrors backend ProvinceModel (with settings/country populated).
-export interface CompanyProvinceWithTaxes extends Province {
-  taxes?: { name: string; rate: number }[];
-}
-
 // ---------------------------------------------------------------------------
-// Agency requests (job orders)
+// Agency requests
 // ---------------------------------------------------------------------------
 
-// Filter for the paginated list of agency requests (job orders).
+// Filter for the paginated list of agency requests.
 // Mirrors backend GetRequestForAgencyFilter (Covenant.Common.Models.Request).
 export interface AgencyRequestFilter {
   pageIndex?: number;
@@ -466,7 +458,7 @@ export interface AgencyRequestListItem {
   notesCount: number;
   vaccinationRequired: boolean;
   punchCardOptionEnabled: boolean;
-  hasPermissionToSeeInternalOrders: boolean;
+  hasPermissionToSeeInternalRequests: boolean;
   location: string;
   locationAddress: string;
   jobBoards: RequestJobBoard[];

@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Request;
 
-public interface ITimeSheetRepository
+public interface ITimesheetRepository
 {
     Task SaveChangesAsync();
     Task Create<T>(T entity) where T : class;

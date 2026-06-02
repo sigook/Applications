@@ -81,7 +81,7 @@ namespace Covenant.Common.Entities.Request
         public ICollection<RequestSource> Sources { get; set; } = new List<RequestSource>();
         public IReadOnlyCollection<RequestRecruiter> Recruiters => _recruiters;
         public IReadOnlyCollection<WorkerRequest> Workers => _workers;
-        private string TheOrderCanNotBeChanged => $"The order can't be changed because is: {Status}";
+        private string TheRequestCanNotBeChanged => $"The request can't be changed because is: {Status}";
         private int CountWorkersWorking => _workers.Count(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked);
         public bool CanBeUpdated => Status != RequestStatus.Cancelled;
         public bool IsAvailableToApply => Status == RequestStatus.Open;
@@ -101,8 +101,8 @@ namespace Covenant.Common.Entities.Request
 
         public Result<Guid> AddWorker(Guid workerId, DateTime startWorking, string createdBy = null)
         {
-            if (CountWorkersWorking >= WorkersQuantity) return Result.Fail<Guid>("The Order is complete");
-            if (!IsAvailableToApply) return Result.Fail<Guid>(TheOrderCanNotBeChanged);
+            if (CountWorkersWorking >= WorkersQuantity) return Result.Fail<Guid>("The Request is complete");
+            if (!IsAvailableToApply) return Result.Fail<Guid>(TheRequestCanNotBeChanged);
             WorkerRequest workerRequest = _workers.SingleOrDefault(s => s.WorkerId == workerId);
             switch (workerRequest?.WorkerRequestStatus)
             {
@@ -132,9 +132,9 @@ namespace Covenant.Common.Entities.Request
 
         public Result RejectWorker(Guid workerId, string detail, string rejectedBy = null)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerId == workerId);
-            if (workerRequest is null) return Result.Fail("Worker isn't in the order");
+            if (workerRequest is null) return Result.Fail("Worker isn't in the request");
             if (workerRequest.IsRejected) return Result.Fail("Worker is already rejected");
             workerRequest.Reject(detail, null, rejectedBy);
             WorkersQuantityWorking = CountWorkersWorking;
@@ -148,19 +148,19 @@ namespace Covenant.Common.Entities.Request
 
         public Result Cancel(DateTime now)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
 
-            // Only orders in Open status can be cancelled
+            // Only requests in Open status can be cancelled
             if (Status != RequestStatus.Open)
-                return Result.Fail("Only orders in Open status can be cancelled");
+                return Result.Fail("Only requests in Open status can be cancelled");
 
-            // Cannot cancel orders with workers assigned
+            // Cannot cancel requests with workers assigned
             if (WorkersQuantityWorking > 0)
-                return Result.Fail("Cannot cancel orders with workers assigned. Please remove all workers first.");
+                return Result.Fail("Cannot cancel requests with workers assigned. Please remove all workers first.");
 
             foreach (WorkerRequest worker in Workers)
             {
-                Result rReject = worker.Reject("Order canceled", now);
+                Result rReject = worker.Reject("Request canceled", now);
                 if (!rReject) return rReject;
             }
             Status = RequestStatus.Cancelled;
@@ -195,7 +195,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateRequirements(string requirements)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             Requirements = requirements;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
@@ -203,7 +203,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateDescription(string description)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             Description = description;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
@@ -221,7 +221,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateJobTitle(string jobTitle)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             if (string.IsNullOrEmpty(jobTitle)) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.JobTitle));
             if (jobTitle.Length > MaximumLengthJobTitle) return Result.Fail(ValidationMessages.LessThanOrEqualMsg(ApiResources.JobTitle, MaximumLengthJobTitle));
             JobTitle = jobTitle;
@@ -231,7 +231,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateBillingTitle(string title)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             if (title?.Length > MaximumLengthJobTitle) return Result.Fail(ValidationMessages.LessThanOrEqualMsg(nameof(BillingTitle), MaximumLengthJobTitle));
             BillingTitle = title;
             UpdatedAt = DateTime.Now;
@@ -240,7 +240,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateIsAsap(bool? isAsap = null)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             if (isAsap.HasValue) IsAsap = isAsap.Value;
             else IsAsap = !IsAsap;
             UpdatedAt = DateTime.Now;
@@ -285,7 +285,7 @@ namespace Covenant.Common.Entities.Request
         public Result UpdateJobLocation(Location location, bool jobIsOnBranchOffice)
         {
             if (location is null) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.Location));
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             if (JobLocation is null)
             {
                 JobLocation = location;
@@ -298,7 +298,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdatePunchCardVisibilityStatusInApp(bool? visibleInApp = null)
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             if (visibleInApp.HasValue) PunchCardOptionEnabled = visibleInApp.Value;
             else PunchCardOptionEnabled = !PunchCardOptionEnabled;
             UpdatedAt = DateTime.Now;
@@ -307,7 +307,7 @@ namespace Covenant.Common.Entities.Request
 
         public Result IncreaseWorkersQuantityByOne()
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             WorkersQuantity++;
             UpdatedAt = DateTime.Now;
 
@@ -320,12 +320,12 @@ namespace Covenant.Common.Entities.Request
 
         public Result DecreaseWorkersQuantityByOne()
         {
-            if (!CanBeUpdated) return Result.Fail(TheOrderCanNotBeChanged);
-            if (WorkersQuantity <= 1 || WorkersQuantity <= WorkersQuantityWorking) return Result.Fail($"The order has to have at least {WorkersQuantity} worker");
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
+            if (WorkersQuantity <= 1 || WorkersQuantity <= WorkersQuantityWorking) return Result.Fail($"The request has to have at least {WorkersQuantity} worker");
             WorkersQuantity--;
             UpdatedAt = DateTime.Now;
 
-            // Update status if reducing capacity causes the order to become filled
+            // Update status if reducing capacity causes the request to become filled
             if (WorkersQuantityWorking >= WorkersQuantity && Status == RequestStatus.Open)
                 Status = RequestStatus.Filled;
 

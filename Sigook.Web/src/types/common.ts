@@ -27,6 +27,11 @@ export interface ProvinceSettings {
   overtimeStartsAfter: number | null;
 }
 
+// Matches backend LocationTaxModel. Tax1 is a percentage (e.g. 10 = 10%).
+export interface LocationTax {
+  tax1: number;
+}
+
 // Matches backend ProvinceModel (Covenant.Common.Models.Location.ProvinceModel).
 export interface Province {
   id: string;
@@ -99,13 +104,6 @@ export type CompanyStatusCatalog = CatalogItem;
 export type CancellationReason = CatalogItem;
 
 export type TaxCategory = CatalogItem<number>;
-
-// Matches API JobPositionDetailModel
-export interface JobPosition {
-  id: string;
-  value: string;
-  industry: string;
-}
 
 // Matches API skill endpoint { skill: string }
 export interface Skill {

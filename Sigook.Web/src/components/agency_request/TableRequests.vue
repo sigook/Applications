@@ -3,7 +3,7 @@
     <Export :url="'/api/AgencyRequest/File'" :params="serverParams" :fileName="'Requests'"
       @onDataLoading="(value) => emit('onDataLoading', value)">
       <template v-slot:actions>
-        <b-checkbox v-if="tableConfig.showMyOrdersCheckbox" v-model="serverParams.onlyMine">My Orders</b-checkbox>
+        <b-checkbox v-if="tableConfig.showMyRequestsCheckbox" v-model="serverParams.onlyMine">My Requests</b-checkbox>
         <b-dropdown v-if="tableConfig.showQuickActions"
           :key="quickActionsKey"
           aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false" append-to-body>
@@ -27,7 +27,7 @@
           </b-dropdown-item>
           <b-dropdown-item aria-role="menuitem" :disabled="checkedRows.length < 1"
             @click="onShowBulkCancelModal">
-            Cancel orders
+            Cancel requests
           </b-dropdown-item>
         </b-dropdown>
       </template>
@@ -46,16 +46,16 @@
         <p class="container text-center">No records available</p>
       </template>
       <template>
-        <b-table-column field="numberId" label="Order ID" sortable searchable>
+        <b-table-column field="numberId" label="ID" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <div class="order-id-cell">
-              <div v-if="props.row.isAsap || props.row.workerSalary" class="order-flags">
-                <span v-if="props.row.isAsap" class="order-flag order-flag--asap">Asap</span>
-                <span v-if="props.row.workerSalary" class="order-flag order-flag--dh">DH</span>
+            <div class="request-id-cell">
+              <div v-if="props.row.isAsap || props.row.workerSalary" class="request-flags">
+                <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
+                <span v-if="props.row.workerSalary" class="request-flag request-flag--dh">DH</span>
               </div>
               <router-link :to="{ path: '/agency-request/' + props.row.id }">
                 <p>{{ props.row.numberId }}</p>
@@ -298,7 +298,7 @@ const agencyStore = useAgencyStore();
 const { isPayrollManager } = useBillingAdmin();
 
 const defaultConfig = {
-  showMyOrdersCheckbox: true,
+  showMyRequestsCheckbox: true,
   showQuickActions: true,
   enableCheckable: true,
   showRecruiterModal: true,
@@ -596,12 +596,12 @@ loadRequests();
 </script>
 
 <style scoped lang="scss">
-.order-id-cell {
+.request-id-cell {
   position: relative;
   padding-top: 14px;
 }
 
-.order-flags {
+.request-flags {
   position: absolute;
   top: -8px;
   left: -10px;
@@ -619,7 +619,7 @@ loadRequests();
   min-width: 180px;
 }
 
-.order-flag {
+.request-flag {
   position: relative;
   display: inline-block;
   padding: 2px 12px 2px 6px;

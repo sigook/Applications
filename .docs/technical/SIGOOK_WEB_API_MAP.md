@@ -118,7 +118,6 @@ Candidate management (recruitment pool before conversion to Worker).
 | `updateAgencyCompanyEmail(id, model)` | PUT | `/api/v2/AgencyCompanyProfile/{id}/Email` | `{ newEmail: string }` | `void` | Update email |
 | `updateAgencyCompanyProfileLogo(id, model)` | PUT | `/api/AgencyCompanyProfile/{id}/Logo` | `Partial<CovenantFileModel>` | `void` | Logo upload |
 | `getAgencyCompanyProfileWithRequests()` | GET | `/api/v2/AgencyCompanyProfile/company-with-requests` | — | `CompanyProfileListItem[]` | Companies + their requests |
-| `getCompanyProvinceWithTaxes(id)` | GET | `/api/v2/AgencyCompanyProfile/{id}/company-provinces-taxes` | — | `CompanyProvinceWithTaxes[]` | Tax info by province |
 | `bulkAgencyCompanies(agencyId, file)` | POST | `/api/v2/AgencyCompanyProfile/bulk/{agencyId}` | FormData (multipart file) | Blob | Excel import |
 
 ### Contact Persons
@@ -176,7 +175,7 @@ Candidate management (recruitment pool before conversion to Worker).
 ### Company Settings
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `updatePermissionToSeeOrders(id, settings)` | PATCH | `/api/V2/AgencyCompanyProfile/{id}/RequiresPermissionToSeeOrders` | `CompanyProfileSettingsUpdate` | `void` | Restrict order visibility |
+| `updatePermissionToSeeRequests(id, settings)` | PATCH | `/api/V2/AgencyCompanyProfile/{id}/RequiresPermissionToSeeRequests` | `CompanyProfileSettingsUpdate` | `void` | Restrict request visibility |
 | `updatePaidHolidays(id, settings)` | PATCH | `/api/V2/AgencyCompanyProfile/{id}/PaidHolidays` | `CompanyProfileSettingsUpdate` | `void` | Enable/disable paid holidays |
 | `updateOvertime(id, settings)` | PATCH | `/api/V2/AgencyCompanyProfile/{id}/Overtime` | `CompanyProfileSettingsUpdate` | `void` | Overtime tracking setting |
 
@@ -193,7 +192,7 @@ Candidate management (recruitment pool before conversion to Worker).
 |----------|------------|----------|--------------|---------------|-------|
 | `updateIsAsapRequests(model)` | PUT | `/api/AgencyRequest/is-asap` | `UpdateIsAsapRequestsPayload` | `void` | Mark requests as ASAP |
 
-**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `CompanyProvinceWithTaxes`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (from `src/types/agency`); `CompanyProfileDetail`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (from `src/types/company`)
+**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (from `src/types/agency`); `CompanyProfileDetail`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (from `src/types/company`)
 
 **Pinia:**
 - Filter stored: `agencyCompanyProfileFilter` in `agency` module
@@ -418,7 +417,7 @@ Report generation and downloads (PDFs, Excel, data exports).
 - Used in: Requests page, Request detail, Board view
 
 **Business Logic:**
-- Request = job order from company; defines role, rate, location, shift
+- Request = job request from company; defines role, rate, location, shift
 - Applicants = workers who applied; can be promoted to booked workers
 - Recruiters = agency personnel assigned to fill request
 - RequestedBy = company contact who made the request
@@ -656,8 +655,10 @@ Geographic lookup (countries, provinces, cities).
 | `getCities(provinceId)` | GET | `/api/Location/city/{provinceId}` | — | `City[]` | Cities |
 | `createCity(city)` | POST | `/api/Location/city` | `{ value, code?, province: { id } }` | `City` | Add custom city |
 | `addProvinceSetting(provinceId, settings)` | POST | `/api/Location/province/{provinceId}/settings` | `{ paidHolidays?, overtimeStartsAfter? }` | `void` | Configure provincial rules |
+| `getLocationTax(locationId)` | GET | `/api/Location/{locationId}/tax` | — | `LocationTax \| null` | Tax (%) configured for a location (admin) |
+| `upsertLocationTax(locationId, model)` | PUT | `/api/Location/{locationId}/tax` | `LocationTax` | `void` | Create/update a location's tax (%) (admin) |
 
-**Types:** `Country`, `Province`, `City` (from `src/types/common`)
+**Types:** `Country`, `Province`, `City`, `LocationTax` (from `src/types/common`)
 
 **Pinia:** None
 

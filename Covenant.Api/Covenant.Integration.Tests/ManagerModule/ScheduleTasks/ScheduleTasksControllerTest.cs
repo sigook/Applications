@@ -44,7 +44,7 @@ namespace Covenant.Integration.Tests.ManagerModule.ScheduleTasks
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()));
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IAgencyService, AgencyService>();
-                services.AddSingleton<ITimeSheetRepository, TimeSheetRepository>();
+                services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
