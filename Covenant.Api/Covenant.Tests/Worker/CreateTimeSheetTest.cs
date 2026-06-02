@@ -9,8 +9,9 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using MediatR;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -57,7 +58,7 @@ namespace Covenant.Tests.Worker
                 Mock.Of<IConfiguration>(),
                 identityServerService.Object,
                 Mock.Of<IMediator>(),
-                Mock.Of<ILogger<TimesheetService>>());
+                new TelemetryClient(new TelemetryConfiguration()));
             workerRequestRepository.Setup(r => r.GetWorkerRequest(_workerRequest.WorkerId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
             identityServerService.Setup(iss => iss.GetNickname()).Returns(createdBy);
         }

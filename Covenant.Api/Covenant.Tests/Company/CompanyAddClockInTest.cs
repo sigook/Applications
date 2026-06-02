@@ -7,8 +7,9 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using MediatR;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -54,7 +55,7 @@ namespace Covenant.Tests.Company
                 Mock.Of<IConfiguration>(),
                 Mock.Of<IIdentityServerService>(),
                 Mock.Of<IMediator>(),
-                Mock.Of<ILogger<TimesheetService>>());
+                new TelemetryClient(new TelemetryConfiguration()));
         }
 
         [Fact]
