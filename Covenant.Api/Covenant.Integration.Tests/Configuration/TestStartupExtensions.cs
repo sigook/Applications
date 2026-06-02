@@ -11,6 +11,8 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Documents;
 using FluentValidation;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -76,6 +78,7 @@ public static class TestStartupExtensions
             Lng = Location.DefaultLongitude
         });
         services.AddSingleton(mockMicrosoft365Configuration.Object);
+        services.AddSingleton(new TelemetryClient(new TelemetryConfiguration()));
         services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServicesConfiguration).Assembly));
     }
 }
