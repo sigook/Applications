@@ -107,7 +107,7 @@ public class CompanyService : ICompanyService
             model.PhoneExt,
             rLocation.Value,
             location.IsBilling,
-            model.JobPositionRates.Select(j => (j.JobPosition?.Id, j.OtherJobPosition)).ToList(),
+            model.JobPositionRates.Select(j => j.JobPosition).ToList(),
             model.Logo.FileName);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();

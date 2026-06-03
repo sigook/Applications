@@ -24,8 +24,6 @@ public static class CovenantConstants
         public const int BusinessNameMinimumLength = 2;
         public const int BusinessNameMaximumLength = 50;
         public const int ContactInformationMaximum = 10;
-        public const int AsapRateMinimum = 0;
-        public const int AsapRateMaximum = 999999;
 
         public const int HstNumberMinimumLength = 15;
         public const int HstNumberMaximumLength = 20;

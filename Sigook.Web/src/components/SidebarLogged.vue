@@ -203,7 +203,7 @@ async function getWorkerInfo() {
 function switchAgency(agency: { id: string; isPrimary: boolean }) {
   if (agency.isPrimary) return;
   switchPersonnelAgency(agency.id).then(async () => {
-    router.push('/recruiting/orders');
+    router.push('/recruiting/requests');
     await getAgencyInfo();
     window.location.reload();
   });

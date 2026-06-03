@@ -5,12 +5,14 @@ import type { UserProfile } from '@/types/security';
 interface SecurityState {
   userRoles: string[];
   user: UserProfile | null;
+  isReady: boolean;
 }
 
 export const useSecurityStore = defineStore('security', {
   state: (): SecurityState => ({
     userRoles: [],
     user: null,
+    isReady: false,
   }),
   actions: {
     setUser(data: UserProfile | null) {
@@ -40,6 +42,8 @@ export const useSecurityStore = defineStore('security', {
       } catch (error) {
         this.setUser(null);
         throw error;
+      } finally {
+        this.isReady = true;
       }
     },
     signIn(): void {

@@ -15,8 +15,8 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="value" label="Role" v-slot="props">
-            {{ props.row.value }}
+          <b-table-column field="jobPosition" label="Role" v-slot="props">
+            {{ props.row.jobPosition }}
           </b-table-column>
           <b-table-column field="rate" label="Agency Rate" :visible="billingAdmin.isPayrollManager" v-slot="props">
             {{ currency(props.row.rate) }}

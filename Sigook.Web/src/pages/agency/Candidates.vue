@@ -88,7 +88,7 @@
                 @onDelete="(item) => onDeleteCandidateSkill(props.row.id, item)" />
             </template>
           </b-table-column>
-          <b-table-column field="requests" label="Order ID" searchable>
+          <b-table-column field="requests" label="Request ID" searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress="onInputEntered"></b-input>
@@ -148,7 +148,7 @@
           </b-table-column>
           <b-table-column field="notesCount" label="Notes" v-slot="props">
             <div @click="onNote(props.row, true)">
-              <b-tag icon="note-multiple" rounded>
+              <b-tag icon="note-text" rounded>
                 <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
               </b-tag>
             </div>

@@ -115,7 +115,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
-                services.AddSingleton<ITimeSheetRepository, TimeSheetRepository>();
+                services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<ITimesheetService, TimesheetService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);

@@ -55,5 +55,5 @@ public interface IRequestRepository
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
     Task SaveChangesAsync();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
-    Task<bool> ExistsRequestByNumber(int orderId);
+    Task<bool> ExistsRequestByNumber(int requestId);
 }

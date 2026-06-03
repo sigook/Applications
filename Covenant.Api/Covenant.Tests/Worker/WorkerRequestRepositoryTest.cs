@@ -16,7 +16,7 @@ namespace Covenant.Tests.Worker
     public class WorkerRequestRepositoryTest
     {
         private readonly WorkerRequestRepository _sut;
-        private readonly TimeSheetRepository _sut2;
+        private readonly TimesheetRepository _sut2;
         private readonly CovenantContext _context;
         private static readonly DateTime FakeNow = new DateTime(2019, 10, 02);
         private static readonly User UserAgency = new User(CvnEmail.Create("uAgency@com.com").Value);
@@ -33,7 +33,7 @@ namespace Covenant.Tests.Worker
             var mockFilesConfiguration = new Mock<IOptions<FilesConfiguration>>();
             mockFilesConfiguration.Setup(m => m.Value).Returns(new FilesConfiguration());
             _sut = new WorkerRequestRepository(_context);
-            _sut2 = new TimeSheetRepository(_context, Mock.Of<Rates>(), Mock.Of<IRequestRepository>(), Mock.Of<TimeLimits>());
+            _sut2 = new TimesheetRepository(_context, Mock.Of<Rates>(), Mock.Of<IRequestRepository>(), Mock.Of<TimeLimits>());
             FakeRequest.UpdateShift(new Shift());
             Wr.UpdateStartWorking(FakeNow);
             _context.WorkerProfile.Add(Wp);

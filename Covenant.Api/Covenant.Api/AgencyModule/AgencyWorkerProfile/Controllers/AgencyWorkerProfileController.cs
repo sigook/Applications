@@ -61,15 +61,15 @@ public class AgencyWorkerProfileController : Controller
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
 
-    /// <summary>Creates a new worker profile, optionally associated with an order.</summary>
-    /// <param name="orderId">Optional order identifier to associate the new worker with.</param>
+    /// <summary>Creates a new worker profile, optionally associated with a request.</summary>
+    /// <param name="requestId">Optional request identifier to associate the new worker with.</param>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateWorkerProfile([FromQuery] int? orderId)
+    public async Task<IActionResult> CreateWorkerProfile([FromQuery] int? requestId)
     {
-        var result = await workerService.CreateWorker(orderId);
+        var result = await workerService.CreateWorker(requestId);
         if (result)
         {
             return Ok(result.Value);

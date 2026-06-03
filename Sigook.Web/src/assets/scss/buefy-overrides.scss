@@ -2,9 +2,15 @@
   --grid-height: calc(100vh - 280px);
 }
 
+// Bulma forces `html { overflow-y: scroll }`, which paints a permanent
+// dead window scrollbar because the logged layout is position:fixed and
+// never overflows the viewport. Use `auto` so the bar shows only on real overflow.
+html:root {
+  overflow-y: auto;
+}
+
 .b-table .table-wrapper.has-sticky-header {
   padding-right: 12px;
-  scrollbar-gutter: stable;
 
   > .table > thead {
     position: sticky;

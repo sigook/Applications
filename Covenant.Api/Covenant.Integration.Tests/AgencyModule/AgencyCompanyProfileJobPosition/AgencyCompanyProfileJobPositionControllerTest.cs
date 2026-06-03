@@ -29,8 +29,8 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
     {
         private readonly WebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
-        private readonly JobPosition GeneralLabour;
-        private readonly JobPosition Driver;
+        private const string GeneralLabour = "General Labour";
+        private const string Driver = "Driver";
         private readonly Covenant.Common.Entities.Agency.Agency FakeAgency;
         private readonly CompanyProfile FakeCompanyProfile;
         private readonly CompanyProfileJobPositionRate FakePosition;
@@ -61,8 +61,6 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
                     });
                     builder.UseSetting("EmailsPetitionNewJobPosition", "e@sigook.com,b@siggok.com");
                 });
-            GeneralLabour = new JobPosition { Industry = new Industry(), Value = "General Labour" };
-            Driver = new JobPosition { Industry = new Industry(), Value = "Driver" };
             FakeAgency = new Covenant.Common.Entities.Agency.Agency();
             FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
                 "", "", "", new CompanyProfileIndustry("Company Industry"));
@@ -76,13 +74,12 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
         private string RequestUri() => AgencyCompanyProfileJobPositionController.RouteName.Replace("{profileId}",
             FakeCompanyProfile.Id.ToString());
 
-        [Theory]
-        [InlineData("Other")]
-        [InlineData("General")]
-        public async Task Post(string jobPosition)
+        [Fact]
+        public async Task Post()
         {
             var model = new CompanyProfileJobPositionRateModel
             {
+                JobPosition = "General Labour",
                 Rate = 0.5M,
                 WorkerRate = 0.4M,
                 Description = "Night Position",
@@ -101,12 +98,6 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
                     FridayFinish = TimeSpan.Parse("18:00")
                 }
             };
-            if (jobPosition == "Other") model.OtherJobPosition = "General Labour";
-            else model.JobPosition = new JobPositionDetailModel
-            {
-                Id = GeneralLabour.Id,
-                Value = GeneralLabour.Value
-            };
             var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
@@ -117,13 +108,12 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
             Assert.NotNull(entity.CreatedBy);
         }
 
-        [Theory]
-        [InlineData("Other")]
-        [InlineData("General")]
-        public async Task Put(string jobPosition)
+        [Fact]
+        public async Task Put()
         {
             var model = new CompanyProfileJobPositionRateModel
             {
+                JobPosition = "AZ Driver",
                 Rate = 1000M,
                 WorkerRate = 1000M,
                 Description = "Day Position",
@@ -154,12 +144,6 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
                     SaturdayFinish = TimeSpan.Parse("10:00"),
                 }
             };
-            if (jobPosition == "Other") model.OtherJobPosition = "AZ Driver";
-            else model.JobPosition = new JobPositionDetailModel
-            {
-                Id = Driver.Id,
-                Value = Driver.Value
-            };
             Guid id = FakeUpdatePosition.Id;
             HttpResponseMessage response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
@@ -177,8 +161,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
             Assert.Equal(model.WorkerRateMin, entity.WorkerRateMin);
             Assert.Equal(model.WorkerRateMax, entity.WorkerRateMax);
             Assert.Equal(model.Description, entity.Description);
-            Assert.Equal(model.OtherJobPosition, entity.OtherJobPosition);
-            Assert.Equal(model.JobPosition?.Id, entity.JobPositionId);
+            Assert.Equal(model.JobPosition, entity.JobPosition);
             Assert.Equal(model.Shift?.Sunday, entity.Shift?.Sunday);
             Assert.Equal(model.Shift?.SundayStart, entity.Shift?.SundayStart);
             Assert.Equal(model.Shift?.SundayFinish, entity.Shift?.SundayFinish);
@@ -215,8 +198,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
                 c.Rate == entity.Rate &&
                 c.WorkerRate == entity.WorkerRate &&
                 c.Description == entity.Description &&
-                c.OtherJobPosition == entity.OtherJobPosition &&
-                c.JobPosition?.Id == entity.JobPosition?.Id &&
+                c.JobPosition == entity.JobPosition &&
                 c.WorkerRateMin == entity.WorkerRateMin &&
                 c.WorkerRateMax == entity.WorkerRateMax &&
                 c.CreatedBy == entity.CreatedBy &&
@@ -263,7 +245,6 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
 
         private void Seed(CovenantContext context)
         {
-            context.JobPosition.Add(GeneralLabour);
             var shift = new Shift();
             shift.AddSunday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
             shift.AddSaturday(TimeSpan.Parse("09:00"), TimeSpan.Parse("17:00"));

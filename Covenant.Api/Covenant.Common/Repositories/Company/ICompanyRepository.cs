@@ -44,7 +44,6 @@ namespace Covenant.Common.Repositories.Company
         Task<Guid> GetCompanyIdForUser(Guid userId);
         Task<CompanyUserModel> GetCompanyUserDetail(Guid id);
         Task<CompanyUser> GetCompanyUser(Guid id);
-        Task<IEnumerable<ProvinceModel>> GetCompanyProvincesWithTaxes(Guid id);
         Task BulkCompanies(IEnumerable<BulkCompany> bulk);
     }
 }

@@ -58,7 +58,7 @@ namespace Covenant.Api.AgencyModule.AgencyRequestRecruiter.Controllers
         public async Task<IActionResult> Delete([FromRoute] Guid requestId, [FromRoute] Guid id)
         {
             var entity = await _repository.GetRequest(r => r.Id == requestId);
-            if (entity is null) return BadRequest("Order not found");
+            if (entity is null) return BadRequest("Request not found");
             Result result = entity.RemoveRecruiter(id);
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
             await _repository.Update(entity);

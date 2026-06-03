@@ -125,7 +125,7 @@ namespace Covenant.Tests.Request
             _workerRequestRepository.Setup(r => r.GetWorkerRequestsByWorkerId(_worker.WorkerId)).ReturnsAsync(new List<WorkerRequest> { workerRequest });
             Result result = await _sut.BookWorker(request.Id, _worker.WorkerId, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
             Assert.False(result);
-            Assert.Equal("The worker is associated in other order with the same schedule", result.Errors.Single().Message);
+            Assert.Equal("The worker is associated in other request with the same schedule", result.Errors.Single().Message);
         }
     }
 }

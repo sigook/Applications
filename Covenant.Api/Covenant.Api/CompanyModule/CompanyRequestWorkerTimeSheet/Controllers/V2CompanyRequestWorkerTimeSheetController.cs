@@ -22,9 +22,9 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers
     {
         public const string RouteName = "api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet";
         private readonly ITimesheetService timeSheetService;
-        private readonly ITimeSheetRepository timeSheetRepository;
+        private readonly ITimesheetRepository timeSheetRepository;
 
-        public V2CompanyRequestWorkerTimeSheetController(ITimesheetService timeSheetService, ITimeSheetRepository timeSheetRepository)
+        public V2CompanyRequestWorkerTimeSheetController(ITimesheetService timeSheetService, ITimesheetRepository timeSheetRepository)
         {
             this.timeSheetService = timeSheetService;
             this.timeSheetRepository = timeSheetRepository;

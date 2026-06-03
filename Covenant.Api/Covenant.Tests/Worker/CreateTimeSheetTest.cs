@@ -9,8 +9,9 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using MediatR;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace Covenant.Tests.Worker
 
         private readonly Mock<IIdentityServerService> identityServerService;
         private readonly Mock<ITimeService> _timeService;
-        private readonly Mock<ITimeSheetRepository> _timeSheetRepository;
+        private readonly Mock<ITimesheetRepository> _timeSheetRepository;
         private readonly WorkerRequest _workerRequest = WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
         private readonly ITimesheetService _sut;
 
@@ -46,7 +47,7 @@ namespace Covenant.Tests.Worker
             _workerRequest.Request = request;
             _timeService = new Mock<ITimeService>();
             var catalogRepository = new Mock<ICatalogRepository>();
-            _timeSheetRepository = new Mock<ITimeSheetRepository>();
+            _timeSheetRepository = new Mock<ITimesheetRepository>();
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
             identityServerService = new Mock<IIdentityServerService>();
             _sut = new TimesheetService(
@@ -57,7 +58,7 @@ namespace Covenant.Tests.Worker
                 Mock.Of<IConfiguration>(),
                 identityServerService.Object,
                 Mock.Of<IMediator>(),
-                Mock.Of<ILogger<TimesheetService>>());
+                new TelemetryClient(new TelemetryConfiguration()));
             workerRequestRepository.Setup(r => r.GetWorkerRequest(_workerRequest.WorkerId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
             identityServerService.Setup(iss => iss.GetNickname()).Returns(createdBy);
         }

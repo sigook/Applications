@@ -138,7 +138,7 @@ public class AgencyService : IAgencyService
             logo,
             model.About,
             model.InternalInfo,
-            model.RequiresPermissionToSeeOrders,
+            model.RequiresPermissionToSeeRequests,
             createdBy,
             model.CompanyStatus,
             model.SalesRepresentativeId);
@@ -363,17 +363,8 @@ public class AgencyService : IAgencyService
     private Result<CompanyProfileJobPositionRate> ToJobPosition(Guid profileId, CompanyProfileJobPositionRateModel model)
     {
         var createdBy = identityServerService.GetNickname();
-        Result<CompanyProfileJobPositionRate> result;
-        if (model.JobPosition != null && model.JobPosition.Id != Guid.Empty)
-        {
-            result = CompanyProfileJobPositionRate.Create(profileId, model.JobPosition.Id,
-                model.Rate, model.WorkerRate, model.Description, createdBy);
-        }
-        else
-        {
-            result = CompanyProfileJobPositionRate.Create(profileId, model.OtherJobPosition,
-                model.Rate, model.WorkerRate, model.Description, createdBy);
-        }
+        var result = CompanyProfileJobPositionRate.Create(profileId, model.JobPosition,
+            model.Rate, model.WorkerRate, model.Description, createdBy);
         if (!result) return result;
 
         Result rMin = result.Value.UpdateWorkerRateMin(model.WorkerRateMin);
@@ -383,6 +374,9 @@ public class AgencyService : IAgencyService
         if (!rMax) return Result.Fail<CompanyProfileJobPositionRate>(rMax.Errors);
 
         if (model.Shift != null) result.Value.AddShift(model.Shift.ToShift());
+        result.Value.OvertimeStartsAfter = model.OvertimeStartsAfter.HasValue
+            ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value)
+            : null;
         return result;
     }
 
@@ -429,7 +423,7 @@ public class AgencyService : IAgencyService
         {
             isTimeUsed |= activeShifts.Any(s => s.Saturday.HasValue && s.SaturdayStart < shiftNewOrder.SaturdayFinish && shiftNewOrder.SaturdayStart < s.SaturdayFinish);
         }
-        return isTimeUsed ? Result.Fail("The worker is associated in other order with the same schedule") : Result.Ok();
+        return isTimeUsed ? Result.Fail("The worker is associated in other request with the same schedule") : Result.Ok();
     }
 
     public async Task UpdateWorkerProfileTaxCategory(Guid workerProfileId, WorkerProfileDetailModel model)

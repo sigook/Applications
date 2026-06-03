@@ -42,7 +42,7 @@ namespace Covenant.Tests.Request
         }
 
         [Fact]
-        public void AddWorkerOrderComplete()
+        public void AddWorkerRequestComplete()
         {
             const int workersQuantity = 1;
             var request = FakeData.FakeRequest(workersQuantity: workersQuantity);
@@ -53,7 +53,7 @@ namespace Covenant.Tests.Request
             var adrian = Guid.NewGuid();
             result = request.AddWorker(adrian, startWorking);
             Assert.False(result);
-            Assert.Equal("The Order is complete", result.Errors.Single().Message);
+            Assert.Equal("The Request is complete", result.Errors.Single().Message);
             request.RejectWorker(mary, default);
             result = request.AddWorker(adrian, startWorking);
             Assert.True(result);
@@ -126,7 +126,7 @@ namespace Covenant.Tests.Request
         }
 
         [Fact]
-        public void CannotCancelOrdersWithWorkers()
+        public void CannotCancelRequestsWithWorkers()
         {
             var request = FakeData.FakeRequest(workersQuantity: 2);
 
@@ -141,7 +141,7 @@ namespace Covenant.Tests.Request
             Assert.Contains("workers assigned", result.Errors.Single().Message);
             Assert.Equal(RequestStatus.Open, request.Status);
 
-            // Fill the order
+            // Fill the request
             request.AddWorker(Guid.NewGuid(), new DateTime(2019, 01, 01));
             Assert.Equal(RequestStatus.Filled, request.Status);
 

@@ -9,7 +9,6 @@ import type {
   Language,
   WsibGroup,
   Industry,
-  JobPosition,
   Skill,
   CancellationReason,
   CatalogItem,
@@ -47,10 +46,6 @@ export function fetchLanguages(): Promise<Language[]> {
 
 export function getWsibGroups(): Promise<WsibGroup[]> {
   return http.get('/api/Catalog/wsibgroup').then(r => r.data);
-}
-
-export function getJobPositions(): Promise<JobPosition[]> {
-  return http.get('/api/Catalog/jobPosition').then(r => r.data);
 }
 
 export function getSkills(): Promise<Skill[]> {

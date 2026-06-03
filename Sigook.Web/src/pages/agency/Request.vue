@@ -11,9 +11,9 @@
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
         <h2 class="capitalize fz1 fw-700">
-          <span v-if="request.isAsap || isDirectHiringComputed" class="order-flags">
-            <span v-if="request.isAsap" class="order-flag order-flag--asap">Asap</span>
-            <span v-if="isDirectHiringComputed" class="order-flag order-flag--dh">DH</span>
+          <span v-if="request.isAsap || isDirectHiringComputed" class="request-flags">
+            <span v-if="request.isAsap" class="request-flag request-flag--asap">Asap</span>
+            <span v-if="isDirectHiringComputed" class="request-flag request-flag--dh">DH</span>
           </span>
           <span class="fw-400 fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
@@ -49,7 +49,7 @@
             </b-dropdown-item>
           </template>
           <b-dropdown-item aria-role="listitem" v-if="request.canCancel" @click="cancelRequestModal = true">
-            Cancel Order
+            Cancel Request
           </b-dropdown-item>
         </b-dropdown>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="!request.canEdit">
@@ -188,7 +188,7 @@ function onCancelRequest(reason: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Cancelled');
-      router.push('/recruiting/orders');
+      router.push('/recruiting/requests');
     })
     .catch((error) => {
       isLoading.value = false;
@@ -284,14 +284,14 @@ function getStatusColorClass(r: any) {
   }
 }
 
-.order-flags {
+.request-flags {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
   margin-right: 6px;
 }
 
-.order-flag {
+.request-flag {
   position: relative;
   display: inline-block;
   padding: 2px 12px 2px 6px;

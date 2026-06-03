@@ -1,5 +1,6 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces;
@@ -10,13 +11,16 @@ namespace Covenant.Core.BL.Services;
 public class LocationService : ILocationService
 {
     private readonly ICatalogRepository _catalogRepository;
+    private readonly ILocationRepository _locationRepository;
     private readonly ILogger<LocationService> _logger;
 
     public LocationService(
         ICatalogRepository catalogRepository,
+        ILocationRepository locationRepository,
         ILogger<LocationService> logger)
     {
         _catalogRepository = catalogRepository;
+        _locationRepository = locationRepository;
         _logger = logger;
     }
 
@@ -105,5 +109,25 @@ public class LocationService : ILocationService
             _logger.LogError(ex, "Error upserting province settings for province: {ProvinceId}", provinceId);
             return Result.Fail("An error occurred while saving province settings");
         }
+    }
+
+    public async Task<LocationTaxModel> GetLocationTax(Guid locationId)
+    {
+        var tax = await _locationRepository.GetLocationTax(locationId);
+        if (tax is null)
+        {
+            return null;
+        }
+
+        tax.Tax1 *= 100m;
+        return tax;
+    }
+
+    public async Task<Result> UpsertLocationTax(Guid locationId, LocationTaxModel model)
+    {
+        await _locationRepository.UpsertLocationTax(locationId, model.Tax1 / 100m);
+        await _locationRepository.SaveChangesAsync();
+
+        return Result.Ok();
     }
 }

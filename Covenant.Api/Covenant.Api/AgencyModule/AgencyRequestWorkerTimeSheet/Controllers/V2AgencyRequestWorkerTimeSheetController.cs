@@ -20,10 +20,10 @@ namespace Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Controllers
     {
         public const string RouteName = "api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet";
 
-        private readonly ITimeSheetRepository timeSheetRepository;
+        private readonly ITimesheetRepository timeSheetRepository;
         private readonly ITimesheetService timeSheetService;
 
-        public V2AgencyRequestWorkerTimeSheetController(ITimeSheetRepository timeSheetRepository, ITimesheetService timeSheetService)
+        public V2AgencyRequestWorkerTimeSheetController(ITimesheetRepository timeSheetRepository, ITimesheetService timeSheetService)
         {
             this.timeSheetRepository = timeSheetRepository;
             this.timeSheetService = timeSheetService;

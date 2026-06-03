@@ -150,18 +150,18 @@ public class V2AgencyCompanyProfileController : ControllerBase
         return Ok();
     }
 
-    /// <summary>Updates whether a company profile requires permission to see orders.</summary>
+    /// <summary>Updates whether a company profile requires permission to see requests.</summary>
     /// <param name="companyProfileId">Identifier of the company profile.</param>
     /// <param name="settingsUpdateModel">Company profile settings update data.</param>
-    [HttpPatch("{companyProfileId}/RequiresPermissionToSeeOrders")]
+    [HttpPatch("{companyProfileId}/RequiresPermissionToSeeRequests")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateRequiresPermissionToSeeOrders([FromRoute] Guid companyProfileId, [FromBody] CompanyProfileSettingsUpdateModel settingsUpdateModel)
+    public async Task<IActionResult> UpdateRequiresPermissionToSeeRequests([FromRoute] Guid companyProfileId, [FromBody] CompanyProfileSettingsUpdateModel settingsUpdateModel)
     {
         var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == companyProfileId);
         if (profile is not null)
         {
-            profile.UpdatePermissionToSeeOrders(settingsUpdateModel.RequiresPermissionToSeeOrders);
+            profile.UpdatePermissionToSeeRequests(settingsUpdateModel.RequiresPermissionToSeeRequests);
             companyRepository.Update(profile);
             await companyRepository.SaveChangesAsync();
             return Ok();
@@ -236,15 +236,6 @@ public class V2AgencyCompanyProfileController : ControllerBase
         return Ok(await requestRepository.GetCompaniesWithRequests(User.GetAgencyIds()));
     }
 
-    /// <summary>Gets the provinces and their taxes for the specified company profile.</summary>
-    /// <param name="profileId">Identifier of the company profile.</param>
-    [HttpGet("{profileId}/company-provinces-taxes")]
-    [ProducesResponseType(typeof(IEnumerable<ProvinceModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCompanyProvincesWithTaxes([FromRoute] Guid profileId)
-    {
-        var result = await companyRepository.GetCompanyProvincesWithTaxes(profileId);
-        return Ok(result);
-    }
 
     /// <summary>Bulk-imports company data for an agency from an uploaded file.</summary>
     /// <param name="agencyId">Identifier of the agency to import companies into.</param>

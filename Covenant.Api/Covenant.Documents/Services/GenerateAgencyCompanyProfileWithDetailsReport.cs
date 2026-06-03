@@ -102,7 +102,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
     private static void BuildJobPositionsSheet(XLWorkbook workbook, IReadOnlyList<CompanyProfileWithDetailsModel> companies)
     {
         var sheet = workbook.Worksheets.Add("Job Positions");
-        sheet.SetupHeaders(["Company", "Position", "Agency Rate", "Worker Rate", "Worker Rate Min", "Worker Rate Max", "ASAP Rate", "Description", "Created By", "Created At"]);
+        sheet.SetupHeaders(["Company", "Position", "Agency Rate", "Worker Rate", "Worker Rate Min", "Worker Rate Max", "Description", "Created By", "Created At"]);
 
         var row = 2;
         foreach (var company in companies)
@@ -110,15 +110,14 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
             foreach (var jp in company.JobPositions)
             {
                 sheet.Cell($"A{row}").SetValue(company.Company.BusinessName);
-                sheet.Cell($"B{row}").SetValue(jp.Value);
+                sheet.Cell($"B{row}").SetValue(jp.JobPosition);
                 sheet.Cell($"C{row}").SetValue(jp.Rate).SetMoneyType();
                 sheet.Cell($"D{row}").SetValue(jp.WorkerRate).SetMoneyType();
                 sheet.Cell($"E{row}").SetValue(jp.WorkerRateMin).SetMoneyType();
                 sheet.Cell($"F{row}").SetValue(jp.WorkerRateMax).SetMoneyType();
-                sheet.Cell($"G{row}").SetValue(jp.AsapRate).SetMoneyType();
-                sheet.Cell($"H{row}").SetValue(jp.Description);
-                sheet.Cell($"I{row}").SetValue(jp.CreatedBy);
-                sheet.Cell($"J{row}").SetValue(jp.CreatedAt);
+                sheet.Cell($"G{row}").SetValue(jp.Description);
+                sheet.Cell($"H{row}").SetValue(jp.CreatedBy);
+                sheet.Cell($"I{row}").SetValue(jp.CreatedAt);
                 row++;
             }
         }

@@ -13,8 +13,8 @@
     </section>
 
     <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="agency">
-      <b-tab-item label="Orders" value="Orders">
-        <agency-requests v-if="visitedTabs.includes('Orders')" :agency="agency" class="p-2" />
+      <b-tab-item label="Requests" value="Requests">
+        <agency-requests v-if="visitedTabs.includes('Requests')" :agency="agency" class="p-2" />
       </b-tab-item>
     </b-tabs>
   </div>
@@ -31,8 +31,8 @@ import AgencyRequests from '@/components/agency/AgencyRequests.vue';
 const route = useRoute();
 const router = useRouter();
 
-const currentTab = ref<string>('Orders');
-const visitedTabs = ref<string[]>(['Orders']);
+const currentTab = ref<string>('Requests');
+const visitedTabs = ref<string[]>(['Requests']);
 const agency = ref<any>(null);
 const isLoading = ref(true);
 

@@ -20,7 +20,7 @@ public class GeneratePayStubHolidayPayTest
     private static readonly Guid WorkerId = Guid.NewGuid();
 
     private readonly Mock<IPayStubRepository> _payStubRepository = new();
-    private readonly Mock<ITimeSheetRepository> _timeSheetRepository = new();
+    private readonly Mock<ITimesheetRepository> _timeSheetRepository = new();
     private readonly Mock<ICatalogRepository> _catalogRepository = new();
     private readonly PayStubService _sut;
     private PayStub _captured;

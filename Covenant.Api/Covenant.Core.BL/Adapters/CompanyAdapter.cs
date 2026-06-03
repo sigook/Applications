@@ -54,7 +54,7 @@ public class CompanyAdapter : ICompanyAdapter
             logo: null,
             about: string.Empty,
             internalInfo: string.Empty,
-            requiresPermissionToSeeOrders: true,
+            requiresPermissionToSeeRequests: true,
             createdBy: createdBy,
             companyStatus: CompanyStatus.Potential,
             salesRepresentativeId: null).Value;

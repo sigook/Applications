@@ -18,7 +18,7 @@ defineProps<{ agency: any }>();
 
 const isLoading = ref(true);
 const tableConfig = ref({
-  showMyOrdersCheckbox: false,
+  showMyRequestsCheckbox: false,
   showQuickActions: false,
   enableCheckable: false,
   showRecruiterModal: false,

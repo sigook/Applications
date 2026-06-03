@@ -35,15 +35,15 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
         /// <summary>
         /// Registers a new worker profile from a multipart/form-data payload.
         /// </summary>
-        /// <param name="orderId">Optional order identifier the worker is registering against.</param>
+        /// <param name="requestId">Optional request identifier the worker is registering against.</param>
         [HttpPost]
         [AllowAnonymous]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Post([FromQuery] int? orderId)
+        public async Task<ActionResult> Post([FromQuery] int? requestId)
         {
-            var result = await workerService.CreateWorker(orderId);
+            var result = await workerService.CreateWorker(requestId);
             if (result)
             {
                 return Ok(result.Value);

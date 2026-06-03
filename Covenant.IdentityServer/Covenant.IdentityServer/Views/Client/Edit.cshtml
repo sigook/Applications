@@ -1,4 +1,4 @@
-﻿@using Newtonsoft.Json
+﻿@using System.Text.Json
 @model Covenant.IdentityServer.Models.ViewModels.ClientViewModel
 <h1>Edit @Model.ClientName</h1>
 <form asp-action="Edit" asp-route-id="@ViewBag.Id" method="post" class="form-horizontal" role="form">
@@ -85,9 +85,9 @@
     </div>
 </div>
 @{
-    var redirectUris = Html.Raw(JsonConvert.SerializeObject(Model.RedirectUris.Split(",")));
-    var postLogoutRedirectUris = Html.Raw(JsonConvert.SerializeObject(Model.PostLogoutRedirectUris.Split(",")));
-    var allowedCorsOrigin = Html.Raw(JsonConvert.SerializeObject(Model.AllowedCorsOrigins.Split(",")));
+    var redirectUris = Html.Raw(JsonSerializer.Serialize(Model.RedirectUris.Split(",")));
+    var postLogoutRedirectUris = Html.Raw(JsonSerializer.Serialize(Model.PostLogoutRedirectUris.Split(",")));
+    var allowedCorsOrigin = Html.Raw(JsonSerializer.Serialize(Model.AllowedCorsOrigins.Split(",")));
     var secrets = Html.Raw(Model.ClientSecret);
 }
 @section scripts {

@@ -28,7 +28,7 @@
             Edit Requirements
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" v-if="canCancel" @click="modalValidation = true">
-            Cancel Order
+            Cancel Request
           </b-dropdown-item>
         </b-dropdown>
       </div>

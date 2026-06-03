@@ -9,7 +9,13 @@
           <strong>FOR BUSINESS</strong>
         </router-link>
       </div>
-      <b-button type="is-primary" class="px-4" @click="login">
+      <b-button
+        type="is-primary"
+        class="px-4"
+        :loading="!securityStore.isReady"
+        :disabled="!securityStore.isReady"
+        @click="login"
+      >
         {{ loginButton }}
       </b-button>
     </div>
@@ -25,7 +31,7 @@
         <div class="collapse navbar-collapse justify-content-end" id="sigookMainMenu">
           <ul class="nav">
             <li class="nav-item d-sm-none">
-              <button class="nav-link" active-class="menu-active" @click="login">LOGIN</button>
+              <button class="nav-link" active-class="menu-active" :disabled="!securityStore.isReady" @click="login">LOGIN</button>
             </li>
             <li class="nav-item">
               <router-link to="/home" class="nav-link" active-class="menu-active">HOME</router-link>

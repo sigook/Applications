@@ -114,12 +114,6 @@ namespace Covenant.Api.Controllers.Sigook
             return Ok(industries);
         }
 
-        /// <summary>Gets the list of job positions.</summary>
-        [HttpGet("jobPosition")]
-        [ResponseCache(Duration = 3600)]
-        [ProducesResponseType(typeof(List<JobPositionDetailModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetJobPosition() => Ok(await _repository.GetJobPositions());
-
         /// <summary>Gets the cancellation reasons localized to the current culture.</summary>
         [HttpGet("reasonCancellationRequest")]
         [ResponseCache(Duration = 3600)]

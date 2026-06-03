@@ -5977,7 +5977,7 @@
             }
           },
           {
-            "name": "HasPermissionToSeeInternalOrders",
+            "name": "HasPermissionToSeeInternalRequests",
             "in": "query",
             "schema": {
               "type": "boolean"
@@ -6235,7 +6235,7 @@
             }
           },
           {
-            "name": "HasPermissionToSeeInternalOrders",
+            "name": "HasPermissionToSeeInternalRequests",
             "in": "query",
             "schema": {
               "type": "boolean"
@@ -6439,7 +6439,7 @@
             }
           },
           {
-            "name": "HasPermissionToSeeInternalOrders",
+            "name": "HasPermissionToSeeInternalRequests",
             "in": "query",
             "schema": {
               "type": "boolean"
@@ -10195,12 +10195,12 @@
         "tags": [
           "AgencyWorkerProfile"
         ],
-        "summary": "Creates a new worker profile, optionally associated with an order.",
+        "summary": "Creates a new worker profile, optionally associated with a request.",
         "parameters": [
           {
-            "name": "orderId",
+            "name": "requestId",
             "in": "query",
-            "description": "Optional order identifier to associate the new worker with.",
+            "description": "Optional request identifier to associate the new worker with.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -11740,48 +11740,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/Catalog/jobPosition": {
-      "get": {
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Gets the list of job positions.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.JobPositionDetailModel"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.JobPositionDetailModel"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.JobPositionDetailModel"
-                  }
                 }
               }
             }
@@ -16588,6 +16546,129 @@
         }
       }
     },
+    "/api/Location/{locationId}/tax": {
+      "get": {
+        "tags": [
+          "LocationTax"
+        ],
+        "summary": "Gets the tax configured for a location.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "description": "Location identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "LocationTax"
+        ],
+        "summary": "Creates or updates the tax for a location.",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "description": "Location identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Location tax data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.LocationTaxModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/accounting/PayStubs": {
       "get": {
         "tags": [
@@ -18803,12 +18884,12 @@
         }
       }
     },
-    "/api/v2/AgencyCompanyProfile/{companyProfileId}/RequiresPermissionToSeeOrders": {
+    "/api/v2/AgencyCompanyProfile/{companyProfileId}/RequiresPermissionToSeeRequests": {
       "patch": {
         "tags": [
           "V2AgencyCompanyProfile"
         ],
-        "summary": "Updates whether a company profile requires permission to see orders.",
+        "summary": "Updates whether a company profile requires permission to see requests.",
         "parameters": [
           {
             "name": "companyProfileId",
@@ -19156,66 +19237,6 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileListModel"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v2/AgencyCompanyProfile/{profileId}/company-provinces-taxes": {
-      "get": {
-        "tags": [
-          "V2AgencyCompanyProfile"
-        ],
-        "summary": "Gets the provinces and their taxes for the specified company profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the company profile.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Location.ProvinceModel"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Location.ProvinceModel"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Location.ProvinceModel"
                   }
                 }
               }
@@ -20756,9 +20777,9 @@
         "summary": "Registers a new worker profile from a multipart/form-data payload.",
         "parameters": [
           {
-            "name": "orderId",
+            "name": "requestId",
             "in": "query",
-            "description": "Optional order identifier the worker is registering against.",
+            "description": "Optional request identifier the worker is registering against.",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -24195,44 +24216,12 @@
             "type": "boolean",
             "readOnly": true
           },
-          "jobPositions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Covenant.Common.Entities.JobPosition"
-            },
-            "nullable": true
-          },
           "companyProfileIndustries": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyProfileIndustry"
             },
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Entities.JobPosition": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "value": {
-            "type": "string",
-            "nullable": true
-          },
-          "industry": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Industry"
-          },
-          "industryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "isDeleted": {
-            "type": "boolean",
-            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -24403,6 +24392,11 @@
           "provinceId": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "taxPercentage": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           },
           "from": {
@@ -26040,7 +26034,7 @@
             "type": "string",
             "nullable": true
           },
-          "requiresPermissionToSeeOrders": {
+          "requiresPermissionToSeeRequests": {
             "type": "boolean"
           },
           "logo": {
@@ -26139,20 +26133,12 @@
             "nullable": true
           },
           "jobPosition": {
-            "$ref": "#/components/schemas/Covenant.Common.Models.JobPositionDetailModel"
+            "type": "string",
+            "nullable": true
           },
           "rate": {
             "type": "number",
             "format": "double"
-          },
-          "asapRate": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "otherJobPosition": {
-            "type": "string",
-            "nullable": true
           },
           "workerRate": {
             "type": "number",
@@ -26164,6 +26150,11 @@
             "nullable": true
           },
           "workerRateMax": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "overtimeStartsAfter": {
             "type": "number",
             "format": "double",
             "nullable": true
@@ -26181,10 +26172,6 @@
             "nullable": true
           },
           "createdBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
             "type": "string",
             "nullable": true
           },
@@ -26340,7 +26327,7 @@
       "Covenant.Common.Models.Company.CompanyProfileSettingsUpdateModel": {
         "type": "object",
         "properties": {
-          "requiresPermissionToSeeOrders": {
+          "requiresPermissionToSeeRequests": {
             "type": "boolean"
           },
           "overtimeStartsAfter": {
@@ -26577,10 +26564,6 @@
           "value": {
             "type": "string",
             "nullable": true
-          },
-          "industry": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -26735,6 +26718,16 @@
             "type": "number",
             "format": "double",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.LocationTaxModel": {
+        "type": "object",
+        "properties": {
+          "tax1": {
+            "type": "number",
+            "format": "double"
           }
         },
         "additionalProperties": false
@@ -27886,7 +27879,7 @@
           "punchCardOptionEnabled": {
             "type": "boolean"
           },
-          "hasPermissionToSeeInternalOrders": {
+          "hasPermissionToSeeInternalRequests": {
             "type": "boolean"
           },
           "jobBoards": {

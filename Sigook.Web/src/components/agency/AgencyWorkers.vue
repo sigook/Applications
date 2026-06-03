@@ -117,7 +117,7 @@
             </template>
           </b-table-column>
           <b-table-column field="notesCount" label="Notes" v-slot="props">
-            <b-tag icon="note-multiple" rounded>
+            <b-tag icon="note-text" rounded>
               <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
             </b-tag>
             <div v-if="props.row.showNotes" class="notes-tooltip">

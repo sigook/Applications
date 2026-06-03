@@ -42,8 +42,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
             CompanyId = Data.FakeCompany.Company.Id,
-            CompanyProfileId = Data.FakeCompany.Id,
-            ProvinceId = Data.Toronto.Province.Id
+            CompanyProfileId = Data.FakeCompany.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"api/agency/accounting/Invoices/Preview", model);
         response.EnsureSuccessStatusCode();
@@ -63,8 +62,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
             CompanyId = Data.FakeCompany.Company.Id,
-            CompanyProfileId = Data.FakeCompany.Id,
-            ProvinceId = Data.Toronto.Province.Id
+            CompanyProfileId = Data.FakeCompany.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync("api/agency/accounting/Invoices", model);
         response.EnsureSuccessStatusCode();
@@ -130,7 +128,8 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
     {
         public static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
         public static readonly City Toronto = new City { Province = new Province { Country = new Country { Code = "USA" } } };
-        public static readonly ProvinceTax ProvinceTax = new ProvinceTax { ProvinceId = Toronto.Province.Id, Tax1 = 0.06m };
+        public static readonly Location JobLocation = Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value;
+        public static readonly LocationTax LocationTax = new LocationTax { LocationId = JobLocation.Id, Tax1 = 0.06m };
         public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
         {
             User = new User(CvnEmail.Create("test@test.com").Value)
@@ -157,7 +156,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         public static void Seed(CovenantContext context)
         {
             FakeAgency.AddLocation(Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value, true);
-            FakeRequest.UpdateJobLocation(Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value, false);
+            FakeRequest.UpdateJobLocation(JobLocation, false);
             FakeCompany.AddLocation(Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value, false);
 
             // Approve timesheets
@@ -165,7 +164,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             TimeSheet1.AddApprovedTime(FakeNow.AddDays(1).AddHours(8), FakeNow.AddDays(1).AddHours(16));
 
             context.City.Add(Toronto);
-            context.ProvinceTaxes.Add(ProvinceTax);
+            context.LocationTaxes.Add(LocationTax);
             context.Request.Add(FakeRequest);
             context.TimeSheet.AddRange(TimeSheets);
             context.WorkerProfile.Add(FakeWorker);

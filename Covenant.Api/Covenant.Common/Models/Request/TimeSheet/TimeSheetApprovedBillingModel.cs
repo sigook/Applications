@@ -25,4 +25,5 @@ public class TimeSheetApprovedBillingModel : ITimeSheetHoursCalculable
     public decimal NightShift { get; set; }
     public decimal Holiday { get; set; }
     public string CountryCode { get; set; }
+    public decimal Tax { get; set; }
 }

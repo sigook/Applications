@@ -16,14 +16,14 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 {
     private readonly IDeductionsRepository _deductionsRepository;
     private readonly IWorkerRepository _workerRepository;
-    private readonly ITimeSheetRepository _timeSheetRepository;
+    private readonly ITimesheetRepository _timeSheetRepository;
     private readonly Rates _rates;
     private readonly TimeLimits _timeLimits;
 
     public TimesheetCalculatorService(
         IDeductionsRepository deductionsRepository,
         IWorkerRepository workerRepository,
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         Rates rates,
         TimeLimits timeLimits)
     {

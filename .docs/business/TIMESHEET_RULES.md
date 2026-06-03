@@ -265,8 +265,13 @@ TotalHours: 08:00:00
 **Purpose:** Track total hours worked in the week (Sunday-Saturday) to determine when overtime starts.
 
 ```
-AccumulateWeekHours = Sum of TotalHours for all timesheets in the same week
+AccumulateWeekHours = Sum of TotalHours for all timesheets in the same week AND same Request
 ```
+
+**Scope: per Worker + Week + Request**
+- Overtime accumulates **per request**, not across the worker's combined weekly load.
+- A worker working multiple requests (e.g. 40h on Request A, 40h on Request B, 40h on Request C) does NOT trigger overtime — each request is evaluated independently against the threshold.
+- Applies identically to paystub generation, invoice generation, and subcontractor reports.
 
 **Week Definition:**
 - Start: Sunday 00:00:00

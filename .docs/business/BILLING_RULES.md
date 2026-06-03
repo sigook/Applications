@@ -161,6 +161,14 @@ Vacations: $4,500.00 × 0.04 = $180.00
 
 ## 🧾 Invoice Calculation
 
+### Overtime Accumulation Scope
+
+Overtime hours are accumulated **per Worker + Week + Request**, not per worker globally.
+
+A worker assigned to multiple requests in the same week is evaluated independently for each request against the overtime threshold (`OvertimeStartsAfter`). 40h on Request A + 40h on Request B does **not** produce overtime — each request stays under the threshold on its own.
+
+This matches the paystub generation behavior (see `PAYSTUB_GENERATION.md`) and applies to both invoices and subcontractor reports.
+
 ### Per-Worker Breakdown
 
 **InvoiceTotal (one per worker):**
@@ -297,6 +305,14 @@ TOTAL NET:                          $5,288.40
 **Determined by:**
 - Company billing address province
 - Stored in `Invoice.HstRate`
+
+### USA Tax (per location)
+
+USA invoices do not use the fixed Canadian HST rate. Instead, the tax is configured **per company location** in the `LocationTaxes` table (keyed by `LocationId`, stored as a rate, e.g. `0.10`).
+
+- **Configuration:** Admins set the rate from the company **Location** menu ("Configure tax"). The UI accepts a **percentage** (e.g. `10` for 10%); the backend stores it as a rate (divides by 100).
+- **Regular invoices:** the tax is computed **per request while processing its timesheets**, applying the rate of each request's job location. An invoice spanning requests in different locations taxes each request at its own rate. Selecting a Province/State in the front-end filters the timesheets to that province (by job location).
+- **Direct-hiring invoices:** there are no timesheets, so the agent types the tax **percentage** directly in the front-end and it is applied to the manual items (sent as `TaxPercentage`).
 
 ---
 

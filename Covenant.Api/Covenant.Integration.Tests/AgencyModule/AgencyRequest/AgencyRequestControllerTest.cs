@@ -93,7 +93,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
         Assert.Equal(model.JobLocation.MainIntersection, Data.FakeRequest.JobLocation.MainIntersection);
         Assert.Equal(model.WorkersQuantity, Data.FakeRequest.WorkersQuantity);
         Assert.Equal(model.WorkersQuantityWorking, Data.FakeRequest.WorkersQuantityWorking);
-        Assert.Equal(model.JobPosition, Data.FakeRequest.JobPositionRate.JobPosition?.Value ?? Data.FakeRequest.JobPositionRate.OtherJobPosition);
+        Assert.Equal(model.JobPosition, Data.FakeRequest.JobPositionRate.JobPosition);
         Assert.Equal(model.HolidayIsPaid, Data.FakeRequest.HolidayIsPaid);
         Assert.Equal(model.BreakIsPaid, Data.FakeRequest.BreakIsPaid);
         Assert.Equal(model.Status, Data.FakeRequest.Status);

@@ -23,13 +23,13 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
     public class WorkerRequestTimeSheetController : ControllerBase
     {
         public const string RouteName = "api/WorkerRequest/{requestId}/TimeSheet";
-        private readonly ITimesheetService timeSheetService;
-        private readonly ITimeSheetRepository _timeSheetRepository;
+        private readonly ITimesheetService timesheetService;
+        private readonly ITimesheetRepository _timesheetRepository;
 
-        public WorkerRequestTimeSheetController(ITimesheetService timeSheetService, ITimeSheetRepository timeSheetRepository)
+        public WorkerRequestTimeSheetController(ITimesheetService timesheetService, ITimesheetRepository timesheetRepository)
         {
-            this.timeSheetService = timeSheetService;
-            _timeSheetRepository = timeSheetRepository;
+            this.timesheetService = timesheetService;
+            _timesheetRepository = timesheetRepository;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
         /// <param name="pagination">Pagination parameters.</param>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedList<TimeSheetListModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await _timeSheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
+        public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await _timesheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
 
         /// <summary>
         /// Registers a clock-in/clock-out timesheet entry for the authenticated worker.
@@ -51,7 +51,7 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromBody] WorkerLocationModel model)
         {
-            var result = await timeSheetService.Register(requestId, model);
+            var result = await timesheetService.Register(requestId, model);
             if (result) return Ok(result.Value);
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
@@ -65,7 +65,7 @@ namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers
         [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromQuery] DateTime? date)
         {
-            var result = await timeSheetService.GetClockType(requestId, date);
+            var result = await timesheetService.GetClockType(requestId, date);
             return Ok(result.Value);
         }
     }
