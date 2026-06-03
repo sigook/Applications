@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import '@/assets/css/tailwind.css';
+import '@/assets/css/tokens.css';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';
