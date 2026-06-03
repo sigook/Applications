@@ -6,13 +6,7 @@
       <div class="col-12">
         <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
           :message="formErrors.jobPosition">
-          <b-autocomplete :data="filteredPositions" placeholder="Position" v-model="jobPosition" field="value"
-            open-on-focus name="positions">
-            <template v-slot="props">
-              <span class="fz-0">{{ props.option.value }}</span>
-              <span v-if="props.option.industry" class="fz-2 d-block">Industry: {{ props.option.industry }}</span>
-            </template>
-          </b-autocomplete>
+          <b-input placeholder="Position" v-model="jobPosition" name="positions" />
         </b-field>
       </div>
       <div class="col-12">
@@ -28,10 +22,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import * as yup from 'yup';
 import { showAlertError } from "@/utils/toast";
-import { getJobPositions } from "@/api/catalogApi";
 import { petitionAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 import { useStickyForm } from '@/composables/useStickyForm';
 
@@ -51,12 +44,6 @@ const { jobPosition, message } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const jobPositionList = ref<any[]>([]);
-
-const filteredPositions = computed(() => {
-  const q = (jobPosition.value || '').toLowerCase();
-  return jobPositionList.value.filter((jpl: any) => jpl.value.toLowerCase().includes(q));
-});
 
 async function validateForm() {
   form.markInteracted();
@@ -86,9 +73,4 @@ function requestAgencyJobPosition() {
     });
 }
 
-(async () => {
-  isLoading.value = true;
-  jobPositionList.value = await getJobPositions();
-  isLoading.value = false;
-})();
 </script>

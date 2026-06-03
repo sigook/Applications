@@ -38,16 +38,34 @@ namespace Covenant.Infrastructure.Repositories
             return await location.FirstOrDefaultAsync();
         }
 
-        public async Task<ProvinceTaxModel> GetProvinceSalesTax(Guid provinceId)
+        public async Task<LocationTaxModel> GetLocationTax(Guid locationId)
         {
-            var provinceTax = await _context.ProvinceTaxes
-                .Where(pt => pt.ProvinceId == provinceId)
-                .Select(pt => new ProvinceTaxModel
+            var locationTax = await _context.LocationTaxes
+                .Where(lt => lt.LocationId == locationId)
+                .Select(lt => new LocationTaxModel
                 {
-                    Tax1 = pt.Tax1
+                    Tax1 = lt.Tax1
                 })
                 .FirstOrDefaultAsync();
-            return provinceTax;
+            return locationTax;
+        }
+
+        public async Task UpsertLocationTax(Guid locationId, decimal tax1)
+        {
+            var locationTax = await _context.LocationTaxes
+                .FirstOrDefaultAsync(lt => lt.LocationId == locationId);
+            if (locationTax is null)
+            {
+                _context.LocationTaxes.Add(new LocationTax
+                {
+                    LocationId = locationId,
+                    Tax1 = tax1
+                });
+            }
+            else
+            {
+                locationTax.Tax1 = tax1;
+            }
         }
     }
 }

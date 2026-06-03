@@ -38,7 +38,7 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
             var entity = await _repository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == model.WorkerProfileId && ra.CandidateId == model.CandidateId);
-            if (entity != null) return BadRequest(ModelState.AddError("The candidate is already in the order as an applicant"));
+            if (entity != null) return BadRequest(ModelState.AddError("The candidate is already in the request as an applicant"));
             var createdBy = User.GetNickname();
             if (model.CandidateId.HasValue)
             {
@@ -55,7 +55,7 @@ namespace Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers
             else if (model.WorkerProfileId.HasValue)
             {
                 var workerRequest = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(model.WorkerProfileId.Value, requestId);
-                if (workerRequest != null && workerRequest.IsBooked) return BadRequest(ModelState.AddError("The worker is already in the order as a worker"));
+                if (workerRequest != null && workerRequest.IsBooked) return BadRequest(ModelState.AddError("The worker is already in the request as a worker"));
                 var result = RequestApplicant.CreateWithWorker(requestId, model.WorkerProfileId.Value, createdBy, model.Comments);
                 if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
                 entity = result.Value;

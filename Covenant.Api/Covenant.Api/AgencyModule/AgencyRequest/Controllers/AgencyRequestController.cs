@@ -47,7 +47,7 @@ public class AgencyRequestController : ControllerBase
         var agencyId = User.GetAgencyId();
         if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
         if (pagination.AgencyId.HasValue) agencyId = pagination.AgencyId.Value;
-        pagination.HasPermissionToSeeInternalOrders = User.IsPayrollManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsPayrollManager();
         return Ok(await requestService.GetRequestsForAgency(agencyId, pagination));
     }
 
@@ -74,7 +74,7 @@ public class AgencyRequestController : ControllerBase
         {
             pagination.Recruiter = User.GetNickname();
         }
-        pagination.HasPermissionToSeeInternalOrders = User.IsPayrollManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsPayrollManager();
         var data = repository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
         var file = await mediator.Send(new GenerateAgencyRequestsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);

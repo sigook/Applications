@@ -76,12 +76,11 @@ public class CovenantContext : DbContext
     public DbSet<Language> Language { get; set; }
     public DbSet<Lift> Lift { get; set; }
     public DbSet<Province> Province { get; set; }
-    public DbSet<ProvinceTax> ProvinceTaxes { get; set; }
+    public DbSet<LocationTax> LocationTaxes { get; set; }
     public DbSet<ProvinceSetting> ProvinceSettings { get; set; }
     public DbSet<WsibGroup> WsibGroup { get; set; }
     public DbSet<Industry> Industry { get; set; }
     public DbSet<Source> Source { get; set; }
-    public DbSet<JobPosition> JobPosition { get; set; }
     public DbSet<ReasonCancellationRequest> ReasonCancellationRequest { get; set; }
     public DbSet<Holiday> Holiday { get; set; }
     public DbSet<CovenantFile> CovenantFile { get; set; }

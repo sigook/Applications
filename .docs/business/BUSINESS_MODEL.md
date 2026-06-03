@@ -8,7 +8,7 @@ Covenant/Sigook is an **end-to-end staffing and recruitment platform** that conn
 
 **Manage the complete temporary/permanent staffing flow including:**
 - ✅ Worker registration and certification
-- ✅ Matching workers with job orders
+- ✅ Matching workers with requests
 - ✅ Schedule and timesheet management with punch card
 - ✅ Payroll processing with complex Canadian taxes (CPP, EI, Federal, Provincial)
 - ✅ Automated invoicing for companies
@@ -31,7 +31,7 @@ Covenant/Sigook is an **end-to-end staffing and recruitment platform** that conn
 **Responsibilities:**
 - Recruit and approve Workers
 - Manage Companies (clients)
-- Create and assign job orders (Requests)
+- Create and assign requests
 - Approve timesheets
 - Process payroll for workers
 - Bill companies
@@ -58,7 +58,7 @@ Lead → Potential → Prospect → Quoted → Client → Blocked/Inactive
 
 **Responsibilities:**
 - Define job positions with rates
-- Create job orders (Requests)
+- Create requests
 - Review and approve candidates
 - Review timesheets (optional)
 - Receive billing for services
@@ -70,13 +70,13 @@ Lead → Potential → Prospect → Quoted → Client → Blocked/Inactive
   - **WorkerRate** — What is paid to the worker
   - **AgencyRate** — What the agency charges (includes markup)
 - Contacts (CompanyProfileContactPerson)
-- Internal users (CompanyUser) to manage orders
+- Internal users (CompanyUser) to manage requests
 
 **Key data:**
 - BusinessName, DbaName
 - BusinessNumber, HstNumber
 - Billing address and shipping addresses
-- RequiresPermissionToSeeOrders (access control)
+- RequiresPermissionToSeeRequests (access control)
 
 ---
 
@@ -93,7 +93,7 @@ Lead → Potential → Prospect → Quoted → Client → Blocked/Inactive
 **Responsibilities:**
 - Complete registration with full information
 - Keep documents current (SIN, IDs, licenses, certificates)
-- Apply to job orders
+- Apply to requests
 - Complete timesheets (clock in/out)
 - Receive pay stubs
 
@@ -194,7 +194,7 @@ Candidate (managed by agency) → Worker (registers in Flutter app)
 │  - Incentive (optional bonus)                           │
 │                                                          │
 │ Status:                                                  │
-│  - Open: Active order with available capacity           │
+│  - Open: Active request with available capacity         │
 │  - Filled: All positions filled                         │
 │  - Cancelled: Cancelled                                 │
 └─────────────────────────────────────────────────────────┘

@@ -133,14 +133,6 @@ namespace Covenant.Infrastructure.Repositories
             .Select(c => new BaseModel<Guid>(c.Id, c.Value))
             .ToListAsync();
 
-        public Task<List<JobPositionDetailModel>> GetJobPositions() =>
-            _context.JobPosition.Where(c => !c.IsDeleted).Select(s => new JobPositionDetailModel
-            {
-                Id = s.Id,
-                Value = s.Value,
-                Industry = s.Industry.Value
-            }).OrderBy(c => c.Value).ToListAsync();
-
         public Task<List<ReasonCancellationRequest>> GetReasonCancellationRequest() =>
             _context.ReasonCancellationRequest.Include(c => c.Value).AsNoTracking().ToListAsync();
 

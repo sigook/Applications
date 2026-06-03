@@ -15,7 +15,7 @@
             <default-image v-else :name="props.row.agencyFullName" class="img-30"></default-image>
             <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
           </b-table-column>
-          <b-table-column field="numberId" label="Order ID" v-slot="props">
+          <b-table-column field="numberId" label="Request ID" v-slot="props">
             {{ props.row.numberId }}
           </b-table-column>
           <b-table-column field="jobTitle" label="Position" v-slot="props">

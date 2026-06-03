@@ -1,7 +1,7 @@
 <template>
   <div class="card job-boards-modal">
     <header class="card-header">
-      <p class="card-header-title">Job Boards — Order #{{ numberId }}</p>
+      <p class="card-header-title">Job Boards — Request #{{ numberId }}</p>
     </header>
     <section class="card-content">
       <p v-if="!availableBoards.length" class="has-text-grey">No job boards available.</p>

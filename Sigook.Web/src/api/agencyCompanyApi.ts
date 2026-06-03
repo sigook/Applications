@@ -9,7 +9,6 @@ import type {
   VaccinationRequiredModel,
   InvoiceNotesModel,
   InvoiceRecipientModel,
-  CompanyProvinceWithTaxes,
   PetitionJobPositionPayload,
   UpdateIsAsapRequestsPayload,
 } from '@/types/agency';
@@ -57,10 +56,6 @@ export function updateAgencyCompanyProfileLogo(profileId: string, model: Partial
 
 export function getAgencyCompanyProfileWithRequests(): Promise<CompanyProfileListItem[]> {
   return http.get('/api/v2/AgencyCompanyProfile/company-with-requests').then(r => r.data);
-}
-
-export function getCompanyProvinceWithTaxes(companyProfileId: string): Promise<CompanyProvinceWithTaxes[]> {
-  return http.get(`/api/v2/AgencyCompanyProfile/${companyProfileId}/company-provinces-taxes`).then(r => r.data);
 }
 
 export function bulkAgencyCompanies(agencyId: string, file: File): Promise<Blob> {
@@ -228,9 +223,9 @@ export function updateCompanyInvoiceRecipient(companyProfileId: string, id: stri
 // Company settings
 // ---------------------------------------------------------------------------
 
-export function updatePermissionToSeeOrders(companyId: string, settings: CompanyProfileSettingsUpdate): Promise<void> {
+export function updatePermissionToSeeRequests(companyId: string, settings: CompanyProfileSettingsUpdate): Promise<void> {
   return http
-    .patch(`/api/V2/AgencyCompanyProfile/${companyId}/RequiresPermissionToSeeOrders`, settings)
+    .patch(`/api/V2/AgencyCompanyProfile/${companyId}/RequiresPermissionToSeeRequests`, settings)
     .then(() => {});
 }
 

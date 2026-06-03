@@ -21,7 +21,7 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="numberId" label="Order ID" sortable searchable>
+          <b-table-column field="numberId" label="Request ID" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress="onInputEntered"></b-input>

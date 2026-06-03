@@ -73,7 +73,13 @@ Week groups (ordered by week number)
 
 #### Step 3.3: Public Holidays
 
-For each week, looks up statutory holidays and calculates holiday pay based on the worker's regular wages from `payStubRepository.GetWorkerRegularWages(...)`.
+For each week, looks up statutory holidays (`catalogRepository.GetHolidaysInWeek`) and, for each holiday, resolves the public holiday pay (paid to entitled workers who did **not** work the holiday):
+
+1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub), `CustomPublicHolidayValue` (agency override), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday).
+2. **Base wage** from `calculatorService.CalculateHolidayPayBase(workerProfileId, lookbackStart, holidayWeekEnd)`: the worker's gross earnings (regular + other-regular + overtime + worked-holiday + missing) **plus vacation pay** over the worked timesheets of the four work weeks before the holiday's week. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the worked timesheets, not previously generated pay stubs, so the amount does not depend on pay stub generation order.
+3. **Resolution** via `RegularWageWorker.CalculateAmount()`: `0` if already paid or not entitled, the custom value when present, otherwise `base / 20`.
+
+The resulting amount (when `> 0`) becomes a `PayStubPublicHoliday` and a `StatutoryHoliday` `PayStubItem`.
 
 ### Step 4: Create PayStubItems
 

@@ -9,7 +9,6 @@ public class Industry
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Value { get; set; }
     public bool IsDeleted { get; private set; }
-    public ICollection<JobPosition> JobPositions { get; set; } = new List<JobPosition>();
     public ICollection<CompanyProfileIndustry> CompanyProfileIndustries { get; set; }
 
     public static Result<Industry> Create(string value) =>

@@ -394,7 +394,7 @@ Body: "You can now apply to jobs"
 ## 2️⃣ Job Creation & Matching Flow
 
 ### Overview
-Company creates job order → Agency assigns workers or Workers apply → Assignment confirmed.
+Company creates request → Agency assigns workers or Workers apply → Assignment confirmed.
 
 ---
 

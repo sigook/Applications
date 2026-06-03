@@ -33,7 +33,7 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="numberId" label="Order ID" v-slot="props">
+          <b-table-column field="numberId" label="Request ID" v-slot="props">
             {{ props.row.numberId }}
             <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
           </b-table-column>

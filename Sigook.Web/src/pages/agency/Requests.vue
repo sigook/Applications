@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        Orders
+        Requests
         <span class="fw-100 fz-1">
           ({{ totalItems }})
         </span>

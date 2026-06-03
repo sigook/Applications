@@ -25,7 +25,7 @@ public class CompanyProfileDetailModel
     public DateTime CreatedAt { get; set; }
     public bool? VaccinationRequired { get; set; }
     public string VaccinationRequiredComments { get; set; }
-    public bool RequiresPermissionToSeeOrders { get; set; }
+    public bool RequiresPermissionToSeeRequests { get; set; }
     public CovenantFileModel Logo { get; set; }
     public CompanyProfileIndustryDetailModel Industry { get; set; }
     public Guid? SalesRepresentativeId { get; set; }

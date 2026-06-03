@@ -24,8 +24,8 @@ const routesWorker: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/register-worker/:orderId",
-    name: "register-worker-with-orderId",
+    path: "/register-worker/:requestId",
+    name: "register-worker-with-requestId",
     component: WorkerRegister,
     meta: {
       layout: "web",

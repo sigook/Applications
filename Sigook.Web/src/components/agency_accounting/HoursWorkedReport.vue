@@ -19,7 +19,7 @@
       <div class="col-12 col-md-6 col-lg-4 col-padding">
         <b-field label="Job Position">
           <b-autocomplete v-model="jobPositionSelected" :data="filteredJobPositions" open-on-focus
-            field="jobPosition.value" :loading="isLoadingJobPositions" name="jobPosition" placeholder="Job Position"
+            field="jobPosition" :loading="isLoadingJobPositions" name="jobPosition" placeholder="Job Position"
             @select="selectJobPosition">
             <template v-slot:empty>
               <p class="container text-center">No records available</p>
@@ -196,7 +196,7 @@ const filteredCompanies = computed(() =>
   companies.value.filter((company: any) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
 );
 const filteredJobPositions = computed(() =>
-  jobPositions.value.filter((jp: any) => jp.jobPosition.value.toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
+  jobPositions.value.filter((jp: any) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
 );
 
 (async () => {

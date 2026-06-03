@@ -114,7 +114,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                                 }
                                 else
                                 {
-                                    errorMessage = $"The candidate with email {email.Value.Email} attempted to apply for order {request.NumberId}, but the country selected during registration does not match the one in the order.";
+                                    errorMessage = $"The candidate with email {email.Value.Email} attempted to apply for request {request.NumberId}, but the country selected during registration does not match the one in the request.";
                                 }
                             }
                             else

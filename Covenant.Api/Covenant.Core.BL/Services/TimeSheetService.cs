@@ -16,8 +16,8 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using GeoCoordinatePortable;
 using MediatR;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Covenant.Core.BL.Services;
 
@@ -25,22 +25,22 @@ public class TimesheetService : ITimesheetService
 {
     private readonly ITimeService timeService;
     private readonly IWorkerRequestRepository workerRequestRepository;
-    private readonly ITimeSheetRepository timeSheetRepository;
+    private readonly ITimesheetRepository timeSheetRepository;
     private readonly ICatalogRepository catalogRepository;
     private readonly IConfiguration configuration;
     private readonly IIdentityServerService identityServerService;
     private readonly IMediator mediator;
-    private readonly ILogger<TimesheetService> logger;
+    private readonly TelemetryClient telemetryClient;
 
     public TimesheetService(
         ITimeService timeService,
         IWorkerRequestRepository workerRequestRepository,
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         ICatalogRepository catalogRepository,
         IConfiguration configuration,
         IIdentityServerService identityServerService,
         IMediator mediator,
-        ILogger<TimesheetService> logger)
+        TelemetryClient telemetryClient)
     {
         this.timeService = timeService;
         this.workerRequestRepository = workerRequestRepository;
@@ -49,7 +49,7 @@ public class TimesheetService : ITimesheetService
         this.configuration = configuration;
         this.identityServerService = identityServerService;
         this.mediator = mediator;
-        this.logger = logger;
+        this.telemetryClient = telemetryClient;
     }
 
     public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerId, TimeSpan clockIn)
@@ -162,8 +162,21 @@ public class TimesheetService : ITimesheetService
                     now = timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value);
                     var pinWorker = new GeoCoordinate(workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
                     var distanceBetween = pinJob.GetDistanceTo(pinWorker);
-                    logger.LogWarning("{0} - {1}: Distance between is: {2}: Request Latitude: {3} Request Longitude: {4} / Worker Latitude: {5} Worker Longitude: {6}",
-                        requestId, workerId, distanceBetween, info.Latitude.Value, info.Longitude.Value, workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
+                    telemetryClient.TrackEvent(
+                        "TimesheetLocationDistanceCheck",
+                        new Dictionary<string, string>
+                        {
+                            ["RequestId"] = requestId.ToString(),
+                            ["WorkerId"] = workerId.ToString(),
+                            ["RequestLatitude"] = info.Latitude.Value.ToString(),
+                            ["RequestLongitude"] = info.Longitude.Value.ToString(),
+                            ["WorkerLatitude"] = workerLocationModel.Latitude.Value.ToString(),
+                            ["WorkerLongitude"] = workerLocationModel.Longitude.Value.ToString()
+                        },
+                        new Dictionary<string, double>
+                        {
+                            ["DistanceMeters"] = distanceBetween
+                        });
                     if (distanceBetween >= 101)
                     {
                         result = Result.Fail<RegisterTimeSheetResultModel>("You are too far from check point. Please get closer.");

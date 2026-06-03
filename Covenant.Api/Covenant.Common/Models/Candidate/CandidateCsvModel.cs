@@ -21,8 +21,8 @@ public class CandidateCsvModel
     public string Gender { get; set; }
     [Name("Has Transportation?")]
     public string HasTransportation { get; set; }
-    [Name("Order ID")]
-    public string OrderID { get; set; }
+    [Name("Request ID")]
+    public string RequestID { get; set; }
     [Name("Source")]
     public string Source { get; set; }
     [Name("URL Resume")]

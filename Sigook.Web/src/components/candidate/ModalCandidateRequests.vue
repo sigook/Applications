@@ -3,8 +3,8 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12 col-padding">
-        <b-field label="OrderID, Position">
-          <b-autocomplete :data="rows" placeholder="OrderID, Position" :loading="isLoadingList"
+        <b-field label="RequestID, Position">
+          <b-autocomplete :data="rows" placeholder="RequestID, Position" :loading="isLoadingList"
             :custom-formatter="(option: any) => `${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
             @typing="onInputEntered" @select="(option: any) => optionSelected = option" append-to-body>
             <template v-slot="props">

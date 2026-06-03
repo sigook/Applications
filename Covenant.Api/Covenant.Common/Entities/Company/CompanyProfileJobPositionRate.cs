@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Functionals;
+using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,9 +13,7 @@ namespace Covenant.Common.Entities.Company
 
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid? JobPositionId { get; set; }
-        public JobPosition JobPosition { get; set; }
-        public string OtherJobPosition { get; set; }
+        public string JobPosition { get; set; }
 
         public Guid CompanyProfileId { get; set; }
         public CompanyProfile CompanyProfile { get; set; }
@@ -28,7 +26,7 @@ namespace Covenant.Common.Entities.Company
         public decimal WorkerRate { get; set; }
         public decimal? WorkerRateMin { get; private set; }
         public decimal? WorkerRateMax { get; private set; }
-        public decimal? AsapRate { get; set; }
+        public TimeSpan? OvertimeStartsAfter { get; set; }
         public string Description { get; set; }
 
         public bool IsDeleted { get; private set; }
@@ -43,17 +41,15 @@ namespace Covenant.Common.Entities.Company
         /// When the company creates an account the company doesn't have the rates
         /// that's why by default are in zero
         /// </summary>
-        /// <param name="companyProfileId"></param>
-        /// <param name="jobPositionId"></param>
-        /// <param name="otherJobPosition"></param>
-        /// <returns></returns>
-        public static Result<CompanyProfileJobPositionRate> CompanyCreate(Guid companyProfileId, Guid? jobPositionId, string otherJobPosition)
+        public static Result<CompanyProfileJobPositionRate> CompanyCreate(Guid companyProfileId, string jobPosition)
         {
+            if (string.IsNullOrWhiteSpace(jobPosition))
+                return Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
+
             return Result.Ok(new CompanyProfileJobPositionRate
             {
                 CompanyProfileId = companyProfileId,
-                JobPositionId = jobPositionId,
-                OtherJobPosition = otherJobPosition,
+                JobPosition = jobPosition,
                 Rate = default,
                 WorkerRate = default,
                 Description = "Created by company",
@@ -62,21 +58,12 @@ namespace Covenant.Common.Entities.Company
             });
         }
 
-        public static Result<CompanyProfileJobPositionRate> Create(Guid companyProfileId, Guid jobPositionId,
-            decimal agencyRate, decimal workerRate, string description = null, string createdBy = null) =>
-            jobPositionId == Guid.Empty
-                ? Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.RequiredMsg(ApiResources.JobPosition))
-                : PrivateCreate(companyProfileId, agencyRate, workerRate, description, createdBy, jobPositionId: jobPositionId);
-
-        public static Result<CompanyProfileJobPositionRate> Create(Guid companyProfileId, string otherJobPosition,
-            decimal agencyRate, decimal workerRate, string description = null, string createdBy = null) =>
-            string.IsNullOrEmpty(otherJobPosition)
-                ? Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.RequiredMsg(ApiResources.JobPosition))
-                : PrivateCreate(companyProfileId, agencyRate, workerRate, description, createdBy, otherJobPosition);
-
-        private static Result<CompanyProfileJobPositionRate> PrivateCreate(Guid companyProfileId, decimal agencyRate,
-            decimal workerRate, string description, string createdBy, string otherJobPosition = null, Guid? jobPositionId = null)
+        public static Result<CompanyProfileJobPositionRate> Create(Guid companyProfileId, string jobPosition,
+            decimal agencyRate, decimal workerRate, string description = null, string createdBy = null)
         {
+            if (string.IsNullOrWhiteSpace(jobPosition))
+                return Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
+
             if (agencyRate < MinAgencyRate || agencyRate > MaxAgencyRate)
                 return Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.BetweenMsg(ApiResources.Rate, MinAgencyRate, MaxAgencyRate));
 
@@ -89,8 +76,7 @@ namespace Covenant.Common.Entities.Company
             return Result.Ok(new CompanyProfileJobPositionRate
             {
                 CompanyProfileId = companyProfileId,
-                JobPositionId = jobPositionId,
-                OtherJobPosition = otherJobPosition,
+                JobPosition = jobPosition,
                 Rate = agencyRate,
                 WorkerRate = workerRate,
                 Description = description,
@@ -101,8 +87,7 @@ namespace Covenant.Common.Entities.Company
 
         public void Update(CompanyProfileJobPositionRate value)
         {
-            JobPositionId = value.JobPositionId;
-            OtherJobPosition = value.OtherJobPosition;
+            JobPosition = value.JobPosition;
             Rate = value.Rate;
             WorkerRate = value.WorkerRate;
             Description = value.Description;
@@ -110,6 +95,7 @@ namespace Covenant.Common.Entities.Company
             UpdatedBy = value.UpdatedBy ?? value.CreatedBy;
             WorkerRateMin = value.WorkerRateMin;
             WorkerRateMax = value.WorkerRateMax;
+            OvertimeStartsAfter = value.OvertimeStartsAfter;
             UpdateShift(value.Shift);
         }
 

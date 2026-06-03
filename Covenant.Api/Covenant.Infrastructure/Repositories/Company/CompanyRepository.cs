@@ -59,17 +59,11 @@ namespace Covenant.Infrastructure.Repositories.Company
                     WorkerRate = s.WorkerRate,
                     WorkerRateMin = s.WorkerRateMin,
                     WorkerRateMax = s.WorkerRateMax,
-                    AsapRate = s.AsapRate,
+                    OvertimeStartsAfter = s.OvertimeStartsAfter == null ? null : (double?)s.OvertimeStartsAfter.GetValueOrDefault().TotalHours,
                     Description = s.Description,
                     CreatedAt = s.CreatedAt,
                     CreatedBy = s.CreatedBy,
-                    OtherJobPosition = s.OtherJobPosition,
-                    JobPosition = s.JobPositionId == null ? null : new JobPositionDetailModel
-                    {
-                        Id = s.JobPosition.Id,
-                        Value = s.JobPosition.Value
-                    },
-                    Value = s.JobPositionId == null ? s.OtherJobPosition : s.JobPosition.Value,
+                    JobPosition = s.JobPosition,
                     DisplayShift = s.Shift == null ? null : s.Shift.DisplayShift,
                     Shift = s.Shift == null ? null : new ShiftModel
                     {
@@ -97,7 +91,7 @@ namespace Covenant.Infrastructure.Repositories.Company
                         Comments = s.Shift.Comments
                     }
                 });
-            var result = await query.OrderBy(c => c.Value).ToListAsync();
+            var result = await query.OrderBy(c => c.JobPosition).ToListAsync();
             return result;
         }
 
@@ -112,17 +106,11 @@ namespace Covenant.Infrastructure.Repositories.Company
                     WorkerRate = s.WorkerRate,
                     WorkerRateMin = s.WorkerRateMin,
                     WorkerRateMax = s.WorkerRateMax,
-                    AsapRate = s.AsapRate,
+                    OvertimeStartsAfter = s.OvertimeStartsAfter == null ? null : (double?)s.OvertimeStartsAfter.GetValueOrDefault().TotalHours,
                     Description = s.Description,
                     CreatedAt = s.CreatedAt,
                     CreatedBy = s.CreatedBy,
-                    OtherJobPosition = s.OtherJobPosition,
-                    Value = s.JobPositionId == null ? s.OtherJobPosition : s.JobPosition.Value,
-                    JobPosition = s.JobPositionId == null ? null : new JobPositionDetailModel
-                    {
-                        Id = s.JobPosition.Id,
-                        Value = s.JobPosition.Value
-                    },
+                    JobPosition = s.JobPosition,
                     Shift = s.Shift == null ? null : new ShiftModel
                     {
                         Sunday = s.Shift.Sunday,
@@ -177,7 +165,6 @@ namespace Covenant.Infrastructure.Repositories.Company
             if (profile is null) return null;
             var positionRates = await _context.CompanyProfileJobPositionRate
                 .Where(c => !c.IsDeleted && c.CompanyProfileId == profile.Id)
-                .Include(c => c.JobPosition)
                 .ToListAsync();
             profile.JobPositionRates = positionRates;
             return profile;
@@ -266,12 +253,10 @@ namespace Covenant.Infrastructure.Repositories.Company
                     WorkerRate = jp.WorkerRate,
                     WorkerRateMin = jp.WorkerRateMin,
                     WorkerRateMax = jp.WorkerRateMax,
-                    AsapRate = jp.AsapRate,
                     Description = jp.Description,
                     CreatedAt = jp.CreatedAt,
                     CreatedBy = jp.CreatedBy,
-                    OtherJobPosition = jp.OtherJobPosition,
-                    Value = jp.JobPositionId == null ? jp.OtherJobPosition : jp.JobPosition.Value
+                    JobPosition = jp.JobPosition
                 }).ToListAsync();
 
             var users = await _context.CompanyUser
@@ -370,7 +355,7 @@ namespace Covenant.Infrastructure.Repositories.Company
             var query = _context.CompanyProfile
                 .Include(cp => cp.Locations)
                 .Include(cp => cp.ContactPersons)
-                .Include(cp => cp.JobPositionRates).ThenInclude(jpr => jpr.JobPosition)
+                .Include(cp => cp.JobPositionRates)
                 .Include(cp => cp.Industry).ThenInclude(i => i.Industry)
                 .Include(cp => cp.Logo)
                 .Where(expression)
@@ -411,7 +396,7 @@ namespace Covenant.Infrastructure.Repositories.Company
                         Industry = cp.Industry.Industry == null ? null : new BaseModel<Guid> { Id = cp.Industry.Industry.Id, Value = cp.Industry.Industry.Value },
                         OtherIndustry = cp.Industry.OtherIndustry
                     },
-                    RequiresPermissionToSeeOrders = cp.RequiresPermissionToSeeOrders,
+                    RequiresPermissionToSeeRequests = cp.RequiresPermissionToSeeRequests,
                     SalesRepresentativeId = cp.SalesRepresentativeId,
                     OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours
                 });
@@ -562,22 +547,6 @@ namespace Covenant.Infrastructure.Repositories.Company
                 .OrderBy(cu => cu.Name).ThenBy(cu => cu.Lastname)
                 .Select(CompanyExtensionsMapping.SelectCompanyUser).ToListAsync();
             return companyUsers;
-        }
-
-        public async Task<IEnumerable<ProvinceModel>> GetCompanyProvincesWithTaxes(Guid id)
-        {
-            var locations = _context.CompanyProfile.Include(cp => cp.Locations)
-                .Where(cp => cp.Id == id)
-                .SelectMany(cp => cp.Locations)
-                .Where(l => l.Location.City.Province.ProvinceTax.Tax1 > 0)
-                .Select(l => new ProvinceModel
-                {
-                    Id = l.Location.City.Province.Id,
-                    Value = l.Location.City.Province.Value,
-                    Code = l.Location.City.Province.Code
-                }).Distinct();
-            var results = await locations.OrderBy(l => l.Value).ToListAsync();
-            return results;
         }
 
         public async Task BulkCompanies(IEnumerable<BulkCompany> bulk)

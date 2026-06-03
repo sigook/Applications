@@ -31,12 +31,6 @@ namespace Covenant.Api.Common
             CreateMap<BaseModel<Guid>, Industry>();
 
             CreateMap<BaseModel<Guid>, Industry>()
-                .ForMember(e => e.JobPositions, exp => exp.Ignore())
-                .ForMember(e => e.Value, exp => exp.Ignore());
-
-            CreateMap<JobPosition, JobPositionDetailModel>();
-            CreateMap<JobPositionDetailModel, JobPosition>()
-                .ForMember(e => e.IndustryId, exp => exp.Ignore())
                 .ForMember(e => e.Value, exp => exp.Ignore());
 
             CreateMap<CovenantFileModel, CovenantFile>()

@@ -138,7 +138,7 @@
       <b-tab-item label="Timesheet" value="timeSheetHistory">
         <time-sheet-history v-if="visitedTabs.includes('timeSheetHistory')" :workerId="worker.id" />
       </b-tab-item>
-      <b-tab-item label="Orders" value="requestHistory">
+      <b-tab-item label="Requests" value="requestHistory">
         <request-history v-if="visitedTabs.includes('requestHistory')" :workerId="worker.id" />
       </b-tab-item>
     </b-tabs>

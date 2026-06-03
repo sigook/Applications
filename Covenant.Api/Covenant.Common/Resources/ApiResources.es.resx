@@ -441,9 +441,6 @@
   <data name="Comment">
     <value>Comment</value>
   </data>
-  <data name="AsapRate">
-    <value>Asap Rate</value>
-  </data>
   <data name="WorkerNotAvailableToWork">
     <value>This worker is not available to work</value>
   </data>

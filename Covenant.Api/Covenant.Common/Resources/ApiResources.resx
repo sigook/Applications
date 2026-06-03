@@ -232,7 +232,7 @@
     <value>Today's time sheet was already reported</value>
   </data>
   <data name="RequestNotAvailable" xml:space="preserve">
-    <value>This order isn't available</value>
+    <value>This request isn't available</value>
   </data>
   <data name="WorkerNotApprovedToWork">
     <value>You aren't approved to work</value>
@@ -540,9 +540,6 @@
   <data name="Comment">
     <value>Comment</value>
   </data>
-  <data name="AsapRate">
-    <value>Asap Rate</value>
-  </data>
   <data name="WorkerNotAvailableToWork">
     <value>This worker is not available to work</value>
   </data>
@@ -616,7 +613,7 @@
     <value>Note</value>
   </data>
   <data name="WorkerIsNotInARequest" xml:space="preserve">
-    <value>Sorry, you are not in any Order please contact your agency</value>
+    <value>Sorry, you are not in any Request please contact your agency</value>
   </data>
   <data name="MaxSizeFileError" xml:space="preserve">
     <value>This file can't be uploaded, because it exceeds the maximum file-size 10MB</value>

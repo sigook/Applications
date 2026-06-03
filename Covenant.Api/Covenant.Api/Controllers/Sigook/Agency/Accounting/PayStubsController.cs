@@ -19,13 +19,13 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 public class PayStubsController : ControllerBase
 {
     private readonly IAccountingService accountingService;
-    private readonly ITimeSheetRepository timeSheetRepository;
+    private readonly ITimesheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
     private readonly IPayStubService payStubService;
 
     public PayStubsController(
         IAccountingService accountingService,
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
         IPayStubService payStubService)
     {

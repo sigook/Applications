@@ -21,6 +21,7 @@ namespace Covenant.Common.Entities
         public string MainIntersection { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public LocationTax LocationTax { get; set; }
         public virtual string FormattedAddress => $"{Address} {City?.Value} {City?.Province?.Code} {PostalCode}";
         public bool IsUSA => City?.Province?.Country.Code == "USA";
 

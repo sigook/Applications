@@ -26,7 +26,7 @@ public class AccountingService : IAccountingService
     private readonly IPayStubRepository payStubRepository;
     private readonly IPayStubsContainer payStubsContainer;
     private readonly ISubcontractorRepository subcontractorRepository;
-    private readonly ITimeSheetRepository timeSheetRepository;
+    private readonly ITimesheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
     private readonly IMediator mediator;
     private readonly IServiceProvider serviceProvider;
@@ -38,7 +38,7 @@ public class AccountingService : IAccountingService
         IPayStubRepository payStubRepository,
         IPayStubsContainer payStubsContainer,
         ISubcontractorRepository subcontractorRepository,
-        ITimeSheetRepository timeSheetRepository,
+        ITimesheetRepository timeSheetRepository,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
         IMediator mediator,
         IServiceProvider serviceProvider)

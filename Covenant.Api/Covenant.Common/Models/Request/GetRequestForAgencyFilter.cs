@@ -27,7 +27,7 @@ namespace Covenant.Common.Models.Request
         public string Recruiter { get; set; }
         public string SalesRepresentative { get; set; }
         public GetRequestSortBy SortBy { get; set; }
-        public bool HasPermissionToSeeInternalOrders { get; set; }
+        public bool HasPermissionToSeeInternalRequests { get; set; }
         public DateTime? CreatedAtFrom { get; set; }
         public DateTime? CreatedAtTo { get; set; }
         public decimal? RateFrom { get; set; }

@@ -133,15 +133,6 @@ namespace Covenant.Common.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asap Rate.
-        /// </summary>
-        public static string AsapRate {
-            get {
-                return ResourceManager.GetString("AsapRate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Availabilities.
         /// </summary>
         public static string Availabilities {

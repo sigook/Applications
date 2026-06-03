@@ -1,6 +1,6 @@
 # Request State Management
 
-How a `Request` (job order) transitions between states throughout its lifecycle.
+How a `Request` transitions between states throughout its lifecycle.
 
 **Source of truth:** `Covenant.Api/Covenant.Common/Entities/Request/Request.cs`
 
@@ -11,7 +11,7 @@ How a `Request` (job order) transitions between states throughout its lifecycle.
 ```csharp
 public enum RequestStatus
 {
-    Open = 1,        // Active order with available capacity (with or without workers)
+    Open = 1,        // Active request with available capacity (with or without workers)
     Filled = 3,      // All positions filled
     Cancelled = 4    // Cancelled
 }
@@ -73,13 +73,13 @@ Cancels the request. Two strict pre-conditions:
 
 ```csharp
 if (Status != RequestStatus.Open)
-    return Result.Fail("Only orders in Open status can be cancelled");
+    return Result.Fail("Only requests in Open status can be cancelled");
 
 if (WorkersQuantityWorking > 0)
-    return Result.Fail("Cannot cancel orders with workers assigned. Please remove all workers first.");
+    return Result.Fail("Cannot cancel requests with workers assigned. Please remove all workers first.");
 ```
 
-In other words, cancellation is only valid for an `Open` request that has zero booked workers. To cancel a request that already has assignees, the agency must first remove every worker (which transitions a `Filled` order back to `Open`).
+In other words, cancellation is only valid for an `Open` request that has zero booked workers. To cancel a request that already has assignees, the agency must first remove every worker (which transitions a `Filled` request back to `Open`).
 
 ### 5. `Open(now)` (reopen)
 
@@ -95,8 +95,8 @@ Status = WorkersQuantityWorking >= WorkersQuantity
 
 Capacity changes can flip the status between `Open` and `Filled`:
 
-- Increasing capacity on a `Filled` order → `Open`.
-- Decreasing capacity on an `Open` order such that working workers now meet the (smaller) capacity → `Filled`.
+- Increasing capacity on a `Filled` request → `Open`.
+- Decreasing capacity on an `Open` request such that working workers now meet the (smaller) capacity → `Filled`.
 
 ---
 
@@ -142,7 +142,7 @@ Relevant tests in `Covenant.Tests/Request/RequestTest.cs`:
 
 - `WorkersQuantityWorking()` — Validates automatic transitions when adding/removing workers.
 - `StatusTransitions()` — Validates all states and transitions.
-- `CannotCancelOrdersWithWorkers()` — Validates the cancellation restriction.
+- `CannotCancelRequestsWithWorkers()` — Validates the cancellation restriction.
 
 ---
 

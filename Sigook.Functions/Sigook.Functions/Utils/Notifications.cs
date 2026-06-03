@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Sigook.Functions.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sigook.Functions.Utils
 {
@@ -11,7 +12,11 @@ namespace Sigook.Functions.Utils
         {
             string url = configuration["TeamsWebhook"];
             if (string.IsNullOrEmpty(url)) return "TeamsWebhook configuration is not set";
-            string json = JsonSerializer.Serialize(message);
+            var adaptiveMessage = TeamsAdaptiveMessage.FromNotification(message);
+            string json = JsonSerializer.Serialize(adaptiveMessage, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new StringContent(json);

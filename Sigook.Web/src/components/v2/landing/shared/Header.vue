@@ -21,13 +21,15 @@
 
       <!-- Desktop actions -->
       <div class="nav__actions">
-        <button
-          type="button"
+        <b-button
+          native-type="button"
           class="nav__cta nav__cta--ghost"
+          :loading="!authReady"
+          :disabled="!authReady"
           @click="onSignIn"
         >
           {{ ctaLabel }}
-        </button>
+        </b-button>
       </div>
 
       <!-- Mobile hamburger -->
@@ -54,11 +56,13 @@
           @click="mobileOpen = false"
         >{{ link.label }}</router-link>
         <div class="nav__drawer-actions">
-          <button
-            type="button"
+          <b-button
+            native-type="button"
             class="nav__cta nav__cta--ghost"
+            :loading="!authReady"
+            :disabled="!authReady"
             @click="onSignIn"
-          >{{ ctaLabel }}</button>
+          >{{ ctaLabel }}</b-button>
         </div>
       </div>
     </transition>
@@ -93,6 +97,14 @@ const navLinks = [
  * Mirrors the legacy landing Header behaviour at src/components/landing/Header.vue.
  */
 const ctaLabel = computed(() => (securityStore.user ? 'Go to Portal' : 'Sign In'));
+
+/**
+ * Auth state is resolved asynchronously on app start (OIDC user is read from
+ * storage). Until that first resolution completes the CTA shows buefy's
+ * loading spinner and stays disabled, so a premature click can't fire
+ * signinRedirect() mid-load and corrupt the OIDC localStorage state.
+ */
+const authReady = computed(() => securityStore.isReady);
 
 async function onSignIn(): Promise<void> {
   mobileOpen.value = false;

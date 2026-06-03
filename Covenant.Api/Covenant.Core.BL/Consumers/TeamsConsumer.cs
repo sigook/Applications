@@ -51,7 +51,7 @@ namespace Covenant.Core.BL.Consumers
                     var message = args.Message.Body.ToObjectFromJson<RequestApplicant>();
                     var candidate = await candidateRepository.GetCandidate(c => c.Id == message.CandidateId.Value);
                     var request = await requestRepository.GetRequest(r => r.Id == message.RequestId);
-                    notification = TeamsNotificationModel.CreateSuccess("Candidate application", $"Candidate {candidate.Name} applied to order number {request.NumberId}");
+                    notification = TeamsNotificationModel.CreateSuccess("Candidate application", $"Candidate {candidate.Name} applied to request number {request.NumberId}");
                 }
                 else
                 {

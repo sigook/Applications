@@ -35,10 +35,10 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!directHiring">
-          <b-field :label="`${'Job type'} *`" :message="formErrors.jobPosition || ''"
+          <b-field :label="`${'Rol'} *`" :message="formErrors.jobPosition || ''"
             :type="formErrors.jobPosition ? 'is-danger' : ''">
-            <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="value"
-              open-on-focus name="job type" @select="onJobPositionSelected">
+            <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="jobPosition"
+              open-on-focus name="rol" @select="onJobPositionSelected">
               <template #empty>You don't have any roles created</template>
             </b-autocomplete>
           </b-field>
@@ -210,7 +210,7 @@ const validationSchema = computed(() => {
       .typeError('Worker salary is required')
       .required('Worker salary is required');
   } else {
-    shape.jobPosition = yup.string().required('Job type is required');
+    shape.jobPosition = yup.string().required('Rol is required');
   }
   return yup.object(shape);
 });
@@ -264,7 +264,7 @@ const showLocationModal = ref(false);
 
 const filteredCompanyJobPositions = computed(() => {
   const search = (jobPosition.value || '').toLowerCase();
-  return companyJobPositions.value.filter((cjp: any) => cjp.value.toLowerCase().includes(search));
+  return companyJobPositions.value.filter((cjp: any) => (cjp.jobPosition || '').toLowerCase().includes(search));
 });
 
 const filteredLocations = computed(() => {
@@ -277,7 +277,7 @@ const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
 function validateAutocompleteSelections(): boolean {
   let valid = true;
 
-  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.value.toLowerCase() !== jobPosition.value.toLowerCase())) {
+  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.jobPosition.toLowerCase() !== jobPosition.value.toLowerCase())) {
     form.setFieldError('jobPosition', 'Please select a role from the list');
     valid = false;
   }
@@ -361,7 +361,7 @@ async function onUpdateLocationModal() {
 }
 
 watch(jobPosition, (newVal) => {
-  if (jobPositionSelected.value && jobPositionSelected.value.value !== newVal) {
+  if (jobPositionSelected.value && jobPositionSelected.value.jobPosition !== newVal) {
     jobPositionSelected.value = null;
     request.shift = null;
     request.rate = null;

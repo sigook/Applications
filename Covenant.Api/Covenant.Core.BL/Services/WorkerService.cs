@@ -88,7 +88,7 @@ public class WorkerService : IWorkerService
         this.documentService = documentService;
     }
 
-    public async Task<Result<Guid>> CreateWorker(int? orderId)
+    public async Task<Result<Guid>> CreateWorker(int? requestId)
     {
         var form = httpContextAccessor.HttpContext.Request.Form;
         var model = form.DeserializeData<WorkerProfileCreateModel>();
@@ -133,9 +133,9 @@ public class WorkerService : IWorkerService
         ];
         await teamsNotification.SendNotification(teamsWebhookConfiguration.CandidateAndWorker, notification);
         await NotifyAgencyAndSubscribe(entity.Agency, entity);
-        if (orderId.HasValue)
+        if (requestId.HasValue)
         {
-            var request = await requestRepository.GetRequest(r => r.NumberId == orderId.Value);
+            var request = await requestRepository.GetRequest(r => r.NumberId == requestId.Value);
             if (request != null)
             {
                 await NotifyApplicant(request, entity, string.Empty);
@@ -196,9 +196,9 @@ public class WorkerService : IWorkerService
         if (request is null || !request.IsAvailableToApply) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
         var worker = await workerRepository.GetProfile(p => p.WorkerId == workerId);
         if (worker is null) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotFound);
-        if (await workerRequestRepository.WorkerRequestExists(worker.WorkerId, requestId)) return Result.Fail<RequestApplicantDetailModel>("You already apply to this order");
+        if (await workerRequestRepository.WorkerRequestExists(worker.WorkerId, requestId)) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
         var requestCandidate = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == worker.Id);
-        if (requestCandidate != null) return Result.Fail<RequestApplicantDetailModel>("You already apply to this order");
+        if (requestCandidate != null) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
         var result = await NotifyApplicant(request, worker, model.Comments);
         return Result.Ok(new RequestApplicantDetailModel
         {

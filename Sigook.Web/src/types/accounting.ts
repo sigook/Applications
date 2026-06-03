@@ -310,6 +310,7 @@ export interface CreateAgencyInvoiceModel {
   invoiceDate?: string | null;
   email?: string;
   provinceId?: string | null;
+  taxPercentage?: number | null;
   from?: string | null;
   to?: string | null;
   discounts: CreateInvoiceItemModel[];
