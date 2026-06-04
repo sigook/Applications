@@ -16,7 +16,7 @@
       </h1>
 
       <p class="op-hero__subtitle">
-        Browse vetted roles across Canada and the US — from skilled trades
+        Browse vetted roles across the United States — from skilled trades
         to professional positions. Updated weekly.
       </p>
 
@@ -46,38 +46,6 @@
           />
         </div>
 
-        <div class="op-hero__field">
-          <label class="op-hero__label" for="op-type">Job type</label>
-          <select
-            id="op-type"
-            v-model="form.type"
-            class="op-hero__select"
-          >
-            <option value="">Any type</option>
-            <option
-              v-for="opt in JOB_TYPE_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >{{ opt.label }}</option>
-          </select>
-        </div>
-
-        <div class="op-hero__field">
-          <label class="op-hero__label" for="op-country">Country</label>
-          <select
-            id="op-country"
-            v-model="form.country"
-            class="op-hero__select"
-          >
-            <option value="">All countries</option>
-            <option
-              v-for="opt in JOB_COUNTRY_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >{{ opt.flag }} {{ opt.label }}</option>
-          </select>
-        </div>
-
         <button type="submit" class="op-hero__submit">
           <span>Search</span>
           <span class="op-hero__submit-arrow" aria-hidden="true">→</span>
@@ -90,14 +58,6 @@
           <span class="op-hero__stat-value">{{ openCount }}+</span>
           <span class="op-hero__stat-label">Open roles</span>
         </li>
-        <li class="op-hero__stat">
-          <span class="op-hero__stat-value">{{ industryCount }}</span>
-          <span class="op-hero__stat-label">Industries</span>
-        </li>
-        <li class="op-hero__stat">
-          <span class="op-hero__stat-value">{{ provinceCount }}</span>
-          <span class="op-hero__stat-label">Provinces / states</span>
-        </li>
       </ul>
     </div>
   </section>
@@ -108,9 +68,9 @@
  * Open Positions hero — window-style intro with the search form glass-baked
  * directly into the layout (replaces the Figma floating white card).
  *
- * The form is currently UI-only. On submit it scrolls to the list section
- * — wiring it to a real search backend is a follow-up task. The list
- * section has its own filter chips + search input for in-place refinement.
+ * On submit the form queries the live /api/WebSite/jobs feed by title/city
+ * (the only server-side filters available) and scrolls to the list section,
+ * which also has a local title search for in-place refinement.
  *
  * Magnifier anchor: top-left (reuses Home's anchor by design — both pages
  * are search/discovery surfaces).
@@ -118,40 +78,30 @@
 import { computed, reactive } from 'vue'
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
-import { JOBS, JOB_TYPE_OPTIONS, JOB_COUNTRY_OPTIONS } from '@/data/jobs'
+import { useJobs } from '@/composables/useJobs'
 
 interface SearchForm {
   title: string
   location: string
-  type: string
-  country: string
 }
 
 const form = reactive<SearchForm>({
   title: '',
   location: '',
-  type: '',
-  country: '',
 })
 
+const { jobs, fetchJobs } = useJobs()
+
 function onSearch(): void {
-  // Hero search is UI-only for the MVP — submit scrolls to the in-page
-  // list, where the user can refine using chip filters + the local search.
+  fetchJobs({
+    jobTitle: form.title || undefined,
+    location: form.location || undefined,
+  })
   const target = document.getElementById('op-list')
   target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-/* ── Stats derived from the mock data ───────────────────────────────────── */
-
-const openCount = computed(() => JOBS.length)
-
-const industryCount = computed(() =>
-  new Set(JOBS.map((j) => j.industry)).size,
-)
-
-const provinceCount = computed(() =>
-  new Set(JOBS.map((j) => j.location.province)).size,
-)
+const openCount = computed(() => jobs.value.length)
 </script>
 
 <style scoped>
@@ -225,9 +175,8 @@ const provinceCount = computed(() =>
   position: relative;
   z-index: 2;
   display: grid;
-  /* 4 inputs in one row on desktop, plus the submit button on the right.
-     The submit spans 2 rows so it stays the same height as the inputs. */
-  grid-template-columns: 1.4fr 1.2fr 1fr 1fr auto;
+  /* 2 inputs in one row on desktop, plus the submit button on the right. */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) auto;
   gap: clamp(12px, 1.4vw, 16px);
   width: 100%;
   max-width: 1080px;
@@ -261,8 +210,7 @@ const provinceCount = computed(() =>
   color: rgba(255, 255, 255, 0.70);
 }
 
-.op-hero__input,
-.op-hero__select {
+.op-hero__input {
   width: 100%;
   height: clamp(44px, 4.4vw, 50px);
   padding: 0 14px;
@@ -284,30 +232,12 @@ const provinceCount = computed(() =>
   color: rgba(255, 255, 255, 0.45);
 }
 
-.op-hero__select {
-  appearance: none;
-  /* Custom chevron — single-color so it inherits the input look */
-  background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.55) 50%),
-                    linear-gradient(135deg, rgba(255, 255, 255, 0.55) 50%, transparent 50%);
-  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 32px;
-}
-
-.op-hero__select option {
-  background-color: var(--c-brand-navy, #0f2f44);
-  color: #fff;
-}
-
-.op-hero__input:hover,
-.op-hero__select:hover {
+.op-hero__input:hover {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.40);
 }
 
-.op-hero__input:focus,
-.op-hero__select:focus {
+.op-hero__input:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);

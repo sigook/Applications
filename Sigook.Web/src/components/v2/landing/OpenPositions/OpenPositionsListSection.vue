@@ -9,30 +9,17 @@
       </EyebrowPill>
 
       <h2 class="op-list__heading">
-        {{ JOBS.length }} jobs hiring now.
+        {{ jobs.length }} jobs hiring now.
         <span class="op-list__heading-accent">Skim, click, apply.</span>
       </h2>
 
       <p class="op-list__subtitle">
-        The full list of roles we're actively recruiting for. Filter by track,
-        search by title, then dig into the role on the right.
+        The full list of roles we're actively recruiting for. Search by title,
+        then dig into the role on the right.
       </p>
 
       <!-- Toolbar — chip filters + local search ─────────────────────────── -->
       <div class="op-list__toolbar">
-        <nav class="op-list__chips" aria-label="Filter by track">
-          <button
-            v-for="chip in JOB_TRACK_FILTERS"
-            :key="chip.key"
-            type="button"
-            class="op-list__chip"
-            :class="{ 'op-list__chip--active': activeTrack === chip.key }"
-            @click="selectTrack(chip.key)"
-          >
-            {{ chip.label }}
-          </button>
-        </nav>
-
         <label class="op-list__search">
           <span class="op-list__search-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,39 +39,50 @@
     </header>
 
     <!-- Body — master-detail grid (desktop) / accordion (mobile) ─────────── -->
-    <div class="op-list__body" :class="{ 'op-list__body--empty': filtered.length === 0 }">
+    <div class="op-list__body" :class="{ 'op-list__body--empty': !showList }">
+      <!-- Loading state -->
+      <p v-if="loading" class="op-list__empty">Loading open roles…</p>
+
+      <!-- Error state -->
+      <p v-else-if="error" class="op-list__empty">
+        {{ error }}
+        <button type="button" class="op-list__empty-reset" @click="fetchJobs()">Retry</button>
+      </p>
+
       <!-- Empty state -->
-      <p v-if="filtered.length === 0" class="op-list__empty">
-        No openings match your filters. Try a broader track or
-        <button type="button" class="op-list__empty-reset" @click="resetFilters">reset all filters</button>.
+      <p v-else-if="filtered.length === 0" class="op-list__empty">
+        No openings match your search.
+        <button type="button" class="op-list__empty-reset" @click="resetFilters">Clear search</button>.
       </p>
 
       <!-- Job list (left column on desktop, full width on mobile) -->
       <ol v-else class="op-list__items" aria-label="Open positions">
         <li
-          v-for="(job, idx) in filtered"
-          :key="job.id"
+          v-for="job in filtered"
+          :key="job.numberId"
           class="op-list__item-wrap"
         >
           <button
             type="button"
             class="op-list__item"
             :class="{
-              'op-list__item--active': job.id === selectedId,
-              'op-list__item--expanded-mobile': job.id === selectedId,
+              'op-list__item--active': job.numberId === selectedId,
+              'op-list__item--expanded-mobile': job.numberId === selectedId,
             }"
-            @click="selectJob(job.id, idx)"
-            :aria-expanded="job.id === selectedId"
-            :aria-controls="`op-detail-${job.id}`"
+            @click="selectJob(job.numberId)"
+            :aria-expanded="job.numberId === selectedId"
+            :aria-controls="`op-detail-${job.numberId}`"
           >
             <div class="op-list__item-head">
               <h3 class="op-list__item-title">{{ job.title }}</h3>
-              <span class="op-list__item-number">{{ job.jobNumber }}</span>
+              <span class="op-list__item-number">{{ job.numberId }}</span>
             </div>
             <div class="op-list__item-meta">
-              <span class="op-list__item-location">{{ formatLocation(job.location) }}</span>
-              <span class="op-list__item-dot" aria-hidden="true">·</span>
-              <span class="op-list__item-salary">{{ formatSalary(job.salary) }}</span>
+              <span class="op-list__item-location">{{ job.location }}</span>
+              <template v-if="showSalary(job)">
+                <span class="op-list__item-dot" aria-hidden="true">·</span>
+                <span class="op-list__item-salary">{{ job.salary }}</span>
+              </template>
             </div>
           </button>
 
@@ -92,8 +90,8 @@
                selected one. Desktop hides this (detail lives in the right
                column). -->
           <div
-            v-if="job.id === selectedId"
-            :id="`op-detail-${job.id}`"
+            v-if="job.numberId === selectedId"
+            :id="`op-detail-${job.numberId}`"
             class="op-list__inline-detail"
           >
             <JobDetail :job="job" />
@@ -102,7 +100,7 @@
       </ol>
 
       <!-- Desktop sticky detail panel — visible at ≥1024px only -->
-      <aside v-if="selectedJob" class="op-list__detail" aria-label="Job detail">
+      <aside v-if="showList && selectedJob" class="op-list__detail" aria-label="Job detail">
         <JobDetail :job="selectedJob" />
       </aside>
     </div>
@@ -111,66 +109,69 @@
 
 <script setup lang="ts">
 /**
- * OpenPositionsListSection — master-detail job-board layout.
+ * OpenPositionsListSection — master-detail job-board layout backed by the
+ * live /api/WebSite/jobs feed (USA roles).
  *
  * Desktop (≥1024px): two columns — sticky job list on the left, detail on
  * the right. Click a job → detail updates in place.
  *
  * Mobile (<1024px): the right-column detail is hidden by CSS; clicking a
- * job expands the detail INLINE beneath the row (accordion pattern). No
- * scroll position is lost.
+ * job expands the detail INLINE beneath the row (accordion pattern).
  *
- * Filtering is local — chip filters (All / Professional / Industrial) plus
- * a free-text title search. Default selection: the first filtered job, so
- * the detail panel is never empty.
+ * Filtering is a local free-text title search over the fetched list. Default
+ * selection: the first job, so the detail panel is never empty.
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import JobDetail from '@/components/v2/landing/OpenPositions/JobDetail.vue'
-import {
-  JOBS,
-  JOB_TRACK_FILTERS,
-  filterJobs,
-  formatLocation,
-  formatSalary,
-  type JobTrack,
-} from '@/data/jobs'
+import { useJobs } from '@/composables/useJobs'
+import type { JobViewModel } from '@/types/website'
 
-const activeTrack = ref<JobTrack | 'all'>('all')
+const { jobs, loading, error, fetchJobs } = useJobs()
+
 const query = ref('')
-const selectedId = ref<string>(JOBS[0].id)
+const selectedId = ref<string>('')
 
-const filtered = computed(() => filterJobs(JOBS, activeTrack.value, query.value))
+const filtered = computed(() => {
+  const q = query.value.trim().toLowerCase()
+  if (!q) return jobs.value
+  return jobs.value.filter((j) => j.title.toLowerCase().includes(q))
+})
+
+const showList = computed(() => !loading.value && !error.value && filtered.value.length > 0)
 
 const selectedJob = computed(() =>
-  filtered.value.find((j) => j.id === selectedId.value) ?? filtered.value[0],
+  filtered.value.find((j) => j.numberId === selectedId.value) ?? filtered.value[0],
 )
 
-function selectTrack(key: JobTrack | 'all'): void {
-  activeTrack.value = key
-  // Keep selection valid — if the current job is filtered out, jump to
-  // the first item in the new filtered list.
-  if (filtered.value.length > 0 && !filtered.value.some((j) => j.id === selectedId.value)) {
-    selectedId.value = filtered.value[0].id
-  }
+function showSalary(job: JobViewModel): boolean {
+  return !!job.salary && job.salary !== '$0.00'
 }
 
-function selectJob(id: string, _idx: number): void {
-  // Toggle on mobile — clicking the active item collapses it.
-  if (window.matchMedia('(max-width: 1023px)').matches && selectedId.value === id) {
-    // Find a different job to keep the right-column detail filled (it's
-    // hidden on mobile anyway, but desktop wants a non-empty panel).
-    selectedId.value = filtered.value.find((j) => j.id !== id)?.id ?? id
+function selectJob(numberId: string): void {
+  if (window.matchMedia('(max-width: 1023px)').matches && selectedId.value === numberId) {
+    selectedId.value = filtered.value.find((j) => j.numberId !== numberId)?.numberId ?? numberId
     return
   }
-  selectedId.value = id
+  selectedId.value = numberId
 }
 
 function resetFilters(): void {
-  activeTrack.value = 'all'
   query.value = ''
-  if (filtered.value.length > 0) selectedId.value = filtered.value[0].id
+  if (filtered.value.length > 0) selectedId.value = filtered.value[0].numberId
 }
+
+watch(filtered, (list) => {
+  if (list.length === 0) {
+    selectedId.value = ''
+  } else if (!list.some((j) => j.numberId === selectedId.value)) {
+    selectedId.value = list[0].numberId
+  }
+})
+
+onMounted(() => {
+  fetchJobs()
+})
 </script>
 
 <style scoped>
@@ -259,56 +260,10 @@ function resetFilters(): void {
 
 /* ── Toolbar — chips + search ───────────────────────────────────────────── */
 .op-list__toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: clamp(14px, 2vw, 22px);
+  display: flex;
+  justify-content: center;
   width: 100%;
   margin-top: clamp(10px, 1.4vw, 16px);
-}
-
-.op-list__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: clamp(8px, 1vw, 12px);
-}
-
-.op-list__chip {
-  font-size: clamp(12px, 1vw, 13px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: clamp(8px, 0.9vw, 11px) clamp(16px, 1.7vw, 22px);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  color: rgba(255, 255, 255, 0.80);
-  backdrop-filter: blur(10px) saturate(140%);
-  -webkit-backdrop-filter: blur(10px) saturate(140%);
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.op-list__chip:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: #fff;
-}
-
-.op-list__chip--active {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  box-shadow: 0 6px 16px rgba(0, 173, 239, 0.30);
-}
-
-.op-list__chip--active:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
 }
 
 .op-list__search {
@@ -568,15 +523,6 @@ function resetFilters(): void {
   .op-list__items {
     max-height: none;
     padding-right: 0;
-  }
-
-  /* Toolbar stacks: chips on top, search below */
-  .op-list__toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .op-list__chips {
-    justify-content: center;
   }
 
   .op-list__search {

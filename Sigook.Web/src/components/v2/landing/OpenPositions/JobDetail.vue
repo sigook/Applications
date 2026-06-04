@@ -9,15 +9,15 @@
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          {{ formatLocation(job.location) }}
+          {{ job.location }}
         </span>
 
-        <span class="job-detail__meta-item job-detail__meta-item--salary">
-          {{ formatSalary(job.salary) }}
+        <span v-if="showSalary" class="job-detail__meta-item job-detail__meta-item--salary">
+          {{ job.salary }}
         </span>
 
-        <span class="job-detail__chip" :class="`job-detail__chip--${job.type}`">
-          {{ typeLabel }}
+        <span v-if="job.type" class="job-detail__chip">
+          {{ job.type }}
         </span>
       </div>
 
@@ -33,30 +33,29 @@
 
     </header>
 
-    <section class="job-detail__section">
+    <section v-if="job.description" class="job-detail__section">
+      <h4 class="job-detail__section-title">Description</h4>
+      <div class="job-detail__html" v-html="job.description"></div>
+    </section>
+
+    <section v-if="job.shift" class="job-detail__section">
       <h4 class="job-detail__section-title">Schedule</h4>
-      <ul class="job-detail__list">
-        <li v-for="item in job.schedule" :key="item">{{ item }}</li>
-      </ul>
+      <p class="job-detail__text">{{ job.shift }}</p>
     </section>
 
-    <section class="job-detail__section">
+    <section v-if="job.responsibilities" class="job-detail__section">
       <h4 class="job-detail__section-title">Responsibilities</h4>
-      <ul class="job-detail__list">
-        <li v-for="item in job.responsibilities" :key="item">{{ item }}</li>
-      </ul>
+      <div class="job-detail__html" v-html="job.responsibilities"></div>
     </section>
 
-    <section class="job-detail__section">
+    <section v-if="job.requirements" class="job-detail__section">
       <h4 class="job-detail__section-title">Requirements</h4>
-      <ul class="job-detail__list">
-        <li v-for="item in job.requirements" :key="item">{{ item }}</li>
-      </ul>
+      <div class="job-detail__html" v-html="job.requirements"></div>
     </section>
 
     <footer class="job-detail__footer">
       <span class="job-detail__posted">
-        Posted {{ formattedPosted }} · ref {{ job.jobNumber }}
+        <template v-if="formattedPosted">Posted {{ formattedPosted }} · </template>ref {{ job.numberId }}
       </span>
     </footer>
   </article>
@@ -66,45 +65,38 @@
 /**
  * JobDetail — the right-column / inline detail panel for a single job.
  *
- * Consumes a Job from `@/data/jobs`. Owns no state — purely presentational.
- * Used by OpenPositionsListSection in two modes:
+ * Consumes a JobViewModel from the live API (`@/types/website`). Owns no
+ * state — purely presentational. Used by OpenPositionsListSection in two modes:
  *   - Desktop: sticky right column
  *   - Mobile : inline expanded under the active list item
  */
 import { computed } from 'vue'
-import {
-  formatLocation,
-  formatSalary,
-  type Job,
-} from '@/data/jobs'
+import type { JobViewModel } from '@/types/website'
 import { useWorkerRegisterModal } from '@/components/v2/landing/shared/forms/useWorkerRegisterModal'
 
 const props = defineProps<{
-  job: Job
+  job: JobViewModel
 }>()
 
 const registerModal = useWorkerRegisterModal()
 
 function onApply(): void {
-  registerModal.open({ jobSlug: props.job.slug, jobTitle: props.job.title })
+  registerModal.open({
+    jobTitle: props.job.title,
+    jobNumber: props.job.numberId,
+    requestId: props.job.requestId,
+  })
 }
 
-const JOB_TYPE_LABELS: Readonly<Record<Job['type'], string>> = {
-  'full-time': 'Full-time',
-  'part-time': 'Part-time',
-  'contract':  'Contract',
-  'temp':      'Temporary',
-}
-
-const typeLabel = computed(() => JOB_TYPE_LABELS[props.job.type])
+const showSalary = computed(() => !!props.job.salary && props.job.salary !== '$0.00')
 
 const formattedPosted = computed(() => {
-  const date = new Date(`${props.job.postedAt}T00:00:00Z`)
+  const date = new Date(props.job.createdAt)
+  if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'UTC',
   })
 })
 </script>
@@ -281,7 +273,29 @@ const formattedPosted = computed(() => {
   margin: 0;
 }
 
-.job-detail__list {
+.job-detail__text {
+  margin: 0;
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.job-detail__html {
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.job-detail__html :deep(p) {
+  margin: 0 0 10px;
+}
+
+.job-detail__html :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.job-detail__html :deep(ul),
+.job-detail__html :deep(ol) {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -290,15 +304,13 @@ const formattedPosted = computed(() => {
   gap: 6px;
 }
 
-.job-detail__list li {
+.job-detail__html :deep(li) {
   position: relative;
   padding-left: 18px;
-  font-size: clamp(13px, 1.1vw, 14px);
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.88);
 }
 
-.job-detail__list li::before {
+.job-detail__html :deep(li)::before {
   content: '';
   position: absolute;
   left: 0;
