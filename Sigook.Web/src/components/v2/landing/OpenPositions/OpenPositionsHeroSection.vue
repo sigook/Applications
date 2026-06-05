@@ -52,11 +52,18 @@
         </button>
       </form>
 
-      <!-- Stats strip — proof there's actually a market -->
-      <ul class="op-hero__stats" aria-label="Open positions stats">
+      <ul class="op-hero__stats" aria-label="Why apply with us">
         <li class="op-hero__stat">
-          <span class="op-hero__stat-value">{{ openCount }}+</span>
-          <span class="op-hero__stat-label">Open roles</span>
+          <span class="op-hero__stat-value">Weekly</span>
+          <span class="op-hero__stat-label">Fresh roles added</span>
+        </li>
+        <li class="op-hero__stat">
+          <span class="op-hero__stat-value">Vetted</span>
+          <span class="op-hero__stat-label">Employers only</span>
+        </li>
+        <li class="op-hero__stat">
+          <span class="op-hero__stat-value">Fast</span>
+          <span class="op-hero__stat-label">Apply in minutes</span>
         </li>
       </ul>
     </div>
@@ -75,7 +82,7 @@
  * Magnifier anchor: top-left (reuses Home's anchor by design — both pages
  * are search/discovery surfaces).
  */
-import { computed, reactive } from 'vue'
+import { reactive } from 'vue'
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import { useJobs } from '@/composables/useJobs'
@@ -90,7 +97,7 @@ const form = reactive<SearchForm>({
   location: '',
 })
 
-const { jobs, fetchJobs } = useJobs()
+const { fetchJobs } = useJobs()
 
 function onSearch(): void {
   fetchJobs({
@@ -100,8 +107,6 @@ function onSearch(): void {
   const target = document.getElementById('op-list')
   target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-
-const openCount = computed(() => jobs.value.length)
 </script>
 
 <style scoped>

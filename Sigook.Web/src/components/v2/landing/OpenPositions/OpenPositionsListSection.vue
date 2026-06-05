@@ -9,7 +9,7 @@
       </EyebrowPill>
 
       <h2 class="op-list__heading">
-        {{ jobs.length }} jobs hiring now.
+        Roles hiring now.
         <span class="op-list__heading-accent">Skim, click, apply.</span>
       </h2>
 
