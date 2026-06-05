@@ -104,22 +104,27 @@ const formattedPosted = computed(() => {
 <style scoped>
 /* ── Shell ──────────────────────────────────────────────────────────────── */
 .job-detail {
+  --jd-fg: rgba(255, 255, 255, 0.82);
+  --jd-fg-strong: #fff;
+  --jd-fg-muted: rgba(255, 255, 255, 0.5);
+  --jd-divider: rgba(255, 255, 255, 0.1);
+
   position: relative;
-  padding: clamp(24px, 3vw, 36px) clamp(22px, 2.8vw, 36px);
+  padding: clamp(26px, 3.2vw, 40px) clamp(24px, 3vw, 40px);
   background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.09) 0%,
     rgba(255, 255, 255, 0.03) 100%);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius:
     clamp(20px, 2.4vw, 28px) clamp(20px, 2.4vw, 28px)
     clamp(20px, 2.4vw, 28px) clamp(40px, 5vw, 56px);
-  color: #fff;
+  color: var(--jd-fg);
   font-family: var(--font-family);
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: clamp(16px, 2vw, 24px);
   isolation: isolate;
   overflow: hidden;
 }
@@ -131,14 +136,14 @@ const formattedPosted = computed(() => {
   pointer-events: none;
   bottom: 0;
   left: 0;
-  width: clamp(140px, 16vw, 200px);
-  height: clamp(140px, 16vw, 200px);
+  width: clamp(160px, 18vw, 220px);
+  height: clamp(160px, 18vw, 220px);
   z-index: 0;
   border-radius: 0 clamp(40px, 5vw, 56px) 0 0;
   background: radial-gradient(circle at bottom left,
-    rgba(0, 173, 239, 0.30) 0%,
-    rgba(0, 173, 239, 0.10) 40%,
-    transparent 70%);
+    rgba(0, 173, 239, 0.26) 0%,
+    rgba(0, 173, 239, 0.08) 45%,
+    transparent 72%);
 }
 
 /* ── Header — title + meta + apply ──────────────────────────────────────── */
@@ -172,7 +177,7 @@ const formattedPosted = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--jd-fg);
   font-weight: 500;
 }
 
@@ -196,21 +201,9 @@ const formattedPosted = computed(() => {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.job-detail__chip--contract {
-  background: rgba(229, 45, 39, 0.18);
-  border-color: rgba(229, 45, 39, 0.45);
-  color: #ff8a85;
-}
-
-.job-detail__chip--temp {
-  background: rgba(229, 45, 39, 0.12);
-  border-color: rgba(229, 45, 39, 0.35);
-  color: #ff8a85;
+  background: rgba(0, 173, 239, 0.14);
+  border: 1px solid rgba(0, 173, 239, 0.35);
+  color: var(--c-brand-cyan);
 }
 
 /* ── Apply CTA — solid red pill (matches Figma) ─────────────────────────── */
@@ -255,43 +248,84 @@ const formattedPosted = computed(() => {
   transform: translateX(3px);
 }
 
-/* ── Sections — Schedule / Responsibilities / Requirements ──────────────── */
+/* ── Sections — Description / Schedule / Responsibilities / Requirements ─── */
 .job-detail__section {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1vw, 12px);
+  gap: clamp(10px, 1.2vw, 14px);
+  padding-top: clamp(16px, 2vw, 22px);
+  border-top: 1px solid var(--jd-divider);
 }
 
 .job-detail__section-title {
   font-size: clamp(11px, 0.95vw, 12px);
   font-weight: 700;
-  letter-spacing: 0.20em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--c-brand-cyan);
   margin: 0;
 }
 
-.job-detail__text {
+.job-detail__text,
+.job-detail__html {
   margin: 0;
   font-size: clamp(13px, 1.1vw, 14px);
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  color: var(--jd-fg);
 }
 
-.job-detail__html {
-  font-size: clamp(13px, 1.1vw, 14px);
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.88);
+.job-detail__html :deep(p),
+.job-detail__html :deep(span),
+.job-detail__html :deep(li),
+.job-detail__html :deep(div),
+.job-detail__html :deep(em),
+.job-detail__html :deep(u) {
+  color: var(--jd-fg) !important;
+  background: transparent !important;
+}
+
+.job-detail__html :deep(strong),
+.job-detail__html :deep(b),
+.job-detail__html :deep(h1),
+.job-detail__html :deep(h2),
+.job-detail__html :deep(h3),
+.job-detail__html :deep(h4),
+.job-detail__html :deep(h5),
+.job-detail__html :deep(h6) {
+  color: var(--jd-fg-strong) !important;
+  font-weight: 700;
+}
+
+.job-detail__html :deep(a) {
+  color: var(--c-brand-cyan) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.job-detail__html :deep(h1),
+.job-detail__html :deep(h2),
+.job-detail__html :deep(h3),
+.job-detail__html :deep(h4),
+.job-detail__html :deep(h5),
+.job-detail__html :deep(h6) {
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.4;
+  margin: 2px 0;
 }
 
 .job-detail__html :deep(p) {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .job-detail__html :deep(p:last-child) {
   margin-bottom: 0;
+}
+
+.job-detail__html :deep(p:empty),
+.job-detail__html :deep(br + br) {
+  display: none;
 }
 
 .job-detail__html :deep(ul),
@@ -301,7 +335,7 @@ const formattedPosted = computed(() => {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .job-detail__html :deep(li) {
@@ -314,24 +348,24 @@ const formattedPosted = computed(() => {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.55em;
+  top: 0.6em;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--c-brand-cyan);
 }
 
 /* ── Footer — posted date + ref ─────────────────────────────────────────── */
 .job-detail__footer {
   position: relative;
   z-index: 1;
-  padding-top: clamp(8px, 1vw, 12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  padding-top: clamp(14px, 1.8vw, 18px);
+  border-top: 1px solid var(--jd-divider);
 }
 
 .job-detail__posted {
   font-size: clamp(11px, 0.95vw, 12px);
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--jd-fg-muted);
   font-weight: 500;
   letter-spacing: 0.04em;
 }

@@ -183,7 +183,7 @@ onMounted(() => {
   padding:
     clamp(140px, 14vw, 200px)
     clamp(20px, 3vw, 64px)
-    clamp(100px, 12vw, 160px);
+    clamp(80px, 10vw, 130px);
   display: flex;
   flex-direction: column;
   align-items: center;

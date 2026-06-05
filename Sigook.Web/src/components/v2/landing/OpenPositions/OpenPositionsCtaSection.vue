@@ -1,50 +1,65 @@
 <template>
   <section class="op-cta">
-    <div class="op-cta__inner">
-      <EyebrowPill variant="red" class="op-cta__eyebrow">
-        Still Looking?
-      </EyebrowPill>
+    <div class="op-cta__card">
+      <div class="op-cta__inner">
+        <div class="op-cta__grid">
+          <div class="op-cta__copy">
+            <EyebrowPill variant="red" class="op-cta__eyebrow">
+              Still Looking?
+            </EyebrowPill>
 
-      <h2 class="op-cta__heading">
-        Don't see your role yet?
-        <span class="op-cta__heading-accent">Send your resume anyway.</span>
-      </h2>
+            <h2 class="op-cta__heading">
+              Don't see your role yet?
+              <span class="op-cta__heading-accent">Send your resume anyway.</span>
+            </h2>
 
-      <p class="op-cta__subtitle">
-        New roles open every week — and our recruiters keep a watch list.
-        Drop your CV and we'll let you know the moment a fit lands.
-      </p>
+            <div class="op-cta__accent-line"></div>
 
-      <div class="op-cta__actions">
-        <button type="button" class="op-cta__primary" @click="onSendResume">
-          <span>Send your resume</span>
-          <span class="op-cta__arrow" aria-hidden="true">→</span>
-        </button>
-        <router-link to="/v2/industries" class="op-cta__secondary">
-          <span>Browse industries</span>
-          <span class="op-cta__arrow" aria-hidden="true">→</span>
-        </router-link>
+            <p class="op-cta__subtitle">
+              New roles open every week and our recruiters keep a watch list.
+              Drop your CV and we'll reach out the moment a fit lands.
+            </p>
+
+            <div class="op-cta__actions">
+              <button type="button" class="op-cta__primary" @click="onSendResume">
+                <span>Send your resume</span>
+                <span class="op-cta__arrow" aria-hidden="true">→</span>
+              </button>
+              <router-link to="/v2/industries" class="op-cta__secondary">
+                <span>Browse industries</span>
+                <span class="op-cta__arrow" aria-hidden="true">→</span>
+              </router-link>
+            </div>
+          </div>
+
+          <ul class="op-cta__features" aria-label="What to expect">
+            <li v-for="feature in features" :key="feature" class="op-cta__feature">
+              <span class="op-cta__check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              <span class="op-cta__feature-text">{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-/**
- * OpenPositionsCtaSection — bridge between the job list and Contact.
- *
- * Window-style closing CTA for users who didn't find a fit in the list.
- * Two actions:
- *  • Primary: opens the worker registration modal (Send your resume)
- *  • Secondary: pivot to the industries page for sector-level browsing
- *
- * The WorkerRegisterModal is mounted once at the page level (OpenPositions.vue)
- * — clicking the button triggers the singleton composable.
- */
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import { useWorkerRegisterModal } from '@/components/v2/landing/shared/forms/useWorkerRegisterModal'
 
 const registerModal = useWorkerRegisterModal()
+
+const features = [
+  'Fresh roles posted every week',
+  'Recruiters keep a personal watch list',
+  'We reach out when a role fits you',
+  'One short form — no account needed',
+]
 
 function onSendResume(): void {
   registerModal.open()
@@ -52,76 +67,87 @@ function onSendResume(): void {
 </script>
 
 <style scoped>
-/* ── Window shell — transparent ─────────────────────────────────────────── */
 .op-cta {
   position: relative;
   width: 100%;
-  padding:
-    clamp(72px, 10vw, 140px)
-    clamp(20px, 3vw, 40px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: clamp(8px, 1.5vw, 28px) 0 clamp(64px, 9vw, 120px);
   isolation: isolate;
-  overflow: hidden;
   font-family: var(--font-family);
 }
 
-/* Inner editorial card — anchors the CTA against the GlobalBackground */
-.op-cta__inner {
+.op-cta__card {
   position: relative;
-  z-index: 2;
   width: 100%;
-  max-width: 880px;
-  margin: 0 auto;
-  padding: clamp(36px, 4.5vw, 60px) clamp(28px, 3.6vw, 56px);
+  min-height: clamp(480px, 58vh, 740px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding:
+    clamp(72px, 10vw, 120px)
+    clamp(20px, 3vw, 64px);
   border-radius:
-    clamp(28px, 3.4vw, 44px) clamp(28px, 3.4vw, 44px)
-    clamp(28px, 3.4vw, 44px) clamp(64px, 7.5vw, 100px);
-  background: linear-gradient(180deg,
-    rgba(229, 45, 39, 0.18) 0%,
-    rgba(229, 45, 39, 0.04) 100%);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgba(229, 45, 39, 0.35);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.30);
-  text-align: center;
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg,
+      rgba(229, 45, 39, 0.3) 0%,
+      rgba(229, 45, 39, 0.08) 38%,
+      rgba(9, 48, 85, 0.5) 100%),
+    rgba(11, 38, 64, 0.6);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
+    0 22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
-/* Red glow accent at the asymmetric corner */
-.op-cta__inner::before {
+.op-cta__card::after {
   content: '';
   position: absolute;
   pointer-events: none;
   z-index: 0;
   bottom: 0;
-  left: 0;
-  width: clamp(180px, 20vw, 280px);
-  height: clamp(180px, 20vw, 280px);
-  background: radial-gradient(circle at bottom left,
-    rgba(229, 45, 39, 0.55) 0%,
-    rgba(229, 45, 39, 0.18) 40%,
-    transparent 70%);
-  border-radius: 0 clamp(64px, 7.5vw, 100px) 0 0;
+  right: 0;
+  width: clamp(220px, 24vw, 360px);
+  height: clamp(220px, 24vw, 360px);
+  background: radial-gradient(circle at bottom right,
+    rgba(0, 173, 239, 0.18) 0%,
+    rgba(0, 173, 239, 0.05) 45%,
+    transparent 72%);
 }
 
-/* ── Content ────────────────────────────────────────────────────────────── */
-.op-cta__eyebrow {
+.op-cta__inner {
   position: relative;
   z-index: 1;
-  margin-bottom: clamp(18px, 2.2vw, 24px);
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.op-cta__grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+}
+
+.op-cta__copy {
+  text-align: left;
+}
+
+.op-cta__eyebrow {
+  margin-bottom: clamp(16px, 2vw, 22px);
 }
 
 .op-cta__heading {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(26px, 4vw, 42px);
+  font-size: clamp(26px, 3.6vw, 42px);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.12;
   letter-spacing: -0.02em;
   color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 20px);
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
+  margin: 0;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
 .op-cta__heading-accent {
@@ -129,25 +155,27 @@ function onSendResume(): void {
   display: block;
 }
 
+.op-cta__accent-line {
+  width: 56px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--c-brand-red);
+  margin: clamp(16px, 2vw, 22px) 0;
+}
+
 .op-cta__subtitle {
-  position: relative;
-  z-index: 1;
   font-size: clamp(13px, 1.2vw, 16px);
   font-weight: 400;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0 auto clamp(28px, 3.4vw, 40px);
-  max-width: 560px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 clamp(24px, 3vw, 34px);
+  max-width: 480px;
 }
 
-/* ── Actions ────────────────────────────────────────────────────────────── */
 .op-cta__actions {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(12px, 1.6vw, 18px);
+  gap: clamp(12px, 1.6vw, 16px);
 }
 
 .op-cta__primary,
@@ -155,7 +183,7 @@ function onSendResume(): void {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: clamp(13px, 1.4vw, 16px) clamp(26px, 2.8vw, 36px);
+  padding: clamp(13px, 1.4vw, 16px) clamp(24px, 2.6vw, 32px);
   border-radius: 999px;
   font-family: var(--font-family);
   font-size: clamp(13px, 1.1vw, 14px);
@@ -172,21 +200,21 @@ function onSendResume(): void {
 }
 
 .op-cta__primary {
-  background: #fff;
-  border: 1px solid #fff;
-  color: var(--c-brand-red);
+  background: var(--c-brand-red);
+  border: 1px solid var(--c-brand-red);
+  color: #fff;
+  box-shadow: 0 10px 24px -6px rgba(229, 45, 39, 0.6);
 }
 
 .op-cta__primary:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
+  background: var(--c-brand-crimson);
+  border-color: var(--c-brand-crimson);
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(0, 173, 239, 0.35);
+  box-shadow: 0 14px 28px -6px rgba(229, 45, 39, 0.7);
 }
 
 .op-cta__secondary {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.1);
   border: 1.5px solid rgba(255, 255, 255, 0.55);
   color: #fff;
 }
@@ -207,5 +235,72 @@ function onSendResume(): void {
 .op-cta__primary:hover .op-cta__arrow,
 .op-cta__secondary:hover .op-cta__arrow {
   transform: translateX(3px);
+}
+
+.op-cta__features {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: clamp(22px, 2.6vw, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.8vw, 20px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius:
+    0 clamp(18px, 2vw, 26px)
+    0 clamp(18px, 2vw, 26px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.op-cta__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: clamp(13px, 1.1vw, 15px);
+  line-height: 1.45;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.op-cta__check {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--c-brand-cyan);
+  color: var(--c-brand-navy);
+  margin-top: 1px;
+}
+
+.op-cta__check svg {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 1023px) {
+  .op-cta__grid {
+    grid-template-columns: 1fr;
+    gap: clamp(24px, 5vw, 36px);
+  }
+
+  .op-cta__copy {
+    text-align: center;
+  }
+
+  .op-cta__accent-line,
+  .op-cta__subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .op-cta__actions {
+    justify-content: center;
+  }
 }
 </style>

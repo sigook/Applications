@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="op-page">
     <OpenPositionsHeroSection />
     <OpenPositionsListSection />
     <OpenPositionsBrowseSection />
@@ -41,3 +41,17 @@ import OpenPositionsCtaSection from '@/components/v2/landing/OpenPositions/OpenP
 import ContactSection from '@/components/v2/landing/shared/ContactSection.vue'
 import WorkerRegisterModal from '@/components/v2/landing/shared/forms/WorkerRegisterModal.vue'
 </script>
+
+<style scoped>
+.op-page :deep(.industries-carousel) {
+  margin-top: clamp(8px, 1.5vw, 24px);
+  padding-top: clamp(48px, 7vw, 88px);
+  padding-bottom: clamp(48px, 7vw, 88px);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.op-page :deep(.industries-carousel__surface) {
+  display: none;
+}
+</style>
