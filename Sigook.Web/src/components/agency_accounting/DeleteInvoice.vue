@@ -14,41 +14,35 @@
           change.</b>
       </p>
     </b-message>
-    <b-table sticky-header height="var(--grid-height)" v-if="rows.length > 0" :data="rows" v-model:checked-rows="selectedPayStubs" checkable>
-      <template>
-        <b-table-column field="payStubNumber" label="Pay Stub Number" v-slot="props">
-          {{ props.row.payStubNumber }}
-        </b-table-column>
-      </template>
-    </b-table>
-    <b-field label="Verification Code" :type="{ 'is-danger': errors.verificationCode }"
-      :message="errors.verificationCode">
-      <b-input v-model="verificationCode" name="verificationCode" />
-    </b-field>
+    <div class="paystubs-table" v-if="rows.length > 0">
+      <b-table :data="rows" v-model:checked-rows="selectedPayStubs" checkable>
+        <template>
+          <b-table-column field="payStubNumber" label="Pay Stub Number" v-slot="props">
+            {{ props.row.payStubNumber }}
+          </b-table-column>
+        </template>
+      </b-table>
+    </div>
     <b-button @click="submitDeleteInvoice" type="is-danger">Delete</b-button>
   </div>
 </template>
+<style scoped>
+.paystubs-table {
+  max-height: var(--grid-height);
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+}
+</style>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useForm } from 'vee-validate';
-import * as yup from 'yup';
 import { showAlertError } from "@/utils/toast";
 import {
   getPayStubsByInvoice,
-  sendInvoiceVerificationCode,
   deleteAgencyInvoice
 } from "@/api/agencyInvoiceApi";
 
 const props = defineProps<{ invoice: any }>();
 const emit = defineEmits<{(e: 'deleted'): void}>();
-
-const schema = yup.object({
-  verificationCode: yup.string().required('Verification code is required'),
-});
-const { handleSubmit, errors, defineField } = useForm({
-  validationSchema: schema,
-});
-const [verificationCode] = defineField('verificationCode');
 
 const isLoading = ref(true);
 const rows = ref<any[]>([]);
@@ -58,29 +52,21 @@ async function loadPayStubs() {
   rows.value = await getPayStubsByInvoice(props.invoice.id);
 }
 
-async function requestVerificationCode() {
-  await sendInvoiceVerificationCode(props.invoice.id);
-}
-
-function submitDeleteInvoice() {
-  handleSubmit(async (values: any) => {
-    isLoading.value = true;
-    await deleteAgencyInvoice({
-      invoiceId: props.invoice.id,
-      verificationCode: values.verificationCode,
-      payStubs: selectedPayStubs.value.map((payStub: any) => payStub.payStubId),
-    }).catch((error: any) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+async function submitDeleteInvoice() {
+  isLoading.value = true;
+  await deleteAgencyInvoice({
+    invoiceId: props.invoice.id,
+    payStubs: selectedPayStubs.value.map((payStub: any) => payStub.payStubId),
+  }).catch((error: any) => {
     isLoading.value = false;
-    emit("deleted");
-  })();
+    showAlertError(error);
+  });
+  isLoading.value = false;
+  emit("deleted");
 }
 
 (async () => {
   await loadPayStubs();
-  await requestVerificationCode();
   isLoading.value = false;
 })();
 </script>

@@ -9,7 +9,7 @@
           role</b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated detailed show-detail-icon
-        pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex"
+        pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex" pagination-size="is-small"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>

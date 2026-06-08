@@ -47,6 +47,7 @@ public class WorkerService : IWorkerService
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IFilesContainer filesContainer;
     private readonly IDocumentService documentService;
+    private readonly ICandidateService candidateService;
 
     public WorkerService(
         IWorkerRepository workerRepository,
@@ -67,7 +68,8 @@ public class WorkerService : IWorkerService
         IValidator<WorkerProfileCreateModel> workerProfileValidator,
         IHttpContextAccessor httpContextAccessor,
         IFilesContainer filesContainer,
-        IDocumentService documentService)
+        IDocumentService documentService,
+        ICandidateService candidateService)
     {
         this.workerRepository = workerRepository;
         this.agencyRepository = agencyRepository;
@@ -86,6 +88,7 @@ public class WorkerService : IWorkerService
         this.httpContextAccessor = httpContextAccessor;
         this.filesContainer = filesContainer;
         this.documentService = documentService;
+        this.candidateService = candidateService;
     }
 
     public async Task<Result<Guid>> CreateWorker(int? requestId)
@@ -120,6 +123,8 @@ public class WorkerService : IWorkerService
 
         await workerRepository.Create(entity);
         await workerRepository.SaveChangesAsync();
+
+        await candidateService.DeleteCandidateByEmail(model.Email);
 
         await UploadWorkerFiles(form.Files, entity);
 

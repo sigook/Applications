@@ -39,7 +39,7 @@ export function getAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRe
   return http.get('/api/AgencyRequest', { params: { ...filter } }).then(r => r.data);
 }
 
-export function getAllAgencyRequests(filter: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem>> {
+export function getAllAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRequestListItem[]> {
   return http.get('/api/AgencyRequest/all', { params: { ...filter } }).then(r => r.data);
 }
 

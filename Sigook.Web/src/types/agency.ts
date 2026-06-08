@@ -849,16 +849,22 @@ export interface HoursWorkedResume {
   detail: HoursWorkedResponseItem[];
 }
 
-// Loose detail row inside HoursWorkedResume.detail (backend HoursWorkedResponse).
+// Detail row inside HoursWorkedResume.detail (mirrors backend HoursWorkedResponse).
 export interface HoursWorkedResponseItem {
-  workerFullName?: string;
-  jobTitle?: string;
-  totalHours?: number;
-  totalPay?: number;
-  regularHours?: number;
-  overtimeHours?: number;
-  holidayHours?: number;
-  nightHours?: number;
+  workerName: string;
+  jobPosition: string;
+  payRate: number;
+  billRate: number;
+  regularHoursWorked: number;
+  overtimeHoursWorked: number;
+  holidayHoursWorked: number;
+  nightHoursWorked: number;
+  totalPayRegularRate: number;
+  totalPayOvertimeRate: number;
+  totalPayHolidayRate: number;
+  totalPayNightRate: number;
+  totalHoursWorked: number;
+  totalPayRate: number;
 }
 
 // Payment report row returned by GET /api/agency/accounting/reports/payments.
