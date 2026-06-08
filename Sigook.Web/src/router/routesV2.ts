@@ -83,7 +83,8 @@ const routesV2: RouteRecordRaw[] = [
     cs('/v2/certified',        'v2-certified',        'Licensed & Certified'),
     cs('/v2/payroll',          'v2-payroll',          'Payroll Solutions'),
     cs('/v2/privacy-policy',   'v2-privacy-policy',   'Privacy Policy'),
-    cs('/v2/terms',            'v2-terms',            'Terms of Use'),
+    cs('/v2/terms',            'v2-terms',            'Terms and Conditions'),
+    cs('/v2/disclaimer',       'v2-disclaimer',       'Disclaimer'),
     cs('/v2/sign-up',          'v2-sign-up',          'Sign Up'),
     cs('/v2/sign-in',          'v2-sign-in',          'Sign In'),
 ];

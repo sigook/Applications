@@ -35,7 +35,6 @@
             <router-link to="/v2/employers" class="footer__link">Temporary Staffing</router-link>
             <router-link to="/v2/payroll"   class="footer__link">Payroll Services</router-link>
             <router-link to="/v2/talents"   class="footer__link">Workforce Solutions</router-link>
-            <router-link to="/v2/about"     class="footer__link">HR Consulting</router-link>
             <router-link to="/v2/certified" class="footer__link">Compliance</router-link>
           </nav>
 
@@ -56,7 +55,8 @@
         </p>
         <div class="footer__legal">
           <router-link to="/v2/privacy-policy" class="footer__legal-link">Privacy Policy</router-link>
-          <router-link to="/v2/terms"          class="footer__legal-link">Terms of Use</router-link>
+          <router-link to="/v2/terms"          class="footer__legal-link">Terms and Conditions</router-link>
+          <router-link to="/v2/disclaimer"     class="footer__legal-link">Disclaimer</router-link>
         </div>
       </div>
     </div>

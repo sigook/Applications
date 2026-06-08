@@ -21,7 +21,7 @@
       </h1>
 
       <p class="hero__subtitle">
-        Sigook® connects leading U.S. employers with skilled workers —
+        Sigook® connects leading U.S. employers with skilled workers
         from onboarding and timesheets to payroll, fully connected in one platform.
       </p>
 
