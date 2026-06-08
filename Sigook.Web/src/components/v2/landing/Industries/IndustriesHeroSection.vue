@@ -17,7 +17,7 @@
 
       <p class="industries-hero__subtitle">
         We recruit highly qualified professionals for specialized positions
-        across the industries that power North America's economy — pairing
+        across the industries that power the U.S. economy — pairing
         deep sector knowledge with long-term, measurable impact.
       </p>
 

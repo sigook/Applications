@@ -57,7 +57,7 @@
             <span class="why__map-halo" aria-hidden="true"></span>
             <img
               src="@/assets/images/v2/why-choose-us/usa-map.png"
-              alt="USA/Canada presence map"
+              alt="United States coverage map"
               class="why__map-img"
             />
           </div>
@@ -73,7 +73,7 @@
             :delay="300"
           >
             A nationwide recruitment network with reliable coverage across every
-            major North American market.
+            major U.S. market.
           </SecondaryCard>
 
           <SecondaryCard

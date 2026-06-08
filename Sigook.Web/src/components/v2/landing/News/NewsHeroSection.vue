@@ -19,7 +19,7 @@
       </div>
 
       <h1 class="news-hero__heading">
-        What's happening at Sigook.
+        What's happening at Sigook®.
         <span class="news-hero__heading-accent">
           Stories, insights, signals.
         </span>

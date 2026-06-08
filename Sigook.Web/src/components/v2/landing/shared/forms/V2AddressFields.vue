@@ -16,8 +16,8 @@
       <V2Autocomplete
         v-model="provinceQuery"
         :data="provinces"
-        label="Province / State"
-        placeholder="Select a province"
+        label="State"
+        placeholder="Select a state"
         :required="true"
         :error="errors.province"
         :disabled="!country"
@@ -46,8 +46,8 @@
       />
       <V2Input
         v-model="postalCode"
-        label="Postal / ZIP Code"
-        placeholder="A1A 1A1"
+        label="ZIP Code"
+        placeholder="12345"
         :required="true"
         :error="errors.postalCode"
         @update:model-value="emitChange"
@@ -105,7 +105,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: AddressModel): void
-  (e: 'isCanada', value: boolean): void
 }>()
 
 /* ── State ──────────────────────────────────────────────────────────────── */
@@ -133,7 +132,11 @@ const errors = reactive({
 /* ── API loads ──────────────────────────────────────────────────────────── */
 
 async function loadCountries(): Promise<void> {
-  countries.value = await fetchCountries()
+  const all = await fetchCountries()
+  countries.value = all.filter((c) => c.code === 'USA')
+  if (!country.value && countries.value.length === 1) {
+    onCountrySelected(countries.value[0])
+  }
 }
 
 async function loadProvinces(c: CountryOption | null): Promise<void> {
@@ -166,7 +169,6 @@ function onCountrySelected(c: CountryOption | null): void {
   provinces.value = []
   cities.value = []
   void loadProvinces(c)
-  emit('isCanada', c?.code === 'CA')
   emitChange()
 }
 
@@ -232,7 +234,7 @@ function validate(): boolean {
     valid = false
   }
   if (!provinceSelected.value) {
-    errors.province = 'Please select a province from the list'
+    errors.province = 'Please select a state from the list'
     valid = false
   }
   if (!citySelected.value) {

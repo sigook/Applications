@@ -14,7 +14,7 @@
             class="footer__logo"
           />
           <p class="footer__tagline">
-            Staffing and workforce solutions for growing businesses across Canada and the US.
+            Staffing and workforce solutions for growing businesses across the United States.
           </p>
         </div>
 
@@ -42,8 +42,8 @@
           <div class="footer__col">
             <span class="footer__col-eyebrow">Contact</span>
             <a href="mailto:info@sigook.com" class="footer__link">info@sigook.com</a>
-            <a href="tel:+16475550123"       class="footer__link">+1 (647) 555-0123</a>
-            <span class="footer__link footer__link--plain">Toronto, ON, Canada</span>
+            <a href="tel:+13055550123"       class="footer__link">+1 (305) 555-0123</a>
+            <span class="footer__link footer__link--plain">Florida, USA</span>
           </div>
         </div>
       </div>

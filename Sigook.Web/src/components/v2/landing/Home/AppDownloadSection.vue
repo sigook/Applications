@@ -4,7 +4,7 @@
       <!-- TOP: CTA + phone hero -->
       <div class="app__top">
         <div class="app__copy">
-          <span class="app__eyebrow">Sigook App</span>
+          <span class="app__eyebrow">Sigook® App</span>
           <h2 class="app__title">
             Your workforce,<br />in your <span class="app__title-accent">pocket</span>
           </h2>
@@ -36,7 +36,7 @@
               target="_blank"
               rel="noopener noreferrer"
               class="app__badge"
-              aria-label="Get Sigook on Google Play"
+              aria-label="Get Sigook® on Google Play"
             >
               <img
                 src="@/assets/images/v2/app-download/app-store-google.png"

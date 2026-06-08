@@ -14,7 +14,7 @@
         </h2>
 
         <p class="news-newsletter__subtitle">
-          The week's stories — compliance, hiring trends, and Sigook moves —
+          The week's stories — compliance, hiring trends, and Sigook® moves —
           condensed into a five-minute read. No filler, no sales pitches.
         </p>
       </header>

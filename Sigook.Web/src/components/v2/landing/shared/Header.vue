@@ -2,7 +2,11 @@
   <header class="nav" :class="{ 'nav--solid': isScrolled }">
     <div class="nav__inner">
       <!-- Logo -->
-      <router-link to="/v2/home" class="nav__logo">
+      <router-link
+        to="/v2/home"
+        class="nav__logo"
+        :class="{ 'nav__logo--hidden': heroLogoVisible }"
+      >
         <img src="@/assets/images/logo-white-v2.png" alt="Sigook" />
       </router-link>
 
@@ -71,12 +75,13 @@
 
 <script setup lang="ts">
 import '@/assets/css/tokens.css';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';
 import menu from '@/security/menu';
 
 const router = useRouter();
+const route = useRoute();
 const securityStore = useSecurityStore();
 
 const isScrolled = ref(false);
@@ -84,13 +89,31 @@ const mobileOpen = ref(false);
 
 const navLinks = [
   { label: 'Open Positions',   to: '/v2/open-positions' },
+  { label: 'Talents',          to: '/v2/talents' },
+  { label: 'Employers',        to: '/v2/employers' },
   { label: 'Industries',       to: '/v2/industries' },
+  { label: 'Special Projects', to: '/v2/special-projects' },
   { label: 'News',             to: '/v2/news' },
   { label: 'About Us',         to: '/v2/about' },
-  { label: 'Employers',        to: '/v2/employers' },
-  { label: 'Talents',          to: '/v2/talents' },
-  { label: 'Special Projects', to: '/v2/special-projects' },
 ];
+
+const heroLogoVisible = ref(false);
+let heroLogoObserver: IntersectionObserver | null = null;
+
+function observeHeroLogo(): void {
+  heroLogoObserver?.disconnect();
+  heroLogoObserver = null;
+  heroLogoVisible.value = false;
+  nextTick(() => {
+    const el = document.querySelector('.hero__logo');
+    if (!el) return;
+    heroLogoObserver = new IntersectionObserver(
+      ([entry]) => { heroLogoVisible.value = entry.isIntersecting; },
+      { rootMargin: '-80px 0px 0px 0px', threshold: 0 },
+    );
+    heroLogoObserver.observe(el);
+  });
+}
 
 /**
  * CTA flips between "Sign In" (anonymous) and "Go to Portal" (logged in).
@@ -124,10 +147,14 @@ function onScroll() {
 
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true });
+  observeHeroLogo();
 });
+
+watch(() => route.fullPath, observeHeroLogo);
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
+  heroLogoObserver?.disconnect();
 });
 </script>
 
@@ -182,11 +209,16 @@ onUnmounted(() => {
   flex-shrink: 0;
   display: block;
   line-height: 0;
-  transition: transform 0.25s ease;
+  clip-path: inset(0 0 0 0);
+  transition:
+    opacity 0.45s ease,
+    clip-path 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.nav__logo:hover {
-  transform: scale(1.04);
+.nav__logo--hidden {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  pointer-events: none;
 }
 
 .nav__logo img {
@@ -194,6 +226,21 @@ onUnmounted(() => {
   width: auto;
   max-width: 160px;
   object-fit: contain;
+  transition: transform 0.25s ease;
+}
+
+.nav__logo:hover img {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__logo {
+    transition: opacity 0.2s ease;
+    clip-path: none;
+  }
+  .nav__logo--hidden {
+    clip-path: none;
+  }
 }
 
 /* ── Desktop nav links — cyan underline indicator ──────────────────────── */

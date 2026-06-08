@@ -57,7 +57,7 @@ import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'
 
 const CREDENTIALS = [
   'Since 2008',
-  'Florida → Canada & USA',
+  'Florida → coast to coast',
   'Talent Management since 2016',
 ] as const
 

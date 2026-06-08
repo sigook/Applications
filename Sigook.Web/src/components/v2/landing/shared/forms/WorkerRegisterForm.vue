@@ -51,7 +51,6 @@
         <V2AddressFields
           ref="addressRef"
           v-model="addressModel"
-          @isCanada="(v) => (isCanada = v)"
         />
 
         <div class="reg-form__row">
@@ -302,39 +301,6 @@
               <span class="reg-form__doc-filename">📑 {{ filename(worker.resume.fileName) }}</span>
               <button type="button" class="reg-form__doc-remove" @click="deleteResume()">Remove</button>
             </div>
-          </div>
-        </div>
-
-        <!-- Canada extras -->
-        <div v-if="isCanada" class="reg-form__doc-block">
-          <div class="reg-form__doc-head">
-            <div>
-              <span class="reg-form__doc-title">WHMIS and Health &amp; Safety training</span>
-              <p class="reg-form__doc-hint">
-                Complete the training using the links below and upload your certificates.
-              </p>
-            </div>
-            <V2FileUpload label="Add document" @file="handleOtherDocumentUpload" />
-          </div>
-          <p class="reg-form__doc-links">
-            <a href="https://aixsafety.com/wp-content/uploads/articulate_uploads/WHS-Apr2025Aix/story.html" target="_blank" rel="noopener noreferrer">WHIMS Training →</a>
-            <a href="https://www.labour.gov.on.ca/english/hs/elearn/worker/foursteps.php" target="_blank" rel="noopener noreferrer">HS Booklet →</a>
-          </p>
-          <div
-            v-for="(item, idx) in worker.otherDocuments"
-            :key="`oth-${idx}`"
-            class="reg-form__doc-card"
-          >
-            <div class="reg-form__doc-card-head">
-              <span class="reg-form__doc-filename">📁 {{ filename(item.fileName) }}</span>
-              <button type="button" class="reg-form__doc-remove" @click="deleteOtherDocument(idx)">Remove</button>
-            </div>
-            <V2Input
-              v-model="item.description"
-              label="Description"
-              :required="true"
-              :error="itemErrors['descriptionOther' + idx]"
-            />
           </div>
         </div>
 
@@ -629,7 +595,6 @@ const addressModel = ref<AddressModel>({
   postalCode: '',
 })
 const addressRef = ref<{ validate: () => boolean } | null>(null)
-const isCanada = ref(false)
 
 /* ── Lift + vehicle (proxied to worker reactive state) ──────────────────── */
 
@@ -714,12 +679,6 @@ function handleResumeUpload(file: File | null): void {
   worker.resume = { fileName: file.name }
 }
 
-function handleOtherDocumentUpload(file: File | null): void {
-  if (!file || !validateFileSize(file)) return
-  fileObjects.otherDocuments.push(file)
-  worker.otherDocuments.push({ fileName: file.name, description: '' })
-}
-
 function deleteDocument(file: { fileName: string }): void {
   if (!worker.identificationType1File) return
   const isFirst = worker.identificationType1File.fileName === file.fileName
@@ -758,11 +717,6 @@ function deleteCertificate(idx: number): void {
 function deleteResume(): void {
   fileObjects.resume = null
   worker.resume = null
-}
-
-function deleteOtherDocument(idx: number): void {
-  fileObjects.otherDocuments.splice(idx, 1)
-  worker.otherDocuments.splice(idx, 1)
 }
 
 /* ── Per-step validation ────────────────────────────────────────────────── */

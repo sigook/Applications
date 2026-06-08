@@ -42,7 +42,7 @@
             v-model="form.location"
             type="text"
             class="op-hero__input"
-            placeholder="e.g. Toronto, ON"
+            placeholder="e.g. Miami, FL"
             autocomplete="off"
           />
         </div>

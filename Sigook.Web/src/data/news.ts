@@ -80,9 +80,9 @@ export const NEWS_ARTICLES: readonly NewsArticle[] = [
   },
   {
     id: 'q1-hiring-pulse-2026',
-    slug: 'q1-2026-north-american-hiring-pulse',
+    slug: 'q1-2026-us-hiring-pulse',
     category: 'hiring-trends',
-    title: 'Q1 2026 North American hiring pulse: where demand actually is',
+    title: 'Q1 2026 U.S. hiring pulse: where demand actually is',
     excerpt:
       'We pulled 1,400 placements across our network. The headline: contract hiring grew 22% YoY, with manufacturing and logistics leading.',
     imageUrl:
@@ -94,12 +94,12 @@ export const NEWS_ARTICLES: readonly NewsArticle[] = [
     featured: true,
   },
   {
-    id: 'sigook-quebec-office',
-    slug: 'sigook-opens-quebec-city-office',
+    id: 'sigook-houston-office',
+    slug: 'sigook-opens-houston-office',
     category: 'company-news',
-    title: 'Sigook opens a Quebec City office — bilingual recruitment now in-region',
+    title: 'Sigook opens a Houston office — bilingual recruitment now in-region',
     excerpt:
-      'Our newest branch brings French-first recruitment to clients across the St. Lawrence corridor. Meet the team and the roles we\'re staffing first.',
+      'Our newest branch brings bilingual recruitment to clients across the Gulf Coast region. Meet the team and the roles we\'re staffing first.',
     imageUrl:
       'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop',
     imageAlt: 'Bright modern office interior with team working at desks',
@@ -109,12 +109,12 @@ export const NEWS_ARTICLES: readonly NewsArticle[] = [
     featured: true,
   },
   {
-    id: 'minimum-wage-ontario',
-    slug: 'ontario-minimum-wage-october-2026',
+    id: 'minimum-wage-florida',
+    slug: 'florida-minimum-wage-2026',
     category: 'compliance',
-    title: 'Ontario minimum wage rises October 1 — what it means for contract rates',
+    title: 'Florida minimum wage rises September 30 — what it means for contract rates',
     excerpt:
-      'The province confirmed a $0.65 increase. We break down which contract billing models absorb it and which need renegotiation now.',
+      'The state confirmed a $1.00 increase. We break down which contract billing models absorb it and which need renegotiation now.',
     imageUrl:
       'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop',
     imageAlt: 'Person signing a payroll document at a desk',
@@ -128,7 +128,7 @@ export const NEWS_ARTICLES: readonly NewsArticle[] = [
     category: 'industry-insights',
     title: 'Closing the manufacturing talent gap: three things that actually work',
     excerpt:
-      'Apprenticeship pipelines, internal mobility, and one underrated retention play we\'ve seen move the needle on Canadian shop floors.',
+      'Apprenticeship pipelines, internal mobility, and one underrated retention play we\'ve seen move the needle on U.S. shop floors.',
     imageUrl:
       'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1200&q=80&auto=format&fit=crop',
     imageAlt: 'Manufacturing worker operating industrial machinery',
@@ -154,7 +154,7 @@ export const NEWS_ARTICLES: readonly NewsArticle[] = [
     id: 'sigook-iso-9001',
     slug: 'sigook-achieves-iso-9001-certification',
     category: 'press-releases',
-    title: 'Sigook achieves ISO 9001:2015 certification across all Canadian offices',
+    title: 'Sigook achieves ISO 9001:2015 certification across all U.S. offices',
     excerpt:
       'Independent audit confirms our quality management standards meet the international benchmark — full statement and downloadable certificate inside.',
     imageUrl:

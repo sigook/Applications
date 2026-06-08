@@ -9,7 +9,7 @@
         <span class="numbers__eyebrow">By the Numbers</span>
         <h2 class="numbers__heading">Our impact, at scale</h2>
         <p class="numbers__sub">
-          Real results from real partnerships across North America.
+          Real results from real partnerships across the United States.
         </p>
       </header>
 
