@@ -1,5 +1,6 @@
 <template>
   <section class="partner-hero">
+    <HeroBackground :image="heroImage" focal="center 30%" />
     <!-- Atmospheric magnifier decoration — bottom-center anchor (final
          unused position, closes the family alongside Home TL, About TR,
          SP BR, Industries BL, Talents CR, Employers CL, News TC) -->
@@ -56,6 +57,8 @@
  * partner audience needs to see traction. The stat strip serves that role.
  */
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/partner.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'
 </script>

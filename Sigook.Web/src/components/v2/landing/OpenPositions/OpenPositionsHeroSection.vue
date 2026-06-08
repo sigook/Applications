@@ -1,5 +1,6 @@
 <template>
   <section class="op-hero">
+    <HeroBackground :image="heroImage" focal="center 35%" />
     <!-- Magnifier — reuses the Home top-left anchor (Open Positions is the
          page closest in spirit to Home: discovery + search). Anchors are
          "1 per page" by default; this is the intentional exception. -->
@@ -84,6 +85,8 @@
  */
 import { reactive } from 'vue'
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/open-positions.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import { useJobs } from '@/composables/useJobs'
 

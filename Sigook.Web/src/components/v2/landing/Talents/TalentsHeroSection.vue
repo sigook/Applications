@@ -1,5 +1,6 @@
 <template>
   <section class="talents-hero">
+    <HeroBackground :image="heroImage" focal="center 35%" />
     <!-- Atmospheric magnifier decoration — center-right anchor
          (Home top-left, About top-right, SP bottom-right, Industries bottom-left) -->
     <DecoMagnifier class="talents-hero__magnifier" />
@@ -44,6 +45,8 @@
  *    Industrial toggle — same intent, vocabulary that scales with the system
  */
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/talents.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/v2/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'

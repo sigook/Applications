@@ -1,5 +1,6 @@
 <template>
   <section class="employers-hero">
+    <HeroBackground :image="heroImage" focal="center 40%" />
     <!-- Atmospheric magnifier decoration — center-left anchor
          (Home top-left, About top-right, SP bottom-right, Industries
           bottom-left, Talents center-right → Employers center-left closes
@@ -45,6 +46,8 @@
  *  • Copy speaks from the employer side: hiring outcomes, not career outcomes
  */
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/employers.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/v2/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'

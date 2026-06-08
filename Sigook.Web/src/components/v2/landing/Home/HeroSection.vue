@@ -1,6 +1,8 @@
 <template>
   <section class="hero">
-    <HeroBackground :image="heroImage" focal="center 32%" />
+    <HeroBackground :image="heroImage" focal="center 28%" />
+
+    <DecoMagnifier class="hero__magnifier" />
 
     <div class="hero__content">
       <EyebrowPill variant="red" class="hero__eyebrow">
@@ -37,12 +39,13 @@
 </template>
 
 <script setup lang="ts">
+import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/v2/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'
 import logoWhite from '@/assets/images/logo-white-v2.png'
-import heroImage from '@/assets/images/v2/why-choose-us/why-bg.jpg'
+import heroImage from '@/assets/images/v2/hero/home.jpg'
 
 const INDUSTRIES = [
   'Manufacturing',
@@ -62,6 +65,11 @@ const INDUSTRIES = [
   min-height: max(100vh, 1080px);
   overflow: hidden;
   isolation: isolate;
+}
+
+.hero__magnifier {
+  top: clamp(14%, 16vw, 18%);
+  left: clamp(6%, 7vw, 9%);
 }
 
 /* ── Content stack — vertically centered editorial layout ───────────────── */

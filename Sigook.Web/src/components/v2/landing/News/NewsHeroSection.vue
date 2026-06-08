@@ -1,5 +1,6 @@
 <template>
   <section class="news-hero">
+    <HeroBackground :image="heroImage" focal="center 40%" />
     <!-- Atmospheric magnifier decoration — top-center anchor (completes the
          family: Home TL, About TR, SP BR, Industries BL, Talents CR,
          Employers CL → News TC) -->
@@ -65,6 +66,8 @@
  * future enhancement).
  */
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/news.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'
 import { NEWS_CATEGORIES } from '@/data/news'
