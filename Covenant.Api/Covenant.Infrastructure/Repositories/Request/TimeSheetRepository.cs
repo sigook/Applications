@@ -170,9 +170,9 @@ public class TimesheetRepository : ITimesheetRepository
             .ThenInclude(ts => ts.Agency)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId) && ts.WorkerRequest.Request.CompanyId == model.CompanyId)
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotal == null);
-        if (model.ProvinceId.HasValue)
+        if (model.RequestIds != null && model.RequestIds.Any())
         {
-            timeSheet = timeSheet.Where(ts => ts.WorkerRequest.Request.JobLocation.City.Province.Id == model.ProvinceId);
+            timeSheet = timeSheet.Where(ts => model.RequestIds.Contains(ts.WorkerRequest.RequestId));
         }
         if (model.From.HasValue && model.To.HasValue)
         {

@@ -1,3 +1,4 @@
+using Covenant.Api.AccountingModule.PayStubDocument.Services;
 using Covenant.Api.Shared.PayrollDocument.Models;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
@@ -14,7 +15,6 @@ namespace Covenant.Api.AccountingModule.PayStubDocument.Controllers
     public class PayStubPdf
     {
         public delegate Task<IActionResult> OnPayStubPdf(string pdfPath, string fileName);
-        public delegate Task<IActionResult> OnPayStubPdfAndModel(string pdfPath, string fileName, PayrollEmailViewModel model);
         private const string PdfContentType = MediaTypeNames.Application.Pdf;
         private const string PayStubTemplatePath = "/Views/Billing/Payroll/Payroll.cshtml";
         private readonly IPayStubsContainer _container;
@@ -47,19 +47,20 @@ namespace Covenant.Api.AccountingModule.PayStubDocument.Controllers
             return string.IsNullOrEmpty(pdfPath) ? new BadRequestResult() : await func(pdfPath, fileName);
         }
 
-        public async Task<IActionResult> GetPdf(Guid payStubId, OnPayStubPdfAndModel func)
+        public async Task<PayStubEmailDocument> GetPdfAndModel(Guid payStubId)
         {
             string fileName = payStubId.ToPayStubBlobName();
             string pdfPath = await _container.Download(fileName);
 
             var model = await _repository.GetPayStubDetail(payStubId);
-            if (model is null) return new NotFoundResult();
+            if (model is null) return null;
             model.Ytd = await _repository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
 
             if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadPdf(model);
+            if (string.IsNullOrEmpty(pdfPath)) return null;
 
-            return string.IsNullOrEmpty(pdfPath) ? new BadRequestResult() :
-                await func(pdfPath, fileName, new PayrollEmailViewModel(model.WorkerFullName, model.TotalNet, model.EndDate,
+            return new PayStubEmailDocument(pdfPath, fileName,
+                new PayrollEmailViewModel(model.WorkerFullName, model.TotalNet, model.EndDate,
                     model.PaymentDate, model.WorkerEmail, model.PayrollNumber));
         }
 

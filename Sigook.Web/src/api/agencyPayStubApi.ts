@@ -33,6 +33,10 @@ export function sendPayStubEmail(payStubId: string): Promise<void> {
   return http.post(`/api/v4/Accounting/PayStub/${payStubId}/Document/Email`).then(() => {});
 }
 
+export function sendPayStubEmailBulk(payStubIds: string[]): Promise<void> {
+  return http.post('/api/agency/accounting/PayStubs/email/bulk', { payStubIds }).then(() => {});
+}
+
 export function createAgencyPayStub(payload: CreatePayStubPayload): Promise<void> {
   return http.post('/api/v4/accounting/PayStub', payload).then(() => {});
 }

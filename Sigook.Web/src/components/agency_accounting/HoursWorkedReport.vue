@@ -2,21 +2,21 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div class="col-12 col-md-6 col-lg-4 col-padding">
+      <div class="col-33">
         <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
           :message="formErrors.dates">
           <b-datepicker v-model="dates" name="dates" range
             @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
-      <div class="col-12 col-md-6 col-lg-4 col-padding">
+      <div class="col-33">
         <b-field label="Company">
           <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus
             field="fullName" name="company" placeholder="Company" @select="selectCompany">
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-12 col-md-6 col-lg-4 col-padding">
+      <div class="col-33">
         <b-field label="Job Position">
           <b-autocomplete v-model="jobPositionSelected" :data="filteredJobPositions" open-on-focus
             field="jobPosition" :loading="isLoadingJobPositions" name="jobPosition" placeholder="Job Position"
@@ -27,14 +27,18 @@
           </b-autocomplete>
         </b-field>
       </div>
+    </div>
+    <div class="container-flex">
       <div class="col-12 col-padding">
         <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
-      <div v-if="reportGenerated" class="col-12 col-padding">
+    </div>
+    <div v-if="reportGenerated" class="container-flex">
+      <div class="col-12 col-padding">
         <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </Export>
-        <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated :per-page="pageSize"
+        <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated pagination-size="is-small" :per-page="pageSize"
           v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
             <p class="container text-center">No records available</p>
