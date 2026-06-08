@@ -54,9 +54,9 @@ public class IdentityServerService : IIdentityServerService
             var content = JsonSerializer.Serialize(model);
             var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
             var response = await client.PostAsync("CreateUser", stringContent);
-            var result = await response.Content.ReadFromJsonAsync<IdModel>();
             if (response.IsSuccessStatusCode)
             {
+                var result = await response.Content.ReadFromJsonAsync<IdModel>();
                 var newUser = new User(model.Email, result.Id);
                 await userRepository.Create(newUser);
                 await userRepository.SaveChangesAsync();

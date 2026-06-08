@@ -11,6 +11,7 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> UpdateCandidate(Guid id, CandidateCreateModel model);
         Task<Result> UpdateRecruiterCandidate(Guid id);
         Task<Result> DeleteCandidate(Guid id);
+        Task<Result> DeleteCandidateByEmail(string email);
         Task<Result> ConvertToWorker(Guid id);
         Task<Result<Guid>> CreateCandidateDocument(Guid id, CovenantFileModel model);
         Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file);

@@ -56,7 +56,8 @@ namespace Covenant.Tests.Worker
                 Mock.Of<IValidator<WorkerProfileCreateModel>>(),
                 Mock.Of<IHttpContextAccessor>(),
                 Mock.Of<IFilesContainer>(),
-                Mock.Of<IDocumentService>());
+                Mock.Of<IDocumentService>(),
+                Mock.Of<ICandidateService>());
         }
         [Fact]
         public async Task Invalid_Profile()

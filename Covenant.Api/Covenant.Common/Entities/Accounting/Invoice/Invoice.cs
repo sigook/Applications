@@ -58,7 +58,5 @@ public class Invoice
 
     public string DisplayInvoiceNumber() => BuildInvoiceNumber(InvoiceNumber, CreatedAt);
 
-    public static string VerificationCode(Guid id) => string.Concat(id.ToString("N").Reverse());
-
     public static string BuildInvoiceNumber(long number, DateTime date) => $"{PrefixInvoiceNumber}-{number:0000}-{date:yy}";
 }
