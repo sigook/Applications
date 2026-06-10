@@ -163,7 +163,7 @@ const TOPICS: readonly Topic[] = [
     eyebrow: `${counts['company-news']} stories`,
     title: 'Company news',
     body:
-      'Inside Sigook — new offices, leadership announcements, programs, and the milestones we want you to know about.',
+      'Inside Sigook® — new offices, leadership announcements, programs, and the milestones we want you to know about.',
     ctaLabel: 'Read updates',
     href: '#news-latest',
     variant: 'blue',

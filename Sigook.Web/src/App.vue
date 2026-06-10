@@ -20,10 +20,15 @@
       <router-view />
       <LandingFooter />
     </div>
-    <div v-else>
-      <Header />
-      <router-view />
-      <Footer />
+    <div v-else class="web-layout">
+      <header class="web-layout__bar">
+        <router-link to="/" class="web-layout__brand" aria-label="Sigook home">
+          <img src="@/assets/images/sm-logo.png" alt="Sigook" />
+        </router-link>
+      </header>
+      <main class="web-layout__content">
+        <router-view />
+      </main>
     </div>
   </div>
 </template>
@@ -35,8 +40,6 @@ import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import axios from 'axios';
 import SidebarLogged from '@/components/SidebarLogged.vue';
-import Header from '@/components/landing/Header.vue';
-import Footer from '@/components/landing/Footer.vue';
 import LandingHeader from '@/components/v2/landing/shared/Header.vue';
 import LandingFooter from '@/components/v2/landing/shared/Footer.vue';
 import LandingBackground from '@/components/v2/landing/shared/GlobalBackground.vue';
@@ -110,6 +113,34 @@ onUnmounted(() => {
 
 .no-menu {
   display: none;
+}
+
+/* Neutral chrome for standalone non-landing pages (worker registration,
+   worker apply, email preferences, 404, unauthorized). Replaces the old
+   legacy marketing Header/Footer so those can be removed. Light background,
+   slim brand bar that links home. */
+.web-layout__bar {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.web-layout__brand {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.web-layout__brand img {
+  height: 32px;
+  width: auto;
+}
+
+.web-layout__content {
+  position: relative;
+  min-height: calc(100vh - 64px);
 }
 
 /* V2 landing layout — clip any horizontal overflow from decorative absolute

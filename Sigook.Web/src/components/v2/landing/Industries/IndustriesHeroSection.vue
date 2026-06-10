@@ -1,5 +1,6 @@
 <template>
   <section class="industries-hero">
+    <HeroBackground :image="heroImage" focal="center 35%" />
     <!-- Atmospheric magnifier decoration — bottom-left anchor (only quadrant
          not used yet across Home top-left, About top-right, SP bottom-right) -->
     <DecoMagnifier class="industries-hero__magnifier" />
@@ -16,7 +17,7 @@
 
       <p class="industries-hero__subtitle">
         We recruit highly qualified professionals for specialized positions
-        across the industries that power North America's economy — pairing
+        across the industries that power the U.S. economy — pairing
         deep sector knowledge with long-term, measurable impact.
       </p>
 
@@ -45,6 +46,8 @@
  *    the user to scroll to the full grid panel below.
  */
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
+import heroImage from '@/assets/images/v2/hero/industries.jpg'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/v2/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'

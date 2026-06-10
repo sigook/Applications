@@ -112,10 +112,10 @@ const BENEFITS: readonly Benefit[] = [
     iconComponent: IconAutonomy,
   },
   {
-    eyebrow: 'North America',
+    eyebrow: 'Coast to Coast',
     title: 'Nationwide Reach',
     body:
-      'Place across Canada and the US through one license, one contract, one payroll system. We absorb the multi-jurisdiction overhead.',
+      'Place across the United States through one license, one contract, one payroll system. We absorb the multi-state overhead.',
     variant: 'blue',
     iconComponent: IconReach,
   },

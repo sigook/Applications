@@ -4,7 +4,7 @@
     <NewsFeaturedSection />
     <NewsLatestGridSection />
     <NewsTopicsSection />
-    <NewsletterSection />
+    <ContactSection />
   </main>
 </template>
 
@@ -17,14 +17,16 @@
  *  2. NewsFeaturedSection     — Editor's-picks carousel (3 stories)
  *  3. NewsLatestGridSection   — 6-card grid of recent articles
  *  4. NewsTopicsSection       — 6 SecondaryCards for category browsing
- *  5. NewsletterSection       — Weekly digest subscription form (closes page)
+ *  5. ContactSection (shared) — "Get in Touch" form (closes page)
  *
- * The newsletter replaces the usual ContactSection at the bottom — the call
- * to action that matches a newsroom is "subscribe", not "get in touch".
+ * NewsletterSection is kept in the codebase but not mounted: it is a UI-only
+ * subscription form with no backend mailing-list endpoint yet. Until one
+ * exists, the page closes with the shared ContactSection like every other
+ * v2 landing page.
  */
 import NewsHeroSection from '@/components/v2/landing/News/NewsHeroSection.vue'
 import NewsFeaturedSection from '@/components/v2/landing/News/NewsFeaturedSection.vue'
 import NewsLatestGridSection from '@/components/v2/landing/News/NewsLatestGridSection.vue'
 import NewsTopicsSection from '@/components/v2/landing/News/NewsTopicsSection.vue'
-import NewsletterSection from '@/components/v2/landing/News/NewsletterSection.vue'
+import ContactSection from '@/components/v2/landing/shared/ContactSection.vue'
 </script>

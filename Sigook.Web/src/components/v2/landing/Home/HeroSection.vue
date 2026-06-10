@@ -1,6 +1,7 @@
 <template>
   <section class="hero">
-    <!-- Atmospheric magnifier decoration -->
+    <HeroBackground :image="heroImage" focal="center 28%" />
+
     <DecoMagnifier class="hero__magnifier" />
 
     <div class="hero__content">
@@ -8,16 +9,11 @@
         Workforce Platform
       </EyebrowPill>
 
-      <!-- Logo lockup with atmospheric halo — radial white glow softens the
-           transition between the logo and the navy background so the mark
-           reads with more presence without breaking the page palette. -->
-      <div class="hero__logo-halo">
-        <img
-          src="@/assets/images/v2/footer/footer-logo.png"
-          alt="Sigook Work Factory"
-          class="hero__logo"
-        />
-      </div>
+      <img
+        :src="logoWhite"
+        alt="Sigook Work Factory"
+        class="hero__logo"
+      />
 
       <h1 class="hero__heading">
         Where great talent meets
@@ -25,7 +21,7 @@
       </h1>
 
       <p class="hero__subtitle">
-        Sigook connects North America's leading employers with skilled workers —
+        Sigook® connects leading U.S. employers with skilled workers
         from onboarding and timesheets to payroll, fully connected in one platform.
       </p>
 
@@ -33,7 +29,7 @@
         label="Trusted across"
         :items="INDUSTRIES"
         more-label="+ more"
-        more-to="/v2/industries"
+        more-to="/industries"
         class="hero__industries"
       />
     </div>
@@ -44,14 +40,18 @@
 
 <script setup lang="ts">
 import DecoMagnifier from '@/components/v2/landing/shared/DecoMagnifier.vue'
+import HeroBackground from '@/components/v2/landing/shared/HeroBackground.vue'
 import EyebrowPill from '@/components/v2/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/v2/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/v2/landing/shared/ScrollIndicator.vue'
+import logoWhite from '@/assets/images/logo-white-v2.png'
+import heroImage from '@/assets/images/v2/hero/home.jpg'
 
 const INDUSTRIES = [
+  'Cibersecurity',
+  'Artificial Intelligence',
   'Manufacturing',
   'Logistics',
-  'Healthcare',
   'Retail',
   'Construction',
 ] as const
@@ -68,7 +68,6 @@ const INDUSTRIES = [
   isolation: isolate;
 }
 
-/* ── Decorative magnifier — top-left anchor ─────────────────────────────── */
 .hero__magnifier {
   top: clamp(14%, 16vw, 18%);
   left: clamp(6%, 7vw, 9%);
@@ -99,45 +98,14 @@ const INDUSTRIES = [
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
 
-/* Logo halo — wraps the brand mark with a soft radial white glow that
-   fades to transparent. The halo sits behind the logo via `z-index: -1`
-   on a pseudo-element; `isolation: isolate` keeps it scoped to this
-   stacking context so it never bleeds onto siblings. */
-.hero__logo-halo {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto clamp(28px, 4vw, 44px);
-  isolation: isolate;
-  /* Generous padding gives the glow room to breathe past the logo edges. */
-  padding: clamp(20px, 3vw, 36px) clamp(40px, 6vw, 80px);
-}
-
-.hero__logo-halo::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.32) 0%,
-    rgba(255, 255, 255, 0.18) 28%,
-    rgba(255, 255, 255, 0.06) 55%,
-    transparent 78%
-  );
-  /* Soften the gradient edges further so the halo blends into the navy. */
-  filter: blur(8px);
-}
-
 .hero__logo {
   display: block;
   width: auto;
   height: clamp(64px, 8vw, 96px);
   max-width: clamp(200px, 22vw, 280px);
   object-fit: contain;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.30));
+  margin: 0 auto clamp(28px, 4vw, 44px);
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.45));
 }
 
 /* ── Main heading — large editorial with cyan accent ────────────────────── */

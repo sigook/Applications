@@ -51,7 +51,6 @@
         <V2AddressFields
           ref="addressRef"
           v-model="addressModel"
-          @isCanada="(v) => (isCanada = v)"
         />
 
         <div class="reg-form__row">
@@ -305,39 +304,6 @@
           </div>
         </div>
 
-        <!-- Canada extras -->
-        <div v-if="isCanada" class="reg-form__doc-block">
-          <div class="reg-form__doc-head">
-            <div>
-              <span class="reg-form__doc-title">WHMIS and Health &amp; Safety training</span>
-              <p class="reg-form__doc-hint">
-                Complete the training using the links below and upload your certificates.
-              </p>
-            </div>
-            <V2FileUpload label="Add document" @file="handleOtherDocumentUpload" />
-          </div>
-          <p class="reg-form__doc-links">
-            <a href="https://aixsafety.com/wp-content/uploads/articulate_uploads/WHS-Apr2025Aix/story.html" target="_blank" rel="noopener noreferrer">WHIMS Training →</a>
-            <a href="https://www.labour.gov.on.ca/english/hs/elearn/worker/foursteps.php" target="_blank" rel="noopener noreferrer">HS Booklet →</a>
-          </p>
-          <div
-            v-for="(item, idx) in worker.otherDocuments"
-            :key="`oth-${idx}`"
-            class="reg-form__doc-card"
-          >
-            <div class="reg-form__doc-card-head">
-              <span class="reg-form__doc-filename">📁 {{ filename(item.fileName) }}</span>
-              <button type="button" class="reg-form__doc-remove" @click="deleteOtherDocument(idx)">Remove</button>
-            </div>
-            <V2Input
-              v-model="item.description"
-              label="Description"
-              :required="true"
-              :error="itemErrors['descriptionOther' + idx]"
-            />
-          </div>
-        </div>
-
         <footer class="reg-form__nav">
           <button type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
@@ -384,9 +350,9 @@
 
         <V2Checkbox v-if="!isLogin" v-model="agreeTermsAndConditions">
           I agree to Sigook™
-          <router-link to="/v2/terms" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
+          <router-link to="/terms-and-conditions" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
           &amp;
-          <router-link to="/v2/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
+          <router-link to="/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
         </V2Checkbox>
         <p v-if="!isLogin && errors.agreeTermsAndConditions" class="reg-form__field-error">
           {{ errors.agreeTermsAndConditions }}
@@ -629,7 +595,6 @@ const addressModel = ref<AddressModel>({
   postalCode: '',
 })
 const addressRef = ref<{ validate: () => boolean } | null>(null)
-const isCanada = ref(false)
 
 /* ── Lift + vehicle (proxied to worker reactive state) ──────────────────── */
 
@@ -714,12 +679,6 @@ function handleResumeUpload(file: File | null): void {
   worker.resume = { fileName: file.name }
 }
 
-function handleOtherDocumentUpload(file: File | null): void {
-  if (!file || !validateFileSize(file)) return
-  fileObjects.otherDocuments.push(file)
-  worker.otherDocuments.push({ fileName: file.name, description: '' })
-}
-
 function deleteDocument(file: { fileName: string }): void {
   if (!worker.identificationType1File) return
   const isFirst = worker.identificationType1File.fileName === file.fileName
@@ -758,11 +717,6 @@ function deleteCertificate(idx: number): void {
 function deleteResume(): void {
   fileObjects.resume = null
   worker.resume = null
-}
-
-function deleteOtherDocument(idx: number): void {
-  fileObjects.otherDocuments.splice(idx, 1)
-  worker.otherDocuments.splice(idx, 1)
 }
 
 /* ── Per-step validation ────────────────────────────────────────────────── */
@@ -881,7 +835,7 @@ async function onSubmit(): Promise<void> {
     showAlertSuccess('Your account has been created')
     emit('submitted', id)
     if (props.redirectOnSuccess) {
-      const route = isLogin.value ? `/agency-workers/worker/${id}` : '/home'
+      const route = isLogin.value ? `/agency-workers/worker/${id}` : '/'
       router.push(route)
     }
   } catch (err: unknown) {

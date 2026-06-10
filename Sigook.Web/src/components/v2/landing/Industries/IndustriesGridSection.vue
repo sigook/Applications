@@ -68,9 +68,9 @@ const INDUSTRIES: readonly Industry[] = [
   {
     key: 'automotive',
     title: 'Automotive',
-    tagline: 'Powering mobility across the continent.',
+    tagline: 'Powering mobility across the country.',
     body:
-      'From assembly lines to dealership service bays, we place the technicians, inspectors, and operations staff that keep North America\'s automotive ecosystem moving.',
+      'From assembly lines to dealership service bays, we place the technicians, inspectors, and operations staff that keep America\'s automotive ecosystem moving.',
     positions: [
       'Mechanical Technicians',
       'Quality Inspectors',
@@ -98,7 +98,7 @@ const INDUSTRIES: readonly Industry[] = [
   {
     key: 'construction',
     title: 'Construction',
-    tagline: 'Building the infrastructure North America runs on.',
+    tagline: 'Building the infrastructure America runs on.',
     body:
       'Skilled trades and project leadership for residential, commercial, and civil construction — from supervisor to safety officer, from crane operator to carpenter.',
     positions: [
@@ -188,7 +188,7 @@ const INDUSTRIES: readonly Industry[] = [
   {
     key: 'manufacturing',
     title: 'Manufacturing',
-    tagline: 'The backbone of North American production.',
+    tagline: 'The backbone of American production.',
     body:
       'Machine operators, line leads, and quality professionals for plants running everything from food processing to advanced materials and CNC fabrication.',
     positions: [
@@ -205,7 +205,7 @@ const INDUSTRIES: readonly Industry[] = [
     title: 'Retail',
     tagline: 'Connecting brands with the people who power them.',
     body:
-      'Store managers, merchandising leads, and customer-facing staff for retailers scaling from single-location operations to multi-province networks.',
+      'Store managers, merchandising leads, and customer-facing staff for retailers scaling from single-location operations to multi-state networks.',
     positions: [
       'Store Managers',
       'Merchandising Specialists',
@@ -220,7 +220,7 @@ const INDUSTRIES: readonly Industry[] = [
     title: 'Transportation',
     tagline: 'Keeping commerce moving across roads and rails.',
     body:
-      'Licensed drivers, fleet coordinators, and operations professionals for the transport companies that knit North America\'s commerce together.',
+      'Licensed drivers, fleet coordinators, and operations professionals for the transport companies that knit America\'s commerce together.',
     positions: [
       'CDL Drivers',
       'Fleet Coordinators',

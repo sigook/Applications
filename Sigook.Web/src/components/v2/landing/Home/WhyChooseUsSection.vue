@@ -29,9 +29,10 @@
         </div>
         <div class="why__hero-right">
           <p class="why__hero-body">
-            We are a Talent Management Agency focused on providing skilled professionals,
-            tailored workforce solutions, and reliable support to ensure every partnership
-            runs smoothly and efficiently.
+            We are a Talent Management Agency dedicated to connecting businesses
+            with skilled professionals through customized workforce solutions, 
+            dependable support, and a partnership-driven approach
+            that helps every operation run smoothly and efficiently.
           </p>
         </div>
       </div>
@@ -57,7 +58,7 @@
             <span class="why__map-halo" aria-hidden="true"></span>
             <img
               src="@/assets/images/v2/why-choose-us/usa-map.png"
-              alt="USA/Canada presence map"
+              alt="United States coverage map"
               class="why__map-img"
             />
           </div>
@@ -69,34 +70,28 @@
             variant="blue"
             eyebrow="Network"
             title="Coast-to-coast reach"
+            :list="NETWORK_POINTS"
             class="why__feature"
             :delay="300"
-          >
-            A nationwide recruitment network with reliable coverage across every
-            major North American market.
-          </SecondaryCard>
+          />
 
           <SecondaryCard
             variant="cyan"
             eyebrow="Local Focus"
             title="Tailored solutions"
+            :list="LOCAL_POINTS"
             class="why__feature"
             :delay="440"
-          >
-            National scale paired with the dedication of local expertise — every
-            client gets a fit, never a template.
-          </SecondaryCard>
+          />
 
           <SecondaryCard
             variant="red"
             eyebrow="Leadership"
             title="Trusted innovators"
+            :list="LEADERSHIP_POINTS"
             class="why__feature"
             :delay="580"
-          >
-            Industry expertise meets modern strategies — meaningful connections
-            that drive success on both sides of the table.
-          </SecondaryCard>
+          />
         </div>
 
       </div>
@@ -107,6 +102,24 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import SecondaryCard from '@/components/v2/landing/shared/SecondaryCard.vue'
+
+const NETWORK_POINTS = [
+  'Recruiters and coverage across all major US markets',
+  'From the East Coast to the West Coast — we\'ve got you covered',
+  'Fast placements wherever your business operates in the US',
+] as const
+
+const LOCAL_POINTS = [
+  'Dedicated recruiters who know your local industry and market',
+  'Custom hiring strategies built around your specific needs',
+  'Ongoing support from first contact to successful placement',
+] as const
+
+const LEADERSHIP_POINTS = [
+  'Deep expertise in US staffing across skilled trades and professional sectors',
+  'Modern tools and processes that speed up hiring decisions',
+  'A partner invested in long-term success for workers and employers alike',
+] as const
 
 const sectionRef = ref<HTMLElement | null>(null)
 const visible = ref(false)

@@ -36,7 +36,7 @@
       <SecondaryCard
         variant="red"
         eyebrow="Our Vision"
-        title="A North American workforce where every connection sparks real growth — for workers, companies, and the communities they share."
+        title="An American workforce where every connection sparks real growth — for workers, companies, and the communities they share."
         :delay="180"
         class="about-mission__card about-mission__card--offset"
       >

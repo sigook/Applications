@@ -14,7 +14,7 @@
         </h2>
 
         <p class="news-newsletter__subtitle">
-          The week's stories — compliance, hiring trends, and Sigook moves —
+          The week's stories — compliance, hiring trends, and Sigook® moves —
           condensed into a five-minute read. No filler, no sales pitches.
         </p>
       </header>
@@ -51,7 +51,7 @@
 
       <p class="news-newsletter__footnote">
         We send one email per week. Unsubscribe with a single click. See our
-        <a href="/v2/privacy-policy">privacy policy</a>.
+        <a href="/privacy-policy">privacy policy</a>.
       </p>
     </div>
   </section>

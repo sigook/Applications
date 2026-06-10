@@ -14,7 +14,7 @@
       </h2>
 
       <p class="news-featured__subtitle">
-        The stories the Sigook team is following this week — handpicked from
+        The stories the Sigook® team is following this week — handpicked from
         the newsroom.
       </p>
     </header>

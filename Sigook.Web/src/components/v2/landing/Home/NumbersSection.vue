@@ -9,7 +9,7 @@
         <span class="numbers__eyebrow">By the Numbers</span>
         <h2 class="numbers__heading">Our impact, at scale</h2>
         <p class="numbers__sub">
-          Real results from real partnerships across North America.
+          Real results from real partnerships across the United States.
         </p>
       </header>
 
@@ -17,15 +17,17 @@
         <SecondaryCard
           variant="blue"
           class="numbers__stat"
+          eyebrow="Network"
           :delay="0"
         >
-          <span class="numbers__num">+330</span>
+          <span class="numbers__num">+650</span>
           <span class="numbers__lbl">Clients Served</span>
         </SecondaryCard>
 
         <SecondaryCard
           variant="cyan"
           class="numbers__stat"
+          eyebrow="Connections"
           :delay="140"
         >
           <span class="numbers__num">+1,700</span>
@@ -35,6 +37,7 @@
         <SecondaryCard
           variant="red"
           class="numbers__stat"
+          eyebrow="Engagement"
           :delay="280"
         >
           <span class="numbers__num">+5,000</span>
@@ -148,8 +151,8 @@ onUnmounted(() => observer?.disconnect())
 
 .numbers__stat {
   width: 280px;
-  /* Center-align content inside the card body for stat layout */
-  text-align: center;
+  /* Left-align content inside the card (eyebrow + number + label) — mirrors Figma */
+  text-align: left;
 }
 
 /* Number + label — typography lives at the section level so the stat
@@ -157,7 +160,7 @@ onUnmounted(() => observer?.disconnect())
 .numbers__stat :deep(.secondary-card__body) {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 

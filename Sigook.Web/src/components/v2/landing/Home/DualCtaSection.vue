@@ -23,7 +23,7 @@
         Browse openings and grow your career.
 
         <template #button>
-          <router-link to="/v2/talents" class="dual-cta__cta dual-cta__cta--work">
+          <router-link to="/talents" class="dual-cta__cta dual-cta__cta--work">
             <span>Browse Jobs</span>
             <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
           </router-link>
@@ -42,7 +42,7 @@
         We match qualified workers to your needs, fast.
 
         <template #button>
-          <router-link to="/v2/employers" class="dual-cta__cta dual-cta__cta--talent">
+          <router-link to="/employers" class="dual-cta__cta dual-cta__cta--talent">
             <span>Post a Job</span>
             <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
           </router-link>

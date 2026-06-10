@@ -59,7 +59,7 @@ const REASONS: readonly Reason[] = [
     eyebrow: 'Local Reach',
     title: 'Working where you are',
     body:
-      'With clients located across multiple states and provinces, you\'ll find roles that match your skills and interests — and build the relationships that turn placement into long-term stability.',
+      'With clients located across multiple states, you\'ll find roles that match your skills and interests — and build the relationships that turn placement into long-term stability.',
     variant: 'blue',
   },
   {

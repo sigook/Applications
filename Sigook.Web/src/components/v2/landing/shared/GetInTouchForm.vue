@@ -51,6 +51,41 @@
         <span v-if="errors.email" class="git-card__field-error">{{ errors.email }}</span>
       </div>
 
+      <!-- Company + Location -->
+      <div class="git-card__field-group">
+        <div class="git-card__name-row">
+          <div class="git-card__name-col">
+            <label class="git-card__label">Company</label>
+            <input
+              class="git-card__input"
+              :class="{ 'git-card__input--error': errors.company }"
+              v-model="fields.company.value"
+              type="text"
+              placeholder="Your company"
+              autocomplete="organization"
+            />
+            <span v-if="errors.company" class="git-card__field-error">{{ errors.company }}</span>
+          </div>
+          <div class="git-card__name-col">
+            <label class="git-card__label">Location</label>
+            <select
+              class="git-card__input git-card__select"
+              :class="{
+                'git-card__input--error': errors.state,
+                'git-card__select--placeholder': !fields.state.value,
+              }"
+              v-model="fields.state.value"
+            >
+              <option value="" disabled>Select a state</option>
+              <option v-for="state in states" :key="state.id" :value="state.value">
+                {{ state.value }}
+              </option>
+            </select>
+            <span v-if="errors.state" class="git-card__field-error">{{ errors.state }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Industry -->
       <div class="git-card__field-group">
         <label class="git-card__label">Industry</label>
@@ -98,10 +133,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as yup from 'yup'
 import { useStickyForm } from '@/composables/useStickyForm'
 import { submitContactForm } from '@/api/websiteApi'
+import { getCountries, getProvinces } from '@/api/locationApi'
+import type { Province } from '@/types/common'
 import ArrowIcon from '@/components/v2/landing/shared/ArrowIcon.vue'
 
 withDefaults(defineProps<{ size?: 'default' | 'compact' }>(), { size: 'default' })
@@ -110,18 +147,32 @@ const schema = yup.object({
   firstName: yup.string().required('First name is required').max(50, 'Max 50 characters'),
   lastName:  yup.string().required('Last name is required').max(50, 'Max 50 characters'),
   email:     yup.string().required('Email is required').email('Invalid email address').max(100),
+  company:   yup.string().required('Company is required').max(100, 'Max 100 characters'),
   industry:  yup.string().max(100).optional(),
+  state:     yup.string().required('State is required'),
   message:   yup.string().required('Message is required').max(500, 'Max 500 characters'),
 })
 
 const { fields, errors, validate, markInteracted, resetAll } = useStickyForm({
   schema,
-  initialValues: { firstName: '', lastName: '', email: '', industry: '', message: '' },
+  initialValues: { firstName: '', lastName: '', email: '', company: '', industry: '', state: '', message: '' },
 })
 
 const submitting  = ref(false)
 const submitted   = ref(false)
 const submitError = ref('')
+
+const states = ref<Province[]>([])
+
+onMounted(async () => {
+  try {
+    const countries = await getCountries()
+    const usa = countries.find((c) => c.code === 'USA')
+    if (usa) states.value = await getProvinces(String(usa.id))
+  } catch {
+    states.value = []
+  }
+})
 
 async function handleFormSubmit() {
   markInteracted()
@@ -133,12 +184,19 @@ async function handleFormSubmit() {
   submitted.value   = false
 
   try {
+    const composedMessage = [
+      `Company: ${fields.company.value}`,
+      `Location: ${fields.state.value}, USA`,
+      '',
+      fields.message.value,
+    ].join('\n')
+
     await submitContactForm({
       title:           'Get in Touch',
       name:            `${fields.firstName.value} ${fields.lastName.value}`.trim(),
       email:           fields.email.value,
       phone:           '',
-      message:         fields.message.value,
+      message:         composedMessage,
       subject:         fields.industry.value || '',
       captchaResponse: '',
     })
@@ -299,6 +357,22 @@ function handleReset() {
 
 .git-card__input--error:focus {
   box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.14);
+}
+
+/* ── Select (Location / state) — matches the input styling ───────────────── */
+.git-card__select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%234a5764' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.git-card__select--placeholder {
+  color: #a8b3bd;
 }
 
 /* ── Textarea ────────────────────────────────────────────────────────────── */

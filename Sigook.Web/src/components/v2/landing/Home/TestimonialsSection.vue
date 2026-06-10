@@ -83,14 +83,14 @@ const testimonials = [
     gradient: '',
     quote: '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
     author: 'Business Owner, Retail',
-    location: 'Vancouver, BC',
+    location: 'Seattle, WA',
   },
   {
     bg: slide3Bg,
     gradient: '',
     quote: '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
     author: 'Operations Manager, Logistics',
-    location: 'Montréal, QC',
+    location: 'Atlanta, GA',
   },
 ]
 

@@ -8,10 +8,12 @@ import { ref, readonly, type Ref } from 'vue'
  * can pass in via `open()`; the modal reads it to display "Applying for: X".
  */
 export interface WorkerRegisterModalContext {
-  /** Slug of the job the user is applying to, if any. */
-  readonly jobSlug?: string
   /** Human-readable role title (shown in the modal header). */
   readonly jobTitle?: string
+  /** Human-readable job number (e.g. the request NumberId), if any. */
+  readonly jobNumber?: string
+  /** Backend Request id the application should attach to, if any. */
+  readonly requestId?: string
 }
 
 const isOpen = ref(false)
