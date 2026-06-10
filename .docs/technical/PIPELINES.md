@@ -36,7 +36,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 |----------|------|-------------|--------|---------------|
 | Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test → Docker+Deploy → Notify | `sigook-api-staging` / `sigook-api` |
 | Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
-| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | Type-check+Lint+Build → Deploy → Notify | `covenantgroup-staging` / `covenantgroup` |
+| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | Type-check+Lint+Build → Deploy → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
 | SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
@@ -91,7 +91,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 **Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `agency-portal`)
 
-### Covenant.Web (Vue.js 3 + Azure App Service)
+### Covenant.Web (Vue.js 3 + Azure Static Web Apps)
 
 **Build naming:** `CovenantWeb-YYYYMMDDr`
 
@@ -103,13 +103,14 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Linting: `pnpm run lint`
 - Build: `pnpm run build:staging` or `pnpm run build:production`
 - Verify `dist/index.html` exists
-- Archive as zip artifact (only on direct push, not PRs)
+- Publish `dist/` as artifact `covenantweb-dist` (only on direct push, not PRs)
 
 **Stage 2 - Deploy** (only on direct push to dev/main):
-- Deploy zip to Azure App Service (Linux)
-- Runtime: Node.js 20 LTS, startup: `npm start` (App Service image; runtime uses npm to launch `serve`)
-- Staging: `https://covenantgroup-staging.azurewebsites.net`
-- Production: `https://covenantgroup.azurewebsites.net`
+- Deploy prebuilt `dist/` via `AzureStaticWebApp@0` (`skip_app_build: true`)
+- Deployment token fetched at deploy time via `AzureCLI@2` + `SigookPipelines` service connection (`az staticwebapp secrets list`) — no manual pipeline variables needed
+- SPA routing handled by `Covenant.Web/public/staticwebapp.config.json` (navigationFallback to `index.html`)
+- Staging: `https://lively-island-020c8260f.7.azurestaticapps.net` (SWA `covenantgroup-staging-swa`, Free tier)
+- Production: `https://www.covenantgroupl.com` (SWA `covenantgroup-swa`, Free tier, default host `ambitious-bush-0eb4f540f.7.azurestaticapps.net`)
 
 **Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `website`)
@@ -338,7 +339,7 @@ variables:
 |-----|---------|------------|
 | Covenant.Api | `sigook-api-staging.azurewebsites.net` | `sigook-api.azurewebsites.net` |
 | Sigook.Web | `sigook-web-staging.azurewebsites.net` | `sigook.azurewebsites.net` |
-| Covenant.Web | `covenantgroup-staging.azurewebsites.net` | `covenantgroup.azurewebsites.net` |
+| Covenant.Web | `lively-island-020c8260f.7.azurestaticapps.net` | `www.covenantgroupl.com` (SWA) |
 | IdentityServer | `sigook-accounts-staging.azurewebsites.net` | `sigook-accounts.azurewebsites.net` |
 | Sigook.Functions | N/A | `sigook-functions.azurewebsites.net` |
 | CognitiveServices | N/A | `sigook-cognitive-services.azurewebsites.net` |

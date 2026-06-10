@@ -309,7 +309,7 @@ export interface CreateAgencyInvoiceModel {
   companyId: string;
   invoiceDate?: string | null;
   email?: string;
-  provinceId?: string | null;
+  requestIds: string[];
   taxPercentage?: number | null;
   from?: string | null;
   to?: string | null;
@@ -406,7 +406,6 @@ export interface PayStubDeleteWarningItem {
 // plus the client-side `invoiceId` used to build the URL.
 export interface DeleteInvoicePayload {
   invoiceId: string;
-  verificationCode: string;
   payStubs?: string[];
 }
 

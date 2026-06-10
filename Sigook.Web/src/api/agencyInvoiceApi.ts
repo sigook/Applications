@@ -39,10 +39,6 @@ export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
     .then(r => r.data);
 }
 
-export function sendInvoiceVerificationCode(invoiceId: string): Promise<void> {
-  return http.post(`/api/v4/Accounting/Invoice/${invoiceId}/SendVerificationCode`).then(() => {});
-}
-
 export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWarningItem[]> {
   return http.get(`/api/v4/Accounting/Invoice/${invoiceId}/PayStub`).then(r => r.data);
 }

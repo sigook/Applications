@@ -39,7 +39,7 @@
       </b-tag>
     </div>
     <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
-      :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
+      :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" pagination-size="is-small"
       focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>

@@ -42,14 +42,19 @@ namespace Covenant.Common.Entities
             var rAddress = CvnAddress.Create(address);
             if (!rAddress) return Result.Fail<Location>(rAddress.Errors);
 
-            var rPostalCode = CvnPostalCode.Create(postalCode);
-            if (!rPostalCode) return Result.Fail<Location>(rPostalCode.Errors);
+            string validatedPostalCode = null;
+            if (!string.IsNullOrEmpty(postalCode))
+            {
+                var rPostalCode = CvnPostalCode.Create(postalCode);
+                if (!rPostalCode) return Result.Fail<Location>(rPostalCode.Errors);
+                validatedPostalCode = rPostalCode.Value.PostalCode;
+            }
 
             return Result.Ok(new Location
             {
                 CityId = cityId.GetValueOrDefault(),
                 Address = rAddress.Value.Address,
-                PostalCode = rPostalCode.Value.PostalCode,
+                PostalCode = validatedPostalCode,
                 Latitude = latitud,
                 Longitude = longitude,
                 Entrance = entrance,
