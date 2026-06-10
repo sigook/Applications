@@ -48,9 +48,10 @@ import logoWhite from '@/assets/images/logo-white-v2.png'
 import heroImage from '@/assets/images/v2/hero/home.jpg'
 
 const INDUSTRIES = [
+  'Cibersecurity',
+  'Artificial Intelligence',
   'Manufacturing',
   'Logistics',
-  'Healthcare',
   'Retail',
   'Construction',
 ] as const
