@@ -29,7 +29,7 @@
         label="Trusted across"
         :items="INDUSTRIES"
         more-label="+ more"
-        more-to="/v2/industries"
+        more-to="/industries"
         class="hero__industries"
       />
     </div>

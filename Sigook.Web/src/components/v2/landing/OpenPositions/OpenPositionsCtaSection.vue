@@ -25,7 +25,7 @@
                 <span>Send your resume</span>
                 <span class="op-cta__arrow" aria-hidden="true">→</span>
               </button>
-              <router-link to="/v2/industries" class="op-cta__secondary">
+              <router-link to="/industries" class="op-cta__secondary">
                 <span>Browse industries</span>
                 <span class="op-cta__arrow" aria-hidden="true">→</span>
               </router-link>

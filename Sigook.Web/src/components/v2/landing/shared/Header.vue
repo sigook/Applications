@@ -3,7 +3,7 @@
     <div class="nav__inner">
       <!-- Logo -->
       <router-link
-        to="/v2/home"
+        to="/"
         class="nav__logo"
         :class="{ 'nav__logo--hidden': heroLogoVisible }"
       >
@@ -88,13 +88,13 @@ const isScrolled = ref(false);
 const mobileOpen = ref(false);
 
 const navLinks = [
-  { label: 'Open Positions',   to: '/v2/open-positions' },
-  { label: 'Talents',          to: '/v2/talents' },
-  { label: 'Employers',        to: '/v2/employers' },
-  { label: 'Industries',       to: '/v2/industries' },
-  { label: 'Special Projects', to: '/v2/special-projects' },
-  { label: 'News',             to: '/v2/news' },
-  { label: 'About Us',         to: '/v2/about' },
+  { label: 'Open Positions',   to: '/open-positions' },
+  { label: 'Talents',          to: '/talents' },
+  { label: 'Employers',        to: '/employers' },
+  { label: 'Industries',       to: '/industries' },
+  { label: 'Special Projects', to: '/special-projects' },
+  { label: 'News',             to: '/news' },
+  { label: 'About Us',         to: '/about' },
 ];
 
 const heroLogoVisible = ref(false);

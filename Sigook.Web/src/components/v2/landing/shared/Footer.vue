@@ -22,20 +22,20 @@
         <div class="footer__cols">
           <nav class="footer__col" aria-label="Company">
             <span class="footer__col-eyebrow">Company</span>
-            <router-link to="/v2/about"             class="footer__link">About Us</router-link>
-            <router-link to="/v2/open-positions"    class="footer__link">Open Positions</router-link>
-            <router-link to="/v2/industries"        class="footer__link">Industries</router-link>
-            <router-link to="/v2/special-projects"  class="footer__link">Special Projects</router-link>
-            <router-link to="/v2/partner"           class="footer__link">Become a Partner</router-link>
+            <router-link to="/about"             class="footer__link">About Us</router-link>
+            <router-link to="/open-positions"    class="footer__link">Open Positions</router-link>
+            <router-link to="/industries"        class="footer__link">Industries</router-link>
+            <router-link to="/special-projects"  class="footer__link">Special Projects</router-link>
+            <router-link to="/partner"           class="footer__link">Become a Partner</router-link>
             <a href="#sp-contact"                   class="footer__link">Contact</a>
           </nav>
 
           <nav class="footer__col" aria-label="Services">
             <span class="footer__col-eyebrow">Services</span>
-            <router-link to="/v2/employers" class="footer__link">Temporary Staffing</router-link>
-            <router-link to="/v2/payroll"   class="footer__link">Payroll Services</router-link>
-            <router-link to="/v2/talents"   class="footer__link">Workforce Solutions</router-link>
-            <router-link to="/v2/certified" class="footer__link">Compliance</router-link>
+            <router-link to="/employers" class="footer__link">Temporary Staffing</router-link>
+            <router-link to="/payroll"   class="footer__link">Payroll Services</router-link>
+            <router-link to="/talents"   class="footer__link">Workforce Solutions</router-link>
+            <router-link to="/certified" class="footer__link">Compliance</router-link>
           </nav>
 
           <div class="footer__col">
@@ -54,9 +54,9 @@
           &copy; {{ currentYear }} Sigook Work Factory Inc. All rights reserved.
         </p>
         <div class="footer__legal">
-          <router-link to="/v2/privacy-policy" class="footer__legal-link">Privacy Policy</router-link>
-          <router-link to="/v2/terms"          class="footer__legal-link">Terms and Conditions</router-link>
-          <router-link to="/v2/disclaimer"     class="footer__legal-link">Disclaimer</router-link>
+          <router-link to="/privacy-policy" class="footer__legal-link">Privacy Policy</router-link>
+          <router-link to="/terms-and-conditions"          class="footer__legal-link">Terms and Conditions</router-link>
+          <router-link to="/disclaimer"     class="footer__legal-link">Disclaimer</router-link>
         </div>
       </div>
     </div>

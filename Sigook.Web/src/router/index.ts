@@ -19,14 +19,6 @@ const routes: RouteRecordRaw[] = [
     component: Callback
   },
   {
-    path: "/",
-    redirect: () => 'home',
-    meta: {
-      layout: "web",
-      requiresAuth: false,
-    },
-  },
-  {
     path: "/silent-refresh",
     name: "silent-refresh",
     component: SilentRefresh,
@@ -60,7 +52,7 @@ const router = createRouter({
     .concat(routesV2 as RouteRecordRaw[]),
 });
 router.beforeEach(async (to, from, next) => {
-  if (from.name !== 'jobSeekers') {
+  if (from.name !== 'v2-open-positions') {
     setTimeout(() => {
       window.scrollTo(0, 0);
     }, 0);

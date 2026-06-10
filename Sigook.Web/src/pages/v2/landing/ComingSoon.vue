@@ -4,7 +4,7 @@
       <p class="coming__label">{{ pageTitle }}</p>
       <h1 class="coming__title">This page is coming soon</h1>
       <p class="coming__sub">We're working hard to bring this to you. Check back soon.</p>
-      <router-link to="/v2/home" class="btn btn--primary btn--md">Back to Home</router-link>
+      <router-link to="/" class="btn btn--primary btn--md">Back to Home</router-link>
     </div>
   </div>
 </template>

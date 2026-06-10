@@ -57,7 +57,7 @@
               <!-- Learn-more CTA card — wrapped in router-link -->
               <router-link
                 v-else
-                to="/v2/industries"
+                to="/industries"
                 class="industries-carousel__cta-link"
               >
                 <TertiaryCard

@@ -51,7 +51,7 @@
 
       <p class="news-newsletter__footnote">
         We send one email per week. Unsubscribe with a single click. See our
-        <a href="/v2/privacy-policy">privacy policy</a>.
+        <a href="/privacy-policy">privacy policy</a>.
       </p>
     </div>
   </section>

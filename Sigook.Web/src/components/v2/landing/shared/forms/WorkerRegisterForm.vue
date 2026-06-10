@@ -350,9 +350,9 @@
 
         <V2Checkbox v-if="!isLogin" v-model="agreeTermsAndConditions">
           I agree to Sigook™
-          <router-link to="/v2/terms" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
+          <router-link to="/terms-and-conditions" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
           &amp;
-          <router-link to="/v2/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
+          <router-link to="/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
         </V2Checkbox>
         <p v-if="!isLogin && errors.agreeTermsAndConditions" class="reg-form__field-error">
           {{ errors.agreeTermsAndConditions }}
@@ -835,7 +835,7 @@ async function onSubmit(): Promise<void> {
     showAlertSuccess('Your account has been created')
     emit('submitted', id)
     if (props.redirectOnSuccess) {
-      const route = isLogin.value ? `/agency-workers/worker/${id}` : '/home'
+      const route = isLogin.value ? `/agency-workers/worker/${id}` : '/'
       router.push(route)
     }
   } catch (err: unknown) {

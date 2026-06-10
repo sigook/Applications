@@ -85,7 +85,7 @@ const OPTIONS: readonly CareerOption[] = [
       'Clear career progression',
     ],
     ctaLabel: 'Browse direct hires',
-    ctaTo: '/v2/open-positions',
+    ctaTo: '/open-positions',
     variant: 'blue',
   },
   {
@@ -100,7 +100,7 @@ const OPTIONS: readonly CareerOption[] = [
       'Multi-industry exposure',
     ],
     ctaLabel: 'Browse contracts',
-    ctaTo: '/v2/open-positions',
+    ctaTo: '/open-positions',
     variant: 'red',
   },
 ] as const
