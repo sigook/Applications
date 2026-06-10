@@ -94,10 +94,11 @@ Router:       Vue Router 4.6.3
 UI Framework: Vuetify 3.7.0
 Validation:   VeeValidate 4.15.1 + Yup 1.7.1
 Node Version: ^20.19.0 OR >=22.12.0
+Hosting:      Azure Static Web Apps (Free tier)
 ```
 
-**Staging:** `https://covenantgroup-staging.azurewebsites.net`
-**Production:** `https://covenantgroup.azurewebsites.net`
+**Staging:** `https://lively-island-020c8260f.7.azurestaticapps.net`
+**Production:** `https://www.covenantgroupl.com`
 
 ---
 
@@ -679,7 +680,7 @@ Sigook.Web/
 - API: `sigook-api-staging.azurewebsites.net`
 - Web: `sigook-web-staging.azurewebsites.net`
 - Identity: `sigook-accounts-staging.azurewebsites.net`
-- Marketing: `covenantgroup-staging.azurewebsites.net`
+- Marketing: `lively-island-020c8260f.7.azurestaticapps.net` (Static Web App)
 
 **Production:**
 - Branch: `main`
@@ -687,7 +688,7 @@ Sigook.Web/
 - API: `sigook-api.azurewebsites.net`
 - Web: `sigook.azurewebsites.net`
 - Identity: `sigook-accounts.azurewebsites.net`
-- Marketing: `covenantgroup.azurewebsites.net`
+- Marketing: `www.covenantgroupl.com` (Static Web App `covenantgroup-swa`)
 
 ### CI/CD Pipeline
 
