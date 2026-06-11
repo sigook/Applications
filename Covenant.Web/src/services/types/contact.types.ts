@@ -11,6 +11,8 @@ export interface ContactDto {
   name: string
   email: string
   phone: string
+  company: string
+  location: string
   message: string
   subject: string
   captchaResponse: string

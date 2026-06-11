@@ -184,19 +184,14 @@ async function handleFormSubmit() {
   submitted.value   = false
 
   try {
-    const composedMessage = [
-      `Company: ${fields.company.value}`,
-      `Location: ${fields.state.value}, USA`,
-      '',
-      fields.message.value,
-    ].join('\n')
-
     await submitContactForm({
       title:           'Get in Touch',
       name:            `${fields.firstName.value} ${fields.lastName.value}`.trim(),
       email:           fields.email.value,
       phone:           '',
-      message:         composedMessage,
+      company:         fields.company.value,
+      location:        fields.state.value,
+      message:         fields.message.value,
       subject:         fields.industry.value || '',
       captchaResponse: '',
     })
