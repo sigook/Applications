@@ -8,7 +8,6 @@ import routesCompany from "@/router/routesCompany";
 import routesAgency from "@/router/routesAgency";
 import routesWorker from "@/router/routesWorker";
 import routesLanding from "@/router/routesLanding";
-import routesV2 from "@/router/routesV2";
 import pinia from "@/stores";
 import { useSecurityStore } from "@/stores/security";
 
@@ -48,11 +47,10 @@ const router = createRouter({
     .concat(routesAgency as RouteRecordRaw[])
     .concat(routesCompany as RouteRecordRaw[])
     .concat(routesWorker as RouteRecordRaw[])
-    .concat(routesLanding as RouteRecordRaw[])
-    .concat(routesV2 as RouteRecordRaw[]),
+    .concat(routesLanding as RouteRecordRaw[]),
 });
 router.beforeEach(async (to, from, next) => {
-  if (from.name !== 'v2-open-positions') {
+  if (from.name !== 'open-positions') {
     setTimeout(() => {
       window.scrollTo(0, 0);
     }, 0);
@@ -68,6 +66,32 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next();
   }
+});
+
+// Per-route canonical + og:url. index.html ships a single static canonical
+// pointing at the homepage; without this every SPA route would claim the
+// homepage as its canonical and search engines would treat them as duplicates.
+// The origin is the production host (not window.location.origin) so canonicals
+// stay correct on staging/preview domains.
+const CANONICAL_ORIGIN = "https://www.sigook.com";
+
+function setCanonical(path: string): void {
+  const url = `${CANONICAL_ORIGIN}${path}`;
+  let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  link.href = url;
+  const ogUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+  if (ogUrl) ogUrl.setAttribute("content", url);
+}
+
+router.afterEach((to) => {
+  // Don't self-canonicalize unknown URLs (the SPA soft-serves 404s with HTTP 200).
+  if (to.name === "not-found") return;
+  setCanonical(to.path);
 });
 
 export default router;
