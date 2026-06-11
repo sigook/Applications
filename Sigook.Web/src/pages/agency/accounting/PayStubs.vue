@@ -23,10 +23,15 @@
             <b-icon icon="step-forward"></b-icon>
             <span>Skip Payroll Number</span>
           </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" :disabled="checkedRows.length === 0" @click="onSendSelectedEmails">
+            <b-icon icon="email-multiple"></b-icon>
+            <span>Send Email</span>
+          </b-dropdown-item>
         </template>
       </export>
-      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
+      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
+        checkable checkbox-position="left" v-model:checked-rows="checkedRows"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -123,6 +128,7 @@ import {
   getAgencyPayStubs,
   downloadPayStubPdf,
   sendPayStubEmail,
+  sendPayStubEmailBulk,
   deleteAgencyPayStub,
 } from '@/api/agencyPayStubApi';
 import Export from '@/components/Export.vue';
@@ -134,6 +140,7 @@ const agencyStore = useAgencyStore();
 const isLoading = ref(true);
 const totalItems = ref(0);
 const rows = ref<any[]>([]);
+const checkedRows = ref<any[]>([]);
 const createdAtDatesSelected = ref<any[]>([]);
 const serverParams = ref<any>({
   sortBy: 0,
@@ -203,6 +210,7 @@ function loadPayStubs() {
   getAgencyPayStubs(serverParams.value)
     .then((response: any) => {
       rows.value = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+      checkedRows.value = [];
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
@@ -237,6 +245,31 @@ function onSendPayStubEmail(payStub: any) {
       payStub.emailSending = false;
       showAlertError(error);
     });
+}
+
+function onSendSelectedEmails() {
+  const count = checkedRows.value.length;
+  getDialog().confirm({
+    title: 'Send selected pay stubs',
+    message: `You are about to email <b>${count}</b> pay stub(s). A summary will be sent to Teams when it finishes.`,
+    confirmText: 'Yes, send them',
+    type: 'is-info',
+    hasIcon: true,
+    onConfirm: () => {
+      isLoading.value = true;
+      const payStubIds = checkedRows.value.map((p: any) => p.id);
+      sendPayStubEmailBulk(payStubIds)
+        .then(() => {
+          isLoading.value = false;
+          checkedRows.value = [];
+          showAlertSuccess(`Sending ${count} pay stub(s). A summary will arrive on Teams.`);
+        })
+        .catch((error) => {
+          isLoading.value = false;
+          showAlertError(error);
+        });
+    },
+  });
 }
 
 function onDeletePayStub(payStub: any) {

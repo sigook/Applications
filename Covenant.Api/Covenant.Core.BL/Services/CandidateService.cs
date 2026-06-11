@@ -147,14 +147,26 @@ public class CandidateService : ICandidateService
         if (!result) return Result.Fail(result.Errors);
         result = profile.AddOtherDocuments(candidate.Documents.Select(d => d.Document).ToList());
         if (!result) return Result.Fail(result.Errors);
+        if (!string.IsNullOrWhiteSpace(candidate.Email))
+        {
+            var existingUser = await userRepository.GetUserByEmail(candidate.Email);
+            if (existingUser != null)
+            {
+                if (await userRepository.UserIsWorker(existingUser.Id))
+                    return Result.Fail("This email is already associated with a worker");
+                var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
+                if (!deleteResult) return Result.Fail(deleteResult.Errors);
+            }
+        }
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
             UserType = UserType.Worker
         });
+        if (!user) return Result.Fail(user.Errors);
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
-        candidateRepository.Delete(candidate.Documents);
+        candidateRepository.Delete<CandidateDocument>(candidate.Documents);
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();
         if (candidate.Notes.Any())
@@ -250,6 +262,14 @@ public class CandidateService : ICandidateService
             }
         }
         return Result.Ok();
+    }
+
+    public async Task<Result> DeleteCandidateByEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return Result.Ok();
+        var candidate = await candidateRepository.GetCandidate(c => c.Email.ToLower() == email.ToLower());
+        if (candidate == null) return Result.Ok();
+        return await DeleteCandidate(candidate.Id);
     }
 
     public async Task<Result> UpdateCandidate(Guid id, CandidateCreateModel model)

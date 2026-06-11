@@ -34,11 +34,17 @@
         </div>
 
         <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-else>
-          <b-field label="Province/State">
-            <b-autocomplete v-model="provinceSearch" :data="filteredProvinces" open-on-focus
-              field="value" name="province" placeholder="Select Province/State"
-              :disabled="!enabledProvince" @select="selectProvince">
-            </b-autocomplete>
+          <b-field label="Request (optional)"
+            :message="'Optional: select one or more requests to invoice. Leave empty to invoice all the company\'s timesheets.'">
+            <b-taginput v-model="selectedRequests" autocomplete :data="filteredRequests" open-on-focus
+              field="numberId" icon="label" name="requests" placeholder="Request, Position"
+              :disabled="!enabledRequests" :loading="isLoadingRequests"
+              :custom-formatter="(option: any) => `${option.numberId} | ${option.jobTitle}`"
+              @typing="filterRequests" @update:modelValue="onRequestsSelected" append-to-body>
+              <template v-slot="props">
+                <small>{{ props.option.numberId }} | {{ props.option.jobTitle }}</small>
+              </template>
+            </b-taginput>
           </b-field>
         </div>
 
@@ -213,8 +219,7 @@ import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { showAlertError } from '@/utils/toast';
 import { getAgencyCompanyProfileWithRequests } from '@/api/agencyCompanyApi';
-import { getAgencyLocations } from '@/api/agencyApi';
-import { getProvinces } from '@/api/locationApi';
+import { getAllAgencyRequests } from '@/api/agencyRequestApi';
 import { previewAgencyInvoice, createAgencyInvoice } from '@/api/agencyInvoiceApi';
 import { useStickyForm } from '@/composables/useStickyForm';
 import PreviewInvoice from '@/components/agency_accounting/PreviewInvoice.vue';
@@ -237,8 +242,10 @@ const itemErrors = reactive<Record<string, string>>({});
 const isLoading = ref(false);
 const invoice = ref<any>({});
 const companies = ref<any[]>([]);
-const provinces = ref<any[]>([]);
-const provinceSearch = ref('');
+const requests = ref<any[]>([]);
+const selectedRequests = ref<any[]>([]);
+const requestSearch = ref('');
+const isLoadingRequests = ref(false);
 const additionalItems = ref<any[]>([]);
 const discounts = ref<any[]>([]);
 const previewData = ref<any>(null);
@@ -249,22 +256,27 @@ const filteredCompanies = computed(() =>
   companies.value.filter((c: any) => c.fullName.toLowerCase().includes((company.value || '').toLowerCase())),
 );
 
-const enabledProvince = computed(() => !!company.value && provinces.value.length > 0);
+const enabledRequests = computed(() => !!company.value && requests.value.length > 0);
 
-const filteredProvinces = computed(() =>
-  provinces.value.filter((p: any) => p.value.toLowerCase().includes((provinceSearch.value || '').toLowerCase())),
-);
+const filteredRequests = computed(() => {
+  const term = (requestSearch.value || '').toLowerCase();
+  return requests.value.filter((r: any) =>
+    !selectedRequests.value.some((s: any) => s.id === r.id) &&
+    (`${r.numberId}`.includes(term) || (r.jobTitle || '').toLowerCase().includes(term)),
+  );
+});
 
 (async () => {
   await loadCompanies();
-  await loadAgencyProvinces();
 })();
 
-async function loadAgencyProvinces() {
-  const agencyLocations = await getAgencyLocations();
-  const reference = agencyLocations.find((l: any) => l.isBilling) ?? agencyLocations[0];
-  const countryId = reference?.city?.province?.country?.id;
-  provinces.value = countryId ? await getProvinces(countryId) : [];
+async function loadCompanyRequests(companyId: string) {
+  isLoadingRequests.value = true;
+  try {
+    requests.value = await getAllAgencyRequests({ companyId, statuses: [1, 3], pageSize: 1000, pageIndex: 0 });
+  } finally {
+    isLoadingRequests.value = false;
+  }
 }
 
 function loadPreview() {
@@ -283,23 +295,34 @@ async function loadCompanies() {
 }
 
 function selectCompany(c: any) {
+  resetRequests();
   if (c) {
     invoice.value.companyId = c.companyId;
     invoice.value.companyProfileId = c.id;
+    loadCompanyRequests(c.companyId);
   } else {
     invoice.value = {};
-    provinceSearch.value = '';
+    requests.value = [];
   }
 }
 
-function selectProvince(item: any) {
-  invoice.value.provinceId = item ? item.id : undefined;
+function filterRequests(value: string) {
+  requestSearch.value = value;
+}
+
+function onRequestsSelected() {
+  invoice.value.requestIds = selectedRequests.value.map((r: any) => r.id);
+}
+
+function resetRequests() {
+  selectedRequests.value = [];
+  requestSearch.value = '';
+  invoice.value.requestIds = [];
 }
 
 watch(() => invoice.value.directHiring, (isDirectHiring) => {
   if (isDirectHiring) {
-    invoice.value.provinceId = undefined;
-    provinceSearch.value = '';
+    resetRequests();
   } else {
     invoice.value.taxPercentage = undefined;
   }

@@ -1,6 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -22,17 +23,20 @@ public class PayStubsController : ControllerBase
     private readonly ITimesheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
     private readonly IPayStubService payStubService;
+    private readonly IBulkPayStubEmailQueue bulkPayStubEmailQueue;
 
     public PayStubsController(
         IAccountingService accountingService,
         ITimesheetRepository timeSheetRepository,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
-        IPayStubService payStubService)
+        IPayStubService payStubService,
+        IBulkPayStubEmailQueue bulkPayStubEmailQueue)
     {
         this.accountingService = accountingService;
         this.timeSheetRepository = timeSheetRepository;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
         this.payStubService = payStubService;
+        this.bulkPayStubEmailQueue = bulkPayStubEmailQueue;
     }
 
     /// <summary>Gets a paginated list of pay stubs matching the given filter.</summary>
@@ -95,6 +99,22 @@ public class PayStubsController : ControllerBase
             return Ok();
         }
         return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Queues a bulk pay stub email job and notifies the accounting team on Teams when it finishes.</summary>
+    /// <param name="model">The pay stubs to email.</param>
+    [HttpPost("email/bulk")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendBulkEmail([FromBody] BulkPayStubEmailModel model)
+    {
+        if (model?.PayStubIds is null || !model.PayStubIds.Any())
+        {
+            return BadRequest(ModelState.AddError("At least one pay stub is required"));
+        }
+        var job = new BulkPayStubEmailJob(User.GetAgencyId(), User.GetNickname(), [.. model.PayStubIds]);
+        await bulkPayStubEmailQueue.Enqueue(job);
+        return Accepted();
     }
 
     /// <summary>Gets the workers that are ready to have pay stubs generated.</summary>

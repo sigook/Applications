@@ -3,8 +3,6 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting.Invoice;
@@ -57,7 +55,7 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
 
 
     /// <summary>
-    /// Deletes an invoice and its related pay stubs after validating the verification code, and notifies the accounting team.
+    /// Deletes an invoice and its related pay stubs, and notifies the accounting team.
     /// </summary>
     /// <param name="options">Teams webhook configuration.</param>
     /// <param name="service">Teams notification service.</param>
@@ -65,7 +63,7 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
     /// <param name="payStubRepository">Pay stub repository.</param>
     /// <param name="agencyRepository">Agency repository.</param>
     /// <param name="id">Identifier of the invoice to delete.</param>
-    /// <param name="model">Verification code and the pay stubs to delete alongside the invoice.</param>
+    /// <param name="model">The pay stubs to delete alongside the invoice.</param>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -78,10 +76,6 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
         [FromRoute] Guid id,
         [FromBody] DeleteInvoiceModel model)
     {
-        if (!Invoice.VerificationCode(id).Equals(model?.VerificationCode, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return BadRequest("Invalid Verification Code");
-        }
         (Guid InvoiceId, string InvoiceNumber) invoicesDeleted;
         IReadOnlyList<string> payStubsDeleted = [];
         Location billingLocation = await agencyRepository.GetBillingLocation(User.GetAgencyId());
@@ -105,22 +99,5 @@ public class AccountingInvoiceV4Controller : AccountingBaseController
         var configuration = options.Value;
         await service.SendNotification(configuration.Accounting, TeamsNotificationModel.CreateWarning($"Invoice deleted by {name}", text));
         return Ok();
-    }
-
-    /// <summary>
-    /// Sends the invoice deletion verification code to the accounting team via Teams.
-    /// </summary>
-    /// <param name="options">Teams webhook configuration.</param>
-    /// <param name="service">Teams notification service.</param>
-    /// <param name="id">Identifier of the invoice the verification code is generated for.</param>
-    [HttpPost("{id:guid}/SendVerificationCode")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SendVerificationCode([FromServices] IOptions<TeamsWebhookConfiguration> options, [FromServices] ITeamsService service, Guid id)
-    {
-        var configuration = options.Value;
-        Result result = await service.SendNotification(configuration.Accounting, TeamsNotificationModel.CreateSuccess("Verification Code", Invoice.VerificationCode(id)));
-        if (result) return Ok();
-        return BadRequest(ModelState.AddErrors(result.Errors));
     }
 }

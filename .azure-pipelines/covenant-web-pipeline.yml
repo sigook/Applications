@@ -1,5 +1,5 @@
 # Azure Pipeline for covenantWeb (Vue.js Marketing Website)
-# Builds and deploys Vue.js app to Azure App Service (Linux)
+# Builds and deploys Vue.js app to Azure Static Web Apps
 
 name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -176,24 +176,13 @@ stages:
                 echo "Build contents:"
                 ls -lh $(workingDirectory)/dist
 
-          # Archive for deployment (only on direct pushes, not PRs)
-          - task: ArchiveFiles@2
-            displayName: 'Archive Application'
-            condition: ne(variables['Build.Reason'], 'PullRequest')
-            inputs:
-              rootFolderOrFile: '$(workingDirectory)'
-              includeRootFolder: false
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/covenantweb-$(environment)-$(Build.BuildId).zip'
-              replaceExistingArchive: true
-
-          # Publish artifacts (only on direct pushes, not PRs)
+          # Publish dist as artifact (only on direct pushes, not PRs)
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Build Artifacts'
             condition: ne(variables['Build.Reason'], 'PullRequest')
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'covenantweb-drop'
+              PathtoPublish: '$(workingDirectory)/dist'
+              ArtifactName: 'covenantweb-dist'
               publishLocation: 'Container'
 
           # Build summary
@@ -208,10 +197,7 @@ stages:
 
                 # Show artifact info only if created (not on PRs)
                 if [ "$(Build.Reason)" != "PullRequest" ]; then
-                  echo "📦 Artifact: covenantweb-$(environment)-$(Build.BuildId).zip"
-                  echo ""
-                  echo "Artifact size:"
-                  ls -lh $(Build.ArtifactStagingDirectory)/*.zip
+                  echo "📦 Artifact: covenantweb-dist"
                 else
                   echo "📋 PR validation completed - no artifacts created"
                 fi
@@ -223,10 +209,10 @@ stages:
               workingDirectory: '$(workingDirectory)'
 
       # ============================================
-      # Job 2: Deploy to Azure
+      # Job 2: Deploy to Azure Static Web Apps
       # ============================================
       - job: Deploy_to_Azure
-        displayName: 'Deploy to Azure App Service'
+        displayName: 'Deploy to Azure Static Web Apps'
         dependsOn: Build_and_Test
         # Only deploy on direct pushes to main/dev, NOT on Pull Requests
         condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)), ne(variables['isPR'], true))
@@ -234,37 +220,42 @@ stages:
           environment: $[ dependencies.Build_and_Test.outputs['SetEnvironment.environment'] ]
         steps:
           - download: current
-            artifact: covenantweb-drop
+            artifact: covenantweb-dist
             displayName: 'Download Build Artifacts'
 
-          # Determine Azure App Service name
-          - script: |
-              echo "Determining Azure App Service name for environment: $(environment)"
-              if [ "$(isDev)" = True ]; then
-                azureAppName="covenantgroup-staging"
-                envLabel="Staging"
-              else
-                azureAppName="covenantgroup"
-                envLabel="Production"
-              fi
-              echo "##vso[task.setvariable variable=azureAppName]$azureAppName"
-              echo "##vso[task.setvariable variable=envLabel]$envLabel"
-              echo ""
-              echo "Deploying to: $azureAppName ($envLabel)"
-              echo "Build ID: $(Build.BuildId)"
-            displayName: 'Set Azure App Name'
-
-          # Deploy to Azure App Service (Linux)
-          - task: AzureWebApp@1
-            displayName: 'Deploy to Azure App Service (Linux)'
+          # Determine target Static Web App and fetch its deployment token
+          - task: AzureCLI@2
+            displayName: 'Set Static Web App Target'
             inputs:
               azureSubscription: 'SigookPipelines'
-              appType: 'webAppLinux'
-              appName: '$(azureAppName)'
-              package: '$(Pipeline.Workspace)/covenantweb-drop/covenantweb-$(environment)-$(Build.BuildId).zip'
-              runtimeStack: 'NODE|20-lts'
-              startUpCommand: 'npm start'
-              appSettings: '-CVN_VERSION $(Build.BuildId)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                if [ "$(isDev)" = True ]; then
+                  envLabel="Staging"
+                  swaName="covenantgroup-staging-swa"
+                  swaResourceGroup="CovenantGroupStaging"
+                else
+                  envLabel="Production"
+                  swaName="covenantgroup-swa"
+                  swaResourceGroup="CovenantGroup"
+                fi
+                swaToken=$(az staticwebapp secrets list --name "$swaName" --resource-group "$swaResourceGroup" --query "properties.apiKey" -o tsv)
+                echo "##vso[task.setvariable variable=swaToken;issecret=true]$swaToken"
+                echo "##vso[task.setvariable variable=envLabel]$envLabel"
+                echo "##vso[task.setvariable variable=swaName]$swaName"
+                echo "Deploying to: $swaName ($envLabel)"
+                echo "Build ID: $(Build.BuildId)"
+
+          # Deploy prebuilt dist to Azure Static Web Apps
+          - task: AzureStaticWebApp@0
+            displayName: 'Deploy to Azure Static Web Apps'
+            inputs:
+              cwd: '$(Pipeline.Workspace)'
+              app_location: 'covenantweb-dist'
+              skip_app_build: true
+              skip_api_build: true
+              azure_static_web_apps_api_token: '$(swaToken)'
 
           # Deployment summary
           - task: Bash@3
@@ -277,25 +268,16 @@ stages:
                 echo "✅ Deployment Completed!"
                 echo "============================================"
                 echo "Environment: $(envLabel)"
-                echo "App Service: $(azureAppName)"
+                echo "Static Web App: $(swaName)"
                 echo "Version: $(Build.BuildId)"
-                echo "Runtime: Node.js 20 LTS"
-                echo "Start Command: npm start"
                 echo "============================================"
                 echo ""
                 echo "URLs:"
                 if [ "$(isDev)" = True ]; then
-                  echo "🌐 Staging: https://covenantgroup-staging.azurewebsites.net"
+                  echo "🌐 Staging: https://lively-island-020c8260f.7.azurestaticapps.net"
                 else
-                  echo "🌐 Production: https://covenantgroup.azurewebsites.net"
+                  echo "🌐 Production: https://www.covenantgroupl.com"
                 fi
-                echo ""
-                echo "Next steps:"
-                echo "1. Wait 2-3 minutes for deployment to complete"
-                echo "2. Verify deployment in Azure Portal"
-                echo "3. Test the application at the URL above"
-                echo "4. Check App Service logs if needed:"
-                echo "   az webapp log tail --name $(azureAppName) --resource-group <your-rg>"
 
   # ============================================
   # Stage 2: Notify Production Deployment
