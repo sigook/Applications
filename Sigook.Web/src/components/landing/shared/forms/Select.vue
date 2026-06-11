@@ -1,13 +1,13 @@
 <template>
-  <label class="v2-select" :class="{ 'v2-select--error': !!error }">
-    <span v-if="label" class="v2-select__label">
-      {{ label }}<span v-if="required" class="v2-select__required">*</span>
+  <label class="landing-select" :class="{ 'landing-select--error': !!error }">
+    <span v-if="label" class="landing-select__label">
+      {{ label }}<span v-if="required" class="landing-select__required">*</span>
     </span>
     <select
       :value="selectedKey"
       :name="name"
       :disabled="disabled"
-      class="v2-select__control"
+      class="landing-select__control"
       @change="onChange"
     >
       <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
@@ -17,7 +17,7 @@
         :value="getKey(opt, idx)"
       >{{ getLabel(opt) }}</option>
     </select>
-    <span v-if="error" class="v2-select__error">{{ error }}</span>
+    <span v-if="error" class="landing-select__error">{{ error }}</span>
   </label>
 </template>
 
@@ -25,7 +25,7 @@
 import { computed } from 'vue'
 
 /**
- * V2Select — dropdown with glass V2 styling.
+ * Select — dropdown with glass V2 styling.
  *
  * Generic over `T` — the selected value is the full option object (not a
  * string key). Internally each option is matched by `optionKey` (defaults
@@ -78,14 +78,14 @@ function onChange(event: Event): void {
 </script>
 
 <style scoped>
-.v2-select {
+.landing-select {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-family: var(--font-family);
 }
 
-.v2-select__label {
+.landing-select__label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -93,12 +93,12 @@ function onChange(event: Event): void {
   color: rgba(255, 255, 255, 0.70);
 }
 
-.v2-select__required {
+.landing-select__required {
   color: var(--c-brand-red);
   margin-left: 4px;
 }
 
-.v2-select__control {
+.landing-select__control {
   appearance: none;
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
@@ -124,32 +124,32 @@ function onChange(event: Event): void {
     box-shadow 0.25s ease;
 }
 
-.v2-select__control option {
+.landing-select__control option {
   background-color: #0f2f44;
   color: #fff;
 }
 
-.v2-select__control:hover {
+.landing-select__control:hover {
   background-color: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.v2-select__control:focus {
+.landing-select__control:focus {
   background-color: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.v2-select__control:disabled {
+.landing-select__control:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.v2-select--error .v2-select__control {
+.landing-select--error .landing-select__control {
   border-color: var(--c-brand-red);
 }
 
-.v2-select__error {
+.landing-select__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

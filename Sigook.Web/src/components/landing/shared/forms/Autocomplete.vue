@@ -1,14 +1,14 @@
 <template>
-  <div class="v2-autocomplete" :class="{ 'v2-autocomplete--focused': focused, 'v2-autocomplete--error': !!error }">
-    <label v-if="label" class="v2-autocomplete__label">
-      {{ label }}<span v-if="required" class="v2-autocomplete__required">*</span>
+  <div class="landing-autocomplete" :class="{ 'landing-autocomplete--focused': focused, 'landing-autocomplete--error': !!error }">
+    <label v-if="label" class="landing-autocomplete__label">
+      {{ label }}<span v-if="required" class="landing-autocomplete__required">*</span>
     </label>
 
     <input
       ref="inputRef"
       :value="modelValue"
       type="text"
-      class="v2-autocomplete__control"
+      class="landing-autocomplete__control"
       :placeholder="placeholder"
       :disabled="disabled"
       @input="onInput"
@@ -16,28 +16,28 @@
       @blur="onBlur"
     />
 
-    <ul v-if="open" class="v2-autocomplete__dropdown">
+    <ul v-if="open" class="landing-autocomplete__dropdown">
       <li
         v-for="(opt, idx) in filtered"
         :key="getKey(opt, idx)"
-        class="v2-autocomplete__option"
+        class="landing-autocomplete__option"
         @mousedown.prevent="select(opt)"
       >{{ getLabel(opt) }}</li>
       <li
         v-if="filtered.length === 0 && !allowAddFooter"
-        class="v2-autocomplete__option v2-autocomplete__option--empty"
+        class="landing-autocomplete__option landing-autocomplete__option--empty"
       >No results</li>
       <li
         v-if="allowAddFooter"
-        class="v2-autocomplete__option v2-autocomplete__option--footer"
+        class="landing-autocomplete__option landing-autocomplete__option--footer"
         @mousedown.prevent="onAddNew"
       >
-        <span class="v2-autocomplete__plus">+</span>
+        <span class="landing-autocomplete__plus">+</span>
         <span>Add "{{ modelValue }}"</span>
       </li>
     </ul>
 
-    <span v-if="error" class="v2-autocomplete__error">{{ error }}</span>
+    <span v-if="error" class="landing-autocomplete__error">{{ error }}</span>
   </div>
 </template>
 
@@ -45,7 +45,7 @@
 import { ref, computed } from 'vue'
 
 /**
- * V2Autocomplete — single-select text input with filtered dropdown.
+ * Autocomplete — single-select text input with filtered dropdown.
  *
  * The model is a plain string (what's currently typed); the parent listens
  * to `@select` to capture the chosen object (`T`). The parent supplies the
@@ -132,7 +132,7 @@ function onAddNew(): void {
 </script>
 
 <style scoped>
-.v2-autocomplete {
+.landing-autocomplete {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -140,7 +140,7 @@ function onAddNew(): void {
   font-family: var(--font-family);
 }
 
-.v2-autocomplete__label {
+.landing-autocomplete__label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -148,12 +148,12 @@ function onAddNew(): void {
   color: rgba(255, 255, 255, 0.70);
 }
 
-.v2-autocomplete__required {
+.landing-autocomplete__required {
   color: var(--c-brand-red);
   margin-left: 4px;
 }
 
-.v2-autocomplete__control {
+.landing-autocomplete__control {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
@@ -168,26 +168,26 @@ function onAddNew(): void {
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.v2-autocomplete__control::placeholder {
+.landing-autocomplete__control::placeholder {
   color: rgba(255, 255, 255, 0.40);
 }
 
-.v2-autocomplete__control:hover {
+.landing-autocomplete__control:hover {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.v2-autocomplete__control:focus {
+.landing-autocomplete__control:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.v2-autocomplete--error .v2-autocomplete__control {
+.landing-autocomplete--error .landing-autocomplete__control {
   border-color: var(--c-brand-red);
 }
 
-.v2-autocomplete__dropdown {
+.landing-autocomplete__dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -204,7 +204,7 @@ function onAddNew(): void {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.40);
 }
 
-.v2-autocomplete__option {
+.landing-autocomplete__option {
   padding: 8px 12px;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.85);
@@ -216,22 +216,22 @@ function onAddNew(): void {
   gap: 8px;
 }
 
-.v2-autocomplete__option:hover {
+.landing-autocomplete__option:hover {
   background: rgba(0, 173, 239, 0.20);
   color: #fff;
 }
 
-.v2-autocomplete__option--empty {
+.landing-autocomplete__option--empty {
   color: rgba(255, 255, 255, 0.45);
   cursor: default;
   font-style: italic;
 }
 
-.v2-autocomplete__option--empty:hover {
+.landing-autocomplete__option--empty:hover {
   background: transparent;
 }
 
-.v2-autocomplete__option--footer {
+.landing-autocomplete__option--footer {
   border-top: 1px solid rgba(255, 255, 255, 0.10);
   margin-top: 4px;
   padding-top: 10px;
@@ -239,12 +239,12 @@ function onAddNew(): void {
   font-weight: 600;
 }
 
-.v2-autocomplete__plus {
+.landing-autocomplete__plus {
   font-size: 18px;
   line-height: 1;
 }
 
-.v2-autocomplete__error {
+.landing-autocomplete__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

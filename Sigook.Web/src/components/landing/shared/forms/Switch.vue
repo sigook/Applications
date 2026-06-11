@@ -1,16 +1,16 @@
 <template>
-  <label class="v2-switch" :class="{ 'v2-switch--on': modelValue }">
+  <label class="landing-switch" :class="{ 'landing-switch--on': modelValue }">
     <input
       type="checkbox"
-      class="v2-switch__input"
+      class="landing-switch__input"
       :checked="modelValue"
       :disabled="disabled"
       @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
     />
-    <span class="v2-switch__track" aria-hidden="true">
-      <span class="v2-switch__thumb"></span>
+    <span class="landing-switch__track" aria-hidden="true">
+      <span class="landing-switch__thumb"></span>
     </span>
-    <span v-if="$slots.default" class="v2-switch__label">
+    <span v-if="$slots.default" class="landing-switch__label">
       <slot />
     </span>
   </label>
@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 /**
- * V2Switch — pill toggle for boolean values.
+ * Switch — pill toggle for boolean values.
  *
  * Off  → muted track + thumb on the left.
  * On   → cyan track + thumb on the right.
@@ -36,7 +36,7 @@ defineEmits<{
 </script>
 
 <style scoped>
-.v2-switch {
+.landing-switch {
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -47,7 +47,7 @@ defineEmits<{
   user-select: none;
 }
 
-.v2-switch__input {
+.landing-switch__input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -55,7 +55,7 @@ defineEmits<{
   pointer-events: none;
 }
 
-.v2-switch__track {
+.landing-switch__track {
   position: relative;
   width: 42px;
   height: 24px;
@@ -65,7 +65,7 @@ defineEmits<{
   flex-shrink: 0;
 }
 
-.v2-switch__thumb {
+.landing-switch__thumb {
   position: absolute;
   top: 3px;
   left: 3px;
@@ -77,15 +77,15 @@ defineEmits<{
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.v2-switch--on .v2-switch__track {
+.landing-switch--on .landing-switch__track {
   background: var(--c-brand-cyan);
 }
 
-.v2-switch--on .v2-switch__thumb {
+.landing-switch--on .landing-switch__thumb {
   transform: translateX(18px);
 }
 
-.v2-switch:has(.v2-switch__input:disabled) {
+.landing-switch:has(.landing-switch__input:disabled) {
   opacity: 0.55;
   cursor: not-allowed;
 }

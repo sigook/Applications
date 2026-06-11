@@ -1,6 +1,6 @@
 <template>
-  <main class="v2-legal">
-    <article class="v2-legal__sheet">
+  <main class="landing-legal">
+    <article class="landing-legal__sheet">
     <p>
       <strong>
         <h4>TERMS AND CONDITIONS OF SERVICE</h4>
@@ -977,13 +977,13 @@
 </template>
 
 <style scoped>
-.v2-legal {
+.landing-legal {
   position: relative;
   z-index: 1;
   font-family: var(--font-family, 'Poppins', sans-serif);
   padding: clamp(104px, 13vw, 168px) clamp(16px, 4vw, 32px) clamp(64px, 8vw, 120px);
 }
-.v2-legal__sheet {
+.landing-legal__sheet {
   max-width: 860px;
   margin: 0 auto;
   background: #ffffff;
@@ -994,27 +994,27 @@
   font-size: 15px;
   line-height: 1.7;
 }
-.v2-legal__sheet h4 {
+.landing-legal__sheet h4 {
   font-size: clamp(22px, 3vw, 30px);
   font-weight: 700;
   color: #0f2f44;
   margin: 0 0 8px;
 }
-.v2-legal__sheet h6 {
+.landing-legal__sheet h6 {
   font-size: 16px;
   font-weight: 700;
   color: #0f2f44;
   margin: 28px 0 8px;
 }
-.v2-legal__sheet p { margin: 0 0 14px; }
-.v2-legal__sheet a { color: var(--c-brand-cyan, #00adef); text-decoration: underline; word-break: break-word; }
-.v2-legal__sheet ul,
-.v2-legal__sheet ol { margin: 0 0 14px; padding-left: 22px; }
-.v2-legal__sheet li { margin-bottom: 6px; }
-.v2-legal__sheet u { text-decoration: underline; }
-.v2-legal__sheet .superscript { vertical-align: super; font-size: 0.7em; }
+.landing-legal__sheet p { margin: 0 0 14px; }
+.landing-legal__sheet a { color: var(--c-brand-cyan, #00adef); text-decoration: underline; word-break: break-word; }
+.landing-legal__sheet ul,
+.landing-legal__sheet ol { margin: 0 0 14px; padding-left: 22px; }
+.landing-legal__sheet li { margin-bottom: 6px; }
+.landing-legal__sheet u { text-decoration: underline; }
+.landing-legal__sheet .superscript { vertical-align: super; font-size: 0.7em; }
 
 @media (max-width: 767px) {
-  .v2-legal__sheet { border-radius: 12px; }
+  .landing-legal__sheet { border-radius: 12px; }
 }
 </style>

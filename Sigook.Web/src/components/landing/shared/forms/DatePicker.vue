@@ -1,7 +1,7 @@
 <template>
-  <label class="v2-datepicker" :class="{ 'v2-datepicker--error': !!error }">
-    <span v-if="label" class="v2-datepicker__label">
-      {{ label }}<span v-if="required" class="v2-datepicker__required">*</span>
+  <label class="landing-datepicker" :class="{ 'landing-datepicker--error': !!error }">
+    <span v-if="label" class="landing-datepicker__label">
+      {{ label }}<span v-if="required" class="landing-datepicker__required">*</span>
     </span>
     <input
       type="date"
@@ -10,10 +10,10 @@
       :min="minIso"
       :name="name"
       :disabled="disabled"
-      class="v2-datepicker__control"
+      class="landing-datepicker__control"
       @change="onChange"
     />
-    <span v-if="error" class="v2-datepicker__error">{{ error }}</span>
+    <span v-if="error" class="landing-datepicker__error">{{ error }}</span>
   </label>
 </template>
 
@@ -21,7 +21,7 @@
 import { computed } from 'vue'
 
 /**
- * V2DatePicker — wraps the native HTML5 date input with V2 glass styling.
+ * DatePicker — wraps the native HTML5 date input with V2 glass styling.
  *
  * Accepts/emits Date objects. Native input gives us calendar UI for free,
  * mobile keyboards, and a11y; we just need to translate Date <-> ISO string.
@@ -68,14 +68,14 @@ function onChange(event: Event): void {
 </script>
 
 <style scoped>
-.v2-datepicker {
+.landing-datepicker {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-family: var(--font-family);
 }
 
-.v2-datepicker__label {
+.landing-datepicker__label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -83,12 +83,12 @@ function onChange(event: Event): void {
   color: rgba(255, 255, 255, 0.70);
 }
 
-.v2-datepicker__required {
+.landing-datepicker__required {
   color: var(--c-brand-red);
   margin-left: 4px;
 }
 
-.v2-datepicker__control {
+.landing-datepicker__control {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
@@ -105,32 +105,32 @@ function onChange(event: Event): void {
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.v2-datepicker__control::-webkit-calendar-picker-indicator {
+.landing-datepicker__control::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
   cursor: pointer;
 }
 
-.v2-datepicker__control:hover {
+.landing-datepicker__control:hover {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.v2-datepicker__control:focus {
+.landing-datepicker__control:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.v2-datepicker__control:disabled {
+.landing-datepicker__control:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.v2-datepicker--error .v2-datepicker__control {
+.landing-datepicker--error .landing-datepicker__control {
   border-color: var(--c-brand-red);
 }
 
-.v2-datepicker__error {
+.landing-datepicker__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

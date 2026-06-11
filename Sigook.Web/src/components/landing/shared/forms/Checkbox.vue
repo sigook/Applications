@@ -1,17 +1,17 @@
 <template>
-  <label class="v2-checkbox" :class="{ 'v2-checkbox--checked': checked }">
+  <label class="landing-checkbox" :class="{ 'landing-checkbox--checked': checked }">
     <input
       type="checkbox"
-      class="v2-checkbox__input"
+      class="landing-checkbox__input"
       :checked="checked"
       :disabled="disabled"
       @change="onChange"
     />
-    <span class="v2-checkbox__box" aria-hidden="true">
+    <span class="landing-checkbox__box" aria-hidden="true">
       <svg
         v-if="checked"
         viewBox="0 0 14 14"
-        class="v2-checkbox__tick"
+        class="landing-checkbox__tick"
         fill="none"
         stroke="currentColor"
         stroke-width="2.5"
@@ -21,7 +21,7 @@
         <polyline points="11 4 6 9 3 6" />
       </svg>
     </span>
-    <span class="v2-checkbox__label">
+    <span class="landing-checkbox__label">
       <slot />
     </span>
   </label>
@@ -31,7 +31,7 @@
 import { computed } from 'vue'
 
 /**
- * V2Checkbox — supports two modes:
+ * Checkbox — supports two modes:
  *   1. Single boolean: bind `v-model` directly.
  *   2. Group-by-value: bind `v-model` to an array + provide `nativeValue`.
  *      Toggling adds/removes `nativeValue` from the array.
@@ -68,7 +68,7 @@ function onChange(event: Event): void {
 </script>
 
 <style scoped>
-.v2-checkbox {
+.landing-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -79,7 +79,7 @@ function onChange(event: Event): void {
   user-select: none;
 }
 
-.v2-checkbox__input {
+.landing-checkbox__input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -87,7 +87,7 @@ function onChange(event: Event): void {
   pointer-events: none;
 }
 
-.v2-checkbox__box {
+.landing-checkbox__box {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -101,26 +101,26 @@ function onChange(event: Event): void {
   flex-shrink: 0;
 }
 
-.v2-checkbox:hover .v2-checkbox__box {
+.landing-checkbox:hover .landing-checkbox__box {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.50);
 }
 
-.v2-checkbox--checked .v2-checkbox__box {
+.landing-checkbox--checked .landing-checkbox__box {
   background: var(--c-brand-cyan);
   border-color: var(--c-brand-cyan);
 }
 
-.v2-checkbox__tick {
+.landing-checkbox__tick {
   width: 14px;
   height: 14px;
 }
 
-.v2-checkbox__label {
+.landing-checkbox__label {
   line-height: 1.3;
 }
 
-.v2-checkbox:has(.v2-checkbox__input:disabled) {
+.landing-checkbox:has(.landing-checkbox__input:disabled) {
   opacity: 0.55;
   cursor: not-allowed;
 }

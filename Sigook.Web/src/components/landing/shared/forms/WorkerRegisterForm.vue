@@ -21,23 +21,23 @@
         <h3 class="reg-form__step-title">Basic information</h3>
 
         <div class="reg-form__photo-wrap">
-          <V2ImageUpload
+          <ImageUpload
             hint="Plain white or off-white background works best."
             @file="onPhotoSelected"
           />
         </div>
 
         <div class="reg-form__grid reg-form__grid--2col">
-          <V2Input v-model="firstName" label="Name" :required="true" :error="errors.firstName" />
-          <V2Input v-model="lastName" label="Last Name" :required="true" :error="errors.lastName" />
-          <V2DatePicker
+          <Input v-model="firstName" label="Name" :required="true" :error="errors.firstName" />
+          <Input v-model="lastName" label="Last Name" :required="true" :error="errors.lastName" />
+          <DatePicker
             v-model="birthDay"
             label="Date of birth"
             :required="true"
             :error="errors.birthDay"
             :max="maxBirthDate"
           />
-          <V2Select
+          <Select
             v-model="gender"
             :options="genders"
             label="Gender"
@@ -48,13 +48,13 @@
         </div>
 
         <div class="reg-form__section-title">Address</div>
-        <V2AddressFields
+        <AddressFields
           ref="addressRef"
           v-model="addressModel"
         />
 
         <div class="reg-form__row">
-          <V2PhoneInput
+          <PhoneInput
             v-model="mobileNumber"
             label="Mobile Number"
             :required="true"
@@ -78,45 +78,45 @@
         <div class="reg-form__field-group">
           <span class="reg-form__field-group-label">Availability</span>
           <div class="reg-form__check-grid">
-            <V2Checkbox
+            <Checkbox
               v-for="item in availabilities"
               :key="item.id"
               v-model="worker.availabilities"
               :native-value="item"
-            >{{ item.value }}</V2Checkbox>
+            >{{ item.value }}</Checkbox>
           </div>
         </div>
 
         <div class="reg-form__field-group">
           <span class="reg-form__field-group-label">Available time</span>
           <div class="reg-form__check-grid">
-            <V2Checkbox
+            <Checkbox
               v-for="t in availabilityTimes"
               :key="t.id"
               v-model="worker.availabilityTimes"
               :native-value="t"
-            >{{ t.value }}</V2Checkbox>
+            >{{ t.value }}</Checkbox>
           </div>
         </div>
 
         <div class="reg-form__field-group">
           <span class="reg-form__field-group-label">Available days</span>
           <div class="reg-form__check-grid">
-            <V2Checkbox v-model="allDaysSelected" @update:model-value="changeDaysSelected">
+            <Checkbox v-model="allDaysSelected" @update:model-value="changeDaysSelected">
               All days
-            </V2Checkbox>
-            <V2Checkbox
+            </Checkbox>
+            <Checkbox
               v-for="day in days"
               :key="day.id"
               v-model="worker.availabilityDays"
               :native-value="day"
               @update:model-value="changeAllDays"
-            >{{ day.value }}</V2Checkbox>
+            >{{ day.value }}</Checkbox>
           </div>
         </div>
 
         <div class="reg-form__grid reg-form__grid--2col">
-          <V2Select
+          <Select
             v-model="lift"
             :options="lifts"
             label="Can you lift up to"
@@ -124,11 +124,11 @@
           />
           <div class="reg-form__field-group reg-form__field-group--inline">
             <span class="reg-form__field-group-label">Do you have your own vehicle?</span>
-            <V2Switch v-model="hasVehicle">{{ hasVehicle ? 'Yes' : 'No' }}</V2Switch>
+            <Switch v-model="hasVehicle">{{ hasVehicle ? 'Yes' : 'No' }}</Switch>
           </div>
         </div>
 
-        <V2TagInput
+        <TagInput
           v-model="languagesModel"
           :options="filteredLanguages"
           label="Languages"
@@ -138,7 +138,7 @@
           @typing="getFilteredLanguages"
         />
 
-        <V2TagInput
+        <TagInput
           v-model="skillsModel"
           :options="filteredSkills"
           label="Skills"
@@ -172,7 +172,7 @@
             <span class="reg-form__doc-title">
               Identification <span class="reg-form__doc-required">*</span>
             </span>
-            <V2FileUpload
+            <FileUpload
               label="Add file"
               :disabled="!!worker.identificationType1File && !!worker.identificationType2File"
               @file="handleIdentificationUpload"
@@ -185,7 +185,7 @@
               <button type="button" class="reg-form__doc-remove" @click="deleteDocument(worker.identificationType1File)">Remove</button>
             </div>
             <div class="reg-form__grid reg-form__grid--2col">
-              <V2Select
+              <Select
                 v-model="identificationType1"
                 :options="identificationTypes"
                 label="Identification type"
@@ -193,7 +193,7 @@
                 :required="true"
                 :error="errors.identificationType1"
               />
-              <V2Input
+              <Input
                 v-model="identificationNumber1"
                 label="Identification number"
                 :required="true"
@@ -208,7 +208,7 @@
               <button type="button" class="reg-form__doc-remove" @click="deleteDocument(worker.identificationType2File)">Remove</button>
             </div>
             <div class="reg-form__grid reg-form__grid--2col">
-              <V2Select
+              <Select
                 v-model="identificationType2"
                 :options="identificationTypes"
                 label="Identification type"
@@ -216,7 +216,7 @@
                 :required="true"
                 :error="errors.identificationType2"
               />
-              <V2Input
+              <Input
                 v-model="identificationNumber2"
                 label="Identification number"
                 :required="true"
@@ -234,7 +234,7 @@
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Licenses</span>
-            <V2FileUpload label="Add license" @file="handleLicenseUpload" />
+            <FileUpload label="Add license" @file="handleLicenseUpload" />
           </div>
           <div
             v-for="(item, idx) in worker.licenses"
@@ -246,13 +246,13 @@
               <button type="button" class="reg-form__doc-remove" @click="deleteLicense(idx)">Remove</button>
             </div>
             <div class="reg-form__grid reg-form__grid--licence">
-              <V2Input
+              <Input
                 v-model="item.license.description"
                 label="Description"
                 :required="true"
                 :error="itemErrors['description' + idx]"
               />
-              <V2DatePicker
+              <DatePicker
                 v-model="item.expires"
                 label="Expires"
                 :required="true"
@@ -266,7 +266,7 @@
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Certificates</span>
-            <V2FileUpload label="Add certificate" @file="handleCertificateUpload" />
+            <FileUpload label="Add certificate" @file="handleCertificateUpload" />
           </div>
           <div
             v-for="(item, idx) in worker.certificates"
@@ -277,7 +277,7 @@
               <span class="reg-form__doc-filename">🎓 {{ filename(item.fileName) }}</span>
               <button type="button" class="reg-form__doc-remove" @click="deleteCertificate(idx)">Remove</button>
             </div>
-            <V2Input
+            <Input
               v-model="item.description"
               label="Description"
               :required="true"
@@ -290,7 +290,7 @@
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Resume</span>
-            <V2FileUpload
+            <FileUpload
               label="Add resume"
               :disabled="!!worker.resume"
               @file="handleResumeUpload"
@@ -320,7 +320,7 @@
       <section v-show="currentStep === 'account'" class="reg-form__step">
         <h3 class="reg-form__step-title">Account</h3>
 
-        <V2Input
+        <Input
           v-model="email"
           label="Email"
           type="email"
@@ -330,7 +330,7 @@
         />
 
         <div class="reg-form__grid reg-form__grid--2col">
-          <V2Input
+          <Input
             v-model="password"
             label="Password"
             type="password"
@@ -338,7 +338,7 @@
             :error="errors.password"
             autocomplete="new-password"
           />
-          <V2Input
+          <Input
             v-model="confirmPassword"
             label="Confirm password"
             type="password"
@@ -348,12 +348,12 @@
           />
         </div>
 
-        <V2Checkbox v-if="!isLogin" v-model="agreeTermsAndConditions">
+        <Checkbox v-if="!isLogin" v-model="agreeTermsAndConditions">
           I agree to Sigook™
           <router-link to="/terms-and-conditions" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
           &amp;
           <router-link to="/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
-        </V2Checkbox>
+        </Checkbox>
         <p v-if="!isLogin && errors.agreeTermsAndConditions" class="reg-form__field-error">
           {{ errors.agreeTermsAndConditions }}
         </p>
@@ -380,16 +380,16 @@ import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import dayjs from 'dayjs'
 
-import V2Input from '@/components/landing/shared/forms/V2Input.vue'
-import V2Select from '@/components/landing/shared/forms/V2Select.vue'
-import V2DatePicker from '@/components/landing/shared/forms/V2DatePicker.vue'
-import V2Checkbox from '@/components/landing/shared/forms/V2Checkbox.vue'
-import V2Switch from '@/components/landing/shared/forms/V2Switch.vue'
-import V2TagInput from '@/components/landing/shared/forms/V2TagInput.vue'
-import V2FileUpload from '@/components/landing/shared/forms/V2FileUpload.vue'
-import V2ImageUpload from '@/components/landing/shared/forms/V2ImageUpload.vue'
-import V2PhoneInput from '@/components/landing/shared/forms/V2PhoneInput.vue'
-import V2AddressFields, { type AddressModel } from '@/components/landing/shared/forms/V2AddressFields.vue'
+import Input from '@/components/landing/shared/forms/Input.vue'
+import Select from '@/components/landing/shared/forms/Select.vue'
+import DatePicker from '@/components/landing/shared/forms/DatePicker.vue'
+import Checkbox from '@/components/landing/shared/forms/Checkbox.vue'
+import Switch from '@/components/landing/shared/forms/Switch.vue'
+import TagInput from '@/components/landing/shared/forms/TagInput.vue'
+import FileUpload from '@/components/landing/shared/forms/FileUpload.vue'
+import ImageUpload from '@/components/landing/shared/forms/ImageUpload.vue'
+import PhoneInput from '@/components/landing/shared/forms/PhoneInput.vue'
+import AddressFields, { type AddressModel } from '@/components/landing/shared/forms/AddressFields.vue'
 import WorkerRegisterStepNav, { type StepDescriptor } from '@/components/landing/shared/forms/WorkerRegisterStepNav.vue'
 
 import { useCreateWorker } from '@/composables/useCreateWorker'
@@ -809,7 +809,7 @@ async function onSubmit(): Promise<void> {
   worker.password = password.value as never
   worker.confirmPassword = confirmPassword.value as never
   worker.agreeTermsAndConditions = agreeTermsAndConditions.value as never
-  // V2Select emits the full Gender object (unlike the legacy form's
+  // Select emits the full Gender object (unlike the legacy form's
    // b-select which bound only the id). Extract `.id` so the backend
    // receives the same `{ id: '<guid>' }` shape Register.vue sends.
   const genderObj = gender.value as { id: string } | null

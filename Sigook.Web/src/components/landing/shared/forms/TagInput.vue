@@ -1,19 +1,19 @@
 <template>
-  <div class="v2-taginput" :class="{ 'v2-taginput--focused': focused }">
-    <label v-if="label" class="v2-taginput__label">
-      {{ label }}<span v-if="required" class="v2-taginput__required">*</span>
+  <div class="landing-taginput" :class="{ 'landing-taginput--focused': focused }">
+    <label v-if="label" class="landing-taginput__label">
+      {{ label }}<span v-if="required" class="landing-taginput__required">*</span>
     </label>
 
-    <div class="v2-taginput__field" @click="onFieldClick">
+    <div class="landing-taginput__field" @click="onFieldClick">
       <span
         v-for="(tag, idx) in modelValue"
         :key="getTagKey(tag, idx)"
-        class="v2-taginput__chip"
+        class="landing-taginput__chip"
       >
-        <span class="v2-taginput__chip-text">{{ getTagLabel(tag) }}</span>
+        <span class="landing-taginput__chip-text">{{ getTagLabel(tag) }}</span>
         <button
           type="button"
-          class="v2-taginput__chip-remove"
+          class="landing-taginput__chip-remove"
           :aria-label="`Remove ${getTagLabel(tag)}`"
           @click.stop="removeTag(idx)"
         >×</button>
@@ -23,7 +23,7 @@
         ref="inputRef"
         v-model="query"
         type="text"
-        class="v2-taginput__input"
+        class="landing-taginput__input"
         :placeholder="modelValue.length === 0 ? placeholder : ''"
         :disabled="disabled"
         @input="onInput"
@@ -35,16 +35,16 @@
     </div>
 
     <!-- Dropdown of suggestions -->
-    <ul v-if="focused && filteredOptions.length > 0" class="v2-taginput__dropdown">
+    <ul v-if="focused && filteredOptions.length > 0" class="landing-taginput__dropdown">
       <li
         v-for="(opt, idx) in filteredOptions"
         :key="getTagKey(opt, idx)"
-        class="v2-taginput__option"
+        class="landing-taginput__option"
         @mousedown.prevent="addTag(opt)"
       >{{ getTagLabel(opt) }}</li>
     </ul>
 
-    <span v-if="error" class="v2-taginput__error">{{ error }}</span>
+    <span v-if="error" class="landing-taginput__error">{{ error }}</span>
   </div>
 </template>
 
@@ -52,7 +52,7 @@
 import { ref, computed } from 'vue'
 
 /**
- * V2TagInput — multi-select chip input with typeahead.
+ * TagInput — multi-select chip input with typeahead.
  *
  * Accepts an array of objects (`T[]`). Each option is keyed by `optionKey`
  * (default 'id') and labeled by `optionLabel` (default 'value'). The parent
@@ -171,7 +171,7 @@ function onBackspace(): void {
 </script>
 
 <style scoped>
-.v2-taginput {
+.landing-taginput {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -179,7 +179,7 @@ function onBackspace(): void {
   font-family: var(--font-family);
 }
 
-.v2-taginput__label {
+.landing-taginput__label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -187,12 +187,12 @@ function onBackspace(): void {
   color: rgba(255, 255, 255, 0.70);
 }
 
-.v2-taginput__required {
+.landing-taginput__required {
   color: var(--c-brand-red);
   margin-left: 4px;
 }
 
-.v2-taginput__field {
+.landing-taginput__field {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -206,13 +206,13 @@ function onBackspace(): void {
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.v2-taginput--focused .v2-taginput__field {
+.landing-taginput--focused .landing-taginput__field {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.v2-taginput__chip {
+.landing-taginput__chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -226,7 +226,7 @@ function onBackspace(): void {
   line-height: 1;
 }
 
-.v2-taginput__chip-remove {
+.landing-taginput__chip-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -242,11 +242,11 @@ function onBackspace(): void {
   transition: background 0.2s ease;
 }
 
-.v2-taginput__chip-remove:hover {
+.landing-taginput__chip-remove:hover {
   background: rgba(255, 255, 255, 0.35);
 }
 
-.v2-taginput__input {
+.landing-taginput__input {
   flex: 1;
   min-width: 100px;
   background: transparent;
@@ -258,11 +258,11 @@ function onBackspace(): void {
   padding: 4px 0;
 }
 
-.v2-taginput__input::placeholder {
+.landing-taginput__input::placeholder {
   color: rgba(255, 255, 255, 0.40);
 }
 
-.v2-taginput__dropdown {
+.landing-taginput__dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -279,7 +279,7 @@ function onBackspace(): void {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.40);
 }
 
-.v2-taginput__option {
+.landing-taginput__option {
   padding: 8px 12px;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.85);
@@ -288,12 +288,12 @@ function onBackspace(): void {
   transition: background 0.15s ease;
 }
 
-.v2-taginput__option:hover {
+.landing-taginput__option:hover {
   background: rgba(0, 173, 239, 0.20);
   color: #fff;
 }
 
-.v2-taginput__error {
+.landing-taginput__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

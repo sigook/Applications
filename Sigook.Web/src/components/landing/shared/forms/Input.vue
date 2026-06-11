@@ -1,7 +1,7 @@
 <template>
-  <label class="v2-input" :class="{ 'v2-input--error': !!error, 'v2-input--filled': !!modelValue }">
-    <span v-if="label" class="v2-input__label">
-      {{ label }}<span v-if="required" class="v2-input__required">*</span>
+  <label class="landing-input" :class="{ 'landing-input--error': !!error, 'landing-input--filled': !!modelValue }">
+    <span v-if="label" class="landing-input__label">
+      {{ label }}<span v-if="required" class="landing-input__required">*</span>
     </span>
     <input
       :type="type"
@@ -11,17 +11,17 @@
       :autocomplete="autocomplete"
       :maxlength="maxlength"
       :disabled="disabled"
-      class="v2-input__control"
+      class="landing-input__control"
       @input="onInput"
       @blur="$emit('blur')"
     />
-    <span v-if="error" class="v2-input__error">{{ error }}</span>
+    <span v-if="error" class="landing-input__error">{{ error }}</span>
   </label>
 </template>
 
 <script setup lang="ts">
 /**
- * V2Input — text/email/password input with glass V2 styling.
+ * Input — text/email/password input with glass V2 styling.
  *
  * Single-line label-above-field layout. Cyan focus border, white text,
  * subtle hover lift. Error state colors the border and shows the message
@@ -55,14 +55,14 @@ function onInput(event: Event): void {
 </script>
 
 <style scoped>
-.v2-input {
+.landing-input {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-family: var(--font-family);
 }
 
-.v2-input__label {
+.landing-input__label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -70,12 +70,12 @@ function onInput(event: Event): void {
   color: rgba(255, 255, 255, 0.70);
 }
 
-.v2-input__required {
+.landing-input__required {
   color: var(--c-brand-red);
   margin-left: 4px;
 }
 
-.v2-input__control {
+.landing-input__control {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
@@ -93,35 +93,35 @@ function onInput(event: Event): void {
     box-shadow 0.25s ease;
 }
 
-.v2-input__control::placeholder {
+.landing-input__control::placeholder {
   color: rgba(255, 255, 255, 0.40);
 }
 
-.v2-input__control:hover {
+.landing-input__control:hover {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.v2-input__control:focus {
+.landing-input__control:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.v2-input__control:disabled {
+.landing-input__control:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.v2-input--error .v2-input__control {
+.landing-input--error .landing-input__control {
   border-color: var(--c-brand-red);
 }
 
-.v2-input--error .v2-input__control:focus {
+.landing-input--error .landing-input__control:focus {
   box-shadow: 0 0 0 3px rgba(229, 45, 39, 0.20);
 }
 
-.v2-input__error {
+.landing-input__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

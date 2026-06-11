@@ -1,7 +1,7 @@
 <template>
-  <div class="v2-address">
-    <div class="v2-address__row v2-address__row--full">
-      <V2Select
+  <div class="landing-address">
+    <div class="landing-address__row landing-address__row--full">
+      <Select
         v-model="country"
         :options="countries"
         label="Country"
@@ -12,8 +12,8 @@
       />
     </div>
 
-    <div class="v2-address__row">
-      <V2Autocomplete
+    <div class="landing-address__row">
+      <Autocomplete
         v-model="provinceQuery"
         :data="provinces"
         label="State"
@@ -23,7 +23,7 @@
         :disabled="!country"
         @select="onProvinceSelected"
       />
-      <V2Autocomplete
+      <Autocomplete
         v-model="cityQuery"
         :data="cities"
         label="City"
@@ -35,8 +35,8 @@
       />
     </div>
 
-    <div class="v2-address__row">
-      <V2Input
+    <div class="landing-address__row">
+      <Input
         v-model="addressLine"
         label="Address"
         placeholder="Street address"
@@ -44,7 +44,7 @@
         :error="errors.address"
         @update:model-value="emitChange"
       />
-      <V2Input
+      <Input
         v-model="postalCode"
         label="ZIP Code"
         placeholder="12345"
@@ -58,9 +58,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import V2Input from '@/components/landing/shared/forms/V2Input.vue'
-import V2Select from '@/components/landing/shared/forms/V2Select.vue'
-import V2Autocomplete from '@/components/landing/shared/forms/V2Autocomplete.vue'
+import Input from '@/components/landing/shared/forms/Input.vue'
+import Select from '@/components/landing/shared/forms/Select.vue'
+import Autocomplete from '@/components/landing/shared/forms/Autocomplete.vue'
 import {
   getCountries as fetchCountries,
   getProvinces as fetchProvinces,
@@ -68,7 +68,7 @@ import {
 } from '@/api/locationApi'
 
 /**
- * V2AddressFields — composite address picker matching the layout / data
+ * AddressFields — composite address picker matching the layout / data
  * structure of the legacy Address.vue but using V2 atoms.
  *
  * Cascading load: pick country → loads provinces → pick province → loads
@@ -259,24 +259,24 @@ defineExpose({ validate })
 </script>
 
 <style scoped>
-.v2-address {
+.landing-address {
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 1.8vw, 20px);
 }
 
-.v2-address__row {
+.landing-address__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(14px, 1.8vw, 20px);
 }
 
-.v2-address__row--full {
+.landing-address__row--full {
   grid-template-columns: 1fr;
 }
 
 @media (max-width: 639px) {
-  .v2-address__row {
+  .landing-address__row {
     grid-template-columns: 1fr;
   }
 }

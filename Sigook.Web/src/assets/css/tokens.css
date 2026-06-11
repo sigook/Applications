@@ -128,7 +128,7 @@
   color: var(--c-ink);
 }
 
-.v2-display {
+.landing-display {
   font-family: var(--font-family);
   font-size: var(--text-display-size);
   font-weight: var(--text-display-weight);
@@ -136,56 +136,56 @@
   letter-spacing: var(--text-display-ls);
 }
 
-.v2-h1 {
+.landing-h1 {
   font-family: var(--font-family);
   font-size: var(--text-h1-size);
   font-weight: var(--text-h1-weight);
   line-height: var(--text-h1-lh);
 }
 
-.v2-h2 {
+.landing-h2 {
   font-family: var(--font-family);
   font-size: var(--text-h2-size);
   font-weight: var(--text-h2-weight);
   line-height: var(--text-h2-lh);
 }
 
-.v2-h2-light {
+.landing-h2-light {
   font-family: var(--font-family);
   font-size: var(--text-h2-size);
   font-weight: var(--text-h2-light-weight);
   line-height: var(--text-h2-light-lh);
 }
 
-.v2-h3 {
+.landing-h3 {
   font-family: var(--font-family);
   font-size: var(--text-h3-size);
   font-weight: var(--text-h3-weight);
   line-height: var(--text-h3-lh);
 }
 
-.v2-lead {
+.landing-lead {
   font-family: var(--font-family);
   font-size: var(--text-lead-size);
   font-weight: var(--text-lead-weight);
   line-height: var(--text-lead-lh);
 }
 
-.v2-body {
+.landing-body {
   font-family: var(--font-family);
   font-size: var(--text-body-size);
   font-weight: var(--text-body-weight);
   line-height: var(--text-body-lh);
 }
 
-.v2-caption {
+.landing-caption {
   font-family: var(--font-family);
   font-size: var(--text-caption-size);
   font-weight: var(--text-caption-weight);
   line-height: var(--text-caption-lh);
 }
 
-.v2-eyebrow {
+.landing-eyebrow {
   font-family: var(--font-family);
   font-size: var(--text-eyebrow-size);
   font-weight: var(--text-eyebrow-weight);

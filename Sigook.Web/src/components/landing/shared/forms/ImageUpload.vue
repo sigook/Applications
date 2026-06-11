@@ -1,27 +1,27 @@
 <template>
-  <div class="v2-imageupload">
-    <label class="v2-imageupload__circle" :class="{ 'v2-imageupload__circle--has-image': !!previewUrl }">
+  <div class="landing-imageupload">
+    <label class="landing-imageupload__circle" :class="{ 'landing-imageupload__circle--has-image': !!previewUrl }">
       <input
         type="file"
         accept="image/*"
-        class="v2-imageupload__input"
+        class="landing-imageupload__input"
         :disabled="disabled"
         @change="onChange"
         ref="inputRef"
       />
-      <img v-if="previewUrl" :src="previewUrl" alt="Profile preview" class="v2-imageupload__preview" />
-      <span v-else class="v2-imageupload__placeholder" aria-hidden="true">
+      <img v-if="previewUrl" :src="previewUrl" alt="Profile preview" class="landing-imageupload__preview" />
+      <span v-else class="landing-imageupload__placeholder" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
           <circle cx="12" cy="13" r="4" />
         </svg>
       </span>
-      <span class="v2-imageupload__overlay">
+      <span class="landing-imageupload__overlay">
         {{ previewUrl ? 'Change photo' : 'Add photo' }}
       </span>
     </label>
-    <p v-if="hint" class="v2-imageupload__hint">{{ hint }}</p>
-    <p v-if="error" class="v2-imageupload__error">{{ error }}</p>
+    <p v-if="hint" class="landing-imageupload__hint">{{ hint }}</p>
+    <p v-if="error" class="landing-imageupload__error">{{ error }}</p>
   </div>
 </template>
 
@@ -88,7 +88,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.v2-imageupload {
+.landing-imageupload {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -96,7 +96,7 @@ onUnmounted(() => {
   font-family: var(--font-family);
 }
 
-.v2-imageupload__circle {
+.landing-imageupload__circle {
   position: relative;
   width: clamp(120px, 14vw, 160px);
   height: clamp(120px, 14vw, 160px);
@@ -112,18 +112,18 @@ onUnmounted(() => {
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 
-.v2-imageupload__circle:hover {
+.landing-imageupload__circle:hover {
   border-color: var(--c-brand-cyan);
   background: rgba(0, 173, 239, 0.08);
 }
 
-.v2-imageupload__circle--has-image {
+.landing-imageupload__circle--has-image {
   border-style: solid;
   border-color: rgba(255, 255, 255, 0.30);
   background: transparent;
 }
 
-.v2-imageupload__input {
+.landing-imageupload__input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -131,7 +131,7 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.v2-imageupload__preview {
+.landing-imageupload__preview {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -139,18 +139,18 @@ onUnmounted(() => {
   object-fit: cover;
 }
 
-.v2-imageupload__placeholder {
+.landing-imageupload__placeholder {
   display: inline-flex;
   width: 36%;
   height: 36%;
 }
 
-.v2-imageupload__placeholder svg {
+.landing-imageupload__placeholder svg {
   width: 100%;
   height: 100%;
 }
 
-.v2-imageupload__overlay {
+.landing-imageupload__overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -168,12 +168,12 @@ onUnmounted(() => {
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.v2-imageupload__circle:hover .v2-imageupload__overlay {
+.landing-imageupload__circle:hover .landing-imageupload__overlay {
   opacity: 1;
   transform: translateY(0);
 }
 
-.v2-imageupload__hint {
+.landing-imageupload__hint {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.55);
   text-align: center;
@@ -182,7 +182,7 @@ onUnmounted(() => {
   line-height: 1.4;
 }
 
-.v2-imageupload__error {
+.landing-imageupload__error {
   font-size: 11px;
   font-weight: 600;
   color: var(--c-brand-red);

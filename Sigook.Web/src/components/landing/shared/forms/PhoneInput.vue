@@ -1,5 +1,5 @@
 <template>
-  <V2Input
+  <Input
     :label="label"
     :model-value="formatted"
     :placeholder="placeholder"
@@ -15,10 +15,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import V2Input from '@/components/landing/shared/forms/V2Input.vue'
+import Input from '@/components/landing/shared/forms/Input.vue'
 
 /**
- * V2PhoneInput — V2Input wrapper that auto-formats 10-digit North-American
+ * PhoneInput — Input wrapper that auto-formats 10-digit North-American
  * phone numbers as "AAA BBB-CCCC".
  */
 const props = withDefaults(defineProps<{
