@@ -43,7 +43,7 @@
 
         <template #button>
           <router-link to="/employers" class="dual-cta__cta dual-cta__cta--talent">
-            <span>Post a Job</span>
+            <span>Contact Us</span>
             <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
           </router-link>
         </template>

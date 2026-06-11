@@ -1,8 +1,8 @@
 import { RouteRecordRaw } from 'vue-router';
 
-// Legacy landing routes now redirect to their v2 canonical equivalents.
-// The page components under src/pages/landing/ remain on disk but are no
-// longer routed as pages. Discontinued pages (direct-hiring, contact, atas)
+// Legacy landing slugs redirect to their v2 canonical equivalents. The old
+// page components have been removed; these records exist only to preserve
+// inbound links and SEO. Discontinued pages (direct-hiring, contact, atas)
 // redirect to the closest v2 page. The legal slugs /privacy-policy and
 // /terms-and-conditions are owned by routesV2 now.
 const routesLanding: RouteRecordRaw[] = [

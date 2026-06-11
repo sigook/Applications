@@ -117,7 +117,6 @@ function observeHeroLogo(): void {
 
 /**
  * CTA flips between "Sign In" (anonymous) and "Go to Portal" (logged in).
- * Mirrors the legacy landing Header behaviour at src/components/landing/Header.vue.
  */
 const ctaLabel = computed(() => (securityStore.user ? 'Go to Portal' : 'Sign In'));
 
