@@ -308,8 +308,8 @@ onUnmounted(() => observer?.disconnect())
   z-index: 1;
   padding-bottom: 160px;
   overflow: hidden;
-  /* Sized so feature cards clear Certified's -556px overlap with a small ~100px buffer */
-  min-height: 1720px;
+  /* Sized so feature cards clear Certified's -556px overlap with a comfortable buffer */
+  min-height: 1880px;
 }
 
 .why__panel-inner {
