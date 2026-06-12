@@ -95,7 +95,7 @@ const REASONS: readonly Reason[] = [
   padding:
     clamp(72px, 10vw, 140px)
     clamp(20px, 3vw, 40px)
-    clamp(180px, 18vw, 300px);
+    clamp(96px, 12vw, 180px);
   display: flex;
   flex-direction: column;
   align-items: center;

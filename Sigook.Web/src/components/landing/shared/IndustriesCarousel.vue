@@ -1,8 +1,5 @@
 <template>
   <section class="industries-carousel">
-    <!-- Inner glass surface — materializes the panel against GlobalBackground -->
-    <div class="industries-carousel__surface" aria-hidden="true"></div>
-
     <header class="industries-carousel__header">
       <EyebrowPill variant="white" class="industries-carousel__eyebrow">
         {{ eyebrow }}
@@ -214,64 +211,22 @@ const trackStyle = computed(() => ({
 </script>
 
 <style scoped>
-/* ── Panel shell ────────────────────────────────────────────────────────── */
+/* ── Window shell — transparent (no panel; GlobalBackground shows through) ─ */
 .industries-carousel {
   position: relative;
   width: 100%;
   margin-top: clamp(-180px, -10vw, -80px);
   padding:
-    clamp(140px, 14vw, 200px)
-    clamp(20px, 3vw, 64px);
+    clamp(72px, 10vw, 140px)
+    clamp(20px, 3vw, 64px)
+    clamp(140px, 14vw, 200px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: clamp(36px, 5vw, 60px);
   z-index: 5;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  box-shadow:
-    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
-    0  22px 40px -12px rgba(0, 0, 0, 0.45);
   isolation: isolate;
   font-family: var(--font-family);
-}
-
-/* ── Depth back-layer — transparent glass, peeks ~16px top & bottom ─────── */
-.industries-carousel::before {
-  content: '';
-  position: absolute;
-  top: -16px;
-  bottom: -16px;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-}
-
-.industries-carousel__surface {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  background: linear-gradient(
-    180deg,
-    rgba(9, 48, 85, 0.65) 0%,
-    rgba(9, 48, 85, 0.55) 100%
-  );
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  pointer-events: none;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
