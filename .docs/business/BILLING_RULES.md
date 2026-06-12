@@ -5,8 +5,8 @@
 Covenant's invoicing system charges Companies for staffing services, applying rates, premiums, and taxes appropriately.
 
 **Code location:**
-- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` — Invoicing logic (BaseInvoiceService, CanadaInvoiceService, UsaInvoiceService)
-- `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` — Orchestration
+- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` — Invoicing logic and orchestration (InvoiceService base, CanadaInvoiceService, UsaInvoiceService, InvoiceServiceFactory)
+- `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` — Weekly payroll and subcontractor reports
 - `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/` — Invoice entities
 - `Covenant.Api/Covenant.Documents/` — PDF generation
 

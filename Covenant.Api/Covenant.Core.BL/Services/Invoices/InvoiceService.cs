@@ -3,8 +3,12 @@ using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Pdf;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
@@ -12,12 +16,19 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils.Extensions.Models.Accounting;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Documents.Services;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
+using System.Net.Mime;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
-public abstract class BaseInvoiceService(
+public abstract class InvoiceService(
     ITimesheetRepository timeSheetRepository,
     IInvoiceRepository invoiceRepository,
     IAgencyRepository agencyRepository,
@@ -28,8 +39,20 @@ public abstract class BaseInvoiceService(
     Rates rates,
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
-    ITimesheetCalculatorService calculatorService)
+    ITimesheetCalculatorService calculatorService,
+    IIdentityServerService identityServerService,
+    IInvoicesContainer invoicesContainer,
+    IRazorViewToStringRenderer renderer,
+    IPdfGeneratorService pdfGenerator,
+    IEmailService emailService,
+    IMediator mediator,
+    IPayStubsContainer payStubsContainer,
+    ITeamsService teamsService,
+    IOptions<TeamsWebhookConfiguration> teamsOptions) : IInvoiceService
 {
+    private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
+    private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
+
     protected readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
     protected readonly IInvoiceRepository invoiceRepository = invoiceRepository;
     protected readonly IAgencyRepository agencyRepository = agencyRepository;
@@ -42,9 +65,139 @@ public abstract class BaseInvoiceService(
     protected readonly TimeLimits timeLimits = timeLimits;
     protected readonly ITimesheetCalculatorService calculatorService = calculatorService;
 
-    // Abstract methods to be implemented by country-specific services
+    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly IInvoicesContainer invoicesContainer = invoicesContainer;
+    private readonly IRazorViewToStringRenderer renderer = renderer;
+    private readonly IPdfGeneratorService pdfGenerator = pdfGenerator;
+    private readonly IEmailService emailService = emailService;
+    private readonly IMediator mediator = mediator;
+    private readonly IPayStubsContainer payStubsContainer = payStubsContainer;
+    private readonly ITeamsService teamsService = teamsService;
+    private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
+
     public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
     public abstract Task<Result<Guid>> CreateAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
+    protected abstract Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter);
+    protected abstract Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter);
+    protected abstract Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId);
+    protected abstract Task<(Guid InvoiceId, string InvoiceNumber, IReadOnlyList<string> PayStubsDeleted)> DeleteInvoiceData(Guid invoiceId, DeleteInvoiceModel model);
+
+    #region Invoice Orchestration
+
+    public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilterV2 filter)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        return await FetchInvoices(agencyIds, filter);
+    }
+
+    public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilterV2 filter)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        var result = await FetchInvoicesForExport(agencyIds, filter);
+        return await mediator.Send(new GenerateInvoicesReport(result));
+    }
+
+    public async Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        return await PreviewAsync(agencyIds, model);
+    }
+
+    public async Task<Result<Guid>> CreateInvoice(CreateInvoiceModel model)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        return await CreateAsync(agencyIds, model);
+    }
+
+    public async Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId)
+    {
+        var model = await FetchInvoiceSummary(invoiceId);
+        if (model is null) return null;
+
+        string fileName = invoiceId.ToInvoiceBlobName();
+        string pdfPath = await invoicesContainer.Download(fileName);
+        if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadInvoicePdf(model);
+        if (string.IsNullOrEmpty(pdfPath)) return null;
+
+        return new InvoiceDocument(pdfPath, fileName, model);
+    }
+
+    public async Task<Result> SendInvoiceEmail(Guid invoiceId, InvoiceEmailModel model)
+    {
+        var document = await GetInvoicePdf(invoiceId);
+        if (document is null) return Result.Fail("Invoice not found");
+
+        var invoice = document.Model;
+        var emailAttachments = BuildAttachments(model.Files);
+        var invoiceStream = new MemoryStream(File.ReadAllBytes(document.PdfPath));
+        emailAttachments.Add(new EmailAttachment($"Invoice {invoice.InvoiceNumber}.pdf", MediaTypeNames.Application.Pdf, invoiceStream));
+
+        string body = await renderer.RenderViewToStringAsync(InvoiceEmailTemplate, invoice.ToInvoiceEmailViewModel(model.Message));
+        bool wasSent = await emailService.SendCovenantEmail(new EmailParams(invoice.Email, model.Subject, body)
+        {
+            Cc = model.Cc?.ToList() ?? [],
+            EmailSettingName = invoice.InvoicePayroll.EmailSettingName,
+            Attachments = emailAttachments
+        });
+        return wasSent ? Result.Ok() : Result.Fail("Email delivery failed please try again");
+    }
+
+    public async Task DeleteInvoice(Guid invoiceId, DeleteInvoiceModel model)
+    {
+        var (deletedInvoiceId, invoiceNumber, payStubsDeleted) = await DeleteInvoiceData(invoiceId, model);
+        await invoiceRepository.SaveChangesAsync();
+        await invoicesContainer.DeleteFileIfExists(deletedInvoiceId.ToInvoiceBlobName());
+        await payStubsContainer.DeleteFilesIfExists(model?.PayStubs?.Select(p => p.ToPayStubBlobName()));
+
+        string text = $"{invoiceNumber} {(payStubsDeleted.Any() ? " - " : string.Empty)}{string.Join(" - ", payStubsDeleted)}";
+        string name = identityServerService.GetNickname();
+        await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning($"Invoice deleted by {name}", text));
+    }
+
+    private async Task<string> UploadInvoicePdf(InvoiceSummaryModel model)
+    {
+        string fileName = model.Id.ToInvoiceBlobName();
+        string html = await renderer.RenderViewToStringAsync(InvoiceHtmlTemplate, model.ToInvoiceViewModel());
+        var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
+        if (!pdf) return string.Empty;
+        try
+        {
+            await invoicesContainer.Upload(pdf.Value.Path, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            {
+                {nameof(model.InvoiceNumber), model.InvoiceNumber.Trim()}
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return pdf.Value.Path;
+    }
+
+    private static List<EmailAttachment> BuildAttachments(IEnumerable<IFormFile> files)
+    {
+        var attachments = new List<EmailAttachment>();
+        if (files is null) return attachments;
+
+        foreach (var file in files)
+        {
+            var contentType = file.ContentType;
+            if (string.IsNullOrEmpty(contentType))
+            {
+                var fileProvider = new FileExtensionContentTypeProvider();
+                if (fileProvider.TryGetContentType(file.FileName, out string result))
+                {
+                    contentType = result;
+                }
+            }
+            using var reader = new BinaryReader(file.OpenReadStream());
+            var data = reader.ReadBytes((int)file.OpenReadStream().Length);
+            attachments.Add(new EmailAttachment(file.FileName, contentType, new MemoryStream(data)));
+        }
+        return attachments;
+    }
+
+    #endregion
 
     #region Helper Methods
 

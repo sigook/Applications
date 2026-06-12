@@ -1,12 +1,10 @@
 using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Utils.Extensions;
-using Covenant.HtmlTemplates.Views.Billing.Payroll;
 
-namespace Covenant.Api.Shared.PayrollDocument.Models;
+namespace Covenant.Common.Utils.Extensions.Models.Accounting;
 
-internal static class PayrollMappers
+public static class PayrollViewModelExtensions
 {
-    internal static PayrollViewModel ToPayrollViewModel(this PayStubDetailModel model)
+    public static PayrollViewModel ToPayrollViewModel(this PayStubDetailModel model)
     {
         return new PayrollViewModel
         {
@@ -38,6 +36,19 @@ internal static class PayrollMappers
         };
     }
 
+    public static PayrollEmailViewModel ToPayrollEmailViewModel(this PayStubDetailModel model)
+    {
+        return new PayrollEmailViewModel
+        {
+            WorkerFullName = model.WorkerFullName,
+            TotalNet = model.TotalNet,
+            EndDate = model.EndDate,
+            PaymentDate = model.PaymentDate,
+            WorkerEmail = model.WorkerEmail,
+            PayrollNumber = model.PayrollNumber
+        };
+    }
+
     private static IEnumerable<PayrollTable2Item> GetItemsTable2(PayStubDetailModel model)
     {
         return GetPlusValues().Concat(
@@ -51,7 +62,7 @@ internal static class PayrollMappers
             [
                 new PayrollTable2Item("Current Deductions (-)", model.DeductionTotal.ToString("C")),
                 PayrollTable2Item.EmptyRow,
-                new PayrollTable2Item("Total Net Paid",model.TotalNet.ToString("C"))
+                new PayrollTable2Item("Total Net Paid", model.TotalNet.ToString("C"))
             ]);
 
         IEnumerable<PayrollTable2Item> GetPlusValues()

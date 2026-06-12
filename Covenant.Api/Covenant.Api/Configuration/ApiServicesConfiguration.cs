@@ -1,6 +1,3 @@
-using Covenant.Api.AccountingModule.InvoiceDocument.Controllers;
-using Covenant.Api.AccountingModule.PayStubDocument.Controllers;
-using Covenant.Api.AccountingModule.PayStubDocument.Services;
 using Covenant.Api.Authorization;
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
@@ -105,15 +102,13 @@ public static class ApiServicesConfiguration
         // Invoice services with Strategy pattern
         services.AddScoped<UsaInvoiceService>();
         services.AddScoped<CanadaInvoiceService>();
+        services.AddScoped<InvoiceServiceFactory>();
 
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();
         services.AddScoped<FederalTaxTablesLoader>();
         services.AddScoped<ProvincialTaxTablesLoader>();
-        services.AddScoped<PayStubPdf>();
-        services.AddScoped<InvoicePdf>();
-        services.AddScoped<IPayStubEmailSender, PayStubEmailSender>();
         services.AddSingleton<IBulkPayStubEmailQueue, BulkPayStubEmailQueue>();
         return services;
     }

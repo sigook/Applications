@@ -4,22 +4,18 @@ using Covenant.Common.Constants;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Core.BL.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Covenant.Core.BL.Services.Invoices;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class InvoicesController : ControllerBase
+public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory) : ControllerBase
 {
-    private readonly IAccountingService accountingService;
-
-    public InvoicesController(IAccountingService accountingService)
-    {
-        this.accountingService = accountingService;
-    }
+    private readonly Lazy<Task<IInvoiceService>> invoiceService = new Lazy<Task<IInvoiceService>>(invoiceServiceFactory.Resolve);
 
     /// <summary>Gets the list of invoices matching the given filter with totals.</summary>
     /// <param name="filter">Filter criteria for invoices.</param>
@@ -27,7 +23,8 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(typeof(InvoiceListModelWithTotals), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoices([FromQuery] GetInvoicesFilterV2 filter)
     {
-        var data = await accountingService.GetInvoices(filter);
+        var service = await invoiceService.Value;
+        var data = await service.GetInvoices(filter);
         return Ok(data);
     }
 
@@ -38,7 +35,8 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilterV2 filter)
     {
-        var file = await accountingService.GetInvoicesFile(filter);
+        var service = await invoiceService.Value;
+        var file = await service.GetInvoicesFile(filter);
         return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
     }
 
@@ -49,7 +47,8 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Preview([FromBody] CreateInvoiceModel model)
     {
-        var result = await accountingService.PreviewInvoice(model);
+        var service = await invoiceService.Value;
+        var result = await service.PreviewInvoice(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -61,8 +60,50 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreateInvoiceModel model)
     {
-        var result = await accountingService.CreateInvoice(model);
+        var service = await invoiceService.Value;
+        var result = await service.CreateInvoice(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Generates and returns the invoice document as a PDF file.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpGet("{invoiceId:guid}/pdf")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInvoicePdf(Guid invoiceId)
+    {
+        var service = await invoiceService.Value;
+        var document = await service.GetInvoicePdf(invoiceId);
+        if (document is null) return NotFound();
+        return PhysicalFile(document.PdfPath, MediaTypeNames.Application.Pdf, document.FileName);
+    }
+
+    /// <summary>Generates the invoice PDF and emails it, with optional attachments, to the client.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    /// <param name="model">Email content, recipients and attachment files.</param>
+    [HttpPost("{invoiceId:guid}/email")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model)
+    {
+        var service = await invoiceService.Value;
+        var result = await service.SendInvoiceEmail(invoiceId, model);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddError(result.StringErrors));
+    }
+
+    /// <summary>Deletes an invoice and its related pay stubs, and notifies the accounting team.</summary>
+    /// <param name="id">Identifier of the invoice to delete.</param>
+    /// <param name="model">The pay stubs to delete alongside the invoice.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, [FromBody] DeleteInvoiceModel model)
+    {
+        var service = await invoiceService.Value;
+        await service.DeleteInvoice(id, model);
         return Ok();
     }
 }

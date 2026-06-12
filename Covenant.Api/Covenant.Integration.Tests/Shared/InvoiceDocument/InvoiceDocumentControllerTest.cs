@@ -1,4 +1,3 @@
-using Covenant.Api.AccountingModule.InvoiceDocument.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
@@ -29,7 +28,7 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
         [Fact]
         public async Task GetPdf()
         {
-            HttpResponseMessage response = await _client.GetAsync($"api/v4/Accounting/Invoice/{Data.Invoice.Id}/Document/PDF");
+            HttpResponseMessage response = await _client.GetAsync($"api/agency/accounting/Invoices/{Data.Invoice.Id}/pdf");
             response.EnsureSuccessStatusCode();
         }
     }
@@ -43,7 +42,11 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
                 .AddTestAuth(o => { });
             services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
             services.AddSingleton(Mock.Of<IInvoicesContainer>());
-            services.AddSingleton<InvoicePdf>();
+            services.AddSingleton(Mock.Of<IPayStubsContainer>());
+            var identityServerService = new Mock<IIdentityServerService>();
+            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.Agency.Id);
+            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.Agency.Id });
+            services.AddSingleton(identityServerService.Object);
             var pdfService = new Mock<IPdfGeneratorService>();
             pdfService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
                 .ReturnsAsync(() =>

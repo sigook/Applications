@@ -26,7 +26,7 @@ export function createAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<
 }
 
 export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void> {
-  return http.delete(`/api/v4/Accounting/Invoice/${payload.invoiceId}`, { data: payload }).then(() => {});
+  return http.delete(`/api/agency/accounting/Invoices/${payload.invoiceId}`, { data: payload }).then(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void
 
 export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
   return http
-    .get(`/api/v4/Accounting/Invoice/${invoiceId}/Document/PDF`, { responseType: 'blob' })
+    .get(`/api/agency/accounting/Invoices/${invoiceId}/pdf`, { responseType: 'blob' })
     .then(r => r.data);
 }
 
@@ -50,7 +50,7 @@ export function sendInvoiceEmail(payload: SendInvoiceEmailPayload): Promise<void
   formData.append('message', payload.body);
   payload.attachments.forEach(file => formData.append('files', file));
   return http
-    .post(`/api/v4/Accounting/Invoice/${payload.invoiceId}/Document/Email`, formData, {
+    .post(`/api/agency/accounting/Invoices/${payload.invoiceId}/email`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     .then(() => {});

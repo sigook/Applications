@@ -1,7 +1,7 @@
-using Covenant.Api.AccountingModule.PayStubDocument.Services;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Core.BL.Interfaces;
 using Covenant.Common.Models.Notification;
 using Microsoft.Extensions.Options;
 
@@ -47,19 +47,19 @@ public class BulkPayStubEmailBackgroundService : BackgroundService
     private async Task ProcessJob(BulkPayStubEmailJob job, CancellationToken stoppingToken)
     {
         using var throttler = new SemaphoreSlim(MaxConcurrency);
-        var tasks = job.PayStubIds.Select(payStubId => SendOne(payStubId, throttler, stoppingToken));
+        var tasks = job.PayStubIds.Select(payStubId => SendPayStubEmail(payStubId, throttler, stoppingToken));
         var results = await Task.WhenAll(tasks);
         await NotifyTeams(job, results);
     }
 
-    private async Task<PayStubEmailResult> SendOne(Guid payStubId, SemaphoreSlim throttler, CancellationToken stoppingToken)
+    private async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId, SemaphoreSlim throttler, CancellationToken stoppingToken)
     {
         await throttler.WaitAsync(stoppingToken);
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var sender = scope.ServiceProvider.GetRequiredService<IPayStubEmailSender>();
-            return await sender.SendOne(payStubId);
+            var payStubService = scope.ServiceProvider.GetRequiredService<IPayStubService>();
+            return await payStubService.SendPayStubEmail(payStubId);
         }
         catch (Exception e)
         {

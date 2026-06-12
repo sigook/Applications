@@ -227,11 +227,10 @@ Covenant.Api/
 │   └── WorkerRequestTimeSheet/Controllers/    → Clock in/out
 │
 ├── AccountingModule/                  # Accounting operations
-│   ├── PayStub/Controllers/                   → AccountingPayStubV4Controller
 │   ├── AgencyInvoice/Controllers/             → AccountingInvoiceV4Controller
-│   ├── InvoiceDocument/Controllers/           → Invoice PDFs
-│   ├── PayStubDocument/Controllers/           → Pay stub PDFs
 │   └── Deduction/                             → CPP / Federal Tax / Provincial Tax
+│   # Pay stub CRUD, PDF & email → Controllers/Sigook/Agency/Accounting/PayStubsController
+│   # Invoice PDF & email        → Controllers/Sigook/Agency/Accounting/InvoicesController
 │
 ├── ManagerModule/
 └── Security/                          # Authentication
@@ -411,15 +410,16 @@ Covenant.Common/
 **Invoice / Billing Logic** (in `Covenant.Core.BL/Services/Invoices/`)
 ```
 Responsibilities:
+- Invoice listing, export, preview, creation, PDF and email orchestration
 - Invoice calculations (rates, markup)
 - Tax calculations (HST/GST per province)
 - Discount calculations
 - Additional item calculations
 
 Key classes:
-- BaseInvoiceService (shared Canada/USA logic)
-- CanadaInvoiceService
-- UsaInvoiceService
+- IInvoiceService / InvoiceService (abstract base: orchestration + shared Canada/USA logic)
+- CanadaInvoiceService / UsaInvoiceService (country-specific PreviewAsync/CreateAsync, IsUSA)
+- IInvoiceServiceFactory / InvoiceServiceFactory (resolves the country service via the agency billing location)
 
 Entities: Covenant.Common/Entities/Accounting/Invoice/
 ```

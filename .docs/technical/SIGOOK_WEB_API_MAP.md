@@ -215,11 +215,11 @@ Invoicing for agency → company billing.
 | `getAgencyInvoices(filter)` | GET | `/api/agency/accounting/Invoices` | `AgencyInvoiceFilter` (params) | `AgencyInvoiceListResponse` | List invoices |
 | `previewAgencyInvoice(payload)` | POST | `/api/agency/accounting/Invoices/Preview` | `CreateAgencyInvoiceModel` | `InvoiceSummaryModel` | Preview before creation |
 | `createAgencyInvoice(payload)` | POST | `/api/agency/accounting/Invoices` | `CreateAgencyInvoiceModel` | `void` | Generate invoice |
-| `deleteAgencyInvoice(payload)` | DELETE | `/api/v4/Accounting/Invoice/{id}` | `DeleteInvoicePayload` (in body) | `void` | Remove invoice |
-| `downloadInvoicePdf(id)` | GET | `/api/v4/Accounting/Invoice/{id}/Document/PDF` | — | Blob | PDF download |
+| `deleteAgencyInvoice(payload)` | DELETE | `/api/agency/accounting/Invoices/{id}` | `DeleteInvoicePayload` (in body) | `void` | Remove invoice |
+| `downloadInvoicePdf(id)` | GET | `/api/agency/accounting/Invoices/{id}/pdf` | — | Blob | PDF download |
 | `sendInvoiceVerificationCode(id)` | POST | `/api/v4/Accounting/Invoice/{id}/SendVerificationCode` | — | `void` | 2FA code for verification |
 | `getPayStubsByInvoice(id)` | GET | `/api/v4/Accounting/Invoice/{id}/PayStub` | — | `PayStubDeleteWarningItem[]` | Linked pay stubs |
-| `sendInvoiceEmail(payload)` | POST | `/api/v4/Accounting/Invoice/{id}/Document/Email` | FormData (multipart) | `void` | Email invoice with attachments |
+| `sendInvoiceEmail(payload)` | POST | `/api/agency/accounting/Invoices/{id}/email` | FormData (multipart) | `void` | Email invoice with attachments |
 
 **Types:** `AgencyInvoiceFilter`, `AgencyInvoiceListResponse`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (from `src/types/accounting`)
 
@@ -284,10 +284,10 @@ Pay stub generation and payroll administration.
 |----------|------------|----------|--------------|---------------|-------|
 | **PayStubs CRUD** | | | | | |
 | `getAgencyPayStubs(filter)` | GET | `/api/agency/accounting/PayStubs` | `AgencyPayStubFilter` (params) | `PaginatedList<AgencyPayStubListItem>` | List pay stubs |
-| `downloadPayStubPdf(id)` | GET | `/api/v4/Accounting/PayStub/{id}/Document/PDF` | — | Blob | PDF download |
-| `deleteAgencyPayStub(id)` | DELETE | `/api/v4/Accounting/PayStub/{id}` | — | `void` | Remove pay stub |
-| `sendPayStubEmail(id)` | POST | `/api/v4/Accounting/PayStub/{id}/Document/Email` | — | `void` | Email to worker |
-| `createAgencyPayStub(payload)` | POST | `/api/v4/accounting/PayStub` | `CreatePayStubPayload` | `void` | Create pay stub |
+| `downloadPayStubPdf(id)` | GET | `/api/agency/accounting/PayStubs/{id}/pdf` | — | Blob | PDF download |
+| `deleteAgencyPayStub(id)` | DELETE | `/api/agency/accounting/PayStubs/{id}` | — | `void` | Remove pay stub |
+| `sendPayStubEmail(id)` | POST | `/api/agency/accounting/PayStubs/{id}/email` | — | `void` | Email to worker |
+| `createAgencyPayStub(payload)` | POST | `/api/agency/accounting/PayStubs` | `CreatePayStubPayload` | `void` | Create pay stub |
 | **Generation** | | | | | |
 | `getWorkersReadyForPayStub()` | GET | `/api/agency/accounting/PayStubs/WorkersReadyForPayStub` | — | `WorkerReadyForPayStubModel[]` | Workers with approved timesheets |
 | `generatePayStubs(workerIds)` | POST | `/api/agency/accounting/PayStubs/generate` | string[] (worker IDs) | `void` | Batch generate from timesheets |
