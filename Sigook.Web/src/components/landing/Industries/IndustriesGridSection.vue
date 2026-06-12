@@ -9,7 +9,7 @@
       </EyebrowPill>
 
       <h2 class="industries-grid__heading">
-        Eleven industries.
+        Many industries.
         <span class="industries-grid__heading-accent">
           One commitment to specialized talent.
         </span>

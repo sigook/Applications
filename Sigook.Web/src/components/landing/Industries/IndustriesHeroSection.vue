@@ -11,20 +11,20 @@
       </EyebrowPill>
 
       <h1 class="industries-hero__heading">
-        Eleven <span class="industries-hero__heading-accent">sectors.</span><br>
+        Many <span class="industries-hero__heading-accent">sectors.</span><br>
         Endless <span class="industries-hero__heading-accent">possibilities.</span>
       </h1>
 
       <p class="industries-hero__subtitle">
         We recruit highly qualified professionals for specialized positions
-        across the industries that power the U.S. economy — pairing
+        across the industries that power the country's economy—combining
         deep sector knowledge with long-term, measurable impact.
       </p>
 
       <LabeledChipList
         label="Sectors we serve"
         :items="PREVIEW_INDUSTRIES"
-        more-label="+ 6 more"
+        more-label="+ many more"
         class="industries-hero__chips"
       />
     </div>
@@ -42,7 +42,7 @@
  * Differentiates via:
  *  • Magnifier anchor: bottom-left (4th and final quadrant for the family)
  *  • Cyan eyebrow → signals expertise/breadth
- *  • Preview chips show 5 of 11 sectors + "+6 more" indicator — invites
+ *  • Preview chips show a sample of the sectors + a "many more" indicator — invites
  *    the user to scroll to the full grid panel below.
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
