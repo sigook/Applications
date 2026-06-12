@@ -155,7 +155,11 @@ onUnmounted(() => observer?.disconnect())
   width: 100%;
   height: 588px;
   border-radius: 150px 0 150px 0;
-  background: rgba(26, 117, 187, 0.45);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
   z-index: 1;
   pointer-events: none;
 }
@@ -282,6 +286,8 @@ onUnmounted(() => observer?.disconnect())
 
 .why__hero-right {
   flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .why__hero-body {
@@ -506,6 +512,7 @@ onUnmounted(() => observer?.disconnect())
 
   .why__hero-right {
     width: 100%;
+    justify-content: flex-start;
   }
 
   .why__hero-body {

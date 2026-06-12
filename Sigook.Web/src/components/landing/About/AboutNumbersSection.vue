@@ -70,8 +70,26 @@ const ABOUT_STATS: readonly Stat[] = [
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
-  overflow: hidden;
   isolation: isolate;
+}
+
+.about-numbers::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  bottom: -16px;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  border-radius:
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 /* ── Inner glass surface — semi-opaque navy lets GlobalBg breathe through ── */
@@ -79,6 +97,9 @@ const ABOUT_STATS: readonly Stat[] = [
   position: absolute;
   inset: 0;
   z-index: 0;
+  border-radius:
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.65) 0%,

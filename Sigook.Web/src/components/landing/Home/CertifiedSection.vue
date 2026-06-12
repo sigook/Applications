@@ -58,13 +58,16 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
 /* ── Back layer — same dimensions + border-radius, 20px above section ── */
 .certified__back {
   position: absolute;
-  top: 40px;
+  top: 4px;
   left: 0;
   width: 100%;
-  height: 577px;
+  height: 609px;
   border-radius: 150px 0 150px 0;
-  background: #1A75BB;
-  opacity: 0.45;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
   z-index: 0;
 }
 

@@ -1,5 +1,6 @@
 <template>
   <section class="op-cta">
+    <div class="op-cta__back" aria-hidden="true"></div>
     <div class="op-cta__card">
       <div class="op-cta__inner">
         <div class="op-cta__grid">
@@ -75,8 +76,28 @@ function onSendResume(): void {
   font-family: var(--font-family);
 }
 
+/* ── Depth back-layer — transparent glass, peeks ~16px above & below card ─ */
+.op-cta__back {
+  position: absolute;
+  top: calc(clamp(8px, 1.5vw, 28px) - 16px);
+  bottom: calc(clamp(64px, 9vw, 120px) - 16px);
+  left: 0;
+  right: 0;
+  z-index: 0;
+  border-radius:
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
 .op-cta__card {
   position: relative;
+  z-index: 1;
   width: 100%;
   min-height: clamp(480px, 58vh, 740px);
   display: flex;

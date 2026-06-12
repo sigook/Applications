@@ -1,5 +1,7 @@
 <template>
-  <section class="dual-cta" aria-label="Find work or find talent">
+  <div class="dual-cta-wrap">
+    <div class="dual-cta__back" aria-hidden="true"></div>
+    <section class="dual-cta" aria-label="Find work or find talent">
     <!-- Full-bleed background layers (fill the entire section, any width) -->
     <div class="dual-cta__bg" aria-hidden="true">
       <img :src="talentsPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--left" />
@@ -49,7 +51,8 @@
         </template>
       </PrimaryCard>
     </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -60,12 +63,35 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
 </script>
 
 <style scoped>
+.dual-cta-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: -140px;
+  z-index: 5;
+}
+
+/* ── Depth back-layer — transparent glass, peeks ~16px top & bottom ─────── */
+.dual-cta__back {
+  position: absolute;
+  top: -16px;
+  bottom: -16px;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  border-radius: 150px 0 150px 0;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
 .dual-cta {
   position: relative;
   width: 100%;
   height: 720px;
-  margin-top: -140px;
-  z-index: 5;
+  z-index: 1;
   overflow: hidden;
   isolation: isolate;
   /* Asymmetric brand shape — top-left + bottom-right curve reveal Hero/Numbers in overlap zones */
@@ -197,10 +223,17 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
 
 /* ── Mobile (≤ 1023px) ───────────────────────────────────── */
 @media (max-width: 1023px) {
+  .dual-cta-wrap {
+    margin-top: -100px;
+  }
+
+  .dual-cta__back {
+    display: none;
+  }
+
   .dual-cta {
     height: auto;
     padding: 90px 20px 110px;
-    margin-top: -100px;
     border-radius: 80px 0 80px 0;
   }
 
