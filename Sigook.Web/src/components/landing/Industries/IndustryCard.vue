@@ -164,19 +164,7 @@ function formatIndex(idx: number): string {
   position: absolute;
   inset: 0;
   z-index: 0;
-}
-
-/* Gradient backgrounds match the DualCta (Home audience section) so the
-   Industries page and the Home audience cards share the same color story. */
-.industry-card--navy .industry-card__base {
-  background: linear-gradient(
-    135deg,
-    rgba(15, 47, 68, 0.95) 0%,
-    rgba(21, 117, 187, 0.75) 100%
-  );
-}
-
-.industry-card--red .industry-card__base {
+  /* Expanded state reveals this solid red gradient — same for every card */
   background: linear-gradient(
     135deg,
     rgba(229, 45, 39, 0.92) 0%,
@@ -208,25 +196,15 @@ function formatIndex(idx: number): string {
   position: absolute;
   inset: 0;
   z-index: 2;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.industry-card--navy .industry-card__overlay {
+  /* Collapsed state shows this blue gradient over the photo — same for every
+     card. Fades out on expand to reveal the red base underneath. */
   background: linear-gradient(
     180deg,
     rgba(15, 47, 68, 0.55) 0%,
     rgba(21, 117, 187, 0.65) 55%,
     rgba(15, 47, 68, 0.92) 100%
   );
-}
-
-.industry-card--red .industry-card__overlay {
-  background: linear-gradient(
-    180deg,
-    rgba(229, 45, 39, 0.55) 0%,
-    rgba(229, 45, 39, 0.75) 55%,
-    rgba(176, 30, 26, 0.92) 100%
-  );
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .industry-card--expanded .industry-card__overlay {
