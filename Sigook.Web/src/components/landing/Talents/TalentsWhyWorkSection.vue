@@ -23,11 +23,10 @@
         :variant="reason.variant"
         :eyebrow="reason.eyebrow"
         :title="reason.title"
+        :list="reason.bullets"
         :delay="idx * 140"
         :class="{ 'talents-why__card--offset': idx === 1 }"
-      >
-        {{ reason.body }}
-      </SecondaryCard>
+      />
     </div>
   </section>
 </template>
@@ -50,7 +49,7 @@ import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/s
 interface Reason {
   readonly eyebrow: string
   readonly title: string
-  readonly body: string
+  readonly bullets: readonly string[]
   readonly variant: SecondaryCardVariant
 }
 
@@ -58,22 +57,31 @@ const REASONS: readonly Reason[] = [
   {
     eyebrow: 'Local Reach',
     title: 'Working where you are',
-    body:
-      'With clients located across multiple states, you\'ll find roles that match your skills and interests — and build the relationships that turn placement into long-term stability.',
+    bullets: [
+      'Roles available across major US states and metro areas',
+      'Local recruiters who know your market and the employers in it',
+      'Placements that grow into lasting careers, not just one-time gigs',
+    ],
     variant: 'blue',
   },
   {
     eyebrow: 'Human-First',
     title: 'We care about you',
-    body:
-      'You\'re not just a candidate. Your aspirations and vision define how we work — we take the time to understand where you want to go before we recommend a single opportunity.',
+    bullets: [
+      'We listen first — your goals shape every role we recommend',
+      'A real person in your corner from first conversation to first day',
+      'We don\'t stop at placement — we check in to make sure it\'s working',
+    ],
     variant: 'cyan',
   },
   {
     eyebrow: 'Sector Expertise',
     title: 'Focused on your experience',
-    body:
-      'Our recruiters specialize in the sectors where your skills are most valued. They know each industry\'s rhythms, language, and what excellent looks like — and they match you accordingly.',
+    bullets: [
+      'Recruiters who specialize in skilled trades, industrial, and professional sectors',
+      'Deep knowledge of what great looks like in your specific field',
+      'Matched to roles where your skills are genuinely valued and put to use',
+    ],
     variant: 'red',
   },
 ] as const

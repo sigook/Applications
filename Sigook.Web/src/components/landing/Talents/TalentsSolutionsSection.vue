@@ -9,7 +9,7 @@
       </EyebrowPill>
 
       <h2 class="talents-solutions__heading">
-        Two paths.
+        Three paths.
         <span class="talents-solutions__heading-accent">
           One commitment to your growth.
         </span>
@@ -32,8 +32,6 @@
         :delay="idx * 160"
         class="talents-solutions__card"
       >
-        {{ option.body }}
-
         <template #button>
           <router-link
             :to="option.ctaTo"
@@ -53,10 +51,10 @@
 /**
  * Talents — "Your Career, Your Way" section.
  *
- * Two SecondaryCard cards (canonical Home pattern) as career-path CTAs.
- * Direct Hiring = blue variant, Contract = red variant. Each card carries
- * supporting copy + a benefits list + a CTA pill — body via default slot,
- * benefits via the `list` prop, and the CTA via the #button slot.
+ * Three SecondaryCard cards (canonical Home pattern) as career-path CTAs:
+ * Direct Hiring = blue, Temp to Perm = cyan, Contract = red. Each card
+ * carries a benefits list + a CTA pill — benefits via the `list` prop and
+ * the CTA via the #button slot.
  */
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
@@ -65,7 +63,6 @@ interface CareerOption {
   readonly key: string
   readonly eyebrow: string
   readonly title: string
-  readonly body: string
   readonly benefits: readonly string[]
   readonly ctaLabel: string
   readonly ctaTo: string
@@ -77,27 +74,36 @@ const OPTIONS: readonly CareerOption[] = [
     key: 'direct-hiring',
     eyebrow: 'Long-Term Career',
     title: 'Direct Hiring',
-    body:
-      'Build a lasting career with permanent placements at companies that invest in your growth — full benefits, real progression, lasting team relationships.',
     benefits: [
-      'Permanent placement',
-      'Full benefits package',
-      'Clear career progression',
+      'Permanent roles with competitive pay and full US benefits',
+      'Join companies that invest in your development and long-term growth',
+      'Build real career momentum with stability and a team behind you',
     ],
     ctaLabel: 'Browse direct hires',
     ctaTo: '/open-positions',
     variant: 'blue',
   },
   {
+    key: 'temp-to-perm',
+    eyebrow: 'Try Before You Commit',
+    title: 'Temp to Perm',
+    benefits: [
+      'Start on a contract with a clear path to a permanent role',
+      'Test the team and the day-to-day before committing long-term',
+      'Convert to full-time once it\'s the right fit for both sides',
+    ],
+    ctaLabel: 'Browse temp-to-perm',
+    ctaTo: '/open-positions',
+    variant: 'cyan',
+  },
+  {
     key: 'contract',
     eyebrow: 'Flexibility & Reach',
     title: 'Contract',
-    body:
-      'Project-based roles that let you choose your pace, diversify your skills, and work across the industries that interest you most — without the long-term tie-down.',
     benefits: [
-      'Variety of projects',
-      'Faster skill expansion',
-      'Multi-industry exposure',
+      'Pick up project-based roles across multiple industries and locations',
+      'Grow your skillset faster by working in diverse environments',
+      'No long-term commitment — work on your terms, at your pace',
     ],
     ctaLabel: 'Browse contracts',
     ctaTo: '/open-positions',
@@ -209,13 +215,13 @@ const OPTIONS: readonly CareerOption[] = [
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Cards grid — 2 cols desktop, stack mobile ──────────────────────────── */
+/* ── Cards grid — 3 cols desktop, stack mobile ──────────────────────────── */
 .talents-solutions__cards {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(24px, 3.2vw, 40px);
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 2.4vw, 32px);
   align-items: start;
   width: 100%;
   max-width: 1180px;
