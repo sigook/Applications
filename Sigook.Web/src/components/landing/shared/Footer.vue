@@ -16,6 +16,7 @@
           <p class="footer__tagline">
             Staffing and workforce solutions for growing businesses across the United States.
           </p>
+          <SocialLinks class="footer__social" />
         </div>
 
         <!-- Nav columns -->
@@ -64,6 +65,8 @@
 </template>
 
 <script setup lang="ts">
+import SocialLinks from '@/components/landing/shared/SocialLinks.vue'
+
 const currentYear = new Date().getFullYear()
 </script>
 
