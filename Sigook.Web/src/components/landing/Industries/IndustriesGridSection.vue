@@ -34,11 +34,16 @@
       <!-- "+" card — closes the grid (slot 12). Same red brand gradient
            as the other red-tone cards, with a single centered plus glyph.
            Acts as a soft CTA: "don't see your sector? talk to us". -->
-      <a href="#industries-contact" class="industries-grid__plus" aria-label="Don't see your sector? Contact us">
+      <button
+        type="button"
+        class="industries-grid__plus"
+        aria-label="Don't see your sector? Talk to us"
+        @click="registerModal.open()"
+      >
         <span class="industries-grid__plus-symbol" aria-hidden="true">+</span>
         <span class="industries-grid__plus-label">Don't see your sector?</span>
         <span class="industries-grid__plus-cta">Talk to us →</span>
-      </a>
+      </button>
     </div>
   </section>
 </template>
@@ -59,6 +64,9 @@
 import { ref } from 'vue'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
+import { useWorkerRegisterModal } from '@/components/landing/shared/forms/useWorkerRegisterModal'
+
+const registerModal = useWorkerRegisterModal()
 
 // 11 sectors. Tones alternate navy / red for visual rhythm.
 // Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized
@@ -359,6 +367,9 @@ function toggle(key: Industry['key']): void {
 /* ── "+" card — closes the 11-industry grid as slot 12 ─────────────────── */
 .industries-grid__plus {
   position: relative;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
   display: flex;
   flex-direction: column;
   align-items: center;

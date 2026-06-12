@@ -12,6 +12,7 @@ const Partner            = () => import('@/pages/landing/Partner/Partner.vue');
 const SpecialProjects    = () => import('@/pages/landing/SpecialProjects/SpecialProjects.vue');
 const PrivacyPolicy      = () => import('@/pages/landing/Legal/PrivacyPolicy.vue');
 const TermsAndConditions = () => import('@/pages/landing/Legal/TermsAndConditions.vue');
+const Disclaimer         = () => import('@/pages/landing/Legal/Disclaimer.vue');
 const ComingSoon         = () => import('@/pages/landing/ComingSoon.vue');
 
 const cs = (path: string, name: string, title: string): RouteRecordRaw => ({
@@ -95,9 +96,14 @@ const routesLanding: RouteRecordRaw[] = [
         component: TermsAndConditions,
         meta: { layout: 'landing', requiresAuth: false, title: 'Terms and Conditions' },
     },
+    {
+        path: '/disclaimer',
+        name: 'disclaimer',
+        component: Disclaimer,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Disclaimer' },
+    },
     cs('/certified',  'certified',  'Licensed & Certified'),
     cs('/payroll',    'payroll',    'Payroll Solutions'),
-    cs('/disclaimer', 'disclaimer', 'Disclaimer'),
     cs('/sign-up',    'sign-up',    'Sign Up'),
     cs('/sign-in',    'sign-in',    'Sign In'),
 
