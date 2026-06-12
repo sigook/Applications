@@ -48,26 +48,54 @@
       </button>
     </div>
 
-    <!-- Mobile drawer -->
+    <!-- Mobile / tablet drawer — lateral off-canvas modal -->
     <transition name="nav-drawer">
-      <div v-if="mobileOpen" class="nav__drawer">
-        <router-link
-          v-for="link in navLinks"
-          :key="link.label"
-          :to="link.to"
-          class="nav__drawer-link"
-          exact-active-class="nav__drawer-link--active"
-          @click="mobileOpen = false"
-        >{{ link.label }}</router-link>
-        <div class="nav__drawer-actions">
-          <b-button
-            native-type="button"
-            class="nav__cta nav__cta--ghost"
-            :loading="!authReady"
-            :disabled="!authReady"
-            @click="onSignIn"
-          >{{ ctaLabel }}</b-button>
-        </div>
+      <div
+        v-if="mobileOpen"
+        class="nav__overlay"
+        @click.self="mobileOpen = false"
+      >
+        <aside
+          class="nav__drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+        >
+          <div class="nav__drawer-head">
+            <span class="nav__drawer-title">Menu</span>
+            <button
+              class="nav__drawer-close"
+              type="button"
+              aria-label="Close menu"
+              @click="mobileOpen = false"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <nav class="nav__drawer-links" aria-label="Primary mobile">
+            <router-link
+              v-for="link in navLinks"
+              :key="link.label"
+              :to="link.to"
+              class="nav__drawer-link"
+              exact-active-class="nav__drawer-link--active"
+              @click="mobileOpen = false"
+            >{{ link.label }}</router-link>
+          </nav>
+
+          <div class="nav__drawer-actions">
+            <b-button
+              native-type="button"
+              class="nav__cta nav__cta--ghost"
+              :loading="!authReady"
+              :disabled="!authReady"
+              @click="onSignIn"
+            >{{ ctaLabel }}</b-button>
+          </div>
+        </aside>
       </div>
     </transition>
   </header>
@@ -144,6 +172,17 @@ function onScroll() {
   isScrolled.value = window.scrollY > 80;
 }
 
+// Close the lateral drawer on Escape; lock body scroll while it is open.
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape') mobileOpen.value = false;
+}
+
+watch(mobileOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) document.addEventListener('keydown', onKeydown);
+  else document.removeEventListener('keydown', onKeydown);
+});
+
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true });
   observeHeroLogo();
@@ -153,6 +192,8 @@ watch(() => route.fullPath, observeHeroLogo);
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
+  document.removeEventListener('keydown', onKeydown);
+  document.body.style.overflow = '';
   heroLogoObserver?.disconnect();
 });
 </script>
@@ -391,16 +432,91 @@ onUnmounted(() => {
   background-color: var(--c-brand-cyan);
 }
 
-/* ── Mobile drawer — glass overlay (matches navbar scrolled state) ──────── */
+/* ── Mobile / tablet drawer — lateral off-canvas modal ─────────────────── */
+/* Full-screen dimmed backdrop above the navbar; the panel slides in from the
+   right edge (closest to the hamburger). Click outside or the X closes it. */
+.nav__overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  /* 100vw (not right:0) so the panel sits flush against the true viewport edge
+     even when a classic scrollbar is present — body scroll is locked while open,
+     so this never introduces a horizontal scrollbar. */
+  width: 100vw;
+  z-index: 200;
+  background: rgba(5, 25, 45, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: flex-end;
+}
+
 .nav__drawer {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  background: rgba(9, 48, 85, 0.92);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 8px 24px 24px;
+  width: min(360px, 84vw);
+  height: 100vh;
+  height: 100dvh;
+  padding: 18px 22px calc(28px + env(safe-area-inset-bottom));
+  background: linear-gradient(
+    180deg,
+    rgba(9, 48, 85, 0.98) 0%,
+    rgba(9, 48, 85, 0.96) 100%
+  );
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -24px 0 48px rgba(0, 0, 0, 0.40);
+  overflow-y: auto;
+}
+
+.nav__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.nav__drawer-title {
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+}
+
+.nav__drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: -6px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.25s ease;
+}
+
+.nav__drawer-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: rotate(90deg);
+}
+
+.nav__drawer-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav__drawer-links {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
 }
 
 .nav__drawer-link {
@@ -443,22 +559,37 @@ onUnmounted(() => {
 .nav__drawer-actions {
   display: flex;
   gap: 12px;
-  margin-top: 22px;
+  margin-top: auto;
+  padding-top: 24px;
 }
 
 .nav__drawer-actions .nav__cta {
   flex: 1;
 }
 
-/* ── Drawer transition ──────────────────────────────────────────────────── */
+/* ── Drawer transition — backdrop fades, panel slides in from the right ─── */
 .nav-drawer-enter-active,
 .nav-drawer-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.3s ease;
+}
+.nav-drawer-enter-active .nav__drawer,
+.nav-drawer-leave-active .nav__drawer {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .nav-drawer-enter-from,
 .nav-drawer-leave-to {
   opacity: 0;
-  transform: translateY(-12px);
+}
+.nav-drawer-enter-from .nav__drawer,
+.nav-drawer-leave-to .nav__drawer {
+  transform: translateX(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer-enter-active .nav__drawer,
+  .nav-drawer-leave-active .nav__drawer {
+    transition: none;
+  }
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
