@@ -6,8 +6,8 @@
         Worker Registration
       </EyebrowPill>
       <h1 class="apply-page__heading">
-        Join Sigook.
-        <span class="apply-page__heading-accent">Get matched in days.</span>
+        Join <span class="apply-page__heading-accent">Sigook.</span><br>
+        Get <span class="apply-page__heading-accent">matched</span> in days.
       </h1>
       <p class="apply-page__subtitle">
         Tell us about you, your skills, and the documents that prove them.
@@ -74,7 +74,6 @@ import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegister
 
 .apply-page__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 .apply-page__subtitle {

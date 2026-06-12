@@ -11,8 +11,8 @@
       </EyebrowPill>
 
       <h1 class="sp-hero__heading">
-        Beyond staffing.
-        <span class="sp-hero__heading-accent">Built for what's next.</span>
+        Beyond <span class="sp-hero__heading-accent">staffing.</span><br>
+        Built for what's <span class="sp-hero__heading-accent">next.</span>
       </h1>
 
       <p class="sp-hero__subtitle">
@@ -112,7 +112,6 @@ const FOCUS_AREAS = [
 
 .sp-hero__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

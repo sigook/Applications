@@ -11,8 +11,8 @@
       </EyebrowPill>
 
       <h1 class="industries-hero__heading">
-        Eleven sectors.
-        <span class="industries-hero__heading-accent">Endless possibilities.</span>
+        Eleven <span class="industries-hero__heading-accent">sectors.</span><br>
+        Endless <span class="industries-hero__heading-accent">possibilities.</span>
       </h1>
 
       <p class="industries-hero__subtitle">
@@ -116,7 +116,6 @@ const PREVIEW_INDUSTRIES = [
 
 .industries-hero__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

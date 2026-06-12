@@ -11,8 +11,8 @@
       </EyebrowPill>
 
       <h1 class="talents-hero__heading">
-        Your career.
-        <span class="talents-hero__heading-accent">Your way.</span>
+        Your <span class="talents-hero__heading-accent">career.</span><br>
+        Your <span class="talents-hero__heading-accent">way.</span>
       </h1>
 
       <p class="talents-hero__subtitle">
@@ -111,7 +111,6 @@ const ROLE_TYPES = [
 
 .talents-hero__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

@@ -13,7 +13,7 @@
       </EyebrowPill>
 
       <h1 class="employers-hero__heading">
-        Your next great hire.
+        Your next great <span class="employers-hero__heading-accent">hire.</span><br>
         <span class="employers-hero__heading-accent">Found.</span>
       </h1>
 
@@ -111,8 +111,7 @@ const STAFFING_TYPES = [
 }
 
 .employers-hero__heading-accent {
-  color: var(--c-brand-red);
-  display: block;
+  color: var(--c-brand-cyan);
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

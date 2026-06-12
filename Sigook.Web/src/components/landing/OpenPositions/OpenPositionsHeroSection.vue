@@ -12,8 +12,8 @@
       </EyebrowPill>
 
       <h1 class="op-hero__heading">
-        Find your next move.
-        <span class="op-hero__heading-accent">Today's openings.</span>
+        Find your next <span class="op-hero__heading-accent">move.</span><br>
+        Today's <span class="op-hero__heading-accent">openings.</span>
       </h1>
 
       <p class="op-hero__subtitle">
@@ -165,7 +165,6 @@ function onSearch(): void {
 
 .op-hero__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 .op-hero__subtitle {

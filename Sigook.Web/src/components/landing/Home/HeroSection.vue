@@ -16,8 +16,8 @@
       />
 
       <h1 class="hero__heading">
-        Where great talent meets
-        <span class="hero__heading-accent">great opportunities</span>
+        Where great <span class="hero__heading-accent">talent</span> meets<br>
+        great <span class="hero__heading-accent">opportunities</span>
       </h1>
 
       <p class="hero__subtitle">
@@ -123,7 +123,6 @@ const INDUSTRIES = [
 
 .hero__heading-accent {
   color: var(--c-brand-cyan);
-  white-space: nowrap;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

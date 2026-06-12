@@ -12,8 +12,8 @@
       </EyebrowPill>
 
       <h1 class="partner-hero__heading">
-        Grow your book.
-        <span class="partner-hero__heading-accent">Keep what's yours.</span>
+        Grow your <span class="partner-hero__heading-accent">book.</span><br>
+        Keep what's <span class="partner-hero__heading-accent">yours.</span>
       </h1>
 
       <p class="partner-hero__subtitle">
@@ -117,8 +117,7 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
 }
 
 .partner-hero__heading-accent {
-  color: var(--c-brand-red);
-  display: block;
+  color: var(--c-brand-cyan);
 }
 
 /* ── Subtitle ───────────────────────────────────────────────────────────── */

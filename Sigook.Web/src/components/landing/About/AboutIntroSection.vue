@@ -10,8 +10,8 @@
       </EyebrowPill>
 
       <h1 class="about-intro__heading">
-        Empowering people.
-        <span class="about-intro__heading-accent">Strengthening businesses.</span>
+        Empowering <span class="about-intro__heading-accent">people.</span><br>
+        Strengthening <span class="about-intro__heading-accent">businesses.</span>
       </h1>
 
       <p class="about-intro__subtitle">
@@ -126,7 +126,6 @@ const VALUES = [
 
 .about-intro__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */

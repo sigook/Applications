@@ -19,10 +19,8 @@
       </div>
 
       <h1 class="news-hero__heading">
-        What's happening at Sigook®.
-        <span class="news-hero__heading-accent">
-          Stories, insights, signals.
-        </span>
+        What's happening at <span class="news-hero__heading-accent">Sigook®.</span><br>
+        <span class="news-hero__heading-accent">Stories,</span> insights, signals.
       </h1>
 
       <p class="news-hero__subtitle">
@@ -179,7 +177,6 @@ function onTabClick(): void {
 
 .news-hero__heading-accent {
   color: var(--c-brand-cyan);
-  display: block;
 }
 
 /* ── Subtitle / value prop ──────────────────────────────────────────────── */
