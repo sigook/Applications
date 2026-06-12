@@ -9,7 +9,7 @@
       </EyebrowPill>
 
       <h2 class="employers-solutions__heading">
-        Two ways to hire.
+        Three ways to hire.
         <span class="employers-solutions__heading-accent">
           One commitment to fit.
         </span>
@@ -54,11 +54,10 @@
  * Employers — "Professional Hiring Options" section.
  *
  * Mirror of TalentsSolutionsSection but flipped to the employer side:
- * the same two services (Direct Hiring + Contract) framed as hiring
- * outcomes rather than career paths.
+ * the same hiring models framed as outcomes rather than career paths.
  *
- * Two SecondaryCard (canonical Home pattern) — Direct Hiring = blue
- * variant, Contract = red variant. Each card carries supporting copy,
+ * Three SecondaryCard (canonical Home pattern) — Direct Hiring = blue,
+ * Temp to Perm = cyan, Contract = red. Each card carries supporting copy,
  * a benefits list, and a CTA pill.
  */
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
@@ -90,6 +89,21 @@ const OPTIONS: readonly HiringOption[] = [
     ctaLabel: 'Talk to a recruiter',
     ctaTo: '#employers-contact',
     variant: 'blue',
+  },
+  {
+    key: 'temp-to-perm',
+    eyebrow: 'Try Before You Hire',
+    title: 'Temp to Perm',
+    body:
+      'Bring talent on as a contractor first and convert to a permanent hire once they\'ve proven the fit on the job — the lowest-risk path to a long-term addition to your team.',
+    benefits: [
+      'On-the-job evaluation',
+      'Lower hiring risk',
+      'Smooth conversion to permanent',
+    ],
+    ctaLabel: 'Explore temp-to-perm',
+    ctaTo: '#employers-contact',
+    variant: 'cyan',
   },
   {
     key: 'contract',
@@ -211,13 +225,13 @@ const OPTIONS: readonly HiringOption[] = [
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Cards grid — 2 cols desktop, stack mobile ──────────────────────────── */
+/* ── Cards grid — 3 cols desktop, stack mobile ──────────────────────────── */
 .employers-solutions__cards {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(24px, 3.2vw, 40px);
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 2.4vw, 32px);
   align-items: start;
   width: 100%;
   max-width: 1180px;
