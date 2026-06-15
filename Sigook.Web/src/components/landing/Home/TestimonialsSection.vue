@@ -1,5 +1,8 @@
 <template>
   <section class="testimonials">
+    <!-- Depth back-layer — transparent, peeks ~20px above & below the slide bg -->
+    <div class="testimonials__back" aria-hidden="true"></div>
+
     <!-- Slide backgrounds — fade between them, start at the visible zone -->
     <div
       v-for="(slide, i) in testimonials"
@@ -148,6 +151,24 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin-top: -700px;
   z-index: 3;
   isolation: isolate;
+}
+
+/* ── Depth back-layer — transparent glass, peeks ~20px above & below the
+   slide bg (same brand mirror shape: top-right + bottom-left rounded) ────── */
+.testimonials__back {
+  position: absolute;
+  top: 520px;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  border-radius: 0 var(--r-brand) 0 var(--r-brand);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 /* ── Slide backgrounds — start at y=540 so top is transparent (AppDL bleeds through),
@@ -406,6 +427,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     margin-top: 0;
     background: transparent;
   }
+
+  .testimonials__back { display: none; }
 
   .testimonials__bg {
     top: 0;

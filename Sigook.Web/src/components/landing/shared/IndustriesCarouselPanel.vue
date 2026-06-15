@@ -25,6 +25,32 @@
   margin-top: clamp(-180px, -10vw, -80px);
   z-index: 5;
   isolation: isolate;
+  border-radius:
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
+  box-shadow:
+    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
+    0  22px 40px -12px rgba(0, 0, 0, 0.45);
+}
+
+/* Depth back-layer — transparent glass, peeks ~16px top & bottom */
+.industries-carousel-panel::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  bottom: -16px;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  border-radius:
+    clamp(80px, 10vw, 150px) 0
+    clamp(80px, 10vw, 150px) 0;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 /* Glass surface clipped to the brand shape (top-left + bottom-right rounded) */
@@ -42,9 +68,6 @@
   );
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow:
-    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
-    0  22px 40px -12px rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
 
