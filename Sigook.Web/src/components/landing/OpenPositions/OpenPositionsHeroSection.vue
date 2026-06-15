@@ -92,23 +92,19 @@ function onSearch(): void {
   isolation: isolate;
 }
 
-/* Bottom fade — dissolves the hero photo into the page background so the job
-   list that overlaps the hero integrates smoothly (no hard edge). */
-.op-hero::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 52%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 47, 68, 0) 0%,
-    rgba(13, 56, 88, 0.55) 48%,
-    rgba(11, 45, 70, 0.94) 100%
-  );
+/* Dissolve the hero photo into the page background at the bottom so the job
+   list that overlaps the hero integrates seamlessly. The whole photo + scrim
+   is masked to transparent, revealing the real GlobalBackground underneath —
+   no fixed-colour fade, so there is no hard seam against the page gradient. */
+.op-hero :deep(.hero-bg) {
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 60%, transparent 92%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 60%, transparent 92%);
+}
+
+/* Drop the shared component's solid-navy bottom fade for this hero — the mask
+   above already blends it into the GlobalBackground. */
+.op-hero :deep(.hero-bg__fade) {
+  display: none;
 }
 
 /* ── Magnifier — top-left anchor (mirrors Home) ─────────────────────────── */

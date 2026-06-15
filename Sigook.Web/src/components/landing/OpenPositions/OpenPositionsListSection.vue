@@ -120,7 +120,7 @@ onMounted(() => {
   width: 100%;
   /* Pull the list up so it overlaps the hero, sitting just below the search
      bar — part of the list integrates over the hero's faded bottom. */
-  margin-top: clamp(-440px, -42vh, -300px);
+  margin-top: clamp(-360px, -33vh, -240px);
   padding:
     clamp(16px, 2vw, 28px)
     clamp(20px, 3vw, 64px)
@@ -144,11 +144,15 @@ onMounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   align-items: start;
+  /* Reserve a stable height so the section doesn't collapse while loading or
+     when a search returns no results. */
+  min-height: clamp(420px, 52vh, 640px);
 }
 
 .op-list__body--empty {
   grid-template-columns: 1fr;
   justify-items: center;
+  align-content: center;
 }
 
 .op-list__empty {
