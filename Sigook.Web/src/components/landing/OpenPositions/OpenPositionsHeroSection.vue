@@ -1,9 +1,6 @@
 <template>
   <section class="op-hero">
     <HeroBackground :image="heroImage" focal="center 35%" />
-    <!-- Magnifier — reuses the Home top-left anchor (Open Positions is the
-         page closest in spirit to Home: discovery + search). Anchors are
-         "1 per page" by default; this is the intentional exception. -->
     <DecoMagnifier class="op-hero__magnifier" />
 
     <div class="op-hero__content">
@@ -21,7 +18,6 @@
         to professional positions. Updated weekly.
       </p>
 
-      <!-- Search form — glass V2 instead of the Figma white floating card -->
       <form class="op-hero__search" @submit.prevent="onSearch">
         <div class="op-hero__field">
           <label class="op-hero__label" for="op-job-title">Job title</label>
@@ -52,37 +48,11 @@
           <span class="op-hero__submit-arrow" aria-hidden="true">→</span>
         </button>
       </form>
-
-      <ul class="op-hero__stats" aria-label="Why apply with us">
-        <li class="op-hero__stat">
-          <span class="op-hero__stat-value">Weekly</span>
-          <span class="op-hero__stat-label">Fresh roles added</span>
-        </li>
-        <li class="op-hero__stat">
-          <span class="op-hero__stat-value">Vetted</span>
-          <span class="op-hero__stat-label">Employers only</span>
-        </li>
-        <li class="op-hero__stat">
-          <span class="op-hero__stat-value">Fast</span>
-          <span class="op-hero__stat-label">Apply in minutes</span>
-        </li>
-      </ul>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-/**
- * Open Positions hero — window-style intro with the search form glass-baked
- * directly into the layout (replaces the Figma floating white card).
- *
- * On submit the form queries the live /api/WebSite/jobs feed by title/city
- * (the only server-side filters available) and scrolls to the list section,
- * which also has a local title search for in-place refinement.
- *
- * Magnifier anchor: top-left (reuses Home's anchor by design — both pages
- * are search/discovery surfaces).
- */
 import { reactive } from 'vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
@@ -120,6 +90,25 @@ function onSearch(): void {
   min-height: max(100vh, 1120px);
   overflow: hidden;
   isolation: isolate;
+}
+
+/* Bottom fade — dissolves the hero photo into the page background so the job
+   list that overlaps the hero integrates smoothly (no hard edge). */
+.op-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 52%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 47, 68, 0) 0%,
+    rgba(13, 56, 88, 0.55) 48%,
+    rgba(11, 45, 70, 0.94) 100%
+  );
 }
 
 /* ── Magnifier — top-left anchor (mirrors Home) ─────────────────────────── */
@@ -293,49 +282,6 @@ function onSearch(): void {
   transform: translateX(3px);
 }
 
-/* ── Stats strip ────────────────────────────────────────────────────────── */
-.op-hero__stats {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(14px, 1.8vw, 22px);
-}
-
-.op-hero__stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: clamp(12px, 1.6vw, 18px) clamp(18px, 2.2vw, 26px);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: clamp(14px, 1.8vw, 18px);
-  backdrop-filter: blur(10px) saturate(150%);
-  -webkit-backdrop-filter: blur(10px) saturate(150%);
-  min-width: clamp(130px, 13vw, 170px);
-}
-
-.op-hero__stat-value {
-  font-size: clamp(22px, 2.8vw, 30px);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--c-brand-cyan);
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.40);
-}
-
-.op-hero__stat-label {
-  font-size: clamp(10px, 0.9vw, 11px);
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.70);
-  text-align: center;
-}
-
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .op-hero {
@@ -362,20 +308,5 @@ function onSearch(): void {
   /* Single column on phones */
   .op-hero__search { grid-template-columns: 1fr; }
 
-  .op-hero__stats {
-    flex-direction: column;
-    width: 100%;
-    max-width: 280px;
-    gap: 10px;
-  }
-
-  .op-hero__stat {
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .op-hero__stat-label { text-align: right; }
 }
 </style>

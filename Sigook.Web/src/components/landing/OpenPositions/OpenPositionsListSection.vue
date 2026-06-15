@@ -1,61 +1,19 @@
 <template>
   <section id="op-list" class="op-list">
-    <!-- Inner glass surface — materializes the panel against GlobalBackground -->
-    <div class="op-list__surface" aria-hidden="true"></div>
 
-    <header class="op-list__header">
-      <EyebrowPill variant="white" class="op-list__eyebrow">
-        Open Roles
-      </EyebrowPill>
-
-      <h2 class="op-list__heading">
-        Roles hiring now.
-        <span class="op-list__heading-accent">Skim, click, apply.</span>
-      </h2>
-
-      <p class="op-list__subtitle">
-        The full list of roles we're actively recruiting for. Search by title,
-        then dig into the role on the right.
-      </p>
-
-      <!-- Toolbar — chip filters + local search ─────────────────────────── -->
-      <div class="op-list__toolbar">
-        <label class="op-list__search">
-          <span class="op-list__search-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </span>
-          <input
-            v-model="query"
-            type="search"
-            placeholder="Search by title…"
-            aria-label="Search jobs by title"
-            class="op-list__search-input"
-          />
-        </label>
-      </div>
-    </header>
-
-    <!-- Body — master-detail grid (desktop) / accordion (mobile) ─────────── -->
     <div class="op-list__body" :class="{ 'op-list__body--empty': !showList }">
-      <!-- Loading state -->
       <p v-if="loading" class="op-list__empty">Loading open roles…</p>
 
-      <!-- Error state -->
       <p v-else-if="error" class="op-list__empty">
         {{ error }}
         <button type="button" class="op-list__empty-reset" @click="fetchJobs()">Retry</button>
       </p>
 
-      <!-- Empty state -->
       <p v-else-if="filtered.length === 0" class="op-list__empty">
         No openings match your search.
         <button type="button" class="op-list__empty-reset" @click="resetFilters">Clear search</button>.
       </p>
 
-      <!-- Job list (left column on desktop, full width on mobile) -->
       <ol v-else class="op-list__items" aria-label="Open positions">
         <li
           v-for="job in filtered"
@@ -86,9 +44,6 @@
             </div>
           </button>
 
-          <!-- Mobile inline detail — only renders when this item is the
-               selected one. Desktop hides this (detail lives in the right
-               column). -->
           <div
             v-if="job.numberId === selectedId"
             :id="`op-detail-${job.numberId}`"
@@ -99,7 +54,6 @@
         </li>
       </ol>
 
-      <!-- Desktop sticky detail panel — visible at ≥1024px only -->
       <aside v-if="showList && selectedJob" class="op-list__detail" aria-label="Job detail">
         <JobDetail :job="selectedJob" />
       </aside>
@@ -108,21 +62,7 @@
 </template>
 
 <script setup lang="ts">
-/**
- * OpenPositionsListSection — master-detail job-board layout backed by the
- * live /api/WebSite/jobs feed (USA roles).
- *
- * Desktop (≥1024px): two columns — sticky job list on the left, detail on
- * the right. Click a job → detail updates in place.
- *
- * Mobile (<1024px): the right-column detail is hidden by CSS; clicking a
- * job expands the detail INLINE beneath the row (accordion pattern).
- *
- * Filtering is a local free-text title search over the fetched list. Default
- * selection: the first job, so the detail panel is never empty.
- */
 import { ref, computed, onMounted, watch } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import JobDetail from '@/components/landing/OpenPositions/JobDetail.vue'
 import { useJobs } from '@/composables/useJobs'
 import type { JobViewModel } from '@/types/website'
@@ -175,13 +115,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ── Panel shell ────────────────────────────────────────────────────────── */
 .op-list {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  /* Pull the list up so it overlaps the hero, sitting just below the search
+     bar — part of the list integrates over the hero's faded bottom. */
+  margin-top: clamp(-440px, -42vh, -300px);
   padding:
-    clamp(140px, 14vw, 200px)
+    clamp(16px, 2vw, 28px)
     clamp(20px, 3vw, 64px)
     clamp(80px, 10vw, 130px);
   display: flex;
@@ -189,163 +130,10 @@ onMounted(() => {
   align-items: center;
   gap: clamp(36px, 5vw, 56px);
   z-index: 5;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  box-shadow:
-    0 -22px 40px -12px rgba(0, 0, 0, 0.45),
-    0  22px 40px -12px rgba(0, 0, 0, 0.45);
   isolation: isolate;
   font-family: var(--font-family);
 }
 
-.op-list::before {
-  content: '';
-  position: absolute;
-  top: -16px;
-  bottom: -16px;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-}
-
-.op-list__surface {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
-  background: linear-gradient(
-    180deg,
-    rgba(9, 48, 85, 0.65) 0%,
-    rgba(9, 48, 85, 0.55) 100%
-  );
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.op-list__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 980px;
-  width: 100%;
-  margin: 0 auto;
-  gap: clamp(18px, 2.4vw, 24px);
-}
-
-.op-list__eyebrow {
-  margin-bottom: clamp(8px, 1vw, 12px);
-}
-
-.op-list__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0;
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.op-list__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.op-list__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
-}
-
-/* ── Toolbar — chips + search ───────────────────────────────────────────── */
-.op-list__toolbar {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: clamp(10px, 1.4vw, 16px);
-}
-
-.op-list__search {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  height: clamp(40px, 4vw, 46px);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 999px;
-  min-width: clamp(220px, 26vw, 300px);
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.op-list__search:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.op-list__search:focus-within {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
-}
-
-.op-list__search-icon {
-  display: inline-flex;
-  width: 16px;
-  height: 16px;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.op-list__search-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.op-list__search-input {
-  flex: 1;
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(12px, 1vw, 13px);
-  font-weight: 500;
-  min-width: 0;
-}
-
-.op-list__search-input::placeholder {
-  color: rgba(255, 255, 255, 0.50);
-}
-
-/* Remove the native search cancel button — we don't style it */
-.op-list__search-input::-webkit-search-cancel-button { display: none; }
-
-/* ── Body — master-detail layout ────────────────────────────────────────── */
 .op-list__body {
   position: relative;
   z-index: 2;
@@ -383,7 +171,6 @@ onMounted(() => {
   padding: 0;
 }
 
-/* ── Job items list ─────────────────────────────────────────────────────── */
 .op-list__items {
   list-style: none;
   padding: 0;
@@ -395,7 +182,6 @@ onMounted(() => {
   overflow-y: auto;
   padding-right: 6px;
 
-  /* Scrollbar — subtle white */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
@@ -501,7 +287,6 @@ onMounted(() => {
   color: #fff;
 }
 
-/* ── Detail (desktop right column) ──────────────────────────────────────── */
 .op-list__detail {
   position: sticky;
   top: 90px;
@@ -518,18 +303,15 @@ onMounted(() => {
   border-radius: 999px;
 }
 
-/* ── Inline detail (mobile accordion) — hidden by default ───────────────── */
 .op-list__inline-detail {
   display: none;
 }
 
-/* ── Responsive — switch to accordion under 1024px ──────────────────────── */
 @media (max-width: 1023px) {
   .op-list__body {
     grid-template-columns: 1fr;
   }
 
-  /* Hide the right-column detail; show inline detail under the active item */
   .op-list__detail {
     display: none;
   }
@@ -540,7 +322,6 @@ onMounted(() => {
     animation: op-list-expand 0.35s ease;
   }
 
-  /* Remove list scroll on mobile — the page scrolls naturally */
   .op-list__items {
     max-height: none;
     padding-right: 0;
