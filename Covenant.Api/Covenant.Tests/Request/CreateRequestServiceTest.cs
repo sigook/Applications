@@ -1,4 +1,5 @@
 ﻿using Covenant.Common.Configuration;
+using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
@@ -77,6 +78,8 @@ namespace Covenant.Tests.Accounting
                 Mock.Of<IWorkerRepository>(),
                 Mock.Of<ISendGridService>(),
                 Options.Create(new SendGridConfiguration()),
+                Mock.Of<ISigookBusClient>(),
+                Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel

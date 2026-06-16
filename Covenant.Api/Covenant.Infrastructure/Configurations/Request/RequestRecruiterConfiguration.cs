@@ -9,7 +9,9 @@ namespace Covenant.Infrastructure.Configurations.Request
         public void Configure(EntityTypeBuilder<RequestRecruiter> builder)
         {
             builder.ToTable("RequestRecruiter");
-            builder.HasKey(k => new { k.RequestId, k.RecruiterId });
+            builder.HasKey(k => k.Id);
+            builder.Property(p => p.WorkDate).HasColumnType("date");
+            builder.HasIndex(k => new { k.RequestId, k.RecruiterId, k.WorkDate }).IsUnique();
         }
     }
-} 
+}

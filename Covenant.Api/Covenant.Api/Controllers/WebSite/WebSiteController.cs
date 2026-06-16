@@ -20,7 +20,7 @@ namespace Covenant.Api.Controllers.WebSite;
 [ApiController]
 public class WebSiteController : ControllerBase
 {
-    private readonly SigookBusClient client;
+    private readonly ISigookBusClient client;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
     private readonly IRequestRepository requestRepository;
@@ -32,7 +32,7 @@ public class WebSiteController : ControllerBase
     private readonly ILogger<WebSiteController> logger;
 
     public WebSiteController(
-        SigookBusClient client,
+        ISigookBusClient client,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
         IRequestRepository requestRepository,

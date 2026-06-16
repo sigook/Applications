@@ -17,6 +17,7 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -34,9 +35,8 @@ public class RequestService : IRequestService
     private readonly IIdentityServerService identityServerService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
-    private readonly IWorkerRepository workerRepository;
-    private readonly ISendGridService sendGridService;
-    private readonly SendGridConfiguration sendGridConfiguration;
+    private readonly ISigookBusClient busClient;
+    private readonly ServiceBusConfiguration serviceBusConfiguration;
     private readonly ILogger<RequestService> logger;
 
     public RequestService(
@@ -49,9 +49,8 @@ public class RequestService : IRequestService
         IIdentityServerService identityServerService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
-        IWorkerRepository workerRepository,
-        ISendGridService sendGridService,
-        IOptions<SendGridConfiguration> sendGridOptions,
+        ISigookBusClient busClient,
+        IOptions<ServiceBusConfiguration> serviceBusOptions,
         ILogger<RequestService> logger)
     {
         this.companyRepository = companyRepository;
@@ -63,9 +62,8 @@ public class RequestService : IRequestService
         this.identityServerService = identityServerService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
-        this.workerRepository = workerRepository;
-        this.sendGridService = sendGridService;
-        sendGridConfiguration = sendGridOptions.Value;
+        this.busClient = busClient;
+        serviceBusConfiguration = serviceBusOptions.Value;
         this.logger = logger;
     }
 
@@ -430,55 +428,8 @@ public class RequestService : IRequestService
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return canBeSent;
 
-        var provinceId = request.JobLocation.City.ProvinceId;
-        var workers = await workerRepository.GetWorkersAvailableToInvite(request.AgencyId, provinceId);
-        if (workers.Count > 0)
-        {
-            var jobTitle = request.JobTitle;
-            var description = request.Description;
-            var requirements = request.Requirements;
-            var city = request.JobLocation?.City?.Value;
-            var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
-            var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
-            var recipients = new List<TemplateRecipient>(workers.Count);
-            foreach (var worker in workers)
-            {
-                var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", worker.WorkerId.ToString());
-                var applyUrl = sendGridConfiguration.ApplyOnlineUrl
-                    .Replace("{{requestId}}", request.Id.ToString())
-                    .Replace("{{workerId}}", worker.WorkerId.ToString());
-
-                object data = new
-                {
-                    worker_name = worker.FullName,
-                    unsubscribe = unsubscribeUrl,
-                    unsubscribe_preferences = unsubscribeUrl,
-                    job_title = jobTitle,
-                    description,
-                    requirements,
-                    rate,
-                    city,
-                    apply = applyUrl,
-                };
-                recipients.Add(new TemplateRecipient(worker.Email, worker.FullName, data));
-            }
-            if (recipients.Count > 0)
-            {
-                await sendGridService.SendTemplateBatch(request.Agency.RecruitmentEmail, recipients);
-                request.InvitationSentItAt = now;
-                await requestRepository.Update(request);
-                await requestRepository.SaveChangesAsync();
-            }
-        }
-        return Result.Ok();
-    }
-
-    public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)
-    {
-        if (model?.Ids == null || !model.Ids.Any()) return Result.Ok();
-        var recruiterIds = model.RecruiterIds?.Distinct().ToList() ?? [];
-        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds);
-        await requestRepository.SaveChangesAsync();
+        var job = new SendInvitationJob(requestId, identityServerService.GetNickname());
+        await busClient.SendMessageAsync(job, serviceBusConfiguration.InvitationQueue);
         return Result.Ok();
     }
 

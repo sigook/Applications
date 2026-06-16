@@ -122,7 +122,6 @@ builder.Services.AddSwaggerGen(opt =>
 logger.LogInformation("Configuring services...");
 
 builder.Services.AddHostedService<SigookBackgroundService>();
-builder.Services.AddHostedService<BulkPayStubEmailBackgroundService>();
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServicesConfiguration).Assembly));
 builder.Services.AddRepositories();
 builder.Services.AddServices();

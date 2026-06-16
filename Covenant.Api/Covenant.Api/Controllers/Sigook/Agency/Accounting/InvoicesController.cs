@@ -3,6 +3,8 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Invoices;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +15,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory) : ControllerBase
+public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPayStubRepository payStubRepository) : ControllerBase
 {
     private readonly Lazy<Task<IInvoiceService>> invoiceService = new Lazy<Task<IInvoiceService>>(invoiceServiceFactory.Resolve);
 
@@ -80,11 +82,19 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory) : C
         return PhysicalFile(document.PdfPath, MediaTypeNames.Application.Pdf, document.FileName);
     }
 
+    /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpGet("{invoiceId:guid}/paystubs")]
+    [ProducesResponseType(typeof(List<PayStubDeleteWarningListModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPayStubs(Guid invoiceId) =>
+        Ok(await payStubRepository.GetPayStubs(invoiceId));
+
     /// <summary>Generates the invoice PDF and emails it, with optional attachments, to the client.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
     /// <param name="model">Email content, recipients and attachment files.</param>
     [HttpPost("{invoiceId:guid}/email")]
     [Consumes("multipart/form-data")]
+
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model)

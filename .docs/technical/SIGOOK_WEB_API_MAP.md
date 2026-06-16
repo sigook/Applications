@@ -396,12 +396,7 @@ Report generation and downloads (PDFs, Excel, data exports).
 | `postAgencyRequestReportTo(id, personId)` | POST | `/api/AgencyRequest/{id}/ReportTo/{personId}` | — | `void` | Add supervisor |
 | `deleteAgencyRequestReportTo(id, personId)` | DELETE | `/api/AgencyRequest/{id}/ReportTo/{personId}` | — | `void` | Remove supervisor |
 
-### Recruiters (agency personnel assigned)
-| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
-|----------|------------|----------|--------------|---------------|-------|
-| `getAgencyRequestRecruiter(id)` | GET | `/api/AgencyRequest/{id}/Recruiter` | — | `PaginatedList<AgencyRequestRecruiterItem>` | Assigned recruiters |
-| `postAgencyRequestRecruiter(id, model)` | POST | `/api/AgencyRequest/{id}/Recruiter` | `AgencyRequestRecruiterModel` | `void` | Assign recruiter |
-| `deleteAgencyRequestRecruiter(id, recruiterId)` | DELETE | `/api/AgencyRequest/{id}/Recruiter/{id}` | — | `void` | Unassign recruiter |
+> Recruiter assignment is no longer done from the request. It lives in the **Recruiting → Weekly Board** feature (per work day). See the Weekly Board section below.
 
 ### Skills
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -410,7 +405,25 @@ Report generation and downloads (PDFs, Excel, data exports).
 | `postAgencyRequestSkill(id, model)` | POST | `/api/AgencyRequest/{id}/Skill` | `AgencyRequestSkillModel` | `{ id: string }` | Add required skill |
 | `deleteAgencyRequestSkill(id, skillId)` | DELETE | `/api/AgencyRequest/{id}/Skill/{id}` | — | `void` | Remove skill requirement |
 
-**Types:** `AgencyRequestFilter`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestRecruiterModel`, `AgencyRequestRecruiterItem`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem` (from `src/types/agency`)
+**Types:** `AgencyRequestFilter`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem` (from `src/types/agency`)
+
+---
+
+## Recruiting → Weekly Board (`src/api/weeklyBoardApi.ts`)
+
+Board where the agency assigns orders to recruiters per work day, and each recruiter records the workers they sent. Replaces the old per-request recruiter assignment. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the dispatched workers.
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard` | `WeeklyBoardFilter` (params) | `WeeklyBoard` | Admin board grouped by recruiter |
+| `getRecruiterWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard/mine` | `WeeklyBoardFilter` (params) | `RecruiterWeeklyBoard` | Current recruiter's board + sent workers |
+| `assignRecruiters(payload)` | POST | `/api/agency/recruiting/WeeklyBoard` | `AssignRecruitersPayload` | `void` | Assign recruiter(s) to an order per day |
+| `unassignRecruiter(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard` | `UnassignRecruiterPayload` (params) | `void` | Remove a day assignment |
+| `moveAssignment(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/move` | `MoveAssignmentPayload` | `void` | Move an assignment to another recruiter/day (keeps its dispatched workers; drag & drop) |
+| `addWorkers(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/dispatch` | `DispatchWorkersPayload` | `void` | Recruiter sends workers to an order/day |
+| `removeWorker(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard/dispatch` | `RemoveWorkerPayload` (params) | `void` | Remove a worker the recruiter sent |
+
+**Types:** `WeeklyBoard`, `RecruiterWeeklyBoard`, `WeeklyBoardRecruiterRow`, `WeeklyBoardAssignment`, `WeeklyBoardDispatch`, `WeeklyBoardFilter`, `AssignRecruitersPayload`, `UnassignRecruiterPayload`, `MoveAssignmentPayload`, `DispatchWorkersPayload`, `RemoveWorkerPayload` (from `src/types/weeklyBoard`)
 
 **Pinia:**
 - Filter stored: `agencyRequestFilter` in `agency` module

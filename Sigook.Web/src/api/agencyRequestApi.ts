@@ -9,7 +9,6 @@ import type {
   CancelRequestPayload,
   BulkCancelRequestsPayload,
   BulkCancelRequestsResult,
-  BulkUpdateRecruitersPayload,
   AgencyRequestWorkerFilter,
   AgencyRequestWorker,
   BookWorkerModel,
@@ -18,8 +17,6 @@ import type {
   AgencyRequestApplicant,
   CreateRequestApplicantModel,
   UpdateApplicantCommentsPayload,
-  AgencyRequestRecruiterModel,
-  AgencyRequestRecruiterItem,
   AgencyRequestSkillModel,
   AgencyRequestPersonItem,
   RequestJobBoard,
@@ -57,10 +54,6 @@ export function cancelAgencyRequest(id: string, payload: CancelRequestPayload): 
 
 export function bulkCancelRequests(payload: BulkCancelRequestsPayload): Promise<BulkCancelRequestsResult> {
   return http.put('/api/AgencyRequest/bulk-cancel', payload).then(r => r.data);
-}
-
-export function bulkUpdateRecruiters(payload: BulkUpdateRecruitersPayload): Promise<void> {
-  return http.put('/api/AgencyRequest/bulk-recruiters', payload).then(() => {});
 }
 
 export function agencyRequestOpen(id: string): Promise<void> {
@@ -161,22 +154,6 @@ export function postAgencyRequestReportTo(requestId: string, contactPersonId: st
 
 export function deleteAgencyRequestReportTo(requestId: string, contactPersonId: string): Promise<void> {
   return http.delete(`/api/AgencyRequest/${requestId}/ReportTo/${contactPersonId}`).then(() => {});
-}
-
-// ---------------------------------------------------------------------------
-// Recruiters
-// ---------------------------------------------------------------------------
-
-export function getAgencyRequestRecruiter(requestId: string): Promise<PaginatedList<AgencyRequestRecruiterItem>> {
-  return http.get(`/api/AgencyRequest/${requestId}/Recruiter`).then(r => r.data);
-}
-
-export function postAgencyRequestRecruiter(requestId: string, model: AgencyRequestRecruiterModel): Promise<void> {
-  return http.post(`/api/AgencyRequest/${requestId}/Recruiter`, model).then(() => {});
-}
-
-export function deleteAgencyRequestRecruiter(requestId: string, id: string): Promise<void> {
-  return http.delete(`/api/AgencyRequest/${requestId}/Recruiter/${id}`).then(() => {});
 }
 
 // ---------------------------------------------------------------------------

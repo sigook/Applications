@@ -77,6 +77,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<ICandidateService, CandidateService>();
         services.AddScoped<ICompanyService, CompanyService>();
         services.AddScoped<ITimesheetService, TimesheetService>();
@@ -109,7 +110,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();
         services.AddScoped<FederalTaxTablesLoader>();
         services.AddScoped<ProvincialTaxTablesLoader>();
-        services.AddSingleton<IBulkPayStubEmailQueue, BulkPayStubEmailQueue>();
         return services;
     }
 
@@ -200,9 +200,12 @@ public static class ApiServicesConfiguration
         {
             services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
             services.AddSingleton(sp => new SigookBusClient(serviceBusConnection, sp.GetRequiredService<SigookBusAdministrationClient>(), sp.GetRequiredService<ILogger<SigookBusClient>>()));
+            services.AddSingleton<ISigookBusClient>(sp => sp.GetRequiredService<SigookBusClient>());
             services.AddSingleton<IAzureServiceBusConsumer, NewCandidateConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, TeamsConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, BulkPayStubEmailConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, InvitationConsumer>();
         }
 
         return services;

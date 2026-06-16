@@ -40,7 +40,7 @@ export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
 }
 
 export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWarningItem[]> {
-  return http.get(`/api/v4/Accounting/Invoice/${invoiceId}/PayStub`).then(r => r.data);
+  return http.get(`/api/agency/accounting/Invoices/${invoiceId}/paystubs`).then(r => r.data);
 }
 
 export function sendInvoiceEmail(payload: SendInvoiceEmailPayload): Promise<void> {

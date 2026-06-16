@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services
 {
-    public class SigookBusClient : ServiceBusClient
+    public class SigookBusClient : ServiceBusClient, ISigookBusClient
     {
         private readonly SigookBusAdministrationClient administrationClient;
         private readonly ILogger<SigookBusClient> logger;

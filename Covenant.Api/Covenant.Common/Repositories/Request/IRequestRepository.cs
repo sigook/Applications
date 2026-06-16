@@ -4,6 +4,7 @@ using Covenant.Common.Models.Company;
 using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Request.WeeklyBoard;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Request;
@@ -43,8 +44,9 @@ public interface IRequestRepository
     Task<PaginatedList<NoteModel>> GetNotes(Guid requestId, Pagination pagination);
     Task<NoteModel> GetNoteDetail(Guid requestId, Guid id);
     Task<RequestNote> GetNote(Guid requestId, Guid id);
-    Task<PaginatedList<RequestRecruiterDetailModel>> GetRecruiters(Guid requestId, Pagination pagination);
-    Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds);
+    Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd);
+    Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd);
+    Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate);
     Task<RequestSkill> GetSkill(Guid requestId, Guid id);
     Task<IEnumerable<SkillModel>> GetSkills(Guid requestId);
     Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression);

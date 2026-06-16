@@ -9,6 +9,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Request.WeeklyBoard;
 using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Request;
@@ -79,7 +80,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         WorkerSalary = r.WorkerSalary,
                         DisplayRecruiters = string.Join("|", context.RequestRecruiter
                             .Where(rr => rr.RequestId == r.Id)
-                            .Select(rr => rr.Recruiter.Name)),
+                            .Select(rr => rr.Recruiter.Name).Distinct()),
                         WorkersQuantity = r.WorkersQuantity,
                         SalesRepresentative = rrc != null ? rrc.AgencyPersonnel.Name : null,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
@@ -308,7 +309,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         EmploymentType = r.EmploymentType,
                         DisplayRecruiters = string.Join("|", context.RequestRecruiter
                             .Where(rr => rr.RequestId == r.Id)
-                            .Select(rr => rr.Recruiter.Name)),
+                            .Select(rr => rr.Recruiter.Name).Distinct()),
                         DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                         IsAsap = r.IsAsap,
                         VaccinationRequired = cp.VaccinationRequired,
@@ -964,10 +965,76 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         context.RequestNotes.Where(c => c.RequestId == requestId && c.NoteId == id)
             .Include(c => c.Note).SingleOrDefaultAsync();
 
-    public Task<PaginatedList<RequestRecruiterDetailModel>> GetRecruiters(Guid requestId, Pagination pagination) =>
-        context.RequestRecruiter.Where(c => c.RequestId == requestId)
-            .Select(s => new RequestRecruiterDetailModel { RecruiterId = s.RecruiterId, Email = s.Recruiter.User.Email })
-            .ToPaginatedList(pagination);
+    public async Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd) =>
+        await (from rr in context.RequestRecruiter
+               join cp in context.CompanyProfile on rr.Request.CompanyId equals cp.CompanyId
+               where rr.Request.AgencyId == agencyId
+                     && rr.WorkDate != null
+                     && rr.WorkDate >= weekStart.Date
+                     && rr.WorkDate <= weekEnd.Date
+               select new WeeklyBoardAssignmentModel
+               {
+                   RecruiterId = rr.RecruiterId,
+                   RecruiterName = rr.Recruiter.Name,
+                   RequestId = rr.RequestId,
+                   NumberId = rr.Request.NumberId,
+                   CompanyName = cp.BusinessName,
+                   JobTitle = rr.Request.JobTitle,
+                   WorkDate = rr.WorkDate.Value,
+                   Status = rr.Request.Status,
+                   IsAsap = rr.Request.IsAsap,
+                   WorkerSalary = rr.Request.WorkerSalary,
+                   WorkersSent = rr.Dispatches.Count,
+                   Dispatches = rr.Dispatches.Select(d => new WeeklyBoardDispatchModel
+                   {
+                       WorkerProfileId = d.WorkerProfileId,
+                       FullName = d.WorkerProfile.FirstName +
+                           (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
+                           " " + d.WorkerProfile.LastName +
+                           (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
+                       Email = d.WorkerProfile.Worker.Email
+                   }).ToList()
+               }).ToListAsync();
+
+    public async Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd) =>
+        await (from rr in context.RequestRecruiter
+               join cp in context.CompanyProfile on rr.Request.CompanyId equals cp.CompanyId
+               where rr.Request.AgencyId == agencyId
+                     && rr.RecruiterId == recruiterId
+                     && rr.WorkDate != null
+                     && rr.WorkDate >= weekStart.Date
+                     && rr.WorkDate <= weekEnd.Date
+               select new WeeklyBoardAssignmentModel
+               {
+                   RecruiterId = rr.RecruiterId,
+                   RecruiterName = rr.Recruiter.Name,
+                   RequestId = rr.RequestId,
+                   NumberId = rr.Request.NumberId,
+                   CompanyName = cp.BusinessName,
+                   JobTitle = rr.Request.JobTitle,
+                   WorkDate = rr.WorkDate.Value,
+                   Status = rr.Request.Status,
+                   IsAsap = rr.Request.IsAsap,
+                   WorkerSalary = rr.Request.WorkerSalary,
+                   WorkersSent = rr.Dispatches.Count,
+                   Dispatches = rr.Dispatches.Select(d => new WeeklyBoardDispatchModel
+                   {
+                       WorkerProfileId = d.WorkerProfileId,
+                       FullName = d.WorkerProfile.FirstName +
+                           (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
+                           " " + d.WorkerProfile.LastName +
+                           (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
+                       Email = d.WorkerProfile.Worker.Email
+                   }).ToList()
+               }).ToListAsync();
+
+    public Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate) =>
+        context.RequestRecruiter
+            .Include(rr => rr.Dispatches)
+            .SingleOrDefaultAsync(rr => rr.RequestId == requestId
+                && rr.RecruiterId == recruiterId
+                && rr.WorkDate == workDate.Date
+                && rr.Request.AgencyId == agencyId);
 
     public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 
@@ -1153,17 +1220,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var requests = context.Request.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
-    }
-
-    public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds)
-    {
-        var requestIdList = requestIds.ToList();
-        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
-        if (recruiterIds == null || !recruiterIds.Any()) return;
-        var entities = requestIdList
-            .SelectMany(rid => recruiterIds.Select(recId => new RequestRecruiter(rid, recId)))
-            .ToList();
-        await context.RequestRecruiter.AddRangeAsync(entities);
     }
 
     public async Task<bool> ExistsRequestByNumber(int requestId)

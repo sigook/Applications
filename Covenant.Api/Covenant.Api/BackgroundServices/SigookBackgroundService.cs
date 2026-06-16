@@ -47,6 +47,8 @@ public class SigookBackgroundService : BackgroundService
         var configuration = scope.ServiceProvider.GetRequiredService<IOptions<ServiceBusConfiguration>>().Value;
         var consumers = scope.ServiceProvider.GetServices<IAzureServiceBusConsumer>();
         await client.CreateQueueIfNotExistsAsync(configuration.ValidateCandidateQueue);
+        await client.CreateQueueIfNotExistsAsync(configuration.BulkPayStubEmailQueue);
+        await client.CreateQueueIfNotExistsAsync(configuration.InvitationQueue);
         await client.CreateTopicIfNotExistsAsync(configuration.CreateApplicantTopic);
         await client.CreateSubscriptionIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.TeamsNotification);
         await client.CreateSubscriptionIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.EmailNotification);

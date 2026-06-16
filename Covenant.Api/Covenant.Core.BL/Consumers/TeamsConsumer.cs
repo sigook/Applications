@@ -11,56 +11,55 @@ using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Covenant.Core.BL.Consumers
+namespace Covenant.Core.BL.Consumers;
+
+public class TeamsConsumer : IAzureServiceBusConsumer
 {
-    public class TeamsConsumer : IAzureServiceBusConsumer
+    private readonly ISigookBusClient client;
+    private readonly IServiceScopeFactory serviceScopeFactory;
+    private readonly ServiceBusConfiguration serviceBusConfiguration;
+
+    public TeamsConsumer(ISigookBusClient client, IServiceScopeFactory serviceScopeFactory, IOptions<ServiceBusConfiguration> options)
     {
-        private readonly SigookBusClient client;
-        private readonly IServiceScopeFactory serviceScopeFactory;
-        private readonly ServiceBusConfiguration serviceBusConfiguration;
+        this.client = client;
+        this.serviceScopeFactory = serviceScopeFactory;
+        serviceBusConfiguration = options.Value;
+    }
 
-        public TeamsConsumer(SigookBusClient client, IServiceScopeFactory serviceScopeFactory, IOptions<ServiceBusConfiguration> options)
+    public async Task OnInit()
+    {
+        await client.CreateProcessorAsync(serviceBusConfiguration.CreateApplicantTopic, TopicSubscription.TeamsNotification, NotifyCandidateCreation);
+    }
+
+    private async Task NotifyCandidateCreation(ProcessMessageEventArgs args)
+    {
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var teamsAccountingNotification = scope.ServiceProvider.GetService<ITeamsService>();
+        var options = scope.ServiceProvider.GetService<IOptions<TeamsWebhookConfiguration>>();
+        var notification = default(TeamsNotificationModel);
+        if (args.Message.ApplicationProperties.Any(k => k.Key == ServiceBusSqlConstants.ErrorCandidate))
         {
-            this.client = client;
-            this.serviceScopeFactory = serviceScopeFactory;
-            serviceBusConfiguration = options.Value;
+            notification = TeamsNotificationModel.CreateError("Candidate application", args.Message.ApplicationProperties[ServiceBusSqlConstants.ErrorCandidate].ToString());
         }
-
-        public async Task OnInit()
+        else
         {
-            await client.CreateProcessorAsync(serviceBusConfiguration.CreateApplicantTopic, TopicSubscription.TeamsNotification, NotifyCandidateCreation);
-        }
-
-        private async Task NotifyCandidateCreation(ProcessMessageEventArgs args)
-        {
-            await using var scope = serviceScopeFactory.CreateAsyncScope();
-            var teamsAccountingNotification = scope.ServiceProvider.GetService<ITeamsService>();
-            var options = scope.ServiceProvider.GetService<IOptions<TeamsWebhookConfiguration>>();
-            var notification = default(TeamsNotificationModel);
-            if (args.Message.ApplicationProperties.Any(k => k.Key == ServiceBusSqlConstants.ErrorCandidate))
+            var requestApplication = (bool)args.Message.ApplicationProperties[ServiceBusSqlConstants.RequestApplication];
+            if (requestApplication)
             {
-                notification = TeamsNotificationModel.CreateError("Candidate application", args.Message.ApplicationProperties[ServiceBusSqlConstants.ErrorCandidate].ToString());
+                var candidateRepository = scope.ServiceProvider.GetService<ICandidateRepository>();
+                var requestRepository = scope.ServiceProvider.GetService<IRequestRepository>();
+                var message = args.Message.Body.ToObjectFromJson<RequestApplicant>();
+                var candidate = await candidateRepository.GetCandidate(c => c.Id == message.CandidateId.Value);
+                var request = await requestRepository.GetRequest(r => r.Id == message.RequestId);
+                notification = TeamsNotificationModel.CreateSuccess("Candidate application", $"Candidate {candidate.Name} applied to request number {request.NumberId}");
             }
             else
             {
-                var requestApplication = (bool)args.Message.ApplicationProperties[ServiceBusSqlConstants.RequestApplication];
-                if (requestApplication)
-                {
-                    var candidateRepository = scope.ServiceProvider.GetService<ICandidateRepository>();
-                    var requestRepository = scope.ServiceProvider.GetService<IRequestRepository>();
-                    var message = args.Message.Body.ToObjectFromJson<RequestApplicant>();
-                    var candidate = await candidateRepository.GetCandidate(c => c.Id == message.CandidateId.Value);
-                    var request = await requestRepository.GetRequest(r => r.Id == message.RequestId);
-                    notification = TeamsNotificationModel.CreateSuccess("Candidate application", $"Candidate {candidate.Name} applied to request number {request.NumberId}");
-                }
-                else
-                {
-                    var message = args.Message.Body.ToObjectFromJson<CandidateCreateModel>();
-                    notification = TeamsNotificationModel.CreateSuccess("Candidate creation", $"Candidate {message.Name} has been created");
-                }
+                var message = args.Message.Body.ToObjectFromJson<CandidateCreateModel>();
+                notification = TeamsNotificationModel.CreateSuccess("Candidate creation", $"Candidate {message.Name} has been created");
             }
-            await teamsAccountingNotification.SendNotification(options.Value.CandidateAndWorker, notification);
-            await args.CompleteMessageAsync(args.Message);
         }
+        await teamsAccountingNotification.SendNotification(options.Value.CandidateAndWorker, notification);
+        await args.CompleteMessageAsync(args.Message);
     }
 }

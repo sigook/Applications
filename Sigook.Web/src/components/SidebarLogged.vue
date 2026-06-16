@@ -62,7 +62,7 @@
     </nav>
 
     <div class="sidebar-user">
-      <b-dropdown position="is-bottom-left" :mobile-modal="false" aria-role="menu">
+      <b-dropdown position="is-bottom-left" :mobile-modal="false" append-to-body aria-role="menu">
         <template #trigger>
           <div class="sidebar-user-trigger">
             <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
@@ -203,7 +203,7 @@ async function getWorkerInfo() {
 function switchAgency(agency: { id: string; isPrimary: boolean }) {
   if (agency.isPrimary) return;
   switchPersonnelAgency(agency.id).then(async () => {
-    router.push('/recruiting/requests');
+    router.push('/recruiting/weekly-board');
     await getAgencyInfo();
     window.location.reload();
   });

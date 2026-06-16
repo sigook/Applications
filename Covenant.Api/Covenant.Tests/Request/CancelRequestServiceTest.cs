@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
@@ -43,6 +44,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<IWorkerRepository>(),
                 Mock.Of<ISendGridService>(),
                 Options.Create(new SendGridConfiguration()),
+                Mock.Of<ISigookBusClient>(),
+                Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
             Assert.True(result);

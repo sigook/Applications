@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -42,6 +43,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<IWorkerRepository>(),
                 Mock.Of<ISendGridService>(),
                 Options.Create(new SendGridConfiguration()),
+                Mock.Of<ISigookBusClient>(),
+                Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
 
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
@@ -71,6 +74,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<IWorkerRepository>(),
                 Mock.Of<ISendGridService>(),
                 Options.Create(new SendGridConfiguration()),
+                Mock.Of<ISigookBusClient>(),
+                Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
             Assert.False(result);

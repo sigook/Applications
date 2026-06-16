@@ -1,69 +1,63 @@
+using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Core.BL.Interfaces;
 using Covenant.Common.Models.Notification;
+using Covenant.Core.BL.Interfaces;
+using Covenant.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Covenant.Api.BackgroundServices;
+namespace Covenant.Core.BL.Consumers;
 
-public class BulkPayStubEmailBackgroundService : BackgroundService
+public class BulkPayStubEmailConsumer : IAzureServiceBusConsumer
 {
     private const int MaxConcurrency = 5;
-    private readonly IBulkPayStubEmailQueue _queue;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<BulkPayStubEmailBackgroundService> _logger;
+    private readonly ISigookBusClient client;
+    private readonly IServiceScopeFactory serviceScopeFactory;
+    private readonly ServiceBusConfiguration serviceBusConfiguration;
+    private readonly ILogger<BulkPayStubEmailConsumer> logger;
 
-    public BulkPayStubEmailBackgroundService(
-        IBulkPayStubEmailQueue queue,
-        IServiceProvider serviceProvider,
-        ILogger<BulkPayStubEmailBackgroundService> logger)
+    public BulkPayStubEmailConsumer(
+        ISigookBusClient client,
+        IServiceScopeFactory serviceScopeFactory,
+        IOptions<ServiceBusConfiguration> options,
+        ILogger<BulkPayStubEmailConsumer> logger)
     {
-        _queue = queue;
-        _serviceProvider = serviceProvider;
-        _logger = logger;
+        this.client = client;
+        this.serviceScopeFactory = serviceScopeFactory;
+        serviceBusConfiguration = options.Value;
+        this.logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task OnInit()
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                var job = await _queue.Dequeue(stoppingToken);
-                await ProcessJob(job, stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to process bulk pay stub email job");
-            }
-        }
+        await client.CreateProcessorAsync(serviceBusConfiguration.BulkPayStubEmailQueue, ProcessAsync);
     }
 
-    private async Task ProcessJob(BulkPayStubEmailJob job, CancellationToken stoppingToken)
+    private async Task ProcessAsync(ProcessMessageEventArgs args)
     {
+        var job = args.Message.Body.ToObjectFromJson<BulkPayStubEmailJob>();
         using var throttler = new SemaphoreSlim(MaxConcurrency);
-        var tasks = job.PayStubIds.Select(payStubId => SendPayStubEmail(payStubId, throttler, stoppingToken));
+        var tasks = job.PayStubIds.Select(payStubId => SendPayStubEmail(payStubId, throttler, args.CancellationToken));
         var results = await Task.WhenAll(tasks);
         await NotifyTeams(job, results);
+        await args.CompleteMessageAsync(args.Message);
     }
 
-    private async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId, SemaphoreSlim throttler, CancellationToken stoppingToken)
+    private async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId, SemaphoreSlim throttler, CancellationToken cancellationToken)
     {
-        await throttler.WaitAsync(stoppingToken);
+        await throttler.WaitAsync(cancellationToken);
         try
         {
-            using var scope = _serviceProvider.CreateScope();
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
             var payStubService = scope.ServiceProvider.GetRequiredService<IPayStubService>();
             return await payStubService.SendPayStubEmail(payStubId);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to send pay stub {PayStubId}", payStubId);
+            logger.LogError(e, "Failed to send pay stub {PayStubId}", payStubId);
             return PayStubEmailResult.Failed(payStubId);
         }
         finally
@@ -74,7 +68,7 @@ public class BulkPayStubEmailBackgroundService : BackgroundService
 
     private async Task NotifyTeams(BulkPayStubEmailJob job, IReadOnlyCollection<PayStubEmailResult> results)
     {
-        using var scope = _serviceProvider.CreateScope();
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
         var teamsService = scope.ServiceProvider.GetRequiredService<ITeamsService>();
         var webhook = scope.ServiceProvider.GetRequiredService<IOptions<TeamsWebhookConfiguration>>().Value.Accounting;
 

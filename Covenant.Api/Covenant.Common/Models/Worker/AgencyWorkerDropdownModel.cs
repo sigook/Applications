@@ -5,6 +5,7 @@ namespace Covenant.Common.Models.Worker
         public Guid Id { get; set; }
         public string SocialInsurance { get; set; }
         public string FullName { get; set; }
+        public string Email { get; set; }
         public string ProfileImage { get; set; }
         public Guid WorkerProfileId { get; set; }
         public bool ApprovedToWork { get; set; }
