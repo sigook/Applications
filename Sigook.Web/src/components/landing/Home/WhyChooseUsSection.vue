@@ -147,13 +147,13 @@ onUnmounted(() => observer?.disconnect())
   margin-top: -260px;   /* overlaps the bottom 260px of Numbers: Numbers ends at y=2724, WhyChooseUs starts at y=2464 */
 }
 
-/* ── Back layer for the hero — peeks 20px above & sides, same shape ─────── */
+/* ── Back layer for the hero — peeks 20px above & below, same shape ─────── */
 .why__hero-back {
   position: absolute;
   top: -20px;
   left: 0;
   width: 100%;
-  height: 588px;
+  height: 628px;
   border-radius: 150px 0 150px 0;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(10px) saturate(120%);

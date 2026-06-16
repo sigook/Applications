@@ -11,7 +11,7 @@
       </EyebrowPill>
 
       <h1 class="industries-hero__heading">
-        Many <span class="industries-hero__heading-accent">sectors.</span><br>
+        Multiple <span class="industries-hero__heading-accent">sectors.</span><br>
         Endless <span class="industries-hero__heading-accent">possibilities.</span>
       </h1>
 

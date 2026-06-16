@@ -5,35 +5,15 @@
     <OpenPositionsBrowseSection />
     <OpenPositionsCtaSection />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="openpos-contact">
       <ContactSection />
     </div>
-
-    <!-- Worker registration modal — single page-level mount. Both "Apply
-         for this role" (inside JobDetail) and "Send your resume" (inside
-         OpenPositionsCtaSection) trigger the same singleton-managed dialog. -->
     <WorkerRegisterModal />
   </main>
 </template>
 
 <script setup lang="ts">
-/**
- * /v2/open-positions landing page — the job board.
- *
- * Section rhythm:
- *  1. OpenPositionsHeroSection    — Window with glass search form + stats
- *  2. OpenPositionsListSection    — Panel master-detail (desktop) / accordion
- *                                   (mobile) job list
- *  3. OpenPositionsBrowseSection  — Panel reusing IndustriesCarousel with
- *                                   "browse by sector" copy
- *  4. OpenPositionsCtaSection     — Window "send your resume" bridge CTA
- *  5. ContactSection (shared)     — "Get in Touch" form
- *
- * Two consecutive panels (List + Browse) intentionally stack with the same
- * border-radius — the margin-top negative on each creates a layered effect
- * rather than a zig-zag, which still reads as "list of open roles".
- */
+
 import OpenPositionsHeroSection from '@/components/landing/OpenPositions/OpenPositionsHeroSection.vue'
 import OpenPositionsListSection from '@/components/landing/OpenPositions/OpenPositionsListSection.vue'
 import OpenPositionsBrowseSection from '@/components/landing/OpenPositions/OpenPositionsBrowseSection.vue'
