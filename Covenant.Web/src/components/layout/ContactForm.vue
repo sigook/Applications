@@ -47,6 +47,36 @@
     </div>
 
     <div class="contact-form__group">
+      <label class="contact-form__label">Company</label>
+      <input
+        v-model="company"
+        v-bind="companyAttrs"
+        type="text"
+        class="contact-form__input"
+        :class="{ 'contact-form__input--error': errors.company }"
+        placeholder="Company"
+        autocomplete="organization"
+      />
+      <span v-if="errors.company" class="contact-form__error">{{ errors.company }}</span>
+    </div>
+
+    <div class="contact-form__group">
+      <label class="contact-form__label">Location</label>
+      <select
+        v-model="location"
+        v-bind="locationAttrs"
+        class="contact-form__input contact-form__select"
+        :class="{ 'contact-form__input--error': errors.location }"
+      >
+        <option value="" disabled>Select a province</option>
+        <option v-for="province in provinces" :key="province.id" :value="province.value">
+          {{ province.value }}
+        </option>
+      </select>
+      <span v-if="errors.location" class="contact-form__error">{{ errors.location }}</span>
+    </div>
+
+    <div class="contact-form__group">
       <label class="contact-form__label">Message</label>
       <textarea
         v-model="message"
@@ -93,6 +123,8 @@ import Cleave from 'cleave.js';
 import { useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { contactService } from '@/services/contactService';
+import { locationService } from '@/services/locationService';
+import type { Province } from '@/services/types/application.types';
 import { useToast } from '@/composables/useToast';
 
 // Props
@@ -121,6 +153,11 @@ const validationSchema = yup.object({
   phone: yup.string()
     .required('Phone is required')
     .matches(/^\d{3} \d{3}-\d{4}$/, 'Phone format must be: ### ###-####'),
+  company: yup.string()
+    .required('Company is required')
+    .max(100, 'Company must be less than 100 characters'),
+  location: yup.string()
+    .required('Location is required'),
   message: yup.string()
     .max(1000, 'Message must be less than 1000 characters')
 });
@@ -132,6 +169,8 @@ const { errors, defineField, handleSubmit: veeHandleSubmit, resetForm: veeResetF
     name: '',
     email: '',
     phone: '',
+    company: '',
+    location: '',
     message: ''
   }
 });
@@ -140,7 +179,23 @@ const { errors, defineField, handleSubmit: veeHandleSubmit, resetForm: veeResetF
 const [name, nameAttrs] = defineField('name');
 const [email, emailAttrs] = defineField('email');
 const [phone, phoneAttrs] = defineField('phone');
+const [company, companyAttrs] = defineField('company');
+const [location, locationAttrs] = defineField('location');
 const [message, messageAttrs] = defineField('message');
+
+// Location dropdown — Canadian provinces (Covenant serves the Canadian market)
+const provinces = ref<Province[]>([]);
+
+onMounted(async () => {
+  try {
+    const countries = await locationService.getCountries();
+    const canada = countries.find((c) => c.code === 'CA' || c.value === 'Canada');
+    if (canada) provinces.value = await locationService.getProvinces(canada.id);
+  } catch (error) {
+    console.error('Failed to load provinces:', error);
+    provinces.value = [];
+  }
+});
 
 // --- LÓGICA CLEAVE.JS (MÁSCARA TELÉFONO) ---
 const phoneInput = ref<HTMLElement | null>(null);
@@ -201,6 +256,8 @@ const handleSubmit = veeHandleSubmit(async (formValues) => {
       name: formValues.name,
       email: formValues.email,
       phone: formValues.phone,
+      company: formValues.company,
+      location: formValues.location,
       message: formValues.message,
       subject: props.subject,
       captchaResponse: captchaToken.value,
@@ -318,6 +375,17 @@ const resetForm = () => {
 
 .contact-form__input::placeholder {
   color: #c3c3c3;
+}
+
+.contact-form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23a0a0a0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
 }
 
 .contact-form__textarea {

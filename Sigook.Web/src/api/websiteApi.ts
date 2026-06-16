@@ -2,9 +2,9 @@ import http from '@/security/apiService';
 import axios from 'axios';
 import type { JobSearchFilter, JobViewModel, ContactForm, LandingJobPositions } from '@/types/website';
 
-export function getJobs(filter: JobSearchFilter): Promise<JobViewModel[]> {
+export function getJobs(filter: JobSearchFilter = {}): Promise<JobViewModel[]> {
   return http.get('/api/WebSite/jobs', {
-    params: { ...filter, countries: ['USA', 'CA'] }
+    params: { ...filter, countries: filter.countries ?? ['USA'] }
   }).then(r => r.data);
 }
 

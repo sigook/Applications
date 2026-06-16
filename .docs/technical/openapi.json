@@ -26141,6 +26141,14 @@
             "type": "string",
             "nullable": true
           },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
           "message": {
             "type": "string",
             "nullable": true

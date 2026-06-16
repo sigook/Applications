@@ -18,6 +18,12 @@ export interface Country {
   code: string   // "CA", "USA"
 }
 
+export interface Province {
+  id: string
+  value: string  // "Ontario", "Quebec", ...
+  code?: string
+}
+
 export const RESIDENCY_STATUS = [
   'Citizen',
   'Work Permit',
