@@ -1,6 +1,6 @@
 <template>
   <section class="employers-hero">
-    <HeroBackground :image="heroImage" focal="center 40%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 40%" />
     <!-- Atmospheric magnifier decoration — center-left anchor
          (Home top-left, About top-right, SP bottom-right, Industries
           bottom-left, Talents center-right → Employers center-left closes
@@ -47,7 +47,8 @@
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/employers.png'
+import heroImage from '@/assets/images/v2/hero/employers.webp'
+import heroImageSm from '@/assets/images/v2/hero/employers-960.webp'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'

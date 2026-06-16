@@ -11,7 +11,7 @@
       :class="{ 'testimonials__bg--active': currentSlide === i }"
       aria-hidden="true"
     >
-      <img v-if="slide.bg" :src="slide.bg" alt="" class="testimonials__bg-img" />
+      <img v-if="slide.bg" :src="slide.bg" alt="" class="testimonials__bg-img" loading="lazy" decoding="async" />
       <div v-else class="testimonials__bg-color" :style="{ background: slide.gradient }"></div>
       <div class="testimonials__overlay"></div>
     </div>
@@ -19,10 +19,12 @@
     <!-- Decorative cyan glow + brand magnifier -->
     <div class="testimonials__glow" aria-hidden="true"></div>
     <img
-      src="@/assets/images/v2/branding/sigook-magnifier.png"
+      src="@/assets/images/v2/branding/sigook-magnifier.webp"
       alt=""
       aria-hidden="true"
       class="testimonials__magnifier"
+      loading="lazy"
+      decoding="async"
     />
 
     <div class="testimonials__inner">
@@ -41,6 +43,8 @@
             alt=""
             aria-hidden="true"
             class="testimonials__quote-mark"
+            loading="lazy"
+            decoding="async"
           />
           <p class="testimonials__quote">{{ testimonials[currentSlide].quote }}</p>
           <div class="testimonials__attribution">
@@ -69,9 +73,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.jpg'
-import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.jpg'
-import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.jpg'
+import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.webp'
+import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.webp'
+import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.webp'
 
 const testimonials = [
   {

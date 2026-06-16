@@ -1,6 +1,15 @@
 <template>
   <div class="hero-bg" aria-hidden="true">
-    <img :src="image" alt="" class="hero-bg__img" :style="{ objectPosition: focal }" />
+    <img
+      :src="image"
+      :srcset="imageSm ? `${imageSm} 960w, ${image} 1920w` : undefined"
+      sizes="100vw"
+      alt=""
+      class="hero-bg__img"
+      decoding="async"
+      fetchpriority="high"
+      :style="{ objectPosition: focal }"
+    />
     <div class="hero-bg__scrim"></div>
     <div class="hero-bg__fade"></div>
   </div>
@@ -9,6 +18,7 @@
 <script setup lang="ts">
 withDefaults(defineProps<{
   image: string
+  imageSm?: string
   focal?: string
 }>(), {
   focal: 'center',

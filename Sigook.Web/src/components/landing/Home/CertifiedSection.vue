@@ -6,17 +6,19 @@
     <section class="certified">
       <!-- Photo layers -->
       <div class="certified__bg" aria-hidden="true">
-        <img src="@/assets/images/v2/certified/certified-bg.jpg" alt="" class="certified__photo certified__photo--1" />
-        <img src="@/assets/images/v2/certified/certified-bg2.jpg" alt="" class="certified__photo certified__photo--2" />
+        <img src="@/assets/images/v2/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
+        <img src="@/assets/images/v2/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
       </div>
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="certified__glow" aria-hidden="true"></div>
       <img
-        src="@/assets/images/v2/branding/sigook-magnifier.png"
+        src="@/assets/images/v2/branding/sigook-magnifier.webp"
         alt=""
         aria-hidden="true"
         class="certified__magnifier"
+        loading="lazy"
+        decoding="async"
       />
 
       <div class="certified__content">
