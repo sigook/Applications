@@ -466,6 +466,10 @@ onUnmounted(() => observer?.disconnect())
     min-height: 280px;
     border-radius: 80px 0 80px 0;
     padding: 60px 24px;
+    /* Cap large drop-shadow blur for mobile GPU */
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.50),
+      0  22px 24px -12px rgba(0, 0, 0, 0.50);
   }
 
   .why__hero-bg {
@@ -486,7 +490,7 @@ onUnmounted(() => observer?.disconnect())
     height: 320px;
     top: -60px;
     right: -100px;
-    filter: blur(110px);
+    filter: blur(40px);
     opacity: 0.20;
   }
 
@@ -495,6 +499,7 @@ onUnmounted(() => observer?.disconnect())
     height: 56px;
     bottom: 20px;
     left: 20px;
+    animation: none;
   }
 
   .why__hero-left {
@@ -570,6 +575,7 @@ onUnmounted(() => observer?.disconnect())
   .why__map-halo {
     width: 110%;
     height: 80%;
+    filter: blur(40px);
   }
 
   /* Feature cards stack on mobile */

@@ -235,6 +235,9 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
     height: auto;
     padding: 90px 20px 110px;
     border-radius: 80px 0 80px 0;
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.45),
+      0  22px 24px -12px rgba(0, 0, 0, 0.45);
   }
 
   .dual-cta__canvas {
@@ -251,7 +254,7 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
   .dual-cta__glow {
     width: 280px;
     height: 280px;
-    filter: blur(90px);
+    filter: blur(40px);
   }
 
   .dual-cta__card {

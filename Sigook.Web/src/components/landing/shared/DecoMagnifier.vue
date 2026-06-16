@@ -47,6 +47,7 @@
   .deco-magnifier {
     width: 56px;
     height: 56px;
+    animation: none;
   }
 }
 </style>

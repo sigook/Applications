@@ -411,6 +411,7 @@ const features = [
 
   .app__phone-img {
     width: 260px;
+    animation: none;
   }
 
   .app__title {
@@ -433,6 +434,9 @@ const features = [
     gap: 8px;
     padding: 10px 12px;
     min-width: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.6);
   }
 
   .app__badge-icon {

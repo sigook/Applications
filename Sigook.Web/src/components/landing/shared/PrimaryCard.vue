@@ -245,4 +245,29 @@ onUnmounted(() => observer?.disconnect())
 /* Slot content resets — first/last margin collapse so consumer spacing wins */
 .primary-card__body :deep(> *:first-child) { margin-top: 0; }
 .primary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
+
+/* ── Mobile GPU perf: drop blur, bake contrast, cap shadows ─────────────── */
+@media (max-width: 1023px) {
+  .primary-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 24px 24px rgba(0, 0, 0, 0.30);
+  }
+
+  .primary-card:hover {
+    box-shadow: 0 32px 24px rgba(0, 0, 0, 0.40);
+  }
+
+  .primary-card--navy {
+    background: linear-gradient(135deg,
+      rgba(15, 47, 68, 0.85) 0%,
+      rgba(21, 117, 187, 0.60) 100%);
+  }
+
+  .primary-card--red {
+    background: linear-gradient(135deg,
+      rgba(229, 45, 39, 0.77) 0%,
+      rgba(229, 45, 39, 0.55) 100%);
+  }
+}
 </style>

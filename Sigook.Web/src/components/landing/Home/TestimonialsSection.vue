@@ -439,6 +439,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     left: 0;
     right: 0;
     bottom: 0;
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.45),
+      0  22px 24px -12px rgba(0, 0, 0, 0.45);
   }
 
   .testimonials__glow {
@@ -446,7 +449,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     right: -80px;
     width: 320px;
     height: 320px;
-    filter: blur(110px);
+    filter: blur(40px);
     opacity: 0.20;
   }
 
@@ -455,6 +458,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     height: 56px;
     bottom: 20px;
     left: 20px;
+    animation: none;
   }
 
   .testimonials__inner {
@@ -478,8 +482,13 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     transform: none;
     max-width: 100%;
     padding: 36px 28px 32px;
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.18) 100%
+    );
+    box-shadow: 0 18px 24px rgba(0, 0, 0, 0.30);
   }
 
   .testimonials__quote {
@@ -500,6 +509,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     transform: none;
     margin: 32px auto 0;
     width: fit-content;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.24);
   }
 }
 </style>

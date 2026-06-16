@@ -144,4 +144,16 @@ withDefaults(defineProps<{
 .labeled-chip-list__chip--link:hover::before {
   background: var(--c-brand-cyan);
 }
+
+@media (max-width: 1023px) {
+  .labeled-chip-list__chip {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .labeled-chip-list__chip--more {
+    background: transparent;
+  }
+}
 </style>

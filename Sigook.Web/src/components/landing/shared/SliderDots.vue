@@ -64,4 +64,12 @@ defineEmits<{
   height: 10px;
   background-color: #fff;
 }
+
+@media (max-width: 1023px) {
+  .slider-dots {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
 </style>

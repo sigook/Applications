@@ -79,4 +79,10 @@ withDefaults(defineProps<{
     transform: scale(1.04);
   }
 }
+
+@media (max-width: 1023px) {
+  .hero-bg__img {
+    animation: none;
+  }
+}
 </style>

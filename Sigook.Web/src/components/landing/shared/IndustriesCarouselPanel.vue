@@ -77,4 +77,24 @@
   margin-top: 0;
   padding-top: clamp(140px, 14vw, 200px);
 }
+
+@media (max-width: 1023px) {
+  /* Cut GPU blur; bake cheaper equivalents for mobile */
+  .industries-carousel-panel {
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.5),
+      0  22px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  .industries-carousel-panel::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .industries-carousel-panel__surface {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
 </style>
