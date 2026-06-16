@@ -75,9 +75,6 @@ namespace Covenant.Tests.Accounting
                 identityServerService.Object,
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
-                Mock.Of<IWorkerRepository>(),
-                Mock.Of<ISendGridService>(),
-                Options.Create(new SendGridConfiguration()),
                 Mock.Of<ISigookBusClient>(),
                 Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>());
