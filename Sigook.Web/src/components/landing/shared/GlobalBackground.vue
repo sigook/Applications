@@ -231,14 +231,42 @@
   .global-bg__deco { animation: none !important; }
 }
 
-/* ── Mobile — scaled-down shapes ──────────────────────────────────────────── */
+/* ── Mobile — static, GPU-cheap backdrop ──────────────────────────────────
+   Phones/tablets can't afford 6 animated blur(>100px) layers recompositing
+   every frame, so the blurred glows are dropped and their atmosphere is
+   baked into the fixed container's gradient (painted once). Rings/dots stay
+   but stop animating; will-change is cleared so nothing is layer-promoted. */
 @media (max-width: 1023px) {
-  .glow-cyan-lg { width: 360px; height: 360px; filter: blur(120px); right: -80px; top: -60px; }
-  .glow-navy-lg { width: 320px; height: 320px; filter: blur(110px); }
-  .glow-red-md  { width: 260px; height: 260px; filter: blur(120px); left: 5%; }
-  .glow-blue-md { width: 320px; height: 320px; filter: blur(130px); right: -40px; }
-  .glow-red-sm  { width: 200px; height: 200px; filter: blur(100px); left: 20%; }
-  .glow-cyan-md { width: 240px; height: 240px; filter: blur(110px); right: -60px; }
+  .global-bg {
+    background:
+      radial-gradient(circle at 85% 8%, rgba(255, 255, 255, 0.10) 0%, transparent 38%),
+      radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.07) 0%, transparent 42%),
+      radial-gradient(circle at 82% 60%, rgba(255, 255, 255, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.15) 0%, transparent 45%),
+      linear-gradient(
+        180deg,
+        #0f2f44 0%,
+        #093055 22%,
+        #0d4063 48%,
+        #135b8c 76%,
+        #1575bb 100%
+      );
+  }
+
+  .global-bg__deco {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  .glow-cyan-lg,
+  .glow-navy-lg,
+  .glow-red-md,
+  .glow-blue-md,
+  .glow-red-sm,
+  .glow-cyan-md {
+    display: none;
+  }
+
   .ring-lg-white { width: 140px; height: 140px; }
   .ring-md-cyan  { width: 80px;  height: 80px;  }
 }
