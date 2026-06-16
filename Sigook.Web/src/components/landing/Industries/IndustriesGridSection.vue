@@ -64,9 +64,9 @@
 import { ref } from 'vue'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
-import { useWorkerRegisterModal } from '@/components/landing/shared/forms/useWorkerRegisterModal'
+import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 
-const registerModal = useWorkerRegisterModal()
+const registerModal = useCandidateApplyModal()
 
 // 11 sectors. Tones alternate navy / red for visual rhythm.
 // Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized

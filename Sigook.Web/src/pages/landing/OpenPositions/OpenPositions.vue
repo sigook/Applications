@@ -8,7 +8,7 @@
     <div id="openpos-contact">
       <ContactSection />
     </div>
-    <WorkerRegisterModal />
+    <CandidateApplyModal />
   </main>
 </template>
 
@@ -19,7 +19,7 @@ import OpenPositionsListSection from '@/components/landing/OpenPositions/OpenPos
 import OpenPositionsBrowseSection from '@/components/landing/OpenPositions/OpenPositionsBrowseSection.vue'
 import OpenPositionsCtaSection from '@/components/landing/OpenPositions/OpenPositionsCtaSection.vue'
 import ContactSection from '@/components/landing/shared/ContactSection.vue'
-import WorkerRegisterModal from '@/components/landing/shared/forms/WorkerRegisterModal.vue'
+import CandidateApplyModal from '@/components/landing/shared/forms/CandidateApplyModal.vue'
 </script>
 
 <style scoped>

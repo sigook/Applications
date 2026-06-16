@@ -47,7 +47,7 @@
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/employers.jpg'
+import heroImage from '@/assets/images/v2/hero/employers.png'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'

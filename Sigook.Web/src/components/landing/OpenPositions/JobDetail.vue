@@ -72,13 +72,13 @@
  */
 import { computed } from 'vue'
 import type { JobViewModel } from '@/types/website'
-import { useWorkerRegisterModal } from '@/components/landing/shared/forms/useWorkerRegisterModal'
+import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 
 const props = defineProps<{
   job: JobViewModel
 }>()
 
-const registerModal = useWorkerRegisterModal()
+const registerModal = useCandidateApplyModal()
 
 function onApply(): void {
   registerModal.open({
