@@ -94,4 +94,12 @@ const arrowHeight = computed(() =>
 .glass-pill-cta--sm { padding: 12px 24px; font-size: 14px; }
 .glass-pill-cta--md { padding: 14px 32px; font-size: 15px; }
 .glass-pill-cta--lg { padding: 16px 36px; font-size: 16px; }
+
+@media (max-width: 1023px) {
+  .glass-pill-cta {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.24);
+  }
+}
 </style>

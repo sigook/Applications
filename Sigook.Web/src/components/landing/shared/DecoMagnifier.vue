@@ -1,6 +1,6 @@
 <template>
   <img
-    src="@/assets/images/v2/branding/sigook-magnifier.png"
+    src="@/assets/images/v2/branding/sigook-magnifier.webp"
     alt=""
     aria-hidden="true"
     class="deco-magnifier"
@@ -47,6 +47,7 @@
   .deco-magnifier {
     width: 56px;
     height: 56px;
+    animation: none;
   }
 }
 </style>

@@ -4,8 +4,8 @@
     <section class="dual-cta" aria-label="Find work or find talent">
     <!-- Full-bleed background layers (fill the entire section, any width) -->
     <div class="dual-cta__bg" aria-hidden="true">
-      <img :src="talentsPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--left" />
-      <img :src="employersPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--right" />
+      <img :src="talentsPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--left" loading="lazy" decoding="async" />
+      <img :src="employersPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--right" loading="lazy" decoding="async" />
     </div>
 
     <div class="dual-cta__veil" aria-hidden="true"></div>
@@ -58,8 +58,8 @@
 <script setup lang="ts">
 import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
 import PrimaryCard from '@/components/landing/shared/PrimaryCard.vue'
-import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.jpg'
-import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.jpg'
+import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
+import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
 </script>
 
 <style scoped>
@@ -235,6 +235,9 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
     height: auto;
     padding: 90px 20px 110px;
     border-radius: 80px 0 80px 0;
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.45),
+      0  22px 24px -12px rgba(0, 0, 0, 0.45);
   }
 
   .dual-cta__canvas {
@@ -251,7 +254,7 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
   .dual-cta__glow {
     width: 280px;
     height: 280px;
-    filter: blur(90px);
+    filter: blur(40px);
   }
 
   .dual-cta__card {

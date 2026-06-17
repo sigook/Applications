@@ -209,7 +209,6 @@ onUnmounted(() => {
   width: 100%;
   transition:
     background 0.35s ease,
-    backdrop-filter 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease;
 }
@@ -249,15 +248,11 @@ onUnmounted(() => {
   flex-shrink: 0;
   display: block;
   line-height: 0;
-  clip-path: inset(0 0 0 0);
-  transition:
-    opacity 0.45s ease,
-    clip-path 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s ease;
 }
 
 .nav__logo--hidden {
   opacity: 0;
-  clip-path: inset(0 100% 0 0);
   pointer-events: none;
 }
 
@@ -622,6 +617,37 @@ onUnmounted(() => {
   .nav__hamburger {
     display: flex;
     margin-left: auto;
+  }
+}
+
+/* ── Mobile GPU budget — drop backdrop blur, bake contrast, cap shadows ──── */
+@media (max-width: 1023px) {
+  .nav--solid {
+    background: linear-gradient(
+      180deg,
+      rgba(9, 48, 85, 0.94) 0%,
+      rgba(9, 48, 85, 0.80) 100%
+    );
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .nav__cta--ghost {
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .nav__overlay {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .nav__drawer {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: -24px 0 24px rgba(0, 0, 0, 0.40);
   }
 }
 </style>

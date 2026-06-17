@@ -9,16 +9,18 @@
 
     <!-- Block A — Corporate buildings photo -->
     <div class="why__hero">
-      <img src="@/assets/images/v2/why-choose-us/why-bg.jpg" alt="" class="why__hero-bg" aria-hidden="true" />
+      <img src="@/assets/images/v2/why-choose-us/why-bg.webp" alt="" class="why__hero-bg" aria-hidden="true" loading="lazy" decoding="async" />
       <div class="why__hero-overlay" aria-hidden="true"></div>
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="why__hero-glow" aria-hidden="true"></div>
       <img
-        src="@/assets/images/v2/branding/sigook-magnifier.png"
+        src="@/assets/images/v2/branding/sigook-magnifier.webp"
         alt=""
         aria-hidden="true"
         class="why__hero-magnifier"
+        loading="lazy"
+        decoding="async"
       />
 
       <div class="why__hero-content">
@@ -57,9 +59,13 @@
           <div class="why__map-wrap">
             <span class="why__map-halo" aria-hidden="true"></span>
             <img
-              src="@/assets/images/v2/why-choose-us/usa-map.png"
+              src="@/assets/images/v2/why-choose-us/usa-map.webp"
               alt="United States coverage map"
               class="why__map-img"
+              width="1224"
+              height="1102"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -460,6 +466,10 @@ onUnmounted(() => observer?.disconnect())
     min-height: 280px;
     border-radius: 80px 0 80px 0;
     padding: 60px 24px;
+    /* Cap large drop-shadow blur for mobile GPU */
+    box-shadow:
+      0 -22px 24px -12px rgba(0, 0, 0, 0.50),
+      0  22px 24px -12px rgba(0, 0, 0, 0.50);
   }
 
   .why__hero-bg {
@@ -480,7 +490,7 @@ onUnmounted(() => observer?.disconnect())
     height: 320px;
     top: -60px;
     right: -100px;
-    filter: blur(110px);
+    filter: blur(40px);
     opacity: 0.20;
   }
 
@@ -489,6 +499,7 @@ onUnmounted(() => observer?.disconnect())
     height: 56px;
     bottom: 20px;
     left: 20px;
+    animation: none;
   }
 
   .why__hero-left {
@@ -564,6 +575,7 @@ onUnmounted(() => observer?.disconnect())
   .why__map-halo {
     width: 110%;
     height: 80%;
+    filter: blur(40px);
   }
 
   /* Feature cards stack on mobile */

@@ -1,6 +1,6 @@
 <template>
   <section class="hero">
-    <HeroBackground :image="heroImage" focal="center 28%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 28%" />
 
     <DecoMagnifier class="hero__magnifier" />
 
@@ -45,7 +45,8 @@ import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
 import logoWhite from '@/assets/images/logo-white-v2.png'
-import heroImage from '@/assets/images/v2/hero/home.jpg'
+import heroImage from '@/assets/images/v2/hero/home.webp'
+import heroImageSm from '@/assets/images/v2/hero/home-960.webp'
 
 const INDUSTRIES = [
   'Cibersecurity',

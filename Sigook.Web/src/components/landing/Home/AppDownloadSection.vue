@@ -21,9 +21,11 @@
               aria-label="Download Sigook on the App Store"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-apple.png"
+                src="@/assets/images/v2/app-download/app-store-apple.webp"
                 alt=""
                 class="app__badge-icon app__badge-icon--apple"
+                loading="lazy"
+                decoding="async"
               />
               <span class="app__badge-text">
                 <span class="app__badge-small">Download on the</span>
@@ -39,9 +41,11 @@
               aria-label="Get Sigook® on Google Play"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-google.png"
+                src="@/assets/images/v2/app-download/app-store-google.webp"
                 alt=""
                 class="app__badge-icon"
+                loading="lazy"
+                decoding="async"
               />
               <span class="app__badge-text">
                 <span class="app__badge-small">DOWNLOAD ON THE</span>
@@ -54,9 +58,13 @@
         <div class="app__phone-wrap" aria-hidden="true">
           <span class="app__phone-halo"></span>
           <img
-            src="@/assets/images/v2/app-download/app-hand-phone.png"
+            src="@/assets/images/v2/app-download/app-hand-phone.webp"
             alt=""
             class="app__phone-img"
+            width="1024"
+            height="1536"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>
@@ -403,6 +411,7 @@ const features = [
 
   .app__phone-img {
     width: 260px;
+    animation: none;
   }
 
   .app__title {
@@ -425,6 +434,9 @@ const features = [
     gap: 8px;
     padding: 10px 12px;
     min-width: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.6);
   }
 
   .app__badge-icon {

@@ -1,6 +1,6 @@
 <template>
   <section class="about-intro">
-    <HeroBackground :image="heroImage" focal="center 30%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 30%" />
     <!-- Atmospheric magnifier decoration — right-side anchor (mirrors Home Hero's left placement) -->
     <DecoMagnifier class="about-intro__magnifier" />
 
@@ -50,7 +50,8 @@
 <script setup lang="ts">
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/about.jpg'
+import heroImage from '@/assets/images/v2/hero/about.webp'
+import heroImageSm from '@/assets/images/v2/hero/about-960.webp'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'

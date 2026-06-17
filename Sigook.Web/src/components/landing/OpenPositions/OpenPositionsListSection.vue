@@ -19,16 +19,17 @@
           v-for="job in filtered"
           :key="job.numberId"
           class="op-list__item-wrap"
+          :data-job-id="job.numberId"
         >
           <button
             type="button"
             class="op-list__item"
             :class="{
-              'op-list__item--active': job.numberId === selectedId,
-              'op-list__item--expanded-mobile': job.numberId === selectedId,
+              'op-list__item--active': isActive(job.numberId),
+              'op-list__item--expanded-mobile': isExpanded(job.numberId),
             }"
             @click="selectJob(job.numberId)"
-            :aria-expanded="job.numberId === selectedId"
+            :aria-expanded="isExpanded(job.numberId)"
             :aria-controls="`op-detail-${job.numberId}`"
           >
             <div class="op-list__item-head">
@@ -45,7 +46,7 @@
           </button>
 
           <div
-            v-if="job.numberId === selectedId"
+            v-if="isExpanded(job.numberId)"
             :id="`op-detail-${job.numberId}`"
             class="op-list__inline-detail"
           >
@@ -62,15 +63,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import JobDetail from '@/components/landing/OpenPositions/JobDetail.vue'
 import { useJobs } from '@/composables/useJobs'
 import type { JobViewModel } from '@/types/website'
+
+const route = useRoute()
+const router = useRouter()
 
 const { jobs, loading, error, fetchJobs } = useJobs()
 
 const query = ref('')
 const selectedId = ref<string>('')
+const urlSyncReady = ref(false)
+
+const expandedIds = ref<string[]>([])
+const isMobile = ref(
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches,
+)
+
+function isExpanded(numberId: string): boolean {
+  return expandedIds.value.includes(numberId)
+}
+
+function isActive(numberId: string): boolean {
+  return isMobile.value ? isExpanded(numberId) : selectedId.value === numberId
+}
+
+function readJobIdFromRoute(): string | undefined {
+  const value = route.query.jobId
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : undefined
+  return undefined
+}
 
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
@@ -88,9 +114,18 @@ function showSalary(job: JobViewModel): boolean {
   return !!job.salary && job.salary !== '$0.00'
 }
 
+function toggleExpanded(numberId: string): void {
+  if (expandedIds.value.includes(numberId)) {
+    expandedIds.value = expandedIds.value.filter((id) => id !== numberId)
+  } else {
+    expandedIds.value = [...expandedIds.value, numberId]
+    selectedId.value = numberId
+  }
+}
+
 function selectJob(numberId: string): void {
-  if (window.matchMedia('(max-width: 1023px)').matches && selectedId.value === numberId) {
-    selectedId.value = filtered.value.find((j) => j.numberId !== numberId)?.numberId ?? numberId
+  if (isMobile.value) {
+    toggleExpanded(numberId)
     return
   }
   selectedId.value = numberId
@@ -107,10 +142,67 @@ watch(filtered, (list) => {
   } else if (!list.some((j) => j.numberId === selectedId.value)) {
     selectedId.value = list[0].numberId
   }
+  if (expandedIds.value.length > 0) {
+    const present = new Set(list.map((j) => j.numberId))
+    const next = expandedIds.value.filter((id) => present.has(id))
+    if (next.length !== expandedIds.value.length) expandedIds.value = next
+  }
 })
 
-onMounted(() => {
-  fetchJobs()
+watch(selectedId, (id) => {
+  if (!urlSyncReady.value || !id) return
+  if (readJobIdFromRoute() === id) return
+  router.replace({ query: { ...route.query, jobId: id } })
+})
+
+watch(
+  () => route.query.jobId,
+  (value) => {
+    const id = typeof value === 'string' ? value : Array.isArray(value) ? value[0] : undefined
+    if (!id || id === selectedId.value) return
+    if (jobs.value.some((j) => j.numberId === id)) selectedId.value = id
+  },
+)
+
+async function scrollToSelected(numberId: string): Promise<void> {
+  await nextTick()
+  const el = document.querySelector(`[data-job-id="${numberId}"]`)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+function updateIsMobile(): void {
+  isMobile.value = window.matchMedia('(max-width: 1023px)').matches
+}
+
+let mobileMql: MediaQueryList | null = null
+
+onMounted(async () => {
+  mobileMql = window.matchMedia('(max-width: 1023px)')
+  mobileMql.addEventListener('change', updateIsMobile)
+  updateIsMobile()
+
+  const initialJobId = readJobIdFromRoute()
+  await fetchJobs()
+  await nextTick()
+
+  const matched = !!initialJobId && jobs.value.some((j) => j.numberId === initialJobId)
+  if (matched) selectedId.value = initialJobId as string
+
+  if (isMobile.value && selectedId.value) {
+    expandedIds.value = [selectedId.value]
+  }
+
+  urlSyncReady.value = true
+
+  if (selectedId.value && readJobIdFromRoute() !== selectedId.value) {
+    router.replace({ query: { ...route.query, jobId: selectedId.value } })
+  }
+
+  if (matched) await scrollToSelected(selectedId.value)
+})
+
+onUnmounted(() => {
+  mobileMql?.removeEventListener('change', updateIsMobile)
 })
 </script>
 
@@ -334,6 +426,15 @@ onMounted(() => {
   .op-list__search {
     width: 100%;
     min-width: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  /* On phones the search form stacks to a single column, so the aggressive
+     desktop overlap covers it. Use a gentler overlap that keeps the list
+     peeking into the faded hero bottom while clearing the search bar. */
+  .op-list {
+    margin-top: clamp(-190px, -22vh, -120px);
   }
 }
 
