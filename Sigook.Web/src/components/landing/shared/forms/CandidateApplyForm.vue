@@ -125,8 +125,8 @@
           :options="filteredSkills"
           label="Skills / Roles of Interest"
           placeholder="Select from suggestions or type your own"
-          option-key="id"
-          option-label="value"
+          option-key="skill"
+          option-label="skill"
           :allow-new="true"
           :create-tag="createSkillTag"
           @typing="onSkillsTyping"
@@ -189,8 +189,8 @@
           <div v-if="skillTags.length" class="reg-form__summary-row">
             <dt>Skills</dt>
             <dd>
-              <span v-for="tag in skillTags" :key="tag.id || tag.value" class="reg-form__summary-chip">
-                {{ tag.value }}
+              <span v-for="tag in skillTags" :key="tag.skill" class="reg-form__summary-chip">
+                {{ tag.skill }}
               </span>
             </dd>
           </div>
@@ -373,7 +373,7 @@ const skillQuery = ref('')
 const filteredSkills = computed<Skill[]>(() => {
   const q = skillQuery.value.trim().toLowerCase()
   if (!q) return allSkills.value
-  return allSkills.value.filter((s) => s.value.toLowerCase().includes(q))
+  return allSkills.value.filter((s) => s.skill.toLowerCase().includes(q))
 })
 
 function onSkillsTyping(value: string): void {
@@ -382,7 +382,7 @@ function onSkillsTyping(value: string): void {
 
 function createSkillTag(raw: string): Skill {
   const value = raw.slice(0, 20)
-  return { id: value, value }
+  return { skill: value }
 }
 
 /* ── Vehicle + resume ───────────────────────────────────────────────────── */
@@ -480,7 +480,7 @@ async function onSubmit(): Promise<void> {
     address: address.value,
     status: (status.value as CandidateFormData['status']) || '',
     sourceId: selectedSource.value?.id ?? null,
-    skills: skillTags.value.map((s) => s.value),
+    skills: skillTags.value.map((s) => s.skill),
     hasVehicle: hasVehicle.value,
     resume: resume.value,
     termsAccepted: termsAccepted.value,
