@@ -3,10 +3,6 @@
     <!-- Soft blurred glows (atmospheric depth) -->
     <span class="global-bg__deco glow-cyan-lg"></span>
     <span class="global-bg__deco glow-navy-lg"></span>
-    <span class="global-bg__deco glow-red-md"></span>
-    <span class="global-bg__deco glow-blue-md"></span>
-    <span class="global-bg__deco glow-red-sm"></span>
-    <span class="global-bg__deco glow-cyan-md"></span>
 
     <!-- Outlined rings (geometric structure) -->
     <span class="global-bg__deco ring-lg-white"></span>
@@ -43,6 +39,10 @@
   overflow: hidden;
   pointer-events: none;
   background:
+    radial-gradient(circle at 30% 45%, rgba(255, 255, 255, 0.10) 0%, transparent 36%),
+    radial-gradient(circle at 85% 55%, rgba(255, 255, 255, 0.11) 0%, transparent 38%),
+    radial-gradient(circle at 35% 82%, rgba(255, 255, 255, 0.08) 0%, transparent 32%),
+    radial-gradient(circle at 95% 88%, rgba(255, 255, 255, 0.09) 0%, transparent 34%),
     radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.15) 0%, transparent 45%),
     linear-gradient(
       180deg,
@@ -61,11 +61,10 @@
 }
 
 /* ── Soft blurred glows ───────────────────────────────────────────────────── */
-/* All blurred glows use white per design decision — they read as soft
-   atmospheric halos against the navy gradient backdrop rather than
-   colored accents. Opacities are tuned down where the previous color
-   already had high saturation (e.g. navy was 0.55, but white at that
-   level reads as harsh light; lowered to 0.18). */
+/* Two drifting corner halos kept as real blur. They animate translate only
+   (no scale), so the blurred bitmap is rasterized once and the compositor
+   just moves it. The other four glows are baked into .global-bg's gradient
+   above as radial-gradients — painted once, ~zero per-frame GPU cost. */
 .glow-cyan-lg {
   width: 640px; height: 640px;
   top: -100px; right: -100px;
@@ -83,46 +82,6 @@
   opacity: 0.14;
   animation: drift-b 70s ease-in-out infinite;
   animation-delay: -8s;
-}
-
-.glow-red-md {
-  width: 480px; height: 480px;
-  top: 30%; left: 18%;
-  background: #fff;
-  filter: blur(170px);
-  opacity: 0.16;
-  animation: drift-c 56s ease-in-out infinite;
-  animation-delay: -14s;
-}
-
-.glow-blue-md {
-  width: 540px; height: 540px;
-  top: 50%; right: 12%;
-  background: #fff;
-  filter: blur(180px);
-  opacity: 0.18;
-  animation: drift-d 66s ease-in-out infinite;
-  animation-delay: -22s;
-}
-
-.glow-red-sm {
-  width: 320px; height: 320px;
-  bottom: 14%; left: 32%;
-  background: #fff;
-  filter: blur(140px);
-  opacity: 0.15;
-  animation: drift-e 50s ease-in-out infinite;
-  animation-delay: -6s;
-}
-
-.glow-cyan-md {
-  width: 380px; height: 380px;
-  bottom: 10%; right: -50px;
-  background: #fff;
-  filter: blur(150px);
-  opacity: 0.14;
-  animation: drift-f 60s ease-in-out infinite;
-  animation-delay: -32s;
 }
 
 /* ── Outlined rings ───────────────────────────────────────────────────────── */
@@ -179,7 +138,7 @@
   animation-delay: -22s;
 }
 
-/* ── Drift keyframes (same vocabulary as section-level drifts) ────────────── */
+/* ── Drift keyframes (translate only — compositor-cheap, no blur re-raster) ── */
 @keyframes drift-a {
   0%, 100% { transform: translate(0, 0); }
   50%      { transform: translate(140px, -110px); }
@@ -192,13 +151,8 @@
 }
 
 @keyframes drift-c {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(-110px, 90px) scale(1.10); }
-}
-
-@keyframes drift-d {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(70px, -80px) scale(0.90); }
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-110px, 90px); }
 }
 
 @keyframes drift-e {
@@ -208,23 +162,15 @@
   75%      { transform: translate(-80px, 40px); }
 }
 
-@keyframes drift-f {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  20%      { transform: translate(90px, -40px) scale(1.08); }
-  40%      { transform: translate(-70px, -80px) scale(0.92); }
-  60%      { transform: translate(-80px, 70px) scale(1.06); }
-  80%      { transform: translate(100px, 60px) scale(0.94); }
-}
-
 @keyframes drift-g {
   0%, 100% { transform: translate(0, 0); }
   50%      { transform: translate(-130px, 150px); }
 }
 
 @keyframes drift-h {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(120px, 70px) scale(1.05); }
-  66%      { transform: translate(-90px, 110px) scale(0.95); }
+  0%, 100% { transform: translate(0, 0); }
+  33%      { transform: translate(120px, 70px); }
+  66%      { transform: translate(-90px, 110px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -232,10 +178,10 @@
 }
 
 /* ── Mobile — static, GPU-cheap backdrop ──────────────────────────────────
-   Phones/tablets can't afford 6 animated blur(>100px) layers recompositing
-   every frame, so the blurred glows are dropped and their atmosphere is
-   baked into the fixed container's gradient (painted once). Rings/dots stay
-   but stop animating; will-change is cleared so nothing is layer-promoted. */
+   Phones/tablets can't afford animated blur layers recompositing every
+   frame, so the blurred glows are dropped and their atmosphere is baked
+   into the fixed container's gradient (painted once). Rings/dots stay but
+   stop animating; will-change is cleared so nothing is layer-promoted. */
 @media (max-width: 1023px) {
   .global-bg {
     background:
@@ -259,11 +205,7 @@
   }
 
   .glow-cyan-lg,
-  .glow-navy-lg,
-  .glow-red-md,
-  .glow-blue-md,
-  .glow-red-sm,
-  .glow-cyan-md {
+  .glow-navy-lg {
     display: none;
   }
 

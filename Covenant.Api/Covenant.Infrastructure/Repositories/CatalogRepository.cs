@@ -40,6 +40,17 @@ namespace Covenant.Infrastructure.Repositories
                 })
                 .OrderBy(c => c.Value)
                 .ToListAsync();
+        public async Task<List<ProvinceModel>> GetProvinces(string countryCode) =>
+            await _context.Province.AsNoTracking()
+                .Where(c => c.Country.Code == countryCode)
+                .Select(s => new ProvinceModel
+                {
+                    Id = s.Id,
+                    Value = s.Value,
+                    Code = s.Code
+                })
+                .OrderBy(c => c.Value)
+                .ToListAsync();
 
         public Task<List<CityModel>> GetCities(Guid provinceId) =>
             _context.City.Where(c => c.ProvinceId == provinceId)

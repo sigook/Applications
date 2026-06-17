@@ -10,6 +10,7 @@ public interface ICatalogRepository
     Task<List<BaseModel<Guid>>> GetWsibGroups();
     Task<List<CountryModel>> GetCountries();
     Task<List<ProvinceModel>> GetProvinces(Guid countryId);
+    Task<List<ProvinceModel>> GetProvinces(string countryCode);
     Task<List<CityModel>> GetCities(Guid provinceId);
     Task<CityModel> GetCity(Guid cityId);
     Task<CityModel> GetCity(string name);
