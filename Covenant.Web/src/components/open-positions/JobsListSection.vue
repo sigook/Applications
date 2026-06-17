@@ -30,7 +30,7 @@
         <button @click="viewAllJobs()" class="retry-button">View All Jobs</button>
       </div>
 
-      <!-- JOBS LAYOUT (existing content) -->
+      <!-- JOBS LAYOUT -->
       <div v-else class="jobs-layout">
 
         <div class="jobs-list-col">
@@ -39,73 +39,34 @@
           </div>
 
           <div class="scrollable-list">
-            <div
-              v-for="job in jobs"
-              :key="job.numberId"
-              class="job-card"
-              :class="{ 'is-selected': selectedJob?.numberId === job.numberId }"
-              :data-job-id="job.numberId"
-              @click="selectJob(job)"
-            >
-              <h3 class="card-title">{{ job.title }}</h3>
-              <p class="card-location">{{ job.location }}</p>
+            <div v-for="job in jobs" :key="job.numberId" class="job-item">
+              <div
+                class="job-card"
+                :class="{ 'is-selected': isActive(job.numberId) }"
+                :data-job-id="job.numberId"
+                @click="selectJob(job)"
+              >
+                <h3 class="card-title">{{ job.title }}</h3>
+                <p class="card-location">{{ job.location }}</p>
 
-              <div class="card-footer">
-                <span class="salary-tag" v-if="job.salary && job.salary !== '$0.00'">{{ job.salary }}</span>
-                <span class="id-tag">#{{ job.numberId }}</span>
+                <div class="card-footer">
+                  <span class="salary-tag" v-if="job.salary && job.salary !== '$0.00'">{{ job.salary }}</span>
+                  <span class="id-tag">#{{ job.numberId }}</span>
+                </div>
+              </div>
+
+              <!-- Mobile: independent inline accordion under the tapped card. -->
+              <div v-if="isMobile && isExpanded(job.numberId)" class="inline-detail">
+                <JobDetailCard :job="job" @apply="handleApplyClick" />
               </div>
             </div>
           </div>
         </div>
 
-        <div class="job-detail-col">
+        <!-- Desktop: single master-detail side panel. -->
+        <div v-if="!isMobile" class="job-detail-col">
           <div v-if="selectedJob" class="detail-card">
-
-            <div class="detail-header">
-              <h2 class="detail-title">
-                {{ selectedJob.title }}
-                <span class="detail-id">#{{ selectedJob.numberId }}</span>
-              </h2>
-              <div class="detail-meta">
-                <span class="meta-item location">{{ selectedJob.location }}</span>
-                <span class="meta-item salary" v-if="selectedJob.salary !== '$0.00'">{{ selectedJob.salary }} / hr</span>
-                <span class="meta-item type">{{ selectedJob.type }}</span>
-              </div>
-            </div>
-
-            <div class="apply-container">
-              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
-            </div>
-
-            <hr class="divider" />
-
-            <div class="detail-body">
-
-              <div class="content-block description" v-if="selectedJob.description">
-                <div v-html="selectedJob.description"></div>
-              </div>
-
-              <div class="content-block" v-if="selectedJob.shift">
-                <h4>Schedule</h4>
-                <p>{{ selectedJob.shift }}</p>
-              </div>
-
-              <div class="content-block" v-if="selectedJob.responsibilities">
-                <h4>Responsibilities</h4>
-                <div class="html-content" v-html="selectedJob.responsibilities"></div>
-              </div>
-
-              <div class="content-block" v-if="selectedJob.requirements">
-                <h4>Requirements</h4>
-                <div class="html-content" v-html="selectedJob.requirements"></div>
-              </div>
-
-            </div>
-
-            <div class="detail-footer">
-              <button class="btn-apply-large" @click="handleApplyClick">APPLY NOW</button>
-            </div>
-
+            <JobDetailCard :job="selectedJob" @apply="handleApplyClick" />
           </div>
 
           <div v-else class="empty-state">
@@ -136,10 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJobs } from '@/composables/useJobs'
 import ApplyNowDialog from '@/components/jobs/ApplyNowDialog.vue'
+import JobDetailCard from '@/components/open-positions/JobDetailCard.vue'
 import type { Job } from '@/services/types/job.types'
 
 const route = useRoute()
@@ -148,8 +110,18 @@ const router = useRouter()
 // Use jobs composable for API integration
 const { jobs, loading, error, fetchJobs } = useJobs()
 
-// Estado para el trabajo seleccionado (para mostrar detalles)
+// Estado para el trabajo seleccionado (desktop master-detail panel)
 const selectedJob = ref<Job | null>(null)
+
+// Mobile independent accordion state (desktop uses selectedJob)
+const expandedIds = ref<string[]>([])
+const isMobile = ref(
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches,
+)
+
+const isExpanded = (numberId: string): boolean => expandedIds.value.includes(numberId)
+const isActive = (numberId: string): boolean =>
+  isMobile.value ? isExpanded(numberId) : selectedJob.value?.numberId === numberId
 
 // Estado para el trabajo al que se está aplicando (para el modal)
 const jobToApply = ref<Job | null>(null)
@@ -158,14 +130,18 @@ const jobToApply = ref<Job | null>(null)
 const showApplyDialog = ref(false)
 const successSnackbar = ref(false)
 
-// Función para seleccionar trabajo
+// Mobile: independent toggle; desktop: single selection. URL stays shareable.
 const selectJob = (job: Job) => {
-  selectedJob.value = job
+  if (isMobile.value) {
+    if (expandedIds.value.includes(job.numberId)) {
+      expandedIds.value = expandedIds.value.filter((id) => id !== job.numberId)
+      return
+    }
+    expandedIds.value = [...expandedIds.value, job.numberId]
+  }
 
-  // Actualizar URL con el jobId (permite deep linking)
-  router.replace({
-    query: { jobId: job.numberId }
-  })
+  selectedJob.value = job
+  router.replace({ query: { ...route.query, jobId: job.numberId } })
 }
 
 // Función para ver todos los trabajos (limpia filtros y query)
@@ -177,9 +153,9 @@ const viewAllJobs = () => {
   fetchJobs()
 }
 
-// Función para abrir el dialog de Apply
-const handleApplyClick = () => {
-  jobToApply.value = selectedJob.value
+// Función para abrir el dialog de Apply para un trabajo específico
+const handleApplyClick = (job: Job) => {
+  jobToApply.value = job
   showApplyDialog.value = true
 }
 
@@ -206,8 +182,20 @@ const scrollToSelectedJob = async (jobNumberId: string) => {
   }
 }
 
+const updateIsMobile = (): void => {
+  isMobile.value = window.matchMedia('(max-width: 900px)').matches
+}
+let mobileMql: MediaQueryList | null = null
+
+// Skip the initial results watch so a deep-link selection survives mount.
+let ready = false
+
 // Al montar el componente, cargamos trabajos desde la API
 onMounted(async () => {
+  mobileMql = window.matchMedia('(max-width: 900px)')
+  mobileMql.addEventListener('change', updateIsMobile)
+  updateIsMobile()
+
   // Obtenemos filtros de la URL (incluyendo jobId si existe)
   const filters = {
     jobId: route.query.jobId as string | undefined,
@@ -217,29 +205,30 @@ onMounted(async () => {
 
   await fetchJobs(filters)
 
-  if (jobs.value.length > 0) {
-    // Si hay jobId en URL y existe ese job, seleccionarlo
-    if (filters.jobId) {
-      const jobFromUrl = jobs.value.find(j => j.numberId === filters.jobId)
-      selectedJob.value = jobFromUrl || jobs.value[0]
-
-      // Hacer scroll hacia el job seleccionado
-      if (selectedJob.value) {
-        scrollToSelectedJob(selectedJob.value.numberId)
-      }
-    } else {
-      selectJob(jobs.value[0])
+  // Only show a detail when a jobId arrives via deep link — never auto-select.
+  if (jobs.value.length > 0 && filters.jobId) {
+    const jobFromUrl = jobs.value.find(j => j.numberId === filters.jobId)
+    if (jobFromUrl) {
+      selectedJob.value = jobFromUrl
+      if (isMobile.value) expandedIds.value = [jobFromUrl.numberId]
+      scrollToSelectedJob(jobFromUrl.numberId)
     }
   }
+
+  await nextTick()
+  ready = true
 })
 
-// Cuando los resultados cambien (por búsqueda), seleccionar el primero automáticamente
+onUnmounted(() => {
+  mobileMql?.removeEventListener('change', updateIsMobile)
+})
+
+// On new search results, clear the selection (no detail until the user picks).
 watch(jobs, (newJobs) => {
-  if (newJobs.length > 0) {
-    selectJob(newJobs[0])
-  } else {
-    selectedJob.value = null
-  }
+  if (!ready) return
+  selectedJob.value = null
+  const present = new Set(newJobs.map((j) => j.numberId))
+  expandedIds.value = expandedIds.value.filter((id) => present.has(id))
 })
 
 // Limpiar jobToApply cuando se cierra el dialog
@@ -373,91 +362,17 @@ watch(showApplyDialog, (newValue) => {
   overflow-y: auto; /* Scroll interno también para el detalle si es muy largo */
 }
 
-.detail-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #05162d;
-  margin-bottom: 10px;
-}
-
-.detail-id {
-  font-size: 1.2rem;
-  color: #888;
-  font-weight: 600;
-  margin-left: 10px;
-  vertical-align: middle;
-}
-
-.detail-meta {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 20px;
-  font-weight: 600;
+.job-item {
   display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.apply-container {
-  margin-bottom: 30px;
-}
-
-.btn-apply-large {
-  background-color: #32d26a; /* Verde brillante */
-  color: white;
-  width: 100%;
-  border: none;
-  padding: 15px;
-  font-weight: 800;
-  border-radius: 999px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.btn-apply-large:hover {
-  background-color: #28a755;
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background: #ccc;
-  margin: 30px 0;
-}
-
-/* Contenido HTML dinámico */
-.detail-body {
-  color: #333;
-  line-height: 1.6;
-}
-
-.content-block {
-  margin-bottom: 30px;
-}
-
-.content-block h4 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #05162d;
-}
-
-/* Estilos profundos para el HTML inyectado (v-html) */
-:deep(.html-content ul), :deep(.description ul) {
-  padding-left: 20px;
-  margin-bottom: 15px;
-}
-
-:deep(.html-content li), :deep(.description li) {
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-}
-
-:deep(.description p) {
-  margin-bottom: 15px;
+/* Mobile inline accordion detail */
+.inline-detail {
+  background: #eaeaea;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 12px;
 }
 
 /* LOADING AND ERROR STATES */
@@ -553,7 +468,9 @@ watch(showApplyDialog, (newValue) => {
   }
 
   .scrollable-list {
-    max-height: 350px;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .detail-card {

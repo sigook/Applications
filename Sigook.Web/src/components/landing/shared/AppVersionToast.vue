@@ -295,4 +295,18 @@ function onDismiss(): void {
     min-width: 0;
   }
 }
+
+/* ── Mobile GPU optimizations — cut expensive effects, keep the look ─────── */
+@media (max-width: 1023px) {
+  .vtoast {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 18px 24px rgba(0, 0, 0, 0.40),
+                0 0 0 1px rgba(0, 173, 239, 0.10);
+  }
+
+  .vtoast__dot-inner {
+    animation: none;
+  }
+}
 </style>

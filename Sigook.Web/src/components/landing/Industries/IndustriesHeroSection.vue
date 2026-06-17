@@ -1,6 +1,6 @@
 <template>
   <section class="industries-hero">
-    <HeroBackground :image="heroImage" focal="center 35%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 35%" />
     <!-- Atmospheric magnifier decoration — bottom-left anchor (only quadrant
          not used yet across Home top-left, About top-right, SP bottom-right) -->
     <DecoMagnifier class="industries-hero__magnifier" />
@@ -47,7 +47,8 @@
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/industries.jpg'
+import heroImage from '@/assets/images/v2/hero/industries.webp'
+import heroImageSm from '@/assets/images/v2/hero/industries-960.webp'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'

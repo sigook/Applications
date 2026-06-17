@@ -1,6 +1,6 @@
 <template>
   <section class="partner-hero">
-    <HeroBackground :image="heroImage" focal="center 30%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 30%" />
     <!-- Atmospheric magnifier decoration — bottom-center anchor (final
          unused position, closes the family alongside Home TL, About TR,
          SP BR, Industries BL, Talents CR, Employers CL, News TC) -->
@@ -58,7 +58,8 @@
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/partner.jpg'
+import heroImage from '@/assets/images/v2/hero/partner.webp'
+import heroImageSm from '@/assets/images/v2/hero/partner-960.webp'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
 </script>

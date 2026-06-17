@@ -273,4 +273,38 @@ onUnmounted(() => observer?.disconnect())
 /* Slot content resets */
 .tertiary-card__body :deep(> *:first-child) { margin-top: 0; }
 .tertiary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
+
+/* ── Mobile GPU optimization ─────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .tertiary-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.20);
+  }
+
+  .tertiary-card:hover {
+    box-shadow: 0 18px 24px rgba(0, 0, 0, 0.30);
+  }
+
+  .tertiary-card--blue {
+    background: linear-gradient(135deg,
+      rgba(21, 117, 187, 0.56) 0%,
+      rgba(21, 117, 187, 0.28) 50%,
+      rgba(229, 45, 39, 0.46) 100%);
+  }
+
+  .tertiary-card--cyan {
+    background: linear-gradient(135deg,
+      rgba(0, 173, 239, 0.48) 0%,
+      rgba(21, 117, 187, 0.36) 50%,
+      rgba(229, 45, 39, 0.44) 100%);
+  }
+
+  .tertiary-card--red {
+    background: linear-gradient(135deg,
+      rgba(229, 45, 39, 0.56) 0%,
+      rgba(229, 45, 39, 0.28) 50%,
+      rgba(21, 117, 187, 0.46) 100%);
+  }
+}
 </style>

@@ -51,9 +51,9 @@
 
 <script setup lang="ts">
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import { useWorkerRegisterModal } from '@/components/landing/shared/forms/useWorkerRegisterModal'
+import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 
-const registerModal = useWorkerRegisterModal()
+const registerModal = useCandidateApplyModal()
 
 const features = [
   'Fresh roles posted every week',

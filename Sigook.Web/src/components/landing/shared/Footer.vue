@@ -230,6 +230,16 @@ const currentYear = new Date().getFullYear()
 
 /* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
+  .footer {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      180deg,
+      rgba(9, 48, 85, 0.55) 0%,
+      rgba(9, 48, 85, 0.80) 100%
+    );
+  }
+
   .footer__inner {
     padding: 56px 28px 36px;
     gap: 36px;

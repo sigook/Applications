@@ -6,17 +6,19 @@
     <section class="certified">
       <!-- Photo layers -->
       <div class="certified__bg" aria-hidden="true">
-        <img src="@/assets/images/v2/certified/certified-bg.jpg" alt="" class="certified__photo certified__photo--1" />
-        <img src="@/assets/images/v2/certified/certified-bg2.jpg" alt="" class="certified__photo certified__photo--2" />
+        <img src="@/assets/images/v2/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
+        <img src="@/assets/images/v2/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
       </div>
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="certified__glow" aria-hidden="true"></div>
       <img
-        src="@/assets/images/v2/branding/sigook-magnifier.png"
+        src="@/assets/images/v2/branding/sigook-magnifier.webp"
         alt=""
         aria-hidden="true"
         class="certified__magnifier"
+        loading="lazy"
+        decoding="async"
       />
 
       <div class="certified__content">
@@ -264,6 +266,7 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
     min-height: 400px;
     border-radius: 80px 0 80px 0;
     padding-bottom: 80px;
+    box-shadow: 0 22px 24px -12px rgba(0, 0, 0, 0.5);
   }
 
   .certified__glow {
@@ -271,7 +274,7 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
     height: 320px;
     right: -100px;
     top: -60px;
-    filter: blur(110px);
+    filter: blur(40px);
     opacity: 0.22;
   }
 
@@ -280,6 +283,16 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
     height: 56px;
     bottom: 20px;
     left: 20px;
+    animation: none;
+  }
+
+  .certified__cta {
+    padding: 12px 28px;
+    font-size: 14px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   }
 
   .certified__content {
@@ -316,11 +329,6 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   .certified__body {
     font-size: 15px;
     margin-bottom: 24px;
-  }
-
-  .certified__cta {
-    padding: 12px 28px;
-    font-size: 14px;
   }
 }
 </style>

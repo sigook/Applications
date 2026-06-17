@@ -357,4 +357,29 @@ onUnmounted(() => observer?.disconnect())
 .news-card--red:hover .news-card__link {
   color: var(--c-brand-red);
 }
+
+/* ── Mobile GPU budget — drop blur, bake legibility, cap shadows ──────────── */
+@media (max-width: 1023px) {
+  .news-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.16) 100%);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  }
+
+  .news-card:hover {
+    box-shadow: 0 22px 24px rgba(0, 0, 0, 0.34);
+  }
+
+  .news-card__chip {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .news-card__chip--cyan {
+    background: rgba(0, 173, 239, 0.34);
+  }
+}
 </style>

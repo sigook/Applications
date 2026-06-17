@@ -1,6 +1,6 @@
 <template>
   <section class="op-hero">
-    <HeroBackground :image="heroImage" focal="center 35%" />
+    <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 35%" />
     <DecoMagnifier class="op-hero__magnifier" />
 
     <div class="op-hero__content">
@@ -56,7 +56,8 @@
 import { reactive } from 'vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/open-positions.jpg'
+import heroImage from '@/assets/images/v2/hero/open-positions.webp'
+import heroImageSm from '@/assets/images/v2/hero/open-positions-960.webp'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import { useJobs } from '@/composables/useJobs'
 
