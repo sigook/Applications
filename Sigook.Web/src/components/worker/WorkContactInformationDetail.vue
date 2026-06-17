@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="button-right">
+    <div class="d-flex align-items-center justify-content-between">
       <h3 class="section-title">{{ "Contact information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalContactInformation = true"></b-button>
@@ -9,7 +9,7 @@
       <div v-if="props.worker.location">
         <span>{{ 'Address' }}</span>
         <span>
-          <p class="fw-200 margin-0 capitalize">
+          <p class="fw-light m-0 text-capitalize">
             {{ props.worker.location.address }}
             {{ props.worker.location.city.value }}, {{ props.worker.location.city.province.code }}
             {{ props.worker.location.postalCode }}
@@ -19,14 +19,14 @@
       <div>
         <span>{{ 'Mobile Number' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.mobileNumber }}</p>
+          <p class="fw-light m-0">{{ props.worker.mobileNumber }}</p>
         </span>
       </div>
       <div v-if="props.worker.phone">
         <span>{{ 'Phone' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.phone }}
-            <span v-if="props.worker.phoneExt" class="fw-200">
+          <p class="fw-light m-0">{{ props.worker.phone }}
+            <span v-if="props.worker.phoneExt" class="fw-light">
               <b>{{ 'Ext.' }}:</b>
               {{ props.worker.phoneExt }}
             </span>

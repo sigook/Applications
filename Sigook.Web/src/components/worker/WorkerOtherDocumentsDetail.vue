@@ -1,9 +1,9 @@
 <template>
   <section>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="button-right">
+    <div class="d-flex align-items-center justify-content-between">
       <div>
-        <h3 class="fw-700 fz-0">{{ props.justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
+        <h3 class="fw-bold fz-0">{{ props.justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
         <i class="fz-2" v-if="props.justWhmis">Complete the training following both links below and uplaod your
           certificates</i>
       </div>
@@ -25,14 +25,14 @@
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in props.worker.otherDocuments"
         v-bind:key="'docs' + index">
-        <div class="button-right">
+        <div class="d-flex align-items-center justify-content-between">
           <a :href="item.pathFile" target="_blank" download>
-            <h4 class="fw-400">
+            <h4 class="fw-normal">
               {{ filename(item.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
-          <div class="actions text-right">
+          <div class="actions text-end">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item)">
                 {{ "Delete" }}
@@ -42,7 +42,7 @@
         </div>
         <div class="fz-1">
           <p>
-            <strong class="fw-400">{{ item.description }}</strong>
+            <strong class="fw-normal">{{ item.description }}</strong>
           </p>
         </div>
       </div>
@@ -54,7 +54,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">New Document</span>
+              <span class="fz1 fw-bold">New Document</span>
               <button @click="modalDocuments = false" type="button" class="cross-icon">
                 {{ "Close" }}
               </button>

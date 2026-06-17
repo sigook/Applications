@@ -39,7 +39,7 @@
               :companyId="profileId" />
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
+            <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
               @click="openEditModal(props.row)"></b-button>
             <b-button type="is-danger" outlined rounded icon-right="delete"
               @click="onDeleteJobPosition(props.row.id)"></b-button>

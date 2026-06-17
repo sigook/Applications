@@ -110,7 +110,7 @@
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <div v-if="props.row.displayRecruiters" class="capitalize is-inline-block v-middle">
+            <div v-if="props.row.displayRecruiters" class="text-capitalize is-inline-block align-middle">
               {{ breakWord(props.row.displayRecruiters) }}
             </div>
             <span v-else class="op3">—</span>
@@ -141,8 +141,8 @@
         </b-table-column>
         <b-table-column field="workersQuantityWorking" sortable>
           <template v-slot:header>
-            <p class="fw-600">Workers</p>
-            <p class="fw-600">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+            <p class="fw-semibold">Workers</p>
+            <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
           </template>
           <template v-slot="props">
             {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}

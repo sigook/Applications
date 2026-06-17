@@ -26,8 +26,8 @@
           <b-upload v-model="newEmail.attachments" multiple>
             <div class="expandable-section-container">
               <div class="expandable-section-header">
-                <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
-                  <b-icon icon="plus-circle" class="mr-2"></b-icon>
+                <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
+                  <b-icon icon="plus-circle" class="me-2"></b-icon>
                   Add Attachments
                 </h3>
                 <p class="fz-1 color-gray mb-0 text-center">Click here to add extra files or documents to this email</p>

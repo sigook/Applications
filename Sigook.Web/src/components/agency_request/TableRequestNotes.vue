@@ -1,7 +1,7 @@
 <template>
     <div v-if="notesList">
         <div v-for="item in notesList.items" :key="item.id">
-            <p class="fw-400 fz-14">
+            <p class="fw-normal fz-14">
                 <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
                 {{ item.note }}
                 <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
@@ -9,14 +9,14 @@
             </p>
         </div>
 
-        <span v-if="canEdit" @click="showModalNotes = true" class="color-primary pointer fw-400 fz-2 underline">See more + </span>
+        <span v-if="canEdit" @click="showModalNotes = true" class="color-primary pointer fw-normal fz-2 text-decoration-underline">See more + </span>
 
         <!-- NOTES custom modal -->
         <transition name="modal">
             <div v-if="showModalNotes" class="vue-modal min-width-0">
                 <div class="modal-mask">
                     <div class="modal-wrapper">
-                        <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
+                        <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
                             <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
                             <modal-notes :user-id="profileId"
                                          :on-get="getNotes"

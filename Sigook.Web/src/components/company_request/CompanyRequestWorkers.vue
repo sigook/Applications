@@ -50,7 +50,7 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+            <span class="text-uppercase fw-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">

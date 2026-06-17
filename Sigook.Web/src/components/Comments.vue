@@ -2,7 +2,7 @@
   <section class="worker-comments" id="comments">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="button-right" v-if="!onlyView">
+    <div class="d-flex align-items-center justify-content-between" v-if="!onlyView">
       <h3>{{ 'Comments & Qualification' }}</h3>
       <button class="outline-btn md-btn orange-button btn-radius" @click="alertComment">{{ 'Add Comment' }}
         +</button>

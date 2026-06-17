@@ -2,14 +2,14 @@
   <div class="container-flex">
     <b-loading v-model="isLoading"></b-loading>
     <!-- Detail -->
-    <section class="col-md-8 col-sm-12 p-3 pr-5">
+    <section class="col-md-8 col-sm-12 p-3 pe-5">
       <!-- Highlight -->
       <contact-information v-if="props.company" :company="props.company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
       <table class="table-detail" v-if="props.company">
         <tr v-if="props.company.industry">
-          <td><span class="fw-700">Industry </span></td>
+          <td><span class="fw-bold">Industry </span></td>
           <td>
             <span>
               {{ props.company.industry.industry ? props.company.industry.industry.value : props.company.industry.otherIndustry }}
@@ -18,7 +18,7 @@
         </tr>
         <tr>
           <td>
-            <span class="fw-700">{{ "Vaccination Required" }}</span>
+            <span class="fw-bold">{{ "Vaccination Required" }}</span>
           </td>
           <td>
             {{ getLabelVaccinationRequired(localCompany.vaccinationRequired) }}
@@ -30,13 +30,13 @@
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4" v-if="props.company">
-        <span class="fw-700">About</span>
+      <section class="mt-3 mb-4" v-if="props.company">
+        <span class="fw-bold">About</span>
         <pre class="long-description">{{ props.company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4" v-if="props.company">
-        <span class="fw-700">Internal Info</span>
+      <section class="mt-3 mb-4" v-if="props.company">
+        <span class="fw-bold">Internal Info</span>
         <pre class="long-description" v-html="props.company.internalInfo"></pre>
       </section>
 
@@ -44,13 +44,13 @@
 
 
       <!-- Documents -->
-      <section class="margin-top-15 mb-4">
+      <section class="mt-3 mb-4">
         <documents />
       </section>
 
       <div class="mb-5">
-        <div class="button-right">
-          <span class="fw-700">{{ "Invoice notes " }}</span>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="fw-bold">{{ "Invoice notes " }}</span>
           <button class="show-notes-btn" @click="showNotesEditor()">
             <img src="../../assets/images/right-arrow.svg" alt="edit" :class="{ open: showEditor }" />
           </button>
@@ -71,8 +71,8 @@
       </div>
 
       <div>
-        <div class="button-right">
-          <span class="fw-700">Invoice Recipients</span>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="fw-bold">Invoice Recipients</span>
           <button class="show-notes-btn" @click="loadCompanyInvoiceRecipients()">
             <img src="../../assets/images/right-arrow.svg" :class="{ open: showRecipients }" />
           </button>

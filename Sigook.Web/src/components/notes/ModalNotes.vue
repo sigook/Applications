@@ -36,9 +36,9 @@
       <div v-if="showModalUpdate" class="vue-modal min-width-0">
         <div class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
+            <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
               <button @click="showModalUpdate = false" type="button" class="cross-icon">close</button>
-              <h3 class="fw-700">Edit</h3>
+              <h3 class="fw-bold">Edit</h3>
               <note-form :current-note="editNoteModel" :current-index="editNoteIndex"
                 @onSave="(note) => updateNote(note)" />
             </div>
@@ -192,3 +192,25 @@ onMounted(() => {
   getNotes(currentPage.value);
 });
 </script>
+
+<style scoped lang="scss">
+.note-list {
+  border-radius: 5px;
+  padding: 0;
+  margin-bottom: 10px;
+
+  li {
+    border: 1px solid #dbdcdb;
+    border-radius: 5px;
+    padding: 5px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
+</style>

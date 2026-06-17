@@ -32,7 +32,7 @@
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
                 </b-tooltip>
               </span>
-              <i class="fz-2 ellipsis-150 lowercase">
+              <i class="fz-2 ellipsis-150 text-lowercase">
                 <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
               </i>
             </template>
@@ -61,7 +61,7 @@
               </b-field>
             </template>
             <template v-slot="props">
-              <div class="capitalize" v-if="props.row.createdBy">
+              <div class="text-capitalize" v-if="props.row.createdBy">
                 <p>{{ emailName(props.row.createdBy) }}</p>
               </div>
               <div v-else class="op3">Added by</div>

@@ -2,9 +2,9 @@
   <div class="wrapper-calendar">
     <div class="container-flex">
       <div class="col-8">
-        <h2 class="fz1">{{ onlyMonth(selectDate) }} <span class="fw-100">{{ onlyYear(selectDate) }}</span></h2>
+        <h2 class="fz1">{{ onlyMonth(selectDate) }} <span class="fw-light">{{ onlyYear(selectDate) }}</span></h2>
       </div>
-      <div class="col-4 text-right align-s-center">
+      <div class="col-4 text-end align-self-center">
         <b-button size="is-small" @click="getPreviousMonth" icon-left="chevron-left" class="btn-calendar">
         </b-button>
         <b-button size="is-small" @click="getTodayMonth" class="btn-today">Today</b-button>
@@ -16,13 +16,13 @@
     <!-- Desktop: Tabla tradicional -->
     <table v-if="!isMobile && weekdays" class="w-100 isPunchCard" :class="{ 'hasEvents': hasEvents }">
       <thead>
-        <tr class="no-border">
+        <tr class="border-0">
           <th>
             <div class="totalHours">
               Total
             </div>
           </th>
-          <th class="pl-1 min-100" v-for="item in weekdays" :key="'weekDays' + item">{{ item }}</th>
+          <th class="ps-1 min-100" v-for="item in weekdays" :key="'weekDays' + item">{{ item }}</th>
         </tr>
       </thead>
       <tbody>
@@ -445,5 +445,99 @@ defineExpose({ WorkerRequestStatus });
 .btn-calendar:hover,
 .btn-today:hover {
   background: #f5f5f5;
+}
+</style>
+
+<style scoped lang="scss">
+.wrapper-calendar {
+  table {
+    border-collapse: collapse;
+
+    td:nth-child(1),
+    td:nth-last-child(1) {
+      background: #f7f7f7;
+    }
+
+    &.isPunchCard {
+      table-layout: fixed;
+      width: 100%;
+
+      th:nth-child(1),
+      td:nth-child(1) {
+        width: 60px;
+        background: #e4e4e4;
+        border-left: 1px solid white;
+      }
+      td:nth-child(2),
+      td:nth-last-child(1) {
+        background: #f7f7f7;
+      }
+    }
+
+    td {
+      padding: 0 !important;
+    }
+    tbody td {
+      border: 1px solid #d2d2d2;
+    }
+    .wrapper-day {
+      min-height: 60px;
+      padding: 5px;
+      font-size: 14px;
+    }
+
+    .isToday {
+      color: #21b7ff;
+      font-weight: bold;
+    }
+
+    .notCurrentMonth {
+      color: #bebebe;
+    }
+    tr:hover {
+      background: white !important;
+    }
+  }
+  .btn-calendar {
+    width: 14px;
+    border: 0;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 5px;
+  }
+  .btn-prev img {
+    transform: rotate(180deg);
+  }
+  .btn-today {
+    border: 1px solid #a7a7a7;
+    border-radius: 5px;
+    margin: 0 5px;
+    font-weight: bold;
+    color: #b5b5b5;
+    font-size: 14px;
+    padding: 3px 8px;
+  }
+  .no-border {
+    border: 0;
+  }
+  .highlight-day {
+    & > span {
+      line-height: 1;
+      width: 22px;
+      height: 22px;
+      background: #ff9c28;
+      display: inline-block;
+      text-align: center;
+      border-radius: 50%;
+      padding: 5px 0;
+      font-size: 13px;
+      color: white;
+    }
+  }
+
+  .bg-gray {
+    background-color: #dadada !important;
+    opacity: .5;
+  }
 }
 </style>

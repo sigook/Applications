@@ -36,7 +36,7 @@
               @update:expanded="expandedGroups[i] = $event">
               <template #label="{ expanded }">
                 <span class="sidebar-group-label">
-                  <b-icon :icon="group.icon" size="is-medium" class="mr-2"></b-icon>
+                  <b-icon :icon="group.icon" size="is-medium" class="me-2"></b-icon>
                   <span>{{ group.label }}</span>
                 </span>
                 <b-icon :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
@@ -52,7 +52,7 @@
             <b-menu-item v-else v-for="item in group.items" :key="item.to + item.label" tag="router-link"
               :to="item.to" :model-value="isActive(item.to)" :title="item.label">
               <template #label>
-                <b-icon :icon="item.icon" size="is-medium" class="mr-2"></b-icon>
+                <b-icon :icon="item.icon" size="is-medium" class="me-2"></b-icon>
                 <span>{{ item.label }}</span>
               </template>
             </b-menu-item>

@@ -4,10 +4,10 @@
 
     <section class="wrapper-worker-top mb-0">
       <div>
-        <image-detail class="d-inline-block v-top" :data="worker" @updateProfile="() => loadWorker()" />
-        <div class="d-inline-block pl-4 v-top">
-          <h2 class="fz1 fw-700">
-            <span class="fw-400" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
+        <image-detail class="d-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
+        <div class="d-inline-block ps-4 align-text-top">
+          <h2 class="fz1 fw-bold">
+            <span class="fw-normal" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
               {{ worker.numberId }}
             </span>
             {{ lowercase(worker.firstName) }}
@@ -86,7 +86,7 @@
 
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
-              <div class="button-right">
+              <div class="d-flex align-items-center justify-content-between">
                 <h3>{{ "Work Experience" }}</h3>
                 <button class="outline-btn md-btn orange-button btn-radius" @click="modalWorkExperience = true">
                   Add experience +
@@ -105,7 +105,7 @@
                   <div class="modal-mask">
                     <div class="modal-wrapper">
                       <div class="modal-container modal-light overflow-initial">
-                        <span class="fz1 fw-700">Work Experience</span>
+                        <span class="fz1 fw-bold">Work Experience</span>
                         <button @click="modalWorkExperience = false" class="cross-icon">
                           {{ "Close" }}
                         </button>

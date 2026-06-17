@@ -8,8 +8,8 @@
         <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="showUpdateLogo = true">
           Edit
         </button>
-        <h2 class="capitalize fz1 fw-700">
-          <span class="fw-400 fz-1" v-if="company.numberId">{{ company.numberId }} |
+        <h2 class="text-capitalize fz1 fw-bold">
+          <span class="fw-normal fz-1" v-if="company.numberId">{{ company.numberId }} |
           </span>
           {{ lowercase(company.businessName) }}
         </h2>

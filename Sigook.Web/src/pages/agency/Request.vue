@@ -10,12 +10,12 @@
         <router-link :to="'/agency-companies/company/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
-        <h2 class="capitalize fz1 fw-700">
+        <h2 class="text-capitalize fz1 fw-bold">
           <span v-if="request.isAsap || isDirectHiringComputed" class="request-flags">
             <span v-if="request.isAsap" class="request-flag request-flag--asap">Asap</span>
             <span v-if="isDirectHiringComputed" class="request-flag request-flag--dh">DH</span>
           </span>
-          <span class="fw-400 fz-0">{{ request.numberId }}</span>
+          <span class="fw-normal fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
           <i class="fz-2 block">{{ billingTitle }}</i>
         </h2>
@@ -25,7 +25,7 @@
           {{ breakWord(request.displayRecruiters) }}
         </div>
         <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top uppercase fw-700 is-inline-block" :class="getStatusColorClass(request)">
+          class="option-request-top text-uppercase fw-bold is-inline-block" :class="getStatusColorClass(request)">
           {{ RequestStatusLabels[request.status] }}
         </div>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="request.canEdit">

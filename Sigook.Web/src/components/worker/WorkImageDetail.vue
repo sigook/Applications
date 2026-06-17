@@ -11,19 +11,19 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container worker-profile-modal">
-              <span class="fz1 fw-700 ">Profile Photo</span>
+              <span class="fz1 fw-bold ">Profile Photo</span>
               <button @click="showEditModal = false" type="button" class="cross-icon">
                 {{ 'Close' }}
               </button>
               <upload-image v-if="profileImage"
                 @imageSelected="(profileImg: File) => profileImageFile = profileImg"
                 :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
-                @finishUpload="() => pubSub.unsubscribe()" class="margin-10-auto">
+                @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
               </upload-image>
               <div class="text-center">
-                <button class="background-btn md-btn red-button btn-radius margin-top-15 margin-right uppercase"
+                <button class="background-btn md-btn red-button btn-radius mt-3 margin-right text-uppercase"
                   @click="showEditModal = false" type="button">{{ "Cancel" }}</button>
-                <button class="background-btn md-btn primary-button btn-radius margin-top-15 uppercase"
+                <button class="background-btn md-btn primary-button btn-radius mt-3 text-uppercase"
                   @click="createWorkerImageHandler()" type="button">{{ "Save" }}</button>
               </div>
             </div>

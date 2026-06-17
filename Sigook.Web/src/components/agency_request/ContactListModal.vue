@@ -4,7 +4,7 @@
     <h2 class="text-center main-title"> Contacts </h2>
     <ul v-if="data" class="border-top-gray">
       <li v-for="item in data" :key="item.id"
-        class="list-item-border-bottom content-flex-between align-center mb-0">
+        class="list-item-border-bottom content-flex-between align-items-center mb-0">
         <div>
           <b>{{ item.title }} {{ item.firstName }} {{ item.lastName }}</b> <span> | {{ item.position }}</span>
           <span class="d-block fz-1">{{ item.mobileNumber }}</span>

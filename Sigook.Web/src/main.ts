@@ -16,8 +16,6 @@ import { useSecurityStore } from '@/stores/security';
 
 // import the styles
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.min.js';
-import 'jquery/dist/jquery.min.js';
 import '@ntohq/buefy-next/dist/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 

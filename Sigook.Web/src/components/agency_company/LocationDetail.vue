@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="container-flex space-between mb-4">
-      <h3 class="fw-700">Location</h3>
-      <button @click="showModal = true" class="fw-700 fz-1 sm-btn outline-btn orange-button btn-radius">Add</button>
+    <div class="container-flex justify-content-between mb-4">
+      <h3 class="fw-bold">Location</h3>
+      <button @click="showModal = true" class="fw-bold fz-1 sm-btn outline-btn orange-button btn-radius">Add</button>
     </div>
     <b-table sticky-header height="320px" :data="data" narrowed hoverable paginated pagination-size="is-small" :per-page="pageSize" v-model:current-page="pageIndex"
       pagination-rounded @cellclick="onCellClick">
@@ -44,7 +44,7 @@
 
     <b-modal v-model="showMapModal" width="600px">
       <div class="card p-4" v-if="mapLocation">
-        <h4 class="fw-700 mb-2">{{ locationLabel(mapLocation) }}</h4>
+        <h4 class="fw-bold mb-2">{{ locationLabel(mapLocation) }}</h4>
         <p class="fz-1 op5 mb-3">Lat: {{ mapLocation.latitude }} | Lng: {{ mapLocation.longitude }}</p>
         <div class="location-map-modal">
           <iframe :src="mapEmbedSrc(mapLocation)" allowfullscreen width="100%" height="400px" frameborder="0"

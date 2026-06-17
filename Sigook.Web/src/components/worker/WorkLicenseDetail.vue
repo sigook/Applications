@@ -1,8 +1,8 @@
 <template>
   <section>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ "Licenses" }}</h3>
+    <div class="d-flex align-items-center justify-content-between">
+      <h3 class="fw-bold fz-0">{{ "Licenses" }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalLicense = true">
         Add License
       </b-button>
@@ -10,14 +10,14 @@
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in localWorker.licenses"
         v-bind:key="'licences' + index">
-        <div class="button-right">
+        <div class="d-flex align-items-center justify-content-between">
           <a :href="item.license.pathFile" target="_blank" download>
-            <h4 class="fw-400">
+            <h4 class="fw-normal">
               {{ filename(item.license.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
-          <div class="actions text-right">
+          <div class="actions text-end">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item.license)">
                 {{ "Delete" }}
@@ -28,8 +28,8 @@
 
         <div class="fz-1">
           <p>
-            <strong class="fw-400">{{ item.license.description }}</strong>
-            <strong class="fw-400" v-if="item.number">
+            <strong class="fw-normal">{{ item.license.description }}</strong>
+            <strong class="fw-normal" v-if="item.number">
               # {{ item.number }}</strong>
           </p>
           <span v-if="item.issued">Issued: {{ dateMonth(item.issued) }} | </span>
@@ -43,7 +43,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ "Licenses" }}</span>
+              <span class="fz1 fw-bold">{{ "Licenses" }}</span>
               <button @click="modalLicense = false" type="button" class="cross-icon">
                 {{ "Close" }}
               </button>

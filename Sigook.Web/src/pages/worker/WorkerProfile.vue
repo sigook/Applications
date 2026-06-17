@@ -9,7 +9,7 @@
           <ImageDetail :data="workerProfile" @updateProfile="() => updateProfile()" />
         </div>
         <div>
-          <h1 class="capitalize">
+          <h1 class="text-capitalize">
             {{ lowercase(workerProfile.firstName) }}
             {{ lowercase(workerProfile.middleName) }}
             {{ lowercase(workerProfile.lastName) }}
@@ -30,7 +30,7 @@
         <b-tab-item value="PersonalDetails">
           <template #header>
             <span>Personal Details</span>
-            <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
+            <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ms-1" />
           </template>
           <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" @updateProfile="updateProfile()" />
         </b-tab-item>

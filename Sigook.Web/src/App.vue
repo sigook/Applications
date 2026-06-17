@@ -169,23 +169,11 @@ onUnmounted(() => {
   padding: 64px 32px 24px;
 }
 
-.main-container {
-  background-color: $gray-bg;
-  min-height: calc(100vh - 63px);
-  padding: 30px;
-}
-
 /* Legacy .message-version banner removed — replaced by AppVersionToast
    (src/components/landing/shared/AppVersionToast.vue) which renders
    non-invasively in the bottom-right corner. */
 
 @media (max-width: 767px) {
-  .main-container {
-    min-height: auto;
-    padding: 0;
-    background-color: #fff;
-  }
-
   .logged-layout,
   .logged-content {
     position: static;

@@ -4,8 +4,8 @@
             <span class="fz-1 tag_primary_absolute" v-if="data.isCurrentlyWorking" >working</span>
             <img :src="data.profileImage">
             <div class="container-worker-inline-name">
-            <h3 class="fz1 fw-200 capitalize">{{lowercase(data.name)}} {{lowercase(data.lastName)}}</h3>
-            <span class="fz-1 fw-200 color-gray-light"
+            <h3 class="fz1 fw-light text-capitalize">{{lowercase(data.name)}} {{lowercase(data.lastName)}}</h3>
+            <span class="fz-1 fw-light color-gray-light"
                       v-for="(item, index) in data.skills.slice(0, 2)" :key="index"> {{item}}
                 <span v-if="index === 0 && data.skills.length > 1 "> - </span>
             </span>
@@ -13,7 +13,7 @@
         </div>
 
         <div class="container-worker-inline-bottom">
-            <span class="fz-1 fw-700 color-green-dark" :class="{'color-danger': !data.approvedToWork}">
+            <span class="fz-1 fw-bold color-green-dark" :class="{'color-danger': !data.approvedToWork}">
             ID:{{data.numberId}}
             </span>
             <div class="bg-gray">

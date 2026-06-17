@@ -1,10 +1,10 @@
 <template>
     <div class="experience-item">
-        <div class="button-right">
-            <h4>{{props.item.company}}  | <span class="fw-200"> {{props.item.supervisor}} </span>
+        <div class="d-flex align-items-center justify-content-between">
+            <h4>{{props.item.company}}  | <span class="fw-light"> {{props.item.supervisor}} </span>
             </h4>
-            <div class="actions text-right">
-                <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
+            <div class="actions text-end">
+                <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
                     @click="modalEdit = true"></b-button>
                 <b-button type="is-danger" outlined rounded icon-right="delete"
                     @click="confirmDelete()"></b-button>
@@ -12,13 +12,13 @@
         </div>
 
         <div class="experience-body">
-            <p class="margin-0 date-range">
+            <p class="m-0 date-range">
                 <span>{{toDateMMYYYY(props.item.startDate)}} -
                     <span v-if="props.item.isCurrentJobPosition">{{'Present'}}</span>
                     <span v-else>{{toDateMMYYYY(props.item.endDate)}}</span>
                 </span>
             </p>
-            <p class="margin-0 duties-text">{{props.item.duties}}</p>
+            <p class="m-0 duties-text">{{props.item.duties}}</p>
         </div>
 
         <b-modal v-model="modalEdit" width="800px">
@@ -93,7 +93,7 @@ function updateExperience() {
   color: #363636;
 }
 
-.experience-item h4 .fw-200 {
+.experience-item h4 .fw-light {
   font-size: 0.9rem;
   font-weight: 400;
   color: #777;
