@@ -41,6 +41,31 @@ public class LocationController : ControllerBase
         return Ok(provinces);
     }
 
+    /// <summary>Gets the provinces for the given country by Country Code.</summary>
+    /// <param name="countryCode">Country identifier.</param>
+    [HttpGet("province/{countryCode}")]
+    [ResponseCache(Duration = 3600, VaryByQueryKeys = new[] { "countryCode" })]
+    [ProducesResponseType(typeof(List<ProvinceModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> GetProvinces([FromRoute] string countryCode)
+    {
+        var code = countryCode.ToUpperInvariant();
+        Console.WriteLine(code);
+
+        if (code is not "CA" and not "USA")
+        {
+            Console.WriteLine(code);
+            return UnprocessableEntity(new
+            {
+                Code = countryCode,
+                Error = "Muste be either CA or USA"
+            });
+        }
+
+        var provinces = await _locationService.GetProvinces(code);
+        return Ok(provinces);
+    }
+
     /// <summary>Gets the cities for the given province.</summary>
     /// <param name="provinceId">Province identifier.</param>
     [HttpGet("city/{provinceId}")]
