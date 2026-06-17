@@ -22,10 +22,6 @@
             </div>
           </b-dropdown-item>
           <b-dropdown-item aria-role="menuitem" :disabled="checkedRows.length < 1"
-            @click="onShowBulkRecruitersModal">
-            Assign / Unassign recruiters
-          </b-dropdown-item>
-          <b-dropdown-item aria-role="menuitem" :disabled="checkedRows.length < 1"
             @click="onShowBulkCancelModal">
             Cancel requests
           </b-dropdown-item>
@@ -116,14 +112,8 @@
           <template v-slot="props">
             <div v-if="props.row.displayRecruiters" class="capitalize is-inline-block v-middle">
               {{ breakWord(props.row.displayRecruiters) }}
-              <button v-if="tableConfig.showRecruiterModal" type="button"
-                class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
             </div>
-            <div v-else>
-              <span class="op3">Recruiter</span>
-              <button v-if="tableConfig.showRecruiterModal" type="button"
-                class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"></button>
-            </div>
+            <span v-else class="op3">—</span>
           </template>
         </b-table-column>
         <b-table-column field="salesRepresentative" label="Sales Rep" :visible="tableConfig.showSalesRepColumn" sortable
@@ -227,23 +217,9 @@
       </template>
     </b-table>
 
-    <!-- recruiters list -->
-    <b-modal v-if="tableConfig.showRecruiterModal" v-model="showRecruitersModal" @close="showRecruitersModal = false"
-      width="500px">
-      <PersonnelList :recruiters="recruiters" :request="currentRequest" @selectUser="() => onUpdateRecruiter()"
-        @removeUser="() => onUpdateRecruiter()" />
-    </b-modal>
-
     <!-- bulk cancel -->
     <b-modal v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
       <CancelList @sendReason="onBulkCancelConfirmed" />
-    </b-modal>
-
-    <!-- bulk recruiters -->
-    <b-modal v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px">
-      <BulkRecruiterModal :request-count="checkedRows.length"
-        @submit="onBulkRecruitersConfirmed"
-        @cancel="showBulkRecruitersModal = false" />
     </b-modal>
 
     <!-- job boards -->
@@ -267,7 +243,7 @@ import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, breakWord, currency } from '@/utils/filters';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
-import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
+import { getAgencyRequests, bulkCancelRequests } from "@/api/agencyRequestApi";
 import { getSourcesForRequests } from "@/api/catalogApi";
 import type { RequestJobBoardSummary, AgencyRequestListItem } from '@/types/agency';
 import type { Source } from '@/types/common';
@@ -280,8 +256,6 @@ import {
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/types/agency';
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import ModalNotes from '../notes/ModalNotes.vue';
-import PersonnelList from '../../components/agency_request/PersonnelListModal.vue';
-import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
@@ -301,22 +275,16 @@ const defaultConfig = {
   showMyRequestsCheckbox: true,
   showQuickActions: true,
   enableCheckable: true,
-  showRecruiterModal: true,
   showSalesRepColumn: true,
   showNotesColumn: true
 };
-const showRecruitersModal = ref(false);
 const showBulkCancelModal = ref(false);
-const showBulkRecruitersModal = ref(false);
 const showJobBoardsModal = ref(false);
 const currentJobBoardsRequest = ref<AgencyRequestListItem | null>(null);
 const availableJobBoards = ref<Source[]>([]);
 const jobBoardsSelected = ref<Source[]>([]);
 const jobBoardsSummary = ref<RequestJobBoardSummary[]>([]);
 const quickActionsKey = ref(0);
-const recruiters = ref<any>(null);
-const currentRequest = ref<any>(null);
-const currentIndex = ref<number | null>(null);
 const getNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyRequestNotes(userId, pagination);
 const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model);
 const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model);
@@ -362,9 +330,6 @@ function onCellClick(row: any, column: any, rowIndex: number) {
       });
       break;
     case 'displayRecruiters':
-      if (tableConfig.value.showRecruiterModal) {
-        onShowRecruitersModal(row, rowIndex);
-      }
       break;
     case 'jobBoards':
       currentJobBoardsRequest.value = row;
@@ -456,18 +421,6 @@ function onUpdateNote(row: any, size: number) {
   rows.value[index].notesCount = size;
 }
 
-function onShowRecruitersModal(item: any, index: number) {
-  currentRequest.value = item;
-  currentIndex.value = index;
-  recruiters.value = item.displayRecruiters ? item.displayRecruiters.split('|') : [];
-  showRecruitersModal.value = true;
-}
-
-function onUpdateRecruiter() {
-  showRecruitersModal.value = false;
-  loadRequests();
-}
-
 function getStatusClass(row: any) {
   if (row.requestStatus === RequestStatus.Open &&
     row.workersQuantityWorking > 0 &&
@@ -514,28 +467,6 @@ function onShowBulkCancelModal() {
   showBulkCancelModal.value = true;
 }
 
-function onShowBulkRecruitersModal() {
-  quickActionsKey.value++;
-  showBulkRecruitersModal.value = true;
-}
-
-function onBulkRecruitersConfirmed(recruiterIds: string[]) {
-  emit('onDataLoading', true);
-  bulkUpdateRecruiters({
-    ids: checkedRows.value.map((cr) => cr.id),
-    recruiterIds
-  })
-    .then(() => {
-      showBulkRecruitersModal.value = false;
-      showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters cleared' : 'Recruiters assigned');
-      loadRequests();
-    })
-    .catch((error) => {
-      showBulkRecruitersModal.value = false;
-      showAlertError(error);
-      emit('onDataLoading', false);
-    });
-}
 
 function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; otherMessage: string }) {
   emit('onDataLoading', true);

@@ -185,669 +185,6 @@
         }
       }
     },
-    "/api/v4/Accounting/Invoice/{invoiceId}/Document/PDF": {
-      "get": {
-        "tags": [
-          "AccountingInvoiceDocumentV4"
-        ],
-        "summary": "Generates and returns the invoice document as a PDF file.",
-        "parameters": [
-          {
-            "name": "invoiceId",
-            "in": "path",
-            "description": "Identifier of the invoice.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v4/Accounting/Invoice/{invoiceId}/Document/Email": {
-      "post": {
-        "tags": [
-          "AccountingInvoiceDocumentV4"
-        ],
-        "summary": "Generates the invoice PDF and emails it, with optional attachments, to the client.",
-        "parameters": [
-          {
-            "name": "invoiceId",
-            "in": "path",
-            "description": "Identifier of the invoice.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "Subject": {
-                    "type": "string"
-                  },
-                  "Message": {
-                    "type": "string"
-                  },
-                  "Files": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    }
-                  },
-                  "Cc": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              },
-              "encoding": {
-                "Subject": {
-                  "style": "form"
-                },
-                "Message": {
-                  "style": "form"
-                },
-                "Files": {
-                  "style": "form"
-                },
-                "Cc": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v4/Accounting/Invoice/{id}": {
-      "get": {
-        "tags": [
-          "AccountingInvoiceV4"
-        ],
-        "summary": "Gets the invoice summary by its identifier, using the agency's billing location to select the format.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the invoice.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.InvoiceSummaryModel"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.InvoiceSummaryModel"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.InvoiceSummaryModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "AccountingInvoiceV4"
-        ],
-        "summary": "Deletes an invoice and its related pay stubs, and notifies the accounting team.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the invoice to delete.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "The pay stubs to delete alongside the invoice.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v4/Accounting/PayStub/{payStubId}/Document/PDF": {
-      "get": {
-        "tags": [
-          "AccountingPayStubDocumentV4"
-        ],
-        "summary": "Generates and returns the pay stub document as a PDF file.",
-        "parameters": [
-          {
-            "name": "payStubId",
-            "in": "path",
-            "description": "Identifier of the pay stub.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v4/Accounting/PayStub/{payStubId}/Document/Email": {
-      "post": {
-        "tags": [
-          "AccountingPayStubDocumentV4"
-        ],
-        "summary": "Generates the pay stub PDF and emails it to the worker.",
-        "parameters": [
-          {
-            "name": "payStubId",
-            "in": "path",
-            "description": "Identifier of the pay stub.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v4/Accounting/PayStub": {
-      "post": {
-        "tags": [
-          "AccountingPayStubV4"
-        ],
-        "summary": "Creates a manual pay stub. Obsolete.",
-        "requestBody": {
-          "description": "Manual pay stub creation data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        },
-        "deprecated": true
-      }
-    },
-    "/api/v4/Accounting/PayStub/{id}": {
-      "get": {
-        "tags": [
-          "AccountingPayStubV4"
-        ],
-        "summary": "Gets the detail of a pay stub by its identifier.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the pay stub.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDetailModel"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDetailModel"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDetailModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "AccountingPayStubV4"
-        ],
-        "summary": "Deletes a pay stub by its identifier.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the pay stub to delete.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/v2/Accounting/SkipPayrollNumber": {
-      "get": {
-        "tags": [
-          "AccountingSkipPayrollNumberV2"
-        ],
-        "summary": "Gets the list of payroll numbers configured to be skipped.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "AccountingSkipPayrollNumberV2"
-        ],
-        "summary": "Creates a new skipped payroll number entry.",
-        "requestBody": {
-          "description": "Payroll number to skip.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/Agency": {
       "get": {
         "tags": [
@@ -5199,66 +4536,6 @@
         }
       }
     },
-    "/api/v4/Accounting/Invoice/{invoiceId}/PayStub": {
-      "get": {
-        "tags": [
-          "AgencyInvoicePayStub"
-        ],
-        "summary": "Gets the pay stubs linked to an invoice, including delete-warning information.",
-        "parameters": [
-          {
-            "name": "invoiceId",
-            "in": "path",
-            "description": "Identifier of the invoice.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/Agency/Location": {
       "get": {
         "tags": [
@@ -6971,58 +6248,6 @@
         }
       }
     },
-    "/api/AgencyRequest/bulk-recruiters": {
-      "put": {
-        "tags": [
-          "AgencyRequest"
-        ],
-        "summary": "Updates recruiters of multiple requests in bulk.",
-        "requestBody": {
-          "description": "Bulk recruiter update data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/AgencyRequest/{id}/Open": {
       "put": {
         "tags": [
@@ -7197,7 +6422,7 @@
         "tags": [
           "AgencyRequest"
         ],
-        "summary": "Sends invitations to potential workers for the specified request.",
+        "summary": "Queues a job that sends invitations to potential workers for the specified request and notifies the recruitment team on Teams when it finishes.",
         "parameters": [
           {
             "name": "id",
@@ -7896,199 +7121,6 @@
             "name": "id",
             "in": "path",
             "description": "Identifier of the note to delete.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/AgencyRequest/{requestId}/Recruiter": {
-      "post": {
-        "tags": [
-          "AgencyRequestRecruiter"
-        ],
-        "summary": "Assigns a recruiter to the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Recruiter assignment data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterDetailModel"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterDetailModel"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterDetailModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "AgencyRequestRecruiter"
-        ],
-        "summary": "Gets a paginated list of recruiters assigned to the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestRecruiterDetailModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestRecruiterDetailModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestRecruiterDetailModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/AgencyRequest/{requestId}/Recruiter/{id}": {
-      "delete": {
-        "tags": [
-          "AgencyRequestRecruiter"
-        ],
-        "summary": "Removes a recruiter from the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the recruiter to remove.",
             "required": true,
             "schema": {
               "type": "string",
@@ -16286,6 +15318,270 @@
         }
       }
     },
+    "/api/agency/accounting/Invoices/{invoiceId}/pdf": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Generates and returns the invoice document as a PDF file.",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "description": "Identifier of the invoice.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/Invoices/{invoiceId}/paystubs": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Gets the pay stubs linked to an invoice, including delete-warning information.",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "description": "Identifier of the invoice.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDeleteWarningListModel"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/Invoices/{invoiceId}/email": {
+      "post": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Generates the invoice PDF and emails it, with optional attachments, to the client.",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "description": "Identifier of the invoice.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Subject": {
+                    "type": "string"
+                  },
+                  "Message": {
+                    "type": "string"
+                  },
+                  "Files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "Cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "Subject": {
+                  "style": "form"
+                },
+                "Message": {
+                  "style": "form"
+                },
+                "Files": {
+                  "style": "form"
+                },
+                "Cc": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/Invoices/{id}": {
+      "delete": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Deletes an invoice and its related pay stubs, and notifies the accounting team.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the invoice to delete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The pay stubs to delete alongside the invoice.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Invoice.DeleteInvoiceModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/Location/country": {
       "get": {
         "tags": [
@@ -16722,6 +16018,66 @@
             "description": "Forbidden — insufficient permissions"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "PayStubs"
+        ],
+        "summary": "Creates a manual pay stub. Obsolete.",
+        "requestBody": {
+          "description": "Manual pay stub creation data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.CreatePayStubModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
       }
     },
     "/api/agency/accounting/PayStubs/file": {
@@ -17113,6 +16469,146 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/PayStubs/{payStubId}/pdf": {
+      "get": {
+        "tags": [
+          "PayStubs"
+        ],
+        "summary": "Generates and returns the pay stub document as a PDF file.",
+        "parameters": [
+          {
+            "name": "payStubId",
+            "in": "path",
+            "description": "Identifier of the pay stub.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/PayStubs/{payStubId}/email": {
+      "post": {
+        "tags": [
+          "PayStubs"
+        ],
+        "summary": "Generates the pay stub PDF and emails it to the worker.",
+        "parameters": [
+          {
+            "name": "payStubId",
+            "in": "path",
+            "description": "Identifier of the pay stub.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/accounting/PayStubs/{id}": {
+      "delete": {
+        "tags": [
+          "PayStubs"
+        ],
+        "summary": "Deletes a pay stub by its identifier.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the pay stub to delete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "500": {
             "description": "Internal Server Error"
@@ -20419,6 +19915,372 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/WeeklyBoard": {
+      "get": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Gets the weekly board grouped by recruiter for the requested date range.",
+        "parameters": [
+          {
+            "name": "From",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "To",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Assigns one or more recruiters to an order for one or more work days.",
+        "requestBody": {
+          "description": "Assignment data: order, work days and recruiters.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AssignRecruitersModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AssignRecruitersModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AssignRecruitersModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Removes a recruiter assignment from an order for a specific work day.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "query",
+            "description": "Identifier of the order.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "recruiterId",
+            "in": "query",
+            "description": "Identifier of the recruiter to unassign.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "workDate",
+            "in": "query",
+            "description": "Work day of the assignment to remove.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/WeeklyBoard/mine": {
+      "get": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Gets the weekly board for the current recruiter, including the workers sent to each order.",
+        "parameters": [
+          {
+            "name": "From",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "To",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.RecruiterWeeklyBoardModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/WeeklyBoard/move": {
+      "post": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Moves a recruiter assignment to another recruiter and/or work day, keeping its dispatched workers.",
+        "requestBody": {
+          "description": "Move data: order, source recruiter/day and target recruiter/day.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.MoveAssignmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.MoveAssignmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.MoveAssignmentModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/WeeklyBoard/dispatch": {
+      "post": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Adds one or more workers sent by the current recruiter to an order for a specific work day.",
+        "requestBody": {
+          "description": "Dispatch data: order, work day and worker profiles.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Removes a worker sent by the current recruiter from an order for a specific work day.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "query",
+            "description": "Identifier of the order.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "workDate",
+            "in": "query",
+            "description": "Work day of the dispatch.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "workerProfileId",
+            "in": "query",
+            "description": "Identifier of the worker profile to remove.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -25065,177 +24927,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Accounting.PayStub.PayStubDetailItemModel": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "number",
-            "format": "double"
-          },
-          "unitPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "total": {
-            "type": "number",
-            "format": "double"
-          },
-          "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.PayStubItemType"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Accounting.PayStub.PayStubDetailModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "numberId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "payrollNumberId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "agencyFullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyPhone": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyPhoneExt": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "agencyLogoFileName": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyLocation": {
-            "type": "string",
-            "nullable": true
-          },
-          "workerFullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "workerEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "position": {
-            "type": "string",
-            "nullable": true
-          },
-          "sinNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "employeeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "startDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "vacations": {
-            "type": "number",
-            "format": "double"
-          },
-          "earnings": {
-            "type": "number",
-            "format": "double"
-          },
-          "deductionCpp": {
-            "type": "number",
-            "format": "double"
-          },
-          "deductionEi": {
-            "type": "number",
-            "format": "double"
-          },
-          "deductionTax": {
-            "type": "number",
-            "format": "double"
-          },
-          "deductionTotal": {
-            "type": "number",
-            "format": "double"
-          },
-          "gross": {
-            "type": "number",
-            "format": "double"
-          },
-          "totalNet": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "paymentDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deductionOthers": {
-            "type": "number",
-            "format": "double"
-          },
-          "payrollNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "deductionProvincialTax": {
-            "type": "number",
-            "format": "double"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDetailItemModel"
-            },
-            "nullable": true
-          },
-          "otherDeductions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubDetailItemModel"
-            },
-            "nullable": true
-          },
-          "federalCategory": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.TaxCategory"
-          },
-          "provincialCategory": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.TaxCategory"
-          },
-          "workerProfileId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "ytd": {
-            "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubYtdModel"
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Accounting.PayStub.PayStubListModel": {
         "type": "object",
         "properties": {
@@ -25285,48 +24976,6 @@
           },
           "canDelete": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Accounting.PayStub.PayStubYtdModel": {
-        "type": "object",
-        "properties": {
-          "gross": {
-            "type": "number",
-            "format": "double"
-          },
-          "vacations": {
-            "type": "number",
-            "format": "double"
-          },
-          "earnings": {
-            "type": "number",
-            "format": "double"
-          },
-          "cpp": {
-            "type": "number",
-            "format": "double"
-          },
-          "ei": {
-            "type": "number",
-            "format": "double"
-          },
-          "federalTax": {
-            "type": "number",
-            "format": "double"
-          },
-          "provincialTax": {
-            "type": "number",
-            "format": "double"
-          },
-          "totalDeductions": {
-            "type": "number",
-            "format": "double"
-          },
-          "totalPaid": {
-            "type": "number",
-            "format": "double"
           }
         },
         "additionalProperties": false
@@ -27447,31 +27096,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestRecruiterDetailModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "object",
-        "properties": {
-          "pageIndex": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalItems": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestRecruiterDetailModel"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -28139,28 +27763,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Request.BulkRequestRecruiters": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "nullable": true
-          },
-          "recruiterIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Request.CompanyRequestDetailModel": {
         "type": "object",
         "properties": {
@@ -28678,30 +28280,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Request.RequestRecruiterDetailModel": {
-        "type": "object",
-        "properties": {
-          "recruiterId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Request.RequestRecruiterModel": {
-        "type": "object",
-        "properties": {
-          "recruiterId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Request.RequestSourceDetailModel": {
         "type": "object",
         "properties": {
@@ -28975,6 +28553,245 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.WeeklyBoard.AssignRecruitersModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workDates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "nullable": true
+          },
+          "recruiterIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "workerProfileIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.MoveAssignmentModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromRecruiterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromWorkDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "toRecruiterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toWorkDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.RecruiterWeeklyBoardModel": {
+        "type": "object",
+        "properties": {
+          "recruiterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "weekStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "weekEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ordersCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "workersSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardAssignmentModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardAssignmentModel": {
+        "type": "object",
+        "properties": {
+          "recruiterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recruiterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "workDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestStatus"
+          },
+          "isAsap": {
+            "type": "boolean"
+          },
+          "workerSalary": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "workersSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dispatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel": {
+        "type": "object",
+        "properties": {
+          "workerProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardModel": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "weekEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalAssignments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalWorkersSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "recruiters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardRecruiterRowModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardRecruiterRowModel": {
+        "type": "object",
+        "properties": {
+          "recruiterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recruiterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordersCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "workersSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardAssignmentModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Security.UpdateEmailModel": {
         "required": [
           "newEmail"
@@ -29195,6 +29012,10 @@
             "nullable": true
           },
           "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
             "type": "string",
             "nullable": true
           },

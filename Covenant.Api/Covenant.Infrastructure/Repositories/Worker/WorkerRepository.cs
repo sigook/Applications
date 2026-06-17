@@ -343,6 +343,7 @@ public class WorkerRepository : IWorkerRepository
                     (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
                     " " + wp.LastName +
                     (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
+                Email = wp.Worker.Email,
                 ApprovedToWork = wp.ApprovedToWork
             });
         var predicate = PredicateBuilder.New<AgencyWorkerDropdownModel>(true);

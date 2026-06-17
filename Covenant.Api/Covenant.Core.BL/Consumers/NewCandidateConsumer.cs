@@ -15,7 +15,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Infrastructure.Services;
-using DocumentFormat.OpenXml.Spreadsheet;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -25,11 +24,11 @@ namespace Covenant.Core.BL.Consumers;
 
 public class NewCandidateConsumer : IAzureServiceBusConsumer
 {
-    private readonly SigookBusClient client;
+    private readonly ISigookBusClient client;
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly ServiceBusConfiguration serviceBusConfiguration;
 
-    public NewCandidateConsumer(SigookBusClient client, IServiceScopeFactory serviceScopeFactory, IOptions<ServiceBusConfiguration> options)
+    public NewCandidateConsumer(ISigookBusClient client, IServiceScopeFactory serviceScopeFactory, IOptions<ServiceBusConfiguration> options)
     {
         this.client = client;
         this.serviceScopeFactory = serviceScopeFactory;

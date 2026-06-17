@@ -2,6 +2,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Repositories;
@@ -11,25 +12,46 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Covenant.Core.BL.Services.Invoices;
 
-public class UsaInvoiceService : BaseInvoiceService
+public class UsaInvoiceService(
+    ITimesheetRepository timeSheetRepository,
+    IInvoiceRepository invoiceRepository,
+    IAgencyRepository agencyRepository,
+    ICompanyRepository companyRepository,
+    ILocationRepository locationRepository,
+    ICatalogRepository catalogRepository,
+    ITimeService timeService,
+    Rates rates,
+    ISubcontractorRepository subcontractorRepository,
+    TimeLimits timeLimits,
+    ITimesheetCalculatorService calculatorService,
+    IIdentityServerService identityServerService,
+    IInvoicesContainer invoicesContainer,
+    IRazorViewToStringRenderer renderer,
+    IPdfGeneratorService pdfGenerator,
+    IEmailService emailService,
+    IMediator mediator,
+    IPayStubsContainer payStubsContainer,
+    ITeamsService teamsService,
+    IOptions<TeamsWebhookConfiguration> teamsOptions) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, identityServerService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions)
 {
-    public UsaInvoiceService(
-        ITimesheetRepository timeSheetRepository,
-        IInvoiceRepository invoiceRepository,
-        IAgencyRepository agencyRepository,
-        ICompanyRepository companyRepository,
-        ILocationRepository locationRepository,
-        ICatalogRepository catalogRepository,
-        ITimeService timeService,
-        Rates rates,
-        ISubcontractorRepository subcontractorRepository,
-        TimeLimits timeLimits,
-        ITimesheetCalculatorService calculatorService)
-        : base(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService)
+    protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+        => invoiceRepository.GetInvoicesUSAForAgency(agencyIds, filter);
+
+    protected override Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+        => invoiceRepository.GetAllInvoicesUSAForAgency(agencyIds, filter);
+
+    protected override Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId)
+        => invoiceRepository.GetInvoiceUSASummaryById(invoiceId);
+
+    protected override async Task<(Guid InvoiceId, string InvoiceNumber, IReadOnlyList<string> PayStubsDeleted)> DeleteInvoiceData(Guid invoiceId, DeleteInvoiceModel model)
     {
+        var (deletedId, invoiceNumber) = await invoiceRepository.DeleteInvoiceUSA(invoiceId);
+        return (deletedId, invoiceNumber, []);
     }
 
     public override async Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model)

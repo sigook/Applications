@@ -2,7 +2,7 @@
   "name": "clientapp",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.1.2",
+  "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": "^20.19.0 || >=22.12.0",
     "pnpm": ">=10"

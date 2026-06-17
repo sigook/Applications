@@ -84,7 +84,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     /// <summary>
     /// Calculates the hours breakdown for a single timesheet entry.
-    /// Consolidates logic from TimeSheetTotalCalculator.Calculate() and BaseInvoiceService.CalculateHoursForItem().
+    /// Consolidates logic from TimeSheetTotalCalculator.Calculate() and InvoiceService.CalculateHoursForItem().
     /// Supports: BreakIsPaid, HolidayIsPaid, OtherRegularHours (two-threshold system).
     /// Does NOT support: NightShift (deprecated).
     /// </summary>

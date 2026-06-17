@@ -395,14 +395,14 @@ export interface InvoiceSummaryHolidayItem {
   unitPrice: number;
 }
 
-// Pay stub warning item returned by GET /api/v4/Accounting/Invoice/{id}/PayStub.
+// Pay stub warning item returned by GET /api/agency/accounting/Invoices/{id}/paystubs.
 // Mirrors backend PayStubDeleteWarningListModel.
 export interface PayStubDeleteWarningItem {
   payStubId: string;
   payStubNumber: string;
 }
 
-// Body for DELETE /api/v4/Accounting/Invoice/{id}. Mirrors DeleteInvoiceModel,
+// Body for DELETE /api/agency/accounting/Invoices/{id}. Mirrors DeleteInvoiceModel,
 // plus the client-side `invoiceId` used to build the URL.
 export interface DeleteInvoicePayload {
   invoiceId: string;

@@ -11,4 +11,10 @@ public interface IPayStubService
     Task<Result<ResultGenerateDocument<byte[]>>> GenerateCraPayroll(DateTime from, DateTime to);
     Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds);
     Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model);
+    Task<PayStubDocument> GetPayStubPdf(Guid payStubId);
+    Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId);
+    Task<PaginatedList<PayStubListModel>> GetPayStubs(GetPayStubsFilter filter);
+    Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter);
+    Task DeletePayStub(Guid payStubId);
+    Task<Result> CreateSkipPayrollNumber(BaseModel<Guid> model);
 }

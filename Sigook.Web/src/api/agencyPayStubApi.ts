@@ -21,16 +21,16 @@ export function getAgencyPayStubs(filter: AgencyPayStubFilter): Promise<Paginate
 
 export function downloadPayStubPdf(payStubId: string): Promise<Blob> {
   return http
-    .get(`/api/v4/Accounting/PayStub/${payStubId}/Document/PDF`, { responseType: 'blob' })
+    .get(`/api/agency/accounting/PayStubs/${payStubId}/pdf`, { responseType: 'blob' })
     .then(r => r.data);
 }
 
 export function deleteAgencyPayStub(payStubId: string): Promise<void> {
-  return http.delete(`/api/v4/Accounting/PayStub/${payStubId}`).then(() => {});
+  return http.delete(`/api/agency/accounting/PayStubs/${payStubId}`).then(() => {});
 }
 
 export function sendPayStubEmail(payStubId: string): Promise<void> {
-  return http.post(`/api/v4/Accounting/PayStub/${payStubId}/Document/Email`).then(() => {});
+  return http.post(`/api/agency/accounting/PayStubs/${payStubId}/email`).then(() => {});
 }
 
 export function sendPayStubEmailBulk(payStubIds: string[]): Promise<void> {
@@ -38,7 +38,7 @@ export function sendPayStubEmailBulk(payStubIds: string[]): Promise<void> {
 }
 
 export function createAgencyPayStub(payload: CreatePayStubPayload): Promise<void> {
-  return http.post('/api/v4/accounting/PayStub', payload).then(() => {});
+  return http.post('/api/agency/accounting/PayStubs', payload).then(() => {});
 }
 
 // ---------------------------------------------------------------------------
