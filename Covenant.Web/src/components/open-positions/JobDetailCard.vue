@@ -49,7 +49,7 @@
 import type { Job } from '@/services/types/job.types'
 
 defineProps<{ job: Job }>()
-defineEmits<{ (e: 'apply', job: Job): void }>()
+defineEmits<{ apply: [job: Job] }>()
 </script>
 
 <style scoped>
