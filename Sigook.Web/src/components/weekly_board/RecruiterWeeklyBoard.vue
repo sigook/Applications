@@ -278,38 +278,7 @@ watch(range, loadBoard, { immediate: true });
 
 .recruiter-board {
   .range-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     margin-bottom: 1.25rem;
-  }
-
-  .stats-navbar {
-    border-radius: 10px;
-    min-height: 0;
-    padding: 0.25rem 0.75rem;
-    margin-bottom: 1.5rem;
-
-    .stats-name {
-      font-size: 1.15rem;
-      font-weight: 800;
-    }
-
-    .stat {
-      display: flex;
-      align-items: baseline;
-      gap: 0.4rem;
-
-      .stat-value {
-        font-size: 1.25rem;
-        font-weight: 800;
-      }
-
-      .stat-label {
-        font-size: 0.78rem;
-        opacity: 0.9;
-      }
-    }
   }
 
   .day-tabs {
@@ -407,50 +376,6 @@ watch(range, loadBoard, { immediate: true });
       border-top-color: $green;
     }
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .card-head-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      min-width: 0;
-    }
-
-    .card-num {
-      font-weight: 800;
-      color: $primary;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-
-    .request-flags {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .request-flag {
-      display: inline-block;
-      padding: 2px 11px 2px 6px;
-      font-size: 9px;
-      font-weight: 700;
-      line-height: 1.3;
-      color: $white;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
-
-      &--asap { background: #ff9932; z-index: 2; }
-      &--dh { background: #1d4ed8; z-index: 1; }
-      & + & { margin-left: -6px; }
-    }
-
     .card-company {
       font-weight: 700;
       margin-bottom: 0.4rem;
@@ -537,18 +462,6 @@ watch(range, loadBoard, { immediate: true });
       .sent-worker-email {
         font-size: 0.75rem;
         color: $grey-light;
-      }
-
-      .remove-worker.button {
-        height: auto;
-        padding: 0;
-        color: $grey-light;
-        text-decoration: none;
-
-        &:hover {
-          color: $red;
-          background: transparent;
-        }
       }
     }
 

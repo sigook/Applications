@@ -84,8 +84,8 @@
           <hr class="my-4">
           <div class="expandable-section-container">
             <div class="expandable-section-header" @click="addItem">
-              <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
-                <b-icon icon="plus-circle" class="mr-2"></b-icon>
+              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
+                <b-icon icon="plus-circle" class="me-2"></b-icon>
                 Add Additional Items
               </h3>
               <p class="fz-1 color-gray mb-0 text-center">Click here to add extra items or charges not included in
@@ -139,8 +139,8 @@
           <hr class="my-4">
           <div class="expandable-section-container">
             <div class="expandable-section-header" @click="addDiscount">
-              <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
-                <b-icon icon="minus-circle" class="mr-2"></b-icon>
+              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
+                <b-icon icon="minus-circle" class="me-2"></b-icon>
                 Add Discounts
               </h3>
               <p class="fz-1 color-gray mb-0 text-center">Click here to add discounts or reductions to apply to this
@@ -199,7 +199,7 @@
         <div class="box">
           <PreviewInvoice :preview="previewData" />
           <div class="buttons is-justify-content-flex-end mt-4">
-            <b-button @click="cancelPreview" class="mr-2">
+            <b-button @click="cancelPreview" class="me-2">
               Cancel
             </b-button>
             <b-button type="is-primary" @click="confirmInvoice">

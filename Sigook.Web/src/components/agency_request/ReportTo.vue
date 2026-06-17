@@ -1,14 +1,14 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex space-between">
-      <h3 class="fw-700">Report to</h3>
+    <div class="container-flex justify-content-between">
+      <h3 class="fw-bold">Report to</h3>
       <button v-if="canEdit" @click="showModal = true" class="sm-save-button">Add</button>
     </div>
     <div>
       <ul v-if="data" class="p-1">
         <li v-for="(item) in data.items" :key="item.id"
-          class="content-flex-between align-center mb-0 hover-actions fz-14">
+          class="content-flex-between align-items-center mb-0 hover-actions fz-14">
           <span class="d-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
           <button v-if="canEdit" class="btn-icon-sm btn-icon-reject valign-middle actions"
             @click="removeReportTo(item)">DELETE</button>
@@ -20,7 +20,7 @@
       <div v-if="showModal" class="vue-modal min-width-0">
         <div class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
+            <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
               <button @click="showModal = false" type="button" class="cross-icon">close</button>
               <contact-list :requestId="requestId" :companyId="companyId" :activeUsers="data.items"
                 @removeContact="(item) => removeReportTo(item)"

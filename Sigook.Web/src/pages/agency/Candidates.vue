@@ -4,7 +4,7 @@
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
         Candidates
-        <span class="fw-100 fz-1">
+        <span class="fw-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -48,7 +48,7 @@
                 <b-icon v-if="props.row.hasDocuments" icon="file-download" size="is-small"
                   class="cursor-poiner"></b-icon>
               </span>
-              <i class="fz-2 ellipsis-150 lowercase">
+              <i class="fz-2 ellipsis-150 text-lowercase">
                 <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
               </i>
             </template>
@@ -71,8 +71,8 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <p class="capitalize">{{ props.row.address }}</p>
-              <i class="fz-2 d-block pl-1">
+              <p class="text-capitalize">{{ props.row.address }}</p>
+              <i class="fz-2 d-block ps-1">
                 {{ props.row.postalCode }}
               </i>
             </template>
@@ -136,13 +136,13 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <div class="capitalize is-inline-block v-middle pr-0" v-if="props.row.recruiter">
+              <div class="text-capitalize is-inline-block align-middle pe-0" v-if="props.row.recruiter">
                 {{ emailName(props.row.recruiter) }}
               </div>
-              <div v-else class="op3 is-inline-block v-middle pr-0">
+              <div v-else class="op3 is-inline-block align-middle pe-0">
                 Recruiter
               </div>
-              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block v-middle"
+              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block align-middle"
                 @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
             </template>
           </b-table-column>

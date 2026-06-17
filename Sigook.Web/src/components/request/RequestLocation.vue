@@ -1,7 +1,7 @@
 <template>
   <div v-if="jobLocation">
-    <span class="fw-700 mr-2 block mb-0">Location</span>
-    <p class="fw-400 fz-14 p-1">{{ jobLocation.formattedAddress }}
+    <span class="fw-bold me-2 block mb-0">Location</span>
+    <p class="fw-normal fz-14 p-1">{{ jobLocation.formattedAddress }}
       <br v-if="jobLocation.mainIntersection">
       <i v-if="jobLocation.mainIntersection">{{ jobLocation.mainIntersection }}</i>
       <br><i>{{ jobLocation.entrance }}</i>

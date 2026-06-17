@@ -4,7 +4,7 @@
 
         <ul v-if="data">
             <li class="header">
-                <div class="text-center contain-switch form-100">
+                <div class="text-center contain-switch col-12 col-padding">
                     <span></span>
                     <p>Email</p>
                 </div>
@@ -14,11 +14,11 @@
 
                 <h2 class="title-item">{{item.title}}</h2>
 
-                <div class="text-center contain-switch form-100">
+                <div class="text-center contain-switch col-12 col-padding">
                     <p>{{item.description}}</p>
                     <p class="switch-container-flex">
                         {{'No'}}
-                        <label class="fz0 fw-400 switch">
+                        <label class="fz0 fw-normal switch">
 
                             <input type="checkbox"
                                    v-model="item.emailNotification"
@@ -32,11 +32,11 @@
 
 
                 <!--
-                <div class="text-center contain-switch form-100">
+                <div class="text-center contain-switch col-12 col-padding">
                     <p>Push Notifications</p>
                     <p class="switch-container-flex">
                         {{'No'}}
-                        <label class="fz0 fw-400 switch">
+                        <label class="fz0 fw-normal switch">
 
                             <input type="checkbox" v-model="item.pushNotification"/>
                             <span class="slider round"></span>
@@ -45,11 +45,11 @@
                     </p>
                 </div>
 
-                <div class="text-center contain-switch form-100">
+                <div class="text-center contain-switch col-12 col-padding">
                     <p>Sms Notifications</p>
                     <p class="switch-container-flex">
                         {{'No'}}
-                        <label class="fz0 fw-400 switch">
+                        <label class="fz0 fw-normal switch">
 
                             <input type="checkbox" v-model="item.smsNotification"/>
                             <span class="slider round"></span>
@@ -136,4 +136,29 @@ loadNotifications();
 
     }
 
+</style>
+
+<style scoped lang="scss">
+.contain-switch {
+  display: flex;
+  & > p {
+    margin-right: 15px;
+    font-weight: 400;
+  }
+}
+
+.switch-container-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: #b3b2b2;
+  margin-bottom: 40px;
+  font-size: 12px;
+  label {
+    margin: 0 8px;
+    display: block;
+  }
+}
 </style>

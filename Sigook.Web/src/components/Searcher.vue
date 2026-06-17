@@ -90,6 +90,40 @@ defineExpose({ clear });
 .filter-request {
   position: relative;
   transition: 0.4s all ease;
+  display: flex;
+  margin: 0 auto 30px;
+  border: 1px solid #d8d8d8;
+  border-radius: 5px;
+  width: 50%;
+  padding: 0 10px;
+
+  button {
+    margin: 0;
+    text-transform: uppercase;
+    border: 0;
+    background: transparent;
+    color: #ff9932;
+    font-weight: 600;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  button.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  label {
+    flex-basis: 100%;
+
+    input {
+      width: 100%;
+      margin-top: 0;
+      border: 0;
+      min-width: 110px;
+    }
+  }
+
   .help.tooltip2 {
     position: absolute;
     background: #363636;
@@ -115,7 +149,7 @@ defineExpose({ clear });
   }
 }
 
-.filter-invoice.margin-0 {
+.filter-invoice.m-0 {
   margin: 0;
 }
 
@@ -127,5 +161,16 @@ defineExpose({ clear });
   top: 0;
   left: 4px;
   border-radius: 50%;
+}
+
+@media (max-width: 767px) {
+  .filter-request {
+    width: 100%;
+    background-color: #fff;
+
+    label {
+      padding-right: 0;
+    }
+  }
 }
 </style>

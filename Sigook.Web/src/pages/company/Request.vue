@@ -7,14 +7,14 @@
         <router-link :to="'/agency-companies/company/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" />
         </router-link>
-        <h2 class="capitalize fz1 fw-700">
-          <span class="fw-400 fz-0">{{ request.numberId }}</span>
+        <h2 class="text-capitalize fz1 fw-bold">
+          <span class="fw-normal fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
         </h2>
       </div>
       <div>
         <div v-if="request.status"
-          class="option-request-top capitailized fw-700 is-inline-block" :class="RequestStatusLabels[request.status]">
+          class="option-request-top capitailized fw-bold is-inline-block" :class="RequestStatusLabels[request.status]">
           {{ RequestStatusLabels[request.status] }}
         </div>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="canEdit">

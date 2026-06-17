@@ -3,8 +3,8 @@
     <div>
       <h2 class="text-center main-title">Documents</h2>
       <div class="tooltip-form tooltip-form-multiline">
-        <div class="form-100">
-          <div class="fz-1 fw-400">
+        <div class="col-12 col-padding">
+          <div class="fz-1 fw-normal">
             Document
             <span class="sign-required"></span>
             <div class="input-file-edited input-block" v-if="newDocument.fileName">
@@ -16,7 +16,7 @@
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()" />
           </div>
         </div>
-        <div class="form-100">
+        <div class="col-12 col-padding">
           <input type="text" class="input-border input-block" placeholder="Description"
             v-model="description" name="documentDescription" />
           <span v-show="errors.description" class="help is-danger no-margin">
@@ -31,7 +31,7 @@
       <div class="relative">
         <b-loading v-model="isLoading"></b-loading>
         <ul v-if="documents && documents.items && documents.items.length > 0" class="tooltip-list">
-          <li v-for="(document, index) in documents.items" :key="'document' + index" class="margin-0">
+          <li v-for="(document, index) in documents.items" :key="'document' + index" class="m-0">
             <a :href="document.pathFile" target="_blank">
               {{ document.description }}
             </a>
@@ -142,3 +142,28 @@ function onDeleteDocument(id: number, index: number) {
 
 loadDocuments();
 </script>
+
+<style scoped lang="scss">
+.tooltip-list {
+  font-size: 16px;
+  text-align: left;
+  padding-bottom: 6px;
+
+  li {
+    padding: 5px;
+    border-bottom: 1px solid #dbdcdb;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    transition: 0.4s all ease;
+
+    &:hover {
+      background: #f1f1f1;
+    }
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+</style>

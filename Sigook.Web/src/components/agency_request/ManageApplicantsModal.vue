@@ -13,10 +13,10 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <strong>#{{ props.option.numberId }}</strong>
-                    <span class="ml-2">{{ props.option.name }}</span>
-                    <small class="ml-2 color-gray-light" v-if="props.option.email">{{ props.option.email }}</small>
+                    <span class="ms-2">{{ props.option.name }}</span>
+                    <small class="ms-2 color-gray-light" v-if="props.option.email">{{ props.option.email }}</small>
                   </div>
-                  <span class="tag-sm-gray ml-2">{{ props.option.type }}</span>
+                  <span class="tag-sm-gray ms-2">{{ props.option.type }}</span>
                 </div>
               </template>
             </b-autocomplete>

@@ -2,8 +2,8 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="button-right">
-      <span class="fw-700">Documents</span>
+    <div class="d-flex align-items-center justify-content-between">
+      <span class="fw-bold">Documents</span>
       <button class="show-notes-btn" @click="onShowDocuments()">
         <img src="../../assets/images/right-arrow.svg" :class="{ open: showDocuments }" />
       </button>
@@ -14,14 +14,14 @@
       <div v-if="showDocuments && data" class="mb-5">
         <div class="profile-licenses profile-experience">
           <div v-for="(document, index) in data.items" :key="document.id" class="container-license hover-actions">
-            <div v-if="document.canDownload" class="button-right">
+            <div v-if="document.canDownload" class="d-flex align-items-center justify-content-between">
               <a :href="document.pathFile" target="_blank" download>
-                <p class="fw-400">
+                <p class="fw-normal">
                   {{ filename(document.fileName) }}
                   <span class="download-button"></span>
                 </p>
               </a>
-              <div class="actions text-right">
+              <div class="actions text-end">
                 <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
                     @click="onDeleteDocument(document.id, index)">
@@ -30,10 +30,10 @@
                 </b-tooltip>
               </div>
             </div>
-            <p v-else class="fw-400">{{ filename(document.fileName) }}</p>
+            <p v-else class="fw-normal">{{ filename(document.fileName) }}</p>
             <div class="fz-1">
               <p>
-                <strong class="fw-400">{{ document.description }}</strong>
+                <strong class="fw-normal">{{ document.description }}</strong>
               </p>
             </div>
           </div>
@@ -51,7 +51,7 @@
       <div v-if="showModal" class="vue-modal">
         <div class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container modal-light small-container modal-overflow height-auto border-radius">
+            <div class="modal-container modal-light small-container modal-overflow h-auto border-radius">
               <button @click="showModal = false" type="button" class="cross-icon">
                 close
               </button>

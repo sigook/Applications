@@ -5,11 +5,11 @@
     <section class="wrapper-request-top" v-if="request">
       <div>
         <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="capitalize fz1 fw-700">{{ request.jobTitle }}</h2>
+        <h2 class="text-capitalize fz1 fw-bold">{{ request.jobTitle }}</h2>
       </div>
 
       <div>
-        <div v-if="request.status && request.status !== 'None'" class="capitailized fw-700 is-inline-block"
+        <div v-if="request.status && request.status !== 'None'" class="capitailized fw-bold is-inline-block"
           :class="request.status">
           {{ request.status }}
         </div>

@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="button-right">
+    <div class="d-flex align-items-center justify-content-between">
       <h3 class="section-title">{{ "Emergency information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalEmergencyInformation = true"></b-button>
     </div>
@@ -8,33 +8,33 @@
       <div>
         <span>{{ 'Do you have any health problems / allergies?' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.haveAnyHealthProblem ? "Yes" : "No" }}</p>
+          <p class="fw-light m-0">{{ props.worker.haveAnyHealthProblem ? "Yes" : "No" }}</p>
         </span>
       </div>
       <div v-if="props.worker.haveAnyHealthProblem">
         <span>{{ 'Which' }} ?</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.healthProblem }}</p>
+          <p class="fw-light m-0">{{ props.worker.healthProblem }}</p>
         </span>
       </div>
       <div v-if="props.worker.haveAnyHealthProblem">
         <span>{{ 'Other allergies' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.otherHealthProblem }}</p>
+          <p class="fw-light m-0">{{ props.worker.otherHealthProblem }}</p>
         </span>
       </div>
 
-      <p class="fw-400 fz-0 is-italic margin-bottom-10">{{ 'In case of emergency notify' }}: </p>
+      <p class="fw-normal fz-0 is-italic mb-3">{{ 'In case of emergency notify' }}: </p>
       <div>
         <span>{{ 'Name' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.contactEmergencyName }} {{ props.worker.contactEmergencyLastName }}</p>
+          <p class="fw-light m-0">{{ props.worker.contactEmergencyName }} {{ props.worker.contactEmergencyLastName }}</p>
         </span>
       </div>
       <div>
         <span>{{ 'Phone' }}</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.contactEmergencyPhone }}</p>
+          <p class="fw-light m-0">{{ props.worker.contactEmergencyPhone }}</p>
         </span>
       </div>
     </div>

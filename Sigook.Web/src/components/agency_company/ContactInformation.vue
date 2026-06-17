@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="highlight-content" v-if="company">
-      <div class="d-inline-flex relative mr-3">
+      <div class="d-inline-flex relative me-3">
         <div class="item">
-          <span class="fw-700">{{ 'Phone' }}</span>
+          <span class="fw-bold">{{ 'Phone' }}</span>
           <p v-if="company.phone">
             {{ company.phone }}
             <i v-show="company.phoneExt">
@@ -14,7 +14,7 @@
         </div>
 
         <div class="item" v-if="company.fax">
-          <span class="fw-700">{{ 'Fax' }}</span>
+          <span class="fw-bold">{{ 'Fax' }}</span>
           <p>{{ company.fax }}
             <i v-show="company.faxExt">
               {{ 'Ext.' }} {{ company.faxExt }}</i>
@@ -22,7 +22,7 @@
         </div>
 
         <div class="item" v-if="company.website">
-          <span class="fw-700">{{ 'Website' }}</span>
+          <span class="fw-bold">{{ 'Website' }}</span>
           <p class="ellipsis-150 block">
             <a :href="getFullUrl(company.website)" target="_blank">{{ company.website }}</a>
           </p>
@@ -31,7 +31,7 @@
       </div>
       <div class="d-inline-flex relative">
         <div class="item">
-          <span class="fw-700">{{ 'Email' }}</span>
+          <span class="fw-bold">{{ 'Email' }}</span>
           <p class="word-break">{{ company.email }}</p>
         </div>
         <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModalUpdateEmail = true">

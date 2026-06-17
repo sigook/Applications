@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="button-right">
+    <div class="d-flex align-items-center justify-content-between">
       <h3 class="section-title">{{ "SIN/SSN" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalSocialInsurance = true"></b-button>
@@ -10,7 +10,7 @@
       <div v-if="props.worker.socialInsurance">
         <span>{{ "SIN/SSN#" }}</span>
         <span>
-          <p class="fw-200 margin-0">
+          <p class="fw-light m-0">
             <b-button size="is-small" type="is-ghost" :icon-right="showSin ? 'eye-off' : 'eye'" @click="showSin = !showSin"></b-button>
             <i v-if="showSin">{{ props.worker.socialInsurance }}</i>
             <i v-else>{{ sin(props.worker.socialInsurance) }}</i> |
@@ -21,7 +21,7 @@
       </div>
       <div v-if="props.worker.socialInsuranceFile && props.worker.socialInsuranceFile.fileName">
         <span>{{ "File" }}</span>
-        <span class="fw-200 margin-0">
+        <span class="fw-light m-0">
           <a :href="props.worker.socialInsuranceFile.pathFile" download target="_blank">
             {{ filename(props.worker.socialInsuranceFile.fileName) }}
             <span class="download-button"></span>

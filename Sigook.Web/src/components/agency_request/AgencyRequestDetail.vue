@@ -10,7 +10,7 @@
         :companyId="request.companyProfileId" />
       <report-to class="mt-3" :canEdit="request.canEdit" :requestId="request.id" :companyId="request.companyProfileId" />
       <div class="mt-3">
-        <h3 class="fw-700">Created by</h3>
+        <h3 class="fw-bold">Created by</h3>
         <span class="d-inline-block valign-middle">
           {{ emailName(request.createdBy) }} {{ dateFromNow(request.createdAt) }}
         </span>

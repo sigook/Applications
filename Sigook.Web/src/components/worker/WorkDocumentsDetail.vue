@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="button-right">
+    <div class="d-flex align-items-center justify-content-between">
       <h3 class="section-title">{{ "Documents" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalDocuments = true"></b-button>
@@ -9,7 +9,7 @@
       <div v-if="props.worker.identificationType1File && props.worker.identificationType1">
         <span>{{ props.worker.identificationType1.value }} #</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.identificationNumber1 }}</p>
+          <p class="fw-light m-0">{{ props.worker.identificationNumber1 }}</p>
         </span>
       </div>
       <div v-if="props.worker.identificationType1File && props.worker.identificationType1">
@@ -25,7 +25,7 @@
       <div v-if="props.worker.identificationType2File && props.worker.identificationType2">
         <span>{{ props.worker.identificationType2.value }} #</span>
         <span>
-          <p class="fw-200 margin-0">{{ props.worker.identificationNumber2 }}</p>
+          <p class="fw-light m-0">{{ props.worker.identificationNumber2 }}</p>
         </span>
       </div>
 
