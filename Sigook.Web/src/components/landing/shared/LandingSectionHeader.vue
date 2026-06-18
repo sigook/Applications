@@ -1,10 +1,22 @@
 <template>
-  <header class="section-header">
-    <EyebrowPill :variant="eyebrowVariant" class="section-header__eyebrow">
+  <header class="section-header" :style="{ marginBottom }">
+    <EyebrowPill
+      :variant="eyebrowVariant"
+      class="section-header__eyebrow"
+      :style="{ marginBottom: eyebrowMarginBottom }"
+    >
       {{ eyebrow }}
     </EyebrowPill>
 
-    <h2 class="section-header__heading" :style="{ maxWidth: headingMaxWidth }">
+    <h2
+      class="section-header__heading"
+      :style="{
+        maxWidth: headingMaxWidth,
+        fontSize: headingSize,
+        lineHeight: headingLineHeight,
+        marginBottom: headingMarginBottom,
+      }"
+    >
       {{ heading }}
       <span v-if="headingAccent" class="section-header__accent">{{ headingAccent }}</span>
     </h2>
@@ -12,7 +24,12 @@
     <p
       v-if="subtitle"
       class="section-header__subtitle"
-      :style="{ maxWidth: subtitleMaxWidth }"
+      :style="{
+        maxWidth: subtitleMaxWidth,
+        color: subtitleColor,
+        textShadow: subtitleTextShadow,
+        marginTop: subtitleMarginTop,
+      }"
     >
       {{ subtitle }}
     </p>
@@ -26,8 +43,9 @@
  * Industries, News, Partner, Special Projects, About, the Industries carousel).
  *
  * The accent renders on its own line (block) and the eyebrow uses the shared
- * EyebrowPill. Per-section line-length tuning is exposed via the max-width
- * props; everything else is fixed to the design-system values.
+ * EyebrowPill. Defaults reproduce the design-system values exactly; the
+ * optional overrides exist only for the few sections that tune line length,
+ * spacing or type ramp (the About family). Pass nothing for the common case.
  */
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 
@@ -39,6 +57,14 @@ withDefaults(defineProps<{
   eyebrowVariant?: 'cyan' | 'red' | 'white'
   headingMaxWidth?: string
   subtitleMaxWidth?: string
+  marginBottom?: string
+  eyebrowMarginBottom?: string
+  headingSize?: string
+  headingLineHeight?: string
+  headingMarginBottom?: string
+  subtitleColor?: string
+  subtitleTextShadow?: string
+  subtitleMarginTop?: string
 }>(), {
   eyebrowVariant: 'white',
   headingMaxWidth: '780px',

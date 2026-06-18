@@ -3,21 +3,15 @@
     <!-- Atmospheric magnifier decoration — bottom-left anchor -->
     <DecoMagnifier class="about-mission__magnifier" />
 
-    <header class="about-mission__header">
-      <EyebrowPill variant="white" class="about-mission__eyebrow">
-        Why We Exist
-      </EyebrowPill>
-
-      <h2 class="about-mission__heading">
-        Built on purpose.
-        <span class="about-mission__heading-accent">Driven by people.</span>
-      </h2>
-
-      <p class="about-mission__intro">
-        Two questions guide everything we build — what we're here to do, and the
-        future we're trying to make real.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Why We Exist"
+      heading="Built on purpose."
+      heading-accent="Driven by people."
+      subtitle="Two questions guide everything we build — what we're here to do, and the future we're trying to make real."
+      margin-bottom="clamp(48px, 6vw, 80px)"
+      heading-line-height="1.1"
+      subtitle-color="rgba(255, 255, 255, 0.75)"
+    />
 
     <div class="about-mission__cards">
       <SecondaryCard
@@ -61,7 +55,7 @@
  * this is a declaration, not an action prompt.
  */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 </script>
 
@@ -81,50 +75,6 @@ import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 .about-mission__magnifier {
   bottom: clamp(8%, 10vw, 14%);
   left: clamp(5%, 6vw, 8%);
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.about-mission__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto clamp(48px, 6vw, 80px);
-}
-
-.about-mission__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.about-mission__heading {
-  font-family: var(--font-family);
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.about-mission__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.about-mission__intro {
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 2 col with staggered offset on second card ────────────── */
