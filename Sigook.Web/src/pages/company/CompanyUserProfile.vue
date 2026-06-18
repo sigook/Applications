@@ -30,7 +30,7 @@
     <div class="profile-content company-profile">
       <div class="profile-top">
         <div v-if="companyUser">
-          <h1 class="capitalize fz2">{{ companyUser.name }} {{ companyUser.lastname }}</h1>
+          <h1 class="text-capitalize fz2">{{ companyUser.name }} {{ companyUser.lastname }}</h1>
         </div>
       </div>
       <component v-bind:is="currentTabComponent" class="tab" v-model:user="companyUser"></component>

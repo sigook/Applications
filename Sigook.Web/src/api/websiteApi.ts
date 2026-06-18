@@ -1,15 +1,10 @@
 import http from '@/security/apiService';
-import axios from 'axios';
-import type { JobSearchFilter, JobViewModel, ContactForm, LandingJobPositions } from '@/types/website';
+import type { JobSearchFilter, JobViewModel, ContactForm } from '@/types/website';
 
-export function getJobs(filter: JobSearchFilter): Promise<JobViewModel[]> {
+export function getJobs(filter: JobSearchFilter = {}): Promise<JobViewModel[]> {
   return http.get('/api/WebSite/jobs', {
-    params: { ...filter, countries: ['USA', 'CA'] }
+    params: { ...filter, countries: filter.countries ?? ['USA'] }
   }).then(r => r.data);
-}
-
-export function getLandingJobPositions(): Promise<LandingJobPositions> {
-  return axios.get('/data/job-positions.json').then(r => r.data);
 }
 
 export function submitContactForm(contact: ContactForm): Promise<void> {

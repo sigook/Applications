@@ -1,5 +1,5 @@
 import api from './api'
-import type { BaseModel, Country } from './types/application.types'
+import type { BaseModel, Country, Province } from './types/application.types'
 
 export interface Skill {
   skill: string
@@ -8,6 +8,11 @@ export interface Skill {
 export const locationService = {
   async getCountries(): Promise<Country[]> {
     const response = await api.get<Country[]>('/api/Location/country')
+    return response.data
+  },
+
+  async getProvinces(countryId: string): Promise<Province[]> {
+    const response = await api.get<Province[]>(`/api/Location/province/${countryId}`)
     return response.data
   },
 

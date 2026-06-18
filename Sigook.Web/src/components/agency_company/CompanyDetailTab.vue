@@ -1,42 +1,31 @@
 <template>
-  <div class="container-flex">
+  <div class="container-flex detail-split">
     <b-loading v-model="isLoading"></b-loading>
     <!-- Detail -->
-    <section class="col-md-8 col-sm-12 p-3 pr-5">
+    <section class="col-md-8 col-sm-12 p-3 detail-split-main">
       <!-- Highlight -->
       <contact-information v-if="props.company" :company="props.company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
       <table class="table-detail" v-if="props.company">
         <tr v-if="props.company.industry">
-          <td><span class="fw-700">Industry </span></td>
+          <td><span class="fw-bold">Industry </span></td>
           <td>
             <span>
               {{ props.company.industry.industry ? props.company.industry.industry.value : props.company.industry.otherIndustry }}
             </span>
           </td>
         </tr>
-        <tr>
-          <td>
-            <span class="fw-700">{{ "Vaccination Required" }}</span>
-          </td>
-          <td>
-            {{ getLabelVaccinationRequired(localCompany.vaccinationRequired) }}
-            {{ localCompany.vaccinationRequiredComments ? "|" : "" }}
-            {{ localCompany.vaccinationRequiredComments }}
-            <b-button type="is-ghost" @click="showEditVaccinationRequired = true" icon-right="pencil"></b-button>
-          </td>
-        </tr>
       </table>
 
       <!-- About -->
-      <section class="margin-top-15 mb-4" v-if="props.company">
-        <span class="fw-700">About</span>
+      <section class="mt-3 mb-4" v-if="props.company">
+        <span class="fw-bold">About</span>
         <pre class="long-description">{{ props.company.about }} </pre>
       </section>
 
-      <section class="margin-top-15 mb-4" v-if="props.company">
-        <span class="fw-700">Internal Info</span>
+      <section class="mt-3 mb-4" v-if="props.company">
+        <span class="fw-bold">Internal Info</span>
         <pre class="long-description" v-html="props.company.internalInfo"></pre>
       </section>
 
@@ -44,13 +33,13 @@
 
 
       <!-- Documents -->
-      <section class="margin-top-15 mb-4">
+      <section class="mt-3 mb-4">
         <documents />
       </section>
 
       <div class="mb-5">
-        <div class="button-right">
-          <span class="fw-700">{{ "Invoice notes " }}</span>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="fw-bold">{{ "Invoice notes " }}</span>
           <button class="show-notes-btn" @click="showNotesEditor()">
             <img src="../../assets/images/right-arrow.svg" alt="edit" :class="{ open: showEditor }" />
           </button>
@@ -71,8 +60,8 @@
       </div>
 
       <div>
-        <div class="button-right">
-          <span class="fw-700">Invoice Recipients</span>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="fw-bold">Invoice Recipients</span>
           <button class="show-notes-btn" @click="loadCompanyInvoiceRecipients()">
             <img src="../../assets/images/right-arrow.svg" :class="{ open: showRecipients }" />
           </button>
@@ -122,20 +111,16 @@
       </i>
     </section>
 
-    <aside class="col-md-4 col-sm-12 p-3">
+    <aside class="col-md-4 col-sm-12 p-3 detail-split-aside">
       <notes />
       <location />
     </aside>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="props.company">
-      <edit-vaccination-required :company-profile-id="props.company.id" :vaccination-required="props.company.vaccinationRequired"
-        :vaccination-comments="props.company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
-    </b-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
@@ -152,7 +137,6 @@ import Location from "../../components/agency_company/LocationDetail.vue";
 import ContactInformation from "./ContactInformation.vue";
 import Documents from "../../components/agency_company/Documents.vue";
 import Notes from "../../components/agency_company/CompanyNotes.vue";
-import EditVaccinationRequired from "@/components/agency_company/EditVaccinationRequired.vue";
 
 const recipientSchema = yup.object({
   name: yup.string().required('Name is required').min(3, 'Min 3 characters').max(50, 'Max 50 characters'),
@@ -160,7 +144,7 @@ const recipientSchema = yup.object({
 });
 
 const props = defineProps<{ company: any }>();
-const emit = defineEmits<{ (e: 'update:company', value: any): void }>();
+defineEmits<{ (e: 'update:company', value: any): void }>();
 
 const route = useRoute();
 
@@ -172,11 +156,9 @@ const { name, email } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const localCompany = ref<any>(JSON.parse(JSON.stringify(props.company)));
 const editorContent = ref<string | null>(null);
 const showEditor = ref(false);
 const showRecipients = ref(false);
-const showEditVaccinationRequired = ref(false);
 const customToolbar = [
   ["bold", "italic", "underline", "strike"],
   [
@@ -191,10 +173,6 @@ const customToolbar = [
   ["clean"],
 ];
 const companyRecipients = ref<any[]>([]);
-
-watch(() => props.company, (newVal) => {
-  localCompany.value = JSON.parse(JSON.stringify(newVal));
-}, { deep: true });
 
 function showNotesEditor() {
   if (showEditor.value) {
@@ -286,17 +264,5 @@ function validateCreateEmail() {
   form.handleSubmit((values) => {
     saveCompanyInvoiceRecipient(values);
   })();
-}
-
-function getLabelVaccinationRequired(vaccinationRequired: boolean | null | undefined) {
-  if (vaccinationRequired == null) return "";
-  return vaccinationRequired ? "Yes" : "No";
-}
-
-function vaccinationRequiredUpdated(model: { required: boolean; comments: string | null }) {
-  showEditVaccinationRequired.value = false;
-  localCompany.value.vaccinationRequired = model.required;
-  localCompany.value.vaccinationRequiredComments = model.comments;
-  emit('update:company', localCompany.value);
 }
 </script>

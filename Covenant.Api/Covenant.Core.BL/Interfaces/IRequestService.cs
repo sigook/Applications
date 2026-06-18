@@ -18,7 +18,6 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> PunchCardUpdateVisibilityStatusInApp(Guid requestId);
         Task<Result> CancelRequest(Guid requestId, RequestCancellationDetailModel reason);
         Task<Result<BulkRequestCancellationResult>> BulkCancelRequests(BulkRequestCancellation model);
-        Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model);
         Task<Result> ReduceWorkerQuantityByOne(Guid requestId);
         Task<Result> RejectWorker(Guid requestId, Guid workerId, CommentsModel model);
         Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId);

@@ -35,7 +35,7 @@
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
               </span>
               <p>
-                <i class="fz-2 lowercase block">
+                <i class="fz-2 text-lowercase block">
                   <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
                 </i>
               </p>
@@ -81,11 +81,11 @@
             <template v-slot="props">
               <div v-if="props.row.skills.length > 0">
                 <span v-for="(skill, index) in props.row.skills" :key="`${skill}_${index}`"
-                  class="tag-sm-gray mb-1 mr-1 ellipsis-full">
+                  class="tag-sm-gray mb-1 me-1 ellipsis-full">
                   {{ skill }}
                 </span>
               </div>
-              <span v-else class="op3 is-inline-block v-middle pr-0">Skill</span>
+              <span v-else class="op3 is-inline-block align-middle pe-0">Skill</span>
             </template>
           </b-table-column>
           <b-table-column field="isCurrentlyWorking" label="Details" searchable>

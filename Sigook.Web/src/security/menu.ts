@@ -1,4 +1,5 @@
 import roles from "@/security/roles";
+import { useBillingAdmin } from "@/composables/useBillingAdmin";
 
 interface MenuLink {
   to: string;
@@ -49,6 +50,11 @@ export default {
           to: "/recruiting/requests",
           icon: "calendar-month",
           label: "Requests",
+        },
+        {
+          to: "/recruiting/weekly-board",
+          icon: "view-week",
+          label: "Weekly Board",
         },
         {
           to: "/recruiting/candidates",
@@ -163,11 +169,12 @@ export default {
     ];
   },
   getDefaultHomePageUrlBaseOnRoles(userRoles: string[]): string {
+    const { isPayrollManager } = useBillingAdmin();
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
         case roles.agencyPersonnel:
         case roles.agency:
-          return "/recruiting/requests";
+          return isPayrollManager.value ? "/recruiting/requests" : "/recruiting/weekly-board";
         case roles.company:
         case roles.companyUser:
           return "/company-requests";

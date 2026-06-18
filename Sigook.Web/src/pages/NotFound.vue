@@ -23,18 +23,4 @@
     p {
         font-size: 1.4em;
     }
-}
-
-.main-container.path-not-found {
-    min-height: auto;
-
-    &>div {
-        min-height: calc(100vh - 210px);
-    }
-}
-
-@media(max-width: 767px) {
-    .main-container.path-not-found .white-container {
-        background-color: white;
-    }
 }</style>

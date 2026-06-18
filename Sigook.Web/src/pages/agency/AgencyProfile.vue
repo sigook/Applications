@@ -9,8 +9,8 @@
         </upload-image>
 
         <div v-if="agency.locations">
-          <h1 class="capitalize">{{ lowercase(agency.fullName) }}</h1>
-          <p class="icon-before-location icon-before uppercase" v-if="agency.locations[0]">
+          <h1 class="text-capitalize">{{ lowercase(agency.fullName) }}</h1>
+          <p class="icon-before-location icon-before text-uppercase" v-if="agency.locations[0]">
             {{ agency.locations[0].address }}
             {{ agency.locations[0].city.value }}
             {{ agency.locations[0].city.province.code }}

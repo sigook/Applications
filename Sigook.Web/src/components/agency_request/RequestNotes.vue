@@ -1,14 +1,14 @@
 <template>
     <div>
-        <div class="container-flex space-between mb-4">
-            <h3 class="fw-700">Notes</h3>
+        <div class="container-flex justify-content-between mb-4">
+            <h3 class="fw-bold">Notes</h3>
             <button @click="showModalNotes = true" class="sm-save-button">Add</button>
         </div>
 
         <div class="mb-5">
             <ul v-if="notesList && notesList.items.length > 0" class="container-shadow container-notes" >
                 <li v-for="item in notesList.items" :key="item.id">
-                    <p class="fw-400">
+                    <p class="fw-normal">
                         <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
                         {{ item.note }}
                         <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
@@ -23,7 +23,7 @@
             <div v-if="showModalNotes" class="vue-modal min-width-0">
                 <div class="modal-mask">
                     <div class="modal-wrapper">
-                        <div class="modal-container small-container modal-light modal-overflow height-auto border-radius">
+                        <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
                             <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
                             <modal-notes :user-id="profileId"
                                          :on-get="getNotes"

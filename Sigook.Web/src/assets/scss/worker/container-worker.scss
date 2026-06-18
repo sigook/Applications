@@ -45,7 +45,7 @@
       visibility: visible;
     }
   }
-  .fz1.fw-200{
+  .fz1.fw-light{
     padding: 0 5px;
   }
 
@@ -96,7 +96,7 @@
       padding-left: 16px;
       vertical-align: middle;
     }
-    .fz1.fw-200 {
+    .fz1.fw-light {
       padding-left: 0;
     }
     h3 {
@@ -172,7 +172,7 @@
         display: none;
       }
 
-      .text-right{
+      .text-end{
         display: block;
         text-align: right;
         button.btn-icon-sm {

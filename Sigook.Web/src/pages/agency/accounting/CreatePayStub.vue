@@ -39,12 +39,12 @@
       <div class="container-flex">
         <!-- Items Section -->
         <div class="col-12 col-padding">
-          <h3 class="fz1 fw-600 mb-3">Items</h3>
+          <h3 class="fz1 fw-semibold mb-3">Items</h3>
           <div class="expandable-section-container mb-5">
             <div class="expandable-section-header" @click="addItem"
               :class="{ 'is-disabled': availableItemTypes.length === 0 }">
-              <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
-                <b-icon icon="plus-circle" class="mr-2"></b-icon>
+              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
+                <b-icon icon="plus-circle" class="me-2"></b-icon>
                 Add Item
               </h3>
               <p class="fz-1 color-gray mb-0 text-center">Click here to add an item to the pay stub</p>
@@ -100,11 +100,11 @@
 
         <!-- Discount Section -->
         <div class="col-12 col-padding">
-          <h3 class="fz1 fw-600 mb-3">Discount</h3>
+          <h3 class="fz1 fw-semibold mb-3">Discount</h3>
           <div class="expandable-section-container">
             <div class="expandable-section-header" @click="addDiscount" :class="{ 'is-disabled': discount }">
-              <h3 class="expandable-section-title fz1 fw-600 mb-2 text-center">
-                <b-icon icon="minus-circle" class="mr-2"></b-icon>
+              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
+                <b-icon icon="minus-circle" class="me-2"></b-icon>
                 Add Discount
               </h3>
               <p class="fz-1 color-gray mb-0 text-center">Click here to add a discount to the pay stub</p>

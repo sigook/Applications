@@ -26,7 +26,7 @@
         </b-field>
       </div>
       <div class="col-2">
-        <b-field label="Provincial Category" class="mr-5">
+        <b-field label="Provincial Category" class="me-5">
           <b-select v-model="localWorker.provincialTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">

@@ -1,6 +1,6 @@
 <template>
     <section>
-        <div class="button-right">
+        <div class="d-flex align-items-center justify-content-between">
             <h3 class="section-title">{{ 'Resume' }}</h3>
             <b-button type="is-info" outlined rounded icon-right="pencil"
               @click="modal = true"></b-button>
@@ -22,7 +22,7 @@
                 <div class="modal-mask">
                     <div class="modal-wrapper">
                         <div class="modal-container modal-light">
-                            <span class="fz1 fw-700">{{ "Resume" }}</span>
+                            <span class="fz1 fw-bold">{{ "Resume" }}</span>
                             <button @click="modal = false" type="button" class="cross-icon">{{ 'Close' }}</button>
                             <resume-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
                         </div>

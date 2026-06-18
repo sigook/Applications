@@ -206,7 +206,10 @@ export interface AgencyWorkerListItem {
 // Lightweight item used by autocomplete (Dropdown endpoint)
 export interface AgencyWorkerDropdownItem {
   id: string;
+  workerProfileId: string;
   fullName: string;
+  email: string;
+  socialInsurance: string;
   approvedToWork: boolean;
 }
 
@@ -584,14 +587,6 @@ export interface BulkCancelRequestsResult {
   skipped: number;
 }
 
-// Payload for PUT /api/AgencyRequest/bulk-recruiters. Mirrors BulkRequestRecruiters.
-// Replace semantics: clears existing recruiters on each request id and assigns the provided ones.
-// Empty recruiterIds = unassign all.
-export interface BulkUpdateRecruitersPayload {
-  ids: string[];
-  recruiterIds: string[];
-}
-
 // Filter for GET /api/AgencyRequest/{requestId}/Worker.
 // Mirrors backend GetWorkersRequestFilter.
 export interface AgencyRequestWorkerFilter {
@@ -697,10 +692,6 @@ export interface UpdateApplicantCommentsPayload {
   comments?: string;
 }
 
-export interface AgencyRequestRecruiterModel {
-  recruiterId: string;
-}
-
 export interface AgencyRequestSkillModel {
   id?: string | null;
   skill: string;
@@ -714,12 +705,6 @@ export interface AgencyRequestPersonItem {
   firstName?: string;
   middleName?: string;
   lastName?: string;
-}
-
-// Recruiter attached to a request. Mirrors RequestRecruiterDetailModel.
-export interface AgencyRequestRecruiterItem {
-  recruiterId: string;
-  email?: string;
 }
 
 // POST /api/AgencyCompanyProfile/{profileId}/JobPosition/Petition

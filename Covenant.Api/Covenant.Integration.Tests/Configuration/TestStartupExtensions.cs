@@ -10,6 +10,7 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Documents;
+using Covenant.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -55,6 +56,10 @@ public static class TestStartupExtensions
         mockSendGridService.Setup(ss => ss.SendEmail(It.IsAny<SendGridModel>())).ReturnsAsync(Result.Ok());
         mockSendGridService.Setup(ss => ss.SendTemplateBatch(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<TemplateRecipient>>())).ReturnsAsync(Result.Ok());
         services.AddSingleton(mockSendGridService.Object);
+        services.AddSingleton(Mock.Of<ISigookBusClient>());
+        var mockServiceBusConfiguration = new Mock<IOptions<ServiceBusConfiguration>>();
+        mockServiceBusConfiguration.Setup(m => m.Value).Returns(new ServiceBusConfiguration());
+        services.AddSingleton(mockServiceBusConfiguration.Object);
         var mockFilesConfiguration = new Mock<IOptions<FilesConfiguration>>();
         mockFilesConfiguration.Setup(m => m.Value).Returns(new FilesConfiguration
         {

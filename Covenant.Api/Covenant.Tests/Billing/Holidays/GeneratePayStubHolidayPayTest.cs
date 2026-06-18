@@ -1,5 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -9,6 +11,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Shared;
+using MediatR;
 using Moq;
 using Xunit;
 
@@ -55,6 +58,13 @@ public class GeneratePayStubHolidayPayTest
             calculator,
             _timeSheetRepository.Object,
             _catalogRepository.Object,
+            Mock.Of<IPayStubsContainer>(),
+            Mock.Of<IRazorViewToStringRenderer>(),
+            Mock.Of<IPdfGeneratorService>(),
+            Mock.Of<IEmailService>(),
+            Mock.Of<IIdentityServerService>(),
+            Mock.Of<ISkipPayrollNumberRepository>(),
+            Mock.Of<IMediator>(),
             rates,
             timeLimits);
     }

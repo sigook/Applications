@@ -4,7 +4,7 @@
     <div class="section-top-title container-flex mb-2">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
         Invoices
-        <span class="fw-100 fz-1">
+        <span class="fw-light fz-1">
           ({{ totalItems }})
         </span>
         <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
@@ -76,12 +76,12 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
                   @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
+                <b-button type="is-info" outlined rounded icon-right="email" class="me-2"
                   @click="openSendEmailModal(props.row)">
                 </b-button>
               </b-tooltip>

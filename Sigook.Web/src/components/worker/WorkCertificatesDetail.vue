@@ -2,8 +2,8 @@
   <section>
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="button-right">
-      <h3 class="fw-700 fz-0">{{ 'Certificates' }}</h3>
+    <div class="d-flex align-items-center justify-content-between">
+      <h3 class="fw-bold fz-0">{{ 'Certificates' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalCertificate = true">
         Add Certificate
       </b-button>
@@ -12,11 +12,11 @@
       <div class="container-license hover-actions" v-for="(item, index) in localWorker.certificates"
         v-bind:key="'certificates' + index">
 
-        <div class="button-right">
+        <div class="d-flex align-items-center justify-content-between">
           <a :href="item.pathFile" target="_blank" download>
-            <h4 class="fw-400">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
+            <h4 class="fw-normal">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
           </a>
-          <div class="actions text-right">
+          <div class="actions text-end">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button" @click="confirmDelete(item)">
                 {{ "Delete" }}
@@ -26,28 +26,14 @@
         </div>
         <div class="fz-1">
           <p>
-            <strong class="fw-400">{{ item.description }}</strong>
+            <strong class="fw-normal">{{ item.description }}</strong>
           </p>
         </div>
       </div>
     </div>
-    <!-- custom CREATE modal -->
-    <transition name="modal">
-      <div v-if="modalCertificate" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-700">{{ "Certificates" }}</span>
-              <button @click="modalCertificate = false" type="button" class="cross-icon">
-                {{ 'Close' }}
-              </button>
-              <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
+    <b-modal v-model="modalCertificate" width="500px">
+      <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
+    </b-modal>
   </section>
 </template>
 

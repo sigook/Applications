@@ -4,10 +4,10 @@
 
     <section class="wrapper-worker-top mb-0">
       <div>
-        <image-detail class="d-inline-block v-top" :data="worker" @updateProfile="() => loadWorker()" />
-        <div class="d-inline-block pl-4 v-top">
-          <h2 class="fz1 fw-700">
-            <span class="fw-400" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
+        <image-detail class="d-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
+        <div class="d-inline-block ps-4 align-text-top">
+          <h2 class="fz1 fw-bold">
+            <span class="fw-normal" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
               {{ worker.numberId }}
             </span>
             {{ lowercase(worker.firstName) }}
@@ -42,6 +42,9 @@
             <basic-information :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
+            <email-detail :worker="worker" @updateProfile="() => loadWorker()" />
+
+            <span class="line-gray" />
             <social-insurance :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
@@ -50,7 +53,6 @@
 
             <span class="line-gray" />
             <contact-information :worker="worker" @updateProfile="() => loadWorker()" />
-            <email-detail class="mb-5" :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
             <emergency-information :worker="worker" @updateProfile="() => loadWorker()" />
@@ -86,11 +88,11 @@
 
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
-              <div class="button-right">
-                <h3>{{ "Work Experience" }}</h3>
-                <button class="outline-btn md-btn orange-button btn-radius" @click="modalWorkExperience = true">
-                  Add experience +
-                </button>
+              <div class="d-flex align-items-center justify-content-between">
+                <h3 class="fw-bold fz-0">{{ "Work Experience" }}</h3>
+                <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
+                  Add experience
+                </b-button>
               </div>
               <ul>
                 <li v-for="(item, index) in worker.jobExperiences" v-bind:class="{ active: currentJobEx === index }"
@@ -99,25 +101,10 @@
                 </li>
               </ul>
 
-              <!-- custom modal -->
-              <transition name="modal">
-                <div v-if="modalWorkExperience" class="vue-modal">
-                  <div class="modal-mask">
-                    <div class="modal-wrapper">
-                      <div class="modal-container modal-light overflow-initial">
-                        <span class="fz1 fw-700">Work Experience</span>
-                        <button @click="modalWorkExperience = false" class="cross-icon">
-                          {{ "Close" }}
-                        </button>
-                        <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </transition>
+              <b-modal v-model="modalWorkExperience" width="500px">
+                <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
+              </b-modal>
             </section>
-
-            <span class="line-gray" />
 
             <span class="line-gray" id="comments" />
             <comments v-if="commentsData" :user-id="worker.workerId" :data="commentsData" :size-comments="commentSize"

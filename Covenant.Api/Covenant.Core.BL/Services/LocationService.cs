@@ -34,6 +34,11 @@ public class LocationService : ILocationService
         return await _catalogRepository.GetProvinces(countryId);
     }
 
+    public async Task<List<ProvinceModel>> GetProvinces(string countryCode)
+    {
+        return await _catalogRepository.GetProvinces(countryCode);
+    }
+
     public async Task<List<CityModel>> GetCities(Guid provinceId)
     {
         return await _catalogRepository.GetCities(provinceId);

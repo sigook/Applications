@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 w-100">
-    <div class="fz-1 fw-700 mb-3">
+    <div class="fz-1 fw-bold mb-3">
       Shift
     </div>
     <div class="shifts-grid">

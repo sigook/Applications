@@ -5,19 +5,19 @@
     <div class="text-center">
       <div class="container-worker-report">
         <h3 class="fz-0">Worker Report</h3>
-        <div class="d-flex space-between">
-          <div class="pl-2 pr-2">
-            <span class="fz-2 fw-700 d-block">Clock In</span>
+        <div class="d-flex justify-content-between">
+          <div class="ps-2 pe-2">
+            <span class="fz-2 fw-bold d-block">Clock In</span>
             <span v-if="localEditableDay.clockIn">{{ dateHHmm(localEditableDay.clockIn) }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
-          <div class="pl-2 pr-2">
-            <span class="fz-2 fw-700 d-block">Clock Out</span>
+          <div class="ps-2 pe-2">
+            <span class="fz-2 fw-bold d-block">Clock Out</span>
             <span v-if="localEditableDay.clockOut">{{ dateHHmm(localEditableDay.clockOut) }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
-          <div class="pl-2 pr-2">
-            <span class="fz-2 fw-700 d-block">Hours</span>
+          <div class="ps-2 pe-2">
+            <span class="fz-2 fw-bold d-block">Hours</span>
             <span v-if="localEditableDay.clockOut && localEditableDay.totalHours">
               {{ hour(localEditableDay.totalHours) }}
             </span>

@@ -23,7 +23,7 @@
         </b-field>
       </div>
       <div class="col-12">
-        <h1 class="fw-700">{{ 'In case of emergency notify' }}</h1>
+        <h1 class="fw-bold">{{ 'In case of emergency notify' }}</h1>
       </div>
       <div class="col-6">
         <b-field :label="'Name'" :type="formErrors.contactEmergencyName ? 'is-danger' : ''"

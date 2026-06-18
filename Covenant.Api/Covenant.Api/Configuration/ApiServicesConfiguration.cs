@@ -1,6 +1,3 @@
-using Covenant.Api.AccountingModule.InvoiceDocument.Controllers;
-using Covenant.Api.AccountingModule.PayStubDocument.Controllers;
-using Covenant.Api.AccountingModule.PayStubDocument.Services;
 using Covenant.Api.Authorization;
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
@@ -80,6 +77,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<ICandidateService, CandidateService>();
         services.AddScoped<ICompanyService, CompanyService>();
         services.AddScoped<ITimesheetService, TimesheetService>();
@@ -105,16 +103,13 @@ public static class ApiServicesConfiguration
         // Invoice services with Strategy pattern
         services.AddScoped<UsaInvoiceService>();
         services.AddScoped<CanadaInvoiceService>();
+        services.AddScoped<InvoiceServiceFactory>();
 
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
         services.AddScoped<ICppTablesLoader, CppTablesLoader>();
         services.AddScoped<FederalTaxTablesLoader>();
         services.AddScoped<ProvincialTaxTablesLoader>();
-        services.AddScoped<PayStubPdf>();
-        services.AddScoped<InvoicePdf>();
-        services.AddScoped<IPayStubEmailSender, PayStubEmailSender>();
-        services.AddSingleton<IBulkPayStubEmailQueue, BulkPayStubEmailQueue>();
         return services;
     }
 
@@ -205,9 +200,12 @@ public static class ApiServicesConfiguration
         {
             services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
             services.AddSingleton(sp => new SigookBusClient(serviceBusConnection, sp.GetRequiredService<SigookBusAdministrationClient>(), sp.GetRequiredService<ILogger<SigookBusClient>>()));
+            services.AddSingleton<ISigookBusClient>(sp => sp.GetRequiredService<SigookBusClient>());
             services.AddSingleton<IAzureServiceBusConsumer, NewCandidateConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, TeamsConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, BulkPayStubEmailConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, InvitationConsumer>();
         }
 
         return services;

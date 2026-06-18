@@ -47,44 +47,6 @@
 .worker-profile-image .btn-icon-edit {
   margin-right: -10px;
 }
-.worker-main {
-  text-align: center;
-  img {
-    border-radius: 50%;
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-  }
-
-  .icon-before:before {
-    width: 18px;
-    height: 18px;
-  }
-  .items {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin: 40px auto;
-    & > div {
-      flex-basis: 30%;
-      text-align: left;
-      margin-bottom: 20px;
-      &:nth-child(2) {
-        padding-left: 6%;
-      }
-      &:nth-child(3) {
-        padding-left: 6%;
-      }
-      &:nth-child(5) {
-        padding-left: 6%;
-      }
-      &:nth-child(6) {
-        padding-left: 6%;
-      }
-    }
-  }
-}
-
 
 .worker-documents {
   & > div {
@@ -188,20 +150,6 @@
   }
 }
 
-.statusLight {
-  width: 10px;
-  height: 10px;
-  position: absolute;
-  background: #469a1f;
-  right: 10px;
-  bottom: 10px;
-  border-radius: 50%;
-  z-index: 1;
-  &.disable {
-    background: #9a1f1f;
-  }
-}
-
 .detail-worker-profile {
   width: 100%;
   display: flex;
@@ -250,7 +198,7 @@
 
   &.licenses-create {
     display: inline-block;
-    strong.fw-400 {
+    strong.fw-normal {
       display: flex;
       align-items: center;
       input {
@@ -288,32 +236,6 @@
   }
 }
 
-.max-width-158 {
-  max-width: 158px;
-}
-
-.container-worker-top {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.minWidth-date160 {
-  min-width: 160px;
-  display: block;
-  margin-bottom: 5px;
-}
-
-
-.filter-wage {
-  margin-bottom: 10px;
-  select {
-    display: inline-block;
-    border-radius: 10px;
-    width: 120px;
-    margin-left: 10px;
-  }
-}
-
 @media(max-width: 970px) {
   .contain-worker {
     padding: 0 50px;
@@ -330,7 +252,7 @@
       padding: 0;
     }
 
-    .action-buttons.text-right {
+    .action-buttons.text-end {
       position: relative;
       z-index: 1;
     }
@@ -346,33 +268,6 @@
       margin: 10px -5px 30px;
       button {
         font-size: 14px;
-      }
-    }
-  }
-
-  .worker-main {
-    img {
-      width: 200px;
-      height: 200px;
-    }
-    .items {
-      margin: 20px 0 0;
-      text-align: center;
-      .icon-before:before {
-        display: block;
-      }
-
-      & > div {
-        flex-basis: 50%;
-        &:nth-child(3),
-        &:nth-child(2),
-        &:nth-child(5),
-        &:nth-child(6) {
-          padding: 0;
-        }
-        padding-right: 10px;
-
-
       }
     }
   }
@@ -506,10 +401,6 @@
   }
   .contain-worker section {
     position: static;
-  }
-
-  .contain-check label {
-    min-width: calc(50% - 22px);
   }
 
   .vue-modal .modal-container.modal-light.overflow-initial {

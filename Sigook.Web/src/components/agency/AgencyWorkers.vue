@@ -12,7 +12,7 @@
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
-        @cellclick="onCellClick" @mouseleave="hideNotes">
+        @cellclick="onCellClick">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
         </template>
@@ -117,16 +117,11 @@
             </template>
           </b-table-column>
           <b-table-column field="notesCount" label="Notes" v-slot="props">
-            <b-tag icon="note-text" rounded>
-              <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
-            </b-tag>
-            <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId" :on-get="getNotes"
-                :on-create="createNote" :on-update="updateNote"
-                :on-delete="deleteNote"
-                @onUpdateNote="(val) => onUpdateNote(props.row, val.size)">
-              </modal-notes>
-            </div>
+            <NotesPopover :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId"
+              :notes-count="props.row.notesCount" :on-get="getNotes" :on-create="createNote"
+              :on-update="updateNote" :on-delete="deleteNote"
+              @update:count="(size) => props.row.notesCount = size">
+            </NotesPopover>
           </b-table-column>
           <b-table-column field="status" label="Status" sortable searchable>
             <template v-slot:searchable>
@@ -135,7 +130,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <span class="text-uppercase fw-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
               <i class="fz-1 block" v-html="props.row.rejectComments"></i>
             </template>
           </b-table-column>
@@ -190,7 +185,7 @@ import {
 } from "@/api/agencyNoteApi";
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
 import WorkersList from "./AgencyWorkersList.vue";
-import ModalNotes from "../../components/notes/ModalNotes.vue";
+import NotesPopover from "../../components/notes/NotesPopover.vue";
 import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import DatepickerModal from "@/components/agency_request/DatepickerModal.vue";
 
@@ -234,13 +229,10 @@ const serverParams = reactive<any>({
   isDescending: true,
 });
 
-function onCellClick(row: any, column: any, rowIndex: number) {
+function onCellClick(row: any, column: any) {
   switch (column.field) {
     case 'startWorking':
       onShowModalStartWorking(row);
-      break;
-    case 'notesCount':
-      showNotes(rowIndex);
       break;
     case 'actions':
       break;
@@ -335,7 +327,6 @@ function loadRequestWorkers() {
         ...i,
         status: WorkerRequestStatusLabels[i.workerRequestStatus],
         actions: null,
-        showNotes: false,
       }));
       totalItems.value = response.totalItems;
       isLoading.value = false;
@@ -362,14 +353,6 @@ function rejectWorker(comments: string) {
     isLoading.value = false;
     showAlertError(error.data);
   });
-}
-
-function showNotes(index: number) {
-  rows.value[index].showNotes = true;
-}
-
-function hideNotes() {
-  rows.value.forEach(r => { r.showNotes = false; });
 }
 
 function onShowModalStartWorking(worker: any) {
@@ -407,10 +390,6 @@ function onWorkerBooked() {
   loadRequestWorkers();
   // Emit event to refresh request status (Open/Filled state may have changed)
   emit('refreshRequest');
-}
-
-function onUpdateNote(row: any, size: number) {
-  row.notesCount = size;
 }
 
 loadRequestWorkers();

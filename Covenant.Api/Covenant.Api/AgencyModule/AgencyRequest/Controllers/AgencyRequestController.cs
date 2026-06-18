@@ -203,19 +203,6 @@ public class AgencyRequestController : ControllerBase
         return Ok(result.Value);
     }
 
-    /// <summary>Updates recruiters of multiple requests in bulk.</summary>
-    /// <param name="model">Bulk recruiter update data.</param>
-    [HttpPut("bulk-recruiters")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> BulkRecruiters([FromBody] BulkRequestRecruiters model)
-    {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = await requestService.BulkUpdateRecruiters(model);
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        return Ok();
-    }
-
     /// <summary>Reopens a previously closed request.</summary>
     /// <param name="id">Identifier of the request to open.</param>
     [HttpPut("{id:guid}/Open")]
@@ -253,7 +240,7 @@ public class AgencyRequestController : ControllerBase
         return Ok();
     }
 
-    /// <summary>Sends invitations to potential workers for the specified request.</summary>
+    /// <summary>Queues a job that sends invitations to potential workers for the specified request and notifies the recruitment team on Teams when it finishes.</summary>
     /// <param name="id">Identifier of the request.</param>
     [HttpPost("{id:guid}/SendInvitation")]
     [ProducesResponseType(StatusCodes.Status200OK)]

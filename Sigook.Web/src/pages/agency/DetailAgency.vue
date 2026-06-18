@@ -4,8 +4,8 @@
 
     <section class="company-top" v-if="agency">
       <div class="hover-actions">
-        <h2 class="capitalize fz1 fw-700">
-          <span class="fw-400 fz-1" v-if="agency.numberId">{{ agency.numberId }} |
+        <h2 class="text-capitalize fz1 fw-bold">
+          <span class="fw-normal fz-1" v-if="agency.numberId">{{ agency.numberId }} |
           </span>
           {{ lowercase(agency.fullName) }}
         </h2>

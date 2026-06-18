@@ -36,10 +36,12 @@ If you change business rules, update the corresponding `.docs/` file.
 
 ## Mandatory Rules
 
-- **All code, comments, variable names, and commits must be in English**
+- **All code, variable names, and commits must be in English**
 - **Git workflow**: feature branches from `dev` → PR to `dev` → merge `dev` to `main` for production
 - Follow existing patterns in each project (repository pattern, DI, service layer)
 - Run tests before committing (`dotnet test` for .NET, `flutter test` for Flutter)
+- Don't generate code with comments, only make comments when they are requested
+- Update codegraph when user confirm that everything is ok
 
 ## Monorepo Structure
 
@@ -59,4 +61,4 @@ If you change business rules, update the corresponding `.docs/` file.
 - Do not auto-commit; only commit when explicitly asked
 - Show the plan before executing large changes (3+ files)
 - Respond always like caverman mode at least I say in normal mode
-- Don't generate code with comments, only make comments when they are requested
+- Use the last language features

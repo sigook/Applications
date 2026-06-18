@@ -4,19 +4,19 @@
     <!-- Highlight -->
     <div class="col-12 col-padding highlight-content" v-if="request">
       <div class="item">
-        <span class="fw-700">Rate / Salary</span>
+        <span class="fw-bold">Rate / Salary</span>
         <p>{{ currency(request.workerRate || request.workerSalary) }}</p>
       </div>
       <div class="item">
-        <span class="fw-700">Term</span>
+        <span class="fw-bold">Term</span>
         <p>{{ DurationTermLabels[request.durationTerm] }}</p>
       </div>
       <div class="item">
-        <span class="fw-700">Employment Type</span>
+        <span class="fw-bold">Employment Type</span>
         <p>{{ EmploymentTypeLabels[request.employmentType] }}</p>
       </div>
       <div class="item">
-        <span class="fw-700">Start
+        <span class="fw-bold">Start
           <span
             v-if="((request.status === RequestStatus.Filled || request.status === RequestStatus.Cancelled) && request.durationTerm === DurationTerm.LongTerm) || request.durationTerm === DurationTerm.ShortTerm">
             / Finish</span>
@@ -32,39 +32,36 @@
         </p>
       </div>
       <div class="item worker-options">
-        <span class="fw-700">Workers</span>
+        <span class="fw-bold">Workers</span>
         <p class="hover-actions">
-          <span class="mr-1 fz-0">{{ request.workersQuantityWorking }} /
+          <span class="me-1 fz-0">{{ request.workersQuantityWorking }} /
             {{ request.workersQuantity }}</span>
-          <button v-if="request.canEdit" @click="onIncreaseWorkersQuantity()"
-            class="btn-icon-sm btn-icon-circle-plus bg-transparent relative actions">
-            add
-          </button>
-          <button @click="onReduceWorkersQuantity"
-            class="btn-icon-sm btn-icon-circle-minus bg-transparent relative actions"
-            v-if="request.canEdit && request.workersQuantityWorking < request.workersQuantity && request.workersQuantity !== 1">
-            reduce
-          </button>
+          <b-button v-if="request.canEdit" type="is-ghost" icon-left="plus-circle"
+            class="worker-qty-btn worker-qty-plus" @click="onIncreaseWorkersQuantity()" />
+          <b-button type="is-ghost" icon-left="minus-circle" class="worker-qty-btn worker-qty-minus"
+            v-if="request.canEdit && request.workersQuantityWorking < request.workersQuantity && request.workersQuantity !== 1"
+            @click="onReduceWorkersQuantity" />
         </p>
       </div>
       <div class="item">
-        <span class="fw-700">Is Asap</span>
+        <span class="fw-bold">Is Asap</span>
         <p>
           <b-checkbox v-model="localRequest.isAsap" @update:modelValue="onToggleIsAsap()"></b-checkbox>
         </p>
       </div>
       <div class="item">
-        <span class="fw-700">Visible Punch Card</span>
+        <span class="fw-bold">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled"
+            @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
         </p>
       </div>
       <div class="item">
-        <span class="fw-700">Vaccination</span>
+        <span class="fw-bold">Vaccination</span>
         <router-link :to="'/agency-companies/company/' + request.companyProfileId">
           <p>
             {{ request.vaccinationRequired ? "yes" : "No" }}
-            <b-icon icon="needle" class="ml-2"></b-icon>
+            <b-icon icon="needle" class="ms-2"></b-icon>
           </p>
         </router-link>
       </div>
@@ -72,10 +69,10 @@
 
     <!-- Role -->
     <div class="col-12 col-padding">
-      <span class="fw-700 mr-2">Role</span>
-      <span class="fw-400">{{ request.jobPosition }}</span>
-      <span v-if="request.displayShift" class="request-shift-container"><b class="fw-700 ">Shift</b>
-        <agency-shift class="ml-3" :requestId="request.id" :displayShift="request.displayShift" />
+      <span class="fw-bold me-2">Role</span>
+      <span class="fw-normal">{{ request.jobPosition }}</span>
+      <span v-if="request.displayShift" class="request-shift-container"><b class="fw-bold ">Shift</b>
+        <agency-shift class="ms-3" :requestId="request.id" :displayShift="request.displayShift" />
       </span>
     </div>
 
@@ -84,38 +81,38 @@
 
     <!-- Detail -->
     <section class="col-12 col-padding">
-      <span class="fw-700 is-inline-block mb-2">Description</span>
+      <span class="fw-bold is-inline-block mb-2">Description</span>
       <pre class="long-description bullet-list" v-html="request.description"></pre>
     </section>
 
     <section class="col-12 col-padding">
-      <span class="fw-700 is-inline-block mb-2">Responsibilities</span>
+      <span class="fw-bold is-inline-block mb-2">Responsibilities</span>
       <pre class="long-description bullet-list" v-html="request.responsibilities"></pre>
     </section>
 
     <!-- Requirements -->
     <section class="col-12 col-padding">
-      <span class="fw-700 is-inline-block mb-2">Requirements</span>
+      <span class="fw-bold is-inline-block mb-2">Requirements</span>
       <pre class="long-description bullet-list" v-html="request.requirements"></pre>
     </section>
 
     <section class="col-12 col-padding">
-      <span class="fw-700 is-inline-block mb-2">Internal Requirements</span>
+      <span class="fw-bold is-inline-block mb-2">Internal Requirements</span>
       <pre class="long-description bullet-list" v-html="request.internalRequirements"></pre>
     </section>
 
     <!-- Incentive -->
     <section class="col-12 col-padding" v-if="request.incentive">
-      <span class="fw-700 is-inline-block mb-2">Plus </span>
-      <span class="fw-400 ml-2"> {{ currency(request.incentive) }}</span>
+      <span class="fw-bold is-inline-block mb-2">Plus </span>
+      <span class="fw-normal ms-2"> {{ currency(request.incentive) }}</span>
       <pre class="long-description">{{ request.incentiveDescription }} </pre>
     </section>
 
     <!-- Break -->
     <section class="col-12 col-padding">
-      <span class="fw-700 mr-2">Break</span>
-      <span class="fw-400">{{ request.durationBreak }}</span>
-      <span v-if="request.breakIsPaid" class="fw-400">
+      <span class="fw-bold me-2">Break</span>
+      <span class="fw-normal">{{ request.durationBreak }}</span>
+      <span v-if="request.breakIsPaid" class="fw-normal">
         | {{ "Break paid" }}</span>
     </section>
   </div>
@@ -203,6 +200,36 @@ function onTogglePunchCardVisibility() {
 .bullet-list {
   &>ul {
     list-style: inside;
+  }
+}
+
+.worker-options {
+  .hover-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .worker-qty-btn {
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    margin-left: 4px;
+    line-height: 1;
+    background: transparent;
+
+    &:hover,
+    &:focus {
+      background: transparent;
+      text-decoration: none;
+    }
+
+    .icon {
+      width: auto;
+      height: auto;
+      margin: 0 !important;
+      font-size: 18px;
+    }
   }
 }
 </style>

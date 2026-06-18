@@ -87,13 +87,13 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                  class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
+                  class="me-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>

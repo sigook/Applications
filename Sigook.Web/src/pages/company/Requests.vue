@@ -4,7 +4,7 @@
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
         {{ "Staff Requests" }}
-        <span class="fw-100 fz-1">
+        <span class="fw-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -60,8 +60,8 @@
           </b-table-column>
           <b-table-column field="workersQuantityWorking" sortable>
             <template v-slot:header>
-              <p class="fw-600">Workers</p>
-              <p class="fw-600">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+              <p class="fw-semibold">Workers</p>
+              <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
             </template>
             <template v-slot="props">
               {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}

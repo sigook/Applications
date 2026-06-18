@@ -45,3 +45,50 @@ function onSelectColor(color: string) {
   emit('onSelectColor', color);
 }
 </script>
+
+<style scoped lang="scss">
+.color-picker {
+  display: inline-block;
+}
+
+#button-select-color {
+  border: 0;
+  margin: 0 10px 0 0;
+  vertical-align: middle;
+
+  img {
+    width: 20px;
+    height: auto;
+  }
+}
+
+.colors-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 180px;
+  padding: 6px;
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 4px #f1f1f1;
+  bottom: -75px;
+  left: -10px;
+  border-radius: 6px;
+}
+
+.color-item {
+  flex-basis: 25%;
+
+  .dot-color {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    border-radius: 50%;
+    border: 1px solid #f1f1f1;
+  }
+
+  &.active .dot-color {
+    border: 2px solid #ff9932;
+  }
+}
+</style>

@@ -34,7 +34,7 @@ public class BaseAzureStorage : IBaseAzureStorage
         var blob = container.GetBlobClient(Path.GetFileName(sourcePath));
         if (await blob.ExistsAsync()) return;
         using var stream = new FileStream(sourcePath, FileMode.Open);
-        var info = await blob.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType }, metadata ?? new Dictionary<string, string>());
+        var info = await blob.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType }, metadata ?? []);
     }
 
     public async Task<string> Download(string fileName)

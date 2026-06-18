@@ -1,6 +1,5 @@
-using Covenant.Api.AccountingModule.InvoiceDocument.Controllers;
-using Covenant.Api.AccountingModule.InvoiceDocument.Models;
 using Covenant.Api.Authorization;
+using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
@@ -27,7 +26,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
     public class AccountingInvoiceDocumentV4ControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AccountingInvoiceDocumentV4ControllerTest.Startup>>
     {
         private readonly HttpClient _client;
-        private static readonly string RouteName = AccountingInvoiceDocumentV4Controller.RouteName.Replace("{invoiceId}", Startup.FakeInvoice.Id.ToString());
+        private static readonly string RouteName = $"api/agency/accounting/Invoices/{Startup.FakeInvoice.Id}";
 
         public AccountingInvoiceDocumentV4ControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
@@ -38,7 +37,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
         [Fact]
         public async Task GetPdf()
         {
-            HttpResponseMessage response = await _client.GetAsync($"{RouteName}/PDF");
+            HttpResponseMessage response = await _client.GetAsync($"{RouteName}/pdf");
             response.EnsureSuccessStatusCode();
             string expectedInvoiceHtml = Path.Combine(Directory.GetCurrentDirectory(), "Common", "fake_invoice_usa.html");
             FileAssert.Equal(expectedInvoiceHtml, Startup.InvoiceHtmlPath);
@@ -52,7 +51,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 { new StringContent("Invoice"), nameof(InvoiceEmailModel.Subject) },
                 { new StringContent("Test message"), nameof(InvoiceEmailModel.Message) }
             };
-            HttpResponseMessage response = await _client.PostAsync($"{RouteName}/Email", content);
+            HttpResponseMessage response = await _client.PostAsync($"{RouteName}/email", content);
             response.EnsureSuccessStatusCode();
         }
 
@@ -130,6 +129,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 services.AddSingleton(timeService.Object);
                 var payStubContainer = new Mock<IInvoicesContainer>();
                 services.AddSingleton(payStubContainer.Object);
+                services.AddSingleton(Mock.Of<IPayStubsContainer>());
                 var pdfGeneratorService = new Mock<IPdfGeneratorService>();
                 pdfGeneratorService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
                     .Callback<PdfParams>(pdfParams =>
@@ -139,7 +139,10 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                     })
                     .ReturnsAsync(Result.Ok(new PdfResult(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
                 services.AddSingleton(pdfGeneratorService.Object);
-                services.AddSingleton<InvoicePdf>();
+                var identityServerService = new Mock<IIdentityServerService>();
+                identityServerService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
+                identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });
+                services.AddSingleton(identityServerService.Object);
                 services.AddSingleton<AgencyIdFilter>();
             }
 

@@ -2,8 +2,8 @@
   <div id="app">
     <!-- Non-invasive bottom-right toast that nudges the user to refresh
          when a newer build is detected. Replaces the legacy top banner
-         which (a) shifted layout down and (b) collided with the V2 fixed
-         navbar. Component lives in src/components/v2/landing/shared/. -->
+         which (a) shifted layout down and (b) collided with the landing
+         fixed navbar. Component lives in src/components/landing/shared/. -->
     <AppVersionToast v-model="isANewVersion" @update="updateAppVersion" />
     <div v-if="isCallback">
       <router-view />
@@ -14,16 +14,21 @@
         <router-view />
       </div>
     </div>
-    <div v-else-if="isV2Route" class="v2-page">
+    <div v-else-if="isLandingRoute" class="landing-page">
       <LandingBackground />
       <LandingHeader />
       <router-view />
       <LandingFooter />
     </div>
-    <div v-else>
-      <Header />
-      <router-view />
-      <Footer />
+    <div v-else class="web-layout">
+      <header class="web-layout__bar">
+        <router-link to="/" class="web-layout__brand" aria-label="Sigook home">
+          <img src="@/assets/images/sm-logo.png" alt="Sigook" />
+        </router-link>
+      </header>
+      <main class="web-layout__content">
+        <router-view />
+      </main>
     </div>
   </div>
 </template>
@@ -35,12 +40,10 @@ import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import axios from 'axios';
 import SidebarLogged from '@/components/SidebarLogged.vue';
-import Header from '@/components/landing/Header.vue';
-import Footer from '@/components/landing/Footer.vue';
-import LandingHeader from '@/components/v2/landing/shared/Header.vue';
-import LandingFooter from '@/components/v2/landing/shared/Footer.vue';
-import LandingBackground from '@/components/v2/landing/shared/GlobalBackground.vue';
-import AppVersionToast from '@/components/v2/landing/shared/AppVersionToast.vue';
+import LandingHeader from '@/components/landing/shared/Header.vue';
+import LandingFooter from '@/components/landing/shared/Footer.vue';
+import LandingBackground from '@/components/landing/shared/GlobalBackground.vue';
+import AppVersionToast from '@/components/landing/shared/AppVersionToast.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -50,7 +53,7 @@ const isANewVersion = ref(false);
 const isLogged = ref(false);
 
 const isCallback = computed(() => route.name === 'callback');
-const isV2Route = computed(() => route.meta?.layout === 'v2');
+const isLandingRoute = computed(() => route.meta?.layout === 'landing');
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
 const VERSION_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -112,11 +115,39 @@ onUnmounted(() => {
   display: none;
 }
 
-/* V2 landing layout — clip any horizontal overflow from decorative absolute
+/* Neutral chrome for standalone non-landing pages (worker registration,
+   worker apply, email preferences, 404, unauthorized). Replaces the old
+   legacy marketing Header/Footer so those can be removed. Light background,
+   slim brand bar that links home. */
+.web-layout__bar {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.web-layout__brand {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.web-layout__brand img {
+  height: 32px;
+  width: auto;
+}
+
+.web-layout__content {
+  position: relative;
+  min-height: calc(100vh - 64px);
+}
+
+/* Landing layout — clip any horizontal overflow from decorative absolute
    elements (glows, blurs, photos, circles) so the page never shows a
    horizontal scrollbar. `clip` is preferred over `hidden` because it does
    NOT create a scroll container (preserves position: sticky behavior). */
-.v2-page {
+.landing-page {
   overflow-x: clip;
   position: relative;
 }
@@ -138,23 +169,11 @@ onUnmounted(() => {
   padding: 64px 32px 24px;
 }
 
-.main-container {
-  background-color: $gray-bg;
-  min-height: calc(100vh - 63px);
-  padding: 30px;
-}
-
 /* Legacy .message-version banner removed — replaced by AppVersionToast
-   (src/components/v2/landing/shared/AppVersionToast.vue) which renders
+   (src/components/landing/shared/AppVersionToast.vue) which renders
    non-invasively in the bottom-right corner. */
 
 @media (max-width: 767px) {
-  .main-container {
-    min-height: auto;
-    padding: 0;
-    background-color: #fff;
-  }
-
   .logged-layout,
   .logged-content {
     position: static;

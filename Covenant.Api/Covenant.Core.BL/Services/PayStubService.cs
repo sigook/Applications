@@ -3,23 +3,39 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Pdf;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils.Extensions.Models.Accounting;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Documents.Services;
+using MediatR;
+using System.Net.Mime;
 
 namespace Covenant.Core.BL.Services;
 
 public class PayStubService : IPayStubService
 {
+    private const string PayStubTemplatePath = "/Views/Billing/Payroll/Payroll.cshtml";
+    private const string PayStubEmailTemplatePath = "/Views/Billing/Payroll/PayrollEmail.cshtml";
+
     private readonly IPayStubRepository payStubRepository;
     private readonly ITimesheetCalculatorService calculatorService;
     private readonly ITimesheetRepository timeSheetRepository;
     private readonly ICatalogRepository catalogRepository;
+    private readonly IPayStubsContainer payStubsContainer;
+    private readonly IRazorViewToStringRenderer renderer;
+    private readonly IPdfGeneratorService pdfGenerator;
+    private readonly IEmailService emailService;
+    private readonly IIdentityServerService identityServerService;
+    private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
+    private readonly IMediator mediator;
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
 
@@ -28,6 +44,13 @@ public class PayStubService : IPayStubService
         ITimesheetCalculatorService calculatorService,
         ITimesheetRepository timeSheetRepository,
         ICatalogRepository catalogRepository,
+        IPayStubsContainer payStubsContainer,
+        IRazorViewToStringRenderer renderer,
+        IPdfGeneratorService pdfGenerator,
+        IEmailService emailService,
+        IIdentityServerService identityServerService,
+        ISkipPayrollNumberRepository skipPayrollNumberRepository,
+        IMediator mediator,
         Rates rates,
         TimeLimits timeLimits)
     {
@@ -35,6 +58,13 @@ public class PayStubService : IPayStubService
         this.calculatorService = calculatorService;
         this.timeSheetRepository = timeSheetRepository;
         this.catalogRepository = catalogRepository;
+        this.payStubsContainer = payStubsContainer;
+        this.renderer = renderer;
+        this.pdfGenerator = pdfGenerator;
+        this.emailService = emailService;
+        this.identityServerService = identityServerService;
+        this.skipPayrollNumberRepository = skipPayrollNumberRepository;
+        this.mediator = mediator;
         this.rates = rates;
         this.timeLimits = timeLimits;
     }
@@ -433,6 +463,89 @@ public class PayStubService : IPayStubService
         await payStubRepository.SaveChangesAsync();
 
         return Result.Ok();
+    }
+
+    public async Task<PayStubDocument> GetPayStubPdf(Guid payStubId)
+    {
+        string fileName = payStubId.ToPayStubBlobName();
+        string pdfPath = await payStubsContainer.Download(fileName);
+
+        var model = await payStubRepository.GetPayStubDetail(payStubId);
+        if (model is null) return null;
+        model.Ytd = await payStubRepository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
+
+        if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadPdf(model);
+        if (string.IsNullOrEmpty(pdfPath)) return null;
+
+        return new PayStubDocument(pdfPath, fileName, model.ToPayrollEmailViewModel());
+    }
+
+    public async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId)
+    {
+        var document = await GetPayStubPdf(payStubId);
+        if (document is null) return PayStubEmailResult.Failed(payStubId);
+
+        var model = document.Model;
+        var attachment = new EmailAttachment(document.FileName, MediaTypeNames.Application.Pdf, document.PdfPath);
+        var body = await renderer.RenderViewToStringAsync(PayStubEmailTemplatePath, model);
+        var emailParams = new EmailParams(model.WorkerEmail, $"PayStub {model.PayrollNumber}", body)
+        {
+            Attachments = [attachment],
+            EmailSettingName = EmailSettingName.PayrollCovenant
+        };
+        bool wasSent = await emailService.SendCovenantEmail(emailParams);
+        return new PayStubEmailResult(payStubId, wasSent, model.WorkerFullName, model.PayrollNumber);
+    }
+
+    public async Task<PaginatedList<PayStubListModel>> GetPayStubs(GetPayStubsFilter filter)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        var result = await payStubRepository.GetPayStubs(agencyIds, filter);
+        return result;
+    }
+
+    public async Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter)
+    {
+        var agencyIds = identityServerService.GetAgencyIds();
+        var payStubs = await payStubRepository.GetAllPayStubs(agencyIds, filter);
+        return await mediator.Send(new GeneratePayStubsReport(payStubs));
+    }
+
+    public async Task DeletePayStub(Guid payStubId)
+    {
+        await payStubRepository.Delete([payStubId]);
+        await payStubsContainer.DeleteFileIfExists(payStubId.ToPayStubBlobName());
+        await payStubRepository.SaveChangesAsync();
+    }
+
+    public async Task<Result> CreateSkipPayrollNumber(BaseModel<Guid> model)
+    {
+        if (model is null || string.IsNullOrWhiteSpace(model.Value))
+        {
+            return Result.Fail("Invalid model or value");
+        }
+        var result = await skipPayrollNumberRepository.Create(model);
+        return result;
+    }
+
+    private async Task<string> UploadPdf(PayStubDetailModel model)
+    {
+        var fileName = model.Id.ToPayStubBlobName();
+        var html = await renderer.RenderViewToStringAsync(PayStubTemplatePath, model.ToPayrollViewModel());
+        var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
+        if (!pdf) return string.Empty;
+        try
+        {
+            await payStubsContainer.Upload(pdf.Value.Path, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            {
+                { nameof(model.PayrollNumberId), model.PayrollNumberId.ToString() }
+            });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return pdf.Value.Path;
     }
 
     private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)

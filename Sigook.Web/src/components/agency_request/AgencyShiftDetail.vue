@@ -1,8 +1,8 @@
 <template>
-    <div class="d-inline-block relative v-top" @mouseleave="showDetail = false">
+    <div class="d-inline-block relative align-text-top" @mouseleave="showDetail = false">
         <span>{{ displayShift }}</span>
-        <button v-if="displayShift" @click.stop="getRequestShift" class="no-border" :class="{ 'up': showDetail }">
-            <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ml-2">
+        <button v-if="displayShift" @click.stop="getRequestShift" class="border-0" :class="{ 'up': showDetail }">
+            <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ms-2">
         </button>
         <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />
     </div>

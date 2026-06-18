@@ -1,7 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -9,8 +9,11 @@ using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using System.Net.Mime;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
@@ -19,24 +22,24 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class PayStubsController : ControllerBase
 {
-    private readonly IAccountingService accountingService;
     private readonly ITimesheetRepository timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
     private readonly IPayStubService payStubService;
-    private readonly IBulkPayStubEmailQueue bulkPayStubEmailQueue;
+    private readonly ISigookBusClient busClient;
+    private readonly ServiceBusConfiguration serviceBusConfiguration;
 
     public PayStubsController(
-        IAccountingService accountingService,
         ITimesheetRepository timeSheetRepository,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
         IPayStubService payStubService,
-        IBulkPayStubEmailQueue bulkPayStubEmailQueue)
+        ISigookBusClient busClient,
+        IOptions<ServiceBusConfiguration> serviceBusOptions)
     {
-        this.accountingService = accountingService;
         this.timeSheetRepository = timeSheetRepository;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
         this.payStubService = payStubService;
-        this.bulkPayStubEmailQueue = bulkPayStubEmailQueue;
+        this.busClient = busClient;
+        serviceBusConfiguration = serviceBusOptions.Value;
     }
 
     /// <summary>Gets a paginated list of pay stubs matching the given filter.</summary>
@@ -45,7 +48,7 @@ public class PayStubsController : ControllerBase
     [ProducesResponseType(typeof(PaginatedList<PayStubListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPayStubs([FromQuery] GetPayStubsFilter filter)
     {
-        var data = await accountingService.GetPayStubs(filter);
+        var data = await payStubService.GetPayStubs(filter);
         return Ok(data);
     }
 
@@ -56,7 +59,7 @@ public class PayStubsController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPayStubsFile([FromQuery] GetPayStubsFilter filter)
     {
-        var file = await accountingService.GetPayStubsFile(filter);
+        var file = await payStubService.GetPayStubsFile(filter);
         return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
     }
 
@@ -93,7 +96,7 @@ public class PayStubsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateSkipPayrollNumber([FromBody] BaseModel<Guid> model)
     {
-        var result = await accountingService.CreateSkipPayrollNumber(model);
+        var result = await payStubService.CreateSkipPayrollNumber(model);
         if (result)
         {
             return Ok();
@@ -113,7 +116,7 @@ public class PayStubsController : ControllerBase
             return BadRequest(ModelState.AddError("At least one pay stub is required"));
         }
         var job = new BulkPayStubEmailJob(User.GetAgencyId(), User.GetNickname(), [.. model.PayStubIds]);
-        await bulkPayStubEmailQueue.Enqueue(job);
+        await busClient.SendMessageAsync(job, serviceBusConfiguration.BulkPayStubEmailQueue);
         return Accepted();
     }
 
@@ -124,5 +127,53 @@ public class PayStubsController : ControllerBase
     {
         var data = await timeSheetRepository.GetWorkersReadyForPayStub(User.GetAgencyIds());
         return Ok(data);
+    }
+
+    /// <summary>Generates and returns the pay stub document as a PDF file.</summary>
+    /// <param name="payStubId">Identifier of the pay stub.</param>
+    [HttpGet("{payStubId}/pdf")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPayStubPdf(Guid payStubId)
+    {
+        var file = await payStubService.GetPayStubPdf(payStubId);
+        if (file is null) return NotFound();
+        return PhysicalFile(file.PdfPath, MediaTypeNames.Application.Pdf, file.FileName);
+    }
+
+    /// <summary>Generates the pay stub PDF and emails it to the worker.</summary>
+    /// <param name="payStubId">Identifier of the pay stub.</param>
+    [HttpPost("{payStubId}/email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendPayStubEmail(Guid payStubId)
+    {
+        var result = await payStubService.SendPayStubEmail(payStubId);
+        if (result.Success) return Ok();
+        return BadRequest(ModelState.AddError("Email delivery failed please try again"));
+    }
+
+    /// <summary>Creates a manual pay stub. Obsolete.</summary>
+    /// <param name="model">Manual pay stub creation data.</param>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreatePayStub([FromBody] CreatePayStubModel model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await payStubService.CreateManualPayStub(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Created();
+    }
+
+    /// <summary>Deletes a pay stub by its identifier.</summary>
+    /// <param name="id">Identifier of the pay stub to delete.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeletePayStub([FromRoute] Guid id)
+    {
+        await payStubService.DeletePayStub(id);
+        return Ok();
     }
 }

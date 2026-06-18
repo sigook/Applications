@@ -2687,18 +2687,28 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
                 {
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RecruiterId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RequestId", "RecruiterId");
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("WorkDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecruiterId");
+
+                    b.HasIndex("RequestId", "RecruiterId", "WorkDate")
+                        .IsUnique();
 
                     b.ToTable("RequestRecruiter", (string)null);
                 });
@@ -2991,6 +3001,34 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("TimesheetHistory", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestRecruiterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkerProfileId");
+
+                    b.HasIndex("RequestRecruiterId", "WorkerProfileId")
+                        .IsUnique();
+
+                    b.ToTable("WorkerDispatch", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -4701,6 +4739,25 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheet");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
+                        .WithMany("Dispatches")
+                        .HasForeignKey("RequestRecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                        .WithMany()
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RequestRecruiter");
+
+                    b.Navigation("WorkerProfile");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
@@ -5176,6 +5233,11 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Sources");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
+                {
+                    b.Navigation("Dispatches");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
