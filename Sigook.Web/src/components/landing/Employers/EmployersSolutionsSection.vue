@@ -3,23 +3,12 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="employers-solutions__surface" aria-hidden="true"></div>
 
-    <header class="employers-solutions__header">
-      <EyebrowPill variant="white" class="employers-solutions__eyebrow">
-        Professional Hiring Options
-      </EyebrowPill>
-
-      <h2 class="employers-solutions__heading">
-        Three ways to hire.
-        <span class="employers-solutions__heading-accent">
-          One commitment to fit.
-        </span>
-      </h2>
-
-      <p class="employers-solutions__subtitle">
-        Build a permanent team or scale on demand — choose the model that
-        matches your timeline, budget, and growth plan.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Professional Hiring Options"
+      heading="Three ways to hire."
+      heading-accent="One commitment to fit."
+      subtitle="Build a permanent team or scale on demand — choose the model that matches your timeline, budget, and growth plan."
+    />
 
     <div class="employers-solutions__cards">
       <SecondaryCard
@@ -60,7 +49,7 @@
  * Temp to Perm = cyan, Contract = red. Each card carries supporting copy,
  * a benefits list, and a CTA pill.
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 
 interface HiringOption {
@@ -181,48 +170,6 @@ const OPTIONS: readonly HiringOption[] = [
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.employers-solutions__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.employers-solutions__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.employers-solutions__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.employers-solutions__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.employers-solutions__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 3 cols desktop, stack mobile ──────────────────────────── */
