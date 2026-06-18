@@ -49,23 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 
-const sectionRef = ref<HTMLElement | null>(null)
-const visible = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!sectionRef.value) return
-  observer = new IntersectionObserver(
-    (entries) => { visible.value = entries[0].isIntersecting },
-    { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-  )
-  observer.observe(sectionRef.value)
-})
-
-onUnmounted(() => observer?.disconnect())
+const { el: sectionRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>

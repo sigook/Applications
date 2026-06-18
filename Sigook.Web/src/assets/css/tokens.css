@@ -118,6 +118,87 @@
   --text-small-size: 13px;
   --text-small-weight: 400;
   --text-small-lh: 1.6;
+
+  /* --- RGB channel companions (back alpha variants of brand colors) --- */
+  --c-white-rgb: 255, 255, 255;
+  --c-black-rgb: 0, 0, 0;
+  --c-brand-navy-rgb: 15, 47, 68;
+  --c-brand-navy-deep-rgb: 9, 48, 85;
+  --c-brand-cyan-rgb: 0, 173, 239;
+  --c-brand-blue-rgb: 21, 117, 187;
+  --c-brand-red-rgb: 229, 45, 39;
+
+  /* --- On-dark text scale (white-alpha) --- */
+  --c-on-dark: #fff;
+  --c-on-dark-90: rgba(var(--c-white-rgb), 0.9);
+  --c-on-dark-80: rgba(var(--c-white-rgb), 0.8);
+  --c-on-dark-78: rgba(var(--c-white-rgb), 0.78);
+  --c-on-dark-70: rgba(var(--c-white-rgb), 0.7);
+  --c-on-dark-55: rgba(var(--c-white-rgb), 0.55);
+  --c-on-dark-40: rgba(var(--c-white-rgb), 0.4);
+
+  /* --- Glass surface fills & borders --- */
+  --c-glass-fill-soft: rgba(var(--c-white-rgb), 0.04);
+  --c-glass-fill: rgba(var(--c-white-rgb), 0.06);
+  --c-glass-fill-strong: rgba(var(--c-white-rgb), 0.1);
+  --c-glass-fill-hover: rgba(var(--c-white-rgb), 0.16);
+  --c-glass-fill-active: rgba(var(--c-white-rgb), 0.22);
+  --c-glass-border-soft: rgba(var(--c-white-rgb), 0.14);
+  --c-glass-border: rgba(var(--c-white-rgb), 0.22);
+  --c-glass-border-hover: rgba(var(--c-white-rgb), 0.36);
+  --c-glass-border-strong: rgba(var(--c-white-rgb), 0.45);
+
+  /* --- Brand cyan hover-darken --- */
+  --c-brand-cyan-strong: #0098d6;
+
+  /* --- Light-card form neutrals (GetInTouchForm) --- */
+  --c-input-border: #e3e8ed;
+  --c-input-border-hover: #c8d3dd;
+  --c-input-placeholder: #a8b3bd;
+  --c-input-focus-bg: #fbfdff;
+
+  /* --- Brand gradients --- */
+  --grad-panel-surface: linear-gradient(180deg, rgba(var(--c-brand-navy-deep-rgb), 0.65), rgba(var(--c-brand-navy-deep-rgb), 0.55));
+  --grad-brand-red: linear-gradient(135deg, rgba(var(--c-brand-red-rgb), 0.92), rgba(var(--c-brand-red-rgb), 0.7));
+
+  /* --- Glass blur presets (pair with -webkit- at use site) --- */
+  --glass-blur-soft: blur(10px) saturate(120%);
+  --glass-blur: blur(20px) saturate(160%);
+  --glass-blur-strong: blur(22px) saturate(160%);
+
+  /* --- Extended shadows (text & panel depth) --- */
+  --sh-text-heading: 0 4px 24px rgba(var(--c-black-rgb), 0.4);
+  --sh-text-sub: 0 2px 12px rgba(var(--c-black-rgb), 0.3);
+  --sh-text-sub-hero: 0 2px 12px rgba(var(--c-black-rgb), 0.35);
+  --sh-panel-dual: 0 -22px 40px -12px rgba(var(--c-black-rgb), 0.45), 0 22px 40px -12px rgba(var(--c-black-rgb), 0.45);
+  --sh-back: 0 18px 40px -20px rgba(var(--c-black-rgb), 0.4);
+
+  /* --- Focus rings --- */
+  --focus-ring-cyan: 0 0 0 3px rgba(var(--c-brand-cyan-rgb), 0.2);
+  --focus-ring-red: 0 0 0 3px rgba(var(--c-brand-red-rgb), 0.2);
+
+  /* --- Extended radii (fluid brand cut, full pill, fields) --- */
+  --r-brand-fluid: clamp(80px, 10vw, 150px);
+  --r-cut-card: clamp(40px, 5.5vw, 72px);
+  --r-pill-full: 999px;
+  --r-field: 12px;
+  --r-input: 14px;
+
+  /* --- Section rhythm --- */
+  --section-pad-y: clamp(72px, 10vw, 140px);
+  --section-pad-y-lg: clamp(140px, 14vw, 200px);
+  --panel-overlap: clamp(-180px, -10vw, -80px);
+  --grid-max: 1180px;
+
+  /* --- Signature easing --- */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Fluid type ramps (hero & section headings) --- */
+  --text-hero-size: clamp(32px, 5.5vw, 60px);
+  --text-hero-ls: -0.02em;
+  --text-hero-sub-size: clamp(14px, 1.4vw, 17px);
+  --text-section-heading-size: clamp(28px, 4.2vw, 46px);
+  --text-contact-title-size: 48px;
 }
 
 /* ============================================================

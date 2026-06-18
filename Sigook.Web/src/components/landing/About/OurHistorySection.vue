@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 
 interface Milestone {
@@ -122,25 +122,11 @@ const MILESTONES: readonly Milestone[] = [
   },
 ] as const
 
-const timeline = ref<HTMLElement | null>(null)
-const revealed = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!timeline.value) return
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting) {
-        revealed.value = true
-        observer?.disconnect()
-      }
-    },
-    { threshold: 0.12 },
-  )
-  observer.observe(timeline.value)
+const { el: timeline, visible: revealed } = useRevealOnScroll({
+  threshold: 0.12,
+  rootMargin: '0px',
+  once: true,
 })
-
-onUnmounted(() => observer?.disconnect())
 </script>
 
 <style scoped>

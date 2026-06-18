@@ -14,14 +14,7 @@
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="why__hero-glow" aria-hidden="true"></div>
-      <img
-        src="@/assets/images/v2/branding/sigook-magnifier.webp"
-        alt=""
-        aria-hidden="true"
-        class="why__hero-magnifier"
-        loading="lazy"
-        decoding="async"
-      />
+      <DecoMagnifier class="why__hero-magnifier" />
 
       <div class="why__hero-content">
         <div class="why__hero-left">
@@ -106,8 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
+import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 
 const NETWORK_POINTS = [
   'Recruiters and coverage across all major US markets',
@@ -127,23 +121,7 @@ const LEADERSHIP_POINTS = [
   'A partner invested in long-term success for workers and employers alike',
 ] as const
 
-const sectionRef = ref<HTMLElement | null>(null)
-const visible = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!sectionRef.value) return
-  // Continuous observer — fade in entering viewport, fade out leaving (matches Numbers)
-  observer = new IntersectionObserver(
-    (entries) => {
-      visible.value = entries[0].isIntersecting
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-  )
-  observer.observe(sectionRef.value)
-})
-
-onUnmounted(() => observer?.disconnect())
+const { el: sectionRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
@@ -220,29 +198,10 @@ onUnmounted(() => observer?.disconnect())
   pointer-events: none;
 }
 
-/* Brand magnifier decoration — floats with subtle sway */
+/* Brand magnifier — position only (size/float/shadow from DecoMagnifier) */
 .why__hero-magnifier {
-  position: absolute;
   bottom: 48px;
   left: 56px;
-  width: 88px;
-  height: 88px;
-  z-index: 1;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
-  animation: why-magnifier-float 6.5s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes why-magnifier-float {
-  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
-  25%      { transform: translate(6px, -8px) rotate(4deg); }
-  50%      { transform: translate(0, -14px) rotate(8deg); }
-  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .why__hero-magnifier { animation: none; }
 }
 
 .why__hero-content {
@@ -495,11 +454,8 @@ onUnmounted(() => observer?.disconnect())
   }
 
   .why__hero-magnifier {
-    width: 56px;
-    height: 56px;
     bottom: 20px;
     left: 20px;
-    animation: none;
   }
 
   .why__hero-left {

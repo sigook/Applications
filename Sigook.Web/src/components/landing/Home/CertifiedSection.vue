@@ -12,14 +12,7 @@
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="certified__glow" aria-hidden="true"></div>
-      <img
-        src="@/assets/images/v2/branding/sigook-magnifier.webp"
-        alt=""
-        aria-hidden="true"
-        class="certified__magnifier"
-        loading="lazy"
-        decoding="async"
-      />
+      <DecoMagnifier class="certified__magnifier" />
 
       <div class="certified__content">
         <div class="certified__left">
@@ -45,6 +38,7 @@
 
 <script setup lang="ts">
 import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
+import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 </script>
 
 <style scoped>
@@ -139,29 +133,10 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   pointer-events: none;
 }
 
-/* ── Brand magnifier decoration — floats with subtle sway ──────────────── */
+/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .certified__magnifier {
-  position: absolute;
   bottom: 40px;
   left: 56px;
-  width: 88px;
-  height: 88px;
-  z-index: 1;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
-  animation: cert-magnifier-float 6.5s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes cert-magnifier-float {
-  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
-  25%      { transform: translate(6px, -8px) rotate(4deg); }
-  50%      { transform: translate(0, -14px) rotate(8deg); }
-  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .certified__magnifier { animation: none; }
 }
 
 /* ── Content — asymmetric split (heading left, body+CTA right) ─────────── */
@@ -279,11 +254,8 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   }
 
   .certified__magnifier {
-    width: 56px;
-    height: 56px;
     bottom: 20px;
     left: 20px;
-    animation: none;
   }
 
   .certified__cta {

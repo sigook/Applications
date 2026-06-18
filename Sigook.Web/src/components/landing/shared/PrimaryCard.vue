@@ -65,7 +65,7 @@ export type PrimaryCardVariant = 'navy' | 'red'
  *  • navy — Find-Work style (navy → brand-blue gradient)
  *  • red  — Find-Talent style (brand-red gradient)
  */
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 
 withDefaults(defineProps<{
   variant?: PrimaryCardVariant
@@ -80,20 +80,7 @@ withDefaults(defineProps<{
   showDivider: false,
 })
 
-const cardRef = ref<HTMLElement | null>(null)
-const visible = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!cardRef.value) return
-  observer = new IntersectionObserver(
-    (entries) => { visible.value = entries[0].isIntersecting },
-    { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-  )
-  observer.observe(cardRef.value)
-})
-
-onUnmounted(() => observer?.disconnect())
+const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
