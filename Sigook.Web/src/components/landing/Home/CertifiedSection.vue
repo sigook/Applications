@@ -26,10 +26,9 @@
             solutions, combining experienced recruiters, streamlined processes,
             and reliable talent to meet evolving workforce needs.
           </p>
-          <router-link to="/partner" class="certified__cta">
-            <span>Grow With Us</span>
-            <ArrowIcon :width="32" :height="11" :stroke-width="1.5" />
-          </router-link>
+          <ArrowPillCta to="/partner" hover-variant="navy">
+            Grow With Us
+          </ArrowPillCta>
         </div>
       </div>
     </section>
@@ -37,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 </script>
 
@@ -198,33 +197,6 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   max-width: 560px;
 }
 
-/* ── Glass pill CTA — matches Hero / DualCta / WhyChooseUs language ────── */
-.certified__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 32px;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-
-.certified__cta:hover {
-  background: #fff;
-  color: var(--c-brand-navy);
-  transform: translateY(-2px);
-}
-
 /* ── Mobile ── */
 @media (max-width: 1023px) {
   .certified-wrap {
@@ -256,15 +228,6 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   .certified__magnifier {
     bottom: 20px;
     left: 20px;
-  }
-
-  .certified__cta {
-    padding: 12px 28px;
-    font-size: 14px;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.28);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   }
 
   .certified__content {

@@ -22,14 +22,12 @@
         class="talents-solutions__card"
       >
         <template #button>
-          <router-link
+          <ArrowPillCta
             :to="option.ctaTo"
-            class="talents-solutions__cta"
-            :class="`talents-solutions__cta--${option.variant}`"
+            :hover-variant="option.variant === 'red' ? 'red' : 'cyan'"
           >
-            <span>{{ option.ctaLabel }}</span>
-            <span class="talents-solutions__cta-arrow" aria-hidden="true">→</span>
-          </router-link>
+            {{ option.ctaLabel }}
+          </ArrowPillCta>
         </template>
       </SecondaryCard>
     </div>
@@ -46,6 +44,7 @@
  * the CTA via the #button slot.
  */
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 
 interface CareerOption {
@@ -180,55 +179,6 @@ const OPTIONS: readonly CareerOption[] = [
 .talents-solutions__card {
   display: flex;
   flex-direction: column;
-}
-
-/* ── CTA pill — sits in the SecondaryCard #button slot ─────────────────── */
-.talents-solutions__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(11px, 1.2vw, 14px) clamp(22px, 2.4vw, 30px);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.05vw, 14px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.talents-solutions__cta--blue:hover,
-.talents-solutions__cta--cyan:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.talents-solutions__cta--red:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
-}
-
-.talents-solutions__cta-arrow {
-  font-size: 1.15em;
-  font-weight: 700;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.talents-solutions__cta:hover .talents-solutions__cta-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Mobile-only behaviors ──────────────────────────────────────────────── */

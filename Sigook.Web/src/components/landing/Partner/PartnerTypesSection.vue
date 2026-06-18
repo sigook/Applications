@@ -26,14 +26,13 @@
         {{ track.body }}
 
         <template #button>
-          <a
+          <ArrowPillCta
             :href="track.ctaHref"
-            class="partner-types__cta"
-            :class="`partner-types__cta--${track.variant}`"
+            :hover-variant="track.variant"
+            size="lg"
           >
-            <span>{{ track.ctaLabel }}</span>
-            <span class="partner-types__cta-arrow" aria-hidden="true">→</span>
-          </a>
+            {{ track.ctaLabel }}
+          </ArrowPillCta>
         </template>
       </PrimaryCard>
     </div>
@@ -53,6 +52,7 @@
  * Business Partner  = red variant (the entrepreneurial, revenue-share track).
  */
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/PrimaryCard.vue'
 
 interface PartnerTrack {
@@ -178,53 +178,6 @@ const TRACKS: readonly PartnerTrack[] = [
 .partner-types__card {
   display: flex;
   flex-direction: column;
-}
-
-/* ── CTA pill in #button slot ───────────────────────────────────────────── */
-.partner-types__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(13px, 1.4vw, 16px) clamp(26px, 2.8vw, 36px);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(14px, 1.15vw, 15px);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.partner-types__cta--navy:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.partner-types__cta--red:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
-}
-
-.partner-types__cta-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.partner-types__cta:hover .partner-types__cta-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Mobile-only behaviors ──────────────────────────────────────────────── */
