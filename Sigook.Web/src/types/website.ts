@@ -33,20 +33,3 @@ export interface ContactForm {
   subject: string;
   captchaResponse: string;
 }
-
-export interface LandingJobSubPosition {
-  title: string;
-  description: string;
-  image: string;
-  comingSoon?: boolean;
-}
-
-export interface LandingJobCategory {
-  id: string;
-  title: string;
-  shortDescription: string;
-  backgroundImage: string;
-  positions: LandingJobSubPosition[];
-}
-
-export type LandingJobPositions = Record<string, LandingJobCategory[]>;

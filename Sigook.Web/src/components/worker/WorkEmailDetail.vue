@@ -1,17 +1,21 @@
 <template>
-  <div class="hover-transform">
-    <div class="detail-worker-profile">
-      <span class="width-30">{{ "Email" }}</span>
-      <span class="width-70">
-        <p class="fw-light m-0">{{ props.worker.email }}</p>
-      </span>
-      <button class="actions btn-icon-sm btn-icon-edit button-top-m8" type="button"
-        @click="modalEmail = true">Edit</button>
+  <section>
+    <div class="d-flex align-items-center justify-content-between">
+      <h3 class="section-title">{{ "Account" }}</h3>
+      <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalEmail = true"></b-button>
+    </div>
+    <div class="worker-documents">
+      <div>
+        <span>{{ 'Email' }}</span>
+        <span>
+          <p class="fw-light m-0">{{ props.worker.email }}</p>
+        </span>
+      </div>
     </div>
     <b-modal v-model="modalEmail" width="500px">
       <email-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
-  </div>
+  </section>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';

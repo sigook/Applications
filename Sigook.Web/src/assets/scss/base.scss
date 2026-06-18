@@ -1549,6 +1549,24 @@ label.superscript {
   border-bottom: none;
 }
 
+/* Two-column detail layout: main content + right sidebar separated by a
+   vertical divider. The border/padding only apply from md up, where the
+   columns sit side by side; on mobile they stack with no lateral border. */
+.detail-split {
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .detail-split-main {
+    padding-right: 1.5rem;
+  }
+
+  .detail-split-aside {
+    padding-left: 1.5rem;
+    border-left: 1px solid #e6e6e6;
+  }
+}
+
 html,
 body,
 form {

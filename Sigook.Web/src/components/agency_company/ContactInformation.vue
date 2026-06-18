@@ -1,42 +1,47 @@
 <template>
   <div>
-    <div class="highlight-content" v-if="company">
-      <div class="d-inline-flex relative me-3">
-        <div class="item">
-          <span class="fw-bold">{{ 'Phone' }}</span>
-          <p v-if="company.phone">
-            {{ company.phone }}
-            <i v-show="company.phoneExt">
-              {{ 'Ext.' }} {{ company.phoneExt }}
-            </i>
-          </p>
-          <p v-else class="op3">Phone</p>
-        </div>
-
-        <div class="item" v-if="company.fax">
-          <span class="fw-bold">{{ 'Fax' }}</span>
-          <p>{{ company.fax }}
-            <i v-show="company.faxExt">
-              {{ 'Ext.' }} {{ company.faxExt }}</i>
-          </p>
-        </div>
-
-        <div class="item" v-if="company.website">
-          <span class="fw-bold">{{ 'Website' }}</span>
-          <p class="ellipsis-150 block">
-            <a :href="getFullUrl(company.website)" target="_blank">{{ company.website }}</a>
-          </p>
-        </div>
-        <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModal = true">{{ "Edit" }}</button>
+    <div class="col-12 col-padding highlight-content" v-if="company">
+      <div class="item">
+        <span class="fw-bold">{{ 'Phone' }}</span>
+        <p v-if="company.phone">
+          {{ company.phone }}
+          <i v-show="company.phoneExt">
+            {{ 'Ext.' }} {{ company.phoneExt }}
+          </i>
+        </p>
+        <p v-else class="op3">Phone</p>
       </div>
-      <div class="d-inline-flex relative">
-        <div class="item">
-          <span class="fw-bold">{{ 'Email' }}</span>
-          <p class="word-break">{{ company.email }}</p>
-        </div>
-        <button class="btn-icon-sm btn-icon-edit bg-transparent" @click="showModalUpdateEmail = true">
-          {{ "Edit" }}
-        </button>
+
+      <div class="item" v-if="company.fax">
+        <span class="fw-bold">{{ 'Fax' }}</span>
+        <p>{{ company.fax }}
+          <i v-show="company.faxExt">
+            {{ 'Ext.' }} {{ company.faxExt }}</i>
+        </p>
+      </div>
+
+      <div class="item" v-if="company.website">
+        <span class="fw-bold">{{ 'Website' }}</span>
+        <p class="d-flex align-items-center">
+          <a :href="getFullUrl(company.website)" target="_blank">{{ company.website }}</a>
+          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showModal = true" />
+        </p>
+      </div>
+
+      <div class="item">
+        <span class="fw-bold">{{ 'Email' }}</span>
+        <p class="d-flex align-items-center">
+          {{ company.email }}
+          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showModalUpdateEmail = true" />
+        </p>
+      </div>
+
+      <div class="item">
+        <span class="fw-bold">{{ 'Vaccination Required' }}</span>
+        <p class="d-flex align-items-center">
+          {{ getLabelVaccinationRequired(company.vaccinationRequired) }}
+          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showEditVaccinationRequired = true" />
+        </p>
       </div>
     </div>
 
@@ -48,6 +53,11 @@
     <b-modal v-model="showModalUpdateEmail" width="500px">
       <dialog-company-update-email :company-profile-id="company.id" @closeModal="closeEditEmailModal" />
     </b-modal>
+
+    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
+      <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
+        :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
+    </b-modal>
   </div>
 </template>
 
@@ -56,6 +66,7 @@ import { ref, reactive, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import DialogCompanyUpdateEmail from "@/components/company/DialogCompanyUpdateEmail.vue";
 import ContactInformationForm from "@/components/agency_company/ContactInformationForm.vue";
+import EditVaccinationRequired from "@/components/agency_company/EditVaccinationRequired.vue";
 
 const props = defineProps<{ company: any }>();
 const emit = defineEmits<{ (e: 'update:company', value: any): void }>();
@@ -64,6 +75,7 @@ const route = useRoute();
 
 const showModal = ref(false);
 const showModalUpdateEmail = ref(false);
+const showEditVaccinationRequired = ref(false);
 const localCompany = ref<any>(JSON.parse(JSON.stringify(props.company)));
 const model = reactive<any>({
   phone: props.company.phone,
@@ -102,6 +114,26 @@ function getFullUrl(url: string) {
   return `https://${url}`;
 }
 
+function getLabelVaccinationRequired(vaccinationRequired: boolean | null | undefined) {
+  return vaccinationRequired ? "Yes" : "No";
+}
+
+function vaccinationRequiredUpdated(model: { required: boolean; comments: string | null }) {
+  showEditVaccinationRequired.value = false;
+  localCompany.value.vaccinationRequired = model.required;
+  localCompany.value.vaccinationRequiredComments = model.comments;
+  emit('update:company', localCompany.value);
+}
+
 // Preserve profileId reference for potential template use
 void profileId;
 </script>
+
+<style scoped>
+.highlight-content .item p {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  margin: 0;
+}
+</style>
