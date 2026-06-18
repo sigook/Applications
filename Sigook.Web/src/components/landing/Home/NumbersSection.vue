@@ -30,7 +30,7 @@
           eyebrow="Connections"
           :delay="140"
         >
-          <span class="numbers__num">+1,700</span>
+          <span class="numbers__num">+2,000</span>
           <span class="numbers__lbl">Jobs Posted</span>
         </SecondaryCard>
 
@@ -40,7 +40,7 @@
           eyebrow="Engagement"
           :delay="280"
         >
-          <span class="numbers__num">+5,000</span>
+          <span class="numbers__num">+15,000</span>
           <span class="numbers__lbl">Applications</span>
         </SecondaryCard>
       </div>
