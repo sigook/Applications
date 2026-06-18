@@ -66,14 +66,14 @@
 
               <p class="news-featured__excerpt">{{ article.excerpt }}</p>
 
-              <a
+              <ArrowPillCta
                 :href="`#${article.slug}`"
                 class="news-featured__link"
+                hover-variant="cyan"
                 :aria-label="`Read full article: ${article.title}`"
               >
-                <span>Read full article</span>
-                <span class="news-featured__link-arrow" aria-hidden="true">→</span>
-              </a>
+                Read full article
+              </ArrowPillCta>
             </div>
           </article>
         </div>
@@ -114,6 +114,7 @@
  */
 import { computed } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SliderDots from '@/components/landing/shared/SliderDots.vue'
 import {
   CATEGORY_LABEL,
@@ -382,42 +383,6 @@ const trackStyle = computed(() => ({
 .news-featured__link {
   margin-top: clamp(8px, 1vw, 12px);
   align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(11px, 1.2vw, 14px) clamp(22px, 2.4vw, 30px);
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.05vw, 14px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.news-featured__link:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.news-featured__link-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.news-featured__link:hover .news-featured__link-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Dots ───────────────────────────────────────────────────────────────── */

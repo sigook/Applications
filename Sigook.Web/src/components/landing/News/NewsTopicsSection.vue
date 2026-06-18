@@ -28,14 +28,13 @@
         {{ topic.body }}
 
         <template #button>
-          <a
+          <ArrowPillCta
             :href="topic.href"
-            class="news-topics__cta"
-            :class="`news-topics__cta--${topic.variant}`"
+            size="sm"
+            :hover-variant="topic.variant === 'red' ? 'red' : 'cyan'"
           >
-            <span>{{ topic.ctaLabel }}</span>
-            <span class="news-topics__cta-arrow" aria-hidden="true">→</span>
-          </a>
+            {{ topic.ctaLabel }}
+          </ArrowPillCta>
         </template>
       </SecondaryCard>
     </div>
@@ -53,6 +52,7 @@
  */
 import { h, type FunctionalComponent } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 import { getCategoryCounts } from '@/data/news'
 
@@ -252,54 +252,6 @@ const TOPICS: readonly Topic[] = [
 .news-topics__card {
   display: flex;
   flex-direction: column;
-}
-
-/* ── CTA pill in the #button slot ───────────────────────────────────────── */
-.news-topics__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(10px, 1.1vw, 12px) clamp(18px, 2vw, 24px);
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.40);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(12px, 1vw, 13px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.news-topics__cta--blue:hover,
-.news-topics__cta--cyan:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.news-topics__cta--red:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
-}
-
-.news-topics__cta-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.news-topics__cta:hover .news-topics__cta-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */

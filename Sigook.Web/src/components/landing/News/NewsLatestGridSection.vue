@@ -18,10 +18,7 @@
     </div>
 
     <div class="news-latest__footer">
-      <a href="#" class="news-latest__view-all">
-        <span>View the full archive</span>
-        <span class="news-latest__view-all-arrow" aria-hidden="true">→</span>
-      </a>
+      <ArrowPillCta href="#" hover-variant="cyan">View the full archive</ArrowPillCta>
     </div>
   </section>
 </template>
@@ -38,6 +35,7 @@
  * the article detail page lands.
  */
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import NewsCard from '@/components/landing/shared/NewsCard.vue'
 import { getLatestArticles } from '@/data/news'
 
@@ -79,45 +77,6 @@ const ARTICLES = getLatestArticles(6)
 .news-latest__footer {
   position: relative;
   z-index: 2;
-}
-
-.news-latest__view-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(11px, 1.2vw, 14px) clamp(24px, 2.4vw, 32px);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.05vw, 14px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.news-latest__view-all:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateY(-2px);
-}
-
-.news-latest__view-all-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.news-latest__view-all:hover .news-latest__view-all-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
