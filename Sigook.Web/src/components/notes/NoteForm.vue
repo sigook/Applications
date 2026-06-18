@@ -1,7 +1,7 @@
 <template>
   <div class="tooltip-form tooltip-form-multiline form-notes" @keydown="onPressEnter">
     <div>
-      <span :style="styleNote" class="note-color-icon relative top-2 fz-2 fw-400 color-gray-light"
+      <span :style="styleNote" class="note-color-icon relative top-2 fz-2 fw-normal color-gray-light"
         :class="{ 'border': styleNote.background === '#fefefe' }">Note:
       </span>
       <label>
@@ -9,7 +9,7 @@
           v-model="newNote.note"></textarea>
       </label>
     </div>
-    <div class="container-flex button-right align-center mt-3">
+    <div class="container-flex d-flex align-items-center justify-content-between mt-3">
       <div>
         <color-picker @onSelectColor="(color) => changeColor(color)"></color-picker>
       </div>
@@ -81,3 +81,13 @@ if (props.currentNote) {
   }
 }
 </script>
+
+<style scoped lang="scss">
+.top-2 {
+  top: 2px;
+}
+
+.form-notes {
+  box-shadow: 0 0 6px #bfbfbf;
+}
+</style>

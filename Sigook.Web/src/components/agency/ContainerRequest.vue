@@ -10,8 +10,8 @@
           </h3>
           <div class="subtitle">{{ data.companyFullName }}</div>
         </div>
-        <div class="text-right container-right">
-          <div class="subtitle icon-before-location uppercase icon-before"> {{ data.location }}</div>
+        <div class="text-end container-right">
+          <div class="subtitle icon-before-location text-uppercase icon-before"> {{ data.location }}</div>
         </div>
       </div>
       <div class="container-actions">
@@ -22,15 +22,15 @@
           {{ dateFromNow(data.createdAt) }}
 
           <i class="icon-workers"></i>
-          <span class="color-green fw-400">{{ data.workersQuantityWorking }} / {{ data.workersQuantity }}</span>
+          <span class="color-green fw-normal">{{ data.workersQuantityWorking }} / {{ data.workersQuantity }}</span>
 
           <i v-if="showFinishAt(data.finishAt)" class="icon-time margin-left"></i>
-          <span v-if="showFinishAt(data.finishAt)" v-bind:class="{'color-danger fw-400' : showFinishWarning(data.finishAt)}">
+          <span v-if="showFinishAt(data.finishAt)" v-bind:class="{'color-danger fw-normal' : showFinishWarning(data.finishAt)}">
             Finish: {{dateFromNow(data.finishAt) }}
           </span>
         </div>
 
-        <div class="container-status uppercase" :class="'status-' + data.status.toLowerCase()"
+        <div class="container-status text-uppercase" :class="'status-' + data.status.toLowerCase()"
              v-status="{status: data.status}"> {{ data.status }}
         </div>
       </div>
@@ -74,3 +74,28 @@ appStore.getCurrentDate().then(response => {
   now.value = response;
 });
 </script>
+
+<style scoped lang="scss">
+.icon-time {
+  width: 11px;
+  height: 11px;
+  margin-right: 5px;
+  display: inline-block;
+  background-image: url('../../assets/images/icon_time.png');
+  background-size: contain;
+  opacity: 0.8;
+  margin-bottom: -1px;
+}
+
+.icon-workers {
+  width: 14px;
+  height: 15px;
+  margin-right: 5px;
+  display: inline-block;
+  background-image: url('../../assets/images/icon_workers.png');
+  background-size: contain;
+  opacity: 0.8;
+  margin-bottom: -3px;
+  margin-left: 20px;
+}
+</style>

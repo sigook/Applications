@@ -7,7 +7,7 @@
           <h1 class="title has-text-centered">Basic Information</h1>
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <div class=" container-image margin-10-auto">
+              <div class=" container-image mx-auto my-2">
                 <UploadImage @imageSelected="(profileImg) => saveImage(profileImg)" :edited-image="worker.profileImage"
                   @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"
                   class="upload-image-spacing" />
@@ -167,7 +167,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">Documents <span class="has-text-danger">*</span></label>
+                  <label class="fz1 fw-semibold section-label">Documents <span class="has-text-danger">*</span></label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
@@ -195,7 +195,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">
+                          <h4 class="fw-semibold document-filename">
                             {{ filename(worker.identificationType1File.fileName) }}
                           </h4>
                         </div>
@@ -244,7 +244,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">
+                          <h4 class="fw-semibold document-filename">
                             {{ filename(worker.identificationType2File.fileName) }}
                           </h4>
                         </div>
@@ -295,7 +295,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ "Licenses" }}</label>
+                  <label class="fz1 fw-semibold section-label">{{ "Licenses" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedLicenseFile }">
@@ -319,7 +319,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="certificate" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">
+                          <h4 class="fw-semibold document-filename">
                             {{ filename(item.license.fileName) }}
                           </h4>
                         </div>
@@ -361,7 +361,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ "Certificates" }}</label>
+                  <label class="fz1 fw-semibold section-label">{{ "Certificates" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedCertificateFile }">
@@ -385,7 +385,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="card-account-details" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
+                          <h4 class="fw-semibold document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
@@ -409,7 +409,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-600 section-label">{{ "Resume" }}</label>
+                  <label class="fz1 fw-semibold section-label">{{ "Resume" }}</label>
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
@@ -436,7 +436,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">
+                          <h4 class="fw-semibold document-filename">
                             {{ filename(worker.resume.fileName) }}
                           </h4>
                         </div>
@@ -457,7 +457,7 @@
               <div class="container-flex document-section-header">
                 <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
                   <div>
-                    <label class="fz1 fw-600 section-label block-label">WHMIS and Health and Safety Training</label>
+                    <label class="fz1 fw-semibold section-label block-label">WHMIS and Health and Safety Training</label>
                     <i class="fz-2">Complete the training following both links below and upload your certificates</i>
                   </div>
                 </div>
@@ -478,11 +478,11 @@
               <div class="col-sm-12 col-md-12 col-lg-12 col-padding canada-links-container">
                 <p class="canada-link">
                   <a href="https://aixsafety.com/wp-content/uploads/articulate_uploads/WHS-Apr2025Aix/story.html"
-                    target="_blank" class="color-primary fw-600">WHIMS Training</a>
+                    target="_blank" class="color-primary fw-semibold">WHIMS Training</a>
                 </p>
                 <p>
                   <a href="https://www.labour.gov.on.ca/english/hs/elearn/worker/foursteps.php" target="_blank"
-                    class="color-primary fw-600">HS BOOKLET</a>
+                    class="color-primary fw-semibold">HS BOOKLET</a>
                 </p>
               </div>
               <div class="container-files">
@@ -493,7 +493,7 @@
                       <div class="col-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="folder-open" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-600 document-filename">{{ filename(item.fileName) }}</h4>
+                          <h4 class="fw-semibold document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
                       <div class="col-2 document-delete-container no-padding">
@@ -1042,6 +1042,10 @@ function isCanadaSelected(value: boolean) {
 </script>
 
 <style lang="scss" scoped>
+.container-files {
+  padding: 10px 0;
+}
+
 .document-section-header {
   align-items: center;
   margin-bottom: 15px;

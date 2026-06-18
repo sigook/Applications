@@ -3,7 +3,7 @@
     <div class="detail-worker-profile">
       <span class="width-30">{{ "Email" }}</span>
       <span class="width-70">
-        <p class="fw-200 margin-0">{{ props.worker.email }}</p>
+        <p class="fw-light m-0">{{ props.worker.email }}</p>
       </span>
       <button class="actions btn-icon-sm btn-icon-edit button-top-m8" type="button"
         @click="modalEmail = true">Edit</button>

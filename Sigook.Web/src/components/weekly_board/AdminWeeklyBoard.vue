@@ -368,45 +368,11 @@ watch(range, loadBoard, { immediate: true });
 @import "../../assets/scss/variables";
 
 .weekly-board {
-  .stats-navbar {
-    border-radius: 10px;
-    min-height: 0;
-    padding: 0.25rem 0.75rem;
-    margin-bottom: 1.25rem;
-
-    .stats-name {
-      font-size: 1.15rem;
-      font-weight: 800;
-    }
-
-    .stat {
-      display: flex;
-      align-items: baseline;
-      gap: 0.4rem;
-
-      .stat-value {
-        font-size: 1.25rem;
-        font-weight: 800;
-      }
-
-      .stat-label {
-        font-size: 0.78rem;
-        opacity: 0.9;
-      }
-    }
-  }
-
   .board-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-
-    .range-nav {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
 
     .toolbar-right {
       display: flex;
@@ -543,29 +509,6 @@ watch(range, loadBoard, { immediate: true });
       border-left-color: $green;
     }
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .card-head-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      min-width: 0;
-    }
-
-    .card-num {
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: $primary;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-
     .card-company {
       font-size: 0.8rem;
       color: $grey-font;
@@ -575,50 +518,6 @@ watch(range, loadBoard, { immediate: true });
       font-size: 0.75rem;
       color: $grey-light;
       margin-top: 0.2rem;
-    }
-
-    .request-flags {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .request-flag {
-      display: inline-block;
-      padding: 1px 9px 1px 5px;
-      font-size: 8px;
-      font-weight: 700;
-      line-height: 1.4;
-      color: $white;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 0 100%);
-
-      &--asap {
-        background: #ff9932;
-        z-index: 2;
-      }
-
-      &--dh {
-        background: #1d4ed8;
-        z-index: 1;
-      }
-
-      & + & {
-        margin-left: -5px;
-      }
-    }
-
-
-    .card-remove.button {
-      height: auto;
-      padding: 0;
-      color: $grey-light;
-      text-decoration: none;
-
-      &:hover {
-        color: $red;
-        background: transparent;
-      }
     }
   }
 

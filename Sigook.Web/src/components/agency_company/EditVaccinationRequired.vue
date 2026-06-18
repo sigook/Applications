@@ -16,7 +16,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding text-right">
+      <div class="col-sm-12 col-md-12 col-lg-12 col-padding text-end">
         <b-button type="is-primary" @click="saveVaccinationRequired">
           {{ 'Save' }}
         </b-button>

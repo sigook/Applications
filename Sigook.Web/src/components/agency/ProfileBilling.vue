@@ -17,10 +17,10 @@
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
           <b-field>
-            <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="mr-2"
+            <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="me-2"
               icon-left="pencil" />
             <b-button outlined rounded type="is-danger" @click="deleteLocation(props.row, props.index)"
-              class="mr-2" icon-left="delete" />
+              class="me-2" icon-left="delete" />
           </b-field>
         </b-table-column>
       </template>

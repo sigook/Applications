@@ -46,8 +46,8 @@
           </b-table-column>
           <b-table-column field="startAt">
             <template v-slot:header>
-              <p class="fw-600">Duration</p>
-              <p class="fw-600">(Start - End)</p>
+              <p class="fw-semibold">Duration</p>
+              <p class="fw-semibold">(Start - End)</p>
             </template>
             <template v-slot="props">
               {{ dateMonth(props.row.startAt) }}
@@ -68,7 +68,7 @@
             {{ props.row.workersQuantity }}
           </b-table-column>
           <b-table-column field="status" v-slot="props">
-            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-700 text-center"
+            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-bold text-center"
               :class="props.row.status">
               {{ props.row.status }}
             </div>

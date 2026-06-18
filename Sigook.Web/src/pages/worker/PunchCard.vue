@@ -7,7 +7,7 @@
         <b-datepicker inline v-model="dateSelected" :events="highlights" indicators="dots"></b-datepicker>
       </div>
       <div class="right-40">
-        <h3 class="fz2 fw-400">{{ "Punch card" }}</h3>
+        <h3 class="fz2 fw-normal">{{ "Punch card" }}</h3>
         <table class="table-report-hours">
           <tr>
             <td>Day:</td>
@@ -199,21 +199,6 @@ watch(dateSelected, async (value) => {
     margin-bottom: 20px;
     letter-spacing: 4px;
     font-size: 2.35em;
-  }
-}
-
-#app .worked-day .vdp-datepicker__calendar .cell.highlighted {
-
-  &:after {
-    width: 12px;
-    height: 12px;
-    top: auto;
-    bottom: 3px;
-    left: auto;
-    right: 6px;
-    z-index: 1;
-    background: rgba(210, 210, 210, .5) url("../../assets/images/checked.png") no-repeat 50%;
-    background-size: calc(100% - 4px);
   }
 }
 

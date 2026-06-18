@@ -2,9 +2,9 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <h2 class="text-center main-title">Document</h2>
-    <div class="form">
-      <div class="form-100">
-        <div class="fz-1 fw-400">
+    <div class="form container-flex">
+      <div class="col-12 col-padding">
+        <div class="fz-1 fw-normal">
           Document
           <span class="sign-required"></span>
           <div class="input-file-edited input-block" v-if="fileName">
@@ -16,8 +16,8 @@
             @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
         </div>
       </div>
-      <div class="form-100">
-        <label class="fz-1 fw-400 sign-required">Description</label>
+      <div class="col-12 col-padding">
+        <label class="fz-1 fw-normal sign-required d-block">Description</label>
         <input type="text" v-model="description" class="input-border input-block" name="Description"
           :class="{ 'is-danger': formErrors.description }"
           autocomplete="nope" />
@@ -25,16 +25,16 @@
           {{ formErrors.description }}
         </span>
       </div>
-      <div class="form-100">
-        <label class="fz-1 fw-400">Document Type</label>
+      <div class="col-12 col-padding">
+        <label class="fz-1 fw-normal d-block">Document Type</label>
         <b-select v-model="documentType" placeholder="Select Document Type" expanded>
           <option value="1">Contract</option>
         </b-select>
       </div>
     </div>
 
-    <div class="text-right pr-3">
-      <button class="background-btn md-btn orange-button btn-radius margin-top-15 margin-bottom-10" type="button"
+    <div class="text-end pe-3">
+      <button class="background-btn md-btn orange-button btn-radius mt-3 mb-3" type="button"
         @click="validateForm" :disabled="disableButton">
         Save
       </button>

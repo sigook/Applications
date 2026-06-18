@@ -7,7 +7,7 @@
     <form class="form-md" @submit.prevent="validateForm">
       <div class="container-flex">
         <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-          <div class="container-image margin-10-auto">
+          <div class="container-image mx-auto my-2">
             <UploadImage @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
           </div>

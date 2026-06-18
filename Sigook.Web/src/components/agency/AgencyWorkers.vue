@@ -135,7 +135,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="uppercase fw-700 fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <span class="text-uppercase fw-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
               <i class="fz-1 block" v-html="props.row.rejectComments"></i>
             </template>
           </b-table-column>
