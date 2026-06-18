@@ -3,23 +3,13 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="partner-types__surface" aria-hidden="true"></div>
 
-    <header class="partner-types__header">
-      <EyebrowPill variant="white" class="partner-types__eyebrow">
-        Two Tracks
-      </EyebrowPill>
-
-      <h2 class="partner-types__heading">
-        Two partner tracks.
-        <span class="partner-types__heading-accent">
-          One platform behind you.
-        </span>
-      </h2>
-
-      <p class="partner-types__subtitle">
-        Pick the model that fits your strength — sourcing talent or
-        sourcing clients. We'll handle the rest, whichever side you bring.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Two Tracks"
+      heading="Two partner tracks."
+      heading-accent="One platform behind you."
+      subtitle="Pick the model that fits your strength — sourcing talent or sourcing clients. We'll handle the rest, whichever side you bring."
+      subtitle-max-width="580px"
+    />
 
     <div class="partner-types__cards">
       <PrimaryCard
@@ -62,7 +52,7 @@
  * Recruiter Partner = navy variant (the steady, structured track).
  * Business Partner  = red variant (the entrepreneurial, revenue-share track).
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/PrimaryCard.vue'
 
 interface PartnerTrack {
@@ -170,48 +160,6 @@ const TRACKS: readonly PartnerTrack[] = [
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.partner-types__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.partner-types__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.partner-types__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.partner-types__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.partner-types__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 2 cols desktop, stack mobile ──────────────────────────── */

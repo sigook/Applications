@@ -3,24 +3,14 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="partner-process__surface" aria-hidden="true"></div>
 
-    <header class="partner-process__header">
-      <EyebrowPill variant="white" class="partner-process__eyebrow">
-        How It Works
-      </EyebrowPill>
-
-      <h2 class="partner-process__heading">
-        From apply to first commission —
-        <span class="partner-process__heading-accent">
-          typically four weeks.
-        </span>
-      </h2>
-
-      <p class="partner-process__subtitle">
-        We've stripped the partner onboarding down to four steps. No
-        12-week certification tracks, no scattered orientation calls — a
-        clear path from application to your first paid placement.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="How It Works"
+      heading="From apply to first commission —"
+      heading-accent="typically four weeks."
+      subtitle="We've stripped the partner onboarding down to four steps. No 12-week certification tracks, no scattered orientation calls — a clear path from application to your first paid placement."
+      heading-max-width="880px"
+      subtitle-max-width="620px"
+    />
 
     <ol class="partner-process__steps" aria-label="Partner onboarding steps">
       <li
@@ -66,7 +56,7 @@
  * because the wrapper isn't a SecondaryCard.
  */
 import { ref, onMounted, onUnmounted } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 
 interface Step {
   readonly eyebrow: string
@@ -166,48 +156,6 @@ onUnmounted(() => observer?.disconnect())
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.partner-process__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.partner-process__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.partner-process__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 880px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.partner-process__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.partner-process__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 620px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Steps — 4 cols desktop, 2 tablet, 1 mobile ─────────────────────────── */

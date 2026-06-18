@@ -1,22 +1,12 @@
 <template>
   <section id="news-latest" class="news-latest">
-    <header class="news-latest__header">
-      <EyebrowPill variant="white" class="news-latest__eyebrow">
-        Latest
-      </EyebrowPill>
-
-      <h2 class="news-latest__heading">
-        Fresh off the press.
-        <span class="news-latest__heading-accent">
-          Updated weekly.
-        </span>
-      </h2>
-
-      <p class="news-latest__subtitle">
-        The most recent stories from the newsroom — sorted by date, freshest
-        first. Skim the cards, click into anything that catches your eye.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Latest"
+      heading="Fresh off the press."
+      heading-accent="Updated weekly."
+      subtitle="The most recent stories from the newsroom — sorted by date, freshest first. Skim the cards, click into anything that catches your eye."
+      subtitle-max-width="580px"
+    />
 
     <div class="news-latest__grid">
       <NewsCard
@@ -47,7 +37,7 @@
  * The footer link points to a future archive route — kept as `#` until
  * the article detail page lands.
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import NewsCard from '@/components/landing/shared/NewsCard.vue'
 import { getLatestArticles } from '@/data/news'
 
@@ -70,48 +60,6 @@ const ARTICLES = getLatestArticles(6)
   isolation: isolate;
   overflow: hidden;
   font-family: var(--font-family);
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.news-latest__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.news-latest__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.news-latest__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.news-latest__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.news-latest__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Grid — 3 cols desktop, 2 tablet, 1 mobile ──────────────────────────── */
