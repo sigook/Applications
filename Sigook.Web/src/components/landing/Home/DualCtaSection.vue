@@ -18,12 +18,10 @@
         eyebrow="For Talents"
         title="Find Work"
         :show-divider="true"
+        :list="talentBenefits"
         class="dual-cta__card dual-cta__card--work"
         tabindex="0"
       >
-        Where great talent meets great opportunities.<br />
-        Browse openings and grow your career.
-
         <template #button>
           <router-link to="/talents" class="dual-cta__cta dual-cta__cta--work">
             <span>Browse Jobs</span>
@@ -37,12 +35,10 @@
         eyebrow="For Employers"
         title="Find Talent"
         :show-divider="true"
+        :list="employerBenefits"
         class="dual-cta__card dual-cta__card--talent"
         tabindex="0"
       >
-        Find the right people for your business.<br />
-        We match qualified workers to your needs, fast.
-
         <template #button>
           <router-link to="/employers" class="dual-cta__cta dual-cta__cta--talent">
             <span>Contact Us</span>
@@ -60,6 +56,18 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
 import PrimaryCard from '@/components/landing/shared/PrimaryCard.vue'
 import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
 import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
+
+const talentBenefits: string[] = [
+  'Access hundreds of jobs in skilled trades, industrial & professional fields',
+  'Get matched with temporary, contract, or permanent roles that fit your skills',
+  'Work across Canada and the US with top employers',
+]
+
+const employerBenefits: string[] = [
+  'Hire pre-screened workers for temporary, contract, or permanent positions',
+  'Fill roles fast in skilled trades, industrial, and professional sectors',
+  'Trusted by leading employers across Canada and the US',
+]
 </script>
 
 <style scoped>
@@ -181,13 +189,17 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
 /* Find Work — navy, lower-left */
 .dual-cta__card--work {
   left: calc(50% - 500px);
-  top: 200px;
+  top: 180px;
 }
 
 /* Find Talent — red, upper-right, overlaps the work card horizontally */
 .dual-cta__card--talent {
   left: calc(50% - 60px);
   top: 80px;
+}
+
+.dual-cta__card--work.primary-card {
+  padding-right: 130px;
 }
 
 /* ── Custom CTA button — outline pill, hover invert ─────────────────────── */
@@ -264,6 +276,10 @@ import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.
     left: auto;
     right: auto;
     top: auto;
+  }
+
+  .dual-cta__card--work.primary-card {
+    padding-right: clamp(32px, 4vw, 56px);
   }
 }
 </style>
