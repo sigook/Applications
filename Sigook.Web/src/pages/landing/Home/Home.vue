@@ -8,7 +8,9 @@
     <AppDownloadSection />
 
     <TestimonialsSection />
-    <ContactSection />
+    <div id="home-contact">
+      <ContactSection />
+    </div>
   </main>
 </template>
 

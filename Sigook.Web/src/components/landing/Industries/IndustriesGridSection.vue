@@ -23,16 +23,15 @@
       <!-- "+" card — closes the grid (slot 12). Same red brand gradient
            as the other red-tone cards, with a single centered plus glyph.
            Acts as a soft CTA: "don't see your sector? talk to us". -->
-      <button
-        type="button"
+      <router-link
+        to="#industries-contact"
         class="industries-grid__plus"
         aria-label="Don't see your sector? Talk to us"
-        @click="registerModal.open()"
       >
         <span class="industries-grid__plus-symbol" aria-hidden="true">+</span>
         <span class="industries-grid__plus-label">Don't see your sector?</span>
         <span class="industries-grid__plus-cta">Talk to us →</span>
-      </button>
+      </router-link>
     </div>
   </section>
 </template>
@@ -53,9 +52,6 @@
 import { ref } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
-import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
-
-const registerModal = useCandidateApplyModal()
 
 // 11 sectors. Tones alternate navy / red for visual rhythm.
 // Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized
