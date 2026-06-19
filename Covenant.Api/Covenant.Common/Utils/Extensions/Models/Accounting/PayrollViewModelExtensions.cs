@@ -1,4 +1,5 @@
 using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Common.Utils.Extensions.Models.Accounting;
 
@@ -54,25 +55,25 @@ public static class PayrollViewModelExtensions
         return GetPlusValues().Concat(
         [
             PayrollTable2Item.EmptyRow,
-            new PayrollTable2Item("CPP (-)", model.DeductionCpp.ToString("C")),
-            new PayrollTable2Item("EI (-)", model.DeductionEi.ToString("C")),
-            new PayrollTable2Item($"Federal TAX {model.FederalCategory.ToString().ToUpper()} (-)", model.DeductionTax.ToString("C")),
-            new PayrollTable2Item($"Provincial TAX {model.ProvincialCategory.ToString().ToUpper()} (-)", model.DeductionProvincialTax.ToString("C"))
+            new PayrollTable2Item("CPP (-)", model.DeductionCpp.ToCaMoney()),
+            new PayrollTable2Item("EI (-)", model.DeductionEi.ToCaMoney()),
+            new PayrollTable2Item($"Federal TAX {model.FederalCategory.ToString().ToUpper()} (-)", model.DeductionTax.ToCaMoney()),
+            new PayrollTable2Item($"Provincial TAX {model.ProvincialCategory.ToString().ToUpper()} (-)", model.DeductionProvincialTax.ToCaMoney())
         ]).Concat(GetOtherDeductions()).Concat(
             [
-                new PayrollTable2Item("Current Deductions (-)", model.DeductionTotal.ToString("C")),
+                new PayrollTable2Item("Current Deductions (-)", model.DeductionTotal.ToCaMoney()),
                 PayrollTable2Item.EmptyRow,
-                new PayrollTable2Item("Total Net Paid", model.TotalNet.ToString("C"))
+                new PayrollTable2Item("Total Net Paid", model.TotalNet.ToCaMoney())
             ]);
 
         IEnumerable<PayrollTable2Item> GetPlusValues()
         {
             var result = new List<PayrollTable2Item>(4)
             {
-                new PayrollTable2Item("Gross Payment (+)", model.Gross.ToString("C")),
-                new PayrollTable2Item("Vacations (+)", model.Vacations.ToString("C"))
+                new PayrollTable2Item("Gross Payment (+)", model.Gross.ToCaMoney()),
+                new PayrollTable2Item("Vacations (+)", model.Vacations.ToCaMoney())
             };
-            result.Add(new PayrollTable2Item("Total Earnings (+)", model.Earnings.ToString("C")));
+            result.Add(new PayrollTable2Item("Total Earnings (+)", model.Earnings.ToCaMoney()));
             return result;
         }
 
@@ -81,7 +82,7 @@ public static class PayrollViewModelExtensions
             if (model.OtherDeductions.Count != 0)
             {
                 return model.OtherDeductions.Select(s =>
-                     new PayrollTable2Item(string.IsNullOrEmpty(s.Description) ? "Others Deductions (-)" : s.Description, s.Total.ToString("C")));
+                     new PayrollTable2Item(string.IsNullOrEmpty(s.Description) ? "Others Deductions (-)" : s.Description, s.Total.ToCaMoney()));
             }
             return [];
         }
@@ -91,17 +92,17 @@ public static class PayrollViewModelExtensions
     {
         return
         [
-            new PayrollTable2Item("Gross Payment", ytd.Gross.ToString("C")),
-            new PayrollTable2Item("Vacations", ytd.Vacations.ToString("C")),
-            new PayrollTable2Item("Total Earnings", ytd.Earnings.ToString("C")),
+            new PayrollTable2Item("Gross Payment", ytd.Gross.ToCaMoney()),
+            new PayrollTable2Item("Vacations", ytd.Vacations.ToCaMoney()),
+            new PayrollTable2Item("Total Earnings", ytd.Earnings.ToCaMoney()),
             PayrollTable2Item.EmptyRow,
-            new PayrollTable2Item("CPP", ytd.Cpp.ToString("C")),
-            new PayrollTable2Item("EI", ytd.Ei.ToString("C")),
-            new PayrollTable2Item("Federal Tax", ytd.FederalTax.ToString("C")),
-            new PayrollTable2Item("Provincial Tax", ytd.ProvincialTax.ToString("C")),
-            new PayrollTable2Item("Total Deductions", ytd.TotalDeductions.ToString("C")),
+            new PayrollTable2Item("CPP", ytd.Cpp.ToCaMoney()),
+            new PayrollTable2Item("EI", ytd.Ei.ToCaMoney()),
+            new PayrollTable2Item("Federal Tax", ytd.FederalTax.ToCaMoney()),
+            new PayrollTable2Item("Provincial Tax", ytd.ProvincialTax.ToCaMoney()),
+            new PayrollTable2Item("Total Deductions", ytd.TotalDeductions.ToCaMoney()),
             PayrollTable2Item.EmptyRow,
-            new PayrollTable2Item("Total Net Paid", ytd.TotalPaid.ToString("C"))
+            new PayrollTable2Item("Total Net Paid", ytd.TotalPaid.ToCaMoney())
         ];
     }
 }

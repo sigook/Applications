@@ -31,23 +31,9 @@
         </div>
       </div>
     </div>
-    <!-- custom CREATE modal -->
-    <transition name="modal">
-      <div v-if="modalCertificate" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-bold">{{ "Certificates" }}</span>
-              <button @click="modalCertificate = false" type="button" class="cross-icon">
-                {{ 'Close' }}
-              </button>
-              <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
+    <b-modal v-model="modalCertificate" width="500px">
+      <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
+    </b-modal>
   </section>
 </template>
 

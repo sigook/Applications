@@ -882,68 +882,6 @@ input[type="file"] {
   }
 }
 
-/*
-switch
-*/
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-}
-
-.switch input {
-  display: none;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-input:checked+.slider {
-  background-color: $accent;
-}
-
-input:focus+.slider {
-  box-shadow: 0 0 1px $accent;
-}
-
-input:checked+.slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px white inset;
 }
@@ -1547,6 +1485,24 @@ label.superscript {
 
 .expandable-section-list .container-flex:last-child {
   border-bottom: none;
+}
+
+/* Two-column detail layout: main content + right sidebar separated by a
+   vertical divider. The border/padding only apply from md up, where the
+   columns sit side by side; on mobile they stack with no lateral border. */
+.detail-split {
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .detail-split-main {
+    padding-right: 1.5rem;
+  }
+
+  .detail-split-aside {
+    padding-left: 1.5rem;
+    border-left: 1px solid #e6e6e6;
+  }
 }
 
 html,

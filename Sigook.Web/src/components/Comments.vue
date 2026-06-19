@@ -3,9 +3,8 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="d-flex align-items-center justify-content-between" v-if="!onlyView">
-      <h3>{{ 'Comments & Qualification' }}</h3>
-      <button class="outline-btn md-btn orange-button btn-radius" @click="alertComment">{{ 'Add Comment' }}
-        +</button>
+      <h3 class="fw-bold fz-0">{{ 'Comments & Qualification' }}</h3>
+      <b-button type="is-primary" icon-right="plus" @click="alertComment">{{ 'Add Comment' }}</b-button>
     </div>
     <div>
       <div class="comment" v-for="comment in data.items" v-bind:key="comment.id">
@@ -29,21 +28,9 @@
 
 
 
-    <!-- custom modal -->
-    <transition name="modal">
-      <div v-if="modalValidation" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light">
-              <button @click="modalValidation = false" class="cross-icon">{{ 'Close' }}</button>
-              <!-- <cancel-list @sendReason="(reason) => cancelRequest(reason)"></cancel-list>-->
-              <dialog-comment @createComment="(data) => getComment(data)"></dialog-comment>
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
+    <b-modal v-model="modalValidation" width="500px">
+      <dialog-comment @createComment="(data) => getComment(data)"></dialog-comment>
+    </b-modal>
 
 
 

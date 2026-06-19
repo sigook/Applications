@@ -48,23 +48,9 @@
       </div>
     </div>
 
-    <!-- custom CREATE modal -->
-    <transition name="modal">
-      <div v-if="modalDocuments" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-bold">New Document</span>
-              <button @click="modalDocuments = false" type="button" class="cross-icon">
-                {{ "Close" }}
-              </button>
-              <documents-form :data="props.worker" @closeAndUpdate="() => closeAndUpdate()" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
+    <b-modal v-model="modalDocuments" width="500px">
+      <documents-form :data="props.worker" @closeAndUpdate="() => closeAndUpdate()" />
+    </b-modal>
   </section>
 </template>
 <script setup lang="ts">

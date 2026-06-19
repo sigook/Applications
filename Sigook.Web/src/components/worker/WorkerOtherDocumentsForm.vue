@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">

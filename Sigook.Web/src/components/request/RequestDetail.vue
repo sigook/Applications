@@ -36,15 +36,11 @@
         <p class="hover-actions">
           <span class="me-1 fz-0">{{ request.workersQuantityWorking }} /
             {{ request.workersQuantity }}</span>
-          <button v-if="request.canEdit" @click="onIncreaseWorkersQuantity()"
-            class="btn-icon-sm btn-icon-circle-plus bg-transparent relative actions">
-            add
-          </button>
-          <button @click="onReduceWorkersQuantity"
-            class="btn-icon-sm btn-icon-circle-minus bg-transparent relative actions"
-            v-if="request.canEdit && request.workersQuantityWorking < request.workersQuantity && request.workersQuantity !== 1">
-            reduce
-          </button>
+          <b-button v-if="request.canEdit" type="is-ghost" icon-left="plus-circle"
+            class="worker-qty-btn worker-qty-plus" @click="onIncreaseWorkersQuantity()" />
+          <b-button type="is-ghost" icon-left="minus-circle" class="worker-qty-btn worker-qty-minus"
+            v-if="request.canEdit && request.workersQuantityWorking < request.workersQuantity && request.workersQuantity !== 1"
+            @click="onReduceWorkersQuantity" />
         </p>
       </div>
       <div class="item">
@@ -56,7 +52,8 @@
       <div class="item">
         <span class="fw-bold">Visible Punch Card</span>
         <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled" @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
+          <b-checkbox v-model="localRequest.punchCardOptionEnabled"
+            @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
         </p>
       </div>
       <div class="item">
@@ -203,6 +200,36 @@ function onTogglePunchCardVisibility() {
 .bullet-list {
   &>ul {
     list-style: inside;
+  }
+}
+
+.worker-options {
+  .hover-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .worker-qty-btn {
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    margin-left: 4px;
+    line-height: 1;
+    background: transparent;
+
+    &:hover,
+    &:focus {
+      background: transparent;
+      text-decoration: none;
+    }
+
+    .icon {
+      width: auto;
+      height: auto;
+      margin: 0 !important;
+      font-size: 18px;
+    }
   }
 }
 </style>

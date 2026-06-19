@@ -135,17 +135,10 @@
             </template>
           </b-table-column>
           <b-table-column field="notesCount" label="Notes" :visible="!isMobile" v-slot="props">
-            <div @click="onNote(props.row, true)">
-              <b-tag icon="note-text" rounded>
-                <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
-              </b-tag>
-            </div>
-            <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCompanyNotes"
-                :on-create="createCompanyNote" :on-delete="deleteCompanyNote"
-                @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
-              </modal-notes>
-            </div>
+            <NotesPopover :can-create="false" :user-id="props.row.id" :notes-count="props.row.notesCount"
+              :on-get="getCompanyNotes" :on-create="createCompanyNote" :on-delete="deleteCompanyNote"
+              @update:count="(size) => props.row.notesCount = size">
+            </NotesPopover>
           </b-table-column>
           <b-table-column field="companyStatus" label="Status" :searchable="!isMobile">
             <template v-slot:searchable>
@@ -182,7 +175,7 @@ import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 import { dateMonth } from '@/utils/filters';
 import Export from '@/components/Export.vue';
-import ModalNotes from '@/components/notes/ModalNotes.vue';
+import NotesPopover from '@/components/notes/NotesPopover.vue';
 import BulkData from '@/components/agency/BulkData.vue';
 
 const route = useRoute();
@@ -295,15 +288,6 @@ function onCellClick(row: any, column: any) {
   }
 }
 
-function onNote(row: any, status: boolean) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].showNotes = status;
-}
-
-function onUpdateNote(row: any, size: number) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].notesCount = size;
-}
 
 function exportWithDetails() {
   isLoading.value = true;
@@ -320,7 +304,7 @@ function loadCompanies() {
   agencyStore.updateAgencyCompanyProfileFilter(serverParams.value);
   getAgencyCompanies(serverParams.value)
     .then((companies: any) => {
-      rows.value = companies.items.map((c: any) => ({ ...c, showNotes: false }));
+      rows.value = companies.items.map((c: any) => ({ ...c }));
       totalItems.value = companies.totalItems;
       isLoading.value = false;
     })
