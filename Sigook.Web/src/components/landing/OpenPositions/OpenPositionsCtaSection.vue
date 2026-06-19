@@ -22,14 +22,12 @@
             </p>
 
             <div class="op-cta__actions">
-              <button type="button" class="op-cta__primary" @click="onSendResume">
-                <span>Send your resume</span>
-                <span class="op-cta__arrow" aria-hidden="true">→</span>
-              </button>
-              <router-link to="/industries" class="op-cta__secondary">
-                <span>Browse industries</span>
-                <span class="op-cta__arrow" aria-hidden="true">→</span>
-              </router-link>
+              <ArrowPillCta variant="solid" size="lg" @click="onSendResume">
+                Send your resume
+              </ArrowPillCta>
+              <ArrowPillCta to="/industries" hover-variant="navy" size="lg">
+                Browse industries
+              </ArrowPillCta>
             </div>
           </div>
 
@@ -52,6 +50,7 @@
 <script setup lang="ts">
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 
 const registerModal = useCandidateApplyModal()
 
@@ -197,65 +196,6 @@ function onSendResume(): void {
   display: flex;
   flex-wrap: wrap;
   gap: clamp(12px, 1.6vw, 16px);
-}
-
-.op-cta__primary,
-.op-cta__secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(13px, 1.4vw, 16px) clamp(24px, 2.6vw, 32px);
-  border-radius: 999px;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.1vw, 14px);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.op-cta__primary {
-  background: var(--c-brand-red);
-  border: 1px solid var(--c-brand-red);
-  color: #fff;
-  box-shadow: 0 10px 24px -6px rgba(229, 45, 39, 0.6);
-}
-
-.op-cta__primary:hover {
-  background: var(--c-brand-crimson);
-  border-color: var(--c-brand-crimson);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px -6px rgba(229, 45, 39, 0.7);
-}
-
-.op-cta__secondary {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  color: #fff;
-}
-
-.op-cta__secondary:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-navy);
-  transform: translateY(-1px);
-}
-
-.op-cta__arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.op-cta__primary:hover .op-cta__arrow,
-.op-cta__secondary:hover .op-cta__arrow {
-  transform: translateX(3px);
 }
 
 .op-cta__features {

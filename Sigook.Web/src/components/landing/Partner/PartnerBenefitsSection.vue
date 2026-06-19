@@ -1,23 +1,12 @@
 <template>
   <section class="partner-benefits">
-    <header class="partner-benefits__header">
-      <EyebrowPill variant="white" class="partner-benefits__eyebrow">
-        Why Partner With Us
-      </EyebrowPill>
-
-      <h2 class="partner-benefits__heading">
-        Built for builders.
-        <span class="partner-benefits__heading-accent">
-          Four reasons partners stay.
-        </span>
-      </h2>
-
-      <p class="partner-benefits__subtitle">
-        The trade-offs other staffing networks ask you to accept — control,
-        reach, compliance, upside — are the four things our program is built
-        to give you instead.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Why Partner With Us"
+      heading="Built for builders."
+      heading-accent="Four reasons partners stay."
+      subtitle="The trade-offs other staffing networks ask you to accept — control, reach, compliance, upside — are the four things our program is built to give you instead."
+      subtitle-max-width="620px"
+    />
 
     <div class="partner-benefits__grid">
       <SecondaryCard
@@ -51,7 +40,7 @@
  * has visual variety without losing the system.
  */
 import { h, type FunctionalComponent } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 
 /**
@@ -154,48 +143,6 @@ const BENEFITS: readonly Benefit[] = [
   isolation: isolate;
   overflow: hidden;
   font-family: var(--font-family);
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.partner-benefits__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.partner-benefits__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.partner-benefits__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.partner-benefits__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.partner-benefits__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 620px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Grid — 4 cols desktop, 2 tablet, 1 mobile ──────────────────────────── */

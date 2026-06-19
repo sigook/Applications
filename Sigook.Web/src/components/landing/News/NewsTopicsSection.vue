@@ -3,21 +3,13 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="news-topics__surface" aria-hidden="true"></div>
 
-    <header class="news-topics__header">
-      <EyebrowPill variant="white" class="news-topics__eyebrow">
-        Topics
-      </EyebrowPill>
-
-      <h2 class="news-topics__heading">
-        Browse by topic.
-        <span class="news-topics__heading-accent">Pick your beat.</span>
-      </h2>
-
-      <p class="news-topics__subtitle">
-        Cut through the feed — every story is filed under one of five beats.
-        Follow the one that matters most for your role.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Topics"
+      heading="Browse by topic."
+      heading-accent="Pick your beat."
+      subtitle="Cut through the feed — every story is filed under one of five beats. Follow the one that matters most for your role."
+      subtitle-max-width="580px"
+    />
 
     <div class="news-topics__grid">
       <SecondaryCard
@@ -36,14 +28,13 @@
         {{ topic.body }}
 
         <template #button>
-          <a
+          <ArrowPillCta
             :href="topic.href"
-            class="news-topics__cta"
-            :class="`news-topics__cta--${topic.variant}`"
+            size="sm"
+            :hover-variant="topic.variant === 'red' ? 'red' : 'cyan'"
           >
-            <span>{{ topic.ctaLabel }}</span>
-            <span class="news-topics__cta-arrow" aria-hidden="true">→</span>
-          </a>
+            {{ topic.ctaLabel }}
+          </ArrowPillCta>
         </template>
       </SecondaryCard>
     </div>
@@ -60,7 +51,8 @@
  * will replace this).
  */
 import { h, type FunctionalComponent } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 import { getCategoryCounts } from '@/data/news'
 
@@ -244,48 +236,6 @@ const TOPICS: readonly Topic[] = [
   pointer-events: none;
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.news-topics__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.news-topics__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.news-topics__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.news-topics__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.news-topics__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
-}
-
 /* ── Grid — 3 cols desktop, 2 tablet, 1 mobile ──────────────────────────── */
 .news-topics__grid {
   position: relative;
@@ -302,54 +252,6 @@ const TOPICS: readonly Topic[] = [
 .news-topics__card {
   display: flex;
   flex-direction: column;
-}
-
-/* ── CTA pill in the #button slot ───────────────────────────────────────── */
-.news-topics__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(10px, 1.1vw, 12px) clamp(18px, 2vw, 24px);
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.40);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(12px, 1vw, 13px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.news-topics__cta--blue:hover,
-.news-topics__cta--cyan:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.news-topics__cta--red:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
-}
-
-.news-topics__cta-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.news-topics__cta:hover .news-topics__cta-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */

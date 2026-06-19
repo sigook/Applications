@@ -23,10 +23,7 @@
         tabindex="0"
       >
         <template #button>
-          <router-link to="/talents" class="dual-cta__cta dual-cta__cta--work">
-            <span>Browse Jobs</span>
-            <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
-          </router-link>
+          <ArrowPillCta to="/talents" hover-variant="navy">Browse Jobs</ArrowPillCta>
         </template>
       </PrimaryCard>
 
@@ -40,10 +37,7 @@
         tabindex="0"
       >
         <template #button>
-          <router-link to="/employers" class="dual-cta__cta dual-cta__cta--talent">
-            <span>Contact Us</span>
-            <ArrowIcon :width="36" :height="14" :stroke-width="2" color="currentColor" />
-          </router-link>
+          <ArrowPillCta to="/employers" hover-variant="red">Contact Us</ArrowPillCta>
         </template>
       </PrimaryCard>
     </div>
@@ -52,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import PrimaryCard from '@/components/landing/shared/PrimaryCard.vue'
 import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
 import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
@@ -200,37 +194,6 @@ const employerBenefits: string[] = [
 
 .dual-cta__card--work.primary-card {
   padding-right: 130px;
-}
-
-/* ── Custom CTA button — outline pill, hover invert ─────────────────────── */
-.dual-cta__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 28px;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  background: transparent;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-
-.dual-cta__cta--work:hover {
-  background: #fff;
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.dual-cta__cta--talent:hover {
-  background: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
 }
 
 /* ── Mobile (≤ 1023px) ───────────────────────────────────── */

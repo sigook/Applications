@@ -3,21 +3,12 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="news-featured__surface" aria-hidden="true"></div>
 
-    <header class="news-featured__header">
-      <EyebrowPill variant="white" class="news-featured__eyebrow">
-        Editor's Picks
-      </EyebrowPill>
-
-      <h2 class="news-featured__heading">
-        Three reads
-        <span class="news-featured__heading-accent">worth your minute.</span>
-      </h2>
-
-      <p class="news-featured__subtitle">
-        The stories the Sigook® team is following this week — handpicked from
-        the newsroom.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Editor's Picks"
+      heading="Three reads"
+      heading-accent="worth your minute."
+      subtitle="The stories the Sigook® team is following this week — handpicked from the newsroom."
+    />
 
     <!-- Carousel -->
     <div class="news-featured__carousel">
@@ -75,14 +66,14 @@
 
               <p class="news-featured__excerpt">{{ article.excerpt }}</p>
 
-              <a
+              <ArrowPillCta
                 :href="`#${article.slug}`"
                 class="news-featured__link"
+                hover-variant="cyan"
                 :aria-label="`Read full article: ${article.title}`"
               >
-                <span>Read full article</span>
-                <span class="news-featured__link-arrow" aria-hidden="true">→</span>
-              </a>
+                Read full article
+              </ArrowPillCta>
             </div>
           </article>
         </div>
@@ -122,7 +113,8 @@
  * The slide transition is a translateX on the track (matches IndustriesCarousel).
  */
 import { computed } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SliderDots from '@/components/landing/shared/SliderDots.vue'
 import {
   CATEGORY_LABEL,
@@ -215,48 +207,6 @@ const trackStyle = computed(() => ({
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.news-featured__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.news-featured__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.news-featured__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.news-featured__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.news-featured__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Carousel row — viewport + prev/next nav ────────────────────────────── */
@@ -433,42 +383,6 @@ const trackStyle = computed(() => ({
 .news-featured__link {
   margin-top: clamp(8px, 1vw, 12px);
   align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(11px, 1.2vw, 14px) clamp(22px, 2.4vw, 30px);
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.05vw, 14px);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.news-featured__link:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.news-featured__link-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.news-featured__link:hover .news-featured__link-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Dots ───────────────────────────────────────────────────────────────── */
