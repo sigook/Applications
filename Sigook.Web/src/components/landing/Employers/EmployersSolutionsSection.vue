@@ -14,21 +14,35 @@
       <SecondaryCard
         v-for="(option, idx) in OPTIONS"
         :key="option.key"
-        :variant="option.variant"
+        :variant="option.key === 'temp-to-perm' && tempExpanded ? 'red' : option.variant"
         :eyebrow="option.eyebrow"
         :title="option.title"
         :list="option.benefits"
         :delay="idx * 160"
+        :expanded="option.key === 'temp-to-perm' && tempExpanded"
         class="employers-solutions__card"
       >
         {{ option.body }}
 
+        <template v-if="option.key === 'temp-to-perm'" #expanded>
+          <TempToPermDetail />
+        </template>
+
         <template #button>
           <ArrowPillCta
+            v-if="option.key !== 'temp-to-perm'"
             :to="option.ctaTo"
             :hover-variant="option.variant === 'red' ? 'red' : 'cyan'"
           >
             {{ option.ctaLabel }}
+          </ArrowPillCta>
+          <ArrowPillCta
+            v-else
+            :hover-variant="tempExpanded ? 'red' : 'cyan'"
+            :show-arrow="false"
+            @click="tempExpanded = !tempExpanded"
+          >
+            {{ tempExpanded ? 'Show less' : 'View details' }}
           </ArrowPillCta>
         </template>
       </SecondaryCard>
@@ -47,9 +61,11 @@
  * Temp to Perm = cyan, Contract = red. Each card carries supporting copy,
  * a benefits list, and a CTA pill.
  */
+import { ref } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import TempToPermDetail from '@/components/landing/shared/TempToPermDetail.vue'
 
 interface HiringOption {
   readonly key: string
@@ -109,6 +125,8 @@ const OPTIONS: readonly HiringOption[] = [
     variant: 'red',
   },
 ] as const
+
+const tempExpanded = ref(false)
 </script>
 
 <style scoped>
