@@ -97,8 +97,8 @@
                     <td style="padding: 8px; text-align: right;">@(i + 1)</td>
                     <td style="padding: 8px">@Model.Table1Items.ElementAt(i).Description</td>
                     <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).Quantity.ToString("F2")</td>
-                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).UnitPrice.ToString("C")</td>
-                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).Total.ToString("C")</td>
+                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).UnitPrice.ToCaMoney()</td>
+                    <td style="padding: 8px; text-align: right;">@Model.Table1Items.ElementAt(i).Total.ToCaMoney()</td>
                 </tr>
             }
             <tr>

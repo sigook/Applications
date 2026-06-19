@@ -1,6 +1,6 @@
 <template>
-  <div class="container-flex" v-if="request">
-    <section class="col-md-9 col-sm-12 section-left mt-2">
+  <div class="container-flex detail-split" v-if="request">
+    <section class="col-md-9 col-sm-12 section-left detail-split-main mt-2">
       <!-- Highlight -->
       <div class="highlight-content justify-content-between">
         <div class="item">
@@ -66,7 +66,7 @@
           | {{ "Break paid" }}</span>
       </section>
     </section>
-    <aside class="col-md-3 col-sm-12 section-right">
+    <aside class="col-md-3 col-sm-12 section-right detail-split-aside">
       <location :jobLocation="request.jobLocation" />
     </aside>
   </div>

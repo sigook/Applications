@@ -37,23 +37,9 @@
         </div>
       </div>
     </div>
-    <!-- custom CREATE modal -->
-    <transition name="modal">
-      <div v-if="modalLicense" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light overflow-initial">
-              <span class="fz1 fw-bold">{{ "Licenses" }}</span>
-              <button @click="modalLicense = false" type="button" class="cross-icon">
-                {{ "Close" }}
-              </button>
-              <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
+    <b-modal v-model="modalLicense" width="500px">
+      <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
+    </b-modal>
   </section>
 </template>
 
