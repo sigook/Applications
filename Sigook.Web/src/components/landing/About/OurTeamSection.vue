@@ -58,14 +58,14 @@ const MEMBERS: readonly Member[] = [
     name: 'Andrea',
     role: 'Co-Founder & CEO',
     bio: 'Majority owner of the Covenant Group family, Andrea guides the company\'s direction and long-term vision.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/andreagonzalesgm/',
     photo: null,
   },
   {
     name: 'David',
     role: 'Co-Founder & President',
     bio: 'Drives growth initiatives, strategic partnerships, and new ventures across staffing, technology, and workforce services.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/saulo-david-ballesteros-8391513/',
     photo: null,
   },
 ]
