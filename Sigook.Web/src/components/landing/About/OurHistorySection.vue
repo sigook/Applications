@@ -4,21 +4,19 @@
     <div class="our-history__glow" aria-hidden="true"></div>
 
     <div class="our-history__inner">
-      <header class="our-history__header">
-        <EyebrowPill variant="white" class="our-history__eyebrow">
-          Our History
-        </EyebrowPill>
-
-        <h2 class="our-history__heading">
-          Connecting people, companies, and opportunities.
-          <span class="our-history__heading-accent">Since 2008.</span>
-        </h2>
-
-        <p class="our-history__lead">
-          From a Toronto consulting startup to a multi-state workforce partner —
-          here's how the journey unfolded.
-        </p>
-      </header>
+      <LandingSectionHeader
+        eyebrow="Our History"
+        heading="Connecting people, companies, and opportunities."
+        heading-accent="Since 2008."
+        subtitle="From a Toronto consulting startup to a multi-state workforce partner — here's how the journey unfolded."
+        margin-bottom="clamp(40px, 5.5vw, 64px)"
+        eyebrow-margin-bottom="clamp(18px, 2.4vw, 26px)"
+        heading-size="clamp(26px, 4vw, 44px)"
+        heading-margin-bottom="0"
+        heading-max-width="700px"
+        subtitle-text-shadow="none"
+        subtitle-margin-top="clamp(14px, 1.8vw, 20px)"
+      />
 
       <ol ref="timeline" class="our-history__timeline">
         <li
@@ -85,8 +83,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 
 interface Milestone {
   readonly year: string
@@ -122,25 +120,11 @@ const MILESTONES: readonly Milestone[] = [
   },
 ] as const
 
-const timeline = ref<HTMLElement | null>(null)
-const revealed = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!timeline.value) return
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting) {
-        revealed.value = true
-        observer?.disconnect()
-      }
-    },
-    { threshold: 0.12 },
-  )
-  observer.observe(timeline.value)
+const { el: timeline, visible: revealed } = useRevealOnScroll({
+  threshold: 0.12,
+  rootMargin: '0px',
+  once: true,
 })
-
-onUnmounted(() => observer?.disconnect())
 </script>
 
 <style scoped>
@@ -222,43 +206,6 @@ onUnmounted(() => observer?.disconnect())
   width: 100%;
   max-width: 820px;
   margin: 0 auto;
-}
-
-.our-history__header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: clamp(40px, 5.5vw, 64px);
-}
-
-.our-history__eyebrow {
-  margin-bottom: clamp(18px, 2.4vw, 26px);
-}
-
-.our-history__heading {
-  font-size: clamp(26px, 4vw, 44px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0;
-  max-width: 700px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-.our-history__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.our-history__lead {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: clamp(14px, 1.8vw, 20px) 0 0;
-  max-width: 560px;
 }
 
 /* ── Timeline ───────────────────────────────────────────────────────────── */

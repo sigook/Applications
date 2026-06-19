@@ -3,23 +3,13 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="partner-types__surface" aria-hidden="true"></div>
 
-    <header class="partner-types__header">
-      <EyebrowPill variant="white" class="partner-types__eyebrow">
-        Two Tracks
-      </EyebrowPill>
-
-      <h2 class="partner-types__heading">
-        Two partner tracks.
-        <span class="partner-types__heading-accent">
-          One platform behind you.
-        </span>
-      </h2>
-
-      <p class="partner-types__subtitle">
-        Pick the model that fits your strength — sourcing talent or
-        sourcing clients. We'll handle the rest, whichever side you bring.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Two Tracks"
+      heading="Two partner tracks."
+      heading-accent="One platform behind you."
+      subtitle="Pick the model that fits your strength — sourcing talent or sourcing clients. We'll handle the rest, whichever side you bring."
+      subtitle-max-width="580px"
+    />
 
     <div class="partner-types__cards">
       <PrimaryCard
@@ -36,14 +26,13 @@
         {{ track.body }}
 
         <template #button>
-          <a
+          <ArrowPillCta
             :href="track.ctaHref"
-            class="partner-types__cta"
-            :class="`partner-types__cta--${track.variant}`"
+            :hover-variant="track.variant"
+            size="lg"
           >
-            <span>{{ track.ctaLabel }}</span>
-            <span class="partner-types__cta-arrow" aria-hidden="true">→</span>
-          </a>
+            {{ track.ctaLabel }}
+          </ArrowPillCta>
         </template>
       </PrimaryCard>
     </div>
@@ -62,7 +51,8 @@
  * Recruiter Partner = navy variant (the steady, structured track).
  * Business Partner  = red variant (the entrepreneurial, revenue-share track).
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/PrimaryCard.vue'
 
 interface PartnerTrack {
@@ -172,48 +162,6 @@ const TRACKS: readonly PartnerTrack[] = [
   pointer-events: none;
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.partner-types__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.partner-types__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.partner-types__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.partner-types__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.partner-types__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
-}
-
 /* ── Cards grid — 2 cols desktop, stack mobile ──────────────────────────── */
 .partner-types__cards {
   position: relative;
@@ -230,53 +178,6 @@ const TRACKS: readonly PartnerTrack[] = [
 .partner-types__card {
   display: flex;
   flex-direction: column;
-}
-
-/* ── CTA pill in #button slot ───────────────────────────────────────────── */
-.partner-types__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(13px, 1.4vw, 16px) clamp(26px, 2.8vw, 36px);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(14px, 1.15vw, 15px);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.partner-types__cta--navy:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-navy);
-  transform: translateX(4px);
-}
-
-.partner-types__cta--red:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-red);
-  transform: translateX(4px);
-}
-
-.partner-types__cta-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.partner-types__cta:hover .partner-types__cta-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Mobile-only behaviors ──────────────────────────────────────────────── */

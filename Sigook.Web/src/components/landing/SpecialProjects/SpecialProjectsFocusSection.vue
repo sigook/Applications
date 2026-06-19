@@ -3,21 +3,12 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="sp-focus__surface" aria-hidden="true"></div>
 
-    <header class="sp-focus__header">
-      <EyebrowPill variant="white" class="sp-focus__eyebrow">
-        Our Focus Areas
-      </EyebrowPill>
-
-      <h2 class="sp-focus__heading">
-        Four ways our work
-        <span class="sp-focus__heading-accent">moves communities forward.</span>
-      </h2>
-
-      <p class="sp-focus__subtitle">
-        Each initiative weaves workforce, technology, and community engagement
-        into outcomes that outlast a single placement.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Our Focus Areas"
+      heading="Four ways our work"
+      heading-accent="moves communities forward."
+      subtitle="Each initiative weaves workforce, technology, and community engagement into outcomes that outlast a single placement."
+    />
 
     <div class="sp-focus__grid">
       <SecondaryCard
@@ -42,7 +33,7 @@
  * cycle blue → cyan → red → cyan so the brand palette stays balanced across
  * the panel.
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 
 interface FocusArea {
@@ -142,48 +133,6 @@ const AREAS: readonly FocusArea[] = [
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.sp-focus__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.sp-focus__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.sp-focus__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.sp-focus__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.sp-focus__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 2x2 desktop, 1 col mobile ─────────────────────────────── */

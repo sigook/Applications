@@ -1,20 +1,17 @@
 <template>
   <section class="team">
-    <header class="team__header">
-      <EyebrowPill variant="red" class="team__eyebrow">
-        Our Team
-      </EyebrowPill>
-
-      <h2 class="team__heading">
-        Meet the people
-        <span class="team__heading-accent">behind Sigook.</span>
-      </h2>
-
-      <p class="team__subtitle">
-        Founder-led and people-driven — the team turning trust and integrity
-        into lasting partnerships for employers and workers alike.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Our Team"
+      eyebrow-variant="red"
+      heading="Meet the people"
+      heading-accent="behind Sigook."
+      subtitle="Founder-led and people-driven — the team turning trust and integrity into lasting partnerships for employers and workers alike."
+      heading-max-width="720px"
+      heading-margin-bottom="0"
+      margin-bottom="clamp(44px, 6vw, 72px)"
+      subtitle-max-width="580px"
+      subtitle-margin-top="clamp(14px, 1.8vw, 20px)"
+    />
 
     <div class="team__grid">
       <article v-for="member in MEMBERS" :key="member.name" class="team__card">
@@ -46,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 
 interface Member {
   readonly name: string
@@ -61,14 +58,14 @@ const MEMBERS: readonly Member[] = [
     name: 'Andrea',
     role: 'Co-Founder & CEO',
     bio: 'Majority owner of the Covenant Group family, Andrea guides the company\'s direction and long-term vision.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/andreagonzalesgm/',
     photo: null,
   },
   {
     name: 'David',
     role: 'Co-Founder & President',
     bio: 'Drives growth initiatives, strategic partnerships, and new ventures across staffing, technology, and workforce services.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/saulo-david-ballesteros-8391513/',
     photo: null,
   },
 ]
@@ -95,47 +92,6 @@ function initials(name: string): string {
   isolation: isolate;
   overflow: hidden;
   font-family: var(--font-family);
-}
-
-.team__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto clamp(44px, 6vw, 72px);
-}
-
-.team__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.team__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0;
-  max-width: 720px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-.team__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.team__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: clamp(14px, 1.8vw, 20px) 0 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .team__grid {

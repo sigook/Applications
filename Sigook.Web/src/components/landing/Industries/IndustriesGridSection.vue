@@ -3,23 +3,12 @@
     <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="industries-grid__surface" aria-hidden="true"></div>
 
-    <header class="industries-grid__header">
-      <EyebrowPill variant="white" class="industries-grid__eyebrow">
-        Sectors We Serve
-      </EyebrowPill>
-
-      <h2 class="industries-grid__heading">
-        Multiple industries.
-        <span class="industries-grid__heading-accent">
-          One commitment to specialized talent.
-        </span>
-      </h2>
-
-      <p class="industries-grid__subtitle">
-        Explore the sectors where Sigook has the deepest expertise — tap any
-        card to see the roles we place and how we partner.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Sectors We Serve"
+      heading="Multiple industries."
+      heading-accent="One commitment to specialized talent."
+      subtitle="Explore the sectors where Sigook has the deepest expertise — tap any card to see the roles we place and how we partner."
+    />
 
     <div class="industries-grid__grid">
       <IndustryCard
@@ -62,7 +51,7 @@
  * scannable and avoids layout churn from multiple simultaneous expansions.
  */
 import { ref } from 'vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 
@@ -307,48 +296,6 @@ function toggle(key: Industry['key']): void {
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   pointer-events: none;
-}
-
-/* ── Header block ───────────────────────────────────────────────────────── */
-.industries-grid__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.industries-grid__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.industries-grid__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.industries-grid__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.industries-grid__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 3 cols desktop / 2 cols tablet / 1 col mobile ─────────── */
