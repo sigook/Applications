@@ -63,7 +63,7 @@ const MEMBERS: readonly Member[] = [
   },
   {
     name: 'David Ballesteros',
-    role: 'Co-Founder & President',
+    role: 'Co-Founder & Business Director',
     bio: 'Drives growth initiatives, strategic partnerships, and new ventures across staffing, technology, and workforce services.',
     linkedin: 'https://www.linkedin.com/in/saulo-david-ballesteros-8391513/',
     photo: null,
