@@ -114,7 +114,7 @@ const MEMBERS: readonly Member[] = [
     name: 'Juan Betancur',
       role: 'Senior Fullstack Developer',
       bio: 'Experienced fullstack developer with a strong focus on building scalable and maintainable web applications.',
-      linkedin: '#',
+      linkedin: 'https://www.linkedin.com/in/juan-betancur-b868b2213',
       photo: null,
   }
 ]
