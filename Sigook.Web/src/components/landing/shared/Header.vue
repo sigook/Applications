@@ -121,6 +121,7 @@ const navLinks = [
   { label: 'Employers',        to: '/employers' },
   { label: 'Industries',       to: '/industries' },
   { label: 'Special Projects', to: '/special-projects' },
+  { label: 'News',             to: '/news' },
   { label: 'About Us',         to: '/about' },
 ];
 

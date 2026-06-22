@@ -9,10 +9,6 @@
     <div class="news-hero__content">
       <!-- "Live" pulse + eyebrow — communicates editorial / always-on -->
       <div class="news-hero__eyebrow-row">
-        <span class="news-hero__live" aria-hidden="true">
-          <span class="news-hero__live-dot"></span>
-          <span class="news-hero__live-label">Live</span>
-        </span>
         <EyebrowPill variant="cyan" class="news-hero__eyebrow">
           Newsroom
         </EyebrowPill>
@@ -122,47 +118,6 @@ function onTabClick(): void {
   gap: 14px;
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
-
-.news-hero__live {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(229, 45, 39, 0.14);
-  border: 1px solid rgba(229, 45, 39, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.news-hero__live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--c-brand-red);
-  box-shadow: 0 0 0 0 rgba(229, 45, 39, 0.55);
-  animation: news-hero-live-pulse 1.8s ease-out infinite;
-}
-
-@keyframes news-hero-live-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(229, 45, 39, 0.55); }
-  70%  { box-shadow: 0 0 0 12px rgba(229, 45, 39, 0); }
-  100% { box-shadow: 0 0 0 0   rgba(229, 45, 39, 0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .news-hero__live-dot { animation: none; }
-}
-
-.news-hero__live-label {
-  font-family: var(--font-family);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-brand-red);
-}
-
 /* ── Main heading — large editorial with cyan accent ────────────────────── */
 .news-hero__heading {
   font-family: var(--font-family);

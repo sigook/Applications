@@ -92,7 +92,7 @@ const employerBenefits: string[] = [
 .dual-cta {
   position: relative;
   width: 100%;
-  height: 720px;
+  height: 790px;
   z-index: 1;
   overflow: hidden;
   isolation: isolate;

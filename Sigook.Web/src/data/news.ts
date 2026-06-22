@@ -6,7 +6,7 @@
  * same types.
  *
  * All copy is in English (CLAUDE.md mandate). Images use Unsplash hot-link
- * URLs sized for editorial cards (~800px wide, q=80, fit=crop) — they're
+ * URLs sized for editorial cards (~1200px wide, q=80, fit=crop) — they're
  * placeholders until the marketing team supplies branded photography.
  */
 
@@ -58,153 +58,84 @@ export const CATEGORY_LABEL: Readonly<Record<NewsCategoryKey, string>> = {
 }
 
 /**
- * 10 mock articles — 3 flagged `featured: true` for the carousel.
+ * Staffing & Recruitment News — U.S. Market Roundup (June 2026).
+ * Five stories — 3 flagged `featured: true` for the carousel.
  * Order matters: the LatestGrid renders these in array order, so newer
  * stories sit at the top of the data file.
  */
 export const NEWS_ARTICLES: readonly NewsArticle[] = [
   {
-    id: 'osha-2026-compliance',
-    slug: 'osha-2026-compliance-guide',
-    category: 'compliance',
-    title: 'OSHA 2026 updates: a practical compliance checklist for employers',
+    id: 'ai-embedded-staffing',
+    slug: 'ai-embedded-in-staffing-skill-based-hiring',
+    category: 'industry-insights',
+    title: 'AI becomes embedded in the staffing workflow as skill-based hiring takes hold',
     excerpt:
-      'The new federal safety standards take effect Q3. Here\'s what changes for industrial workplaces — and the three audit gaps we keep finding.',
+      'AI is now standard infrastructure in recruiting — sourcing, screening, and candidate comms — even as hiring tilts toward skills over credentials. The edge goes to firms that pair automation with human judgment.',
     imageUrl:
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Construction workers reviewing a safety checklist on site',
-    publishedAt: '2026-05-18',
-    author: 'Maria Chen',
-    readTimeMinutes: 6,
-    featured: true,
-  },
-  {
-    id: 'q1-hiring-pulse-2026',
-    slug: 'q1-2026-us-hiring-pulse',
-    category: 'hiring-trends',
-    title: 'Q1 2026 U.S. hiring pulse: where demand actually is',
-    excerpt:
-      'We pulled 1,400 placements across our network. The headline: contract hiring grew 22% YoY, with manufacturing and logistics leading.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Modern warehouse floor with workers and forklift',
-    publishedAt: '2026-05-12',
-    author: 'David Park',
+      'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80&auto=format&fit=crop',
+    imageAlt: 'Abstract 3D \'AI\' lettering over a digital network field',
+    publishedAt: '2026-06-16',
+    author: 'Sigook',
     readTimeMinutes: 8,
     featured: true,
   },
   {
-    id: 'sigook-houston-office',
-    slug: 'sigook-opens-houston-office',
-    category: 'company-news',
-    title: 'Sigook opens a Houston office — bilingual recruitment now in-region',
-    excerpt:
-      'Our newest branch brings bilingual recruitment to clients across the Gulf Coast region. Meet the team and the roles we\'re staffing first.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Bright modern office interior with team working at desks',
-    publishedAt: '2026-05-04',
-    author: 'Anaïs Tremblay',
-    readTimeMinutes: 4,
-    featured: true,
-  },
-  {
-    id: 'minimum-wage-florida',
-    slug: 'florida-minimum-wage-2026',
-    category: 'compliance',
-    title: 'Florida minimum wage rises September 30 — what it means for contract rates',
-    excerpt:
-      'The state confirmed a $1.00 increase. We break down which contract billing models absorb it and which need renegotiation now.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Person signing a payroll document at a desk',
-    publishedAt: '2026-04-28',
-    author: 'Jordan Lee',
-    readTimeMinutes: 5,
-  },
-  {
-    id: 'manufacturing-talent-gap',
-    slug: 'closing-the-manufacturing-talent-gap',
+    id: 'industrial-staffing-outperforms',
+    slug: 'industrial-staffing-outperforms-forecasts',
     category: 'industry-insights',
-    title: 'Closing the manufacturing talent gap: three things that actually work',
+    title: 'Industrial staffing outperforms forecasts as recruiting pressures ease',
     excerpt:
-      'Apprenticeship pipelines, internal mobility, and one underrated retention play we\'ve seen move the needle on U.S. shop floors.',
+      'Logistics and warehousing keep getting easier to staff, with time-to-fill falling since late 2025. Manufacturing runs the other way — rising openings, flat hiring — making the case for a vertical-specific strategy.',
     imageUrl:
       'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Manufacturing worker operating industrial machinery',
-    publishedAt: '2026-04-20',
-    author: 'Priya Sharma',
+    imageAlt: 'Aerial view of freight trucks lined up at a logistics distribution yard',
+    publishedAt: '2026-06-12',
+    author: 'Sigook',
     readTimeMinutes: 7,
   },
   {
-    id: 'remote-vs-onsite-2026',
-    slug: 'remote-vs-onsite-the-2026-reality',
-    category: 'hiring-trends',
-    title: 'Remote vs. onsite: the 2026 reality in skilled trades and offices',
-    excerpt:
-      'Hybrid is the new default for professional roles. For industrial roles, "remote" is reshaping logistics and dispatch. The numbers, by sector.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Team in a hybrid meeting with remote attendees on screen',
-    publishedAt: '2026-04-14',
-    author: 'Sarah Kowalski',
-    readTimeMinutes: 6,
-  },
-  {
-    id: 'sigook-iso-9001',
-    slug: 'sigook-achieves-iso-9001-certification',
-    category: 'press-releases',
-    title: 'Sigook achieves ISO 9001:2015 certification across all U.S. offices',
-    excerpt:
-      'Independent audit confirms our quality management standards meet the international benchmark — full statement and downloadable certificate inside.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Two professionals shaking hands over a certification document',
-    publishedAt: '2026-04-08',
-    author: 'Press Office',
-    readTimeMinutes: 3,
-  },
-  {
-    id: 'aviation-mro-shortage',
-    slug: 'aviation-mro-shortage-deepens-2026',
+    id: 'manufacturing-hiring-momentum',
+    slug: 'manufacturing-hiring-regains-momentum',
     category: 'industry-insights',
-    title: 'Aviation MRO shortage deepens — why airlines are turning to staffing',
+    title: 'Manufacturing hiring regains momentum',
     excerpt:
-      'With certified mechanics retiring faster than schools can graduate them, contract staffing is keeping fleets in the air. The economics, explained.',
+      'Manufacturing added 7,000 jobs in May, reversing April\'s stall, with nine of 18 subsectors growing. Plants increasingly run blended crews — a permanent core plus on-demand skilled trades from staffing firms.',
     imageUrl:
-      'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Aviation mechanic working on an aircraft engine',
-    publishedAt: '2026-03-30',
-    author: 'David Park',
-    readTimeMinutes: 9,
+      'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1200&q=80&auto=format&fit=crop',
+    imageAlt: 'Welder working with sparks on a metal fabrication shop floor',
+    publishedAt: '2026-06-08',
+    author: 'Sigook',
+    readTimeMinutes: 6,
+    featured: true,
   },
   {
-    id: 'diversity-hiring-playbook',
-    slug: 'diversity-hiring-playbook-2026',
+    id: 'may-jobs-report-2026',
+    slug: 'may-2026-us-jobs-report',
     category: 'hiring-trends',
-    title: 'The diversity hiring playbook our clients are running in 2026',
+    title: 'May jobs report signals cautious but steady U.S. hiring',
     excerpt:
-      'Beyond statements: structured intake, blind résumé review, and panel diversity. The plays that survived a year of real-world testing.',
+      'Payrolls rose 172,000 in May and unemployment held at 4.3%. The tell for staffing: temporary help kept expanding — the pattern that shows up when employers favor flexible labor over permanent hires.',
     imageUrl:
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Diverse team collaborating around a meeting table',
-    publishedAt: '2026-03-24',
-    author: 'Maria Chen',
-    readTimeMinutes: 8,
+      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop',
+    imageAlt: 'Two colleagues reviewing labor-market figures at a desk',
+    publishedAt: '2026-06-05',
+    author: 'Sigook',
+    readTimeMinutes: 6,
+    featured: true,
   },
   {
-    id: 'sigook-partner-program',
-    slug: 'introducing-the-sigook-partner-program',
-    category: 'company-news',
-    title: 'Introducing the Sigook Partner Program for boutique recruiters',
+    id: 'asa-staffing-index-2026',
+    slug: 'asa-staffing-index-near-two-year-highs',
+    category: 'hiring-trends',
+    title: 'ASA Staffing Index holds near two-year highs',
     excerpt:
-      'Independent recruiters can now plug into our compliance, payroll, and tech stack while keeping their book of business. Applications open.',
+      'Temporary and contract staffing ran 4.6% above 2025, holding the index near levels last seen in 2024. A near real-time read on labor demand points to stabilization — a welcome story after a hard 2025.',
     imageUrl:
-      'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80&auto=format&fit=crop',
-    imageAlt: 'Business professionals in conversation at a modern office',
-    publishedAt: '2026-03-15',
-    author: 'Anaïs Tremblay',
-    readTimeMinutes: 4,
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop',
+    imageAlt: 'Analytics dashboard showing charts and performance metrics',
+    publishedAt: '2026-05-27',
+    author: 'Sigook',
+    readTimeMinutes: 5,
   },
 ] as const
 
@@ -218,9 +149,9 @@ export function getFeaturedArticles(): readonly NewsArticle[] {
   return NEWS_ARTICLES.filter((a) => a.featured)
 }
 
-/** Latest N non-featured articles for the grid. */
+/** Latest N articles for the grid (newest first; includes featured). */
 export function getLatestArticles(limit = 6): readonly NewsArticle[] {
-  return NEWS_ARTICLES.filter((a) => !a.featured).slice(0, limit)
+  return NEWS_ARTICLES.slice(0, limit)
 }
 
 /** Counts per category — used by Topics cards to show story counts. */

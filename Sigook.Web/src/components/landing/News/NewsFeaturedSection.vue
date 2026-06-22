@@ -67,7 +67,7 @@
               <p class="news-featured__excerpt">{{ article.excerpt }}</p>
 
               <ArrowPillCta
-                :href="`#${article.slug}`"
+                :to="`/news/${article.slug}`"
                 class="news-featured__link"
                 hover-variant="cyan"
                 :aria-label="`Read full article: ${article.title}`"

@@ -47,7 +47,7 @@
 .ttp-detail {
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 1.8vw, 20px);
+  gap: clamp(14px, 1.8vw, 22px);
   text-align: left;
 }
 

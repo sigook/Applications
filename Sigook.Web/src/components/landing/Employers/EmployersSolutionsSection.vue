@@ -10,7 +10,10 @@
       subtitle="Build a permanent team or scale on demand — choose the model that matches your timeline, budget, and growth plan."
     />
 
-    <div class="employers-solutions__cards">
+    <div
+      class="employers-solutions__cards"
+      :class="{ 'employers-solutions__cards--detail': tempExpanded }"
+    >
       <SecondaryCard
         v-for="(option, idx) in OPTIONS"
         :key="option.key"
@@ -21,6 +24,10 @@
         :delay="idx * 160"
         :expanded="option.key === 'temp-to-perm' && tempExpanded"
         class="employers-solutions__card"
+        :class="{
+          'employers-solutions__card--popped': option.key === 'temp-to-perm' && tempExpanded,
+          'employers-solutions__card--dimmed': option.key !== 'temp-to-perm' && tempExpanded,
+        }"
       >
         {{ option.body }}
 
@@ -195,22 +202,61 @@ const tempExpanded = ref(false)
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
   gap: clamp(20px, 2.4vw, 32px);
-  align-items: start;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
 }
 
-/* SecondaryCard ships padding/bg/list styling; we only need fill-height
-   column so the CTA pill sits at the bottom of each card. */
 .employers-solutions__card {
+  position: relative;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease,
+    filter 0.4s ease,
+    box-shadow 0.5s ease;
 }
 
-/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
+/* ── Detail open: Temp-to-Perm pops forward; the others recede in place ───── */
+.employers-solutions__cards--detail {
+  align-items: start;
+}
+
+.employers-solutions__cards--detail .employers-solutions__card--popped {
+  z-index: 20;
+  opacity: 1;
+  transform: scale(1.06) translateY(-6px);
+  box-shadow:
+    0 44px 90px -28px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.employers-solutions__cards--detail .employers-solutions__card--dimmed {
+  opacity: 0.22;
+  filter: blur(2px) saturate(0.85);
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+/* ── Mobile-only behaviors — stack, plain accordion (no pop / no dim) ────── */
 @media (max-width: 899px) {
-  .employers-solutions__cards { grid-template-columns: 1fr; }
+  .employers-solutions__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .employers-solutions__cards--detail .employers-solutions__card--popped {
+    transform: none;
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.55);
+  }
+
+  .employers-solutions__cards--detail .employers-solutions__card--dimmed {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 </style>
