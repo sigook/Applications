@@ -21,15 +21,14 @@
         </span>
       </div>
 
-      <button
-        type="button"
+      <ArrowPillCta
+        variant="solid"
         class="job-detail__apply"
         :aria-label="`Apply for ${job.title}`"
         @click="onApply"
       >
-        <span>Apply for this role</span>
-        <span class="job-detail__apply-arrow" aria-hidden="true">→</span>
-      </button>
+        Apply for this role
+      </ArrowPillCta>
 
     </header>
 
@@ -73,6 +72,7 @@
 import { computed } from 'vue'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 
 const props = defineProps<{
   job: JobViewModel
@@ -208,44 +208,8 @@ const formattedPosted = computed(() => {
 
 /* ── Apply CTA — solid red pill (matches Figma) ─────────────────────────── */
 .job-detail__apply {
-  display: inline-flex;
   align-self: flex-start;
-  align-items: center;
-  gap: 10px;
   margin-top: clamp(8px, 1vw, 12px);
-  padding: clamp(12px, 1.3vw, 14px) clamp(24px, 2.6vw, 32px);
-  background: var(--c-brand-red);
-  border: 1px solid var(--c-brand-red);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.1vw, 14px);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.job-detail__apply:hover {
-  background: #c92622;
-  border-color: #c92622;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(229, 45, 39, 0.35);
-}
-
-.job-detail__apply-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.job-detail__apply:hover .job-detail__apply-arrow {
-  transform: translateX(3px);
 }
 
 /* ── Sections — Description / Schedule / Responsibilities / Requirements ─── */

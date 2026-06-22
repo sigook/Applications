@@ -18,14 +18,7 @@
 
     <!-- Decorative cyan glow + brand magnifier -->
     <div class="testimonials__glow" aria-hidden="true"></div>
-    <img
-      src="@/assets/images/v2/branding/sigook-magnifier.webp"
-      alt=""
-      aria-hidden="true"
-      class="testimonials__magnifier"
-      loading="lazy"
-      decoding="async"
-    />
+    <DecoMagnifier class="testimonials__magnifier" />
 
     <div class="testimonials__inner">
       <!-- Header — eyebrow + heading + cyan divider (matches Numbers / WhyChooseUs) -->
@@ -73,6 +66,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.webp'
 import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.webp'
 import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.webp'
@@ -235,29 +229,11 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0.22;
 }
 
-/* ── Brand magnifier decoration — bottom-left of visible blue zone ─────── */
+/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .testimonials__magnifier {
-  position: absolute;
   z-index: 2;
   bottom: 170px;
   left: 7%;
-  width: 88px;
-  height: 88px;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
-  animation: test-magnifier-float 6.5s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes test-magnifier-float {
-  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
-  25%      { transform: translate(6px, -8px) rotate(4deg); }
-  50%      { transform: translate(0, -14px) rotate(8deg); }
-  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .testimonials__magnifier { animation: none; }
 }
 
 /* ── Inner container ─────────────────────────────────────────────────────── */
@@ -454,11 +430,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   }
 
   .testimonials__magnifier {
-    width: 56px;
-    height: 56px;
     bottom: 20px;
     left: 20px;
-    animation: none;
   }
 
   .testimonials__inner {

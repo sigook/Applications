@@ -4,10 +4,16 @@
     class="secondary-card"
     :class="[
       `secondary-card--${variant}`,
-      { 'secondary-card--visible': visible },
+      { 'secondary-card--visible': visible, 'secondary-card--expanded': expanded },
     ]"
     :style="{ transitionDelay: `${delay}ms` }"
   >
+    <div
+      v-if="$slots.expanded"
+      class="secondary-card__red-veil"
+      aria-hidden="true"
+    ></div>
+
     <div v-if="$slots.icon" class="secondary-card__icon">
       <slot name="icon" />
     </div>
@@ -23,6 +29,10 @@
     <ul v-if="list && list.length" class="secondary-card__list">
       <li v-for="item in list" :key="item">{{ item }}</li>
     </ul>
+
+    <div v-if="$slots.expanded" class="secondary-card__expanded">
+      <slot name="expanded" />
+    </div>
 
     <div v-if="$slots.button" class="secondary-card__button-wrap">
       <slot name="button" />
@@ -63,7 +73,7 @@ export type SecondaryCardVariant = 'blue' | 'cyan' | 'red'
  *  • cyan — triple cyan → blue → red gradient
  *  • red  — red dominant + blue accent on top-right
  */
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 
 withDefaults(defineProps<{
   variant?: SecondaryCardVariant
@@ -71,25 +81,14 @@ withDefaults(defineProps<{
   title?: string
   list?: readonly string[]
   delay?: number
+  expanded?: boolean
 }>(), {
   variant: 'cyan',
   delay: 0,
+  expanded: false,
 })
 
-const cardRef = ref<HTMLElement | null>(null)
-const visible = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!cardRef.value) return
-  observer = new IntersectionObserver(
-    (entries) => { visible.value = entries[0].isIntersecting },
-    { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-  )
-  observer.observe(cardRef.value)
-})
-
-onUnmounted(() => observer?.disconnect())
+const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
@@ -120,6 +119,46 @@ onUnmounted(() => observer?.disconnect())
 .secondary-card--visible {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+/* ── Expandable mode (opt-in via the #expanded slot + `expanded` prop) ────── */
+/* Red veil fades in over the base gradient so the card turns red on expand. */
+.secondary-card__red-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background: linear-gradient(135deg,
+    rgba(229, 45, 39, 0.42) 0%,
+    rgba(229, 45, 39, 0.14) 50%,
+    rgba(21, 117, 187, 0.32) 100%);
+}
+
+.secondary-card--expanded .secondary-card__red-veil {
+  opacity: 1;
+}
+
+/* Extra detail — collapses to zero height until expanded. The max-height is set
+   well above the tallest content so it never clips (the only cost is a touch of
+   slack at the start of the collapse). */
+.secondary-card__expanded {
+  position: relative;
+  z-index: 1;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.6s ease,
+    opacity 0.35s ease,
+    margin-top 0.6s ease;
+}
+
+.secondary-card--expanded .secondary-card__expanded {
+  max-height: 1400px;
+  opacity: 1;
+  margin-top: clamp(14px, 1.6vw, 18px);
 }
 
 /* Radial corner glow — placed at the larger asymmetric corner */

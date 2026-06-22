@@ -5,7 +5,6 @@ const AboutUs            = () => import('@/pages/landing/About/AboutUs.vue');
 const Industries         = () => import('@/pages/landing/Industries/Industries.vue');
 const Talents            = () => import('@/pages/landing/Talents/Talents.vue');
 const Employers          = () => import('@/pages/landing/Employers/Employers.vue');
-const News               = () => import('@/pages/landing/News/News.vue');
 const OpenPositions      = () => import('@/pages/landing/OpenPositions/OpenPositions.vue');
 const Apply              = () => import('@/pages/landing/Apply/Apply.vue');
 const Partner            = () => import('@/pages/landing/Partner/Partner.vue');
@@ -41,12 +40,6 @@ const routesLanding: RouteRecordRaw[] = [
         name: 'industries',
         component: Industries,
         meta: { layout: 'landing', requiresAuth: false, title: 'Industries' },
-    },
-    {
-        path: '/news',
-        name: 'news',
-        component: News,
-        meta: { layout: 'landing', requiresAuth: false, title: 'News' },
     },
     {
         path: '/about',
@@ -119,6 +112,8 @@ const routesLanding: RouteRecordRaw[] = [
     { path: '/about-us', redirect: '/about' },
     { path: '/contact', redirect: '/' },
     { path: '/atas', redirect: '/' },
+    { path: '/news/:slug', redirect: '/' },
+    { path: '/news', redirect: '/' },
 
     // ── Backward-compatibility: the landing previously lived under /v2/* ──────
     { path: '/v2/home', redirect: '/' },

@@ -39,14 +39,14 @@
 
       <div class="news-card__footer">
         <span class="news-card__author">By {{ article.author }}</span>
-        <a
-          :href="`#${article.slug}`"
+        <router-link
+          :to="`/news/${article.slug}`"
           class="news-card__link"
           :aria-label="`Read article: ${article.title}`"
         >
           <span>Read</span>
           <span class="news-card__link-arrow" aria-hidden="true">→</span>
-        </a>
+        </router-link>
       </div>
     </div>
   </article>
@@ -65,7 +65,8 @@
  *
  * Slug links are anchor placeholders until an article detail page exists.
  */
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed } from 'vue'
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import type { NewsArticle, NewsCategoryKey } from '@/data/news'
 import { CATEGORY_LABEL, formatPublishedDate } from '@/data/news'
 
@@ -93,21 +94,7 @@ const tone = computed(() => TONE_BY_CATEGORY[props.article.category])
 const categoryLabel = computed(() => CATEGORY_LABEL[props.article.category])
 const formattedDate = computed(() => formatPublishedDate(props.article.publishedAt))
 
-// Fade-up entry on scroll — same observer pattern as SecondaryCard.
-const cardRef = ref<HTMLElement | null>(null)
-const visible = ref(false)
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  if (!cardRef.value) return
-  observer = new IntersectionObserver(
-    (entries) => { visible.value = entries[0].isIntersecting },
-    { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-  )
-  observer.observe(cardRef.value)
-})
-
-onUnmounted(() => observer?.disconnect())
+const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>

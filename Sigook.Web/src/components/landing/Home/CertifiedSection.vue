@@ -12,14 +12,7 @@
 
       <!-- Decorative cyan glow + brand magnifier -->
       <div class="certified__glow" aria-hidden="true"></div>
-      <img
-        src="@/assets/images/v2/branding/sigook-magnifier.webp"
-        alt=""
-        aria-hidden="true"
-        class="certified__magnifier"
-        loading="lazy"
-        decoding="async"
-      />
+      <DecoMagnifier class="certified__magnifier" />
 
       <div class="certified__content">
         <div class="certified__left">
@@ -33,10 +26,9 @@
             solutions, combining experienced recruiters, streamlined processes,
             and reliable talent to meet evolving workforce needs.
           </p>
-          <router-link to="/partner" class="certified__cta">
-            <span>Grow With Us</span>
-            <ArrowIcon :width="32" :height="11" :stroke-width="1.5" />
-          </router-link>
+          <ArrowPillCta to="#home-contact" hover-variant="navy">
+            Grow With Us
+          </ArrowPillCta>
         </div>
       </div>
     </section>
@@ -44,7 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
+import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
+import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 </script>
 
 <style scoped>
@@ -139,29 +132,10 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   pointer-events: none;
 }
 
-/* ── Brand magnifier decoration — floats with subtle sway ──────────────── */
+/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .certified__magnifier {
-  position: absolute;
   bottom: 40px;
   left: 56px;
-  width: 88px;
-  height: 88px;
-  z-index: 1;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.30));
-  animation: cert-magnifier-float 6.5s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes cert-magnifier-float {
-  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
-  25%      { transform: translate(6px, -8px) rotate(4deg); }
-  50%      { transform: translate(0, -14px) rotate(8deg); }
-  75%      { transform: translate(-6px, -8px) rotate(-4deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .certified__magnifier { animation: none; }
 }
 
 /* ── Content — asymmetric split (heading left, body+CTA right) ─────────── */
@@ -223,33 +197,6 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   max-width: 560px;
 }
 
-/* ── Glass pill CTA — matches Hero / DualCta / WhyChooseUs language ────── */
-.certified__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 32px;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-
-.certified__cta:hover {
-  background: #fff;
-  color: var(--c-brand-navy);
-  transform: translateY(-2px);
-}
-
 /* ── Mobile ── */
 @media (max-width: 1023px) {
   .certified-wrap {
@@ -279,20 +226,8 @@ import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
   }
 
   .certified__magnifier {
-    width: 56px;
-    height: 56px;
     bottom: 20px;
     left: 20px;
-    animation: none;
-  }
-
-  .certified__cta {
-    padding: 12px 28px;
-    font-size: 14px;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.28);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   }
 
   .certified__content {

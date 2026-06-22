@@ -1,20 +1,17 @@
 <template>
   <section class="team">
-    <header class="team__header">
-      <EyebrowPill variant="red" class="team__eyebrow">
-        Our Team
-      </EyebrowPill>
-
-      <h2 class="team__heading">
-        Meet the people
-        <span class="team__heading-accent">behind Sigook.</span>
-      </h2>
-
-      <p class="team__subtitle">
-        Founder-led and people-driven — the team turning trust and integrity
-        into lasting partnerships for employers and workers alike.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Our Team"
+      eyebrow-variant="red"
+      heading="Meet the people"
+      heading-accent="behind Sigook."
+      subtitle="Founder-led and people-driven — the team turning trust and integrity into lasting partnerships for employers and workers alike."
+      heading-max-width="720px"
+      heading-margin-bottom="0"
+      margin-bottom="clamp(44px, 6vw, 72px)"
+      subtitle-max-width="580px"
+      subtitle-margin-top="clamp(14px, 1.8vw, 20px)"
+    />
 
     <div class="team__grid">
       <article v-for="member in MEMBERS" :key="member.name" class="team__card">
@@ -46,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 
 interface Member {
   readonly name: string
@@ -58,19 +55,68 @@ interface Member {
 
 const MEMBERS: readonly Member[] = [
   {
-    name: 'Andrea',
+    name: 'Andrea Gonzalez',
     role: 'Co-Founder & CEO',
     bio: 'Majority owner of the Covenant Group family, Andrea guides the company\'s direction and long-term vision.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/andreagonzalesgm/',
     photo: null,
   },
   {
-    name: 'David',
+    name: 'David Ballesteros',
     role: 'Co-Founder & President',
     bio: 'Drives growth initiatives, strategic partnerships, and new ventures across staffing, technology, and workforce services.',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/saulo-david-ballesteros-8391513/',
     photo: null,
   },
+  {
+  name: 'Isabella Zabaleta',
+    role: 'Operations and Management Support Assistant',
+    bio: 'Provides essential support to our operations and management teams, ensuring smooth workflows and efficient processes across the organization.',
+    linkedin: 'https://www.linkedin.com/in/isabella-zabaleta-marketing-ux/',
+    photo: null,
+  },
+  {
+    name: 'Leonardo Gomez',
+    role: 'Recruiter & Talent Acquisition',
+    bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
+    linkedin: 'https://www.linkedin.com/in/leonardo-gomez-22279b23a/',
+    photo: null,
+  },
+  {
+    name: 'Daniela Garcia',
+      role: 'Recruiter & Talent Acquisition',
+      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
+      linkedin: 'https://www.linkedin.com/in/danielagarciasaave',
+      photo: null,
+  },
+  {
+    name: 'Carol Vargas',
+      role: 'Recruiter & Talent Acquisition',
+      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
+      linkedin: '#',
+      photo: null,
+  },
+  {
+    name: 'Indira Martinez',
+      role: 'Recruiter & Talent Acquisition',
+      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
+      linkedin: 'https://www.linkedin.com/in/indira-yasmin-martinez-rubiano-3247a978/',
+      photo: null,
+  },
+  {
+    name: 'Juan González',
+      role: 'CTO - Lead Developer',
+      bio: 'Experienced technology leader and fullstack developer, responsible for overseeing our technical strategy and leading the development of innovative solutions that drive our business forward.',
+      linkedin: '#',
+      photo: null,
+  },
+  {
+    name: 'Juan Betancur',
+      role: 'Senior Fullstack Developer',
+      bio: 'Experienced fullstack developer with a strong focus on building scalable and maintainable web applications.',
+      linkedin: 'https://www.linkedin.com/in/juan-betancur-b868b2213',
+      photo: null,
+  }
 ]
 
 function initials(name: string): string {
@@ -95,47 +141,6 @@ function initials(name: string): string {
   isolation: isolate;
   overflow: hidden;
   font-family: var(--font-family);
-}
-
-.team__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto clamp(44px, 6vw, 72px);
-}
-
-.team__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.team__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0;
-  max-width: 720px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-.team__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.team__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: clamp(14px, 1.8vw, 20px) 0 0;
-  max-width: 580px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .team__grid {

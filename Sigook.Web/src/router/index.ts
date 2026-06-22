@@ -43,6 +43,12 @@ const routes: RouteRecordRaw[] = [
 ];
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, top: 90, behavior: 'smooth' };
+    }
+    return false;
+  },
   routes: routes
     .concat(routesAgency as RouteRecordRaw[])
     .concat(routesCompany as RouteRecordRaw[])
@@ -50,7 +56,7 @@ const router = createRouter({
     .concat(routesLanding as RouteRecordRaw[]),
 });
 router.beforeEach(async (to, from, next) => {
-  if (from.name !== 'open-positions') {
+  if (from.name !== 'open-positions' && !to.hash) {
     setTimeout(() => {
       window.scrollTo(0, 0);
     }, 0);

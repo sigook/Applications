@@ -1,22 +1,11 @@
 <template>
   <section class="employers-why">
-    <header class="employers-why__header">
-      <EyebrowPill variant="white" class="employers-why__eyebrow">
-        Why Employers Choose Us
-      </EyebrowPill>
-
-      <h2 class="employers-why__heading">
-        Three reasons
-        <span class="employers-why__heading-accent">
-          your shortlist arrives faster.
-        </span>
-      </h2>
-
-      <p class="employers-why__subtitle">
-        It's not just placement. It's a partnership — built on speed, sector
-        expertise, and a network that took years to grow.
-      </p>
-    </header>
+    <LandingSectionHeader
+      eyebrow="Why Employers Choose Us"
+      heading="Three reasons"
+      heading-accent="your shortlist arrives faster."
+      subtitle="It's not just placement. It's a partnership — built on speed, sector expertise, and a network that took years to grow."
+    />
 
     <div class="employers-why__grid">
       <SecondaryCard
@@ -46,7 +35,7 @@
  * the cards speak from the employer side — speed of placement, depth of
  * sector expertise, breadth of the talent network.
  */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
 
 interface Reason {
@@ -97,48 +86,6 @@ const REASONS: readonly Reason[] = [
   isolation: isolate;
   overflow: hidden;
   font-family: var(--font-family);
-}
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.employers-why__header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 880px;
-  margin: 0 auto;
-}
-
-.employers-why__eyebrow {
-  margin-bottom: clamp(20px, 2.5vw, 28px);
-}
-
-.employers-why__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #fff;
-  margin: 0 0 clamp(14px, 1.8vw, 22px);
-  max-width: 780px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
-}
-
-.employers-why__heading-accent {
-  color: var(--c-brand-cyan);
-  display: block;
-}
-
-.employers-why__subtitle {
-  font-size: clamp(13px, 1.2vw, 16px);
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
-  margin: 0;
-  max-width: 560px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 /* ── Cards grid — 3 cols desktop, stack mobile ──────────────────────────── */
