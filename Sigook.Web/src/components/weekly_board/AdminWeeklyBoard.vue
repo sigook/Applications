@@ -110,14 +110,16 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <div class="detail-sent">Workers sent <strong>{{ detail.workersSent }}</strong></div>
-          <ul v-if="detail.dispatches.length > 0" class="detail-workers">
-            <li v-for="worker in detail.dispatches" :key="worker.workerProfileId">
-              <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
-                worker.fullName }}</router-link>
-              <span class="detail-worker-email">{{ worker.email }}</span>
-            </li>
-          </ul>
+          <workers-collapse v-if="detail.dispatches.length > 0" :key="detail.requestId" class="detail-workers"
+            label="Workers" :count="detail.dispatches.length">
+            <ul>
+              <li v-for="worker in detail.dispatches" :key="worker.workerProfileId">
+                <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
+                  worker.fullName }}</router-link>
+                <span class="detail-worker-email">{{ worker.email }}</span>
+              </li>
+            </ul>
+          </workers-collapse>
         </section>
         <footer class="modal-card-foot is-justify-content-space-between">
           <b-button type="is-danger" icon-left="trash-can-outline" :loading="isSaving" @click="onUnassign(detail)">
@@ -148,6 +150,7 @@ import type {
   AssignPreset,
 } from '@/types/weeklyBoard';
 import AssignRecruiterModal from './AssignRecruiterModal.vue';
+import WorkersCollapse from './WorkersCollapse.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -545,10 +548,6 @@ watch(range, loadBoard, { immediate: true });
     align-items: center;
     gap: 0.4rem;
     margin-bottom: 0.6rem;
-  }
-
-  .detail-sent {
-    margin-top: 0.5rem;
   }
 
   .detail-workers {

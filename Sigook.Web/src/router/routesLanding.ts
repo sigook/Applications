@@ -112,6 +112,7 @@ const routesLanding: RouteRecordRaw[] = [
     { path: '/about-us', redirect: '/about' },
     { path: '/contact', redirect: '/' },
     { path: '/atas', redirect: '/' },
+    { path: '/news/:slug', redirect: '/' },
     { path: '/news', redirect: '/' },
 
     // ── Backward-compatibility: the landing previously lived under /v2/* ──────

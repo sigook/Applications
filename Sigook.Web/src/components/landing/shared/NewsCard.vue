@@ -39,14 +39,14 @@
 
       <div class="news-card__footer">
         <span class="news-card__author">By {{ article.author }}</span>
-        <a
-          :href="`#${article.slug}`"
+        <router-link
+          :to="`/news/${article.slug}`"
           class="news-card__link"
           :aria-label="`Read article: ${article.title}`"
         >
           <span>Read</span>
           <span class="news-card__link-arrow" aria-hidden="true">→</span>
-        </a>
+        </router-link>
       </div>
     </div>
   </article>
