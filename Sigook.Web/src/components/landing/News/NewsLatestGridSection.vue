@@ -14,6 +14,7 @@
         :key="article.id"
         :article="article"
         :delay="idx * 90"
+        class="news-latest__card"
       />
     </div>
 
@@ -50,7 +51,7 @@ const ARTICLES = getLatestArticles(6)
   padding:
     clamp(72px, 10vw, 140px)
     clamp(20px, 3vw, 40px)
-    clamp(96px, 12vw, 180px);
+    clamp(160px, 16vw, 260px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,13 +65,18 @@ const ARTICLES = getLatestArticles(6)
 .news-latest__grid {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: clamp(22px, 2.6vw, 32px);
   align-items: stretch;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
+}
+
+.news-latest__card {
+  flex: 0 1 calc((100% - 2 * clamp(22px, 2.6vw, 32px)) / 3);
 }
 
 /* ── Footer — view-all link ─────────────────────────────────────────────── */
@@ -81,10 +87,10 @@ const ARTICLES = getLatestArticles(6)
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
-  .news-latest__grid { grid-template-columns: repeat(2, 1fr); }
+  .news-latest__card { flex-basis: calc((100% - clamp(22px, 2.6vw, 32px)) / 2); }
 }
 
 @media (max-width: 639px) {
-  .news-latest__grid { grid-template-columns: 1fr; }
+  .news-latest__card { flex-basis: 100%; }
 }
 </style>

@@ -10,23 +10,44 @@
       subtitle="Whether you're after stability or variety, we'll match you with roles that keep moving your career forward."
     />
 
-    <div class="talents-solutions__cards">
+    <div
+      class="talents-solutions__cards"
+      :class="{ 'talents-solutions__cards--detail': tempExpanded }"
+    >
       <SecondaryCard
         v-for="(option, idx) in OPTIONS"
         :key="option.key"
-        :variant="option.variant"
+        :variant="option.key === 'temp-to-perm' && tempExpanded ? 'red' : option.variant"
         :eyebrow="option.eyebrow"
         :title="option.title"
         :list="option.benefits"
         :delay="idx * 160"
+        :expanded="option.key === 'temp-to-perm' && tempExpanded"
         class="talents-solutions__card"
+        :class="{
+          'talents-solutions__card--popped': option.key === 'temp-to-perm' && tempExpanded,
+          'talents-solutions__card--dimmed': option.key !== 'temp-to-perm' && tempExpanded,
+        }"
       >
+        <template v-if="option.key === 'temp-to-perm'" #expanded>
+          <TempToPermDetail />
+        </template>
+
         <template #button>
           <ArrowPillCta
+            v-if="option.key !== 'temp-to-perm'"
             :to="option.ctaTo"
             :hover-variant="option.variant === 'red' ? 'red' : 'cyan'"
           >
             {{ option.ctaLabel }}
+          </ArrowPillCta>
+          <ArrowPillCta
+            v-else
+            :hover-variant="tempExpanded ? 'red' : 'cyan'"
+            :show-arrow="false"
+            @click="tempExpanded = !tempExpanded"
+          >
+            {{ tempExpanded ? 'Show less' : 'View details' }}
           </ArrowPillCta>
         </template>
       </SecondaryCard>
@@ -43,9 +64,11 @@
  * carries a benefits list + a CTA pill — benefits via the `list` prop and
  * the CTA via the #button slot.
  */
+import { ref } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import TempToPermDetail from '@/components/landing/shared/TempToPermDetail.vue'
 
 interface CareerOption {
   readonly key: string
@@ -98,6 +121,8 @@ const OPTIONS: readonly CareerOption[] = [
     variant: 'red',
   },
 ] as const
+
+const tempExpanded = ref(false)
 </script>
 
 <style scoped>
@@ -167,22 +192,61 @@ const OPTIONS: readonly CareerOption[] = [
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
   gap: clamp(20px, 2.4vw, 32px);
-  align-items: start;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
 }
 
-/* SecondaryCard ships padding/bg/list styling; we only need fill-height
-   column so the CTA pill sits at the bottom of each card. */
 .talents-solutions__card {
+  position: relative;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease,
+    filter 0.4s ease,
+    box-shadow 0.5s ease;
 }
 
-/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
+/* ── Detail open: Temp-to-Perm pops forward; the others recede in place ───── */
+.talents-solutions__cards--detail {
+  align-items: start;
+}
+
+.talents-solutions__cards--detail .talents-solutions__card--popped {
+  z-index: 20;
+  opacity: 1;
+  transform: scale(1.06) translateY(-6px);
+  box-shadow:
+    0 44px 90px -28px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.talents-solutions__cards--detail .talents-solutions__card--dimmed {
+  opacity: 0.22;
+  filter: blur(2px) saturate(0.85);
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+/* ── Mobile-only behaviors — stack, plain accordion (no pop / no dim) ────── */
 @media (max-width: 899px) {
-  .talents-solutions__cards { grid-template-columns: 1fr; }
+  .talents-solutions__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .talents-solutions__cards--detail .talents-solutions__card--popped {
+    transform: none;
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.55);
+  }
+
+  .talents-solutions__cards--detail .talents-solutions__card--dimmed {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 </style>

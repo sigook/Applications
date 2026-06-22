@@ -54,7 +54,7 @@ import { h, type FunctionalComponent } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
-import { getCategoryCounts } from '@/data/news'
+import { getCategoryCounts, type NewsCategoryKey } from '@/data/news'
 
 const counts = getCategoryCounts()
 const totalStories =
@@ -105,7 +105,7 @@ interface Topic {
   readonly iconComponent: FunctionalComponent
 }
 
-const TOPICS: readonly Topic[] = [
+const ALL_TOPICS: readonly Topic[] = [
   {
     key: 'all',
     eyebrow: `${totalStories} stories`,
@@ -173,6 +173,10 @@ const TOPICS: readonly Topic[] = [
     iconComponent: IconPress,
   },
 ] as const
+
+const TOPICS = ALL_TOPICS.filter(
+  (topic) => topic.key === 'all' || counts[topic.key as NewsCategoryKey] > 0,
+)
 </script>
 
 <style scoped>
@@ -240,8 +244,9 @@ const TOPICS: readonly Topic[] = [
 .news-topics__grid {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: clamp(22px, 2.6vw, 32px);
   align-items: stretch;
   width: 100%;
@@ -252,14 +257,15 @@ const TOPICS: readonly Topic[] = [
 .news-topics__card {
   display: flex;
   flex-direction: column;
+  flex: 0 1 calc((100% - 2 * clamp(22px, 2.6vw, 32px)) / 3);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
+/* ── Responsive — flex-basis drives the column count so incomplete rows center */
 @media (max-width: 1023px) {
-  .news-topics__grid { grid-template-columns: repeat(2, 1fr); }
+  .news-topics__card { flex-basis: calc((100% - clamp(22px, 2.6vw, 32px)) / 2); }
 }
 
 @media (max-width: 639px) {
-  .news-topics__grid { grid-template-columns: 1fr; }
+  .news-topics__card { flex-basis: 100%; }
 }
 </style>

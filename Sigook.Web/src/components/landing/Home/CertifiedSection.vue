@@ -26,7 +26,7 @@
             solutions, combining experienced recruiters, streamlined processes,
             and reliable talent to meet evolving workforce needs.
           </p>
-          <ArrowPillCta to="/partner" hover-variant="navy">
+          <ArrowPillCta to="#home-contact" hover-variant="navy">
             Grow With Us
           </ArrowPillCta>
         </div>

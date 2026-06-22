@@ -41,6 +41,36 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.sigook.com/news</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.sigook.com/news/may-2026-us-jobs-report</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.sigook.com/news/asa-staffing-index-near-two-year-highs</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.sigook.com/news/manufacturing-hiring-regains-momentum</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.sigook.com/news/industrial-staffing-outperforms-forecasts</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.sigook.com/news/ai-embedded-in-staffing-skill-based-hiring</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.sigook.com/apply</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

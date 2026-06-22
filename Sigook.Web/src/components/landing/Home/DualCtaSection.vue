@@ -23,7 +23,7 @@
         tabindex="0"
       >
         <template #button>
-          <ArrowPillCta to="/talents" hover-variant="navy">Browse Jobs</ArrowPillCta>
+          <ArrowPillCta to="/open-positions" hover-variant="navy">Browse Jobs</ArrowPillCta>
         </template>
       </PrimaryCard>
 
@@ -37,7 +37,7 @@
         tabindex="0"
       >
         <template #button>
-          <ArrowPillCta to="/employers" hover-variant="red">Contact Us</ArrowPillCta>
+          <ArrowPillCta to="#home-contact" hover-variant="red">Contact Us</ArrowPillCta>
         </template>
       </PrimaryCard>
     </div>
@@ -92,7 +92,7 @@ const employerBenefits: string[] = [
 .dual-cta {
   position: relative;
   width: 100%;
-  height: 720px;
+  height: 790px;
   z-index: 1;
   overflow: hidden;
   isolation: isolate;
