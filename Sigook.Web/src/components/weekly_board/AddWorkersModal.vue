@@ -16,7 +16,7 @@
         </div>
 
         <div class="col-12 col-padding">
-          <b-field label="Search candidates">
+          <b-field label="Search workers">
             <b-input v-model="searchText" placeholder="Search by name or email" icon="magnify" :loading="isLoading"
               @update:model-value="onTyping"></b-input>
           </b-field>
@@ -26,16 +26,16 @@
         </div>
 
         <div class="col-12 col-padding">
-          <div v-if="candidates.length > 0" class="candidate-list">
-            <label v-for="worker in candidates" :key="worker.workerProfileId" class="candidate-row">
-              <div class="candidate-info">
-                <p class="candidate-name">{{ worker.fullName }}</p>
-                <p class="candidate-email">{{ worker.email }}</p>
+          <div v-if="workers.length > 0" class="worker-list">
+            <label v-for="worker in workers" :key="worker.workerProfileId" class="worker-row">
+              <div class="worker-info">
+                <p class="worker-name">{{ worker.fullName }}</p>
+                <p class="worker-email">{{ worker.email }}</p>
               </div>
               <b-checkbox :model-value="isSelected(worker)" @update:model-value="toggle(worker)"></b-checkbox>
             </label>
           </div>
-          <p v-else-if="searchText.length >= 3 && !isLoading" class="hint">No candidates found.</p>
+          <p v-else-if="searchText.length >= 3 && !isLoading" class="hint">No workers found.</p>
 
           <div v-if="selected.length > 0" class="selected-count">
             {{ selected.length }} selected
@@ -82,7 +82,7 @@ const workDateLabel = computed(() => dayjs(props.assignment.workDate).format('dd
 
 const alreadySent = computed(() => new Set(props.assignment.dispatches.map(d => d.workerProfileId)));
 
-const candidates = computed(() =>
+const workers = computed(() =>
   results.value.filter(w => !alreadySent.value.has(w.workerProfileId))
 );
 
@@ -152,14 +152,14 @@ function submit(): void {
     margin: 0.25rem 0 0.5rem;
   }
 
-  .candidate-list {
+  .worker-list {
     max-height: 280px;
     overflow-y: auto;
     border: 1px solid $gray-border;
     border-radius: 8px;
   }
 
-  .candidate-row {
+  .worker-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -175,12 +175,12 @@ function submit(): void {
       background: $gray-bg;
     }
 
-    .candidate-name {
+    .worker-name {
       font-weight: 600;
       font-size: 0.88rem;
     }
 
-    .candidate-email {
+    .worker-email {
       font-size: 0.78rem;
       color: $grey-light;
     }
