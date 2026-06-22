@@ -9,8 +9,6 @@ const OpenPositions      = () => import('@/pages/landing/OpenPositions/OpenPosit
 const Apply              = () => import('@/pages/landing/Apply/Apply.vue');
 const Partner            = () => import('@/pages/landing/Partner/Partner.vue');
 const SpecialProjects    = () => import('@/pages/landing/SpecialProjects/SpecialProjects.vue');
-const News               = () => import('@/pages/landing/News/News.vue');
-const NewsArticle        = () => import('@/pages/landing/News/NewsArticle.vue');
 const PrivacyPolicy      = () => import('@/pages/landing/Legal/PrivacyPolicy.vue');
 const TermsAndConditions = () => import('@/pages/landing/Legal/TermsAndConditions.vue');
 const Disclaimer         = () => import('@/pages/landing/Legal/Disclaimer.vue');
@@ -68,18 +66,6 @@ const routesLanding: RouteRecordRaw[] = [
         meta: { layout: 'landing', requiresAuth: false },
     },
     {
-        path: '/news',
-        name: 'news',
-        component: News,
-        meta: { layout: 'landing', requiresAuth: false, title: 'News' },
-    },
-    {
-        path: '/news/:slug',
-        name: 'news-article',
-        component: NewsArticle,
-        meta: { layout: 'landing', requiresAuth: false, title: 'News' },
-    },
-    {
         path: '/partner',
         name: 'partner',
         component: Partner,
@@ -126,6 +112,8 @@ const routesLanding: RouteRecordRaw[] = [
     { path: '/about-us', redirect: '/about' },
     { path: '/contact', redirect: '/' },
     { path: '/atas', redirect: '/' },
+    { path: '/news/:slug', redirect: '/' },
+    { path: '/news', redirect: '/' },
 
     // ── Backward-compatibility: the landing previously lived under /v2/* ──────
     { path: '/v2/home', redirect: '/' },
