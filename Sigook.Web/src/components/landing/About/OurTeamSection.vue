@@ -25,7 +25,7 @@
         <p class="team__bio">{{ member.bio }}</p>
 
         <a
-          v-if="member.linkedin"
+          v-if="hasLinkedin(member)"
           class="team__linkedin"
           :href="member.linkedin"
           target="_blank"
@@ -49,7 +49,7 @@ interface Member {
   readonly name: string
   readonly role: string
   readonly bio: string
-  readonly linkedin: string
+  readonly linkedin?: string
   readonly photo: string | null
 }
 
@@ -127,6 +127,11 @@ function initials(name: string): string {
     .join('')
     .slice(0, 2)
     .toUpperCase()
+}
+
+function hasLinkedin(member: Member): boolean {
+  const url = member.linkedin?.trim()
+  return !!url && url !== '#'
 }
 </script>
 
