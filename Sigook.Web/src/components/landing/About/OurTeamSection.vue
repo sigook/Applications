@@ -98,7 +98,7 @@ const MEMBERS: readonly Member[] = [
   },
   {
     name: 'Indira Martinez',
-      role: 'Recruiter & Talent Acquisition',
+      role: 'Payroll Specialist',
       bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
       linkedin: 'https://www.linkedin.com/in/indira-yasmin-martinez-rubiano-3247a978/',
       photo: null,
