@@ -3,7 +3,7 @@ import type { JobSearchFilter, JobViewModel, ContactForm } from '@/types/website
 
 export function getJobs(filter: JobSearchFilter = {}): Promise<JobViewModel[]> {
   return http.get('/api/WebSite/jobs', {
-    params: { ...filter, countries: filter.countries ?? ['USA'] }
+    params: { ...filter, countries: filter.countries ?? ['USA', 'CA'] }
   }).then(r => r.data);
 }
 

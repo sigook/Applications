@@ -6,7 +6,7 @@ import { ref, onMounted, onUnmounted, type Ref } from 'vue'
  * Bind the returned `el` as a template ref and toggle a CSS class off
  * `visible`; the component keeps its own entrance transition/animation.
  *
- * Used across the landing cards (Primary/Secondary/Tertiary/News) and the
+ * Used across the landing cards (Primary/Secondary/Tertiary) and the
  * Numbers / WhyChooseUs / OurHistory sections.
  *
  * @param options.threshold   IntersectionObserver threshold (default 0.15).

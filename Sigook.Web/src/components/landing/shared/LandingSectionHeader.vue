@@ -40,7 +40,7 @@
 /**
  * LandingSectionHeader — the canonical eyebrow + accent-heading + subtitle
  * lockup used by section panels across the landing (Employers, Talents,
- * Industries, News, Partner, Special Projects, About, the Industries carousel).
+ * Industries, Partner, Special Projects, About, the Industries carousel).
  *
  * The accent renders on its own line (block) and the eyebrow uses the shared
  * EyebrowPill. Defaults reproduce the design-system values exactly; the
