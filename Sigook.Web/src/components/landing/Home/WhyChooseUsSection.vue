@@ -60,15 +60,20 @@
               @click="mapPreview = true"
             >
               <img
-                src="@/assets/images/v2/why-choose-us/usa-coverage-map-nameless.webp"
+                src="@/assets/images/v2/why-choose-us/usa-minimal-map.png"
                 alt="Sigook® coverage across the United States"
                 class="why__map-img"
-                width="1440"
-                height="960"
+                width="600"
+                height="400"
                 loading="lazy"
                 decoding="async"
               />
-              <span class="why__map-hint" aria-hidden="true">Click to zoom</span>
+              <span class="why__map-hint" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+              </span>
             </button>
           </div>
         </div>
@@ -452,9 +457,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   border: 0;
   background: none;
   cursor: zoom-in;
-  border-radius:
-    clamp(28px, 3.6vw, 52px) 0
-    clamp(28px, 3.6vw, 52px) 0;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -472,10 +474,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   display: block;
   width: 100%;
   height: auto;
-  border-radius: inherit;
-  box-shadow:
-    0 28px 60px -18px rgba(0, 0, 0, 0.50),
-    0 4px 14px rgba(0, 0, 0, 0.28);
 }
 
 .why__map-hint {
@@ -485,18 +483,25 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  padding: 6px 13px;
-  border-radius: 999px;
-  font-size: clamp(9.5px, 0.82vw, 11px);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  justify-content: center;
+  width: clamp(38px, 4vw, 46px);
+  height: clamp(38px, 4vw, 46px);
+  border-radius: 50%;
   color: #fff;
-  background: rgba(9, 32, 52, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--c-brand-cyan);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 16px rgba(0, 173, 239, 0.4);
   pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.why__map-hint svg {
+  width: 52%;
+  height: 52%;
+}
+
+.why__map:hover .why__map-hint {
+  transform: scale(1.08);
 }
 
 /* ── Enlarged-map lightbox (teleported to body) ─────────────────────────── */
