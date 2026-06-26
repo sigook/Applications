@@ -76,13 +76,8 @@
             </span>
           </div>
 
-          <div class="sent-line">
-            <span>Workers sent</span>
-            <strong>{{ assignment.workersSent }}</strong>
-          </div>
-
-          <div v-if="assignment.dispatches.length > 0" class="sent-workers">
-            <p class="sent-workers-title">SENT WORKERS</p>
+          <workers-collapse v-if="assignment.dispatches.length > 0" class="sent-workers" label="SENT WORKERS"
+            :count="assignment.dispatches.length">
             <div v-for="worker in assignment.dispatches" :key="worker.workerProfileId" class="sent-worker">
               <div class="sent-worker-info">
                 <span class="sent-worker-avatar">{{ workerInitials(worker.fullName) }}</span>
@@ -97,10 +92,10 @@
               <b-button class="remove-worker" type="is-ghost" size="is-small" icon-right="close" :disabled="isSaving"
                 @click="onRemove(assignment, worker.workerProfileId)"></b-button>
             </div>
-          </div>
+          </workers-collapse>
 
-          <b-button type="is-primary" expanded icon-left="account-plus" class="add-worker-btn"
-            @click="openAdd(assignment)">
+          <b-button v-if="!isPastDay(assignment.workDate)" type="is-primary" expanded icon-left="account-plus"
+            class="add-worker-btn" @click="openAdd(assignment)">
             Add worker
           </b-button>
         </div>
@@ -123,6 +118,7 @@ import { isDirectHiring } from '@/utils/directHiring';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import type { RecruiterWeeklyBoard, WeeklyBoardAssignment, WeekDay } from '@/types/weeklyBoard';
 import AddWorkersModal from './AddWorkersModal.vue';
+import WorkersCollapse from './WorkersCollapse.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -173,6 +169,10 @@ const visibleDays = computed<WeekDay[]>(() => {
 
 function assignmentsFor(date: string): WeeklyBoardAssignment[] {
   return (board.value?.assignments ?? []).filter(a => dayjs(a.workDate).format(dateFormat) === date);
+}
+
+function isPastDay(date: string): boolean {
+  return dayjs(date).isBefore(dayjs(), 'day');
 }
 
 function hasAssignments(date: string): boolean {
@@ -392,31 +392,8 @@ watch(range, loadBoard, { immediate: true });
       }
     }
 
-    .sent-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0.65rem;
-      background: $gray-bg;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: $grey-dark;
-
-      strong {
-        font-size: 1rem;
-        color: $grey-font;
-      }
-    }
-
     .sent-workers {
       margin-top: 0.75rem;
-
-      .sent-workers-title {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: $grey-light;
-        margin-bottom: 0.4rem;
-      }
     }
 
     .sent-worker {
