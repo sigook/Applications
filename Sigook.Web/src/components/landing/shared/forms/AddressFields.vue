@@ -67,18 +67,6 @@ import {
   getCities as fetchCities,
 } from '@/api/locationApi'
 
-/**
- * AddressFields — composite address picker matching the layout / data
- * structure of the legacy Address.vue but using V2 atoms.
- *
- * Cascading load: pick country → loads provinces → pick province → loads
- * cities. Emits a normalized `address` object via `update:modelValue` and
- * a `change` event whenever any field updates.
- *
- * Validation: parent reads `errors` reactive object and feeds it back via
- * the optional `errors` prop. `validate()` is exposed via defineExpose so
- * the parent can trigger validation at submit time.
- */
 interface CountryOption { id: number | string; value: string; code?: string }
 interface ProvinceOption { id: number | string; value: string }
 interface CityOption { id: number | string; value: string }
@@ -107,8 +95,6 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: AddressModel): void
 }>()
 
-/* ── State ──────────────────────────────────────────────────────────────── */
-
 const country = ref<CountryOption | null>(props.modelValue.country)
 const provinceSelected = ref<ProvinceOption | null>(props.modelValue.province)
 const citySelected = ref<CityOption | null>(props.modelValue.city)
@@ -129,7 +115,6 @@ const errors = reactive({
   postalCode: '',
 })
 
-/* ── API loads ──────────────────────────────────────────────────────────── */
 
 async function loadCountries(): Promise<void> {
   const all = await fetchCountries()
@@ -157,11 +142,9 @@ async function loadCities(p: ProvinceOption | null): Promise<void> {
 
 void loadCountries()
 
-/* ── Selection handlers ─────────────────────────────────────────────────── */
 
 function onCountrySelected(c: CountryOption | null): void {
   country.value = c
-  // Reset downstream
   provinceQuery.value = ''
   provinceSelected.value = null
   cityQuery.value = ''
@@ -188,8 +171,6 @@ function onCitySelected(c: CityOption): void {
   emitChange()
 }
 
-/* ── Keep selection in sync if user clears the query ────────────────────── */
-
 watch(provinceQuery, (val) => {
   if (provinceSelected.value && provinceSelected.value.value !== val) {
     provinceSelected.value = null
@@ -207,7 +188,6 @@ watch(cityQuery, (val) => {
   }
 })
 
-/* ── Emit ───────────────────────────────────────────────────────────────── */
 
 function emitChange(): void {
   emit('update:modelValue', {
@@ -219,7 +199,6 @@ function emitChange(): void {
   })
 }
 
-/* ── Validation ─────────────────────────────────────────────────────────── */
 
 function validate(): boolean {
   let valid = true

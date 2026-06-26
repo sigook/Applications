@@ -3,12 +3,10 @@
     <IndustriesHeroSection />
     <IndustriesGridSection />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="industries-contact">
       <ContactSection />
     </div>
 
-    <!-- Candidate application modal — opened from the grid's "Talk to us" card -->
     <CandidateApplyModal />
   </main>
 </template>

@@ -5,7 +5,6 @@
     <EmployersWhyChooseSection />
     <EmployersIndustriesCarousel />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="employers-contact">
       <ContactSection />
     </div>

@@ -37,7 +37,6 @@
         </div>
       </div>
 
-      <!-- Email -->
       <div class="git-card__field-group">
         <label class="git-card__label">Email</label>
         <input
@@ -51,7 +50,6 @@
         <span v-if="errors.email" class="git-card__field-error">{{ errors.email }}</span>
       </div>
 
-      <!-- Company + Location -->
       <div class="git-card__field-group">
         <div class="git-card__name-row">
           <div class="git-card__name-col">
@@ -86,7 +84,6 @@
         </div>
       </div>
 
-      <!-- Industry -->
       <div class="git-card__field-group">
         <label class="git-card__label">Industry</label>
         <input
@@ -97,7 +94,6 @@
         />
       </div>
 
-      <!-- Message -->
       <div class="git-card__field-group">
         <label class="git-card__label">Message</label>
         <textarea
@@ -110,7 +106,6 @@
         <span v-if="errors.message" class="git-card__field-error">{{ errors.message }}</span>
       </div>
 
-      <!-- Feedback -->
       <div v-if="submitted" class="git-card__feedback git-card__feedback--success">
         Thank you! We'll reach out to you shortly.
       </div>
@@ -118,13 +113,11 @@
         {{ submitError }}
       </div>
 
-      <!-- Submit -->
       <button type="submit" class="git-card__submit" :disabled="submitting">
         <span>{{ submitting ? 'Sending…' : 'Save & Send' }}</span>
         <ArrowIcon v-if="!submitting" :width="32" :height="11" :stroke-width="1.5" color="#fff" />
       </button>
 
-      <!-- Reset -->
       <button type="button" class="git-card__reset" @click="handleReset">
         Reset information
       </button>
@@ -212,11 +205,10 @@ function handleReset() {
 </script>
 
 <style scoped>
-/* ── Card shell — asymmetric brand radius, deeper shadow ────────────────── */
 .git-card {
   position: relative;
   background: #fff;
-  border-radius: 20px 56px 20px 56px;   /* asymmetric brand shape */
+  border-radius: 20px 56px 20px 56px;
   box-shadow:
     0 24px 60px rgba(15, 47, 68, 0.20),
     0 4px 12px rgba(15, 47, 68, 0.06);
@@ -226,14 +218,12 @@ function handleReset() {
   box-sizing: border-box;
 }
 
-/* Compact variant — narrower card for sidebar / secondary contexts */
 .git-card--compact {
   width: 392px;
   padding: 32px 32px 36px;
   border-radius: 16px 40px 16px 40px;
 }
 
-/* ── Card header ─────────────────────────────────────────────────────────── */
 .git-card__header {
   text-align: center;
   margin-bottom: 28px;
@@ -270,7 +260,6 @@ function handleReset() {
   margin: 0 0 18px;
 }
 
-/* Cyan divider — closes the header, brand accent */
 .git-card__divider {
   width: 56px;
   height: 2px;
@@ -279,7 +268,6 @@ function handleReset() {
   margin: 0 auto;
 }
 
-/* ── Form layout ─────────────────────────────────────────────────────────── */
 .git-card__form {
   display: flex;
   flex-direction: column;
@@ -312,7 +300,6 @@ function handleReset() {
   flex-direction: column;
 }
 
-/* ── Inputs — taller, refined borders, cyan focus accent ─────────────────── */
 .git-card__input {
   width: 100%;
   height: 52px;
@@ -354,7 +341,6 @@ function handleReset() {
   box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.14);
 }
 
-/* ── Select (Location / state) — matches the input styling ───────────────── */
 .git-card__select {
   appearance: none;
   -webkit-appearance: none;
@@ -370,7 +356,6 @@ function handleReset() {
   color: #a8b3bd;
 }
 
-/* ── Textarea ────────────────────────────────────────────────────────────── */
 .git-card__textarea {
   width: 100%;
   padding: 14px 18px;
@@ -400,7 +385,6 @@ function handleReset() {
   background: #fbfdff;
 }
 
-/* ── Validation errors ───────────────────────────────────────────────────── */
 .git-card__field-error {
   display: block;
   color: var(--c-brand-red);
@@ -410,7 +394,6 @@ function handleReset() {
   padding-left: 4px;
 }
 
-/* ── Feedback ────────────────────────────────────────────────────────────── */
 .git-card__feedback {
   font-family: var(--font-family);
   font-size: 13px;
@@ -433,7 +416,6 @@ function handleReset() {
   border: 1px solid rgba(229, 45, 39, 0.20);
 }
 
-/* ── Submit button — solid red pill with arrow icon (brand action) ───────── */
 .git-card__submit {
   display: inline-flex;
   align-items: center;
@@ -466,7 +448,6 @@ function handleReset() {
   cursor: not-allowed;
 }
 
-/* ── Reset link ──────────────────────────────────────────────────────────── */
 .git-card__reset {
   display: block;
   width: fit-content;
@@ -487,7 +468,6 @@ function handleReset() {
   text-decoration: underline;
 }
 
-/* ── Compact field adjustments ───────────────────────────────────────────── */
 .git-card--compact .git-card__input,
 .git-card--compact .git-card__textarea {
   font-size: 13px;
@@ -495,7 +475,6 @@ function handleReset() {
 
 .git-card--compact .git-card__title { font-size: 22px; }
 
-/* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .git-card,
   .git-card--compact {

@@ -274,6 +274,12 @@
   text-transform: uppercase;
 }
 
+/* Accent word inside a LandingHero heading slot. Global (not scoped) so it
+   styles slotted content provided by the per-page hero wrappers. */
+.landing-hero-accent {
+  color: var(--c-brand-cyan);
+}
+
 /* ============================================================
    Button system (.btn)
    Scoped under .landing-page to win over Bootstrap's .btn cascade.
@@ -387,4 +393,37 @@
 }
 .cut-bl {
   border-radius: 0 0 0 var(--r-brand);
+}
+
+/* ============================================================
+   Accessibility — visible keyboard focus (landing-scoped)
+   Single default focus ring for every interactive element that
+   doesn't define its own :focus-visible. Keyboard-only (no effect
+   for mouse users); outline doesn't affect layout.
+   ============================================================ */
+.landing-page a:focus-visible,
+.landing-page button:focus-visible,
+.landing-page [tabindex]:focus-visible,
+.landing-page input:focus-visible,
+.landing-page select:focus-visible,
+.landing-page textarea:focus-visible {
+  outline: 2px solid var(--c-brand-cyan);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Accessibility — honor prefers-reduced-motion (landing-scoped)
+   Neutralizes reveal/hover/carousel transitions & animations for
+   users who request reduced motion. Standard WCAG 2.3.3 safeguard.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -75,7 +75,6 @@ function onSendResume(): void {
   font-family: var(--font-family);
 }
 
-/* ── Depth back-layer — transparent glass, peeks ~16px above & below card ─ */
 .op-cta__back {
   position: absolute;
   top: calc(clamp(8px, 1.5vw, 28px) - 16px);
@@ -84,13 +83,13 @@ function onSendResume(): void {
   right: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -106,8 +105,8 @@ function onSendResume(): void {
     clamp(72px, 10vw, 120px)
     clamp(20px, 3vw, 64px);
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   overflow: hidden;
   background:
     linear-gradient(120deg,

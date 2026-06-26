@@ -4,15 +4,12 @@
     class="why"
     :class="{ 'is-visible': visible }"
   >
-    <!-- Back layer — same shape as the photo, sits 20px above so it peeks out at the top -->
     <div class="why__hero-back" aria-hidden="true"></div>
 
-    <!-- Block A — Corporate buildings photo -->
     <div class="why__hero">
       <img src="@/assets/images/v2/why-choose-us/why-bg.webp" alt="" class="why__hero-bg" aria-hidden="true" loading="lazy" decoding="async" />
       <div class="why__hero-overlay" aria-hidden="true"></div>
 
-      <!-- Decorative cyan glow + brand magnifier -->
       <div class="why__hero-glow" aria-hidden="true"></div>
       <DecoMagnifier class="why__hero-magnifier" />
 
@@ -33,11 +30,9 @@
       </div>
     </div>
 
-    <!-- Block B — Blue content panel -->
     <div class="why__panel">
       <div class="why__panel-inner">
 
-        <!-- Top zone: asymmetric editorial — heading left, map right -->
         <div class="why__top">
           <header class="why__panel-header">
             <span class="why__panel-eyebrow">What Sets Us Apart</span>
@@ -78,7 +73,6 @@
           </div>
         </div>
 
-        <!-- Feature cards — canonical SecondaryCard instances -->
         <div class="why__features">
           <SecondaryCard
             variant="blue"
@@ -115,6 +109,7 @@
       <transition name="why-zoom">
         <div
           v-if="mapPreview"
+          ref="zoomRef"
           class="why-zoom"
           role="dialog"
           aria-modal="true"
@@ -146,24 +141,32 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue'
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
+import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 
 const mapPreview = ref(false)
+const zoomRef = ref<HTMLElement | null>(null)
+const { lock, unlock } = useBodyScrollLock()
+useFocusTrap(mapPreview, zoomRef)
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') mapPreview.value = false
 }
 
 watch(mapPreview, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
-  if (open) window.addEventListener('keydown', onKeydown)
-  else window.removeEventListener('keydown', onKeydown)
+  if (open) {
+    lock()
+    window.addEventListener('keydown', onKeydown)
+  } else {
+    unlock()
+    window.removeEventListener('keydown', onKeydown)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-  document.body.style.overflow = ''
 })
 
 const NETWORK_POINTS = [
@@ -190,11 +193,10 @@ const { el: sectionRef, visible } = useRevealOnScroll()
 <style scoped>
 .why {
   position: relative;
-  z-index: 1;           /* above Numbers (z-index:0) */
-  margin-top: -260px;   /* overlaps the bottom 260px of Numbers: Numbers ends at y=2724, WhyChooseUs starts at y=2464 */
+  z-index: 1;
+  margin-top: -260px;
 }
 
-/* ── Back layer for the hero — peeks 20px above & below, same shape ─────── */
 .why__hero-back {
   position: absolute;
   top: -20px;
@@ -203,25 +205,21 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   height: 628px;
   border-radius: 150px 0 150px 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   z-index: 1;
   pointer-events: none;
 }
 
-/* ── Block A: Photo ── */
 .why__hero {
   position: relative;
-  z-index: 2;       /* above the blue panel (z-index:1) — matches Figma layer order:
-                       corporate buildings 01 1 (node 425:5791) is listed after
-                       Rectangle 16 (the panel) in Figma, meaning it renders on top */
+  z-index: 2;
   width: 100%;
   height: 588px;
   border-radius: 150px 0 150px 0;
   overflow: hidden;
-  /* Soft drop shadows top + bottom — smooth transitions with Numbers (above) and panel (below) */
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -237,7 +235,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   object-position: center 30%;
 }
 
-/* Navy gradient overlay — replaces the green-tinted one, matches DualCta veil language */
 .why__hero-overlay {
   position: absolute;
   inset: 0;
@@ -246,7 +243,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
     linear-gradient(180deg, rgba(9, 48, 85, 0.20) 0%, rgba(15, 47, 68, 0.55) 100%);
 }
 
-/* Cyan glow accent — tertiary color, top-right corner */
 .why__hero-glow {
   position: absolute;
   top: -80px;
@@ -261,7 +257,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   pointer-events: none;
 }
 
-/* Brand magnifier — position only (size/float/shadow from DecoMagnifier) */
 .why__hero-magnifier {
   bottom: 48px;
   left: 56px;
@@ -303,7 +298,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   margin: 0;
 }
 
-/* Cyan divider line under title — right-aligned to match text */
 .why__hero-divider {
   width: 88px;
   height: 2px;
@@ -328,7 +322,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   max-width: 560px;
 }
 
-/* ── Block B: Blue panel — transparent (background lives in GlobalBackground) ── */
 .why__panel {
   position: relative;
   border-radius: 150px 0 150px 0;
@@ -336,7 +329,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   z-index: 1;
   padding-bottom: 160px;
   overflow: hidden;
-  /* Sized so feature cards clear Certified's -556px overlap with a comfortable buffer */
   min-height: 1880px;
 }
 
@@ -351,7 +343,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   z-index: 1;
 }
 
-/* ── Top zone — asymmetric editorial split (heading left, map right) ─── */
 .why__top {
   position: relative;
   z-index: 2;
@@ -362,7 +353,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   margin-bottom: 96px;
 }
 
-/* Panel header — text block on the left */
 .why__panel-header {
   flex: 1;
   position: relative;
@@ -403,7 +393,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   max-width: 460px;
 }
 
-/* Cyan divider under sub — closes the heading block, matches Hero divider language */
 .why__panel-divider {
   width: 88px;
   height: 2px;
@@ -411,7 +400,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   border-radius: 2px;
 }
 
-/* ── USA Map — right side of the split ───────────────────────────────── */
 .why__map-wrap {
   flex: 1;
   position: relative;
@@ -420,12 +408,11 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   justify-content: center;
   align-items: center;
   margin: 0;
-  /* Fade in/out with viewport (matches Numbers behavior) */
   opacity: 0;
   transform: translateY(30px) scale(0.96);
   transition:
     opacity 0.8s ease-out,
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.8s var(--ease-brand);
 }
 
 .why.is-visible .why__map-wrap {
@@ -458,7 +445,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   background: none;
   cursor: zoom-in;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.4s var(--ease-brand);
 }
 
 .why__map:hover {
@@ -492,7 +479,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 0 6px 16px rgba(0, 173, 239, 0.4);
   pointer-events: none;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.3s var(--ease-brand);
 }
 
 .why__map-hint svg {
@@ -504,7 +491,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   transform: scale(1.08);
 }
 
-/* ── Enlarged-map lightbox (teleported to body) ─────────────────────────── */
 .why-zoom {
   position: fixed;
   inset: 0;
@@ -530,7 +516,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
     clamp(20px, 2vw, 32px) 0;
   box-shadow: 0 40px 100px -24px rgba(0, 0, 0, 0.7);
   cursor: default;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.45s var(--ease-brand);
 }
 
 .why-zoom__close {
@@ -585,7 +571,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   transform: scale(0.9);
 }
 
-/* ── Feature cards row — SecondaryCard instances in a flex row ────────── */
 .why__features {
   position: relative;
   z-index: 2;
@@ -602,14 +587,13 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   max-width: 360px;
 }
 
-/* ── Mobile ── */
 @media (max-width: 1023px) {
   .why {
-    margin-top: -100px;  /* overlaps bottom 100px of Numbers background (z-index:1 already set) */
+    margin-top: -100px;
   }
 
   .why__hero-back {
-    display: none;       /* skip on mobile — overlap math + smaller card make it noisy */
+    display: none;
   }
 
   .why__hero {
@@ -617,7 +601,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
     min-height: 280px;
     border-radius: 80px 0 80px 0;
     padding: 60px 24px;
-    /* Cap large drop-shadow blur for mobile GPU */
     box-shadow:
       0 -22px 24px -12px rgba(0, 0, 0, 0.50),
       0  22px 24px -12px rgba(0, 0, 0, 0.50);
@@ -665,7 +648,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   }
 
   .why__hero-divider {
-    margin: 16px 0 0 0;       /* left-aligned on mobile to match left-aligned text */
+    margin: 16px 0 0 0;
     width: 64px;
   }
 
@@ -681,15 +664,14 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   .why__panel {
     border-radius: 80px 0 80px 0;
     margin-top: -80px;
-    min-height: 0; /* reset desktop min-height — mobile stacks naturally */
-    padding-bottom: 220px; /* extends blue downward — certified section overlaps this extra space */
+    min-height: 0;
+    padding-bottom: 220px;
   }
 
   .why__panel-inner {
     padding: 140px 24px 0;
   }
 
-  /* Top zone — stack vertically on mobile */
   .why__top {
     flex-direction: column;
     gap: 40px;
@@ -715,7 +697,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
     margin: 0 auto;
   }
 
-  /* Map */
   .why__map-wrap {
     width: 100%;
   }
@@ -726,7 +707,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
     filter: blur(40px);
   }
 
-  /* Feature cards stack on mobile */
   .why__features {
     flex-direction: column;
     gap: 18px;

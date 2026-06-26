@@ -34,7 +34,7 @@
 
     <section v-if="job.description" class="job-detail__section">
       <h4 class="job-detail__section-title">Description</h4>
-      <div class="job-detail__html" v-html="job.description"></div>
+      <div class="job-detail__html" v-html="safeDescription"></div>
     </section>
 
     <section v-if="job.shift" class="job-detail__section">
@@ -44,12 +44,12 @@
 
     <section v-if="job.responsibilities" class="job-detail__section">
       <h4 class="job-detail__section-title">Responsibilities</h4>
-      <div class="job-detail__html" v-html="job.responsibilities"></div>
+      <div class="job-detail__html" v-html="safeResponsibilities"></div>
     </section>
 
     <section v-if="job.requirements" class="job-detail__section">
       <h4 class="job-detail__section-title">Requirements</h4>
-      <div class="job-detail__html" v-html="job.requirements"></div>
+      <div class="job-detail__html" v-html="safeRequirements"></div>
     </section>
 
     <footer class="job-detail__footer">
@@ -70,6 +70,7 @@
  *   - Mobile : inline expanded under the active list item
  */
 import { computed } from 'vue'
+import DOMPurify from 'dompurify'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
@@ -77,6 +78,9 @@ import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
 const props = defineProps<{
   job: JobViewModel
 }>()
+const safeDescription = computed(() => DOMPurify.sanitize(props.job.description ?? ''))
+const safeResponsibilities = computed(() => DOMPurify.sanitize(props.job.responsibilities ?? ''))
+const safeRequirements = computed(() => DOMPurify.sanitize(props.job.requirements ?? ''))
 
 const registerModal = useCandidateApplyModal()
 
@@ -102,7 +106,6 @@ const formattedPosted = computed(() => {
 </script>
 
 <style scoped>
-/* ── Shell ──────────────────────────────────────────────────────────────── */
 .job-detail {
   --jd-fg: rgba(255, 255, 255, 0.82);
   --jd-fg-strong: #fff;
@@ -129,7 +132,6 @@ const formattedPosted = computed(() => {
   overflow: hidden;
 }
 
-/* Decorative bottom-left glow */
 .job-detail::before {
   content: '';
   position: absolute;
@@ -146,7 +148,6 @@ const formattedPosted = computed(() => {
     transparent 72%);
 }
 
-/* ── Header — title + meta + apply ──────────────────────────────────────── */
 .job-detail__head {
   position: relative;
   z-index: 1;
@@ -192,7 +193,6 @@ const formattedPosted = computed(() => {
   height: 14px;
 }
 
-/* Type chip */
 .job-detail__chip {
   display: inline-block;
   padding: 4px 12px;
@@ -206,13 +206,11 @@ const formattedPosted = computed(() => {
   color: var(--c-brand-cyan);
 }
 
-/* ── Apply CTA — solid red pill (matches Figma) ─────────────────────────── */
 .job-detail__apply {
   align-self: flex-start;
   margin-top: clamp(8px, 1vw, 12px);
 }
 
-/* ── Sections — Description / Schedule / Responsibilities / Requirements ─── */
 .job-detail__section {
   position: relative;
   z-index: 1;
@@ -319,7 +317,6 @@ const formattedPosted = computed(() => {
   background: var(--c-brand-cyan);
 }
 
-/* ── Footer — posted date + ref ─────────────────────────────────────────── */
 .job-detail__footer {
   position: relative;
   z-index: 1;

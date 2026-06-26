@@ -20,13 +20,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Input — text/email/password input with glass V2 styling.
- *
- * Single-line label-above-field layout. Cyan focus border, white text,
- * subtle hover lift. Error state colors the border and shows the message
- * below the field.
- */
 withDefaults(defineProps<{
   modelValue?: string | number
   label?: string

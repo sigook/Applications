@@ -1,9 +1,6 @@
 <template>
   <section class="partner-hero">
     <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 30%" />
-    <!-- Atmospheric magnifier decoration — bottom-center anchor (final
-         unused position, closes the family alongside Home TL, About TR,
-         SP BR, Industries BL, Talents CR, Employers CL) -->
     <DecoMagnifier class="partner-hero__magnifier" />
 
     <div class="partner-hero__content">
@@ -22,7 +19,6 @@
         and 100% of your relationships.
       </p>
 
-      <!-- Stat strip — proof points that say "real program, real partners" -->
       <ul class="partner-hero__stats" aria-label="Partner program stats">
         <li class="partner-hero__stat">
           <span class="partner-hero__stat-value">12+</span>
@@ -44,18 +40,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Partner hero — window-style intro that lets GlobalBackground show through.
- *
- * Differentiates from sibling heroes via:
- *  • Magnifier anchor: bottom-center (final unused slot — closes the family)
- *  • Red eyebrow + red heading accent → entrepreneurial / growth tone
- *  • Stat strip directly under subtitle — partner programs convert on proof
- *    points (active partners, revenue lift, time-to-first-deal)
- *
- * Unlike Talents / Employers which use a chip-list of role types, the
- * partner audience needs to see traction. The stat strip serves that role.
- */
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
 import heroImage from '@/assets/images/v2/hero/partner.webp'
@@ -65,7 +49,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .partner-hero {
   position: relative;
   width: 100%;
@@ -75,14 +58,12 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   isolation: isolate;
 }
 
-/* ── Decorative magnifier — bottom-center anchor ────────────────────────── */
 .partner-hero__magnifier {
   bottom: clamp(14%, 16vw, 20%);
   left: 50%;
   transform: translateX(-50%);
 }
 
-/* ── Content stack — vertically centered editorial layout ───────────────── */
 .partner-hero__content {
   position: relative;
   z-index: 2;
@@ -104,10 +85,9 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
 
-/* ── Main heading — large editorial with red accent ─────────────────────── */
 .partner-hero__heading {
   font-family: var(--font-family);
-  font-size: clamp(32px, 5.5vw, 60px);
+  font-size: var(--text-hero-size);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -121,10 +101,9 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   color: var(--c-brand-cyan);
 }
 
-/* ── Subtitle ───────────────────────────────────────────────────────────── */
 .partner-hero__subtitle {
   font-family: var(--font-family);
-  font-size: clamp(14px, 1.4vw, 17px);
+  font-size: var(--text-hero-sub-size);
   font-weight: 400;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.85);
@@ -133,7 +112,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Stat strip — proof points ──────────────────────────────────────────── */
 .partner-hero__stats {
   list-style: none;
   padding: 0;
@@ -159,7 +137,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   min-width: clamp(140px, 14vw, 180px);
 }
 
-/* Accent stat — wears the red glow to signal "headline metric" */
 .partner-hero__stat--accent {
   background: rgba(229, 45, 39, 0.12);
   border-color: rgba(229, 45, 39, 0.45);
@@ -189,7 +166,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   text-align: center;
 }
 
-/* ── Scroll indicator ───────────────────────────────────────────────────── */
 .partner-hero__scroll {
   position: absolute;
   bottom: clamp(20px, 3vw, 36px);
@@ -198,7 +174,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
   z-index: 2;
 }
 
-/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .partner-hero {
     min-height: 100svh;
@@ -218,7 +193,6 @@ import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
 }
 
 @media (max-width: 599px) {
-  /* Stack stats vertically on phones — single column is more readable */
   .partner-hero__stats {
     flex-direction: column;
     width: 100%;

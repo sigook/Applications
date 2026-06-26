@@ -131,9 +131,9 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
 .our-history {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(140px, 14vw, 200px)
+    var(--section-pad-y-lg)
     clamp(20px, 3vw, 64px)
     clamp(96px, 12vw, 160px);
   display: flex;
@@ -141,8 +141,8 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   align-items: center;
   z-index: 5;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0 22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -159,13 +159,13 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   right: 0;
   z-index: -1;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -174,8 +174,8 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   inset: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.65) 0%,
@@ -208,7 +208,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   margin: 0 auto;
 }
 
-/* ── Timeline ───────────────────────────────────────────────────────────── */
 .our-history__timeline {
   --rail: clamp(38px, 4.6vw, 52px);
   --line-x: clamp(11px, 1.3vw, 15px);
@@ -240,7 +239,7 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   transform: translateY(18px);
   transition:
     opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.6s var(--ease-brand);
 }
 
 .our-history__milestone:last-child {
@@ -289,7 +288,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   margin: 0;
 }
 
-/* ── SIGOOK meaning callout ─────────────────────────────────────────────── */
 .our-history__meaning {
   margin-top: clamp(40px, 5.5vw, 64px);
   padding: clamp(24px, 3.2vw, 40px);
@@ -340,7 +338,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   color: rgba(255, 255, 255, 0.82);
 }
 
-/* ── What's next ────────────────────────────────────────────────────────── */
 .our-history__next {
   margin-top: clamp(36px, 5vw, 56px);
 }
@@ -378,7 +375,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   font-weight: 500;
 }
 
-/* ── Closing ────────────────────────────────────────────────────────────── */
 .our-history__closing {
   margin-top: clamp(36px, 5vw, 56px);
   padding-top: clamp(26px, 3.2vw, 38px);
@@ -417,7 +413,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   line-height: 1;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   .our-history__letters {
     grid-template-columns: 1fr;

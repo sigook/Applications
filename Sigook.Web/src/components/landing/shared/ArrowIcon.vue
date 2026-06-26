@@ -1,5 +1,4 @@
 <template>
-  <!-- Fixed internal viewBox from original Figma; width/height control display size -->
   <svg
     :width="width"
     :height="height"

@@ -1,7 +1,6 @@
 <template>
   <section class="app">
     <div class="app__inner">
-      <!-- TOP: CTA + phone hero -->
       <div class="app__top">
         <div class="app__copy">
           <span class="app__eyebrow">Sigook® App</span>
@@ -69,7 +68,6 @@
         </div>
       </div>
 
-      <!-- BOTTOM: Features -->
       <div class="app__bottom">
         <div class="app__bottom-inner">
           <span class="app__bottom-eyebrow">Workforce platform</span>
@@ -112,17 +110,9 @@ const features = [
 </script>
 
 <style scoped>
-/* ============================================================
-   App Download — background lives in GlobalBackground.
-   This section keeps its content + overlap extensions.
-   ============================================================ */
-
 .app {
   position: relative;
   min-height: 1380px;
-  /* Extend up behind CertifiedSection AND down behind TestimonialsSection so
-     the wedges left by their asymmetric corners reveal GlobalBackground instead
-     of a colour mismatch. */
   margin-top: -200px;
   padding-top: 200px;
   margin-bottom: -200px;
@@ -133,7 +123,6 @@ const features = [
   color: #fff;
 }
 
-/* ── Inner container ──────────────────────────────────────── */
 .app__inner {
   position: relative;
   max-width: var(--container-max);
@@ -142,7 +131,6 @@ const features = [
   z-index: 1;
 }
 
-/* ── TOP: CTA + phone ─────────────────────────────────────── */
 .app__top {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
@@ -191,7 +179,6 @@ const features = [
   max-width: 380px;
 }
 
-/* ── Store badges ─────────────────────────────────────────── */
 .app__badges {
   display: flex;
   flex-direction: row;
@@ -253,7 +240,6 @@ const features = [
   font-weight: 600;
 }
 
-/* ── Phone hero with cyan halo ─────────────────────────────── */
 .app__phone-wrap {
   position: relative;
   display: flex;
@@ -299,7 +285,6 @@ const features = [
   50%      { transform: rotate(-1.5deg) translateY(-12px); }
 }
 
-/* ── BOTTOM: Features ─────────────────────────────────────── */
 .app__bottom {
   position: relative;
 }
@@ -375,9 +360,6 @@ const features = [
   margin-top: 2px;
 }
 
-/* ============================================================
-   Mobile  ≤ 1023px
-   ============================================================ */
 @media (max-width: 1023px) {
   .app {
     min-height: 0;

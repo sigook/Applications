@@ -5,7 +5,6 @@
     <PartnerBenefitsSection />
     <PartnerProcessSection />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="partner-contact">
       <ContactSection />
     </div>
@@ -13,16 +12,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * /v2/partner landing page — Become a Partner.
- *
- * Section rhythm: window → panel → window → panel → window (contact)
- *  1. PartnerHeroSection      — Live story: bottom-center magnifier + stats
- *  2. PartnerTypesSection     — Two PrimaryCards (Recruiter / Business)
- *  3. PartnerBenefitsSection  — 4 SecondaryCards (Autonomy/Reach/Licensed/Reward)
- *  4. PartnerProcessSection   — 4 numbered steps (Apply → Onboard → Match → Earn)
- *  5. ContactSection (shared) — "Get in Touch" form
- */
 import PartnerHeroSection from '@/components/landing/Partner/PartnerHeroSection.vue'
 import PartnerTypesSection from '@/components/landing/Partner/PartnerTypesSection.vue'
 import PartnerBenefitsSection from '@/components/landing/Partner/PartnerBenefitsSection.vue'

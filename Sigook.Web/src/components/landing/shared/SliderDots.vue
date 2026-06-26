@@ -15,12 +15,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Glass-pill carousel dots used across Hero and Testimonials.
- *
- * Usage:
- *   <SliderDots v-model="currentIndex" :count="slides.length" aria-label="Carousel" />
- */
 withDefaults(defineProps<{
   modelValue: number
   count: number

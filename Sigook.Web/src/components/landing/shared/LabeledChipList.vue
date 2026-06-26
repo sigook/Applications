@@ -8,8 +8,6 @@
         class="labeled-chip-list__chip"
       >{{ item }}</span>
 
-      <!-- "+ more" overflow indicator — renders as a router-link when
-           `moreTo` is provided (clickable), or a plain span otherwise. -->
       <router-link
         v-if="moreLabel && moreTo"
         :to="moreTo"
@@ -24,29 +22,10 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Vertical "label + chip row" block used in heroes (Home Hero industries,
- * About Hero values, etc.). Label is uppercase tracked muted text; chips
- * are glass pills with a cyan bullet dot.
- *
- * Sizing scales fluidly via clamp() — no media queries needed.
- *
- * The "+ more" chip can act as a router-link when `moreTo` is passed —
- * useful for pointing users to a fuller listing (e.g. /v2/industries).
- *
- * Usage:
- *   <LabeledChipList
- *     label="Trusted across"
- *     :items="INDUSTRIES"
- *     more-label="+ more"
- *     more-to="/industries"
- *   />
- */
 withDefaults(defineProps<{
   label: string
   items: readonly string[]
   moreLabel?: string
-  /** When provided, the "+ more" chip becomes a router-link to this path. */
   moreTo?: string
 }>(), {
   moreLabel: undefined,
@@ -117,7 +96,6 @@ withDefaults(defineProps<{
   transform: translateY(-1px);
 }
 
-/* Overflow indicator — muted variant of the chip */
 .labeled-chip-list__chip--more {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.14);
@@ -128,7 +106,6 @@ withDefaults(defineProps<{
   background: rgba(255, 255, 255, 0.40);
 }
 
-/* Link variant of the "+ more" chip — clickable, brighter hover state */
 .labeled-chip-list__chip--link {
   text-decoration: none;
   cursor: pointer;

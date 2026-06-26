@@ -31,35 +31,10 @@
 </template>
 
 <script lang="ts">
-/**
- * Triple-gradient variants — same family as SecondaryCard.
- * Exported so parents can tightly type their data arrays.
- */
 export type TertiaryCardVariant = 'blue' | 'cyan' | 'red'
 </script>
 
 <script setup lang="ts">
-/**
- * TertiaryCard — compact card.
- *
- * Same visual family as SecondaryCard (triple gradient + radial corner
- * glow + asymmetric brand radius), but sized down for dense layouts like
- * carousels, badge grids, and chip-style lists. Centered content by default.
- *
- * Slots (all optional):
- *  • #icon         — visual lockup at the top (typically a 36-48px icon)
- *  • #default      — body copy (short)
- *  • #button       — small CTA pill
- *
- * Props (all optional):
- *  • eyebrow       — uppercase tracked pretitle (rare in compact cards)
- *  • title         — short heading
- *  • list          — bulleted list of strings (rare)
- *  • delay         — stagger entry delay in ms
- *
- * Variants:
- *  • blue / cyan / red — same three triple-gradient variants as Secondary
- */
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 
 withDefaults(defineProps<{
@@ -77,7 +52,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
-/* ── Card shell — compact, centered, triple gradient ────────────────────── */
 .tertiary-card {
   position: relative;
   display: flex;
@@ -104,7 +78,7 @@ const { el: cardRef, visible } = useRevealOnScroll()
   transform: translateY(28px) scale(0.94);
   transition:
     opacity 0.6s ease-out,
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s var(--ease-brand),
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }
@@ -119,7 +93,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   box-shadow: 0 18px 38px rgba(0, 0, 0, 0.30);
 }
 
-/* Radial corner glow — placed at the larger asymmetric corner */
 .tertiary-card::before {
   content: '';
   position: absolute;
@@ -129,7 +102,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   z-index: 0;
 }
 
-/* ── Variant: blue ──────────────────────────────────────────────────────── */
 .tertiary-card--blue {
   background: linear-gradient(135deg,
     rgba(21, 117, 187, 0.42) 0%,
@@ -150,7 +122,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: 0 clamp(32px, 4vw, 48px) 0 0;
 }
 
-/* ── Variant: cyan ──────────────────────────────────────────────────────── */
 .tertiary-card--cyan {
   background: linear-gradient(135deg,
     rgba(0, 173, 239, 0.34) 0%,
@@ -171,7 +142,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: clamp(32px, 4vw, 48px) 0 0 0;
 }
 
-/* ── Variant: red ───────────────────────────────────────────────────────── */
 .tertiary-card--red {
   background: linear-gradient(135deg,
     rgba(229, 45, 39, 0.42) 0%,
@@ -192,7 +162,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: 0 clamp(32px, 4vw, 48px) 0 0;
 }
 
-/* ── Slots & content ────────────────────────────────────────────────────── */
 .tertiary-card__icon {
   position: relative;
   z-index: 1;
@@ -257,11 +226,9 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin-top: clamp(4px, 0.5vw, 8px);
 }
 
-/* Slot content resets */
 .tertiary-card__body :deep(> *:first-child) { margin-top: 0; }
 .tertiary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
 
-/* ── Mobile GPU optimization ─────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .tertiary-card {
     backdrop-filter: none;

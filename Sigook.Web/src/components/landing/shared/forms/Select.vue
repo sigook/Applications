@@ -24,13 +24,6 @@
 <script setup lang="ts" generic="T">
 import { computed } from 'vue'
 
-/**
- * Select — dropdown with glass V2 styling.
- *
- * Generic over `T` — the selected value is the full option object (not a
- * string key). Internally each option is matched by `optionKey` (defaults
- * to `id`) and rendered by `optionLabel` (defaults to `value`).
- */
 const props = withDefaults(defineProps<{
   modelValue?: T | null
   options: readonly T[]
@@ -40,9 +33,7 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   name?: string
   error?: string
-  /** Property name to use as the option key (default 'id'). */
   optionKey?: keyof T & string
-  /** Property name to use as the option label (default 'value'). */
   optionLabel?: keyof T & string
 }>(), {
   required: false,
@@ -125,7 +116,7 @@ function onChange(event: Event): void {
 }
 
 .landing-select__control option {
-  background-color: #0f2f44;
+  background-color: var(--c-brand-navy);
   color: #fff;
 }
 

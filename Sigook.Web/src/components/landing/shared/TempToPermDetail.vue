@@ -36,11 +36,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * TempToPermDetail — the expanded detail revealed inside the Temp-to-Perm
- * SecondaryCard on both the Talents and Employers Solutions sections.
- * Same copy in both places, so it lives here once.
- */
 </script>
 
 <style scoped>
@@ -70,7 +65,6 @@
   gap: 8px;
 }
 
-/* Numbered steps — circular index badge */
 .ttp-detail__steps {
   counter-reset: ttp-step;
 }
@@ -103,7 +97,6 @@
   border-radius: 50%;
 }
 
-/* Bulleted lists */
 .ttp-detail__list li {
   position: relative;
   padding-left: 18px;

@@ -70,7 +70,7 @@ withDefaults(defineProps<{
   right: 0;
   bottom: 0;
   height: 28%;
-  background: linear-gradient(180deg, transparent 0%, #0f2f44 100%);
+  background: linear-gradient(180deg, transparent 0%, var(--c-brand-navy) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {

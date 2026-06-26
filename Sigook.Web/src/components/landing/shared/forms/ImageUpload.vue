@@ -32,7 +32,6 @@ const ALLOWED = ['jpeg', 'jpg', 'png', 'gif']
 const MAX_SIZE_KB = 10_000
 
 const props = withDefaults(defineProps<{
-  /** Initial image URL (e.g. when editing an existing profile). */
   initialUrl?: string
   hint?: string
   disabled?: boolean
@@ -47,7 +46,6 @@ const emit = defineEmits<{
 const inputRef = ref<HTMLInputElement | null>(null)
 const previewUrl = ref<string | null>(props.initialUrl ?? null)
 const error = ref('')
-/** Track URLs we created via `createObjectURL` so we can revoke them. */
 const ownedUrls: string[] = []
 
 watch(() => props.initialUrl, (url) => {
@@ -58,14 +56,12 @@ function onChange(event: Event): void {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) return
 
-  // Validate extension
   const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
   if (!ALLOWED.includes(ext)) {
     error.value = `Allowed: ${ALLOWED.join(', ')}`
     return
   }
 
-  // Validate size
   if (file.size / 1024 > MAX_SIZE_KB) {
     error.value = `Max size ${MAX_SIZE_KB / 1000}MB`
     return
@@ -79,7 +75,6 @@ function onChange(event: Event): void {
 }
 
 onMounted(() => {
-  // No-op
 })
 
 onUnmounted(() => {

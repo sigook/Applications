@@ -6,13 +6,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Animated scroll affordance — vertical line with a cyan tick that ticks
- * downward continuously. Used at the bottom of full-screen hero sections.
- *
- * Positioning (absolute/fixed/inline) is the parent's responsibility — this
- * component only renders the visual + animation.
- */
 withDefaults(defineProps<{
   href?: string
   ariaLabel?: string

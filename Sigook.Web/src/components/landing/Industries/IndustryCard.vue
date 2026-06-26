@@ -6,34 +6,27 @@
       { 'industry-card--expanded': expanded },
     ]"
   >
-    <!-- Layer 0 — solid brand gradient (always present; revealed when expanded) -->
     <div class="industry-card__base" aria-hidden="true"></div>
 
-    <!-- Layer 1 — photo cover (fades out when expanded) -->
     <div
       class="industry-card__photo"
       :style="photoStyle"
       aria-hidden="true"
     ></div>
 
-    <!-- Layer 2 — navy overlay on top of photo (fades out with photo) -->
     <div class="industry-card__overlay" aria-hidden="true"></div>
 
-    <!-- Ghost numeral 01-11 -->
     <span class="industry-card__index" aria-hidden="true">
       {{ formatIndex(index) }}
     </span>
 
-    <!-- Content -->
     <div class="industry-card__content">
       <IndustryIcon :name="industry.key" class="industry-card__icon" />
 
       <h3 class="industry-card__title">{{ industry.title }}</h3>
 
-      <!-- Tagline (collapsed copy) — fades when expanded -->
       <p class="industry-card__tagline">{{ industry.tagline }}</p>
 
-      <!-- Expanded body — fades in, max-height transitions -->
       <div class="industry-card__expanded">
         <p class="industry-card__body">{{ industry.body }}</p>
 
@@ -64,18 +57,8 @@
 <script lang="ts">
 import type { IndustryIconName } from '@/components/landing/shared/IndustryIcon.vue'
 
-/**
- * Tone names match PrimaryCard / DualCta audience section — keeps the
- * Industries page anchored to the same color vocabulary as the Home page's
- * "Find Work / Find Talent" cards.
- */
 export type IndustryTone = 'navy' | 'red'
 
-/**
- * Industry data shape — exported so the parent panel can tightly type its
- * data array. Photo path is optional; cards gracefully degrade to a pure
- * brand gradient if the image is missing.
- */
 export interface Industry {
   readonly key: IndustryIconName
   readonly title: string
@@ -88,19 +71,6 @@ export interface Industry {
 </script>
 
 <script setup lang="ts">
-/**
- * IndustryCard — expandable card that transitions from "photo + gradient
- * overlay" (collapsed) to "solid brand gradient + detailed info" (expanded).
- *
- * The parent panel owns the expanded state (accordion behavior: only one
- * card open at a time) and toggles via the `toggle` emit.
- *
- * Visual rhythm:
- *  • Asymmetric brand radius alternates per index (handled here, not parent)
- *  • Ghost numeral in the background echoes the magazine-style indices
- *    used in WhyWorkWithUs and FocusAreas panels
- *  • Cyan / red tone drives both the gradient and the icon's accent
- */
 import { computed } from 'vue'
 import IndustryIcon from '@/components/landing/shared/IndustryIcon.vue'
 
@@ -126,7 +96,6 @@ function formatIndex(idx: number): string {
 </script>
 
 <style scoped>
-/* ── Card shell ─────────────────────────────────────────────────────────── */
 .industry-card {
   position: relative;
   display: flex;
@@ -138,7 +107,7 @@ function formatIndex(idx: number): string {
   cursor: pointer;
   transition:
     border-color 0.4s ease,
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.4s var(--ease-brand);
 }
 
 .industry-card:hover {
@@ -146,7 +115,6 @@ function formatIndex(idx: number): string {
   transform: translateY(-4px);
 }
 
-/* Alternating asymmetric brand radius — odd cards: TL+BR, even: TR+BL */
 .industry-card:nth-child(odd) {
   border-radius:
     clamp(40px, 5.5vw, 72px) 0
@@ -159,12 +127,10 @@ function formatIndex(idx: number): string {
     0 clamp(40px, 5.5vw, 72px);
 }
 
-/* ── Layer 0 — solid brand gradient base (always present) ───────────────── */
 .industry-card__base {
   position: absolute;
   inset: 0;
   z-index: 0;
-  /* Expanded state reveals this solid red gradient — same for every card */
   background: linear-gradient(
     135deg,
     rgba(229, 45, 39, 0.92) 0%,
@@ -172,46 +138,35 @@ function formatIndex(idx: number): string {
   );
 }
 
-/* ── Layer 1 — photo cover (visible when collapsed) ─────────────────────── */
 .industry-card__photo {
   position: absolute;
   inset: 0;
   z-index: 1;
   background-size: cover;
   background-position: center;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.55s var(--ease-brand);
 }
 
 .industry-card--expanded .industry-card__photo {
   opacity: 0;
 }
-
-/* ── Layer 2 — brand-tone overlay (visible when collapsed) ──────────────── */
-/* Top-to-bottom gradient that matches the card's tone (navy or red) so the
-   photo reads through the brand color instead of a generic dark veil. Goes
-   from semi-transparent at the top (lets the photo breathe) to nearly opaque
-   at the bottom (anchors the title + tagline). Fades out on expand to
-   reveal the solid `.industry-card__base` gradient underneath. */
 .industry-card__overlay {
   position: absolute;
   inset: 0;
   z-index: 2;
-  /* Collapsed state shows this blue gradient over the photo — same for every
-     card. Fades out on expand to reveal the red base underneath. */
   background: linear-gradient(
     180deg,
     rgba(15, 47, 68, 0.55) 0%,
     rgba(21, 117, 187, 0.65) 55%,
     rgba(15, 47, 68, 0.92) 100%
   );
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.55s var(--ease-brand);
 }
 
 .industry-card--expanded .industry-card__overlay {
   opacity: 0;
 }
 
-/* ── Ghost numeral ──────────────────────────────────────────────────────── */
 .industry-card__index {
   position: absolute;
   top: clamp(-4px, -0.5vw, 4px);
@@ -227,7 +182,6 @@ function formatIndex(idx: number): string {
   user-select: none;
 }
 
-/* ── Content ────────────────────────────────────────────────────────────── */
 .industry-card__content {
   position: relative;
   z-index: 4;
@@ -275,7 +229,6 @@ function formatIndex(idx: number): string {
   max-height: 0;
 }
 
-/* ── Expanded body ──────────────────────────────────────────────────────── */
 .industry-card__expanded {
   width: 100%;
   max-height: 0;
@@ -336,7 +289,6 @@ function formatIndex(idx: number): string {
   border-radius: 50%;
 }
 
-/* ── Toggle button ──────────────────────────────────────────────────────── */
 .industry-card__toggle {
   margin-top: auto;
   align-self: flex-start;

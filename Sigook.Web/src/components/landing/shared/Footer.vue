@@ -1,12 +1,9 @@
 <template>
   <footer class="footer">
-    <!-- Cyan accent line at the top — closes the page visually -->
     <div class="footer__accent" aria-hidden="true"></div>
 
     <div class="footer__inner">
-      <!-- Main row: brand column + 3 link columns -->
       <div class="footer__main">
-        <!-- Brand column -->
         <div class="footer__brand">
           <img
             src="@/assets/images/v2/footer/footer-logo.png"
@@ -19,7 +16,6 @@
           <SocialLinks class="footer__social" />
         </div>
 
-        <!-- Nav columns -->
         <div class="footer__cols">
           <nav class="footer__col" aria-label="Company">
             <span class="footer__col-eyebrow">Company</span>
@@ -71,12 +67,9 @@ const currentYear = new Date().getFullYear()
 </script>
 
 <style scoped>
-/* ── Shell — sits above GlobalBackground (z:1) with subtle dark glass overlay ── */
 .footer {
   position: relative;
   z-index: 1;
-  /* Subtle dark glass overlay on top of the global-bg gradient — keeps the
-     atmospheric circles visible behind while improving text contrast. */
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.35) 0%,
@@ -88,7 +81,6 @@ const currentYear = new Date().getFullYear()
   font-family: var(--font-family);
 }
 
-/* Cyan accent line at the top — gradient fade from edges to center */
 .footer__accent {
   height: 1px;
   background: linear-gradient(
@@ -101,7 +93,6 @@ const currentYear = new Date().getFullYear()
   );
 }
 
-/* ── Inner container ─────────────────────────────────────────────────────── */
 .footer__inner {
   max-width: var(--container-max);
   margin: 0 auto;
@@ -111,7 +102,6 @@ const currentYear = new Date().getFullYear()
   gap: 48px;
 }
 
-/* ── Main row ────────────────────────────────────────────────────────────── */
 .footer__main {
   display: flex;
   align-items: flex-start;
@@ -123,7 +113,6 @@ const currentYear = new Date().getFullYear()
   display: contents;
 }
 
-/* ── Brand column ────────────────────────────────────────────────────────── */
 .footer__brand {
   display: flex;
   flex-direction: column;
@@ -137,7 +126,6 @@ const currentYear = new Date().getFullYear()
   height: 72px;
   object-fit: contain;
   object-position: left center;
-  /* Force white tint so the brand mark reads on dark bg regardless of source PNG */
   filter: brightness(0) invert(1);
 }
 
@@ -150,7 +138,6 @@ const currentYear = new Date().getFullYear()
   margin: 0;
 }
 
-/* ── Link columns ────────────────────────────────────────────────────────── */
 .footer__col {
   display: flex;
   flex-direction: column;
@@ -191,14 +178,12 @@ const currentYear = new Date().getFullYear()
   transform: none;
 }
 
-/* ── Divider ─────────────────────────────────────────────────────────────── */
 .footer__divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.14);
   width: 100%;
 }
 
-/* ── Bottom row ──────────────────────────────────────────────────────────── */
 .footer__bottom {
   display: flex;
   align-items: center;
@@ -228,7 +213,6 @@ const currentYear = new Date().getFullYear()
   color: var(--c-brand-cyan);
 }
 
-/* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .footer {
     backdrop-filter: none;
@@ -259,7 +243,6 @@ const currentYear = new Date().getFullYear()
     height: 60px;
   }
 
-  /* 2 → 3 cols depending on viewport */
   .footer__cols {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

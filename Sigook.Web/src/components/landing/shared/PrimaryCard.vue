@@ -33,38 +33,10 @@
 </template>
 
 <script lang="ts">
-/**
- * Variant names match the Home page's DualCta cards (audience section).
- * Exported so parents can tightly type their data arrays.
- */
 export type PrimaryCardVariant = 'navy' | 'red'
 </script>
 
 <script setup lang="ts">
-/**
- * PrimaryCard — large CTA-grade card.
- *
- * Canonical pattern lifted from the Home page's DualCtaSection: solid
- * brand gradient background, oversized asymmetric brand radius, generous
- * padding, and a prominent title. Use this for hero CTAs and audience
- * cards that need to anchor a section visually.
- *
- * Slots (all optional):
- *  • #icon         — visual lockup at the top
- *  • #default      — body copy
- *  • #button       — CTA pill / button at the bottom
- *
- * Props (all optional, kept simple — use slots for richer content):
- *  • eyebrow       — uppercase tracked pretitle
- *  • title         — main heading
- *  • list          — bulleted list of strings
- *  • showDivider   — short white line between title and body (DualCta style)
- *  • delay         — stagger entry delay in ms
- *
- * Variants:
- *  • navy — Find-Work style (navy → brand-blue gradient)
- *  • red  — Find-Talent style (brand-red gradient)
- */
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 
 withDefaults(defineProps<{
@@ -84,11 +56,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
-/* ── Card shell — large, glass + solid brand gradient ───────────────────── */
-/* Note: `position` is intentionally NOT set here so the consumer can apply
-   absolute positioning (e.g. DualCta's overlap layout) via a wrapping class
-   without specificity tie-breaks. `isolation: isolate` still creates a
-   stacking context without requiring a position value. */
 .primary-card {
   display: flex;
   flex-direction: column;
@@ -103,13 +70,11 @@ const { el: cardRef, visible } = useRevealOnScroll()
   isolation: isolate;
   font-family: var(--font-family);
   overflow: hidden;
-
-  /* Entrance fade — driven by IntersectionObserver */
   opacity: 0;
   transform: translateY(40px) scale(0.95);
   transition:
     opacity 0.7s ease-out,
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s var(--ease-brand),
     box-shadow 0.5s ease;
 }
 
@@ -123,7 +88,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   transform: translateY(-8px);
 }
 
-/* ── Variant: navy (Find-Work style) ────────────────────────────────────── */
 .primary-card--navy {
   background: linear-gradient(135deg,
     rgba(15, 47, 68, 0.70) 0%,
@@ -133,7 +97,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
     clamp(20px, 2.5vw, 24px) clamp(64px, 8vw, 96px);
 }
 
-/* ── Variant: red (Find-Talent style) ───────────────────────────────────── */
 .primary-card--red {
   background: linear-gradient(135deg,
     rgba(229, 45, 39, 0.62) 0%,
@@ -143,7 +106,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
     clamp(64px, 8vw, 96px) clamp(20px, 2.5vw, 24px);
 }
 
-/* ── Slots & content ────────────────────────────────────────────────────── */
 .primary-card__icon {
   margin-bottom: clamp(16px, 1.8vw, 22px);
   font-size: clamp(40px, 4.8vw, 60px);
@@ -179,7 +141,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin: clamp(16px, 2vw, 24px) 0;
 }
 
-/* Default divider color for variant red is cyan (matches DualCta language) */
 .primary-card--red .primary-card__divider {
   background: var(--c-brand-cyan);
 }
@@ -192,7 +153,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin: 0;
 }
 
-/* Spacing when body follows title without divider */
 .primary-card__title + .primary-card__body {
   margin-top: clamp(16px, 2vw, 24px);
 }
@@ -229,11 +189,9 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin-top: clamp(28px, 3.2vw, 36px);
 }
 
-/* Slot content resets — first/last margin collapse so consumer spacing wins */
 .primary-card__body :deep(> *:first-child) { margin-top: 0; }
 .primary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
 
-/* ── Mobile GPU perf: drop blur, bake contrast, cap shadows ─────────────── */
 @media (max-width: 1023px) {
   .primary-card {
     backdrop-filter: none;

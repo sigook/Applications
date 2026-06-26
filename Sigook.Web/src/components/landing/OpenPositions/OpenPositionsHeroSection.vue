@@ -84,7 +84,6 @@ function onSearch(): void {
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .op-hero {
   position: relative;
   width: 100%;
@@ -93,28 +92,20 @@ function onSearch(): void {
   isolation: isolate;
 }
 
-/* Dissolve the hero photo into the page background at the bottom so the job
-   list that overlaps the hero integrates seamlessly. The whole photo + scrim
-   is masked to transparent, revealing the real GlobalBackground underneath —
-   no fixed-colour fade, so there is no hard seam against the page gradient. */
 .op-hero :deep(.hero-bg) {
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 60%, transparent 92%);
   mask-image: linear-gradient(180deg, #000 0%, #000 60%, transparent 92%);
 }
 
-/* Drop the shared component's solid-navy bottom fade for this hero — the mask
-   above already blends it into the GlobalBackground. */
 .op-hero :deep(.hero-bg__fade) {
   display: none;
 }
 
-/* ── Magnifier — top-left anchor (mirrors Home) ─────────────────────────── */
 .op-hero__magnifier {
   top: clamp(14%, 16vw, 22%);
   left: clamp(6%, 8vw, 12%);
 }
 
-/* ── Content stack ──────────────────────────────────────────────────────── */
 .op-hero__content {
   position: relative;
   z-index: 2;
@@ -137,9 +128,8 @@ function onSearch(): void {
   margin-bottom: clamp(20px, 3vw, 28px);
 }
 
-/* ── Heading ────────────────────────────────────────────────────────────── */
 .op-hero__heading {
-  font-size: clamp(32px, 5.5vw, 60px);
+  font-size: var(--text-hero-size);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -154,7 +144,7 @@ function onSearch(): void {
 }
 
 .op-hero__subtitle {
-  font-size: clamp(14px, 1.4vw, 17px);
+  font-size: var(--text-hero-sub-size);
   font-weight: 400;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.85);
@@ -163,12 +153,10 @@ function onSearch(): void {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Search form — glass V2 (replaces white floating card) ──────────────── */
 .op-hero__search {
   position: relative;
   z-index: 2;
   display: grid;
-  /* 2 inputs in one row on desktop, plus the submit button on the right. */
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) auto;
   gap: clamp(12px, 1.4vw, 16px);
   width: 100%;
@@ -236,9 +224,7 @@ function onSearch(): void {
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-/* ── Submit button — red pill matching Figma intent ─────────────────────── */
 .op-hero__submit {
-  /* Sits below the labels but at input height — align to end of the grid */
   align-self: end;
   height: clamp(44px, 4.4vw, 50px);
   padding: 0 clamp(22px, 2.4vw, 28px);
@@ -279,7 +265,6 @@ function onSearch(): void {
   transform: translateX(3px);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .op-hero {
     min-height: 100svh;
@@ -289,7 +274,6 @@ function onSearch(): void {
     min-height: 100svh;
   }
 
-  /* Stack form inputs 2x2, submit takes a row of its own */
   .op-hero__search {
     grid-template-columns: 1fr 1fr;
   }
@@ -302,7 +286,6 @@ function onSearch(): void {
 }
 
 @media (max-width: 599px) {
-  /* Single column on phones */
   .op-hero__search { grid-template-columns: 1fr; }
 
 }

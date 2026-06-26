@@ -8,16 +8,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Floating brand magnifier — decorative element used across Hero,
- * WhyChooseUs hero, Testimonials, and Certified.
- *
- * Position is set by the parent via fall-through attributes (style or class).
- * The parent should provide `top/left/right/bottom` via inline style or its
- * own scoped CSS targeting `.deco-magnifier`.
- *
- * Animation (translate + rotate) lives here so all instances move identically.
- */
 </script>
 
 <style scoped>

@@ -1,18 +1,8 @@
 import { ref, readonly, type Ref } from 'vue'
-
-/**
- * Module-scoped state — acts as a tiny singleton store so any V2 component
- * can open / close the WorkerRegisterModal without dragging in Pinia.
- *
- * `context` is optional metadata (currently just a job slug) that callers
- * can pass in via `open()`; the modal reads it to display "Applying for: X".
- */
+import { lockScroll, unlockScroll } from '@/composables/useBodyScrollLock'
 export interface WorkerRegisterModalContext {
-  /** Human-readable role title (shown in the modal header). */
   readonly jobTitle?: string
-  /** Human-readable job number (e.g. the request NumberId), if any. */
   readonly jobNumber?: string
-  /** Backend Request id the application should attach to, if any. */
   readonly requestId?: string
 }
 
@@ -21,19 +11,16 @@ const context = ref<WorkerRegisterModalContext | null>(null)
 
 function open(ctx?: WorkerRegisterModalContext): void {
   context.value = ctx ?? null
+  if (isOpen.value) return
   isOpen.value = true
-  // Lock body scroll while the modal is open
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'hidden'
-  }
+  lockScroll()
 }
 
 function close(): void {
+  if (!isOpen.value) return
   isOpen.value = false
   context.value = null
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = ''
-  }
+  unlockScroll()
 }
 
 export function useWorkerRegisterModal(): {

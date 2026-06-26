@@ -3,7 +3,6 @@
     <SpecialProjectsHeroSection />
     <SpecialProjectsFocusSection />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="sp-contact">
       <ContactSection />
     </div>

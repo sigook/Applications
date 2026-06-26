@@ -1,14 +1,11 @@
 <template>
   <div class="global-bg" aria-hidden="true">
-    <!-- Soft blurred glows (atmospheric depth) -->
     <span class="global-bg__deco glow-cyan-lg"></span>
     <span class="global-bg__deco glow-navy-lg"></span>
 
-    <!-- Outlined rings (geometric structure) -->
     <span class="global-bg__deco ring-lg-white"></span>
     <span class="global-bg__deco ring-md-cyan"></span>
 
-    <!-- Solid dots (sharp accents) -->
     <span class="global-bg__deco dot-cyan-a"></span>
     <span class="global-bg__deco dot-red-a"></span>
     <span class="global-bg__deco dot-cyan-b"></span>
@@ -17,25 +14,13 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Page-wide animated background — fixed to viewport, sits behind everything.
- *
- * Vocabulary mirrors WhyChooseUs panel: navy → brand-blue gradient + radial
- * cyan glow + the brand palette of soft glows (cyan/navy/red/blue), outlined
- * rings (white/cyan), and solid dots (cyan/red). All elements drift
- * independently.
- *
- * Renders inside App.vue's v2 layout branch so every v2 route inherits the
- * same backdrop. Sections layer on top with their own photos / content /
- * transparent containers.
- */
 </script>
 
 <style scoped>
 .global-bg {
   position: fixed;
   inset: 0;
-  z-index: 0;             /* below all section content */
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
   background:
@@ -46,7 +31,7 @@
     radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.15) 0%, transparent 45%),
     linear-gradient(
       180deg,
-      #0f2f44 0%,
+      var(--c-brand-navy) 0%,
       #093055 22%,
       #0d4063 48%,
       #135b8c 76%,
@@ -59,12 +44,6 @@
   border-radius: 50%;
   will-change: transform;
 }
-
-/* ── Soft blurred glows ───────────────────────────────────────────────────── */
-/* Two drifting corner halos kept as real blur. They animate translate only
-   (no scale), so the blurred bitmap is rasterized once and the compositor
-   just moves it. The other four glows are baked into .global-bg's gradient
-   above as radial-gradients — painted once, ~zero per-frame GPU cost. */
 .glow-cyan-lg {
   width: 640px; height: 640px;
   top: -100px; right: -100px;
@@ -84,7 +63,6 @@
   animation-delay: -8s;
 }
 
-/* ── Outlined rings ───────────────────────────────────────────────────────── */
 .ring-lg-white {
   width: 220px; height: 220px;
   top: 12%; left: 8%;
@@ -102,7 +80,6 @@
   animation-delay: -12s;
 }
 
-/* ── Solid dots ───────────────────────────────────────────────────────────── */
 .dot-cyan-a {
   width: 22px; height: 22px;
   top: 28%; right: 8%;
@@ -138,7 +115,6 @@
   animation-delay: -22s;
 }
 
-/* ── Drift keyframes (translate only — compositor-cheap, no blur re-raster) ── */
 @keyframes drift-a {
   0%, 100% { transform: translate(0, 0); }
   50%      { transform: translate(140px, -110px); }
@@ -177,11 +153,6 @@
   .global-bg__deco { animation: none !important; }
 }
 
-/* ── Mobile — static, GPU-cheap backdrop ──────────────────────────────────
-   Phones/tablets can't afford animated blur layers recompositing every
-   frame, so the blurred glows are dropped and their atmosphere is baked
-   into the fixed container's gradient (painted once). Rings/dots stay but
-   stop animating; will-change is cleared so nothing is layer-promoted. */
 @media (max-width: 1023px) {
   .global-bg {
     background:
@@ -191,7 +162,7 @@
       radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.15) 0%, transparent 45%),
       linear-gradient(
         180deg,
-        #0f2f44 0%,
+        var(--c-brand-navy) 0%,
         #093055 22%,
         #0d4063 48%,
         #135b8c 76%,

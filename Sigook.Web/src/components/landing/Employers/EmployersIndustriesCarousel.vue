@@ -12,13 +12,7 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Employers — Industries carousel.
- *
- * Thin wrapper around the shared IndustriesCarousel — supplies employer-side
- * copy (hiring outcomes). Wrapped in IndustriesCarouselPanel so it shows the
- * brand panel on this page while the carousel component stays reusable.
- */
+
 import IndustriesCarousel from '@/components/landing/shared/IndustriesCarousel.vue'
 import IndustriesCarouselPanel from '@/components/landing/shared/IndustriesCarouselPanel.vue'
 </script>

@@ -5,7 +5,6 @@
     <TalentsWhyWorkSection />
     <TalentsIndustriesCarousel />
 
-    <!-- ── Contact ───────────────────────────────────────────────────────── -->
     <div id="talents-contact">
       <ContactSection />
     </div>

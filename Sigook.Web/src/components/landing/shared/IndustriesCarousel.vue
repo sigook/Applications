@@ -15,8 +15,13 @@
       <p class="industries-carousel__subtitle">{{ subtitle }}</p>
     </header>
 
-    <!-- Carousel -->
-    <div class="industries-carousel__row">
+    <div
+      class="industries-carousel__row"
+      @mouseenter="stop"
+      @mouseleave="start"
+      @focusin="stop"
+      @focusout="start"
+    >
       <button
         class="industries-carousel__nav industries-carousel__nav--prev"
         type="button"
@@ -40,7 +45,6 @@
             :aria-hidden="currentIndex !== slideIdx"
           >
             <template v-for="card in slide" :key="card.key">
-              <!-- Industry card — minimal: icon + title -->
               <TertiaryCard
                 v-if="card.kind === 'industry'"
                 :variant="card.tone"
@@ -51,7 +55,6 @@
                 </template>
               </TertiaryCard>
 
-              <!-- Learn-more CTA card — wrapped in router-link -->
               <router-link
                 v-else
                 to="/industries"
@@ -108,19 +111,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * IndustriesCarousel — canonical industries carousel.
- *
- * Extracted from TalentsIndustriesCarousel so it can be reused across pages
- * (Talents, Employers, ...) with page-specific copy.
- *
- * 3 cards per slide, 11 sectors + 1 "Learn More" CTA = 12 cards / 4 slides.
- * Cards use TertiaryCard (compact canonical) so the visual rhythm matches
- * Home WhyChooseUs / Numbers feature cards.
- *
- * Props parameterize the header copy and the learn-more CTA card text.
- * Industries list + tones + icons are fixed by design (same 11 sectors).
- */
 import { computed } from 'vue'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import SliderDots from '@/components/landing/shared/SliderDots.vue'
@@ -158,7 +148,6 @@ const props = withDefaults(defineProps<{
   learnMoreSubtitle: 'Explore all sectors',
 })
 
-// 11 industries cycle through the 3 canonical tones (blue → cyan → red).
 const INDUSTRIES: readonly IndustryCard[] = [
   { kind: 'industry', key: 'automotive',     title: 'Automotive',      iconName: 'automotive',     tone: 'blue' },
   { kind: 'industry', key: 'aviation',       title: 'Aviation',        iconName: 'aviation',       tone: 'cyan' },
@@ -175,8 +164,6 @@ const INDUSTRIES: readonly IndustryCard[] = [
 
 const CARDS_PER_SLIDE = 3
 
-// Append the learn-more card from props, then chunk all 12 cards into 4 slides.
-// Computed so the learn-more copy stays reactive if the parent rebinds props.
 const SLIDES = computed<readonly CarouselCard[][]>(() => {
   const learnMore: LearnMoreCard = {
     kind: 'learn-more',
@@ -194,7 +181,7 @@ const SLIDES = computed<readonly CarouselCard[][]>(() => {
   return out
 })
 
-const { currentIndex, next, goTo, start } = useCarousel(() => SLIDES.value, {
+const { currentIndex, next, goTo, start, stop } = useCarousel(() => SLIDES.value, {
   intervalMs: 6500,
   autoStart: true,
 })
@@ -211,15 +198,14 @@ const trackStyle = computed(() => ({
 </script>
 
 <style scoped>
-/* ── Window shell — transparent (no panel; GlobalBackground shows through) ─ */
 .industries-carousel {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(72px, 10vw, 140px)
+    var(--section-pad-y)
     clamp(20px, 3vw, 64px)
-    clamp(140px, 14vw, 200px);
+    var(--section-pad-y-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -229,7 +215,6 @@ const trackStyle = computed(() => ({
   font-family: var(--font-family);
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
 .industries-carousel__header {
   position: relative;
   z-index: 2;
@@ -246,7 +231,7 @@ const trackStyle = computed(() => ({
 }
 
 .industries-carousel__heading {
-  font-size: clamp(28px, 4.2vw, 46px);
+  font-size: var(--text-section-heading-size);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -271,7 +256,6 @@ const trackStyle = computed(() => ({
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Carousel row — viewport + prev/next nav ────────────────────────────── */
 .industries-carousel__row {
   position: relative;
   z-index: 2;
@@ -284,7 +268,6 @@ const trackStyle = computed(() => ({
   margin: 0 auto;
 }
 
-/* Nav buttons — glass round, hover invert */
 .industries-carousel__nav {
   flex-shrink: 0;
   display: inline-flex;
@@ -316,16 +299,14 @@ const trackStyle = computed(() => ({
   height: 50%;
 }
 
-/* Viewport — clips overflow */
 .industries-carousel__viewport {
   overflow: hidden;
   border-radius: clamp(20px, 2.5vw, 36px);
 }
 
-/* Track — flex row of slides, slides snap full-width */
 .industries-carousel__track {
   display: flex;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.55s var(--ease-brand);
   will-change: transform;
 }
 
@@ -336,7 +317,6 @@ const trackStyle = computed(() => ({
   gap: clamp(14px, 1.6vw, 22px);
 }
 
-/* ── Learn-more CTA card link wrapper ───────────────────────────────────── */
 .industries-carousel__cta-link {
   text-decoration: none;
   display: flex;
@@ -347,7 +327,6 @@ const trackStyle = computed(() => ({
   cursor: pointer;
 }
 
-/* ── Dots ───────────────────────────────────────────────────────────────── */
 .industries-carousel__dots {
   position: relative;
   z-index: 2;

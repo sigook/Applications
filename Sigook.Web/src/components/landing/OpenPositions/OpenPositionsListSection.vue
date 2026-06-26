@@ -210,8 +210,6 @@ onUnmounted(() => {
 .op-list {
   position: relative;
   width: 100%;
-  /* Pull the list up so it overlaps the hero, sitting just below the search
-     bar — part of the list integrates over the hero's faded bottom. */
   margin-top: clamp(-360px, -33vh, -240px);
   padding:
     clamp(16px, 2vw, 28px)
@@ -236,8 +234,6 @@ onUnmounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   align-items: start;
-  /* Reserve a stable height so the section doesn't collapse while loading or
-     when a search returns no results. */
   min-height: clamp(420px, 52vh, 640px);
 }
 
@@ -301,7 +297,7 @@ onUnmounted(() => {
   text-align: left;
   padding: clamp(14px, 1.6vw, 18px) clamp(16px, 1.8vw, 22px);
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--c-glass-border-soft);
   border-radius:
     clamp(14px, 1.6vw, 18px) clamp(14px, 1.6vw, 18px)
     clamp(14px, 1.6vw, 18px) clamp(28px, 3vw, 36px);
@@ -430,9 +426,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 599px) {
-  /* On phones the search form stacks to a single column, so the aggressive
-     desktop overlap covers it. Use a gentler overlap that keeps the list
-     peeking into the faded hero bottom while clearing the search bar. */
   .op-list {
     margin-top: clamp(-190px, -22vh, -120px);
   }

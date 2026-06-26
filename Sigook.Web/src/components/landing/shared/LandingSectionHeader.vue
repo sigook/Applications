@@ -37,16 +37,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * LandingSectionHeader — the canonical eyebrow + accent-heading + subtitle
- * lockup used by section panels across the landing (Employers, Talents,
- * Industries, Partner, Special Projects, About, the Industries carousel).
- *
- * The accent renders on its own line (block) and the eyebrow uses the shared
- * EyebrowPill. Defaults reproduce the design-system values exactly; the
- * optional overrides exist only for the few sections that tune line length,
- * spacing or type ramp (the About family). Pass nothing for the common case.
- */
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 
 withDefaults(defineProps<{

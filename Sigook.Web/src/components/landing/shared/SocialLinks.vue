@@ -17,11 +17,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * SocialLinks — Sigook® Work Factory social profiles as icon links.
- * Reused in the footer and the About page. Icons are inline brand SVGs
- * (simple-icons paths) so `currentColor` drives the hover accent.
- */
 interface Social {
   label: string
   href: string

@@ -44,13 +44,6 @@
 <script setup lang="ts" generic="T">
 import { ref, computed } from 'vue'
 
-/**
- * Autocomplete — single-select text input with filtered dropdown.
- *
- * The model is a plain string (what's currently typed); the parent listens
- * to `@select` to capture the chosen object (`T`). The parent supplies the
- * `data` list and filters it (or hands an already-filtered list back).
- */
 const props = withDefaults(defineProps<{
   modelValue?: string
   data: readonly T[]
@@ -62,7 +55,6 @@ const props = withDefaults(defineProps<{
   loading?: boolean
   optionKey?: keyof T & string
   optionLabel?: keyof T & string
-  /** When set, renders a "+ Add 'query'" footer in the dropdown. */
   allowAdd?: boolean
 }>(), {
   required: false,
@@ -196,7 +188,7 @@ function onAddNew(): void {
   list-style: none;
   margin: 0;
   padding: 6px;
-  background: #0f2f44;
+  background: var(--c-brand-navy);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   max-height: 220px;

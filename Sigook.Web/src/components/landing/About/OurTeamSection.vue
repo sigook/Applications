@@ -140,7 +140,7 @@ function hasLinkedin(member: Member): boolean {
   position: relative;
   width: 100%;
   padding:
-    clamp(72px, 10vw, 140px)
+    var(--section-pad-y)
     clamp(20px, 3vw, 40px)
     clamp(96px, 12vw, 180px);
   isolation: isolate;
@@ -180,7 +180,7 @@ function hasLinkedin(member: Member): boolean {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.35s var(--ease-brand),
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }

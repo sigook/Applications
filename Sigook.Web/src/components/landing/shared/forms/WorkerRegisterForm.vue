@@ -1,6 +1,5 @@
 <template>
   <div class="reg-form" :class="{ 'reg-form--loading': isLoading }">
-    <!-- Top: step indicator + optional context banner -->
     <header class="reg-form__head">
       <p v-if="contextLine" class="reg-form__context">
         <span class="reg-form__context-label">Applying for:</span>
@@ -9,14 +8,12 @@
       <WorkerRegisterStepNav :steps="visibleSteps" :current="currentStepIdx" />
     </header>
 
-    <!-- Loading overlay while catalogs load or while submitting -->
     <div v-if="isLoading" class="reg-form__loader" aria-live="polite">
       <span class="reg-form__spinner" aria-hidden="true"></span>
       <span>{{ loadingText }}</span>
     </div>
 
     <form v-else class="reg-form__body" @submit.prevent="onSubmit">
-      <!-- ── Step 1 — Basic ─────────────────────────────────────────────── -->
       <section v-show="currentStep === 'basic'" class="reg-form__step">
         <h3 class="reg-form__step-title">Basic information</h3>
 
@@ -71,7 +68,6 @@
         </footer>
       </section>
 
-      <!-- ── Step 2 — Preferences ───────────────────────────────────────── -->
       <section v-show="currentStep === 'preferences'" class="reg-form__step">
         <h3 class="reg-form__step-title">Preferences</h3>
 
@@ -162,11 +158,9 @@
         </footer>
       </section>
 
-      <!-- ── Step 3 — Documents ─────────────────────────────────────────── -->
       <section v-show="currentStep === 'documents'" class="reg-form__step">
         <h3 class="reg-form__step-title">Documents</h3>
 
-        <!-- Identification (1 required, 2 optional) -->
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">
@@ -230,7 +224,6 @@
           </p>
         </div>
 
-        <!-- Licenses -->
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Licenses</span>
@@ -262,7 +255,6 @@
           </div>
         </div>
 
-        <!-- Certificates -->
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Certificates</span>
@@ -286,7 +278,6 @@
           </div>
         </div>
 
-        <!-- Resume -->
         <div class="reg-form__doc-block">
           <div class="reg-form__doc-head">
             <span class="reg-form__doc-title">Resume</span>
@@ -316,7 +307,6 @@
         </footer>
       </section>
 
-      <!-- ── Step 4 — Account ───────────────────────────────────────────── -->
       <section v-show="currentStep === 'account'" class="reg-form__step">
         <h3 class="reg-form__step-title">Account</h3>
 
@@ -363,7 +353,7 @@
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
             <span>Previous</span>
           </button>
-          <button type="submit" class="reg-form__btn reg-form__btn--submit">
+          <button type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
             <span>Register</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
           </button>
@@ -400,12 +390,9 @@ import { useAppStore } from '@/stores/app'
 import { showAlertError, showAlertSuccess } from '@/utils/toast'
 import { filename } from '@/utils/filters'
 
-/* ── Props / emits ──────────────────────────────────────────────────────── */
 
 const props = withDefaults(defineProps<{
-  /** Optional job title shown in the context banner ("Applying for: X"). */
   jobTitle?: string
-  /** When true, jump to the home route after success; modal would close instead. */
   redirectOnSuccess?: boolean
 }>(), {
   redirectOnSuccess: true,
@@ -414,8 +401,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'submitted', workerId: string): void
 }>()
-
-/* ── State + composables ────────────────────────────────────────────────── */
 
 const router = useRouter()
 const securityStore = useSecurityStore()
@@ -445,8 +430,6 @@ const isLogin = computed(() => !!securityStore.user)
 
 const contextLine = computed(() => props.jobTitle || '')
 
-/* ── Step machine ───────────────────────────────────────────────────────── */
-
 type StepKey = 'basic' | 'preferences' | 'documents' | 'account'
 const ALL_STEPS: readonly StepDescriptor[] = [
   { key: 'basic',       label: 'Basic' },
@@ -472,8 +455,6 @@ function goPrev(): void {
   const idx = currentStepIdx.value
   if (idx > 0) currentStep.value = visibleSteps.value[idx - 1].key as StepKey
 }
-
-/* ── Yup schema (mirrors legacy Register.vue) ───────────────────────────── */
 
 const hasSecondId = computed(() => !!worker.identificationType2File)
 
@@ -549,7 +530,6 @@ const { value: password } = useField<string>('password')
 const { value: confirmPassword } = useField<string>('confirmPassword')
 const { value: agreeTermsAndConditions } = useField<boolean>('agreeTermsAndConditions')
 
-/* "Show error only after the user has touched the field" — matches legacy */
 const interacted = reactive<Record<string, boolean>>({})
 const watchedFields: Array<[string, { value: unknown }]> = [
   ['firstName', { value: firstName }],
@@ -585,8 +565,6 @@ function markInteracted(fields: string[]): void {
   for (const f of fields) interacted[f] = true
 }
 
-/* ── Address (composite) ────────────────────────────────────────────────── */
-
 const addressModel = ref<AddressModel>({
   country: null,
   province: null,
@@ -595,8 +573,6 @@ const addressModel = ref<AddressModel>({
   postalCode: '',
 })
 const addressRef = ref<{ validate: () => boolean } | null>(null)
-
-/* ── Lift + vehicle (proxied to worker reactive state) ──────────────────── */
 
 const lift = computed({
   get: () => worker.lift as unknown,
@@ -607,7 +583,6 @@ const hasVehicle = computed({
   set: (v: boolean) => { worker.hasVehicle = v as never },
 })
 
-/* TagInput needs an array, mirror worker.languages + worker.skills */
 const languagesModel = computed({
   get: () => worker.languages,
   set: (v) => { worker.languages = v as never },
@@ -616,8 +591,6 @@ const skillsModel = computed({
   get: () => worker.skills,
   set: (v) => { worker.skills = v as never },
 })
-
-/* ── File uploads ───────────────────────────────────────────────────────── */
 
 const documentsError = ref(false)
 const fileObjects = reactive({
@@ -719,8 +692,6 @@ function deleteResume(): void {
   worker.resume = null
 }
 
-/* ── Per-step validation ────────────────────────────────────────────────── */
-
 async function validateStepBasic(): Promise<boolean> {
   const fields = ['firstName', 'lastName', 'birthDay', 'gender', 'mobileNumber']
   markInteracted(fields)
@@ -778,25 +749,26 @@ async function validateAndAdvance(): Promise<void> {
   }
 }
 
-/* ── Submit ─────────────────────────────────────────────────────────────── */
-
 const isLoading = ref(true)
 const loadingText = ref('Loading…')
+const isSubmitting = ref(false)
 
 async function onSubmit(): Promise<void> {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
   const fields = ['email', 'password', 'confirmPassword']
   if (!isLogin.value) fields.push('agreeTermsAndConditions')
   markInteracted(fields)
   const results = await Promise.all(fields.map((f) => validateField(f as never)))
   if (!results.every((r) => r.valid)) {
     showAlertError('Please make sure all required fields are filled out correctly')
+    isSubmitting.value = false
     return
   }
 
   isLoading.value = true
   loadingText.value = 'Submitting…'
 
-  // Wire validated values back into the worker model
   worker.firstName = firstName.value as never
   worker.lastName = lastName.value as never
   worker.birthDay = birthDay.value as never
@@ -809,12 +781,8 @@ async function onSubmit(): Promise<void> {
   worker.password = password.value as never
   worker.confirmPassword = confirmPassword.value as never
   worker.agreeTermsAndConditions = agreeTermsAndConditions.value as never
-  // Select emits the full Gender object (unlike the legacy form's
-   // b-select which bound only the id). Extract `.id` so the backend
-   // receives the same `{ id: '<guid>' }` shape Register.vue sends.
   const genderObj = gender.value as { id: string } | null
   worker.gender = (genderObj ? { id: genderObj.id } : null) as never
-  // Address: assemble a `location` matching the legacy shape
   worker.location = addressModel.value.city
     ? {
         address: addressModel.value.address,
@@ -842,22 +810,16 @@ async function onSubmit(): Promise<void> {
     showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
   } finally {
     isLoading.value = false
+    isSubmitting.value = false
   }
 }
-
-/* ── Date constraints (worker must be 18+) ──────────────────────────────── */
 
 const maxBirthDate = ref<Date | null>(null)
 
 onMounted(async () => {
-  // Catalogs need auth — if the call fails (e.g. user not logged in on
-  // /v2 public pages), we still render the form with empty select options
-  // so the user can fill basic info; the backend will reject submission
-  // until they're authenticated, which is the existing legacy behavior.
   try {
     await loadCatalogs()
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('[WorkerRegisterForm] catalog load failed:', err)
   }
   try {
@@ -870,7 +832,6 @@ onMounted(async () => {
   loadingText.value = 'Loading…'
 })
 
-/* ── Silence "unused" warning for skills.value re-render (keeps reactivity) */
 void skills
 </script>
 
@@ -1019,7 +980,6 @@ void skills
   gap: 10px;
 }
 
-/* ── Document blocks ────────────────────────────────────────────────────── */
 .reg-form__doc-block {
   display: flex;
   flex-direction: column;
@@ -1074,7 +1034,7 @@ void skills
 
 .reg-form__doc-card {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--c-glass-border-soft);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -1122,7 +1082,6 @@ void skills
   margin: 0;
 }
 
-/* ── Account step ───────────────────────────────────────────────────────── */
 .reg-form__link {
   color: var(--c-brand-cyan);
   text-decoration: underline;
@@ -1136,7 +1095,6 @@ void skills
   margin: 4px 0 0;
 }
 
-/* ── Nav buttons ────────────────────────────────────────────────────────── */
 .reg-form__nav {
   display: flex;
   align-items: center;
@@ -1191,7 +1149,7 @@ void skills
 .reg-form__btn--ghost:hover {
   background: #fff;
   border-color: #fff;
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
   transform: translateY(-1px);
 }
 
@@ -1213,7 +1171,6 @@ void skills
   transform: scaleX(-1) translateX(3px);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
   .reg-form__grid--2col,
   .reg-form__grid--licence {

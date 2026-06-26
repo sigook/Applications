@@ -1,14 +1,12 @@
 <template>
   <main class="disclaimer">
     <div class="disclaimer__container">
-      <!-- ── Header ───────────────────────────────────────────────────────── -->
       <header class="disclaimer__header">
         <span class="disclaimer__eyebrow">Legal</span>
         <h1 class="disclaimer__title">Disclaimer</h1>
         <p class="disclaimer__updated">Last updated: January 1, 2026</p>
       </header>
 
-      <!-- ── Sheet ────────────────────────────────────────────────────────── -->
       <article class="disclaimer__sheet">
         <section class="disclaimer__section">
           <h2 class="disclaimer__heading">Use at Your Own Risk</h2>
@@ -71,13 +69,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Disclaimer — public legal page (route: /disclaimer).
- *
- * Renders the Sigook 2026 disclaimer verbatim on a readable white sheet over
- * the landing GlobalBackground. The section headings are navigational aids;
- * the legal text under each is reproduced unchanged from the source document.
- */
 </script>
 
 <style scoped>
@@ -96,7 +87,6 @@
   margin: 0 auto;
 }
 
-/* ── Header (over the dark GlobalBackground) ────────────────────────────── */
 .disclaimer__header {
   text-align: center;
   margin-bottom: clamp(28px, 4vw, 48px);
@@ -135,7 +125,6 @@
   margin: 0;
 }
 
-/* ── White sheet ───────────────────────────────────────────────────────── */
 .disclaimer__sheet {
   background: #ffffff;
   color: #2a3a4a;
@@ -178,7 +167,6 @@
   margin: 0;
 }
 
-/* All-caps statutory blocks read a touch smaller for legibility */
 .disclaimer__legal--caps {
   font-size: 13.5px;
   letter-spacing: 0.005em;

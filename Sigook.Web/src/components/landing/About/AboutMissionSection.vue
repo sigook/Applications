@@ -1,6 +1,5 @@
 <template>
   <section class="about-mission">
-    <!-- Atmospheric magnifier decoration — bottom-left anchor -->
     <DecoMagnifier class="about-mission__magnifier" />
 
     <LandingSectionHeader
@@ -43,29 +42,18 @@
 </template>
 
 <script setup lang="ts">
-/**
- * About — Mission & Vision section.
- *
- * Two SecondaryCard cards (canonical Home pattern) declaring the company's
- * purpose. Mission pulls the blue/red-accent variant; Vision pulls the
- * red/blue-accent variant — keeping the brand duality on the page while
- * matching the visual vocabulary established by Home WhyChooseUs.
- *
- * Card 02 sits lower (margin-top offset) to break DualCta-style symmetry —
- * this is a declaration, not an action prompt.
- */
+
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .about-mission {
   position: relative;
   width: 100%;
   padding:
-    clamp(72px, 10vw, 140px)
+    var(--section-pad-y)
     clamp(20px, 3vw, 40px)
     clamp(180px, 18vw, 300px);
   isolation: isolate;
@@ -77,7 +65,6 @@ import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
   left: clamp(5%, 6vw, 8%);
 }
 
-/* ── Cards grid — 2 col with staggered offset on second card ────────────── */
 .about-mission__cards {
   position: relative;
   z-index: 2;
@@ -93,7 +80,6 @@ import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
   margin-top: clamp(40px, 6vw, 96px);
 }
 
-/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
 @media (max-width: 899px) {
   .about-mission__cards { grid-template-columns: 1fr; }
 

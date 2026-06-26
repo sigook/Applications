@@ -11,18 +11,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * ArrowPillCta — the canonical pill CTA used across the landing sections.
- *
- * Two looks:
- *  • variant="glass" — translucent fill + white outline; inverts on hover to a
- *    solid fill whose colour is set by `hoverVariant` (navy | cyan | red).
- *  • variant="solid" — opaque brand-red fill that darkens to crimson on hover
- *    (the primary action CTA). `hoverVariant` is ignored for solid.
- *
- * Renders <router-link> when `to` is set, <a> when `href` is set, otherwise a
- * <button> (`type` selects button|submit). The trailing arrow nudges on hover.
- */
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -70,7 +58,6 @@ const hostAttrs = computed(() =>
     box-shadow 0.25s ease;
 }
 
-/* ── Sizes ───────────────────────────────────────────────────────────────── */
 .arrow-pill--sm {
   padding: clamp(10px, 1.1vw, 12px) clamp(18px, 2vw, 24px);
   font-size: clamp(12px, 1vw, 13px);
@@ -84,7 +71,6 @@ const hostAttrs = computed(() =>
   font-size: clamp(14px, 1.15vw, 15px);
 }
 
-/* ── Glass variant ───────────────────────────────────────────────────────── */
 .arrow-pill--glass {
   background: var(--c-glass-fill-strong);
   border: 1.5px solid rgba(var(--c-white-rgb), 0.55);
@@ -111,7 +97,6 @@ const hostAttrs = computed(() =>
   transform: translateY(-2px);
 }
 
-/* ── Solid variant (primary red) ─────────────────────────────────────────── */
 .arrow-pill--solid {
   background: var(--c-brand-red);
   border: 1.5px solid var(--c-brand-red);
@@ -125,7 +110,6 @@ const hostAttrs = computed(() =>
   box-shadow: 0 12px 28px -6px rgba(var(--c-brand-red-rgb), 0.5);
 }
 
-/* ── Arrow ───────────────────────────────────────────────────────────────── */
 .arrow-pill__arrow {
   font-size: 1.15em;
   line-height: 1;

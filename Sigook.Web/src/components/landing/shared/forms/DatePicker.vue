@@ -20,12 +20,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-/**
- * DatePicker — wraps the native HTML5 date input with V2 glass styling.
- *
- * Accepts/emits Date objects. Native input gives us calendar UI for free,
- * mobile keyboards, and a11y; we just need to translate Date <-> ISO string.
- */
 const props = withDefaults(defineProps<{
   modelValue?: Date | null
   label?: string

@@ -8,7 +8,7 @@
       aria-labelledby="candidate-modal-title"
       @click.self="onBackdropClick"
     >
-      <div class="reg-modal__panel" role="document">
+      <div ref="panelRef" class="reg-modal__panel" role="document">
         <header class="reg-modal__head">
           <h2 id="candidate-modal-title" class="reg-modal__title">
             {{ title }}
@@ -41,30 +41,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
-/**
- * CandidateApplyModal — full-screen glass modal wrapping CandidateApplyForm.
- *
- * - Triggered through the `useCandidateApplyModal` singleton, so any landing
- *   component can call `.open({ jobTitle, requestId })`.
- * - Body scroll lock is handled by the composable on open/close.
- * - ESC key + backdrop click both close the modal.
- * - On successful submission the modal closes shortly after the success toast.
- */
 const { isOpen, context, close } = useCandidateApplyModal()
 
 const title = computed(() => (context.value?.jobTitle ? 'Apply for this role' : 'Register with us'))
 const subtitle = computed(() => context.value?.jobTitle ?? null)
+
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(isOpen, panelRef)
+
+let closeTimer: ReturnType<typeof setTimeout> | null = null
 
 function onBackdropClick(): void {
   close()
 }
 
 function onSubmitted(): void {
-  setTimeout(() => close(), 800)
+  if (closeTimer) clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => close(), 800)
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -79,12 +77,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-})
-
-watch(isOpen, (open) => {
-  if (!open && typeof document !== 'undefined') {
-    document.body.style.overflow = ''
-  }
+  if (closeTimer) clearTimeout(closeTimer)
 })
 </script>
 
@@ -123,7 +116,6 @@ watch(isOpen, (open) => {
   color: #fff;
 }
 
-/* Decorative cyan corner glow */
 .reg-modal__panel::before {
   content: '';
   position: absolute;
@@ -210,7 +202,6 @@ watch(isOpen, (open) => {
   border-radius: 999px;
 }
 
-/* ── Mobile ─────────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
   .reg-modal {
     padding: 0;

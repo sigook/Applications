@@ -24,12 +24,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-/**
- * FileUpload — minimal file input styled as a glass pill.
- *
- * Emits the selected File (or null when cleared). Parent owns the file
- * card rendering / removal — this component just captures the upload.
- */
 withDefaults(defineProps<{
   label?: string
   accept?: string
@@ -49,7 +43,6 @@ const inputRef = ref<HTMLInputElement | null>(null)
 function onChange(event: Event): void {
   const file = (event.target as HTMLInputElement).files?.[0] ?? null
   emit('file', file)
-  // Clear so the same file can be re-uploaded later
   if (inputRef.value) inputRef.value.value = ''
 }
 </script>

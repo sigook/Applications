@@ -14,21 +14,17 @@ import GetInTouchForm from '@/components/landing/shared/GetInTouchForm.vue'
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (background lives in GlobalBackground) ── */
 .contact {
   position: relative;
   border-radius: 0 0 20px 20px;
   overflow: hidden;
   font-family: var(--font-family);
   color: #fff;
-  /* Extend up behind Testimonials to fill the wedge revealed by its rounded
-     bottom-left corner — GlobalBackground now provides the colour underneath. */
   margin-top: -200px;
   padding-top: 200px;
   z-index: 2;
 }
 
-/* ── Inner container ───────────────────────────────────────────────────────── */
 .contact__inner {
   position: relative;
   z-index: 1;
@@ -40,7 +36,6 @@ import GetInTouchForm from '@/components/landing/shared/GetInTouchForm.vue'
   align-items: center;
 }
 
-/* ── Heading ───────────────────────────────────────────────────────────────── */
 .contact__title {
   color: #fff;
   font-family: var(--font-family);
@@ -63,11 +58,9 @@ import GetInTouchForm from '@/components/landing/shared/GetInTouchForm.vue'
   margin: 0 0 40px;
 }
 
-/* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .contact {
     min-height: unset;
-    /* Smaller overlap on mobile — corners are smaller too */
     margin-top: -120px;
     padding-top: 120px;
   }

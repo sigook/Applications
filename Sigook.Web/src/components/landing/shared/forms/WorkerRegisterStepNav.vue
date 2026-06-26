@@ -40,17 +40,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * WorkerRegisterStepNav — horizontal stepper indicator.
- *
- * Three visual states per step:
- *   • done    — cyan filled circle with check mark
- *   • current — cyan outlined circle with white number + label cyan
- *   • pending — muted glass circle, muted label
- *
- * Steps are passed in by the parent so the same nav can serve different
- * flows (skip "Preferences" when the user is logged in, for instance).
- */
 export interface StepDescriptor {
   readonly key: string
   readonly label: string
@@ -121,7 +110,6 @@ defineProps<{
   z-index: 1;
 }
 
-/* ── Current ────────────────────────────────────────────────────────────── */
 .step-nav__item--current .step-nav__circle {
   background: rgba(0, 173, 239, 0.18);
   border-color: var(--c-brand-cyan);
@@ -133,11 +121,10 @@ defineProps<{
   color: var(--c-brand-cyan);
 }
 
-/* ── Done ───────────────────────────────────────────────────────────────── */
 .step-nav__item--done .step-nav__circle {
   background: var(--c-brand-cyan);
   border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
 }
 
 .step-nav__item--done .step-nav__connector {
@@ -148,13 +135,11 @@ defineProps<{
   color: rgba(255, 255, 255, 0.85);
 }
 
-/* ── Tick svg ───────────────────────────────────────────────────────────── */
 .step-nav__tick {
   width: 14px;
   height: 14px;
 }
 
-/* ── Responsive — hide labels on very small screens ─────────────────────── */
 @media (max-width: 479px) {
   .step-nav__label { display: none; }
 }

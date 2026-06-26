@@ -1,7 +1,6 @@
 <template>
   <header class="nav" :class="{ 'nav--solid': isScrolled }">
     <div class="nav__inner">
-      <!-- Logo -->
       <router-link
         to="/"
         class="nav__logo"
@@ -10,7 +9,6 @@
         <img src="@/assets/images/logo-white-v2.png" alt="Sigook" />
       </router-link>
 
-      <!-- Desktop nav links -->
       <nav class="nav__links" aria-label="Primary">
         <router-link
           v-for="link in navLinks"
@@ -23,7 +21,6 @@
         </router-link>
       </nav>
 
-      <!-- Desktop actions -->
       <div class="nav__actions">
         <b-button
           native-type="button"
@@ -36,7 +33,6 @@
         </b-button>
       </div>
 
-      <!-- Mobile hamburger -->
       <button
         class="nav__hamburger"
         :class="{ 'nav__hamburger--open': mobileOpen }"
@@ -48,7 +44,6 @@
       </button>
     </div>
 
-    <!-- Mobile / tablet drawer — lateral off-canvas modal -->
     <transition name="nav-drawer">
       <div
         v-if="mobileOpen"
@@ -56,6 +51,7 @@
         @click.self="mobileOpen = false"
       >
         <aside
+          ref="drawerRef"
           class="nav__drawer"
           role="dialog"
           aria-modal="true"
@@ -107,6 +103,8 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';
 import menu from '@/security/menu';
+import { useFocusTrap } from '@/composables/useFocusTrap';
+import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 
 const router = useRouter();
 const route = useRoute();
@@ -114,6 +112,9 @@ const securityStore = useSecurityStore();
 
 const isScrolled = ref(false);
 const mobileOpen = ref(false);
+const drawerRef = ref<HTMLElement | null>(null);
+const { lock, unlock } = useBodyScrollLock();
+useFocusTrap(mobileOpen, drawerRef);
 
 const navLinks = [
   { label: 'Open Positions',   to: '/open-positions' },
@@ -142,27 +143,16 @@ function observeHeroLogo(): void {
   });
 }
 
-/**
- * CTA flips between "Sign In" (anonymous) and "Go to Portal" (logged in).
- */
 const ctaLabel = computed(() => (securityStore.user ? 'Go to Portal' : 'Sign In'));
 
-/**
- * Auth state is resolved asynchronously on app start (OIDC user is read from
- * storage). Until that first resolution completes the CTA shows buefy's
- * loading spinner and stays disabled, so a premature click can't fire
- * signinRedirect() mid-load and corrupt the OIDC localStorage state.
- */
 const authReady = computed(() => securityStore.isReady);
 
 async function onSignIn(): Promise<void> {
   mobileOpen.value = false;
   if (securityStore.user) {
-    // Already authenticated — jump straight to the role-appropriate home.
     const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
     router.push(homePageUrl);
   } else {
-    // Hand off to the IdentityServer OIDC flow.
     await securityStore.signIn();
   }
 }
@@ -171,15 +161,18 @@ function onScroll() {
   isScrolled.value = window.scrollY > 80;
 }
 
-// Close the lateral drawer on Escape; lock body scroll while it is open.
 function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape') mobileOpen.value = false;
 }
 
 watch(mobileOpen, (open) => {
-  document.body.style.overflow = open ? 'hidden' : '';
-  if (open) document.addEventListener('keydown', onKeydown);
-  else document.removeEventListener('keydown', onKeydown);
+  if (open) {
+    lock();
+    document.addEventListener('keydown', onKeydown);
+  } else {
+    unlock();
+    document.removeEventListener('keydown', onKeydown);
+  }
 });
 
 onMounted(() => {
@@ -192,13 +185,11 @@ watch(() => route.fullPath, observeHeroLogo);
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
   document.removeEventListener('keydown', onKeydown);
-  document.body.style.overflow = '';
   heroLogoObserver?.disconnect();
 });
 </script>
 
 <style scoped>
-/* ── Base layout ─────────────────────────────────────────────────────────── */
 .nav {
   position: fixed;
   top: 0;
@@ -212,7 +203,6 @@ onUnmounted(() => {
     box-shadow 0.35s ease;
 }
 
-/* Scrolled state: glass overlay matching DualCta / Footer vocabulary */
 .nav--solid {
   background: linear-gradient(
     180deg,
@@ -225,11 +215,6 @@ onUnmounted(() => {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
-/* ── Inner container ─────────────────────────────────────────────────────── */
-/* `width: 100%` is CRITICAL — without it, the flex container shrinks to fit
-   its content (logo + hamburger when nav links are hidden on mobile) and
-   `margin: 0 auto` then centers that tiny block, making the logo appear
-   centered instead of left-aligned. */
 .nav__inner {
   display: flex;
   align-items: center;
@@ -242,7 +227,6 @@ onUnmounted(() => {
   gap: 32px;
 }
 
-/* ── Logo ────────────────────────────────────────────────────────────────── */
 .nav__logo {
   flex-shrink: 0;
   display: block;
@@ -277,7 +261,6 @@ onUnmounted(() => {
   }
 }
 
-/* ── Desktop nav links — cyan underline indicator ──────────────────────── */
 .nav__links {
   display: flex;
   align-items: center;
@@ -299,7 +282,6 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-/* Underline indicator pseudo */
 .nav__link::after {
   content: '';
   position: absolute;
@@ -310,7 +292,7 @@ onUnmounted(() => {
   background: var(--c-brand-cyan);
   border-radius: 2px;
   transform: translateX(-50%);
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.3s var(--ease-brand);
 }
 
 .nav__link:hover {
@@ -329,7 +311,6 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* ── Desktop actions ─────────────────────────────────────────────────────── */
 .nav__actions {
   display: flex;
   align-items: center;
@@ -337,7 +318,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* CTAs — glass ghost + solid cyan primary */
 .nav__cta {
   display: inline-flex;
   align-items: center;
@@ -358,7 +338,6 @@ onUnmounted(() => {
     transform 0.25s ease;
 }
 
-/* Sign In — glass ghost pill (matches Hero CTA language) */
 .nav__cta--ghost {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px) saturate(150%);
@@ -374,7 +353,6 @@ onUnmounted(() => {
   transform: translateY(-1px);
 }
 
-/* Sign Up — solid cyan (primary action) */
 .nav__cta--primary {
   background: var(--c-brand-cyan);
   color: var(--c-brand-navy);
@@ -389,7 +367,6 @@ onUnmounted(() => {
   box-shadow: 0 10px 24px rgba(0, 173, 239, 0.40);
 }
 
-/* ── Hamburger (mobile) ──────────────────────────────────────────────────── */
 .nav__hamburger {
   display: none;
   flex-direction: column;
@@ -426,17 +403,11 @@ onUnmounted(() => {
   background-color: var(--c-brand-cyan);
 }
 
-/* ── Mobile / tablet drawer — lateral off-canvas modal ─────────────────── */
-/* Full-screen dimmed backdrop above the navbar; the panel slides in from the
-   right edge (closest to the hamburger). Click outside or the X closes it. */
 .nav__overlay {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
-  /* 100vw (not right:0) so the panel sits flush against the true viewport edge
-     even when a classic scrollbar is present — body scroll is locked while open,
-     so this never introduces a horizontal scrollbar. */
   width: 100vw;
   z-index: 200;
   background: rgba(5, 25, 45, 0.55);
@@ -561,14 +532,13 @@ onUnmounted(() => {
   flex: 1;
 }
 
-/* ── Drawer transition — backdrop fades, panel slides in from the right ─── */
 .nav-drawer-enter-active,
 .nav-drawer-leave-active {
   transition: opacity 0.3s ease;
 }
 .nav-drawer-enter-active .nav__drawer,
 .nav-drawer-leave-active .nav__drawer {
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.35s var(--ease-brand);
 }
 .nav-drawer-enter-from,
 .nav-drawer-leave-to {
@@ -586,10 +556,6 @@ onUnmounted(() => {
   }
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
-/* Breakpoint at 1199px (not 1023px) because the desktop nav has 7 nav links
-   plus a Sign In CTA — at 1024–1199px the row visibly overflows. Tablet
-   landscape gets the hamburger drawer instead. */
 @media (max-width: 1199px) {
   .nav__inner {
     height: 64px;
@@ -603,23 +569,17 @@ onUnmounted(() => {
     max-width: 120px;
   }
 
-  /* Hide desktop links/actions with !important to beat any cascade conflict
-     from Tailwind reset or global utility classes that might re-enable flex. */
   .nav__links,
   .nav__actions {
     display: none !important;
   }
 
-  /* Hamburger forced to right edge regardless of any flex item changes —
-     `margin-left: auto` consumes all remaining horizontal space, pinning
-     the button to the right side. */
   .nav__hamburger {
     display: flex;
     margin-left: auto;
   }
 }
 
-/* ── Mobile GPU budget — drop backdrop blur, bake contrast, cap shadows ──── */
 @media (max-width: 1023px) {
   .nav--solid {
     background: linear-gradient(

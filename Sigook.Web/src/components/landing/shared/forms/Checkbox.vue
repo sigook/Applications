@@ -30,12 +30,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-/**
- * Checkbox — supports two modes:
- *   1. Single boolean: bind `v-model` directly.
- *   2. Group-by-value: bind `v-model` to an array + provide `nativeValue`.
- *      Toggling adds/removes `nativeValue` from the array.
- */
 const props = withDefaults(defineProps<{
   modelValue?: boolean | unknown[]
   nativeValue?: unknown
@@ -96,7 +90,7 @@ function onChange(event: Event): void {
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.30);
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
   transition: background 0.2s ease, border-color 0.2s ease;
   flex-shrink: 0;
 }

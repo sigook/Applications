@@ -8,7 +8,7 @@
       aria-labelledby="reg-modal-title"
       @click.self="onBackdropClick"
     >
-      <div class="reg-modal__panel" role="document">
+      <div ref="panelRef" class="reg-modal__panel" role="document">
         <header class="reg-modal__head">
           <h2 id="reg-modal-title" class="reg-modal__title">
             {{ title }}
@@ -40,32 +40,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegisterForm.vue'
 import { useWorkerRegisterModal } from '@/components/landing/shared/forms/useWorkerRegisterModal'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
-/**
- * WorkerRegisterModal — full-screen glass modal that wraps WorkerRegisterForm.
- *
- * - Triggered through the `useWorkerRegisterModal` singleton, so any V2
- *   component can call `.open({ jobTitle })`.
- * - Body scroll lock is handled by the composable on open/close.
- * - ESC key + backdrop click both close the modal.
- * - On successful submission the modal closes; redirecting is the caller's
- *   responsibility (we pass `redirectOnSuccess=false` to the inner form).
- */
 const { isOpen, context, close } = useWorkerRegisterModal()
 
 const title = computed(() => (context.value?.jobTitle ? 'Apply for this role' : 'Join Sigook'))
 const subtitle = computed(() => context.value?.jobTitle ?? null)
+
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(isOpen, panelRef)
+
+let closeTimer: ReturnType<typeof setTimeout> | null = null
 
 function onBackdropClick(): void {
   close()
 }
 
 function onSubmitted(): void {
-  // Give the success toast a moment, then dismiss.
-  setTimeout(() => close(), 800)
+  if (closeTimer) clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => close(), 800)
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -80,13 +76,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-})
-
-// Make sure body scroll is reset if the component unmounts mid-open
-watch(isOpen, (open) => {
-  if (!open && typeof document !== 'undefined') {
-    document.body.style.overflow = ''
-  }
+  if (closeTimer) clearTimeout(closeTimer)
 })
 </script>
 
@@ -125,7 +115,6 @@ watch(isOpen, (open) => {
   color: #fff;
 }
 
-/* Decorative cyan corner glow */
 .reg-modal__panel::before {
   content: '';
   position: absolute;
@@ -212,14 +201,13 @@ watch(isOpen, (open) => {
   border-radius: 999px;
 }
 
-/* ── Enter / leave transition ───────────────────────────────────────────── */
 .reg-modal-enter-active,
 .reg-modal-leave-active {
   transition: opacity 0.25s ease;
 }
 .reg-modal-enter-active .reg-modal__panel,
 .reg-modal-leave-active .reg-modal__panel {
-  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.25s ease, transform 0.35s var(--ease-brand);
 }
 .reg-modal-enter-from,
 .reg-modal-leave-to {
@@ -231,7 +219,6 @@ watch(isOpen, (open) => {
   transform: scale(0.96) translateY(12px);
 }
 
-/* ── Mobile ─────────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
   .reg-modal {
     padding: 0;

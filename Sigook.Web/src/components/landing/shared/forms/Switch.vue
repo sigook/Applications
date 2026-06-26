@@ -17,12 +17,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Switch — pill toggle for boolean values.
- *
- * Off  → muted track + thumb on the left.
- * On   → cyan track + thumb on the right.
- */
 withDefaults(defineProps<{
   modelValue: boolean
   disabled?: boolean
@@ -74,7 +68,7 @@ defineEmits<{
   background: #fff;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.30);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.25s var(--ease-brand);
 }
 
 .landing-switch--on .landing-switch__track {

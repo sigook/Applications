@@ -1,9 +1,13 @@
 <template>
-  <section class="testimonials">
-    <!-- Depth back-layer — transparent, peeks ~20px above & below the slide bg -->
+  <section
+    class="testimonials"
+    @mouseenter="stopTimer"
+    @mouseleave="startTimer"
+    @focusin="stopTimer"
+    @focusout="startTimer"
+  >
     <div class="testimonials__back" aria-hidden="true"></div>
 
-    <!-- Slide backgrounds — fade between them, start at the visible zone -->
     <div
       v-for="(slide, i) in testimonials"
       :key="i"
@@ -16,19 +20,16 @@
       <div class="testimonials__overlay"></div>
     </div>
 
-    <!-- Decorative cyan glow + brand magnifier -->
     <div class="testimonials__glow" aria-hidden="true"></div>
     <DecoMagnifier class="testimonials__magnifier" />
 
     <div class="testimonials__inner">
-      <!-- Header — eyebrow + heading + cyan divider (matches Numbers / WhyChooseUs) -->
       <header class="testimonials__header">
         <span class="testimonials__eyebrow">Testimonials</span>
         <h2 class="testimonials__title">What our clients say</h2>
         <div class="testimonials__divider" aria-hidden="true"></div>
       </header>
 
-      <!-- Animated glass quote card -->
       <transition name="test-fade" mode="out-in">
         <article :key="currentSlide" class="testimonials__card">
           <img
@@ -47,7 +48,6 @@
         </article>
       </transition>
 
-      <!-- Glass pill dots (matches Hero) -->
       <div class="testimonials__dots" role="tablist" aria-label="Testimonials navigation">
         <button
           v-for="(_, i) in testimonials"
@@ -107,52 +107,45 @@ function nextSlide() {
   currentSlide.value = (currentSlide.value + 1) % testimonials.length
 }
 
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function stopTimer() {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
 function startTimer() {
+  stopTimer()
+  if (prefersReducedMotion()) return
   timer = setInterval(nextSlide, 6000)
 }
 
 function resetTimer() {
-  if (timer) clearInterval(timer)
   startTimer()
 }
 
 onMounted(startTimer)
-onUnmounted(() => { if (timer) clearInterval(timer) })
+onUnmounted(stopTimer)
 </script>
 
 <style scoped>
-/*
-  Geometry (desktop):
-  ─────────────────────────────────────────────────────────────
-  AppDownload height          = 1380px
-  Stores pill bottom          = 940 + 52 = 992px  (from AppDL top)
-  Target bg start             = 992 + 60 = 1052px (from AppDL top)
-
-  testimonials margin-top     = -700px
-    → section top             = 1380 - 700 = 680px (from AppDL top)
-  bg_offset                   = 1052 - 680 = 372px (inside section)
-    → bg starts at AppDL y    = 680 + 372 = 1052  ✓
-
-  Transparent zone (shows AppDownload through): 0 – 372px within section
-  Blue zone (covers AppDownload + extends below): 372px – 1460px within section
-  Visible testimonials below AppDownload end: 1460 - 700 = 760px
-  ─────────────────────────────────────────────────────────────
-*/
-
-/* ── Section shell — preserves AppDownload overlap geometry ──────────────── */
 .testimonials {
   position: relative;
   height: 1460px;
-  /* No overflow:hidden — lets the bg shadow extend down into Contact for the smooth transition.
-     The bg has its own overflow:hidden so its photo still clips to the rounded corners. */
   background: transparent;
   margin-top: -700px;
   z-index: 3;
   isolation: isolate;
 }
 
-/* ── Depth back-layer — transparent glass, peeks ~20px above & below the
-   slide bg (same brand mirror shape: top-right + bottom-left rounded) ────── */
 .testimonials__back {
   position: absolute;
   top: 520px;
@@ -162,15 +155,13 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   z-index: 0;
   border-radius: 0 var(--r-brand) 0 var(--r-brand);
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
-/* ── Slide backgrounds — start at y=540 so top is transparent (AppDL bleeds through),
-       bottom carries the photo + navy veil. Same geometry as before. */
 .testimonials__bg {
   position: absolute;
   top: 540px;
@@ -180,10 +171,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
-  /* Asymmetric brand shape — top-right + bottom-left rounded */
   border-radius: 0 var(--r-brand) 0 var(--r-brand);
   overflow: hidden;
-  /* Soft shadows top + bottom — reinforces overlap with AppDownload (above) and Contact (below) */
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -205,7 +194,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   inset: 0;
 }
 
-/* Heavy navy gradient overlay — matches DualCta veil language */
 .testimonials__overlay {
   position: absolute;
   inset: 0;
@@ -214,7 +202,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     linear-gradient(180deg, rgba(15, 47, 68, 0.45) 0%, rgba(15, 47, 68, 0.70) 100%);
 }
 
-/* ── Decorative cyan glow (Hero language) — top-right of visible blue zone ── */
 .testimonials__glow {
   position: absolute;
   z-index: 1;
@@ -229,14 +216,12 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0.22;
 }
 
-/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .testimonials__magnifier {
   z-index: 2;
   bottom: 170px;
   left: 7%;
 }
 
-/* ── Inner container ─────────────────────────────────────────────────────── */
 .testimonials__inner {
   position: relative;
   z-index: 3;
@@ -246,7 +231,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 0 var(--gutter-desktop);
 }
 
-/* ── Header — eyebrow + heading + cyan divider centered above quote card ─── */
 .testimonials__header {
   position: absolute;
   top: 660px;
@@ -284,7 +268,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin: 22px auto 0;
 }
 
-/* ── Quote glass card — centered, asymmetric brand radius ─────────────────── */
 .testimonials__card {
   position: absolute;
   top: 880px;
@@ -311,7 +294,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   width: 36px;
   height: 36px;
   opacity: 0.85;
-  filter: brightness(0) invert(1);  /* force white tint regardless of source */
+  filter: brightness(0) invert(1);  
 }
 
 .testimonials__quote {
@@ -349,10 +332,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin: 0;
 }
 
-/* Card fade transition */
 .test-fade-enter-active,
 .test-fade-leave-active {
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s ease, transform 0.45s var(--ease-brand);
 }
 .test-fade-enter-from {
   opacity: 0;
@@ -363,7 +345,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   transform: translateX(-50%) translateY(-12px);
 }
 
-/* ── Glass pill dots — matches Hero exactly ──────────────────────────────── */
 .testimonials__dots {
   position: absolute;
   bottom: 80px;
@@ -398,7 +379,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background-color: #fff;
 }
 
-/* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .testimonials {
     height: auto;
@@ -470,7 +450,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
   .test-fade-enter-from,
   .test-fade-leave-to {
-    transform: translateY(10px);   /* reset translateX(-50%) for static mobile layout */
+    transform: translateY(10px);
   }
 
   .test-fade-leave-to {

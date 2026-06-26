@@ -34,7 +34,6 @@
       />
     </div>
 
-    <!-- Dropdown of suggestions -->
     <ul v-if="focused && filteredOptions.length > 0" class="landing-taginput__dropdown">
       <li
         v-for="(opt, idx) in filteredOptions"
@@ -51,16 +50,6 @@
 <script setup lang="ts" generic="T">
 import { ref, computed } from 'vue'
 
-/**
- * TagInput — multi-select chip input with typeahead.
- *
- * Accepts an array of objects (`T[]`). Each option is keyed by `optionKey`
- * (default 'id') and labeled by `optionLabel` (default 'value'). The parent
- * supplies a filtered `options` list and listens to `@typing` to update it.
- *
- * When `allowNew` is true and the user presses Enter, a new tag is created
- * via the `createTag` factory function.
- */
 const props = withDefaults(defineProps<{
   modelValue: T[]
   options: readonly T[]
@@ -69,13 +58,9 @@ const props = withDefaults(defineProps<{
   required?: boolean
   disabled?: boolean
   error?: string
-  /** Property name to use as the option key (default 'id'). */
   optionKey?: keyof T & string
-  /** Property name to use as the option label (default 'value'). */
   optionLabel?: keyof T & string
-  /** Allow creating new tags on Enter. */
   allowNew?: boolean
-  /** Factory called when the user creates a new tag (allowNew=true). */
   createTag?: (raw: string) => T
 }>(), {
   required: false,
@@ -106,7 +91,6 @@ function getTagLabel(opt: T): string {
 
 const filteredOptions = computed<readonly T[]>(() => {
   return props.options.filter((opt) => {
-    // Exclude already-selected tags
     return !props.modelValue.some(
       (sel) => getTagKey(sel, 0) === getTagKey(opt, 0),
     )
@@ -123,7 +107,6 @@ function onFocus(): void {
 }
 
 function onBlur(): void {
-  // Defer so chip clicks (which trigger blur) still register
   setTimeout(() => { focused.value = false }, 120)
 }
 
@@ -148,7 +131,6 @@ function removeTag(idx: number): void {
 
 function onEnter(): void {
   if (!query.value.trim()) return
-  // First check if the typed text matches an existing filtered option.
   const exact = filteredOptions.value.find(
     (o) => getTagLabel(o).toLowerCase() === query.value.toLowerCase(),
   )
@@ -156,7 +138,6 @@ function onEnter(): void {
     addTag(exact)
     return
   }
-  // Fallback to creating a new tag.
   if (props.allowNew && props.createTag) {
     const newTag = props.createTag(query.value.trim())
     if (newTag) addTag(newTag)
@@ -271,7 +252,7 @@ function onBackspace(): void {
   list-style: none;
   margin: 0;
   padding: 6px;
-  background: #0f2f44;
+  background: var(--c-brand-navy);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   max-height: 220px;

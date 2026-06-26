@@ -1,6 +1,5 @@
 <template>
   <section id="industries-grid" class="industries-grid">
-    <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="industries-grid__surface" aria-hidden="true"></div>
 
     <LandingSectionHeader
@@ -19,10 +18,6 @@
         :index="idx"
         @toggle="toggle(industry.key)"
       />
-
-      <!-- "+" card — closes the grid (slot 12). Same red brand gradient
-           as the other red-tone cards, with a single centered plus glyph.
-           Acts as a soft CTA: "don't see your sector? talk to us". -->
       <router-link
         to="#industries-contact"
         class="industries-grid__plus"
@@ -37,26 +32,10 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Industries Grid section.
- *
- * Adopts the panel vocabulary (DualCta / Numbers / WhyWorkWithUs / FocusAreas):
- * asymmetric TL+BR radius, dual top/bottom drop shadows, negative margin-top
- * for overlap with the previous section, inner glass navy surface.
- *
- * Inside the panel: editorial header + 11 IndustryCard in a responsive
- * grid (3 cols desktop / 2 cols tablet / 1 col mobile). The expand-state
- * lives here — accordion behavior (one card open at a time) keeps the page
- * scannable and avoids layout churn from multiple simultaneous expansions.
- */
 import { ref } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
 
-// 11 sectors. Tones alternate navy / red for visual rhythm.
-// Photos are hosted on Unsplash (free editorial-friendly). Each URL is sized
-// for the card aspect (~800w, q=80, fit=crop) so the JPEG is light. When
-// marketing supplies branded photography these URLs swap to local assets.
 const INDUSTRIES: readonly Industry[] = [
   {
     key: 'automotive',
@@ -225,7 +204,6 @@ const INDUSTRIES: readonly Industry[] = [
   },
 ]
 
-// Accordion state — null means everything collapsed
 const expandedKey = ref<Industry['key'] | null>(null)
 
 function toggle(key: Industry['key']): void {
@@ -234,13 +212,12 @@ function toggle(key: Industry['key']): void {
 </script>
 
 <style scoped>
-/* ── Panel shell — adopts DualCta vocabulary (TL+BR radius, dual shadow) ── */
 .industries-grid {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(140px, 14vw, 200px)
+    var(--section-pad-y-lg)
     clamp(20px, 3vw, 64px);
   display: flex;
   flex-direction: column;
@@ -248,8 +225,8 @@ function toggle(key: Industry['key']): void {
   gap: clamp(48px, 6vw, 80px);
   z-index: 5;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -266,24 +243,23 @@ function toggle(key: Industry['key']): void {
   right: 0;
   z-index: -1;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
-/* ── Inner glass surface ────────────────────────────────────────────────── */
 .industries-grid__surface {
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.65) 0%,
@@ -294,20 +270,18 @@ function toggle(key: Industry['key']): void {
   pointer-events: none;
 }
 
-/* ── Cards grid — 3 cols desktop / 2 cols tablet / 1 col mobile ─────────── */
 .industries-grid__grid {
   position: relative;
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(20px, 2.4vw, 32px);
-  align-items: start; /* prevents row stretch when one card expands */
+  align-items: start;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
 }
 
-/* ── "+" card — closes the 11-industry grid as slot 12 ─────────────────── */
 .industries-grid__plus {
   position: relative;
   width: 100%;
@@ -332,15 +306,12 @@ function toggle(key: Industry['key']): void {
     rgba(229, 45, 39, 0.92) 0%,
     rgba(229, 45, 39, 0.70) 100%
   );
-  /* Matches IndustryCard `:nth-child(even)` shape (TR+BL) — slot 12 is the
-     12th child of the grid, so picking the even radius keeps the alternating
-     rhythm consistent with the rest of the cards. */
   border-radius:
     0 clamp(40px, 5.5vw, 72px)
     0 clamp(40px, 5.5vw, 72px);
   transition:
     border-color 0.4s ease,
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s var(--ease-brand),
     box-shadow 0.4s ease;
 }
 
@@ -350,7 +321,6 @@ function toggle(key: Industry['key']): void {
   box-shadow: 0 20px 44px rgba(229, 45, 39, 0.32);
 }
 
-/* Subtle white wash behind the symbol — adds depth without overpowering */
 .industries-grid__plus::before {
   content: '';
   position: absolute;
@@ -375,7 +345,6 @@ function toggle(key: Industry['key']): void {
   line-height: 1;
   letter-spacing: -0.04em;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.30);
-  /* Soft scale wobble — feels alive without being noisy */
   animation: plus-pulse 4s ease-in-out infinite;
 }
 
@@ -418,7 +387,6 @@ function toggle(key: Industry['key']): void {
   color: var(--c-brand-red);
 }
 
-/* ── Responsive grid shifts (can't be expressed with clamp alone) ───────── */
 @media (max-width: 1023px) {
   .industries-grid__grid { grid-template-columns: repeat(2, 1fr); }
 }

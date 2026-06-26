@@ -41,38 +41,10 @@
 </template>
 
 <script lang="ts">
-/**
- * Triple-gradient variants — mirror the Home WhyChooseUs / Numbers cards.
- * Exported so parents can tightly type their data arrays.
- */
 export type SecondaryCardVariant = 'blue' | 'cyan' | 'red'
 </script>
 
 <script setup lang="ts">
-/**
- * SecondaryCard — medium feature/stat card.
- *
- * Canonical pattern lifted from the Home page's WhyChooseUsSection feature
- * cards and NumbersSection stat cards: triple gradient background with 3
- * brand variants, radial corner glow, asymmetric brand radius. The workhorse
- * card across all internal pages (About, Special Projects, Talents).
- *
- * Slots (all optional):
- *  • #icon         — optional visual lockup at the top
- *  • #default      — body copy
- *  • #button       — CTA pill / button at the bottom
- *
- * Props (all optional):
- *  • eyebrow       — uppercase tracked pretitle
- *  • title         — main heading
- *  • list          — bulleted list of strings
- *  • delay         — stagger entry delay in ms
- *
- * Variants:
- *  • blue — blue dominant + red accent on top-right
- *  • cyan — triple cyan → blue → red gradient
- *  • red  — red dominant + blue accent on top-right
- */
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 
 withDefaults(defineProps<{
@@ -92,7 +64,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
-/* ── Card shell — glass + triple gradient ───────────────────────────────── */
 .secondary-card {
   position: relative;
   display: flex;
@@ -113,7 +84,7 @@ const { el: cardRef, visible } = useRevealOnScroll()
   transform: translateY(40px) scale(0.92);
   transition:
     opacity 0.7s ease-out,
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.7s var(--ease-brand);
 }
 
 .secondary-card--visible {
@@ -121,8 +92,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   transform: translateY(0) scale(1);
 }
 
-/* ── Expandable mode (opt-in via the #expanded slot + `expanded` prop) ────── */
-/* Red veil fades in over the base gradient so the card turns red on expand. */
 .secondary-card__red-veil {
   position: absolute;
   inset: 0;
@@ -140,9 +109,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   opacity: 1;
 }
 
-/* Extra detail — collapses to zero height until expanded. The max-height is set
-   well above the tallest content so it never clips (the only cost is a touch of
-   slack at the start of the collapse). */
 .secondary-card__expanded {
   position: relative;
   z-index: 1;
@@ -161,7 +127,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin-top: clamp(14px, 1.6vw, 18px);
 }
 
-/* Radial corner glow — placed at the larger asymmetric corner */
 .secondary-card::before {
   content: '';
   position: absolute;
@@ -171,7 +136,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   z-index: 0;
 }
 
-/* ── Variant: blue (blue dominant + red accent on top-right) ────────────── */
 .secondary-card--blue {
   background: linear-gradient(135deg,
     rgba(21, 117, 187, 0.42) 0%,
@@ -192,7 +156,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: 0 clamp(48px, 6vw, 80px) 0 0;
 }
 
-/* ── Variant: cyan (triple cyan → blue → red gradient) ──────────────────── */
 .secondary-card--cyan {
   background: linear-gradient(135deg,
     rgba(0, 173, 239, 0.34) 0%,
@@ -213,7 +176,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: clamp(48px, 6vw, 80px) 0 0 0;
 }
 
-/* ── Variant: red (red dominant + blue accent on top-right) ─────────────── */
 .secondary-card--red {
   background: linear-gradient(135deg,
     rgba(229, 45, 39, 0.42) 0%,
@@ -234,7 +196,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   border-radius: 0 clamp(48px, 6vw, 80px) 0 0;
 }
 
-/* ── Slots & content ────────────────────────────────────────────────────── */
 .secondary-card__icon {
   position: relative;
   z-index: 1;
@@ -257,7 +218,6 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin-bottom: clamp(12px, 1.4vw, 18px);
 }
 
-/* Red variant — eyebrow uses white-soft so it reads on the red bg */
 .secondary-card--red .secondary-card__eyebrow {
   color: #fff;
   opacity: 0.85;
@@ -323,13 +283,10 @@ const { el: cardRef, visible } = useRevealOnScroll()
   margin-top: clamp(20px, 2.4vw, 28px);
 }
 
-/* Slot content resets */
 .secondary-card__body :deep(> *:first-child) { margin-top: 0; }
 .secondary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
 
-/* ── Mobile GPU optimizations ───────────────────────────────────────────── */
 @media (max-width: 1023px) {
-  /* Drop backdrop blur; cap big shadow; bump bg alpha on variants below */
   .secondary-card {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

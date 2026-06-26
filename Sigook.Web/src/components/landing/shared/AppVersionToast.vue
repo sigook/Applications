@@ -7,7 +7,6 @@
       aria-live="polite"
       aria-atomic="true"
     >
-      <!-- Pulse dot — signals "live / new" -->
       <span class="vtoast__dot" aria-hidden="true">
         <span class="vtoast__dot-inner"></span>
       </span>
@@ -44,23 +43,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-/**
- * AppVersionToast — non-invasive bottom-right pill that nudges the user
- * to refresh when a newer build is available.
- *
- * The legacy banner sat in the document flow at the top of the page, which
- * (a) shifted the entire layout down and (b) collided with the V2 fixed
- * navbar. This toast is `position: fixed` in the bottom-right corner, so
- * it floats above the page without disturbing it.
- *
- * Behavior:
- *  • Tied to the parent's `model-value` prop — parent toggles when the
- *    background version-check sees a mismatch.
- *  • Dismiss button hides the toast for the current session (sessionStorage
- *    flag); it'll re-appear on the next navigation if the version is still
- *    stale, so users who close it can't accidentally miss a critical update.
- *  • Update button emits `update` — parent owns the cache-clear + reload.
- */
 const SESSION_DISMISS_KEY = 'app-version-toast-dismissed'
 
 const props = withDefaults(defineProps<{
@@ -74,7 +56,6 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-// Local visible state — combines the parent's flag with the dismiss state.
 const visible = ref(false)
 
 watch(
@@ -84,7 +65,6 @@ watch(
       visible.value = false
       return
     }
-    // Honor a previously-dismissed session
     const dismissed =
       typeof sessionStorage !== 'undefined' &&
       sessionStorage.getItem(SESSION_DISMISS_KEY) === '1'
@@ -131,7 +111,6 @@ function onDismiss(): void {
   font-family: var(--font-family);
 }
 
-/* ── Pulse dot ──────────────────────────────────────────────────────────── */
 .vtoast__dot {
   position: relative;
   display: inline-flex;
@@ -161,7 +140,6 @@ function onDismiss(): void {
   .vtoast__dot-inner { animation: none; }
 }
 
-/* ── Copy ───────────────────────────────────────────────────────────────── */
 .vtoast__copy {
   display: flex;
   flex-direction: column;
@@ -182,7 +160,6 @@ function onDismiss(): void {
   letter-spacing: 0.02em;
 }
 
-/* ── Update button — solid cyan pill ────────────────────────────────────── */
 .vtoast__update {
   display: inline-flex;
   align-items: center;
@@ -191,7 +168,7 @@ function onDismiss(): void {
   background: var(--c-brand-cyan);
   border: 1px solid var(--c-brand-cyan);
   border-radius: 999px;
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
   font-family: var(--font-family);
   font-size: 12px;
   font-weight: 700;
@@ -218,7 +195,6 @@ function onDismiss(): void {
   transform: translateX(2px);
 }
 
-/* ── Dismiss button — glass round, hover red ────────────────────────────── */
 .vtoast__dismiss {
   display: inline-flex;
   align-items: center;
@@ -246,9 +222,8 @@ function onDismiss(): void {
   height: 14px;
 }
 
-/* ── Enter / leave ──────────────────────────────────────────────────────── */
 .vtoast-enter-active {
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.35s ease, transform 0.35s var(--ease-brand);
 }
 
 .vtoast-leave-active {
@@ -265,7 +240,6 @@ function onDismiss(): void {
   transform: translateY(10px);
 }
 
-/* ── Mobile — center bottom, full width minus margins ───────────────────── */
 @media (max-width: 599px) {
   .vtoast {
     left: 16px;
@@ -277,12 +251,10 @@ function onDismiss(): void {
     max-width: none;
   }
 
-  /* Push the dismiss button to the far right of its row */
   .vtoast__dismiss {
     margin-left: auto;
   }
 
-  /* Update button takes full row on mobile for thumb reach */
   .vtoast__update {
     order: 99;
     flex: 1 1 100%;
@@ -296,7 +268,6 @@ function onDismiss(): void {
   }
 }
 
-/* ── Mobile GPU optimizations — cut expensive effects, keep the look ─────── */
 @media (max-width: 1023px) {
   .vtoast {
     backdrop-filter: none;

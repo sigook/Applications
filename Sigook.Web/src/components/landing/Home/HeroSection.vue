@@ -49,7 +49,7 @@ import heroImage from '@/assets/images/v2/hero/home.webp'
 import heroImageSm from '@/assets/images/v2/hero/home-960.webp'
 
 const INDUSTRIES = [
-  'Cibersecurity',
+  'Cybersecurity',
   'Artificial Intelligence',
   'Manufacturing',
   'Logistics',
@@ -59,7 +59,6 @@ const INDUSTRIES = [
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .hero {
   position: relative;
   width: 100%;
@@ -74,7 +73,6 @@ const INDUSTRIES = [
   left: clamp(6%, 7vw, 9%);
 }
 
-/* ── Content stack — vertically centered editorial layout ───────────────── */
 .hero__content {
   position: relative;
   z-index: 2;
@@ -83,8 +81,6 @@ const INDUSTRIES = [
   align-items: center;
   justify-content: center;
   min-height: max(100vh, 1080px);
-  /* Top padding clears the fixed navbar + buffer.
-     Bottom padding clears the DualCta overlap + buffer. */
   padding:
     clamp(80px, 12vw, 140px)
     clamp(20px, 3vw, 32px)
@@ -94,7 +90,6 @@ const INDUSTRIES = [
   margin: 0 auto;
 }
 
-/* Spacing between stack elements lives here — atoms own their own visual */
 .hero__eyebrow {
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
@@ -109,10 +104,9 @@ const INDUSTRIES = [
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.45));
 }
 
-/* ── Main heading — large editorial with cyan accent ────────────────────── */
 .hero__heading {
   font-family: var(--font-family);
-  font-size: clamp(32px, 5.5vw, 60px);
+  font-size: var(--text-hero-size);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -126,10 +120,9 @@ const INDUSTRIES = [
   color: var(--c-brand-cyan);
 }
 
-/* ── Subtitle / value prop ──────────────────────────────────────────────── */
 .hero__subtitle {
   font-family: var(--font-family);
-  font-size: clamp(14px, 1.4vw, 17px);
+  font-size: var(--text-hero-sub-size);
   font-weight: 400;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.85);
@@ -138,7 +131,6 @@ const INDUSTRIES = [
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Scroll indicator — absolute positioning lives on the parent class ──── */
 .hero__scroll {
   position: absolute;
   bottom: clamp(20px, 3vw, 36px);
@@ -147,7 +139,6 @@ const INDUSTRIES = [
   z-index: 2;
 }
 
-/* ── Mobile-only behaviors (clamp can't express conditional layout) ─────── */
 @media (max-width: 1023px) {
   .hero {
     min-height: 100svh;
