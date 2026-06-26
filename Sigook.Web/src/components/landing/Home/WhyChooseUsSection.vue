@@ -64,10 +64,7 @@
                 decoding="async"
               />
               <span class="why__map-hint" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M21 21l-4.35-4.35" />
-                </svg>
+                <LandingIcon name="search" />
               </span>
             </button>
           </div>
@@ -122,9 +119,7 @@
             aria-label="Close enlarged map"
             @click="mapPreview = false"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
+            <LandingIcon name="close" />
           </button>
 
           <img
@@ -145,6 +140,7 @@ import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
 import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 
 const mapPreview = ref(false)
 const zoomRef = ref<HTMLElement | null>(null)

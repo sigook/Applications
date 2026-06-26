@@ -65,9 +65,7 @@
               aria-label="Close menu"
               @click="mobileOpen = false"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18M6 6l12 12" />
-              </svg>
+<LandingIcon name="close" />
             </button>
           </div>
 
@@ -99,6 +97,7 @@
 
 <script setup lang="ts">
 import '@/assets/css/tokens.css';
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';

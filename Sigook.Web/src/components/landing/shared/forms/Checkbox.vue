@@ -8,18 +8,7 @@
       @change="onChange"
     />
     <span class="landing-checkbox__box" aria-hidden="true">
-      <svg
-        v-if="checked"
-        viewBox="0 0 14 14"
-        class="landing-checkbox__tick"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <polyline points="11 4 6 9 3 6" />
-      </svg>
+      <LandingIcon v-if="checked" name="check-sm" class="landing-checkbox__tick" />
     </span>
     <span class="landing-checkbox__label">
       <slot />
@@ -29,6 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean | unknown[]

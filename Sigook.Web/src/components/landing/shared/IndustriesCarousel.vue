@@ -28,9 +28,7 @@
         aria-label="Previous slide"
         @click="prev"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m15 18-6-6 6-6" />
-        </svg>
+        <LandingIcon name="chevron-left" />
       </button>
 
       <div class="industries-carousel__viewport">
@@ -66,18 +64,7 @@
                   class="industries-carousel__cta-card"
                 >
                   <template #icon>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M9 12h6M13 9l3 3-3 3" />
-                    </svg>
+                    <LandingIcon name="arrow-circle" />
                   </template>
 
                   {{ card.subtitle }}
@@ -94,9 +81,7 @@
         aria-label="Next slide"
         @click="next"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m9 18 6-6-6-6" />
-        </svg>
+        <LandingIcon name="chevron-right" />
       </button>
     </div>
 
@@ -112,6 +97,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import SliderDots from '@/components/landing/shared/SliderDots.vue'
 import TertiaryCard, { type TertiaryCardVariant } from '@/components/landing/shared/TertiaryCard.vue'

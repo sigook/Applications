@@ -34,9 +34,7 @@
           <ul class="op-cta__features" aria-label="What to expect">
             <li v-for="feature in features" :key="feature" class="op-cta__feature">
               <span class="op-cta__check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <LandingIcon name="check" />
               </span>
               <span class="op-cta__feature-text">{{ feature }}</span>
             </li>
@@ -48,6 +46,7 @@
 </template>
 
 <script setup lang="ts">
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'

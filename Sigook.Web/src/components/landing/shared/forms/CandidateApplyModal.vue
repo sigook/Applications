@@ -20,10 +20,7 @@
             aria-label="Close application dialog"
             @click="close"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+<LandingIcon name="close" />
           </button>
         </header>
 
@@ -43,6 +40,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 

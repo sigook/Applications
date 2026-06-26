@@ -14,18 +14,7 @@
         ]"
       >
         <span class="step-nav__circle" aria-hidden="true">
-          <svg
-            v-if="idx < current"
-            viewBox="0 0 14 14"
-            class="step-nav__tick"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="11 4 6 9 3 6" />
-          </svg>
+          <LandingIcon v-if="idx < current" name="check-sm" class="step-nav__tick" />
           <span v-else>{{ idx + 1 }}</span>
         </span>
         <span class="step-nav__label">{{ step.label }}</span>
@@ -40,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+
 export interface StepDescriptor {
   readonly key: string
   readonly label: string

@@ -5,10 +5,7 @@
 
       <div class="job-detail__meta">
         <span class="job-detail__meta-item job-detail__meta-item--location">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+          <LandingIcon name="location" />
           {{ job.location }}
         </span>
 
@@ -74,6 +71,7 @@ import DOMPurify from 'dompurify'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
 
 const props = defineProps<{
   job: JobViewModel

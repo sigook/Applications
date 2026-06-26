@@ -78,18 +78,7 @@
 
           <ul class="app__features">
             <li v-for="feature in features" :key="feature">
-              <svg
-                class="app__check"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <LandingIcon name="check" class="app__check" />
               <span>{{ feature }}</span>
             </li>
           </ul>
@@ -100,6 +89,8 @@
 </template>
 
 <script setup lang="ts">
+import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+
 const features = [
   'One platform. Total workforce visibility.',
   'Real-time attendance and supervisor-approved shifts.',
