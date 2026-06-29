@@ -26,13 +26,13 @@ export interface UseCarouselReturn<T> {
 }
 
 export function useCarousel<T>(
-  items: T[] | (() => T[]),
+  items: readonly T[] | (() => readonly T[]),
   options: UseCarouselOptions = {}
 ): UseCarouselReturn<T> {
   const { intervalMs = 5000, autoStart = true } = options
 
-  const list = computed<T[]>(() =>
-    typeof items === 'function' ? (items as () => T[])() : items
+  const list = computed<readonly T[]>(() =>
+    typeof items === 'function' ? (items as () => readonly T[])() : items
   )
 
   const count = computed(() => list.value.length)

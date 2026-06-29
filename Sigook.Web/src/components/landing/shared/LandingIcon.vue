@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ICONS, type LandingIconName } from './icons'
+import { ICONS, type IconDef, type LandingIconName } from './icons'
 
 const props = defineProps<{
   name: LandingIconName
@@ -28,7 +28,7 @@ const props = defineProps<{
   strokeWidth?: number
 }>()
 
-const def = computed(() => ICONS[props.name])
+const def = computed<IconDef>(() => ICONS[props.name])
 const isFilled = computed(() => (def.value.fill ?? 'none') !== 'none')
 </script>
 
