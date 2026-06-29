@@ -67,7 +67,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import JobDetail from '@/components/landing/OpenPositions/JobDetail.vue'
 import { useJobs } from '@/composables/useJobs'
-import type { JobViewModel } from '@/types/website'
+import type { JobViewModel, JobSearchFilter } from '@/types/website'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,11 +91,22 @@ function isActive(numberId: string): boolean {
   return isMobile.value ? isExpanded(numberId) : selectedId.value === numberId
 }
 
-function readJobIdFromRoute(): string | undefined {
-  const value = route.query.jobId
+function readQueryParam(value: unknown): string | undefined {
   if (typeof value === 'string') return value
   if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : undefined
   return undefined
+}
+
+function readJobIdFromRoute(): string | undefined {
+  return readQueryParam(route.query.jobId)
+}
+
+function readFiltersFromRoute(): JobSearchFilter {
+  return {
+    jobId: readQueryParam(route.query.jobId),
+    jobTitle: readQueryParam(route.query.jobTitle),
+    location: readQueryParam(route.query.location),
+  }
 }
 
 const filtered = computed(() => {
@@ -182,11 +193,15 @@ onMounted(async () => {
   updateIsMobile()
 
   const initialJobId = readJobIdFromRoute()
-  await fetchJobs()
+  await fetchJobs(readFiltersFromRoute())
   await nextTick()
 
   const matched = !!initialJobId && jobs.value.some((j) => j.numberId === initialJobId)
-  if (matched) selectedId.value = initialJobId as string
+  if (matched) {
+    selectedId.value = initialJobId as string
+  } else if (jobs.value.length > 0) {
+    selectedId.value = jobs.value[0].numberId
+  }
 
   if (isMobile.value && selectedId.value) {
     expandedIds.value = [selectedId.value]
@@ -212,10 +227,10 @@ onUnmounted(() => {
   width: 100%;
   /* Pull the list up so it overlaps the hero, sitting just below the search
      bar — part of the list integrates over the hero's faded bottom. */
-  margin-top: clamp(-360px, -33vh, -240px);
+  margin-top: clamp(-120px, -12vh, -72px);
   padding:
     clamp(16px, 2vw, 28px)
-    clamp(20px, 3vw, 64px)
+    clamp(24px, 5vw, 64px)
     clamp(80px, 10vw, 130px);
   display: flex;
   flex-direction: column;
@@ -404,6 +419,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 1023px) {
+  .op-list {
+    margin-top: clamp(-56px, -6vh, -40px);
+  }
+
   .op-list__body {
     grid-template-columns: 1fr;
   }
@@ -421,6 +440,7 @@ onUnmounted(() => {
   .op-list__items {
     max-height: none;
     padding-right: 0;
+    overflow: visible;
   }
 
   .op-list__search {
@@ -434,7 +454,7 @@ onUnmounted(() => {
      desktop overlap covers it. Use a gentler overlap that keeps the list
      peeking into the faded hero bottom while clearing the search bar. */
   .op-list {
-    margin-top: clamp(-190px, -22vh, -120px);
+    margin-top: clamp(-80px, -10vh, -48px);
   }
 }
 

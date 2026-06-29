@@ -69,6 +69,9 @@
       <b-tab-item label="Applicants" value="Applicants">
         <applicants v-if="visitedTabs.includes('Applicants')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
+      <b-tab-item label="Runners" value="Runners">
+        <runners v-if="visitedTabs.includes('Runners')" :request="request" class="p-2 p-sm-0" />
+      </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
         <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
@@ -109,6 +112,7 @@ import Workers from '@/components/agency/AgencyWorkers.vue';
 import PunchCard from '@/components/agency_request/MassivePunchCard.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import Applicants from '@/components/agency_request/Applicants.vue';
+import Runners from '@/components/agency_request/Runners.vue';
 import ShiftModal from '@/components/request/ShiftEditModal.vue';
 
 const route = useRoute();

@@ -2,7 +2,6 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models.Location;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook;
@@ -10,15 +9,10 @@ namespace Covenant.Api.Controllers.Sigook;
 [Route(RouteName)]
 [ApiController]
 [AllowAnonymous]
-public class LocationController : ControllerBase
+public class LocationController(ILocationService locationService) : ControllerBase
 {
     public const string RouteName = "api/Location";
-    private readonly ILocationService _locationService;
-
-    public LocationController(ILocationService locationService)
-    {
-        _locationService = locationService;
-    }
+    private readonly ILocationService _locationService = locationService;
 
     /// <summary>Gets the list of available countries.</summary>
     [HttpGet("country")]

@@ -209,6 +209,10 @@
               Applicants
             </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
+              @click="router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Runners' } })">
+              Runners
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem"
               @click="router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Workers' } })">
               Workers
             </b-dropdown-item>

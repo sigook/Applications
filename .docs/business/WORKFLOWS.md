@@ -1146,6 +1146,68 @@ foreach (var recipient in recipients)
 
 ---
 
+## 6️⃣ Runner Pipeline Flow
+
+### Overview
+A **Runner** is a Candidate or Worker actively submitted to a specific order (Request). The recruiter creates the runner, then advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
+
+### Actors
+- **Recruiter / Agency** (via Web app, order detail → Runners tab)
+- **System** (backend API — domain rules live in the `Runner` entity)
+
+---
+
+### Step-by-Step
+
+#### STEP 1: Recruiter adds a runner to the order
+
+The recruiter searches a Worker or Candidate and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter). The search uses a **dedicated runner-prospect endpoint** that excludes people already runners on this request:
+
+```
+GET  api/agency/requests/{requestId}/Runners/Search?searchTerm=...
+POST api/agency/requests/{requestId}/Runners
+{ "workerProfileId" | "candidateId", "type": 1 }
+```
+
+The runner is created with `Status = SentToClient` and an initial status-history entry (`previousStatus = null`). The same worker/candidate cannot be added twice on the same request (rejected by the `RunnerExists` guard).
+
+#### STEP 2: Recruiter advances the status
+
+```
+PUT api/agency/requests/{requestId}/Runners/{id}/Status
+{ "status": 2, "comments": "Client requested an interview" }
+```
+
+- Any status can move to any other (no fixed order) **except** a `Hired` runner, which is terminal and rejects further changes.
+- Each change appends a row to the status history (previous → new, who, when, comments) — never overwrites.
+- Moving to `Hired` **requires** a `StartDate` (the date the runner would begin working); the transition is rejected without it.
+
+**Pipeline states:** Sent to Client → Interview scheduled → Interview rescheduled → No longer available / No show / Waiting for interview feedback / Waiting for final decision → Rejected / In onboarding process / Hired.
+
+#### STEP 3: Recruiter schedules interviews
+
+Only allowed while the runner is in `Interview scheduled` or `Interview rescheduled`:
+
+```
+POST api/agency/requests/{requestId}/Runners/{id}/Interview
+{ "scheduledDate", "type": 1, "interviewer", "notes" }
+```
+
+A runner can have multiple interviews over time. Rescheduling an interview updates its date and **auto-transitions** the runner to `Interview rescheduled`:
+
+```
+PUT api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Reschedule
+{ "newDate" }
+```
+
+#### STEP 4: View history
+
+The runner detail exposes the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
+
+> All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
+
+---
+
 ## 🎯 Key Takeaways
 
 ### Async Processing

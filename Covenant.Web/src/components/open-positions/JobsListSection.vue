@@ -205,14 +205,20 @@ onMounted(async () => {
 
   await fetchJobs(filters)
 
-  // Only show a detail when a jobId arrives via deep link — never auto-select.
-  if (jobs.value.length > 0 && filters.jobId) {
-    const jobFromUrl = jobs.value.find(j => j.numberId === filters.jobId)
-    if (jobFromUrl) {
-      selectedJob.value = jobFromUrl
-      if (isMobile.value) expandedIds.value = [jobFromUrl.numberId]
-      scrollToSelectedJob(jobFromUrl.numberId)
+  // Select the deep-linked job when its jobId matches; otherwise default to the
+  // first job. Either way, keep the URL's jobId in sync so it stays shareable.
+  if (jobs.value.length > 0) {
+    const jobFromUrl = filters.jobId
+      ? jobs.value.find(j => j.numberId === filters.jobId)
+      : undefined
+    const initialJob = jobFromUrl ?? jobs.value[0]
+
+    selectedJob.value = initialJob
+    if (isMobile.value) expandedIds.value = [initialJob.numberId]
+    if (route.query.jobId !== initialJob.numberId) {
+      router.replace({ query: { ...route.query, jobId: initialJob.numberId } })
     }
+    if (jobFromUrl) scrollToSelectedJob(initialJob.numberId)
   }
 
   await nextTick()
@@ -223,10 +229,19 @@ onUnmounted(() => {
   mobileMql?.removeEventListener('change', updateIsMobile)
 })
 
-// On new search results, clear the selection (no detail until the user picks).
+// On new search results, default to the first job and sync the URL's jobId.
 watch(jobs, (newJobs) => {
   if (!ready) return
-  selectedJob.value = null
+  if (newJobs.length > 0) {
+    const first = newJobs[0]
+    selectedJob.value = first
+    if (isMobile.value) expandedIds.value = [first.numberId]
+    if (route.query.jobId !== first.numberId) {
+      router.replace({ query: { ...route.query, jobId: first.numberId } })
+    }
+  } else {
+    selectedJob.value = null
+  }
   const present = new Set(newJobs.map((j) => j.numberId))
   expandedIds.value = expandedIds.value.filter((id) => present.has(id))
 })

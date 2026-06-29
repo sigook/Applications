@@ -6,10 +6,8 @@ using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Accounting.Subcontractor;
 using Covenant.Common.Models.Company;
-using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
@@ -18,24 +16,14 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 [ApiController]
 [Authorize]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class ReportsController : ControllerBase
+public class ReportsController(
+    IAccountingService accountingService,
+    ITimesheetService timeSheetService,
+    IPayStubService payStubService) : ControllerBase
 {
-    private readonly IAccountingService accountingService;
-    private readonly ITimesheetService timeSheetService;
-    private readonly IPayStubService payStubService;
-    private readonly IPayStubRepository payStubRepository;
-
-    public ReportsController(
-        IAccountingService accountingService,
-        ITimesheetService timeSheetService,
-        IPayStubService payStubService,
-        IPayStubRepository payStubRepository)
-    {
-        this.accountingService = accountingService;
-        this.timeSheetService = timeSheetService;
-        this.payStubService = payStubService;
-        this.payStubRepository = payStubRepository;
-    }
+    private readonly IAccountingService accountingService = accountingService;
+    private readonly ITimesheetService timeSheetService = timeSheetService;
+    private readonly IPayStubService payStubService = payStubService;
 
     /// <summary>Gets the hours-worked report summary for the given filter.</summary>
     /// <param name="filter">Filter criteria for the report.</param>
