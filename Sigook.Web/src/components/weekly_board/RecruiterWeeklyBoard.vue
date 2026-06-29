@@ -76,8 +76,9 @@
             </span>
           </div>
 
-          <workers-collapse v-if="assignment.dispatches.length > 0" class="sent-workers" label="SENT WORKERS"
-            :count="assignment.dispatches.length">
+          <collapse-section v-if="assignment.dispatches.length > 0" class="sent-workers" variant="compact"
+            :model-value="false">
+            <template #title>SENT WORKERS ({{ assignment.dispatches.length }})</template>
             <div v-for="worker in assignment.dispatches" :key="worker.workerProfileId" class="sent-worker">
               <div class="sent-worker-info">
                 <span class="sent-worker-avatar">{{ workerInitials(worker.fullName) }}</span>
@@ -92,7 +93,7 @@
               <b-button class="remove-worker" type="is-ghost" size="is-small" icon-right="close" :disabled="isSaving"
                 @click="onRemove(assignment, worker.workerProfileId)"></b-button>
             </div>
-          </workers-collapse>
+          </collapse-section>
 
           <b-button v-if="!isPastDay(assignment.workDate)" type="is-primary" expanded icon-left="account-plus"
             class="add-worker-btn" @click="openAdd(assignment)">
@@ -118,7 +119,7 @@ import { isDirectHiring } from '@/utils/directHiring';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import type { RecruiterWeeklyBoard, WeeklyBoardAssignment, WeekDay } from '@/types/weeklyBoard';
 import AddWorkersModal from './AddWorkersModal.vue';
-import WorkersCollapse from './WorkersCollapse.vue';
+import CollapseSection from '@/components/CollapseSection.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 

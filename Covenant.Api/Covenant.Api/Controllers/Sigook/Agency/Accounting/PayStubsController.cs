@@ -10,7 +10,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Infrastructure.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
@@ -20,27 +19,18 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class PayStubsController : ControllerBase
+public class PayStubsController(
+    ITimesheetRepository timeSheetRepository,
+    ISkipPayrollNumberRepository skipPayrollNumberRepository,
+    IPayStubService payStubService,
+    ISigookBusClient busClient,
+    IOptions<ServiceBusConfiguration> serviceBusOptions) : ControllerBase
 {
-    private readonly ITimesheetRepository timeSheetRepository;
-    private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
-    private readonly IPayStubService payStubService;
-    private readonly ISigookBusClient busClient;
-    private readonly ServiceBusConfiguration serviceBusConfiguration;
-
-    public PayStubsController(
-        ITimesheetRepository timeSheetRepository,
-        ISkipPayrollNumberRepository skipPayrollNumberRepository,
-        IPayStubService payStubService,
-        ISigookBusClient busClient,
-        IOptions<ServiceBusConfiguration> serviceBusOptions)
-    {
-        this.timeSheetRepository = timeSheetRepository;
-        this.skipPayrollNumberRepository = skipPayrollNumberRepository;
-        this.payStubService = payStubService;
-        this.busClient = busClient;
-        serviceBusConfiguration = serviceBusOptions.Value;
-    }
+    private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
+    private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository = skipPayrollNumberRepository;
+    private readonly IPayStubService payStubService = payStubService;
+    private readonly ISigookBusClient busClient = busClient;
+    private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
 
     /// <summary>Gets a paginated list of pay stubs matching the given filter.</summary>
     /// <param name="filter">Filter and pagination criteria.</param>

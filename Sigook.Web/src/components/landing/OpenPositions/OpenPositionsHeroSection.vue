@@ -32,7 +32,7 @@
         </div>
 
         <div class="op-hero__field">
-          <label class="op-hero__label" for="op-city">City or postal code</label>
+          <label class="op-hero__label" for="op-city">City</label>
           <input
             id="op-city"
             v-model="form.location"
@@ -53,7 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
 import heroImage from '@/assets/images/v2/hero/open-positions.webp'
@@ -71,9 +72,27 @@ const form = reactive<SearchForm>({
   location: '',
 })
 
+const route = useRoute()
+const router = useRouter()
 const { fetchJobs } = useJobs()
 
+function readQueryParam(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : ''
+  return ''
+}
+
+onMounted(() => {
+  form.title = readQueryParam(route.query.jobTitle)
+  form.location = readQueryParam(route.query.location)
+})
+
 function onSearch(): void {
+  const query: Record<string, string> = {}
+  if (form.title) query.jobTitle = form.title
+  if (form.location) query.location = form.location
+  router.replace({ query })
+
   fetchJobs({
     jobTitle: form.title || undefined,
     location: form.location || undefined,
@@ -88,7 +107,7 @@ function onSearch(): void {
 .op-hero {
   position: relative;
   width: 100%;
-  min-height: max(100vh, 1120px);
+  min-height: clamp(560px, 74vh, 780px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -122,11 +141,11 @@ function onSearch(): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: max(100vh, 1120px);
+  min-height: clamp(560px, 74vh, 780px);
   padding:
-    clamp(80px, 12vw, 140px)
-    clamp(20px, 3vw, 32px)
-    clamp(120px, 16vw, 220px);
+    clamp(64px, 9vw, 104px)
+    clamp(24px, 5vw, 40px)
+    clamp(72px, 9vw, 120px);
   text-align: center;
   max-width: 1100px;
   margin: 0 auto;
@@ -139,12 +158,12 @@ function onSearch(): void {
 
 /* ── Heading ────────────────────────────────────────────────────────────── */
 .op-hero__heading {
-  font-size: clamp(32px, 5.5vw, 60px);
+  font-size: clamp(30px, 4.6vw, 48px);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: #fff;
-  margin: 0 0 clamp(20px, 3vw, 32px);
+  margin: 0 0 clamp(14px, 2vw, 20px);
   max-width: 920px;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
 }
@@ -158,7 +177,7 @@ function onSearch(): void {
   font-weight: 400;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 clamp(36px, 5vw, 56px);
+  margin: 0 0 clamp(24px, 3.2vw, 36px);
   max-width: 680px;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
@@ -184,7 +203,7 @@ function onSearch(): void {
     clamp(20px, 2.5vw, 28px) clamp(20px, 2.5vw, 28px)
     clamp(20px, 2.5vw, 28px) clamp(40px, 5vw, 56px);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.30);
-  margin-bottom: clamp(36px, 4.8vw, 56px);
+  margin-bottom: 0;
   text-align: left;
 }
 
@@ -282,11 +301,11 @@ function onSearch(): void {
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .op-hero {
-    min-height: 100svh;
+    min-height: auto;
   }
 
   .op-hero__content {
-    min-height: 100svh;
+    min-height: auto;
   }
 
   /* Stack form inputs 2x2, submit takes a row of its own */

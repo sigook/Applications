@@ -288,6 +288,32 @@ const handleSearch = () => {
     top: -20px;
     right: -40px;
   }
+
+  .form-card {
+    padding: 16px;
+  }
+
+  .form-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .form-header p {
+    margin-bottom: 14px;
+  }
+
+  .form-group {
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 7px 10px;
+  }
+
+  .btn-search {
+    padding: 9px;
+    margin-top: 4px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -299,7 +325,7 @@ const handleSearch = () => {
   /* Ajuste de la tarjeta en móvil */
   .form-card {
     width: 280px;
-    padding: 20px;
+    padding: 16px;
     margin-top: 0;
   }
 

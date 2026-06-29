@@ -3,22 +3,16 @@ using Covenant.Api.Validators.Location;
 using Covenant.Common.Models;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Sigook;
+namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
 [Route("api/Location")]
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
-public class LocationTaxController : ControllerBase
+public class LocationTaxController(ILocationService locationService) : ControllerBase
 {
-    private readonly ILocationService _locationService;
-
-    public LocationTaxController(ILocationService locationService)
-    {
-        _locationService = locationService;
-    }
+    private readonly ILocationService _locationService = locationService;
 
     /// <summary>Gets the tax configured for a location.</summary>
     /// <param name="locationId">Location identifier.</param>

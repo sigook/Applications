@@ -59,6 +59,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IWorkerCommentsRepository, WorkerCommentsRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IRequestRepository, RequestRepository>();
+        services.AddScoped<IRunnerRepository, RunnerRepository>();
         services.AddScoped<ITimesheetRepository, TimesheetRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWorkerRequestRepository, WorkerRequestRepository>();
@@ -77,6 +78,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IRunnerService, RunnerService>();
         services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<ICandidateService, CandidateService>();
         services.AddScoped<ICompanyService, CompanyService>();
