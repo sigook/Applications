@@ -1,0 +1,30 @@
+[
+  {
+    "eyebrow": "Set Your Own Pace",
+    "title": "Full Autonomy",
+    "body": "Pick your hours, your territory, your specialty. No quotas, no central dispatch — your book of business runs on your rhythm.",
+    "variant": "cyan",
+    "icon": "autonomy"
+  },
+  {
+    "eyebrow": "Coast to Coast",
+    "title": "Nationwide Reach",
+    "body": "Place across the United States through one license, one contract, one payroll system. We absorb the multi-state overhead.",
+    "variant": "blue",
+    "icon": "reach"
+  },
+  {
+    "eyebrow": "Compliant by Default",
+    "title": "Licensed Agency",
+    "body": "Operate under Sigook's certifications, insurance, and audit-ready compliance framework — you get the credibility of a tier-1 firm on day one.",
+    "variant": "cyan",
+    "icon": "licensed"
+  },
+  {
+    "eyebrow": "Real Upside",
+    "title": "Entrepreneurial Rewards",
+    "body": "Performance-based comp with no ceiling. The deals you close compound into ongoing revenue, not capped commissions.",
+    "variant": "red",
+    "icon": "rocket"
+  }
+]

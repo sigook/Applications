@@ -17,22 +17,17 @@
         </div>
 
         <div class="footer__cols">
-          <nav class="footer__col" aria-label="Company">
-            <span class="footer__col-eyebrow">Company</span>
-            <router-link to="/about"             class="footer__link">About Us</router-link>
-            <router-link to="/open-positions"    class="footer__link">Open Positions</router-link>
-            <router-link to="/industries"        class="footer__link">Industries</router-link>
-            <router-link to="/special-projects"  class="footer__link">Special Projects</router-link>
-            <router-link to="/partner"           class="footer__link">Become a Partner</router-link>
-            <a href="#sp-contact"                   class="footer__link">Contact</a>
-          </nav>
-
-          <nav class="footer__col" aria-label="Services">
-            <span class="footer__col-eyebrow">Services</span>
-            <router-link to="/employers" class="footer__link">Temporary Staffing</router-link>
-            <router-link to="/payroll"   class="footer__link">Payroll Services</router-link>
-            <router-link to="/talents"   class="footer__link">Workforce Solutions</router-link>
-            <router-link to="/certified" class="footer__link">Compliance</router-link>
+          <nav
+            v-for="col in footerLinks"
+            :key="col.eyebrow"
+            class="footer__col"
+            :aria-label="col.ariaLabel"
+          >
+            <span class="footer__col-eyebrow">{{ col.eyebrow }}</span>
+            <template v-for="link in col.links" :key="link.label">
+              <router-link v-if="link.to" :to="link.to" class="footer__link">{{ link.label }}</router-link>
+              <a v-else :href="link.href" class="footer__link">{{ link.label }}</a>
+            </template>
           </nav>
 
           <div class="footer__col">
@@ -62,6 +57,21 @@
 
 <script setup lang="ts">
 import SocialLinks from '@/components/landing/shared/SocialLinks.vue'
+import footerLinksData from '@/data/landing/footerLinks.json'
+
+interface FooterLink {
+  readonly label: string
+  readonly to?: string
+  readonly href?: string
+}
+
+interface FooterColumn {
+  readonly eyebrow: string
+  readonly ariaLabel: string
+  readonly links: readonly FooterLink[]
+}
+
+const footerLinks = footerLinksData as readonly FooterColumn[]
 
 const currentYear = new Date().getFullYear()
 </script>

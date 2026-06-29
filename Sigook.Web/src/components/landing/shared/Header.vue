@@ -104,6 +104,12 @@ import { useSecurityStore } from '@/stores/security';
 import menu from '@/security/menu';
 import { useFocusTrap } from '@/composables/useFocusTrap';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
+import navLinksData from '@/data/landing/navLinks.json';
+
+interface NavLink {
+  label: string;
+  to: string;
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -115,14 +121,7 @@ const drawerRef = ref<HTMLElement | null>(null);
 const { lock, unlock } = useBodyScrollLock();
 useFocusTrap(mobileOpen, drawerRef);
 
-const navLinks = [
-  { label: 'Open Positions',   to: '/open-positions' },
-  { label: 'Talents',          to: '/talents' },
-  { label: 'Employers',        to: '/employers' },
-  { label: 'Industries',       to: '/industries' },
-  { label: 'Special Projects', to: '/special-projects' },
-  { label: 'About Us',         to: '/about' },
-];
+const navLinks = navLinksData as readonly NavLink[];
 
 const heroLogoVisible = ref(false);
 let heroLogoObserver: IntersectionObserver | null = null;

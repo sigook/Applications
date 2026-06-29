@@ -67,33 +67,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.webp'
-import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.webp'
-import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.webp'
+import testimonialsData from '@/data/landing/testimonials.json'
 
-const testimonials = [
-  {
-    bg: slide1Bg,
-    gradient: '',
-    quote: '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
-    author: 'HR Manager, Manufacturer',
-    location: 'Doral, Florida',
-  },
-  {
-    bg: slide2Bg,
-    gradient: '',
-    quote: '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
-    author: 'Business Owner, Retail',
-    location: 'Seattle, WA',
-  },
-  {
-    bg: slide3Bg,
-    gradient: '',
-    quote: '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
-    author: 'Operations Manager, Logistics',
-    location: 'Atlanta, GA',
-  },
-]
+interface Testimonial {
+  bg: string
+  gradient: string
+  quote: string
+  author: string
+  location: string
+}
+
+const testimonials = testimonialsData as readonly Testimonial[]
 
 const currentSlide = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null

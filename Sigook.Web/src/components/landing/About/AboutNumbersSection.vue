@@ -18,13 +18,9 @@
 <script setup lang="ts">
 import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
 import NumbersGrid, { type Stat } from '@/components/landing/shared/NumbersGrid.vue'
+import aboutStatsData from '@/data/landing/aboutStats.json'
 
-const ABOUT_STATS: readonly Stat[] = [
-  { value: '10',    label: 'Years of Experience', tone: 'blue' },
-  { value: '780',   label: 'Clients Served',      tone: 'cyan' },
-  { value: '1,700', label: 'Jobs Posted',         tone: 'red'  },
-  { value: '5,000', label: 'Applications Filed',  tone: 'cyan' },
-] as const
+const ABOUT_STATS = aboutStatsData as readonly Stat[]
 </script>
 
 <style scoped>

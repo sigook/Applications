@@ -1,0 +1,156 @@
+[
+  {
+    "key": "automotive",
+    "title": "Automotive",
+    "tagline": "Powering mobility across the country.",
+    "body": "From assembly lines to dealership service bays, we place the technicians, inspectors, and operations staff that keep America's automotive ecosystem moving.",
+    "positions": [
+      "Mechanical Technicians",
+      "Quality Inspectors",
+      "Service Advisors",
+      "Production Operators"
+    ],
+    "photo": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  },
+  {
+    "key": "aviation",
+    "title": "Aviation",
+    "tagline": "Keeping the skies safe and on schedule.",
+    "body": "Specialized recruiting for aircraft mechanics, ground crew, and avionics technicians — partnering with carriers, MROs, and airports across the country.",
+    "positions": [
+      "Aircraft Mechanics",
+      "Ground Crew",
+      "Avionics Technicians",
+      "Flight Operations"
+    ],
+    "photo": "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80&auto=format&fit=crop",
+    "tone": "red"
+  },
+  {
+    "key": "construction",
+    "title": "Construction",
+    "tagline": "Building the infrastructure America runs on.",
+    "body": "Skilled trades and project leadership for residential, commercial, and civil construction — from supervisor to safety officer, from crane operator to carpenter.",
+    "positions": [
+      "Project Managers",
+      "Site Supervisors",
+      "Skilled Trades",
+      "Safety Officers"
+    ],
+    "photo": "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  },
+  {
+    "key": "engineering",
+    "title": "Engineering",
+    "tagline": "Designing the systems that shape modern industry.",
+    "body": "Mechanical, electrical, civil, and process engineers placed across manufacturing, energy, and infrastructure projects requiring deep technical fluency.",
+    "positions": [
+      "Mechanical Engineers",
+      "Electrical Engineers",
+      "Civil Engineers",
+      "Process Engineers"
+    ],
+    "photo": "https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=800&q=80&auto=format&fit=crop",
+    "tone": "red"
+  },
+  {
+    "key": "technology",
+    "title": "Technology & IT",
+    "tagline": "Talent for the engines of the digital economy.",
+    "body": "From software engineering to DevOps and data, we connect technology teams with builders who match their stack, pace, and ambition.",
+    "positions": [
+      "Software Engineers",
+      "DevOps Specialists",
+      "Data Engineers",
+      "IT Support Leads"
+    ],
+    "photo": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  },
+  {
+    "key": "finance",
+    "title": "Finance",
+    "tagline": "Where precision and trust drive every decision.",
+    "body": "Accounting, financial analysis, audit, and compliance professionals for firms that need numbers people they can count on — at every level of seniority.",
+    "positions": [
+      "Accountants",
+      "Financial Analysts",
+      "Auditors",
+      "Compliance Officers"
+    ],
+    "photo": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop",
+    "tone": "red"
+  },
+  {
+    "key": "legal",
+    "title": "Legal",
+    "tagline": "Supporting firms with specialist legal expertise.",
+    "body": "Paralegals, legal assistants, and compliance specialists for law firms, in-house teams, and regulatory functions that demand precision and confidentiality.",
+    "positions": [
+      "Paralegals",
+      "Legal Assistants",
+      "Compliance Specialists",
+      "Contract Coordinators"
+    ],
+    "photo": "https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  },
+  {
+    "key": "logistics",
+    "title": "Logistics",
+    "tagline": "Moving goods, people, and possibility.",
+    "body": "End-to-end logistics talent — from warehouse floor to dispatch desk to inventory planning — for distributors, 3PLs, and supply chain operations.",
+    "positions": [
+      "Warehouse Coordinators",
+      "Dispatchers",
+      "Inventory Specialists",
+      "Supply Chain Analysts"
+    ],
+    "photo": "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop",
+    "tone": "red"
+  },
+  {
+    "key": "manufacturing",
+    "title": "Manufacturing",
+    "tagline": "The backbone of American production.",
+    "body": "Machine operators, line leads, and quality professionals for plants running everything from food processing to advanced materials and CNC fabrication.",
+    "positions": [
+      "Machine Operators",
+      "Production Supervisors",
+      "Quality Technicians",
+      "Maintenance Techs"
+    ],
+    "photo": "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  },
+  {
+    "key": "retail",
+    "title": "Retail",
+    "tagline": "Connecting brands with the people who power them.",
+    "body": "Store managers, merchandising leads, and customer-facing staff for retailers scaling from single-location operations to multi-state networks.",
+    "positions": [
+      "Store Managers",
+      "Merchandising Specialists",
+      "Customer Service Leads",
+      "Inventory Associates"
+    ],
+    "photo": "https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80&auto=format&fit=crop",
+    "tone": "red"
+  },
+  {
+    "key": "transportation",
+    "title": "Transportation",
+    "tagline": "Keeping commerce moving across roads and rails.",
+    "body": "Licensed drivers, fleet coordinators, and operations professionals for the transport companies that knit America's commerce together.",
+    "positions": [
+      "CDL Drivers",
+      "Fleet Coordinators",
+      "Operations Managers",
+      "Dispatch Specialists"
+    ],
+    "photo": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&auto=format&fit=crop",
+    "tone": "navy"
+  }
+]
