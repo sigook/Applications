@@ -2,7 +2,7 @@
   <main class="apply-page">
     <header class="apply-page__hero">
       <EyebrowPill variant="red" class="apply-page__eyebrow">
-        Worker Registration
+        Apply
       </EyebrowPill>
       <h1 class="apply-page__heading">
         Join <span class="apply-page__heading-accent">Sigook.</span><br>
@@ -17,7 +17,7 @@
 
     <section class="apply-page__form-wrap">
       <div class="apply-page__form">
-        <WorkerRegisterForm />
+        <CandidateApplyForm />
       </div>
     </section>
   </main>
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegisterForm.vue'
+import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
 </script>
 
 <style scoped>
