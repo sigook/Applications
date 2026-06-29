@@ -246,6 +246,13 @@ watch(jobs, (newJobs) => {
   expandedIds.value = expandedIds.value.filter((id) => present.has(id))
 })
 
+// Al entrar en mobile/tablet, expandir el job seleccionado por defecto.
+watch(isMobile, (mobile) => {
+  if (mobile && selectedJob.value) {
+    expandedIds.value = [selectedJob.value.numberId]
+  }
+})
+
 // Limpiar jobToApply cuando se cierra el dialog
 watch(showApplyDialog, (newValue) => {
   if (!newValue) {
