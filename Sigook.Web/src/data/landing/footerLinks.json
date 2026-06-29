@@ -7,8 +7,7 @@
       { "label": "Open Positions", "to": "/open-positions" },
       { "label": "Industries", "to": "/industries" },
       { "label": "Special Projects", "to": "/special-projects" },
-      { "label": "Become a Partner", "to": "/partner" },
-      { "label": "Contact", "href": "#sp-contact" }
+      { "label": "Become a Partner", "to": "/partner" }
     ]
   },
   {
