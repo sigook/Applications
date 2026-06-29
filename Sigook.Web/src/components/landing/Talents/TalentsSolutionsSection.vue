@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import SolutionsSection, { type SolutionOption } from '@/components/landing/shared/SolutionsSection.vue'
+import SolutionsSection, { type SolutionOption } from '@/components/landing/shared/sections/SolutionsSection.vue'
 import talentsSolutionsData from '@/data/landing/talentsSolutions.json'
 
 const OPTIONS = talentsSolutionsData as readonly SolutionOption[]

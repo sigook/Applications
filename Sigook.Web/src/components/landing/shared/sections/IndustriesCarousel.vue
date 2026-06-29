@@ -97,11 +97,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import SliderDots from '@/components/landing/shared/SliderDots.vue'
-import TertiaryCard, { type TertiaryCardVariant } from '@/components/landing/shared/TertiaryCard.vue'
-import IndustryIcon, { type IndustryIconName } from '@/components/landing/shared/IndustryIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
+import SliderDots from '@/components/landing/shared/ui/SliderDots.vue'
+import TertiaryCard, { type TertiaryCardVariant } from '@/components/landing/shared/cards/TertiaryCard.vue'
+import IndustryIcon, { type IndustryIconName } from '@/components/landing/shared/icons/IndustryIcon.vue'
 import { useCarousel } from '@/composables/useCarousel'
 import industriesCarouselData from '@/data/landing/industriesCarousel.json'
 

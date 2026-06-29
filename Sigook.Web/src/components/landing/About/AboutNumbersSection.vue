@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import NumbersGrid, { type Stat } from '@/components/landing/shared/NumbersGrid.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import NumbersGrid, { type Stat } from '@/components/landing/About/NumbersGrid.vue'
 import aboutStatsData from '@/data/landing/aboutStats.json'
 
 const ABOUT_STATS = aboutStatsData as readonly Stat[]

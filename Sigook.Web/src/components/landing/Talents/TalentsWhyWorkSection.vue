@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import ValleyCardsSection, {
   type ValleyReason,
-} from '@/components/landing/shared/ValleyCardsSection.vue'
+} from '@/components/landing/shared/sections/ValleyCardsSection.vue'
 import talentsReasonsData from '@/data/landing/talentsReasons.json'
 
 const REASONS = talentsReasonsData as readonly ValleyReason[]

@@ -30,8 +30,8 @@
 
 <script setup lang="ts">
 import { h, type FunctionalComponent } from 'vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
 import partnerBenefitsData from '@/data/landing/partnerBenefits.json'
 
 const svg = (paths: string[]): FunctionalComponent => () =>

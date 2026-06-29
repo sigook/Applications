@@ -2,7 +2,6 @@
   <div class="dual-cta-wrap">
     <div class="dual-cta__back" aria-hidden="true"></div>
     <section class="dual-cta" aria-label="Find work or find talent">
-    <!-- Full-bleed background layers (fill the entire section, any width) -->
     <div class="dual-cta__bg" aria-hidden="true">
       <img :src="talentsPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--left" loading="lazy" decoding="async" />
       <img :src="employersPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--right" loading="lazy" decoding="async" />
@@ -11,7 +10,6 @@
     <div class="dual-cta__veil" aria-hidden="true"></div>
     <div class="dual-cta__glow" aria-hidden="true"></div>
 
-    <!-- Inner canvas: max-width centered, holds the cards only -->
     <div class="dual-cta__canvas">
       <PrimaryCard
         variant="navy"
@@ -46,8 +44,8 @@
 </template>
 
 <script setup lang="ts">
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import PrimaryCard from '@/components/landing/shared/PrimaryCard.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import PrimaryCard from '@/components/landing/shared/cards/PrimaryCard.vue'
 import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
 import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
 

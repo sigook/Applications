@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import type { IndustryIconName } from '@/components/landing/shared/IndustryIcon.vue'
+import type { IndustryIconName } from '@/components/landing/shared/icons/IndustryIcon.vue'
 
 export type IndustryTone = 'navy' | 'red'
 
@@ -72,7 +72,7 @@ export interface Industry {
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import IndustryIcon from '@/components/landing/shared/IndustryIcon.vue'
+import IndustryIcon from '@/components/landing/shared/icons/IndustryIcon.vue'
 
 const props = defineProps<{
   industry: Industry

@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 import testimonialsData from '@/data/landing/testimonials.json'
 
 interface Testimonial {

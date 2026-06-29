@@ -39,9 +39,9 @@
 </template>
 
 <script setup lang="ts">
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/PrimaryCard.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/cards/PrimaryCard.vue'
 import partnerTracksData from '@/data/landing/partnerTracks.json'
 
 interface PartnerTrack {

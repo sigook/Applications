@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 export interface ValleyReason {
   readonly eyebrow: string

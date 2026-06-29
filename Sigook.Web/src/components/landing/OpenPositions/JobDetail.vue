@@ -70,8 +70,8 @@ import { computed } from 'vue'
 import DOMPurify from 'dompurify'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const props = defineProps<{
   job: JobViewModel

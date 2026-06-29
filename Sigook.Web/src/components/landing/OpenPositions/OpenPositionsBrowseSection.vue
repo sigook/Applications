@@ -10,5 +10,5 @@
 </template>
 
 <script setup lang="ts">
-import IndustriesCarousel from '@/components/landing/shared/IndustriesCarousel.vue'
+import IndustriesCarousel from '@/components/landing/shared/sections/IndustriesCarousel.vue'
 </script>

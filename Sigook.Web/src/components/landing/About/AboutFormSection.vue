@@ -13,8 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
-import SocialLinks from '@/components/landing/shared/SocialLinks.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
+import SocialLinks from '@/components/landing/shared/ui/SocialLinks.vue'
 </script>
 
 <style scoped>

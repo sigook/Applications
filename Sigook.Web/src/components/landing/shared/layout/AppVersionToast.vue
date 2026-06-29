@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const SESSION_DISMISS_KEY = 'app-version-toast-dismissed'
 

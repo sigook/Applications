@@ -18,7 +18,7 @@ import OpenPositionsHeroSection from '@/components/landing/OpenPositions/OpenPos
 import OpenPositionsListSection from '@/components/landing/OpenPositions/OpenPositionsListSection.vue'
 import OpenPositionsBrowseSection from '@/components/landing/OpenPositions/OpenPositionsBrowseSection.vue'
 import OpenPositionsCtaSection from '@/components/landing/OpenPositions/OpenPositionsCtaSection.vue'
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
 import CandidateApplyModal from '@/components/landing/shared/forms/CandidateApplyModal.vue'
 </script>
 

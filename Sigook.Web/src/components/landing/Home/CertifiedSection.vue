@@ -33,8 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 </script>
 
 <style scoped>

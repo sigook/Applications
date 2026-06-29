@@ -13,6 +13,6 @@
 
 <script setup lang="ts">
 
-import IndustriesCarousel from '@/components/landing/shared/IndustriesCarousel.vue'
-import IndustriesCarouselPanel from '@/components/landing/shared/IndustriesCarouselPanel.vue'
+import IndustriesCarousel from '@/components/landing/shared/sections/IndustriesCarousel.vue'
+import IndustriesCarouselPanel from '@/components/landing/shared/sections/IndustriesCarouselPanel.vue'
 </script>

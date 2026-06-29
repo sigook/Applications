@@ -40,12 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import HeroBackground from '@/components/landing/shared/hero/HeroBackground.vue'
 import heroImage from '@/assets/images/v2/hero/partner.webp'
 import heroImageSm from '@/assets/images/v2/hero/partner-960.webp'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
+import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vue'
 </script>
 
 <style scoped>

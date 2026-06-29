@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import type { SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import type { SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 export type StatTone = SecondaryCardVariant
 
@@ -29,7 +29,7 @@ export interface Stat {
 </script>
 
 <script setup lang="ts">
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 defineProps<{
   stats: readonly Stat[]

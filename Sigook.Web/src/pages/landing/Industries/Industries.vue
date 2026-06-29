@@ -14,6 +14,6 @@
 <script setup lang="ts">
 import IndustriesHeroSection from '@/components/landing/Industries/IndustriesHeroSection.vue'
 import IndustriesGridSection from '@/components/landing/Industries/IndustriesGridSection.vue'
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
 import CandidateApplyModal from '@/components/landing/shared/forms/CandidateApplyModal.vue'
 </script>

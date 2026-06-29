@@ -41,8 +41,8 @@
 </template>
 
 <script setup lang="ts">
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import teamMembersData from '@/data/landing/teamMembers.json'
 
 interface Member {

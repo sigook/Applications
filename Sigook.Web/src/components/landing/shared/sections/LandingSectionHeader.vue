@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 
 withDefaults(defineProps<{
   eyebrow: string

@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import partnerProcessData from '@/data/landing/partnerProcess.json'
 
 interface Step {

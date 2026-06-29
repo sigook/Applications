@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 

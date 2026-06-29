@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean | unknown[]

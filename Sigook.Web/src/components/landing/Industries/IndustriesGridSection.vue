@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import IndustryCard, { type Industry } from '@/components/landing/Industries/IndustryCard.vue'
 import industriesData from '@/data/landing/industries.json'
 

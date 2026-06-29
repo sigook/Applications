@@ -28,8 +28,8 @@
  * Employers hero — thin wrapper over the shared LandingHero shell.
  * Magnifier anchor: center-left. Red eyebrow. Staffing-types chip list.
  */
-import LandingHero from '@/components/landing/shared/LandingHero.vue'
-import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
+import LandingHero from '@/components/landing/shared/hero/LandingHero.vue'
+import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
 import heroImage from '@/assets/images/v2/hero/employers.webp'
 import heroImageSm from '@/assets/images/v2/hero/employers-960.webp'
 

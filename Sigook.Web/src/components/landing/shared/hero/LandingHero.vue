@@ -22,10 +22,10 @@
 </template>
 
 <script setup lang="ts">
-import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
+import HeroBackground from '@/components/landing/shared/hero/HeroBackground.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
+import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vue'
 
 withDefaults(
   defineProps<{

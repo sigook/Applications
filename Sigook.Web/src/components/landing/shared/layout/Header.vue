@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import '@/assets/css/tokens.css';
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue';
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSecurityStore } from '@/stores/security';

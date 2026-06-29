@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import GetInTouchForm from '@/components/landing/shared/GetInTouchForm.vue'
+import GetInTouchForm from '@/components/landing/shared/forms/GetInTouchForm.vue'
 </script>
 
 <style scoped>

@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { type SecondaryCardVariant } from '@/components/landing/shared/SecondaryCard.vue'
+import { type SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 export interface SolutionOption {
   readonly key: string
@@ -75,10 +75,10 @@ export interface SolutionOption {
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
-import TempToPermDetail from '@/components/landing/shared/TempToPermDetail.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
+import TempToPermDetail from '@/components/landing/shared/sections/TempToPermDetail.vue'
 
 defineProps<{
   sectionId: string

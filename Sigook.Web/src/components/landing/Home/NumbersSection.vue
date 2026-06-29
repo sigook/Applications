@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 const { el: sectionRef, visible } = useRevealOnScroll()
 </script>

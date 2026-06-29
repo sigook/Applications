@@ -15,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
-import type { LandingIconName } from '@/components/landing/shared/icons'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import type { LandingIconName } from '@/components/landing/shared/icons/icons'
 
 interface Social {
   label: string

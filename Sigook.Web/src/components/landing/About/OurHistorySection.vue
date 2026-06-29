@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import historyMilestonesData from '@/data/landing/historyMilestones.json'
 
 interface Milestone {

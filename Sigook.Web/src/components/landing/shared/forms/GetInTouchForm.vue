@@ -132,7 +132,7 @@ import { useStickyForm } from '@/composables/useStickyForm'
 import { submitContactForm } from '@/api/websiteApi'
 import { getCountries, getProvinces } from '@/api/locationApi'
 import type { Province } from '@/types/common'
-import ArrowIcon from '@/components/landing/shared/ArrowIcon.vue'
+import ArrowIcon from '@/components/landing/shared/icons/ArrowIcon.vue'
 
 withDefaults(defineProps<{ size?: 'default' | 'compact' }>(), { size: 'default' })
 

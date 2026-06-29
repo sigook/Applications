@@ -16,5 +16,5 @@ import TalentsHeroSection from '@/components/landing/Talents/TalentsHeroSection.
 import TalentsSolutionsSection from '@/components/landing/Talents/TalentsSolutionsSection.vue'
 import TalentsWhyWorkSection from '@/components/landing/Talents/TalentsWhyWorkSection.vue'
 import TalentsIndustriesCarousel from '@/components/landing/Talents/TalentsIndustriesCarousel.vue'
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
 </script>

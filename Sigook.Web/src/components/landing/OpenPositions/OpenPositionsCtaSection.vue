@@ -46,10 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 
 const registerModal = useCandidateApplyModal()
 

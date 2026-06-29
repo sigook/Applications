@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const ALLOWED = ['jpeg', 'jpg', 'png', 'gif']
 const MAX_SIZE_KB = 10_000

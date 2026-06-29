@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const features = [
   'One platform. Total workforce visibility.',

@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import SocialLinks from '@/components/landing/shared/SocialLinks.vue'
+import SocialLinks from '@/components/landing/shared/ui/SocialLinks.vue'
 import footerLinksData from '@/data/landing/footerLinks.json'
 
 interface FooterLink {

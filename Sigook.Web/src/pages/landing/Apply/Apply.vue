@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
 </script>
 

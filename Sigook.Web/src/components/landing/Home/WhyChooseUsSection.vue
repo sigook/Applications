@@ -138,9 +138,9 @@ import { ref, watch, onUnmounted } from 'vue'
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import LandingIcon from '@/components/landing/shared/LandingIcon.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const mapPreview = ref(false)
 const zoomRef = ref<HTMLElement | null>(null)

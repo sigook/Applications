@@ -43,9 +43,9 @@
 
 <script setup lang="ts">
 
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
 </script>
 
 <style scoped>

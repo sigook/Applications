@@ -16,5 +16,5 @@ import EmployersHeroSection from '@/components/landing/Employers/EmployersHeroSe
 import EmployersSolutionsSection from '@/components/landing/Employers/EmployersSolutionsSection.vue'
 import EmployersWhyChooseSection from '@/components/landing/Employers/EmployersWhyChooseSection.vue'
 import EmployersIndustriesCarousel from '@/components/landing/Employers/EmployersIndustriesCarousel.vue'
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
 </script>
