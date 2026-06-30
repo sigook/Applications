@@ -62,7 +62,7 @@
     </nav>
 
     <div class="sidebar-user">
-      <notification-bell v-if="isAgency" />
+      <!-- <notification-bell v-if="isAgency" /> -->
       <b-dropdown position="is-bottom-left" :mobile-modal="false" append-to-body aria-role="menu">
         <template #trigger>
           <div class="sidebar-user-trigger">
