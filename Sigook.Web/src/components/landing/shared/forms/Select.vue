@@ -3,12 +3,13 @@
     <span v-if="label" class="landing-select__label">
       {{ label }}<span v-if="required" class="landing-select__required">*</span>
     </span>
-    <select
-      :value="selectedKey"
+    <b-select
+      class="landing-select__control"
+      :model-value="selectedKey"
       :name="name"
       :disabled="disabled"
-      class="landing-select__control"
-      @change="onChange"
+      expanded
+      @update:model-value="onKeyChange"
     >
       <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
       <option
@@ -16,7 +17,7 @@
         :key="getKey(opt, idx)"
         :value="getKey(opt, idx)"
       >{{ getLabel(opt) }}</option>
-    </select>
+    </b-select>
     <span v-if="error" class="landing-select__error">{{ error }}</span>
   </label>
 </template>
@@ -61,9 +62,8 @@ const selectedKey = computed(() => {
   return String((props.modelValue as Record<string, unknown>)[props.optionKey] ?? '')
 })
 
-function onChange(event: Event): void {
-  const target = event.target as HTMLSelectElement
-  const found = props.options.find((opt, idx) => getKey(opt, idx) === target.value) ?? null
+function onKeyChange(key: string): void {
+  const found = props.options.find((opt, idx) => getKey(opt, idx) === key) ?? null
   emit('update:modelValue', found)
 }
 </script>
@@ -89,12 +89,23 @@ function onChange(event: Event): void {
   margin-left: 4px;
 }
 
-.landing-select__control {
+.landing-select :deep(.control),
+.landing-select :deep(.select) {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.landing-select :deep(.select:not(.is-multiple):not(.is-loading)::after) {
+  display: none;
+}
+
+.landing-select :deep(.select select) {
   appearance: none;
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 38px 0 14px;
-  background: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   color: #fff;
@@ -109,34 +120,35 @@ function onChange(event: Event): void {
   background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
+  box-shadow: none;
   transition:
     background-color 0.25s ease,
     border-color 0.25s ease,
     box-shadow 0.25s ease;
 }
 
-.landing-select__control option {
+.landing-select :deep(.select select option) {
   background-color: var(--c-brand-navy);
   color: #fff;
 }
 
-.landing-select__control:hover {
+.landing-select :deep(.select select:hover) {
   background-color: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.landing-select__control:focus {
+.landing-select :deep(.select select:focus) {
   background-color: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.landing-select__control:disabled {
+.landing-select :deep(.select select:disabled) {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.landing-select--error .landing-select__control {
+.landing-select--error :deep(.select select) {
   border-color: var(--c-brand-red);
 }
 

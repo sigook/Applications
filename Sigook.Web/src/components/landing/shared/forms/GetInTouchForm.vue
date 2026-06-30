@@ -13,24 +13,26 @@
         <label class="git-card__label">Name</label>
         <div class="git-card__name-row">
           <div class="git-card__name-col">
-            <input
+            <b-input
               class="git-card__input"
               :class="{ 'git-card__input--error': errors.firstName }"
               v-model="fields.firstName.value"
               type="text"
               placeholder="First name"
               autocomplete="given-name"
+              :has-counter="false"
             />
             <span v-if="errors.firstName" class="git-card__field-error">{{ errors.firstName }}</span>
           </div>
           <div class="git-card__name-col">
-            <input
+            <b-input
               class="git-card__input"
               :class="{ 'git-card__input--error': errors.lastName }"
               v-model="fields.lastName.value"
               type="text"
               placeholder="Last name"
               autocomplete="family-name"
+              :has-counter="false"
             />
             <span v-if="errors.lastName" class="git-card__field-error">{{ errors.lastName }}</span>
           </div>
@@ -39,13 +41,14 @@
 
       <div class="git-card__field-group">
         <label class="git-card__label">Email</label>
-        <input
+        <b-input
           class="git-card__input git-card__input--full"
           :class="{ 'git-card__input--error': errors.email }"
           v-model="fields.email.value"
           type="email"
           placeholder="your.email@company.com"
           autocomplete="email"
+          :has-counter="false"
         />
         <span v-if="errors.email" class="git-card__field-error">{{ errors.email }}</span>
       </div>
@@ -54,31 +57,33 @@
         <div class="git-card__name-row">
           <div class="git-card__name-col">
             <label class="git-card__label">Company</label>
-            <input
+            <b-input
               class="git-card__input"
               :class="{ 'git-card__input--error': errors.company }"
               v-model="fields.company.value"
               type="text"
               placeholder="Your company"
               autocomplete="organization"
+              :has-counter="false"
             />
             <span v-if="errors.company" class="git-card__field-error">{{ errors.company }}</span>
           </div>
           <div class="git-card__name-col">
             <label class="git-card__label">Location</label>
-            <select
+            <b-select
               class="git-card__input git-card__select"
               :class="{
                 'git-card__input--error': errors.state,
                 'git-card__select--placeholder': !fields.state.value,
               }"
               v-model="fields.state.value"
+              expanded
             >
               <option value="" disabled>Select a state</option>
               <option v-for="state in states" :key="state.id" :value="state.value">
                 {{ state.value }}
               </option>
-            </select>
+            </b-select>
             <span v-if="errors.state" class="git-card__field-error">{{ errors.state }}</span>
           </div>
         </div>
@@ -86,23 +91,25 @@
 
       <div class="git-card__field-group">
         <label class="git-card__label">Industry</label>
-        <input
+        <b-input
           class="git-card__input git-card__input--full"
           v-model="fields.industry.value"
           type="text"
           placeholder="Select one"
+          :has-counter="false"
         />
       </div>
 
       <div class="git-card__field-group">
         <label class="git-card__label">Message</label>
-        <textarea
+        <b-input
           class="git-card__textarea"
           :class="{ 'git-card__input--error': errors.message }"
           v-model="fields.message.value"
+          type="textarea"
           placeholder="Tell us more about the role you need to fill."
-          rows="4"
-        ></textarea>
+          :has-counter="false"
+        />
         <span v-if="errors.message" class="git-card__field-error">{{ errors.message }}</span>
       </div>
 
@@ -113,14 +120,14 @@
         {{ submitError }}
       </div>
 
-      <button type="submit" class="git-card__submit" :disabled="submitting">
+      <b-button native-type="submit" class="git-card__submit" :disabled="submitting">
         <span>{{ submitting ? 'Sending…' : 'Save & Send' }}</span>
         <ArrowIcon v-if="!submitting" :width="32" :height="11" :stroke-width="1.5" color="#fff" />
-      </button>
+      </b-button>
 
-      <button type="button" class="git-card__reset" @click="handleReset">
+      <b-button native-type="button" class="git-card__reset" @click="handleReset">
         Reset information
-      </button>
+      </b-button>
     </form>
   </div>
 </template>
@@ -300,51 +307,75 @@ function handleReset() {
   flex-direction: column;
 }
 
-.git-card__input {
+.git-card__input :deep(.input),
+.git-card__select :deep(.select select),
+.git-card__textarea :deep(.textarea) {
   width: 100%;
-  height: 52px;
-  padding: 0 18px;
+  max-width: 100%;
   border: 1.5px solid #e3e8ed;
   border-radius: 14px;
   font-family: var(--font-family);
   font-size: 14px;
   color: var(--c-ink);
-  background: #fff;
+  background-color: #fff;
   outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  box-shadow: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
   box-sizing: border-box;
 }
 
-.git-card__input::placeholder {
+.git-card__input :deep(.input),
+.git-card__select :deep(.select select) {
+  height: 52px;
+  padding: 0 18px;
+}
+
+.git-card__input :deep(.control),
+.git-card__select :deep(.control),
+.git-card__select :deep(.select),
+.git-card__textarea :deep(.control) {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.git-card__input :deep(.input)::placeholder,
+.git-card__textarea :deep(.textarea)::placeholder {
   color: #a8b3bd;
 }
 
-.git-card__input:hover {
+.git-card__input :deep(.input):hover,
+.git-card__select :deep(.select select:hover),
+.git-card__textarea :deep(.textarea:hover) {
   border-color: #c8d3dd;
 }
 
-.git-card__input:focus {
+.git-card__input :deep(.input):focus,
+.git-card__select :deep(.select select:focus),
+.git-card__textarea :deep(.textarea:focus) {
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.12);
-  background: #fbfdff;
+  background-color: #fbfdff;
 }
 
-.git-card__input--full {
-  width: 100%;
-}
-
-.git-card__input--error {
+.git-card__input--error :deep(.input),
+.git-card__input--error :deep(.select select),
+.git-card__input--error :deep(.textarea) {
   border-color: var(--c-brand-red);
 }
 
-.git-card__input--error:focus {
+.git-card__input--error :deep(.input):focus,
+.git-card__input--error :deep(.select select:focus),
+.git-card__input--error :deep(.textarea:focus) {
   box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.14);
 }
 
-.git-card__select {
+.git-card__select :deep(.select:not(.is-multiple):not(.is-loading)::after) {
+  display: none;
+}
+
+.git-card__select :deep(.select select) {
   appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   cursor: pointer;
   padding-right: 42px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%234a5764' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
@@ -352,37 +383,16 @@ function handleReset() {
   background-position: right 16px center;
 }
 
-.git-card__select--placeholder {
+.git-card__select--placeholder :deep(.select select) {
   color: #a8b3bd;
 }
 
-.git-card__textarea {
-  width: 100%;
+.git-card__textarea :deep(.textarea) {
   padding: 14px 18px;
-  border: 1.5px solid #e3e8ed;
-  border-radius: 14px;
-  font-family: var(--font-family);
-  font-size: 14px;
-  color: var(--c-ink);
-  background: #fff;
-  outline: none;
   resize: none;
-  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-  box-sizing: border-box;
   line-height: 1.55;
   min-height: 110px;
-}
-
-.git-card__textarea::placeholder { color: #a8b3bd; }
-
-.git-card__textarea:hover {
-  border-color: #c8d3dd;
-}
-
-.git-card__textarea:focus {
-  border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.12);
-  background: #fbfdff;
+  height: auto;
 }
 
 .git-card__field-error {
@@ -424,6 +434,7 @@ function handleReset() {
   width: 100%;
   height: 56px;
   margin-top: 18px;
+  padding: 0;
   background: var(--c-brand-red);
   color: #fff;
   border: none;
@@ -435,6 +446,13 @@ function handleReset() {
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(229, 45, 39, 0.28);
   transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+
+.git-card__submit > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
 .git-card__submit:hover:not(:disabled) {
@@ -451,6 +469,7 @@ function handleReset() {
 .git-card__reset {
   display: block;
   width: fit-content;
+  height: auto;
   margin: 14px auto 0;
   background: none;
   border: none;
@@ -468,8 +487,8 @@ function handleReset() {
   text-decoration: underline;
 }
 
-.git-card--compact .git-card__input,
-.git-card--compact .git-card__textarea {
+.git-card--compact .git-card__input :deep(.input),
+.git-card--compact .git-card__textarea :deep(.textarea) {
   font-size: 13px;
 }
 
@@ -492,7 +511,8 @@ function handleReset() {
     gap: 8px;
   }
 
-  .git-card__input {
+  .git-card__input :deep(.input),
+  .git-card__select :deep(.select select) {
     height: 48px;
   }
 }

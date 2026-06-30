@@ -3,16 +3,17 @@
     <span v-if="label" class="landing-input__label">
       {{ label }}<span v-if="required" class="landing-input__required">*</span>
     </span>
-    <input
+    <b-input
+      class="landing-input__field"
       :type="type"
-      :value="modelValue"
+      :model-value="modelValue"
       :placeholder="placeholder"
       :name="name"
       :autocomplete="autocomplete"
       :maxlength="maxlength"
+      :has-counter="false"
       :disabled="disabled"
-      class="landing-input__control"
-      @input="onInput"
+      @update:model-value="onInput"
       @blur="$emit('blur')"
     />
     <span v-if="error" class="landing-input__error">{{ error }}</span>
@@ -42,8 +43,8 @@ const emit = defineEmits<{
   (e: 'blur'): void
 }>()
 
-function onInput(event: Event): void {
-  emit('update:modelValue', (event.target as HTMLInputElement).value)
+function onInput(value: string | number | null): void {
+  emit('update:modelValue', value == null ? '' : String(value))
 }
 </script>
 
@@ -68,7 +69,15 @@ function onInput(event: Event): void {
   margin-left: 4px;
 }
 
-.landing-input__control {
+.landing-input__field {
+  width: 100%;
+}
+
+.landing-input :deep(.control) {
+  width: 100%;
+}
+
+.landing-input :deep(.input) {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
@@ -80,37 +89,38 @@ function onInput(event: Event): void {
   font-size: clamp(13px, 1.1vw, 14px);
   font-weight: 500;
   outline: none;
+  box-shadow: none;
   transition:
     background 0.25s ease,
     border-color 0.25s ease,
     box-shadow 0.25s ease;
 }
 
-.landing-input__control::placeholder {
+.landing-input :deep(.input)::placeholder {
   color: rgba(255, 255, 255, 0.40);
 }
 
-.landing-input__control:hover {
+.landing-input :deep(.input):hover {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.36);
 }
 
-.landing-input__control:focus {
+.landing-input :deep(.input):focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
 }
 
-.landing-input__control:disabled {
+.landing-input :deep(.input):disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.landing-input--error .landing-input__control {
+.landing-input--error :deep(.input) {
   border-color: var(--c-brand-red);
 }
 
-.landing-input--error .landing-input__control:focus {
+.landing-input--error :deep(.input):focus {
   box-shadow: 0 0 0 3px rgba(229, 45, 39, 0.20);
 }
 

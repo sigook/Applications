@@ -1,18 +1,18 @@
 <template>
-  <component
-    :is="tag"
+  <b-button
+    :tag="tag"
     v-bind="hostAttrs"
+    :native-type="type"
     class="arrow-pill"
     :class="[`arrow-pill--${variant}`, `arrow-pill--hover-${hoverVariant}`, `arrow-pill--${size}`]"
   >
     <span class="arrow-pill__label"><slot /></span>
     <span v-if="showArrow" class="arrow-pill__arrow" aria-hidden="true">→</span>
-  </component>
+  </b-button>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
 
 const props = withDefaults(defineProps<{
   to?: string
@@ -30,9 +30,9 @@ const props = withDefaults(defineProps<{
   showArrow: true,
 })
 
-const tag = computed(() => (props.to ? RouterLink : props.href ? 'a' : 'button'))
+const tag = computed(() => (props.to ? 'router-link' : props.href ? 'a' : 'button'))
 const hostAttrs = computed(() =>
-  props.to ? { to: props.to } : props.href ? { href: props.href } : { type: props.type },
+  props.to ? { to: props.to } : props.href ? { href: props.href } : {},
 )
 </script>
 
@@ -42,11 +42,13 @@ const hostAttrs = computed(() =>
   align-items: center;
   justify-content: center;
   gap: 10px;
+  height: auto;
   border-radius: var(--r-pill-full);
   color: #fff;
   font-family: var(--font-family);
   font-weight: 600;
   letter-spacing: 0.04em;
+  line-height: 1;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -56,6 +58,19 @@ const hostAttrs = computed(() =>
     color 0.25s ease,
     transform 0.25s ease,
     box-shadow 0.25s ease;
+}
+
+.arrow-pill:focus {
+  outline: none;
+}
+.arrow-pill:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.arrow-pill > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .arrow-pill--sm {

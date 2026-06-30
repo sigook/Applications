@@ -68,10 +68,10 @@
 
         <footer class="reg-form__nav">
           <span></span>
-          <button type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
             <span>Next</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
 
@@ -112,7 +112,7 @@
           <div v-if="resume" class="reg-form__doc-card">
             <div class="reg-form__doc-card-head">
               <span class="reg-form__doc-filename">📑 {{ resume.name }}</span>
-              <button type="button" class="reg-form__doc-remove" @click="deleteResume">Remove</button>
+              <b-button native-type="button" class="reg-form__doc-remove" @click="deleteResume">Remove</b-button>
             </div>
           </div>
           <p v-if="resumeError" class="reg-form__doc-error">{{ resumeError }}</p>
@@ -136,14 +136,14 @@
         </div>
 
         <footer class="reg-form__nav">
-          <button type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
             <span>Previous</span>
-          </button>
-          <button type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
+          </b-button>
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
             <span>Next</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
 
@@ -206,14 +206,14 @@
         <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
 
         <footer class="reg-form__nav">
-          <button type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
             <span>Previous</span>
-          </button>
-          <button type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
+          </b-button>
+          <b-button native-type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
             <span>{{ isSubmitting ? 'Submitting…' : 'Submit Application' }}</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
     </form>
@@ -792,9 +792,23 @@ onMounted(async () => {
     box-shadow 0.25s ease;
 }
 
+.reg-form__btn {
+  height: auto;
+}
+
+.reg-form__btn > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .reg-form__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.reg-form__doc-remove {
+  height: auto;
 }
 
 .reg-form__btn--primary,

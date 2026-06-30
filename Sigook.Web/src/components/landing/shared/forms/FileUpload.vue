@@ -1,24 +1,23 @@
 <template>
-  <label class="landing-fileupload" :class="{ 'landing-fileupload--disabled': disabled }">
-    <input
-      type="file"
-      class="landing-fileupload__input"
-      :accept="accept"
-      :disabled="disabled"
-      @change="onChange"
-      ref="inputRef"
-    />
+  <b-upload
+    class="landing-fileupload"
+    :class="{ 'landing-fileupload--disabled': disabled }"
+    :model-value="fileModel"
+    :accept="accept"
+    :disabled="disabled"
+    @update:model-value="onChange"
+  >
     <span class="landing-fileupload__icon" aria-hidden="true">
       <LandingIcon name="upload" />
     </span>
     <span class="landing-fileupload__label">
       <slot>{{ label }}</slot>
     </span>
-  </label>
+  </b-upload>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 withDefaults(defineProps<{
@@ -35,12 +34,15 @@ const emit = defineEmits<{
   (e: 'file', value: File | null): void
 }>()
 
-const inputRef = ref<HTMLInputElement | null>(null)
+const fileModel = ref<File | File[] | null>(null)
 
-function onChange(event: Event): void {
-  const file = (event.target as HTMLInputElement).files?.[0] ?? null
+function onChange(value: File | File[] | null): void {
+  const file = Array.isArray(value) ? (value[0] ?? null) : (value ?? null)
+  fileModel.value = value
   emit('file', file)
-  if (inputRef.value) inputRef.value.value = ''
+  void nextTick(() => {
+    fileModel.value = null
+  })
 }
 </script>
 
@@ -68,7 +70,7 @@ function onChange(event: Event): void {
   transform: translateY(-1px);
 }
 
-.landing-fileupload__input {
+.landing-fileupload.upload :deep(input[type="file"]) {
   position: absolute;
   width: 1px;
   height: 1px;
