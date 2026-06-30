@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    [Migration("20260528152447_AddOvertimeStartsAfterAndDropAsapRate")]
-    partial class AddOvertimeStartsAfterAndDropAsapRate
+    [Migration("20260629214508_AddRunners")]
+    partial class AddRunners
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1262,7 +1262,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("RequiredPaymentMethod")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("RequiresPermissionToSeeOrders")
+                    b.Property<bool>("RequiresPermissionToSeeRequests")
                         .HasColumnType("boolean");
 
                     b.Property<Guid?>("SalesRepresentativeId")
@@ -1471,10 +1471,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("JobPositionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OtherJobPosition")
+                    b.Property<string>("JobPosition")
                         .HasColumnType("text");
 
                     b.Property<TimeSpan?>("OvertimeStartsAfter")
@@ -1504,8 +1501,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyProfileId");
-
-                    b.HasIndex("JobPositionId");
 
                     b.HasIndex("ShiftId");
 
@@ -2249,28 +2244,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Industry");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.JobPosition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IndustryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IndustryId");
-
-                    b.ToTable("JobPosition");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Language", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2331,6 +2304,19 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("CityId");
 
                     b.ToTable("Location");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.LocationTax", b =>
+                {
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Tax1")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("LocationId");
+
+                    b.ToTable("LocationTaxes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Notification.NotificationType", b =>
@@ -2422,19 +2408,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasKey("ProvinceId");
 
                     b.ToTable("ProvinceSettings", (string)null);
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.ProvinceTax", b =>
-                {
-                    b.Property<Guid>("ProvinceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Tax1")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("ProvinceId");
-
-                    b.ToTable("ProvinceTaxes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.ReasonCancellationRequest", b =>
@@ -2717,18 +2690,28 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
                 {
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RecruiterId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RequestId", "RecruiterId");
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("WorkDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecruiterId");
+
+                    b.HasIndex("RequestId", "RecruiterId", "WorkDate")
+                        .IsUnique();
 
                     b.ToTable("RequestRecruiter", (string)null);
                 });
@@ -2805,6 +2788,149 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("SourceId");
 
                     b.ToTable("RequestSource", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AgencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NumberId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgencyId");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("WorkerProfileId");
+
+                    b.ToTable("Runners");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Interviewer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RescheduleCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RescheduledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RescheduledBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RunnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunnerId");
+
+                    b.ToTable("RunnerInterviews");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PreviousStatus")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RunnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunnerId");
+
+                    b.ToTable("RunnerStatusHistories");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
@@ -3021,6 +3147,34 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("TimesheetHistory", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestRecruiterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkerProfileId");
+
+                    b.HasIndex("RequestRecruiterId", "WorkerProfileId")
+                        .IsUnique();
+
+                    b.ToTable("WorkerDispatch", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -4315,17 +4469,11 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.JobPosition", "JobPosition")
-                        .WithMany()
-                        .HasForeignKey("JobPositionId");
-
                     b.HasOne("Covenant.Common.Entities.Shift", "Shift")
                         .WithMany()
                         .HasForeignKey("ShiftId");
 
                     b.Navigation("CompanyProfile");
-
-                    b.Navigation("JobPosition");
 
                     b.Navigation("Shift");
                 });
@@ -4387,17 +4535,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.JobPosition", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Industry", "Industry")
-                        .WithMany("JobPositions")
-                        .HasForeignKey("IndustryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Industry");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Location", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.City", "City")
@@ -4407,6 +4544,17 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.LocationTax", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Location", "Location")
+                        .WithOne("LocationTax")
+                        .HasForeignKey("Covenant.Common.Entities.LocationTax", "LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Notification.UserNotificationType", b =>
@@ -4444,17 +4592,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasOne("Covenant.Common.Entities.Province", "Province")
                         .WithOne("ProvinceSetting")
                         .HasForeignKey("Covenant.Common.Entities.ProvinceSetting", "ProvinceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Province");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.ProvinceTax", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Province", "Province")
-                        .WithOne("ProvinceTax")
-                        .HasForeignKey("Covenant.Common.Entities.ProvinceTax", "ProvinceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4696,6 +4833,61 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Source");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                        .WithMany()
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Agency");
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("WorkerProfile");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                        .WithMany("Interviews")
+                        .HasForeignKey("RunnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Runner");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("RunnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Runner");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.WorkerRequest", "WorkerRequest")
@@ -4746,6 +4938,25 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("TimeSheet");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
+                        .WithMany("Dispatches")
+                        .HasForeignKey("RequestRecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                        .WithMany()
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RequestRecruiter");
+
+                    b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
@@ -5198,15 +5409,16 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Industry", b =>
                 {
                     b.Navigation("CompanyProfileIndustries");
+                });
 
-                    b.Navigation("JobPositions");
+            modelBuilder.Entity("Covenant.Common.Entities.Location", b =>
+                {
+                    b.Navigation("LocationTax");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
                 {
                     b.Navigation("ProvinceSetting");
-
-                    b.Navigation("ProvinceTax");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
@@ -5222,6 +5434,18 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Sources");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
+                {
+                    b.Navigation("Dispatches");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.Navigation("Interviews");
+
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>

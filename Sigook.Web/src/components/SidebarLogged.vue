@@ -62,6 +62,7 @@
     </nav>
 
     <div class="sidebar-user">
+      <notification-bell v-if="isAgency" />
       <b-dropdown position="is-bottom-left" :mobile-modal="false" append-to-body aria-role="menu">
         <template #trigger>
           <div class="sidebar-user-trigger">
@@ -102,6 +103,7 @@ import roles from '@/security/roles';
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
+import NotificationBell from '@/components/notifications/NotificationBell.vue';
 
 interface MenuLink {
   to: string;
@@ -157,6 +159,9 @@ function expandActiveGroup() {
 }
 
 const currentUser = computed(() => agencyStore.agency);
+
+const isAgency = computed(() =>
+  securityStore.userRoles.some((ur) => ur === roles.agency || ur === roles.agencyPersonnel));
 
 function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`);
@@ -297,6 +302,9 @@ $sidebar-width-collapsed: 100px;
     top: 12px;
     right: 24px;
     z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     background-color: #fff;
     border: 1px solid #eee;
     border-radius: 999px;

@@ -20,11 +20,11 @@ public class RunnerInterview
     public string Notes { get; private set; }
     public int RescheduleCount { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.Now;
-    public string CreatedBy { get; private set; }
+    public Guid CreatedBy { get; private set; }
     public DateTime? RescheduledAt { get; private set; }
-    public string RescheduledBy { get; private set; }
+    public Guid? RescheduledBy { get; private set; }
 
-    public static RunnerInterview Create(Guid runnerId, DateTime scheduledDate, InterviewType type, string interviewer, string notes, string createdBy) =>
+    public static RunnerInterview Create(Guid runnerId, DateTime scheduledDate, InterviewType type, string interviewer, string notes, Guid createdBy) =>
         new()
         {
             RunnerId = runnerId,
@@ -36,7 +36,7 @@ public class RunnerInterview
             CreatedBy = createdBy
         };
 
-    public Result Reschedule(DateTime newDate, string rescheduledBy)
+    public Result Reschedule(DateTime newDate, Guid rescheduledBy)
     {
         ScheduledDate = newDate;
         Status = InterviewStatus.Rescheduled;

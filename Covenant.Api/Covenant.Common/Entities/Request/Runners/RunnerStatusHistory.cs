@@ -13,11 +13,11 @@ public class RunnerStatusHistory
     public Runner Runner { get; private set; }
     public RunnerStatus? PreviousStatus { get; private set; }
     public RunnerStatus NewStatus { get; private set; }
-    public string ChangedBy { get; private set; }
+    public Guid ChangedBy { get; private set; }
     public DateTime ChangedAt { get; private set; } = DateTime.Now;
     public string Comments { get; private set; }
 
-    public static RunnerStatusHistory Create(Guid runnerId, RunnerStatus? previousStatus, RunnerStatus newStatus, string changedBy, string comments) =>
+    public static RunnerStatusHistory Create(Guid runnerId, RunnerStatus? previousStatus, RunnerStatus newStatus, Guid changedBy, string comments) =>
         new()
         {
             RunnerId = runnerId,

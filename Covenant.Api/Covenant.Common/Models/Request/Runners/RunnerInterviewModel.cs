@@ -13,6 +13,6 @@ public class RunnerInterviewModel
     public string Notes { get; set; }
     public int RescheduleCount { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; }
+    public Guid CreatedBy { get; set; }
     public DateTime? RescheduledAt { get; set; }
 }

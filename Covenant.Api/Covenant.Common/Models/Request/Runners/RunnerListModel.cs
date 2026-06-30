@@ -17,5 +17,5 @@ public class RunnerListModel
     public DateTime? StartDate { get; set; }
     public int InterviewsCount { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; }
+    public Guid CreatedBy { get; set; }
 }

@@ -5,8 +5,9 @@ namespace Covenant.Core.BL.Interfaces;
 
 public interface IRunnerService
 {
-    Task<Result<Guid>> CreateRunner(Guid agencyId, Guid requestId, RunnerCreateModel model, string createdBy);
-    Task<Result> ChangeStatus(Guid runnerId, ChangeRunnerStatusModel model, string changedBy);
-    Task<Result<Guid>> AddInterview(Guid runnerId, RunnerInterviewCreateModel model, string createdBy);
-    Task<Result> RescheduleInterview(Guid runnerId, Guid interviewId, RunnerInterviewRescheduleModel model, string rescheduledBy);
+    Task<Result<Guid>> CreateRunner(Guid requestId, RunnerCreateModel model);
+    Task<Result> ChangeStatus(Guid runnerId, ChangeRunnerStatusModel model);
+    Task<Result<Guid>> AddInterview(Guid runnerId, RunnerInterviewCreateModel model);
+    Task<Result> RescheduleInterview(Guid runnerId, Guid interviewId, RunnerInterviewRescheduleModel model);
+    Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday();
 }

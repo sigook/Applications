@@ -192,3 +192,18 @@ export interface CreateRunnerInterviewModel {
 export interface RescheduleRunnerInterviewModel {
   newDate: string;
 }
+
+// Mirrors backend RunnerStartingTodayModel. Hired runners (non direct-hiring)
+// whose start date is within the first follow-up days, surfaced to the recruiter
+// who hired them so they can confirm attendance on the punch card.
+export interface RunnerStartingToday {
+  runnerId: string;
+  requestId: string;
+  requestNumberId: number;
+  jobTitle: string;
+  companyName: string;
+  workerProfileId: string;
+  workerName: string;
+  startDate: string;
+  dayNumber: number;
+}

@@ -664,8 +664,9 @@ public class Runner
     public RunnerStatus Status { get; private set; }      // current stage
     public DateTime? StartDate { get; private set; }      // set only when status = Hired (required to hire)
     public DateTime CreatedAt { get; private set; }
-    public string CreatedBy { get; private set; }
+    public Guid CreatedBy { get; private set; }           // acting user id
     public DateTime? UpdatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }          // acting user id of the last status change (set with UpdatedAt)
 
     // Backing-field collections (append-only history + interviews)
     public IEnumerable<RunnerStatusHistory> StatusHistory { get; }
@@ -675,7 +676,7 @@ public class Runner
     public static Result<Runner> CreateFromWorker(...);
     public static Result<Runner> CreateFromCandidate(...);
     public static bool CanAddInterview(RunnerStatus status);
-    public Result ChangeStatus(RunnerStatus next, string changedBy, string comments = null, DateTime? startDate = null);
+    public Result ChangeStatus(RunnerStatus next, Guid changedBy, string comments = null, DateTime? startDate = null);
     public Result<RunnerInterview> AddInterview(...);
     public Result RescheduleInterview(Guid interviewId, DateTime newDate, string rescheduledBy);
 }
@@ -686,6 +687,7 @@ public class Runner
 - Status transitions are **unrestricted** (any → any) **except**: a `Hired` runner is terminal — its status cannot change.
 - Every status change **appends** (never overwrites) a `RunnerStatusHistory` row.
 - Moving to `Hired` **requires** a `StartDate`; the transition is rejected without it. `StartDate` is captured only on this transition.
+- `CreatedBy`/`UpdatedBy` on the runner and `ChangedBy` on each history row are all the **acting user's id** (`Guid`, from `IIdentityServerService.GetUserId()`) — resolved inside the service, not passed by callers. Every status change stamps `UpdatedAt` + `UpdatedBy`; because `Hired` is terminal, `UpdatedBy` on a hired runner is the recruiter who hired them — the per-user key for the attendance-review notification (no nickname, no `StatusHistory` scan).
 - A worker/candidate cannot be a Runner **twice on the same request** (`IRunnerRepository.RunnerExists` guard, regardless of current status).
 - Interviews can be **added or rescheduled only** when status is `InterviewScheduled` or `InterviewRescheduled` (`Runner.CanAddInterview`). Rescheduling auto-transitions the runner to `InterviewRescheduled`.
 

@@ -1206,6 +1206,20 @@ The runner detail exposes the full status timeline (latest first) and the list o
 
 > All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
 
+#### STEP 5: Attendance-review notification (first days after hire)
+
+Once a runner is `Hired` with a `StartDate`, the recruiter who hired them is reminded to confirm the worker showed up, during the worker's **first 3 days** (Day 1 = the `StartDate`).
+
+```
+GET api/agency/Notifications     →  { workersToReview: [ { ...worker, dayNumber }, ... ] }
+```
+
+- **Per-user:** only the recruiter who performed the hire sees it. The hire stamps `Runner.UpdatedBy` with the acting user's id (`User.GetUserId()`); the query filters by it (`Hired` is terminal, so `UpdatedBy` = the hirer). No nickname/`StatusHistory` involved.
+- **Scope:** excludes **Direct Hiring** orders (`Request.WorkerSalary` set) and candidate-only runners (only `WorkerProfileId` runners, since the punch card is per worker).
+- **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
+- **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
+- **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for non admin/payroll/agency users (`useBillingAdmin`); the attendance `0` is entered by whoever may edit.
+
 ---
 
 ## 🎯 Key Takeaways

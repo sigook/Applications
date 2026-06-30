@@ -29,8 +29,9 @@ public class Runner
     public DateTime? StartDate { get; private set; }
 
     public DateTime CreatedAt { get; private set; } = DateTime.Now;
-    public string CreatedBy { get; private set; }
+    public Guid CreatedBy { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
 
     private readonly List<RunnerStatusHistory> _statusHistory = new();
     public IEnumerable<RunnerStatusHistory> StatusHistory => _statusHistory;
@@ -38,13 +39,13 @@ public class Runner
     private readonly List<RunnerInterview> _interviews = new();
     public IEnumerable<RunnerInterview> Interviews => _interviews;
 
-    public static Result<Runner> CreateFromWorker(Guid agencyId, Guid requestId, Guid workerProfileId, RunnerType type, string createdBy) =>
+    public static Result<Runner> CreateFromWorker(Guid agencyId, Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy) =>
         Create(agencyId, requestId, type, createdBy, workerProfileId: workerProfileId);
 
-    public static Result<Runner> CreateFromCandidate(Guid agencyId, Guid requestId, Guid candidateId, RunnerType type, string createdBy) =>
+    public static Result<Runner> CreateFromCandidate(Guid agencyId, Guid requestId, Guid candidateId, RunnerType type, Guid createdBy) =>
         Create(agencyId, requestId, type, createdBy, candidateId: candidateId);
 
-    private static Result<Runner> Create(Guid agencyId, Guid requestId, RunnerType type, string createdBy, Guid? workerProfileId = null, Guid? candidateId = null)
+    private static Result<Runner> Create(Guid agencyId, Guid requestId, RunnerType type, Guid createdBy, Guid? workerProfileId = null, Guid? candidateId = null)
     {
         var runner = new Runner
         {
@@ -63,7 +64,7 @@ public class Runner
     public static bool CanAddInterview(RunnerStatus status) =>
         status is RunnerStatus.InterviewScheduled or RunnerStatus.InterviewRescheduled;
 
-    public Result ChangeStatus(RunnerStatus next, string changedBy, string comments = null, DateTime? startDate = null)
+    public Result ChangeStatus(RunnerStatus next, Guid changedBy, string comments = null, DateTime? startDate = null)
     {
         if (Status == RunnerStatus.Hired)
             return Result.Fail("A hired runner's status cannot be changed");
@@ -72,22 +73,24 @@ public class Runner
         var previous = Status;
         Status = next;
         UpdatedAt = DateTime.Now;
+        UpdatedBy = changedBy;
         if (next == RunnerStatus.Hired) StartDate = startDate;
         _statusHistory.Add(RunnerStatusHistory.Create(Id, previous, next, changedBy, comments));
         return Result.Ok();
     }
 
-    public Result<RunnerInterview> AddInterview(DateTime scheduledDate, InterviewType type, string interviewer, string notes, string createdBy)
+    public Result<RunnerInterview> AddInterview(DateTime scheduledDate, InterviewType type, string interviewer, string notes, Guid createdBy)
     {
         if (!CanAddInterview(Status))
             return Result.Fail<RunnerInterview>("Interviews can only be added when the runner status is 'Interview scheduled' or 'Interview rescheduled'");
         var interview = RunnerInterview.Create(Id, scheduledDate, type, interviewer, notes, createdBy);
         _interviews.Add(interview);
         UpdatedAt = DateTime.Now;
+        UpdatedBy = createdBy;
         return Result.Ok(interview);
     }
 
-    public Result RescheduleInterview(Guid interviewId, DateTime newDate, string rescheduledBy)
+    public Result RescheduleInterview(Guid interviewId, DateTime newDate, Guid rescheduledBy)
     {
         if (!CanAddInterview(Status))
             return Result.Fail("Interviews can only be rescheduled when the runner status is 'Interview scheduled' or 'Interview rescheduled'");
@@ -96,6 +99,7 @@ public class Runner
         var result = interview.Reschedule(newDate, rescheduledBy);
         if (!result) return result;
         UpdatedAt = DateTime.Now;
+        UpdatedBy = rescheduledBy;
         if (Status != RunnerStatus.InterviewRescheduled)
             ChangeStatus(RunnerStatus.InterviewRescheduled, rescheduledBy);
         return Result.Ok();

@@ -78,6 +78,7 @@
                   <b-button class="card-remove" type="is-ghost" size="is-small" icon-right="close"
                     title="Remove assignment" :disabled="isSaving" @click.stop="confirmUnassign(assignment)"></b-button>
                 </div>
+                <div class="card-position">{{ assignment.jobTitle }}</div>
                 <div class="card-company">{{ assignment.companyName }}</div>
                 <div class="card-sent">{{ assignment.workersSent }} sent</div>
               </div>
@@ -516,6 +517,12 @@ watch(range, loadBoard, { immediate: true });
     .card-company {
       font-size: 0.8rem;
       color: $grey-font;
+    }
+
+    .card-position {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $grey-dark;
     }
 
     .card-sent {

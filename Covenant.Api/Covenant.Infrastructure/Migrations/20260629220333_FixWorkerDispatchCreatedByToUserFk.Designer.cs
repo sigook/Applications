@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    [Migration("20260629154209_AddRunners")]
-    partial class AddRunners
+    [Migration("20260629220333_FixWorkerDispatchCreatedByToUserFk")]
+    partial class FixWorkerDispatchCreatedByToUserFk
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2805,8 +2805,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<long>("NumberId")
                         .ValueGeneratedOnAdd()
@@ -2830,6 +2830,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -2856,8 +2859,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Feedback")
                         .HasColumnType("text");
@@ -2874,8 +2877,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("RescheduledAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RescheduledBy")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("RescheduledBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RunnerId")
                         .HasColumnType("uuid");
@@ -2907,8 +2910,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ChangedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comments")
                         .HasColumnType("text");
@@ -3155,8 +3158,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RequestRecruiterId")
                         .HasColumnType("uuid");
@@ -3165,6 +3168,8 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("WorkerProfileId");
 
@@ -4939,6 +4944,11 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
                 {
+                    b.HasOne("Covenant.Common.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
                         .WithMany("Dispatches")
                         .HasForeignKey("RequestRecruiterId")

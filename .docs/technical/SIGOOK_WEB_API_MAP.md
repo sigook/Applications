@@ -849,6 +849,26 @@ Public website (landing page) endpoints.
 
 ---
 
+## 21. notificationApi.ts
+
+In-app notification bell. A single aggregated call returns every notification kind in one payload (no per-type requests).
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getNotifications()` | GET | `/api/agency/Notifications` | — | `NotificationsResponse` | Container, grouped by type (today only `workersToReview: RunnerStartingToday[]`) |
+
+**Types:** `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType`, `RunnerStartingToday` (from `src/types/notification`, `src/types/runner`)
+
+**Composable:** `useNotifications` (`src/composables/useNotifications.ts`) loads once, maps each typed list to generic `AppNotification[]` and groups them by `NotificationType`.
+
+**UI:** `NotificationBell.vue` (in `SidebarLogged.vue`, agency roles only) shows a dot + per-type summary/count; clicking opens that type's detail page. `WorkerAttendanceReview` → **Attendance Review** page (`/recruiting/attendance-review`), each row links to the order's Punch Card.
+
+**Business Logic:**
+- Backend `NotificationsModel` aggregates per-type lists; only `Hired`, non Direct-Hiring, worker-based runners in their first 3 days, filtered per recruiter via `Runner.UpdatedBy`. See WORKFLOWS.md → Runner Pipeline Flow → STEP 5.
+- Extensible: a new kind = new list on `NotificationsModel` + new `NotificationType`/label/route + a mapper in `useNotifications`.
+
+---
+
 ## Summary Table: API Endpoints by Entity
 
 | Entity | Primary File(s) | CRUD Operations | Notable Features |

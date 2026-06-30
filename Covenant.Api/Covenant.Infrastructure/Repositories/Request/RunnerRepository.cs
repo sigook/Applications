@@ -1,4 +1,5 @@
 using Covenant.Common.Entities.Request.Runners;
+using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request.Runners;
 using Covenant.Common.Repositories.Request;
@@ -97,6 +98,30 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
                     })
             })
             .SingleOrDefaultAsync();
+
+    public Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd) =>
+        (from r in context.Runners.AsNoTracking()
+         join cp in context.CompanyProfile
+            on new { r.Request.CompanyId, r.AgencyId } equals new { cp.CompanyId, cp.AgencyId }
+         where r.AgencyId == agencyId
+               && r.Status == RunnerStatus.Hired
+               && r.UpdatedBy == updatedBy
+               && r.WorkerProfileId != null
+               && (r.Request.WorkerSalary == null || r.Request.WorkerSalary == 0)
+               && r.StartDate != null
+               && r.StartDate.Value.Date >= windowStart.Date
+               && r.StartDate.Value.Date <= windowEnd.Date
+         select new RunnerStartingTodayModel
+         {
+             RunnerId = r.Id,
+             RequestId = r.RequestId,
+             RequestNumberId = r.Request.NumberId,
+             JobTitle = r.Request.JobTitle,
+             CompanyName = cp.BusinessName,
+             WorkerProfileId = r.WorkerProfileId.Value,
+             WorkerName = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
+             StartDate = r.StartDate.Value
+         }).Distinct().ToListAsync();
 
     private static Expression<Func<RunnerListModel, bool>> ApplyFilter(Guid agencyId, GetRunnersFilter filter)
     {

@@ -11,6 +11,7 @@ public interface IRunnerRepository
     Task<bool> RunnerExists(Guid requestId, Guid? workerProfileId, Guid? candidateId);
     Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter);
     Task<RunnerDetailModel> GetRunnerDetail(Guid id);
+    Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd);
     Task SaveChangesAsync();
     Task Update<T>(T entity) where T : class;
     Task Create<T>(T entity) where T : class;

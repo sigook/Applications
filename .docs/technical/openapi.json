@@ -15984,6 +15984,35 @@
         }
       }
     },
+    "/api/agency/Notifications": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Gets all notifications for the current user in a single payload, grouped by type. Currently surfaces hired workers (non direct-hiring) within their first days so the recruiter can confirm attendance on the punch card.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Notifications.NotificationsModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/accounting/PayStubs": {
       "get": {
         "tags": [
@@ -27144,6 +27173,19 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Notifications.NotificationsModel": {
+        "type": "object",
+        "properties": {
+          "workersToReview": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Entities.Deductions.FederalTaxBiWeekly, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -29118,7 +29160,7 @@
           },
           "createdBy": {
             "type": "string",
-            "nullable": true
+            "format": "uuid"
           },
           "updatedAt": {
             "type": "string",
@@ -29202,7 +29244,7 @@
           },
           "createdBy": {
             "type": "string",
-            "nullable": true
+            "format": "uuid"
           },
           "rescheduledAt": {
             "type": "string",
@@ -29280,7 +29322,49 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel": {
+        "type": "object",
+        "properties": {
+          "runnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestNumberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "jobTitle": {
+            "type": "string",
             "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "workerProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dayNumber": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -29300,7 +29384,7 @@
           },
           "changedBy": {
             "type": "string",
-            "nullable": true
+            "format": "uuid"
           },
           "changedAt": {
             "type": "string",

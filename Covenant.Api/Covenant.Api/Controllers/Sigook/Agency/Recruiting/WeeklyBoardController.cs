@@ -1,7 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Request.WeeklyBoard;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +19,14 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [HttpGet]
     [ProducesResponseType(typeof(WeeklyBoardModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromQuery] WeeklyBoardFilter filter) =>
-        Ok(await weeklyBoardService.GetWeeklyBoard(User.GetAgencyId(), filter));
+        Ok(await weeklyBoardService.GetWeeklyBoard(filter));
 
     /// <summary>Gets the weekly board for the current recruiter, including the workers sent to each order.</summary>
     /// <param name="filter">Date range to display (from/to).</param>
     [HttpGet("mine")]
     [ProducesResponseType(typeof(RecruiterWeeklyBoardModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMine([FromQuery] WeeklyBoardFilter filter) =>
-        Ok(await weeklyBoardService.GetRecruiterWeeklyBoard(User.GetAgencyId(), filter));
+        Ok(await weeklyBoardService.GetRecruiterWeeklyBoard(filter));
 
     /// <summary>Assigns one or more recruiters to an order for one or more work days.</summary>
     /// <param name="model">Assignment data: order, work days and recruiters.</param>
@@ -36,7 +35,7 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Assign([FromBody] AssignRecruitersModel model)
     {
-        var result = await weeklyBoardService.AssignRecruiters(User.GetAgencyId(), model);
+        var result = await weeklyBoardService.AssignRecruiters(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -50,7 +49,7 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Unassign([FromQuery] Guid requestId, [FromQuery] Guid recruiterId, [FromQuery] DateTime workDate)
     {
-        var result = await weeklyBoardService.UnassignRecruiter(User.GetAgencyId(), requestId, recruiterId, workDate);
+        var result = await weeklyBoardService.UnassignRecruiter(requestId, recruiterId, workDate);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -62,7 +61,7 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Move([FromBody] MoveAssignmentModel model)
     {
-        var result = await weeklyBoardService.MoveAssignment(User.GetAgencyId(), model);
+        var result = await weeklyBoardService.MoveAssignment(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -74,7 +73,7 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddWorkers([FromBody] DispatchWorkersModel model)
     {
-        var result = await weeklyBoardService.AddWorkers(User.GetAgencyId(), model);
+        var result = await weeklyBoardService.AddWorkers(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -88,7 +87,7 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveWorker([FromQuery] Guid requestId, [FromQuery] DateTime workDate, [FromQuery] Guid workerProfileId)
     {
-        var result = await weeklyBoardService.RemoveWorker(User.GetAgencyId(), requestId, workDate, workerProfileId);
+        var result = await weeklyBoardService.RemoveWorker(requestId, workDate, workerProfileId);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

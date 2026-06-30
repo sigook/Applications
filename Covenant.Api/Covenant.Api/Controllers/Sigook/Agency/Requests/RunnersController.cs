@@ -7,7 +7,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
@@ -59,7 +58,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromBody] RunnerCreateModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await runnerService.CreateRunner(User.GetAgencyId(), requestId, model, User.GetNickname());
+        var result = await runnerService.CreateRunner(requestId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -73,7 +72,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     public async Task<IActionResult> ChangeStatus([FromRoute] Guid id, [FromBody] ChangeRunnerStatusModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await runnerService.ChangeStatus(id, model, User.GetNickname());
+        var result = await runnerService.ChangeStatus(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -87,7 +86,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     public async Task<IActionResult> AddInterview([FromRoute] Guid id, [FromBody] RunnerInterviewCreateModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await runnerService.AddInterview(id, model, User.GetNickname());
+        var result = await runnerService.AddInterview(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -102,7 +101,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     public async Task<IActionResult> RescheduleInterview([FromRoute] Guid id, [FromRoute] Guid interviewId, [FromBody] RunnerInterviewRescheduleModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await runnerService.RescheduleInterview(id, interviewId, model, User.GetNickname());
+        var result = await runnerService.RescheduleInterview(id, interviewId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

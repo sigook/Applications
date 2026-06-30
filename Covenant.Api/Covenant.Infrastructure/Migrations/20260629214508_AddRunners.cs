@@ -27,8 +27,9 @@ namespace Covenant.Infrastructure.Migrations
                     Status = table.Column<string>(type: "text", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -71,9 +72,9 @@ namespace Covenant.Infrastructure.Migrations
                     Notes = table.Column<string>(type: "text", nullable: true),
                     RescheduleCount = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     RescheduledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    RescheduledBy = table.Column<string>(type: "text", nullable: true)
+                    RescheduledBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -94,7 +95,7 @@ namespace Covenant.Infrastructure.Migrations
                     RunnerId = table.Column<Guid>(type: "uuid", nullable: false),
                     PreviousStatus = table.Column<string>(type: "text", nullable: true),
                     NewStatus = table.Column<string>(type: "text", nullable: false),
-                    ChangedBy = table.Column<string>(type: "text", nullable: true),
+                    ChangedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     ChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Comments = table.Column<string>(type: "text", nullable: true)
                 },

@@ -69,10 +69,10 @@
             </div>
             <b-tag :type="statusTagType(assignment.status)" rounded>{{ statusLabel(assignment.status) }}</b-tag>
           </div>
-          <p class="card-company">{{ assignment.companyName }}</p>
+          <p class="card-position">{{ assignment.jobTitle }}</p>
           <div class="card-meta container-flex">
-            <span class="col-12"><b-icon icon="briefcase-outline" size="is-small"></b-icon>
-              {{ assignment.jobTitle }}
+            <span class="col-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
+              {{ assignment.companyName }}
             </span>
           </div>
 
@@ -377,7 +377,7 @@ watch(range, loadBoard, { immediate: true });
       border-top-color: $green;
     }
 
-    .card-company {
+    .card-position {
       font-weight: 700;
       margin-bottom: 0.4rem;
     }

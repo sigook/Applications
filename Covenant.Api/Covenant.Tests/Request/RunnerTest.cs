@@ -8,8 +8,10 @@ namespace Covenant.Tests.Request
 {
     public class RunnerTest
     {
+        private static readonly Guid Actor = Guid.NewGuid();
+
         private static Runner NewRunner() =>
-            Runner.CreateFromWorker(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), RunnerType.Active, "tester").Value;
+            Runner.CreateFromWorker(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), RunnerType.Active, Actor).Value;
 
         [Fact]
         public void Create_StartsAtSentToClient_WithInitialHistory()
@@ -36,7 +38,7 @@ namespace Covenant.Tests.Request
         public void ChangeStatus_AppendsHistory_WithPreviousAndNew()
         {
             var runner = NewRunner();
-            var result = runner.ChangeStatus(RunnerStatus.InterviewScheduled, "tester", "scheduled it");
+            var result = runner.ChangeStatus(RunnerStatus.InterviewScheduled, Actor, "scheduled it");
             Assert.True(result);
             Assert.Equal(RunnerStatus.InterviewScheduled, runner.Status);
             Assert.Equal(2, runner.StatusHistory.Count());
@@ -51,7 +53,7 @@ namespace Covenant.Tests.Request
         {
             var runner = NewRunner();
             var startDate = new DateTime(2026, 7, 1);
-            var result = runner.ChangeStatus(RunnerStatus.Hired, "tester", startDate: startDate);
+            var result = runner.ChangeStatus(RunnerStatus.Hired, Actor, startDate: startDate);
             Assert.True(result);
             Assert.Equal(RunnerStatus.Hired, runner.Status);
             Assert.Equal(startDate, runner.StartDate);
@@ -61,7 +63,7 @@ namespace Covenant.Tests.Request
         public void ChangeStatus_ToHired_WithoutStartDate_IsBlocked()
         {
             var runner = NewRunner();
-            var result = runner.ChangeStatus(RunnerStatus.Hired, "tester");
+            var result = runner.ChangeStatus(RunnerStatus.Hired, Actor);
             Assert.False(result);
             Assert.NotEqual(RunnerStatus.Hired, runner.Status);
             Assert.Null(runner.StartDate);
@@ -71,8 +73,8 @@ namespace Covenant.Tests.Request
         public void ChangeStatus_WhenAlreadyHired_IsBlocked()
         {
             var runner = NewRunner();
-            runner.ChangeStatus(RunnerStatus.Hired, "tester", startDate: DateTime.Now);
-            var result = runner.ChangeStatus(RunnerStatus.Rejected, "tester");
+            runner.ChangeStatus(RunnerStatus.Hired, Actor, startDate: DateTime.Now);
+            var result = runner.ChangeStatus(RunnerStatus.Rejected, Actor);
             Assert.False(result);
             Assert.Equal(RunnerStatus.Hired, runner.Status);
         }
@@ -81,7 +83,7 @@ namespace Covenant.Tests.Request
         public void AddInterview_BlockedWhenStatusDoesNotAllow()
         {
             var runner = NewRunner();
-            var result = runner.AddInterview(DateTime.Now, InterviewType.Phone, "Jane", "notes", "tester");
+            var result = runner.AddInterview(DateTime.Now, InterviewType.Phone, "Jane", "notes", Actor);
             Assert.False(result);
             Assert.Empty(runner.Interviews);
         }
@@ -90,8 +92,8 @@ namespace Covenant.Tests.Request
         public void AddInterview_AllowedWhenScheduled()
         {
             var runner = NewRunner();
-            runner.ChangeStatus(RunnerStatus.InterviewScheduled, "tester");
-            var result = runner.AddInterview(DateTime.Now, InterviewType.Onsite, "Jane", "notes", "tester");
+            runner.ChangeStatus(RunnerStatus.InterviewScheduled, Actor);
+            var result = runner.AddInterview(DateTime.Now, InterviewType.Onsite, "Jane", "notes", Actor);
             Assert.True(result);
             Assert.Single(runner.Interviews);
             Assert.Equal(InterviewStatus.Scheduled, result.Value.Status);
@@ -101,9 +103,9 @@ namespace Covenant.Tests.Request
         public void RescheduleInterview_TransitionsToRescheduled()
         {
             var runner = NewRunner();
-            runner.ChangeStatus(RunnerStatus.InterviewScheduled, "tester");
-            var interview = runner.AddInterview(DateTime.Now, InterviewType.Video, "Jane", null, "tester").Value;
-            var result = runner.RescheduleInterview(interview.Id, DateTime.Now.AddDays(2), "tester");
+            runner.ChangeStatus(RunnerStatus.InterviewScheduled, Actor);
+            var interview = runner.AddInterview(DateTime.Now, InterviewType.Video, "Jane", null, Actor).Value;
+            var result = runner.RescheduleInterview(interview.Id, DateTime.Now.AddDays(2), Actor);
             Assert.True(result);
             Assert.Equal(RunnerStatus.InterviewRescheduled, runner.Status);
             Assert.Equal(InterviewStatus.Rescheduled, interview.Status);
@@ -113,10 +115,10 @@ namespace Covenant.Tests.Request
         public void RescheduleInterview_BlockedWhenStatusDoesNotAllow()
         {
             var runner = NewRunner();
-            runner.ChangeStatus(RunnerStatus.InterviewScheduled, "tester");
-            var interview = runner.AddInterview(DateTime.Now, InterviewType.Phone, "Jane", null, "tester").Value;
-            runner.ChangeStatus(RunnerStatus.Rejected, "tester");
-            var result = runner.RescheduleInterview(interview.Id, DateTime.Now.AddDays(1), "tester");
+            runner.ChangeStatus(RunnerStatus.InterviewScheduled, Actor);
+            var interview = runner.AddInterview(DateTime.Now, InterviewType.Phone, "Jane", null, Actor).Value;
+            runner.ChangeStatus(RunnerStatus.Rejected, Actor);
+            var result = runner.RescheduleInterview(interview.Id, DateTime.Now.AddDays(1), Actor);
             Assert.False(result);
             Assert.Equal(RunnerStatus.Rejected, runner.Status);
         }
